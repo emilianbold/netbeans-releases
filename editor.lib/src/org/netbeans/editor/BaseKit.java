@@ -1515,7 +1515,14 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 if (Utilities.isSelectionShowing(caret)) { // block selected
                                     try {
+                                        boolean selectionAtLineStart = Utilities.getRowStart(doc, target.getSelectionStart()) == target.getSelectionStart();
                                         changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                        if (selectionAtLineStart) {
+                                            int newSelectionStartOffset = target.getSelectionStart();
+                                            int lineStartOffset = Utilities.getRowStart(doc, newSelectionStartOffset);
+                                            if (lineStartOffset != newSelectionStartOffset)
+                                            target.select(lineStartOffset, target.getSelectionEnd());
+                                        }
                                     } catch (GuardedException e) {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
@@ -3182,22 +3189,38 @@ public class BaseKit extends DefaultEditorKit {
                     int removeLen = firstNW - replacePos;
                     CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
                     String newIndentText = IndentUtils.createIndentString(doc, indent);
-                    if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
-                        // Skip removeLen chars at start
-                        newIndentText = newIndentText.substring(removeLen);
-                        replacePos += removeLen;
-                        removeLen = 0;
-                    } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
-                        // Skip removeLen chars at the end
-                        newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
-                        removeLen = 0;
+                    int newIndentTextLength = newIndentText.length();
+                    if (indent >= removeLen) {
+                        if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
+                            // Skip removeLen chars at start
+                            newIndentText = newIndentText.substring(removeLen);
+                            replacePos += removeLen;
+                            removeLen = 0;
+                        } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
+                            // Skip removeLen chars at the end
+                            newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
+                            removeLen = 0;
+                        }
+                    } else {
+                        if (CharSequenceUtilities.startsWith(removeText, newIndentText)) {
+                            // Skip newIndentText chars at start
+                            replacePos += newIndentTextLength;
+                            removeLen -= newIndentTextLength;
+                            newIndentText = null;
+                        } else if (CharSequenceUtilities.endsWith(removeText, newIndentText)) {
+                            // Skip  newIndentText chars at the end
+                            removeLen -= newIndentTextLength;
+                            newIndentText = null;
+                        }
                     }
 
                     if (removeLen != 0) {
                         doc.remove(replacePos, removeLen);
                     }
 
-                    doc.insertString(replacePos, newIndentText, null);
+                    if (newIndentText != null) {
+                        doc.insertString(replacePos, newIndentText, null);
+                    }
                 } catch (BadLocationException ex) {
                     badLocationExceptions [0] = ex;
                 }

@@ -52,6 +52,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -161,7 +162,10 @@ public class Hk2PluginProperties {
      * @return
      */
     public List<URL> getClasses() {
-        File serverDir = new File(getGlassfishRoot());
+        String gfr = getGlassfishRoot();
+        if (null == gfr) 
+            return Collections.EMPTY_LIST;
+        File serverDir = new File(gfr);
         return getClasses(serverDir);
     }
 

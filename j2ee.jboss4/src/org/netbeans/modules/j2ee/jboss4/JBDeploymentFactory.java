@@ -130,7 +130,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
         try {
 
             Version JBVer = JBPluginUtils.getServerVersion(new File (serverRoot));
-             boolean version5 = (JBVer != null && JBVer.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
+            boolean version5Above = (JBVer != null && JBVer.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
 
             // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
             File domFile = new File(serverRoot , JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
@@ -161,7 +161,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 urlList.add(domFile.toURI().toURL());
             }
 
-            if  (version5) {
+            if  (version5Above) {
                 // get lient class path for Jboss 5.0
                 List<URL> clientClassUrls = JBPluginUtils.getJB5ClientClasspath(
                         serverRoot);
@@ -172,6 +172,24 @@ public class JBDeploymentFactory implements DeploymentFactory {
                     urlList.add(runFile.toURI().toURL());
                 }
 
+                File securityFile = new File(serverRoot, "common" + File.separator // NOI18N
+                        + "lib" + File.separator + "jboss-security-aspects.jar"); // NOI18N
+                if (securityFile.exists()) {
+                    urlList.add(securityFile.toURI().toURL());
+                }
+                File profileFile = new File(serverRoot, "common" + File.separator // NOI18N
+                        + "lib" + File.separator + "jboss-profileservice.jar"); // NOI18N
+                if (profileFile.exists()) {
+                    urlList.add(profileFile.toURI().toURL());
+                }                
+                File managedFile = new File(serverRoot, "lib" + File.separator + "jboss-managed.jar"); // NOI18N
+                if (managedFile.exists()) {
+                    urlList.add(managedFile.toURI().toURL());
+                }
+                File metaFile = new File(serverRoot, "lib" + File.separator + "jboss-metatype.jar"); // NOI18N
+                if (metaFile.exists()) {
+                    urlList.add(metaFile.toURI().toURL());
+                }                 
             } else {  // version < 5.0
                 urlList.add(
                         new File(serverRoot , JBPluginUtils.CLIENT + "jbossall-client.jar").toURI().toURL());      //NOI18N

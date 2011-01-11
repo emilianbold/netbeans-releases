@@ -42,8 +42,6 @@
 package org.netbeans.modules.nativeexecution.support.ui;
 
 import java.awt.Dialog;
-import javax.swing.BorderFactory;
-import javax.swing.border.EtchedBorder;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.DialogDescriptor;
@@ -85,7 +83,18 @@ public class PasswordDlg extends javax.swing.JPanel {
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setResizable(false);
-        dialog.setVisible(true);
+
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
+
         return dd.getValue() == DialogDescriptor.OK_OPTION;
     }
 

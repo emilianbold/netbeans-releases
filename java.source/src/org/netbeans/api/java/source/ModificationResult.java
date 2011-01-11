@@ -229,7 +229,7 @@ public final class ModificationResult {
         }
     }
             
-    private void commit (final FileObject fo, final List<Difference> differences, final Writer out) throws IOException {
+    static void commit (final FileObject fo, final List<Difference> differences, final Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
@@ -338,7 +338,7 @@ public final class ModificationResult {
         }            
     }
 
-    private void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
+    private static void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
         for (Difference diff : differences) {
             if (diff.isExcluded())
                 continue;
@@ -355,7 +355,7 @@ public final class ModificationResult {
         }
     }
     
-    private void processDocument(final StyledDocument doc, final Difference diff) throws IOException {
+    private static void processDocument(final StyledDocument doc, final Difference diff) throws IOException {
         final BadLocationException[] blex = new BadLocationException[1];
         Runnable task = new Runnable() {
 
@@ -410,7 +410,7 @@ public final class ModificationResult {
         }
     }
     
-    private void processDocumentLocked(Document doc, Difference diff) throws BadLocationException {
+    private static void processDocumentLocked(Document doc, Difference diff) throws BadLocationException {
         switch (diff.getKind()) {
             case INSERT:
                 doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
@@ -425,7 +425,7 @@ public final class ModificationResult {
         }
     }
 
-    private void createUnit(Difference diff, Writer out) {
+    private static void createUnit(Difference diff, Writer out) {
         CreateChange change = (CreateChange) diff;
         Writer w = out;
         try {
@@ -447,7 +447,7 @@ public final class ModificationResult {
         }
     }
     
-    private int convertToLF(byte[] buff) {
+    private static int convertToLF(byte[] buff) {
         int j = 0;
         for (int i = 0; i < buff.length; i++) {
             if (buff[i] != '\r') {

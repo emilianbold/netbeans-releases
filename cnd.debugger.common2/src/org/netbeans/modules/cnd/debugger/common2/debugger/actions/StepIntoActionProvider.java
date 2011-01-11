@@ -84,9 +84,13 @@ public class StepIntoActionProvider extends NativeActionsProvider {
     /* abstract in ActionsProviderSupport */
     public void doAction(Object a) {
 	NativeDebugger debugger = getDebugger();
-	if (debugger != null)
-	    debugger.stepInto();
-	else {
+	if (debugger != null) {
+            if (inDis()) {
+                debugger.stepInst();
+            } else {
+                debugger.stepInto();
+            }
+        } else {
 	    Action action = MainProjectSensitiveActions.mainProjectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, "MyDebug",null); // NOI18N
 	    JButton jButton = new JButton(action);
 	    jButton.doClick();

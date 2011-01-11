@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -61,11 +62,18 @@ public final class StartEntry implements Persistent, SelfPersistent{
     private final CharSequence startFile;
     //private boolean isCPP; // TODO: flag to be used for understanding C/C++ lang
     private final Key startFileProject;
-    public StartEntry(String startFile, Key startFileProject) {
+    transient private final FileSystem fileSystem;
+    
+    public StartEntry(FileSystem fs, String startFile, Key startFileProject) {
+        this.fileSystem = fs;
         this.startFile = FilePathCache.getManager().getString(startFile);
         this.startFileProject = startFileProject;
     }
-    
+
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
     public CharSequence getStartFile(){
         return startFile;
     }
@@ -85,8 +93,9 @@ public final class StartEntry implements Persistent, SelfPersistent{
         KeyFactory.getDefaultFactory().writeKey(startFileProject, output);
     }
     
-    public StartEntry(final DataInput input) throws IOException {
+    public StartEntry(FileSystem fs, DataInput input) throws IOException {
         assert input != null;
+        fileSystem = fs;
         startFile = FilePathCache.getManager().getString(input.readUTF());
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
     }

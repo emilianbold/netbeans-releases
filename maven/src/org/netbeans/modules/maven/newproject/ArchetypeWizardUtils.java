@@ -84,7 +84,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -101,7 +100,6 @@ public class ArchetypeWizardUtils {
     public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
 
     private static final String USER_DIR_PROP = "user.dir"; //NOI18N
-    private static final RequestProcessor RP = new RequestProcessor(ArchetypeWizardUtils.class);
 
     /**
      * No instances, utility class.
@@ -398,13 +396,7 @@ public class ArchetypeWizardUtils {
             }
             final NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
             if (watch != null) {
-                //see #163529 for reasoning
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        watch.downloadDependencyAndJavadocSource();
-                    }
-                });
+                watch.downloadDependencyAndJavadocSource(false);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

@@ -501,8 +501,10 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 }
             }
         }
+        List<CompilerSet> all = new ArrayList<CompilerSet>(getCompilerSets());
+        all.addAll(css);
         for(CompilerSet cs : css) {
-            completeCompilerSet(executionEnvironment, (CompilerSetImpl)cs, css);
+            completeCompilerSet(executionEnvironment, (CompilerSetImpl)cs, all);
         }
         return css;
     }

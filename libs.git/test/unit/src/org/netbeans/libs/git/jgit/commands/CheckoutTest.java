@@ -42,16 +42,26 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.WindowCache;
+import org.eclipse.jgit.storage.file.WindowCacheConfig;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -80,7 +90,6 @@ public class CheckoutTest extends AbstractGitTestCase {
     public void testJGitCheckout () throws Exception {
         File file1 = new File(workDir, "file1");
         write(file1, "blablablabla");
-        File file2 = new File(workDir, "file2");
         Git git = new Git(repository);
         org.eclipse.jgit.api.AddCommand cmd = git.add();
         cmd.addFilepattern("file1");
@@ -96,19 +105,6 @@ public class CheckoutTest extends AbstractGitTestCase {
         try {
             DirCacheCheckout checkout = new DirCacheCheckout(repository, null, cache, new RevWalk(repository).parseCommit(repository.resolve(commitId)).getTree());
             checkout.checkout();
-        } finally {
-            cache.unlock();
-        }
-        cache = repository.lockDirCache();
-        try {
-            write(file2, "blablablabla in file2");
-            DirCacheCheckout checkout = new DirCacheCheckout(repository, null, cache, new RevWalk(repository).parseCommit(repository.resolve(commitId)).getTree());
-            try {
-                checkout.checkout();
-                fail("If stops failing, implement checkout with DirCacheCheckout");
-            } catch (NullPointerException ex) {
-                // sadly fails
-            }
         } finally {
             cache.unlock();
         }
@@ -237,5 +233,42 @@ public class CheckoutTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertEquals("file 1 content", read(file1));
         assertEquals(currentRevision, new Git(repository).log().call().iterator().next().getId().getName());
+    }
+
+    public void testLargeFile () throws Exception {
+        unpack("large.dat.zip");
+        File large = new File(workDir, "large.dat");
+        assertTrue(large.exists());
+        assertEquals(2158310, large.length());
+        add();
+        DirCache cache = repository.readDirCache();
+        DirCacheEntry e = cache.getEntry("large.dat");
+        WindowCacheConfig cfg = new WindowCacheConfig();
+        cfg.setStreamFileThreshold((int) large.length() - 1);
+        WindowCache.reconfigure(cfg);
+        DirCacheCheckout.checkoutEntry(repository, large, e);
+    }
+
+    private void unpack (String filename) throws IOException {
+        File zipLarge = new File(getDataDir(), filename);
+        ZipInputStream is = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipLarge)));
+        ZipEntry entry;
+        while ((entry = is.getNextEntry()) != null) {
+            File unpacked = new File(workDir, entry.getName());
+            FileChannel channel = new FileOutputStream(unpacked).getChannel();
+            byte[] bytes = new byte[2048];
+            try {
+                int len;
+                long size = entry.getSize();
+                while (size > 0 && (len = is.read(bytes, 0, 2048)) > 0) {
+                    ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, len);
+                    int j = channel.write(buffer);
+                    size -= len;
+                }
+            } finally {
+                channel.close();
+            }
+        }
+        ZipEntry e = is.getNextEntry();
     }
 }

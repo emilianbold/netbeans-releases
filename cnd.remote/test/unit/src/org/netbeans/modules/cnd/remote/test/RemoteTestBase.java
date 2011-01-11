@@ -140,15 +140,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         setSysProps();        
     }
 
-    protected final void cleanUserDir()  {
-        File userDir = getUserDir();
-        if (userDir.exists()) {
-            if (!removeDirectoryContent(userDir)) {
-                assertTrue("Can not remove the content of " +  userDir.getAbsolutePath(), false);
-            }
-        }
-    }
-
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     private void setSysProps() {
         try {

@@ -441,12 +441,15 @@ public abstract class BaseActionProvider implements ActionProvider {
 
                     if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
                         try {
-                            FileObject file = findSources(context)[0];
-                            String url = p.getProperty("applet.url");
-                            execProperties.put("applet.url", url);
-                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                            prepareSystemProperties(execProperties, false);
-                            JavaRunner.execute(targetNames[0], execProperties);
+                            final FileObject[] selectedFiles = findSources(context);
+                            if (selectedFiles != null) {
+                                FileObject file = selectedFiles[0];
+                                String url = p.getProperty("applet.url");
+                                execProperties.put("applet.url", url);
+                                execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
+                                prepareSystemProperties(execProperties, false);
+                                JavaRunner.execute(targetNames[0], execProperties);
+                            }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -785,6 +788,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                             targetNames = new String[] {"debug-applet"}; // NOI18N
                         }
                     } else {
+                        List<String> alternativeTargetNames = new ArrayList<String>();
                         if (isTest) {
                             //Fallback to normal (non-main-method-based) unit test run
                             if (command.equals(COMMAND_RUN_SINGLE)) {
@@ -792,8 +796,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                             } else {
                                 targetNames = setupDebugTestSingle(p, files);
                             }
-                        } else if (handleJavaClass(p, file, command)) {
-                            targetNames = getCommands().get(command);
+                        } else if (handleJavaClass(p, file, command, alternativeTargetNames)) {
+                            if (alternativeTargetNames.size() > 0) {
+                                targetNames = alternativeTargetNames.toArray(new String[alternativeTargetNames.size()]);
+                            } else {
+                                targetNames = getCommands().get(command);
+                            }
                         } else {
                             NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(MainClassChooser.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                             DialogDisplayer.getDefault().notify(nd);
@@ -862,7 +870,12 @@ public abstract class BaseActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command) {
+    /**
+     * @param targetNames caller of this method must set this parameter to empty 
+     *  modifiable array; implementor of this method can return alternative target
+     *  names to be used to handle this Java class
+     */
+    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command, List<String> targetNames) {
         return false;
     }
 
@@ -1544,15 +1557,15 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     private void showPlatformWarning () {
-        final JButton closeOption = new JButton (NbBundle.getMessage(MainClassChooser.class, "CTL_BrokenPlatform_Close"));
-        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MainClassChooser.class, "AD_BrokenPlatform_Close"));
+        final JButton closeOption = new JButton (NbBundle.getMessage(BaseActionProvider.class, "CTL_BrokenPlatform_Close"));
+        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BaseActionProvider.class, "AD_BrokenPlatform_Close"));
         final ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
         final String projectDisplayName = pi == null ?
-            NbBundle.getMessage (MainClassChooser.class,"TEXT_BrokenPlatform_UnknownProjectName")
+            NbBundle.getMessage (BaseActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
             : pi.getDisplayName();
         final DialogDescriptor dd = new DialogDescriptor(
-            NbBundle.getMessage(MainClassChooser.class, "TEXT_BrokenPlatform", projectDisplayName),
-            NbBundle.getMessage(MainClassChooser.class, "MSG_BrokenPlatform_Title"),
+            NbBundle.getMessage(BaseActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
+            NbBundle.getMessage(BaseActionProvider.class, "MSG_BrokenPlatform_Title"),
             true,
             new Object[] {closeOption},
             closeOption,

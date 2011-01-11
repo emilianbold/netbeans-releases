@@ -251,9 +251,6 @@ public class ExternalTouchTest extends NbTestCase {
             }
 
             public void fileAttributeChanged(FileAttributeEvent fe) {
-                if (fe.getName().startsWith("DataEditorSupport.read-only.refresh")) {
-                    return;
-                }
                 LOG.info("AttributeChanged: " + fe.getFile());
                 sb.append("AttributeChanged");
             }
@@ -293,6 +290,16 @@ public class ExternalTouchTest extends NbTestCase {
 
         flat.assertMessages("No messages in flat mode", "");
         recursive.assertMessages("written", "Changed");
+        
+        fo.setReadOnly();
+        LOG.info("Read-only refresh before");
+        FileUtil.refreshAll();
+        LOG.info("Read-only refresh after");
+        
+        flat.assertMessages("No messages in flat mode", "");
+        recursive.assertMessages("attribute changed", "AttributeChanged");
+        
+        fo.setWritable(true);
 
         fo.delete();
         FileUtil.refreshAll();

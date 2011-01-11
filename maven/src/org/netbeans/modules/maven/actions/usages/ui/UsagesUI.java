@@ -42,11 +42,13 @@
 package org.netbeans.modules.maven.actions.usages.ui;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -59,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -68,7 +71,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -393,7 +395,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
 
                 @Override
                 protected Node[] createNodes(NBVersionInfo arg0) {
-                    return new Node[]{new VertionNode(arg0)};
+                    return new Node[]{new VersionNode(arg0)};
                 }
 
                 @Override
@@ -423,11 +425,11 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
         }
     }
 
-    private static class VertionNode extends AbstractNode {
+    private static class VersionNode extends AbstractNode {
 
         NBVersionInfo version;
 
-        public VertionNode(NBVersionInfo version) {
+        public VersionNode(NBVersionInfo version) {
             super(Children.LEAF);
             this.version = version;
             setIconBaseWithExtension("org/netbeans/modules/maven/DependencyIcon.png"); //NOI18N
@@ -437,6 +439,15 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
         public String getDisplayName() {
             return version.getVersion()+" [ "+version.getType()+" ]";
         }
+
+        public @Override Action getPreferredAction() {
+            return new AbstractAction() {
+                public @Override void actionPerformed(ActionEvent e) {
+                    ArtifactViewer.showArtifactViewer(version);
+                }
+            };
+        }
+
     }
 
     private static class OpenProjectNode extends AbstractNode {

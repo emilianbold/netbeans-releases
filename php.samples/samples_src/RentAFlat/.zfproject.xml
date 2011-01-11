@@ -1,0 +1,259 @@
+<?xml version="1.0"?>
+<projectProfile type="default" version="1.10">
+  <projectDirectory>
+    <projectProfileFile filesystemName=".zfproject.xml"/>
+    <applicationDirectory classNamePrefix="Application_">
+      <apisDirectory enabled="false"/>
+      <configsDirectory>
+        <applicationConfigFile type="ini"/>
+      </configsDirectory>
+      <controllersDirectory>
+        <controllerFile controllerName="Index">
+          <actionMethod actionName="index"/>
+          <actionMethod actionName="submitForm"/>
+        </controllerFile>
+        <controllerFile controllerName="Error"/>
+        <controllerFile controllerName="Contact">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="Base">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="ContactForm">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="PersonalMeeting">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="PersonalMeetingForm">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="QuestionForm">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="AboutUs">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="InformationForBuyers">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="AvailablePositions">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="DevelopmentProjects">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="SellEstate">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="Property">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="RentEstate">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="ExclusiveInvestment">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="FetchDispositions">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="Favorites">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="SiteMap">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="AdminSavePrice">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+        <controllerFile controllerName="AdminAjaxPictureUpload">
+          <actionMethod actionName="index"/>
+        </controllerFile>
+      </controllersDirectory>
+      <formsDirectory>
+        <formFile formName="ContactForm"/>
+        <formFile formName="PersonalMeetingForm"/>
+        <formFile formName="NewsSubscription"/>
+        <formFile formName="PropertyInformationForm"/>
+        <formFile formName="FilterForm"/>
+      </formsDirectory>
+      <layoutsDirectory enabled="false"/>
+      <modelsDirectory>
+        <dbTableDirectory>
+          <dbTableFile dbTableName="Contact"/>
+          <dbTableFile dbTableName="ContactPhone"/>
+          <dbTableFile dbTableName="ContactForm"/>
+          <dbTableFile dbTableName="Content"/>
+          <dbTableFile dbTableName="PersonalMeetingForm"/>
+          <dbTableFile dbTableName="AvailablePositions"/>
+          <dbTableFile dbTableName="DevelopmentProjects"/>
+          <dbTableFile dbTableName="DevelopmentPictures"/>
+          <dbTableFile dbTableName="NewsSubscription"/>
+          <dbTableFile dbTableName="Banner"/>
+          <dbTableFile dbTableName="News"/>
+          <dbTableFile dbTableName="TopAds"/>
+          <dbTableFile dbTableName="Disposition"/>
+          <dbTableFile dbTableName="PropertyType"/>
+          <dbTableFile dbTableName="Ownership"/>
+          <dbTableFile dbTableName="Property"/>
+          <dbTableFile dbTableName="Offer"/>
+          <dbTableFile dbTableName="Location"/>
+          <dbTableFile dbTableName="Agent"/>
+          <dbTableFile dbTableName="PropertyPictures"/>
+          <dbTableFile dbTableName="PriceType"/>
+        </dbTableDirectory>
+        <modelFile modelName="ContactFormMapper"/>
+        <modelFile modelName="ContactForm"/>
+        <modelFile modelName="Content"/>
+        <modelFile modelName="PersonalMeetingForm"/>
+        <modelFile modelName="AvailablePositions"/>
+        <modelFile modelName="DevelopmentProjects"/>
+        <modelFile modelName="DevelopmentPictures"/>
+        <modelFile modelName="NewsSubscriptionForm"/>
+        <modelFile modelName="Banner"/>
+        <modelFile modelName="News"/>
+        <modelFile modelName="TopAds"/>
+        <modelFile modelName="Disposition"/>
+        <modelFile modelName="Property"/>
+        <modelFile modelName="PropertyType"/>
+        <modelFile modelName="PropertyPictures"/>
+        <modelFile modelName="PropertyLocation"/>
+        <modelFile modelName="Ownership"/>
+        <modelFile modelName="Agent"/>
+        <modelFile modelName="PriceType"/>
+      </modelsDirectory>
+      <modulesDirectory enabled="false"/>
+      <viewsDirectory>
+        <viewScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Index">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Error">
+            <viewScriptFile forActionName="error"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Contact">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Index">
+            <viewScriptFile forActionName="submitForm"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="BaseController">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Base">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="ContactForm">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="PersonalMeeting">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="PersonalMeetingForm">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="QuestionForm">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="AboutUs">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="InformationForBuyers">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="AvailablePositions">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="DevelopmentProjects">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="SellEstate">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Property">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="RentEstate">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="ExclusiveInvestment">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="FetchDispositions">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Favorites">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="SiteMap">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="AdminSavePrice">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="AdminAjaxPictureUpload">
+            <viewScriptFile forActionName="index"/>
+          </viewControllerScriptsDirectory>
+        </viewScriptsDirectory>
+        <viewHelpersDirectory/>
+        <viewFiltersDirectory enabled="false"/>
+      </viewsDirectory>
+      <bootstrapFile filesystemName="Bootstrap.php"/>
+    </applicationDirectory>
+    <dataDirectory enabled="false">
+      <cacheDirectory enabled="false"/>
+      <searchIndexesDirectory enabled="false"/>
+      <localesDirectory enabled="false"/>
+      <logsDirectory enabled="false"/>
+      <sessionsDirectory enabled="false"/>
+      <uploadsDirectory enabled="false"/>
+    </dataDirectory>
+    <docsDirectory>
+      <file filesystemName="README.txt"/>
+    </docsDirectory>
+    <libraryDirectory>
+      <zfStandardLibraryDirectory enabled="false"/>
+    </libraryDirectory>
+    <publicDirectory>
+      <publicStylesheetsDirectory enabled="false"/>
+      <publicScriptsDirectory enabled="false"/>
+      <publicImagesDirectory enabled="false"/>
+      <publicIndexFile filesystemName="index.php"/>
+      <htaccessFile filesystemName=".htaccess"/>
+    </publicDirectory>
+    <projectProvidersDirectory enabled="false"/>
+    <temporaryDirectory enabled="false"/>
+    <testsDirectory>
+      <testPHPUnitConfigFile filesystemName="phpunit.xml"/>
+      <testApplicationDirectory>
+        <testApplicationBootstrapFile filesystemName="bootstrap.php"/>
+        <testApplicationControllerDirectory>
+          <testApplicationControllerFile filesystemName="ContactControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="BaseControllerControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="BaseControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="ContactFormControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="PersonalMeetingControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="PersonalMeetingFormControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="QuestionFormControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="AboutUsControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="InformationForBuyersControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="AvailablePositionsControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="DevelopmentProjectsControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="SellEstateControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="PropertyControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="RentEstateControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="ExclusiveInvestmentControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="FetchDispositionsControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="FavoritesControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="SiteMapControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="AdminSavePriceControllerTest.php"/>
+          <testApplicationControllerFile filesystemName="AdminAjaxPictureUploadControllerTest.php"/>
+        </testApplicationControllerDirectory>
+      </testApplicationDirectory>
+      <testLibraryDirectory>
+        <testLibraryBootstrapFile filesystemName="bootstrap.php"/>
+      </testLibraryDirectory>
+    </testsDirectory>
+  </projectDirectory>
+</projectProfile>

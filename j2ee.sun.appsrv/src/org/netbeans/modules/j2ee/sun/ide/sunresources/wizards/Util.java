@@ -54,7 +54,6 @@ import javax.swing.text.BadLocationException;
 import java.awt.Toolkit;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.util.Lookup;
 
@@ -76,6 +75,7 @@ public class Util {
     public static class NumericDocument extends PlainDocument {
         private Toolkit toolkit = Toolkit.getDefaultToolkit();
         
+        @Override
         public void insertString(int offs, String str, AttributeSet a)
         throws BadLocationException {
             char[] s = str.toCharArray();
@@ -104,11 +104,11 @@ public class Util {
             String baseName;
             Lookup lookup = project.getLookup();
             J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
-            String id = provider.getServerID();
-            if ("gfv3ee6wc".equals(id))
-                baseName = "glassfish-resources";
+            String id = provider.getServerInstanceID();
+            if (id != null && id.contains("deployer:gfv3ee6wc")) // NOI18N
+                baseName = "glassfish-resources"; // NOI18N
             else
-                baseName = "sun-resources";
+                baseName = "sun-resources"; // NOI18N
             return baseName;
 
     }

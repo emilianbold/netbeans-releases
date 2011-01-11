@@ -51,12 +51,10 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.model.JavacElements;
-import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.Element;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ElementKind;
@@ -239,12 +237,12 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
             if (t == null || isEmpty(t))
                 continue;
             switch (t.getKind()) {
-                case BLOCK: {
 // #pf: the following code was commented out because it is not always reasonable
 // to inline functionality. -- Sometimes there is conflict between minimal 
 // changes and this optimization. -- Consider rename refactoring in case --
 // User expects identifier change, but optimization replaces whole block. 
 // See BodyStatementTest.java:testRenameInCase() for details.
+//                case BLOCK: {
 //                    BlockTree bt = (BlockTree)t;
 //                    boolean canInline = !bt.isStatic(); // don't inline static initializers
 //                    if (canInline)
@@ -261,7 +259,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 //                    else
 //                        newTrees.add(t); // just add block
 //                    break;
-                }
+//                }
                 case RETURN:
                 case THROW:
                 case BREAK:
@@ -359,7 +357,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitBlock(BlockTree tree, Object p) {
 	return rewriteChildren(tree);
     }
-    public Tree visitDisjointType(DisjointTypeTree tree, Object p) {
+    public Tree visitDisjunctiveType(DisjunctiveTypeTree tree, Object p) {
         return rewriteChildren(tree);
     }
     public Tree visitDoWhileLoop(DoWhileLoopTree tree, Object p) {
@@ -481,9 +479,6 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
     public Tree visitParameterizedType(ParameterizedTypeTree tree, Object p) {
 	return rewriteChildren(tree);
-    }
-    public Tree visitAnnotatedType(AnnotatedTypeTree node, Object p) {
-        return rewriteChildren(node);
     }
     public Tree visitTypeParameter(TypeParameterTree tree, Object p) {
 	return rewriteChildren(tree);
@@ -634,10 +629,10 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
 
-    protected final DisjointTypeTree rewriteChildren(DisjointTypeTree tree) {
-	List<? extends Tree> newComponents = translate(tree.getTypeComponents());
-	if (newComponents!=tree.getTypeComponents()) {
-	    DisjointTypeTree n = make.DisjointType(newComponents);
+    protected final DisjunctiveTypeTree rewriteChildren(DisjunctiveTypeTree tree) {
+	List<? extends Tree> newComponents = translate(tree.getTypeAlternatives());
+	if (newComponents!=tree.getTypeAlternatives()) {
+	    DisjunctiveTypeTree n = make.DisjunctiveType(newComponents);
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);
 	    tree = n;
@@ -1113,30 +1108,6 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
     
-    protected final Tree rewriteChildren(AnnotatedTypeTree tree) {
-        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
-        ExpressionTree type = (ExpressionTree) translate(tree.getUnderlyingType());
-
-        if (!annotations.equals(tree.getAnnotations()) || type != tree.getUnderlyingType()) {
-            List<AnnotationTree> typeAnnotations = new LinkedList<AnnotationTree>();
-
-            for (AnnotationTree at : annotations) {
-                if (!(at instanceof JCTypeAnnotation)) {//XXX
-                    at = make.TypeAnnotation(at);
-                }
-                typeAnnotations.add(at);
-            }
-
-            AnnotatedTypeTree n = make.AnnotatedType(typeAnnotations, type);
-            model.setType(n, model.getType(tree));
-	    copyCommentTo(tree, n);
-	    tree = n;
-            copyPosTo(tree, n);
-        }
-
-        return tree;
-    }
-
     protected final TypeParameterTree rewriteChildren(TypeParameterTree tree) {
 	List<? extends ExpressionTree> bounds = 
                 (List<? extends ExpressionTree>)translate(tree.getBounds());

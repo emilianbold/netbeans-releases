@@ -100,7 +100,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     // XXX
     public Frame getMainWindow() {
-        return hierarchy.getMainWindow();
+        return hierarchy.getMainWindow().getFrame();
     }
     
     public Component getEditorAreaComponent() {
@@ -186,7 +186,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 return;
             }
         }
-        
+
         // Process all event types.
         for(int i = 0; i < viewEvents.length; i++) {
             ViewEvent viewEvent = viewEvents[i];
@@ -520,6 +520,8 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 //        }, AWTEvent.FOCUS_EVENT_MASK);
         
         hierarchy.getMainWindow().initializeComponents();
+
+        JFrame frame = hierarchy.getMainWindow().getFrame();
         // Init toolbar.
         ToolbarPool.getDefault().setConfiguration(wsa.getToolbarConfigurationName());
         
@@ -569,7 +571,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         // XXX PENDING
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             // Ignore when main window is maximized.
-            if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
+            if(frame.getExtendedState() != Frame.MAXIMIZED_BOTH) {
                 if (DEBUG) {
                     debugLog("do updateMainWindowBoundsSeparatedHelp");
                 }

@@ -70,6 +70,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.filesystems.AbstractFileSystem.Attr;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

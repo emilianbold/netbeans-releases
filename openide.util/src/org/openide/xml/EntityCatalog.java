@@ -60,7 +60,6 @@ import org.xml.sax.SAXException;
  * connections.
  *
  * <p>You can register your own instances via lookup to add to the resolver pool,
- * for example using an XML file in the format defined by {@link #PUBLIC_ID},
  * but for reasons of performance and predictability during startup it is best to provide
  * the entity (e.g. some DTD you define) as the contents of a file in
  * the system filesystem, in the <samp>/xml/entities/</samp> folder, where the file path
@@ -77,14 +76,21 @@ import org.xml.sax.SAXException;
  * Naturally this only works if you are defining a fixed number of entities.
  * <p>It is recommended that the entity file in <samp>/xml/entities/</samp> also be given a file
  * attribute named <code>hint.originalPublicID</code> with a string value giving the public ID.
- *
+ * This permits {@code org.netbeans.modules.xml.catalog} to display the entry properly.
  * @author  Petr Kuzel
- * @since   release 3.2
  */
 public abstract class EntityCatalog implements EntityResolver {
+
+    /** Default constructor for subclasses (generally discouraged). */
+    protected EntityCatalog() {}
+
     /**
      * DOCTYPE public ID defining grammar used for entity registrations.
+     * XML files matching this ID produce an instance of {@code EntityCatalog},
+     * so could be registered under {@code Services}.
+     * @deprecated Better to register entities individually by layer as described in class documentation.
      */
+    @Deprecated
     public static final String PUBLIC_ID = "-//NetBeans//Entity Mapping Registration 1.0//EN"; // NOI18N
     private static EntityCatalog instance = new Forwarder();
 
@@ -104,7 +110,7 @@ public abstract class EntityCatalog implements EntityResolver {
         Forwarder() {
         }
 
-        public InputSource resolveEntity(String publicID, String systemID)
+        public @Override InputSource resolveEntity(String publicID, String systemID)
         throws IOException, SAXException {
             if (result == null) {
                 result = Lookup.getDefault().lookupResult(EntityCatalog.class);

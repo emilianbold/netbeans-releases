@@ -50,7 +50,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -58,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -323,9 +323,21 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         assert isFindUsages() : "must be find usages";
         Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
         Collection<CsmReference> refs = CsmIncludeHierarchyResolver.getDefault().getIncludes(csmFile);
-        for (CsmReference csmReference : refs) {
-            elements.add(CsmRefactoringElementImpl.create(csmReference, false));
-        } 
+        CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
+        if(prjs != null && prjs.length != 0) {
+            for (CsmReference csmReference : refs) {
+                for (CsmProject prj : prjs) {
+                    if(csmReference.getContainingFile().getProject().equals(prj)) {
+                        elements.add(CsmRefactoringElementImpl.create(csmReference, false));
+                        break;
+                    }
+                }            
+            } 
+        } else {
+            for (CsmReference csmReference : refs) {
+                elements.add(CsmRefactoringElementImpl.create(csmReference, false));
+            }            
+        }
         return elements;
     }
     

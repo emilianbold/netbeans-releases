@@ -63,7 +63,7 @@ import org.openide.util.URLStreamHandlerRegistration;
 *
 * @author Ales Novak, Petr Hamernik, Jan Jancura, Jaroslav Tulach
 */
-final class FileURL extends URLConnection {
+class FileURL extends URLConnection {
     /** Protocol name for this type of URL. */
     public static final String PROTOCOL = "nbfs"; // NOI18N
 
@@ -86,13 +86,13 @@ final class FileURL extends URLConnection {
     OutputStream oStream = null;
 
     /** FileObject that we want to connect to. */
-    private FileObject fo;
+    protected FileObject fo;
 
     /**
     * Create a new connection to a {@link FileObject}.
     * @param u URL of the connection. Please use {@link #encodeFileObject(FileObject)} to create the URL.
     */
-    private FileURL(URL u) {
+    protected FileURL(URL u) {
         super(u);
     }
 
@@ -200,6 +200,17 @@ final class FileURL extends URLConnection {
         }
 
         return super.getHeaderField(name);
+    }
+
+    public @Override long getHeaderFieldDate(String name, long Default) {
+        if (name.equalsIgnoreCase("last-modified")) { // NOI18N
+            try {
+                connect();
+                return fo.lastModified().getTime();
+            } catch (IOException e) {
+            }
+        }
+        return super.getHeaderFieldDate(name, Default);
     }
 
     // #13038: URLClassPath is going to check this.

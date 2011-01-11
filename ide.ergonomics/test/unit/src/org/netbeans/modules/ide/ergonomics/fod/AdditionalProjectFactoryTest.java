@@ -45,6 +45,7 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import org.netbeans.modules.ide.Factory;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -59,7 +60,8 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AdditionalProjectFactoryTest extends NbTestCase {
-
+    private Logger LOG;
+    
     public AdditionalProjectFactoryTest(String name) {
         super(name);
     }
@@ -81,6 +83,7 @@ public class AdditionalProjectFactoryTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         URL u = AdditionalProjectFactoryTest.class.getResource("default.xml");
         assertNotNull("Default layer found", u);
         XMLFileSystem xml = new XMLFileSystem(u);
@@ -92,14 +95,25 @@ public class AdditionalProjectFactoryTest extends NbTestCase {
         FileObject fo = FileUtil.getConfigFile("Menu/Edit");
         assertNull("Default layer is on and Edit is hidden", fo);
 
+        LOG.info("about to create config data");
         FileUtil.createData(FileUtil.getConfigRoot(), 
             "Services/" + Factory.class.getName().replace('.', '-') + ".instance"
         );
+        LOG.info("looking up Factory.class");
         Factory f = Lookup.getDefault().lookup(Factory.class);
         assertNotNull("Factory found", f);
+        LOG.info("Factory found");
         FoDFileSystem.getInstance().waitFinished();
-
-        fo = FileUtil.getConfigFile("Menu/Edit");
+        LOG.info("Refresh finished");
+        
+        for (int i = 0; i < 100; i++) {
+            fo = FileUtil.getConfigFile("Menu/Edit");
+            if (fo != null) {
+                break;
+            }
+            LOG.log(Level.INFO, "No Menu/Edit found, in round {0}", i);
+            Thread.sleep(500);
+        }
         assertNotNull("Default layer is off and Edit is visible", fo);
     }
 }

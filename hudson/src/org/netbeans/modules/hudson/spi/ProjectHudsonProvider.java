@@ -47,6 +47,8 @@ package org.netbeans.modules.hudson.spi;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -67,7 +69,7 @@ public abstract class ProjectHudsonProvider {
      */
     public static ProjectHudsonProvider getDefault() {
         return new ProjectHudsonProvider() {
-            public Association findAssociation(Project p) {
+            public @Override Association findAssociation(Project p) {
                 for (ProjectHudsonProvider php : Lookup.getDefault().lookupAll(ProjectHudsonProvider.class)) {
                     Association a = php.findAssociation(p);
                     if (a != null) {
@@ -76,7 +78,7 @@ public abstract class ProjectHudsonProvider {
                 }
                 return null;
             }
-            public boolean recordAssociation(Project p, Association a) {
+            public @Override boolean recordAssociation(Project p, Association a) {
                 for (ProjectHudsonProvider php : Lookup.getDefault().lookupAll(ProjectHudsonProvider.class)) {
                     if (php.recordAssociation(p, a)) {
                         return true;
@@ -211,7 +213,12 @@ public abstract class ProjectHudsonProvider {
                 return null;
             }
             String jobNameRaw = m.group(2);
-            return new Association(m.group(1), jobNameRaw != null ? Utilities.uriDecode(jobNameRaw) : null);
+            try {
+                return new Association(m.group(1), jobNameRaw != null ? Utilities.uriDecode(jobNameRaw) : null);
+            } catch (IllegalArgumentException x) {
+                Logger.getLogger(ProjectHudsonProvider.class.getName()).log(Level.WARNING, "Bad URL: {0}", s);
+                return null;
+            }
         }
 
     }

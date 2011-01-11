@@ -175,8 +175,8 @@ made subject to such option by the copyright holder.
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>
-            <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
+            <arg line="${run.args.ide}"/>
         </exec>
         <exec osfamily="unix" dir="." executable="sh"
         failonerror="no" resultproperty="result.prop">
@@ -186,9 +186,9 @@ made subject to such option by the copyright holder.
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>
-            <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
             <arg line="${run.args.mac}"/>
+            <arg line="${run.args.ide}"/>
         </exec>
         <fail>
 The application is already running within the test user directory.

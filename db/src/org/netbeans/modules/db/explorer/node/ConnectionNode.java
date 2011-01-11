@@ -350,14 +350,30 @@ public class ConnectionNode extends BaseNode {
     
     @Override
     public String getName() {
-        return connection.getName();
+        return connection.getDisplayName();
+    }
+
+    @Override
+    public void setName(String name) {
+        connection.setDisplayName(name);
+        fireNameChange(null, null);
     }
 
     @Override
     public String getDisplayName() {
         return connection.getDisplayName();
     }
- 
+
+    @Override
+    public void setDisplayName(String name) {
+        connection.setDisplayName(name);
+    }
+
+    @Override
+    public boolean canRename() {
+        return true;
+    }
+
     @Override
     public String getIconBase() {
         boolean disconnected = ! DatabaseConnection.isVitalConnection(connection.getConnection(), null);

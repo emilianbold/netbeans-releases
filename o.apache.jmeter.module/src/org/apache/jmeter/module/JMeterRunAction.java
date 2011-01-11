@@ -78,6 +78,7 @@ public final class JMeterRunAction extends CookieAction {
     try {
       File script = FileUtil.toFile(primaryFile);
 //      JMeterIntegrationEngine.getDefault().runTestPlan(script.getCanonicalPath());
+      if (script == null) return false; // #183255 - asking for a non-existing file?
       final String path = script.getCanonicalPath();
       
       EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);

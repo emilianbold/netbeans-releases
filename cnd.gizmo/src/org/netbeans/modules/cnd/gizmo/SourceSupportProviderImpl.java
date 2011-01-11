@@ -191,6 +191,12 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
 
             final DataObject dob = DataObject.find(fo);
 
+            // TODO: this is a hack to make Annotations work, as they 
+            // are implemented so that have cache, where key is a path to 
+            // a file (to a mirror local file in case of remote).
+            // See Bug 193172
+            FileObjectsToSourceMap.getInstance().put(fo, lineInfo.getFileName());
+            
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
                 SwingUtilities.invokeLater(new Runnable() {

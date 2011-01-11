@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -104,13 +105,9 @@ public class IOPack {
     }
 
     public static IOPack create(boolean remote,
-                                InputOutput io,
-                                RunProfile runProfile,
+                                NativeDebuggerInfo ndi,
                                 Executor executor) {
-        int consoleType = runProfile.getConsoleType().getValue();
-        if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-            consoleType = RunProfile.getDefaultConsoleType();
-        }
+        int consoleType = ndi.getConsoleType(remote);
 
         TermComponent console;
         if (remote || Utilities.isWindows()) {
@@ -119,11 +116,10 @@ public class IOPack {
             console = IOPack.makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
         }
 
+        InputOutput io = ndi.getInputOutput();
         IOPack res;
 
-        if (io == null) { // Attach or other non-start mode
-            res = new IOPack(console, executor.getExecutionEnvironment());
-        } else if (DebuggerManager.isStandalone()) {
+        if (DebuggerManager.isStandalone()) {
             TermComponent pio;
             if (remote || Utilities.isWindows()) {
                 pio = PioPack.makePio(0);
@@ -131,8 +127,14 @@ public class IOPack {
                 pio = PioPack.makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
             }
             res = new PioPack(console, pio, executor.getExecutionEnvironment());
+        } else if (io == null) { // Attach or other non-start mode
+            res = new IOPack(console, executor.getExecutionEnvironment());
         } else if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-            res = new ExternalTerminalPack(console, runProfile.getTerminalPath(), executor.getExecutionEnvironment());
+            if (!remote && Utilities.isWindows()) {
+                res = new IOPack(console, executor.getExecutionEnvironment());
+            } else {
+                res = new ExternalTerminalPack(console, ndi.getProfile().getTerminalPath(), executor.getExecutionEnvironment());
+            }
         } else if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
             res = new OutputPack(console, io, executor.getExecutionEnvironment());
         } else {

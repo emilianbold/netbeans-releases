@@ -45,12 +45,14 @@
 package org.netbeans.updater;
 
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Locale;
 import javax.swing.*;
-import java.io.*;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.Collection;
 import java.util.logging.Level;
 
 
@@ -61,7 +63,8 @@ import javax.swing.border.LineBorder;
  * @author  phrebejk, akemr, Jiri Rechtacek
  * @version
  */
-public class UpdaterFrame extends javax.swing.JPanel {
+public class UpdaterFrame extends javax.swing.JPanel 
+implements UpdatingContext {
 
     /** Operating system is Windows x */
     public static final int OS_WIN = 1;
@@ -76,20 +79,13 @@ public class UpdaterFrame extends javax.swing.JPanel {
     
     private static final String SPLASH_PATH = "org/netbeans/updater/resources/updatersplash"; // NOI18N
 
-    private static UpdaterFrame panel;
+    private boolean bigBounds = false;
 
-    private static boolean bigBounds = false;
-
-    private static boolean fromIDE = false;
-    
-    private static Window splashWindow;
+    private Window splashWindow;
     
     /** For external running Updater without GUI */
-    private static boolean noSplash = false; 
+    private boolean noSplash = false; 
     
-    public static final String FINISHED = "FINISHED"; // NOI18N
-    public static final String RUNNING = "RUNNING"; // NOI18N
-
     /** Creates new form UpdaterFrame */
     public UpdaterFrame() {
         initComponents ();
@@ -194,29 +190,30 @@ public class UpdaterFrame extends javax.swing.JPanel {
         }
     }
     
-    private static void showSplash () {
+    private void showSplash () {
         
         if ((getOperatingSystem () == OS_WIN) ||
             (getOperatingSystem () == OS_SOLARIS) ||
             (getOperatingSystem () == OS_OS2) ||
             (getOperatingSystem () == OS_LINUX)) {
             // only some systems supports non-frame windows
-            splashWindow = new SplashWindow();
+            splashWindow = new SplashWindow(this);
         } else {        
-            splashWindow = (Window)new SplashFrame();
+            splashWindow = (Window)new SplashFrame(this);
         }
 
         // show splash
-        javax.swing.SwingUtilities.invokeLater( 
-                    new Runnable() {
-                        public void run() {
-                            splashWindow.setVisible(true);
-                            splashWindow.toFront ();
-                        }
-                    });
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                splashWindow.setVisible(true);
+                splashWindow.toFront ();
+            }
+        });
     }
     
-    static void disposeSplash () {
+    @Override
+    public void disposeSplash () {
         if (splashWindow != null) splashWindow.dispose ();
     }
     
@@ -224,64 +221,35 @@ public class UpdaterFrame extends javax.swing.JPanel {
     * @param args the command line arguments
     */
     public static void main (String... args) {
+        UpdaterFrame panel = new UpdaterFrame ();
         if (args.length > 0) {
-            cli (args);
+            panel.cli(args);
         }
-        
-        panel = new UpdaterFrame ();
-        
-        if (!noSplash) {
-            showSplash ();
+        if (!panel.noSplash) {
+            panel.showSplash ();
         }
-
-        new UpdaterDispatcher ().run ();
+        new UpdaterDispatcher (panel).run ();
     }
 
-    public static Thread runFromIDE (Collection<File> files, PropertyChangeListener listener, String brandingToken, boolean showSplash) {
-        noSplash = ! showSplash;
-        fromIDE = true;        
-        Localization.setBranding (brandingToken);
-        panel = new UpdaterFrame ();
-        panel.addPropertyChangeListener( listener );
-        if (! noSplash) {
-            showSplash();
-        }
-        
-        ModuleUpdater mu = new ModuleUpdater (files);
-        mu.start();
-        return mu;
-    }
-
-    void unpackingIsRunning () {
-        if (fromIDE) {
-            firePropertyChange (RUNNING, null, null);
-        }
+    @Override
+    public Collection<File> forInstall() {
+        return null;
     }
     
-    void unpackingFinished() {
+    @Override
+    public void unpackingIsRunning () {
+    }
+    
+    @Override
+    public void unpackingFinished() {
         runningFinished();
-        /*
-        ClassRunner runner = new ClassRunner(); 
-        runner.start();
-        */
     }
 
-    void runningFinished() {
-        if (fromIDE) {
-            firePropertyChange (FINISHED, null, null);
-            if (splashWindow != null) splashWindow.dispose();
-        }
-        else
-            System.exit( 0 );
+    @Override
+    public void runningFinished() {
+        System.exit(0);
     }
     
-    /** Tells the Localization class whether we are running from IDE or not
-     */    
-    boolean isFromIde() {
-        return fromIDE;
-    }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextArea jTextArea1;
@@ -290,57 +258,61 @@ public class UpdaterFrame extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    static void setLabel( final String text ) {
+    @Override
+    public void setLabel( final String text ) {
         
         if (noSplash) return;
 
-        final javax.swing.JLabel label = panel.textLabel;
+        final javax.swing.JLabel label = textLabel;
 
-        javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                                                    public void run() {
-                                                        label.setText( text );
-                                                    }
-                                                });
-
+        EventQueue.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                label.setText( text );
+            }
+        });
     }
 
 
-    static void setProgressRange( final long min, final long max ) {
+    @Override
+    public void setProgressRange( final long min, final long max ) {
         
         if (noSplash) return;
 
         bigBounds = max > 0xFFFF;
 
-        final javax.swing.JProgressBar progressBar = panel.progressBar;
+        final javax.swing.JProgressBar pb = progressBar;
         final boolean bb = bigBounds;
 
-        javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                                                    public void run() {
-                                                        progressBar.setMinimum( bb ? (int)(min / 1024) : (int)min );
-                                                        progressBar.setMaximum( bb ? (int)(max / 1024) : (int)max );
-                                                    }
-                                                });
+        EventQueue.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                pb.setMinimum( bb ? (int)(min / 1024) : (int)min );
+                pb.setMaximum( bb ? (int)(max / 1024) : (int)max );
+            }
+        });
 
     }
 
-    static void setProgressValue( final long value ) {
+    @Override
+    public void setProgressValue( final long value ) {
         
         if (noSplash) return;
 
-        final javax.swing.JProgressBar progressBar = panel.progressBar;
         final boolean bb = bigBounds;
 
-        javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                                                    public void run() {
-                                                        progressBar.setValue( bb ? (int)(value / 1024) : (int)value );
-                                                    }
-                                                });
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setValue( bb ? (int)(value / 1024) : (int)value );
+            }
+        });
     }
     
     /** Get the operating system on which the IDE is running.
     * @return one of the <code>OS_*</code> constants (such as {@link #OS_WINNT})
     */
-    public static final int getOperatingSystem () {
+    private static int getOperatingSystem () {
         int operatingSystem = -1;
         String osName = System.getProperty ("os.name");
         if ( osName != null && osName.startsWith("Windows")) // NOI18N
@@ -358,17 +330,11 @@ public class UpdaterFrame extends javax.swing.JPanel {
         return operatingSystem;
     }
     
-    /** Getter for property fromIDE.
-     * @return Value of property fromIDE.
-     */
-    static boolean isFromIDE() {
-        return fromIDE;
+    @Override
+    public boolean isFromIDE() {
+        return false;
     }
 
-    static UpdaterFrame getUpdaterFrame() {
-        return panel;
-    }
-    
     static private Color stringToColor( String key, Color defcolor ) {
         try {
             String str = Localization.getBrandedString( key + "_R" );  // NOI18N
@@ -417,11 +383,16 @@ public class UpdaterFrame extends javax.swing.JPanel {
         if ( lookup != null )
             jLabel3.setIcon( new ImageIcon( lookup ) );
     }
+
+    @Override
+    public OutputStream createOS(File bckFile) throws FileNotFoundException {
+        return new FileOutputStream(bckFile);
+    }
         
     static class SplashFrame extends JFrame {
         
         /** Creates a new SplashFrame */
-        public SplashFrame () {
+        public SplashFrame (UpdaterFrame panel) {
             super (getMainWindowTitle ());
             setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
             setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
@@ -439,7 +410,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
     
     static class SplashWindow extends Window {
         /** Creates a new SplashWindow */
-        public SplashWindow () {
+        public SplashWindow (UpdaterFrame panel) {
             super(new Frame());
             // add splash component
             setLayout (new java.awt.BorderLayout ());
@@ -466,16 +437,16 @@ public class UpdaterFrame extends javax.swing.JPanel {
         return false;
     }
     
-    private static int cli(String[] args) {
+    private int cli(String[] args) {
         // let's go through the command line
         for (int i = 0; i < args.length; i++) {
             if (args[i] == null) {
                 continue;
             }
             if (isOption (args[i], "noexit")) { // NOI18N
-                UpdaterFrame.fromIDE = true;
+                throw new IllegalStateException();
             } else if (isOption (args[i], "nosplash")) { // NOI18N
-                UpdaterFrame.noSplash = true;
+                noSplash = true;
             } else if (isOption (args[i], "locale")) { // NOI18N
                 args[i] = null;
                 String localeParam = args[++i];

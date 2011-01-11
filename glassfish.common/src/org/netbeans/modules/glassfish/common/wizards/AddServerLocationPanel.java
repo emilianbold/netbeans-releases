@@ -99,6 +99,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @param ev 
      */
+    @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
@@ -113,6 +114,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @return 
      */
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new AddServerLocationVisualPanel(wizardIterator);
@@ -125,6 +127,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @return 
      */
+    @Override
     public HelpCtx getHelp() {
         // !PW FIXME correct help context
         return new HelpCtx("registering_app_server_hk2_location"); //NOI18N
@@ -136,21 +139,22 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @return 
      */
+    @Override
     public boolean isValid() {
-        if(isValidating.compareAndSet(false, true)) {
+        if (isValidating.compareAndSet(false, true)) {
             try {
                 wizardIterator.setHttpPort(-1);
                 AddServerLocationVisualPanel panel = (AddServerLocationVisualPanel) getComponent();
 
                 AddServerLocationVisualPanel.DownloadState downloadState = panel.getDownloadState();
-                if(downloadState == AddServerLocationVisualPanel.DownloadState.DOWNLOADING) {
+                if (downloadState == AddServerLocationVisualPanel.DownloadState.DOWNLOADING) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                     return false;
                 }
 
                 String locationStr = panel.getHk2HomeLocation();
                 locationStr = (locationStr != null) ? locationStr.trim() : null;
-                if(locationStr == null || locationStr.length() == 0) {
+                if (locationStr == null || locationStr.length() == 0) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_BlankInstallDir"));
                     return false;
@@ -163,16 +167,15 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 File installDir = new File(locationStr).getAbsoluteFile();
                 File glassfishDir = getGlassfishRoot(installDir);
                 File domainDir = getDefaultDomain(glassfishDir);
-                if(!installDir.exists()) {
-                    if(!isLegalFolder(installDir)) {
+                if (!installDir.exists()) {
+                    if (!isLegalFolder(installDir)) {
                         wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                                 AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
                         return false;
-                    } else if(canCreate(installDir)) {
-                        if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
-                            panel.updateMessageText(NbBundle.getMessage(
-                                    AddServerLocationPanel.class, "LBL_PreludeInstallDirWillBeUsed", getSanitizedPath(installDir),
-                                    wizardIterator.getNameOfBits()));
+                    } else if (canCreate(installDir)) {
+                        if (downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
+                            panel.updateMessageText(NbBundle.getMessage(AddServerLocationPanel.class,
+                                    "LBL_NewInstallDirCanBeUsed", getSanitizedPath(installDir)));  // NOI18N
                             wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                             return false;
                         } else {
@@ -185,45 +188,49 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                                 AddServerLocationPanel.class, "ERR_CannotCreate", getSanitizedPath(installDir)));
                         return false;
                     }
-                } else if(!wizardIterator.isValidInstall(installDir, glassfishDir,wizard)) {
-                    return false;
-                } else if(!isRegisterableDomain(domainDir)) {
-                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                 } else {
-                    readServerConfiguration(domainDir, wizardIterator);
-                    String uri = wizardIterator.formatUri(glassfishDir.getAbsolutePath(),
-                            GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
-                    if (-1 == wizardIterator.getHttpPort()) {
-                        wizard.putProperty(PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
+                    ServerDetails candidate = wizardIterator.isValidInstall(installDir, glassfishDir, wizard);
+                    if (null == candidate) {
+                        String errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_InstallationInvalid", // NOI18N
+                                FileUtil.normalizeFile(installDir).getPath());
+                        wizard.putProperty(PROP_ERROR_MESSAGE, errMsg);
                         return false;
-                    }
-                    if (-1 == wizardIterator.getAdminPort()) {
-                        wizard.putProperty(PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
-                        return false;
-                    }
-                    if(wizardIterator.hasServer(uri)) {
-                        wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "MSG_DefaultDomainExists",
-                            getSanitizedPath(installDir), GlassfishInstance.DEFAULT_DOMAIN_NAME));
-                        wizardIterator.setHttpPort(-1); // FIXME this is a hack - disables finish button
+                    } else if (!isRegisterableDomain(domainDir)) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                                AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                     } else {
-                        String statusText = panel.getStatusText();
-                        if(statusText != null && statusText.length() > 0) {
-                            wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
+                        readServerConfiguration(domainDir, wizardIterator);
+                        String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
+                        if (-1 == wizardIterator.getHttpPort()) {
+                            wizard.putProperty(PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
                             return false;
-                        } else {
-                            wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                        }
+                        if (-1 == wizardIterator.getAdminPort()) {
+                            wizard.putProperty(PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
+                            return false;
+                        }
+                        if (wizardIterator.hasServer(uri)) {
                             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
-                                AddServerLocationPanel.class, "MSG_NextForSpecial"));
+                                    AddServerLocationPanel.class, "MSG_DefaultDomainExists",
+                                    getSanitizedPath(installDir), GlassfishInstance.DEFAULT_DOMAIN_NAME));
+                            wizardIterator.setHttpPort(-1); // FIXME this is a hack - disables finish button
+                        } else {
+                            String statusText = panel.getStatusText();
+                            if (statusText != null && statusText.length() > 0) {
+                                wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
+                                return false;
+                            } else {
+                                wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                                wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
+                                        AddServerLocationPanel.class, "MSG_NextForSpecial", candidate)); // NOI18N
+                            }
                         }
                     }
                 }
-
                 // message has already been set, do not clear it here (see above).
-                
+
                 // finish initializing the registration data
                 if (installDir.equals(glassfishDir)) {
                     installDir = glassfishDir.getParentFile();
@@ -272,10 +279,12 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         return dir != null ? dir.canRead() && Utils.canWrite(dir) : false;
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
@@ -284,6 +293,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @param settings 
      */
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
@@ -294,9 +304,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @param settings 
      */
+    @Override
     public void storeSettings(Object settings) {
     }
     
+    @Override
     public boolean isFinishPanel() {
         return wizardIterator.getHttpPort() != -1;
     }
@@ -361,10 +373,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                             boolean enabled = !"false".equals(attributes.getValue("enabled"));
                             if(enabled) {
                                 HttpData data = new HttpData(id, port, secure);
-                                Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
+                                Logger.getLogger("glassfish").log(Level.FINER, " Adding {0}", data); // NOI18N
                                 httpMap.put(id, data);
                             } else {
-                                Logger.getLogger("glassfish").log(Level.FINER, "http-listener " + id + " is not enabled and won't be used.");
+                                Logger.getLogger("glassfish").log(Level.FINER, 
+                                        "http-listener {0} is not enabled and won''t be used.", id); // NOI18N
                             }
                         } else {
                             Logger.getLogger("glassfish").log(Level.FINEST, "http-listener found with no name");
@@ -396,10 +409,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                             boolean enabled = !"false".equals(attributes.getValue("enabled"));
                             if(enabled) {
                                 HttpData data = new HttpData(id, port, secure);
-                                Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
+                                Logger.getLogger("glassfish").log(Level.FINER, " Adding {0}", data);  // NOI18N
                                 httpMap.put(id, data);
                             } else {
-                                Logger.getLogger("glassfish").log(Level.FINER, "http-listener " + id + " is not enabled and won't be used.");
+                                Logger.getLogger("glassfish").log(Level.FINER, 
+                                        "http-listener {0} is not enabled and won''t be used.", id);  // NOI18N
                             }
                         } else {
                             Logger.getLogger("glassfish").log(Level.FINEST, "http-listener found with no name");

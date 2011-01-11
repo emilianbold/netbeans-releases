@@ -99,4 +99,10 @@ public class SvnKitClientCallback extends SvnClientCallback {
     public boolean promptUser(String realm, String username, boolean maySave) {
         return promptedUser = !promptedUser;
     }
+
+    @Override
+    public String getUsername () {
+        String un = super.getUsername();
+        return un == null ? "" : un; //NOI18N
+    }
 }

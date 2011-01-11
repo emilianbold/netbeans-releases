@@ -187,6 +187,11 @@ public class Utils {
         return "P"; // NOI18N
     }
 
+    public static String getCsmInstantiationKindKey() {
+        // Returned string should be differed from getCsmDeclarationKindkey() and getCsmParamListKindKey()
+        return "i"; // NOI18N
+    }
+    
     public static CharSequence[] getAllClassifiersUniqueNames(CharSequence uniqueName) {
         CharSequence namePostfix = uniqueName.subSequence(1, uniqueName.length());
         CharSequence out[] = new CharSequence[]

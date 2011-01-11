@@ -79,7 +79,7 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
     private final Object SIGNAL = new Object();
     private String basename;
     private FileObject dir;
-    private Logger LOG;
+    static volatile Logger LOG;
 
     public FileObjectInLookupByMatteoTest(String testName) {
         super(testName);
@@ -91,7 +91,7 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 20000;
+        return 60000;
     }
 
     @Override
@@ -133,6 +133,7 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
                 dir.createData(nameSecondary, TestDataLoader.SECONDARY_EXTENSION);
             }
         }
+        LOG.info("Files created");
     }
 
     @Override
@@ -145,11 +146,13 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
         @Override
         public String findMIMEType(FileObject fo) {
+            LOG.log(Level.INFO, "findMIMEType: {0}", fo);
             if (TestDataLoader.PRIMARY_EXTENSION.equals(fo.getExt()) ||
                     TestDataLoader.SECONDARY_EXTENSION.equals(fo.getExt())) {
-
+                LOG.info("Mime OK");
                 return TestDataLoader.REQUIRED_MIME;
             }
+            LOG.info("No mime");
             return null;
         }
     }
@@ -211,8 +214,9 @@ public class FileObjectInLookupByMatteoTest extends NbTestCase {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                LOG.info("No event in 3s check: " + prev + " == " + count);
                 if (count == prev) {
-                    LOG.info("No event in 3s, probably done: " + prev + " == " + count);
+                    LOG.info("Equals. About to break");
                     break;
                 }
             }

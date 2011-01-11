@@ -126,7 +126,7 @@ final class TextLayoutPart {
     }
     
     float textLayoutWidth() {
-        return textLayout().getAdvance();
+        return TextLayoutUtils.getWidth(textLayout());
     }
 
     Color foreground() {

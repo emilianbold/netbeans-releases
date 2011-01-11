@@ -42,13 +42,12 @@
 
 package org.netbeans.modules.git.ui.status;
 
-import java.io.File;
 import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
-import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
@@ -71,7 +70,7 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
     @Override
     public Action getPreferredAction () {
         if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
-            return new OpenInEditorAction(new File[] { getFile() });
+            return SystemAction.get(ResolveConflictsAction.class);
         } else {
             return SystemAction.get(DiffAction.class);
         }

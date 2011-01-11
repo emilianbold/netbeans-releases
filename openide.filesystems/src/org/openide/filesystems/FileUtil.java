@@ -54,6 +54,7 @@ import java.io.SyncFailedException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -74,6 +75,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
@@ -321,7 +323,9 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void addRecursiveListener(FileChangeListener listener, File path) {
-        addFileChangeListener(new DeepListener(listener, path, null), path);
+        final DeepListener deep = new DeepListener(listener, path, null);
+        deep.init();
+        addFileChangeListener(deep, path);
     }
 
     /**
@@ -368,7 +372,9 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.37
      */
     public static void addRecursiveListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
-        addFileChangeListener(new DeepListener(listener, path, stop), path);
+        final DeepListener deep = new DeepListener(listener, path, stop);
+        deep.init();
+        addFileChangeListener(deep, path);
     }
 
     /**
@@ -381,7 +387,9 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
-        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path, null), path);
+        final DeepListener deep = new DeepListener(listener, path, null);
+        // no need to deep.init()
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(deep, path);
         dl.run();
     }
 
@@ -753,6 +761,12 @@ public final class FileUtil extends Object {
 
     /** Factory method that creates an empty implementation of a filesystem that
      * completely resides in a memory.
+     * <p>To specify the MIME type of a data file without using a MIME resolver,
+     * set the {@code mimeType} file attribute.
+     * <p>Since 7.42, a {@link URLMapper} is available for files (and folders)
+     * in memory filesystems. These URLs are valid only so long as the filesystem
+     * has not been garbage-collected, so hold the filesystem (or a file in it)
+     * strongly for as long as you expect the URLs to be in play.
      * @return a blank writable filesystem
      * @since 4.43
      */
@@ -1095,14 +1109,21 @@ public final class FileUtil extends Object {
                 continue;
             }
 
-            Object value = source.getAttribute(key);
+            AtomicBoolean isRawValue = new AtomicBoolean();
+            Object value = XMLMapAttr.getRawAttribute(source, key, isRawValue);
 
             // #132801 and #16761 - don't set attributes where value is 
             // instance of VoidValue because these attributes were previously written 
             // by mistake in code. So it should happen only if you import some
             // settings from old version.
             if (value != null && !(value instanceof MultiFileObject.VoidValue)) {
-                dest.setAttribute(key, value);
+                if (isRawValue.get() && value instanceof Method) {
+                    dest.setAttribute("methodvalue:" + key, value); // NOI18N
+                } else if (isRawValue.get() && value instanceof Class) {
+                    dest.setAttribute("newvalue:" + key, value); // NOI18N
+                } else {
+                    dest.setAttribute(key, value);
+                }
             }
         }
     }

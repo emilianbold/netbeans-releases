@@ -58,7 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -73,7 +73,7 @@ import org.openide.util.Lookup;
 /**
  * Service that provides template instantiations
  * 
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public abstract class CsmInstantiationProvider {
     
@@ -156,15 +156,19 @@ public abstract class CsmInstantiationProvider {
     public abstract CharSequence getTemplateSignature(CsmTemplate template);
 
     /**
-     * Returns class specialisations
+     * Returns class specializations
      *
-     * @param classifier - class
+     * @param classifier - template declaration
      * @param contextFile - file
      * @param contextOffset - offset
      * @return
      */
-    public abstract Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset);
+    public abstract Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset);
+    public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl) {
+        return getSpecializations(templateDecl, null, -1);
+    }
     
+    public abstract Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration);
     //
     // Implementation of the default provider
     //
@@ -210,7 +214,12 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public Collection<CsmOffsetableDeclaration> getSpecializations(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
+        public Collection<CsmOffsetableDeclaration> getSpecializations(CsmDeclaration templateDecl, CsmFile contextFile, int contextOffset) {
+            return Collections.<CsmOffsetableDeclaration>emptyList();
+        }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration) {
             return Collections.<CsmOffsetableDeclaration>emptyList();
         }
 

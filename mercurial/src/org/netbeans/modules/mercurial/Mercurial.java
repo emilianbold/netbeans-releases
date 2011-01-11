@@ -158,10 +158,15 @@ public class Mercurial {
         } catch (NumberFormatException ex) {
             statisticsFrequency = 0;
         }
-        rootsToFile = new RootsToFile(mvcs, new RootsToFile.Callback() {
+        rootsToFile = new RootsToFile(new RootsToFile.Callback() {
             @Override
             public boolean repositoryExistsFor (File file) {
                 return HgUtils.hgExistsFor(file);
+            }
+
+            @Override
+            public File getTopmostManagedAncestor (File file) {
+                return mvcs.getTopmostManagedAncestor(file);
             }
         }, Logger.getLogger("org.netbeans.modules.mercurial.RootsToFile"), statisticsFrequency); //NOI18N
         asyncInit(); // Does the Hg check but postpones querying user until menu is activated

@@ -108,6 +108,10 @@ public class FileCompletionPopup extends JPopupMenu implements KeyListener {
         list.setListData(files);
         ensureSelection();
     }
+
+    void detach () {
+        textField.removeKeyListener(this);
+    }
     
     private void setSelectNext() {
         if (list.getModel().getSize() > 0) {

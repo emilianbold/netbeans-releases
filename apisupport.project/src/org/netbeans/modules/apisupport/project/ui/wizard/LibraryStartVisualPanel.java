@@ -123,7 +123,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 }
             }
         } else  {
-            setError(getMessage("MSG_Library_Path_Not_Defined"));
+            setWarning(getMessage("MSG_Library_Path_Not_Defined"), false);
             return;
         }
         text = txtLicense.getText().trim();
@@ -250,6 +250,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     public @Override void addNotify() {
         super.addNotify();
         attachDocumentListeners();
+        checkLibraryAndLicense();
     }
     
     public @Override void removeNotify() {

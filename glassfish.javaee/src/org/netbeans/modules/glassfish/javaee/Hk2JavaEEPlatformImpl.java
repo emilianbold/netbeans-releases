@@ -480,7 +480,13 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                     sb.append(File.pathSeparator);
                      sb.append(quotedString(new File(root,"modules/endorsed").getAbsolutePath()));
                      sb.append(" -javaagent:");
-                     sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
+                     String url = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.URL_ATTR);
+                     File f = new File(root,"lib/gf-client.jar"); // NOI18N
+                     if (f.exists()) {
+                        sb.append(quotedString(f.getAbsolutePath()));
+                     } else {
+                        sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
+                    }
                       sb.append("=mode=acscript,arg=-configxml,arg=");
                       sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath()));
                       sb.append(",client=jar=");

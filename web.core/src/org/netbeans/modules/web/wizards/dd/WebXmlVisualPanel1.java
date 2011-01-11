@@ -80,8 +80,10 @@ public final class WebXmlVisualPanel1 extends JPanel {
                 locationText.setText(FileUtil.getFileDisplayName(webInf));
             } else {
                 FileObject docBase = wm.getDocumentBase();
-                targetFolder = docBase;
-                locationText.setText(FileUtil.getFileDisplayName(docBase)+File.separator+"WEB-INF");  //NOI18N
+                if (docBase != null) {
+                    targetFolder = docBase;
+                    locationText.setText(FileUtil.getFileDisplayName(docBase)+File.separator+"WEB-INF");  //NOI18N
+                }
             }
         } catch (NullPointerException npe ) {
             locationText.setText("");   //NOI18N

@@ -56,20 +56,18 @@ import javax.swing.SwingUtilities;
 
 import org.openide.util.Exceptions;
 
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.openide.ErrorManager;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -81,7 +79,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
     public ExecutorCND(String name, Host host) {
 	super(name, host);
-        exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+        exEnv = host.executionEnvironment();
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -160,21 +158,11 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         }
     }
 
-    public String getCmdOutput() {
-	throw new UnsupportedOperationException();
-    }
-
-    public List<String> getCmdOutputLines() {
-	throw new UnsupportedOperationException();
-    }
-
-    public void runShellCmd(String cmd_argv[]) {
-	throw new UnsupportedOperationException();
-    }
-
     public synchronized int startEngine(String enginePath,
 					String engine_argv[], Map<String, String> additionalEnv,
-			                TermComponent console) {
+			                TermComponent console,
+                                        boolean usePty,
+                                        boolean disableEcho) {
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
 
@@ -186,9 +174,11 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
         npb.setExecutable(enginePath);
         npb.setArguments(argv);
-        npb.setUsePty(true);
-
-        npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
+        
+        if (usePty) {
+            npb.setUsePty(true);
+            npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
+        }
 
         try {
             engineProc = npb.call();
@@ -197,6 +187,10 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         }
 
         PtySupport.connect(console.getIO(), engineProc);
+
+        if (disableEcho) {
+            PtySupport.disableEcho(exEnv, PtySupport.getTTY(engineProc));
+        }
 
 	//startMonitor();
         
@@ -227,9 +221,6 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         }
 	super.destroyEngine();
 	engineProc.destroy();
-    }
-
-    public void cleanup() {
     }
 
     @Override
@@ -288,26 +279,12 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
     }
 
     public String readlink(long pid) {
-	// throw new UnsupportedOperationException();
-	String procid = "/proc/" + pid + "/exe"; // NOI18N
-	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/readlink", procid); //NOI18N
-        if (status.isOK()) {
-            return status.output;
-        }
-
-        // try /proc/PID/path/a.out (Solaris)
-        procid = "/proc/" + pid + "/path/a.out"; // NOI18N
-	status = ProcessUtils.execute(exEnv, "/usr/bin/readlink", procid); //NOI18N
-        return status.output;
+        return PathUtils.getExePath(pid, exEnv);
     }
 
     public boolean is_64(String filep) {
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/file", filep); //NOI18N
         return status.output.contains(" 64"); //NOI18N
-    }
-
-    public Platform platform() {
-        return Platform.byCNDId(PlatformInfo.getDefault(exEnv).getPlatform());
     }
 	      
     public InputStream getInputStream() {

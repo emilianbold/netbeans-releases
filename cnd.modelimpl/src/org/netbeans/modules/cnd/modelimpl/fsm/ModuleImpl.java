@@ -61,8 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
- *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmModule, CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {

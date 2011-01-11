@@ -47,14 +47,12 @@ package org.netbeans.modules.web.project.ui.customizer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
@@ -92,7 +90,8 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
         
         jTableAddContent.setModel( uiProperties.WAR_CONTENT_ADDITIONAL_MODEL);
         jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER);
-        initTableVisualProperties(jTableAddContent);
+        Util.initTwoColumnTableVisualProperties(this, jTableAddContent);
+        jTableAddContent.setRowHeight(jTableAddContent.getRowHeight() + 4);
         
         EditMediator.register( uiProperties.getProject(),
                 uiProperties.getProject().getAntProjectHelper(),
@@ -110,28 +109,6 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider, TableMode
                 new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, JavaProjectConstants.ARTIFACT_TYPE_JAR},
                 null, JFileChooser.FILES_AND_DIRECTORIES);
         uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.addTableModelListener(this);
-    }
-    
-    private void initTableVisualProperties(JTable table) {
-        table.setRowHeight(jTableAddContent.getRowHeight() + 4);
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
-        // set the color of the table's JViewport
-        table.getParent().setBackground(table.getBackground());
-        table.setShowHorizontalLines(false);
-        table.setShowVerticalLines(false);
-        
-        //#88174 - Need horizontal scrollbar for library names
-        //ugly but I didn't find a better way how to do it
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        TableColumn column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(240);
-        column.setWidth(240);
-        column.setMinWidth(75);
-        column = table.getColumnModel().getColumn(1);
-        column.setMinWidth(187);
-        column.setWidth(187);
-        column.setMinWidth(75);
     }
     
     /** This method is called from within the constructor to

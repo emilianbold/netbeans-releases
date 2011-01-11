@@ -71,7 +71,6 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class XMLUtilTest extends NbTestCase {
@@ -80,31 +79,14 @@ public class XMLUtilTest extends NbTestCase {
         super(testName);
     }
     
-    public void testCreateXMLReader() {
-        
-        XMLReader parser = null;
-        
-        try {
-            parser = XMLUtil.createXMLReader();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-                
-        // Add your test code below by replacing the default call to fail.
-        if (parser == null) fail("Cannot create XML reader");
+    public void testCreateXMLReader() throws Exception {
+        XMLUtil.createXMLReader();
+        // XXX now what?
     }
     
-    public void testCreateDocument() {
-       
-        Document doc = null;
-        try {
-            doc = XMLUtil.createDocument("root", null, null, null);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        
-        // Add your test code below by replacing the default call to fail.
-        if (doc == null) fail("The test case is empty.");
+    public void testCreateDocument() throws Exception {
+        XMLUtil.createDocument("root", null, null, null);
+        // XXX now what?
     }
     
     public void testWrite() throws Exception {
@@ -142,24 +124,24 @@ public class XMLUtilTest extends NbTestCase {
         String data2 = baos.toString("UTF-8");
         //System.err.println("data2:\n" + data2);
         assertTrue(data2, data2.indexOf("foo") != -1);
-        assertTrue(data2, data2.indexOf("x") != -1);
+        assertTrue(data2, data2.indexOf('x') != -1);
         assertTrue(data2, data2.indexOf("DOCTYPE") != -1);
         assertTrue(data2, data2.indexOf("The foo DTD") != -1);
         assertTrue(data2, data2.indexOf("http://nowhere.net/foo.dtd") != -1);
     }
     private static final class Handler implements ErrorHandler {
-        public void error(SAXParseException exception) throws SAXException {
+        public @Override void error(SAXParseException exception) throws SAXException {
             throw exception;
         }
-        public void fatalError(SAXParseException exception) throws SAXException {
+        public @Override void fatalError(SAXParseException exception) throws SAXException {
             throw exception;
         }
-        public void warning(SAXParseException exception) throws SAXException {
+        public @Override void warning(SAXParseException exception) throws SAXException {
             throw exception;
         }
     }
     private static final class Resolver implements EntityResolver {
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             assertEquals("The foo DTD", publicId);
             assertEquals("http://nowhere.net/foo.dtd", systemId);
             String data = "<!ELEMENT foo (x+)><!ELEMENT x EMPTY>";
@@ -434,7 +416,7 @@ public class XMLUtilTest extends NbTestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
 
-        String data = baos.toString("UTF-8");
+        String data = baos.toString("UTF-8").replace("\r\n", "\n");
         assertTrue("Can't find CDATA section", data.indexOf("<![CDATA[" + cdataContent + "]]>") != -1);
         
         // parse the data back to DOM
@@ -478,7 +460,7 @@ public class XMLUtilTest extends NbTestCase {
                 "<root xmlns=\"some://where\">\n" +
                 "    <hello>there</hello>\n" +
                 "</root>\n";
-        assertEquals(expanded, baos.toString("UTF-8"));
+        assertEquals(expanded, baos.toString("UTF-8").replace("\r\n", "\n"));
         // XXX #160806 reported a problem with "xml:base" being consider a no-NS attr; not yet caught by test
         // Try again with no xmlns specified in entity; should inherit from main.xml:
         TestFileUtils.writeFile(ent, "<hello>there</hello>");
@@ -486,7 +468,7 @@ public class XMLUtilTest extends NbTestCase {
         XMLUtil.validate(doc.getDocumentElement(), s);
         baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
-        assertEquals(expanded, baos.toString("UTF-8"));
+        assertEquals(expanded, baos.toString("UTF-8").replace("\r\n", "\n"));
     }
 
     public void testHandlerLeak() throws Exception {
@@ -696,7 +678,7 @@ public class XMLUtilTest extends NbTestCase {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(dstDoc, baos, "UTF-8");
-        assertEquals(resultXml, baos.toString());
+        assertEquals(resultXml, baos.toString().replace("\r\n", "\n"));
 
         assertEquals(1, dstDoc.getChildNodes().getLength());
         Element root = dstDoc.getDocumentElement();

@@ -686,7 +686,7 @@ public abstract class Children extends Object {
                 if (getNodesEntry() == null) {
                     nodesEntry = createNodesEntry();
                 }
-                es.setEntries(Collections.singleton(getNodesEntry()));
+                es.setEntries(Collections.singleton(getNodesEntry()), true);
             } else if (getNodesEntry() != null) {
                 nodesEntry = null;
             }

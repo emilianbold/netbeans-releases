@@ -89,8 +89,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
@@ -134,11 +132,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private static final RequestProcessor RPofQueryPanel = new RequestProcessor(AddDependencyPanel.QueryPanel.class.getName(), 10);
 
     private NotificationLineSupport nls;
-    private RepositoryInfo nbRepo;
 
     public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
-        this.nbRepo = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans");
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -229,12 +225,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             tabPane.setEnabledAt(2, false);
         }
         chkNbOnly.setVisible(false);
-        if (nbRepo != null) {
-            String packaging = mavenProject.getPackaging();
-            if (NbMavenProject.TYPE_NBM.equals(packaging) || NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging)) {
-                chkNbOnly.setVisible(true);
-                chkNbOnly.setSelected(true);
-            }
+        String packaging = mavenProject.getPackaging();
+        if (NbMavenProject.TYPE_NBM.equals(packaging) || NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging)) {
+            chkNbOnly.setVisible(true);
+            chkNbOnly.setSelected(true);
         }
 
         pnlOpenProjects.add(new OpenListPanel(prj), BorderLayout.CENTER);
@@ -658,7 +652,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 vers.add(rec.getVersion());
             }
         }
-        Collections.sort(vers);
         // also include properties/expressions that could be related to version
         // management
         List<String> propList = new ArrayList<String>();
@@ -926,22 +919,11 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             AddDependencyPanel.this.searchField.setForeground(defSearchC);
 
             if (curTypedText.length() > 0) {
-                RepositoryInfo[] infos;
-                if (chkNbOnly.isSelected() && AddDependencyPanel.this.nbRepo != null) {
-                    infos = new RepositoryInfo[] { AddDependencyPanel.this.nbRepo };
-                } else {
-                    infos = new RepositoryInfo[0];
-                }
-                find(curTypedText, infos);
+                find(curTypedText);
             }
         }
 
-        /**
-         *
-         * @param queryText
-         * @param infos Repositories to search in, null means all repos
-         */
-        void find(String queryText, final RepositoryInfo... infos) {
+        void find(String queryText) {
             synchronized (LOCK) {
                 if (inProgressText != null) {
                     lastQueryText = queryText;
@@ -988,7 +970,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             
-            queryRequest = new QueryRequest(fields,infos,this);
+            queryRequest = new QueryRequest(fields, null, this);
 
             Task t = RPofQueryPanel.post(new Runnable() {
 
@@ -1135,6 +1117,33 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
             if (infos != null) {
+                if (chkNbOnly.isSelected()) { // #181656: show only NB modules
+                    List<NBVersionInfo> refined = new ArrayList<NBVersionInfo>();
+                    Set<String> check = new HashSet<String>(); // class index works only on JAR artifacts
+                    Set<String> found = new HashSet<String>(); // but search string might also be found in other fields
+                    for (NBVersionInfo nbvi : infos) {
+                        String key = key(nbvi);
+                        if (NbMavenProject.TYPE_NBM.equals(nbvi.getPackaging())) {
+                            refined.add(nbvi);
+                            found.add(key);
+                        } else {
+                            check.add(key);
+                        }
+                    }
+                    QueryField qf = new QueryField();
+                    qf.setField(QueryField.FIELD_PACKAGING);
+                    qf.setValue(NbMavenProject.TYPE_NBM);
+                    qf.setMatch(QueryField.MATCH_EXACT);
+                    qf.setOccur(QueryField.OCCUR_MUST);
+                    for (NBVersionInfo alt : RepositoryQueries.find(Collections.singletonList(qf))) {
+                        String key = key(alt);
+                        if (check.contains(key) && !found.contains(key)) {
+                            refined.add(alt);
+                        }
+                    }
+                    Collections.sort(refined);
+                    infos = refined;
+                }
                 for (NBVersionInfo nbvi : infos) {
                     String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
                     List<NBVersionInfo> get = map.get(key);
@@ -1155,6 +1164,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     updateResultNodes(keyList, map);
                 }
             });
+        }
+        private String key(NBVersionInfo nbvi) {
+            return nbvi.getGroupId() + ':' + nbvi.getArtifactId() + ':' + nbvi.getVersion();
         }
 
     } // QueryPanel

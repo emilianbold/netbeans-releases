@@ -49,6 +49,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -57,6 +58,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
@@ -195,7 +197,7 @@ public final class ViewUtils {
         if (s instanceof Rectangle2D) {
             return toString((Rectangle2D)s);
         } else {
-            return s.toString();
+            return appendPath(new StringBuilder(200), 0, s.getPathIterator(null)).toString();
         }
     }
 
@@ -276,6 +278,47 @@ public final class ViewUtils {
         return sb.toString();
     }
 
+    private static StringBuilder appendPath(StringBuilder sb, int indent, PathIterator pathIterator) {
+        double[] coords = new double[6];
+        while (!pathIterator.isDone()) {
+            int type = pathIterator.currentSegment(coords);
+            String typeStr;
+            int endIndex;
+            switch (type) {
+                case PathIterator.SEG_CLOSE:
+                    typeStr = "SEG_CLOSE";
+                    endIndex = 0;
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    typeStr = "SEG_CUBICTO";
+                    endIndex = 6;
+                    break;
+                case PathIterator.SEG_LINETO:
+                    typeStr = "SEG_LINETO";
+                    endIndex = 2;
+                    break;
+                case PathIterator.SEG_MOVETO:
+                    typeStr = "SEG_MOVETO";
+                    endIndex = 2;
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    typeStr = "SEG_QUADTO";
+                    endIndex = 4;
+                    break;
+                default:
+                    throw new IllegalStateException("Invalid type=" + type);
+            }
+            ArrayUtilities.appendSpaces(sb, indent);
+            sb.append(typeStr).append(": ");
+            for (int i = 0; i < endIndex;) {
+                sb.append("[").append(coords[i++]).append(",").append(coords[i++]).append("] ");
+            }
+            sb.append('\n');
+            pathIterator.next();
+        }
+        return sb;
+    }
+ 
     public static String toString(JComponent component) {
         if (component == null) {
             return "<NULL>"; // NOI18N

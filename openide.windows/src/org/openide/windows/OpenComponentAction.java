@@ -43,7 +43,6 @@
 package org.openide.windows;
 
 import java.awt.EventQueue;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
@@ -71,9 +70,18 @@ final class OpenComponentAction implements ActionListener {
         if (component != null) {
             return component;
         }
-        component = (TopComponent)map.get("component"); // NOI18N
-        assert component != null : "Component cannot be created for " + map;
-        return component;
+        TopComponent c = null;
+        Object id = map.get("preferredID"); // NOI18N
+        if (id instanceof String) {
+            c = WindowManager.getDefault().findTopComponent((String)id);
+        }
+        if (c == null) {
+            c = (TopComponent)map.get("component");
+        }
+        if (id != null) {
+            component = c;
+        }
+        return c;
     }
 
     public void actionPerformed(ActionEvent e) {

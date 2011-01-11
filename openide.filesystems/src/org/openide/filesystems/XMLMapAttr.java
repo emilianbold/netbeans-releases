@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.AbstractMap;
@@ -61,6 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
@@ -149,6 +151,29 @@ final class XMLMapAttr implements Map {
         return new Attr(index, value);
     }
 
+    static Object getRawAttribute(FileObject fo, String name, AtomicBoolean ab) {
+        Object raw = fo.getAttribute("raw:" + name); // NOI18N
+        if (raw != null) {
+            if (ab != null) {
+                ab.set(true);
+            }
+            return raw;
+        }
+        if (ab != null) {
+            ab.set(false);
+        }
+        return fo.getAttribute(name);
+    }
+    private static ThreadLocal<FileObject> ATTR_FOR = new ThreadLocal<FileObject>();
+    static Object readAttribute(FileObject forFO, AbstractFileSystem.Attr attr, String path, String attrName) {
+        FileObject prev = ATTR_FOR.get();
+        try {
+            ATTR_FOR.set(forFO);
+            return attr.readAttribute(path, attrName);
+        } finally {
+            ATTR_FOR.set(prev);
+        }
+    }
     /** According to name of attribute returns attribute as object
     * @param p1 is name of attribute
     * @return attribute, which is hold in XMLMapAttr.Attr or null if such attribute doesn`t exist or isn`t able to construct form String representation
@@ -186,7 +211,7 @@ final class XMLMapAttr implements Map {
     /** implementation of Map.get. But fires Exception to have chance in
      * DefaultAttributes to catch and annotate*/
     Object getAttribute(Object attrName) throws Exception {
-        return getAttribute(attrName, null);
+        return getAttribute(attrName, new Object[] { ATTR_FOR.get(), attrName });
     }
 
     private Object getAttribute(Object attrName, Object[] params)
@@ -204,12 +229,24 @@ final class XMLMapAttr implements Map {
         if (attr == null && origAttrName.startsWith("class:")) { // NOI18N
             attr = (Attr) map.get(origAttrName.substring(6));
             retVal = attr != null ? attr.getType(params) : null;
+        } else if (attr == null && origAttrName.startsWith("raw:")) { // NOI18N
+            attr = (Attr) map.get(origAttrName.substring(4));
+            if (attr != null && attr.keyIndex == 9) {
+                return attr.methodValue(attr.value, params).getMethod();
+            }
+            if (attr != null && attr.keyIndex == 12) {
+                return attr.getType(params);
+            }
         } else {
-            try {
-                retVal = (attr == null) ? attr : attr.get(params);
-            } catch (Exception e) {
-                ExternalUtil.annotate(e, "attrName = " + attrName); //NOI18N
-                throw e;
+            if (keyValuePair[1] instanceof ModifiedAttribute) {
+                return attr;
+            } else {
+                try {
+                    retVal = (attr == null) ? attr : attr.get(params);
+                } catch (Exception e) {
+                    ExternalUtil.annotate(e, "attrName = " + attrName); //NOI18N
+                    throw e;
+                }
             }
         }
 
@@ -244,8 +281,22 @@ final class XMLMapAttr implements Map {
         Object[] keyValuePair = ModifiedAttribute.translateInto((String) p1, p2);
         String key = (String) keyValuePair[0];
         Object value = keyValuePair[1];
-        Object toStore = ((value == null) || value instanceof Attr) ? value : new Attr(value);
-
+        Object toStore;
+        if (value == null) {
+            toStore = null;
+        } else if (value instanceof Attr) {
+            toStore = value;
+        } else if (value instanceof Method && key.startsWith("methodvalue:")) { // NOI18N
+            Method m = (Method)value;
+            key = key.substring("methodvalue:".length()); // NOI18N
+            toStore = new Attr("methodvalue", m.getDeclaringClass().getName() + '.' + m.getName()); // NOI18N
+        } else if (value instanceof Class && key.startsWith("newvalue:")) { // NOI18N
+            Class<?> c = (Class<?>)value;
+            key = key.substring("newvalue:".length()); // NOI18N
+            toStore = new Attr("newvalue", c.getName()); // NOI18N
+        } else {
+            toStore = new Attr(value);
+        }
         if (decode) {
             key = Attr.decode(key).intern();
         }
@@ -621,19 +672,11 @@ final class XMLMapAttr implements Map {
         }
 
         /**
-        * Constructs new attribute as Object. Used for static creation from literal or serialValue.
-        * @return new attribute as Object
-        */
-        private Object get() throws Exception {
-            return getObject(null); //getObject is ready to aobtain null
-        }
-
-        /**
          * Constructs new attribute as Object. Used for dynamic creation: methodvalue .
          * @param objs has sense only for methodvalue invocation; and only 2 parametres will be used
          *@return new attribute as Object
          */
-        private Object get(Object[] objs) throws Exception {
+        final Object get(Object[] objs) throws Exception {
             return getObject(objs);
         }
 
@@ -927,7 +970,9 @@ final class XMLMapAttr implements Map {
                         if (SharedClassObject.class.isAssignableFrom(cls)) {
                             return SharedClassObject.findObject(cls, true);
                         } else {
-                            return cls.newInstance();
+                            Constructor<?> init = cls.getDeclaredConstructor();
+                            init.setAccessible(true);
+                            return init.newInstance((Object[]) null);
                         }
                     case 13:
                         String[] arr = value.split("#", 2); // NOI18N

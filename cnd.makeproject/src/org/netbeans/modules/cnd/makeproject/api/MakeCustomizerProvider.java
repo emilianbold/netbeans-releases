@@ -222,7 +222,18 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put(project, dialog);
         currentCommand = COMMAND_CANCEL;
-        dialog.setVisible(true);
+        
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dialogDescriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
+        
         MakeContext lastContext = innerPane.getLastContext();
         String nodeName = innerPane.getCurrentNodeName();
         if (lastContext != null) {

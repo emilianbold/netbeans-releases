@@ -1,6 +1,6 @@
 Name: winp
 Version: 1.14
-License: MIT License
+License: MIT
 OSR: 12292
 Origin: https://winp.dev.java.net
 Source: https://winp.dev.java.net

@@ -159,9 +159,12 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
                 File harness = nbjunit.getParentFile().getParentFile();
                 Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
                 TreeSet<File> sorted = new TreeSet<File>();
-                for (File p : harness.getParentFile().listFiles()) {
-                    if (p.getName().startsWith("platform")) {
-                        sorted.add(p);
+                File[] listFiles = harness.getParentFile().listFiles();
+                if (listFiles != null) {
+                    for (File p : listFiles) {
+                        if (p.getName().startsWith("platform")) {
+                            sorted.add(p);
+                        }
                     }
                 }
                 Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());
@@ -253,6 +256,15 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
     private static final class AsmStub extends NbEditorKit {
         private AsmStub(){
+        }
+    }
+
+    protected final void cleanUserDir()  {
+        File userDir = getUserDir();
+        if (userDir.exists()) {
+            if (!removeDirectoryContent(userDir)) {
+                assertTrue("Can not remove the content of " +  userDir.getAbsolutePath(), false);
+            }
         }
     }
 

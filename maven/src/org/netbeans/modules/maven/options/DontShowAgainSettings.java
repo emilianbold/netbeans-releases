@@ -70,14 +70,6 @@ public final class DontShowAgainSettings {
         getPreferences().putBoolean("showBuildWithDependenciesWarning", false);//NOI18N
     }
 
-    public boolean showWarningAboutEmbeddedBuild() {
-        return getPreferences().getBoolean("showEmbeddedBuildWarning", true);//NOI18N
-    }
-
-    public void dontshowWarningAboutEmbeddedBuildAnymore() {
-        getPreferences().putBoolean("showEmbeddedBuildWarning", false);//NOI18N
-    }
-
     public boolean showWarningAboutApplicationCoS() {
         return getPreferences().getBoolean("showApplicationCompileOnSave", true);//NOI18N
     }

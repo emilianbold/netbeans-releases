@@ -44,10 +44,9 @@
 
 package org.netbeans.modules.cnd.editor.parser;
 
-import java.io.Reader;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 public interface FoldingParser {
-    List<CppFoldRecord> parse(String name, Reader source);
-    List<CppFoldRecord> parse(String name, char[] buf);
+    List<CppFoldRecord> parse(FileObject fo, char[] buf);
 }

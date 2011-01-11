@@ -314,8 +314,8 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
         return new HashSet<FileObject>();
     }
-
-    private void createFolders() {
+    
+    protected void createFolders(boolean createConverter) {
         FileObject sourceRootFolder = getSourceRootFolder(targetFolder, targetPackageName);
         File sourceRootDir = FileUtil.toFile(sourceRootFolder);
         try {
@@ -325,14 +325,22 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 resourceFolder = FileUtil.createFolder(new File(sourceRootDir, resourceFolderPath));
             }
 
-            String converterFolderPath = toFilePath(converterPackageName);
-            converterFolder = sourceRootFolder.getFileObject(converterFolderPath);
-            if (converterFolder == null) {
-                converterFolder = FileUtil.createFolder(new File(sourceRootDir, converterFolderPath));
+            if (createConverter) {
+                String converterFolderPath = toFilePath(converterPackageName);
+                converterFolder = sourceRootFolder
+                        .getFileObject(converterFolderPath);
+                if (converterFolder == null) {
+                    converterFolder = FileUtil.createFolder(new File(
+                            sourceRootDir, converterFolderPath));
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private void createFolders() {
+        createFolders( true );
     }
 
     private void generatePersistenceService() throws IOException {

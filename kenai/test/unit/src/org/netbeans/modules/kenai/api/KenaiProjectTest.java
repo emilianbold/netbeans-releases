@@ -42,51 +42,21 @@
 
 package org.netbeans.modules.kenai.api;
 
-import java.net.MalformedURLException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiProjectTest extends NbTestCase {
-
-    static String UNITTESTUNIQUENAME = "golden-project-1";
-    private static Kenai kenai;
-    static {
-        try {
-            kenai = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
+public class KenaiProjectTest extends AbstractKenaiTestCase {
 
     public KenaiProjectTest(String s) {
         super(s);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    public void setProjectName(String name) {
-        UNITTESTUNIQUENAME = name;
-    }
-
-    @Before
-    @Override
-    public void setUp() {
-    }
     /**
      * Test of forRepository method, of class KenaiProject.
      */
@@ -95,9 +65,9 @@ public class KenaiProjectTest extends NbTestCase {
         System.out.println("forRepositorySvn");
         KenaiProject proj = null;
         try {
-            proj = kenai.getProject(UNITTESTUNIQUENAME);
+            proj = getKenai().getProject(getTestProject());
         } catch (KenaiException e) {
-            fail("Project " + UNITTESTUNIQUENAME + " not found - testForRepository fails");
+            fail("Project " + getTestProject() + " not found - testForRepository fails");
         }
         KenaiFeature[] features = proj.getFeatures(KenaiService.Type.SOURCE);
         String uri = "";
@@ -109,7 +79,7 @@ public class KenaiProjectTest extends NbTestCase {
             }
         }
         KenaiProject result = KenaiProject.forRepository(uri);
-        assert result.getName().equals(UNITTESTUNIQUENAME);
+        assert result.getName().equals(getTestProject());
     }
     /**
      * Test of forRepository method, of class KenaiProject.
@@ -119,9 +89,9 @@ public class KenaiProjectTest extends NbTestCase {
         System.out.println("forRepositoryHg");
         KenaiProject proj = null;
         try {
-            proj = kenai.getProject(UNITTESTUNIQUENAME);
+            proj = getKenai().getProject(getTestProject());
         } catch (KenaiException e) {
-            fail("Project " + UNITTESTUNIQUENAME + " not found - testForRepository fails");
+            fail("Project " + getTestProject() + " not found - testForRepository fails");
         }
         KenaiFeature[] features = proj.getFeatures(KenaiService.Type.SOURCE);
         String uri = "";
@@ -133,13 +103,13 @@ public class KenaiProjectTest extends NbTestCase {
             }
         }
         KenaiProject result = KenaiProject.forRepository(uri);
-        assert result.getName().equals(UNITTESTUNIQUENAME);
+        assert result.getName().equals(getTestProject());
     }
 
     @Test
-    public void testCheckName() throws KenaiException, MalformedURLException {
-        assertNull(kenai.checkProjectName("non-existing-project"));
-        assertNotNull("Project does not exist, but it should...", kenai.checkProjectName(UNITTESTUNIQUENAME));
-        assertTrue(kenai.checkProjectName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
+    public void testCheckName() throws KenaiException {
+        assertNull(getKenai().checkProjectName("non-existing-project"));
+        assertNotNull("Project does not exist, but it should...", getKenai().checkProjectName(getTestProject()));
+        assertTrue(getKenai().checkProjectName(getTestProject()).equals("Name has already been taken"));
     }
 }

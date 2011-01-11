@@ -46,6 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
@@ -61,8 +62,13 @@ public class InstallIntoNewClusterTest extends OperationsTestImpl {
     }
 
     @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();        
+        super.setUp();       
         System.setProperty("netbeans.dirs", getWorkDirPath());
     }
 

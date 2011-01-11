@@ -210,24 +210,35 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
 
     private void addSwdpLibrary( RestConfig config ) throws IOException {
-        if (!hasSwdpLibrary()) { //platform does not have rest-api library, so add defaults 
+        boolean addLibrary = false;
+        if (!hasSwdpLibrary()) { //platform does not have rest-api library, so add defaults
+            addLibrary = true;
             Library apiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
             if (apiLibrary != null) {
                 addSwdpLibrary(classPathTypes, apiLibrary);
             }  
         }
         
-        boolean added = false;
-        if ( config.isServerJerseyLibSelected() ){
-            added = addDeployableServerJerseyLibrary();
+        if (config != null) {
+            boolean added = false;
+            if (config.isServerJerseyLibSelected()) {
+                added = addDeployableServerJerseyLibrary();
+            }
+            if (!added && config.isJerseyLibSelected()) {
+                Library swdpLibrary = LibraryManager.getDefault().getLibrary(
+                        SWDP_LIBRARY);
+                if (swdpLibrary != null) {
+                    addSwdpLibrary(classPathTypes, swdpLibrary);
+                }
+            }
         }
-        if ( !added || config.isJerseyLibSelected() ){
-            Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+        else if (addLibrary ){
+            Library swdpLibrary = LibraryManager.getDefault().getLibrary(
+                    SWDP_LIBRARY);
             if (swdpLibrary != null) {
                 addSwdpLibrary(classPathTypes, swdpLibrary);
-            }            
+            }
         }
-
     }
 
     private FileObject getApplicationContextXml() {

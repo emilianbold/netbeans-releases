@@ -308,6 +308,9 @@ public class Utils {
         if (response.length() == 0) {
             //isSecure = false;
             throw new ConnectException();
+        } else if (response.startsWith("http/1.1 302 moved temporarily")) {
+            // 3.1 has started to use redirects... but 3.0 is still using the older strategies...
+            isSecure = true;
         } else if (response.startsWith("http/1.")) {
             isSecure = false;
         } else if (response.indexOf("<html") != -1) {

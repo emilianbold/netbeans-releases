@@ -61,11 +61,12 @@ public class MakeArtifact {
     // Project
     private String projectLocation;
     // Configuration
-    private int configurationType;
-    private String configurationName;
-    private boolean active;
-    private boolean build;
+    private final int configurationType;
+    private final String configurationName;
+    private final boolean active;
+    private final MakeConfiguration makeConfiguration;
     // Artifact
+    private boolean build;
     private String workingDirectory;
     private String buildCommand;
     private String cleanCommand;
@@ -80,7 +81,8 @@ public class MakeArtifact {
 	    String workingDirectory, 
 	    String buildCommand, 
 	    String cleanCommand, 
-	    String output) {
+	    String output,
+            MakeConfiguration makeConfiguration) {
 	this.projectLocation = projectLocation;
 	this.configurationType = configurationType;
 	this.configurationName = configurationName;
@@ -90,17 +92,19 @@ public class MakeArtifact {
 	this.buildCommand = buildCommand;
 	this.cleanCommand = cleanCommand;
 	this.output = output;
+        this.makeConfiguration = makeConfiguration;
     }
 
     public MakeArtifact(MakeConfigurationDescriptor pd, MakeConfiguration makeConfiguration) {
-                //PathMap pm = HostInfoProvider.default().getMapper(makeConfiguration.getDevelopmentHost().getName());
-		projectLocation = makeConfiguration.getBaseDir();
-		configurationName = makeConfiguration.getName();
-		active = makeConfiguration.isDefault();
-		build = true;
-		workingDirectory = projectLocation;
-		buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-		cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+        //PathMap pm = HostInfoProvider.default().getMapper(makeConfiguration.getDevelopmentHost().getName());
+        projectLocation = makeConfiguration.getBaseDir();
+        configurationName = makeConfiguration.getName();
+        active = makeConfiguration.isDefault();
+        build = true;
+        this.makeConfiguration = makeConfiguration;
+        workingDirectory = projectLocation;
+        buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+        cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_MAKEFILE:
                 configurationType = MakeArtifact.TYPE_UNKNOWN;
@@ -125,8 +129,9 @@ public class MakeArtifact {
                 break;
             default:
                 assert false; // FIXUP: error
+                configurationType = -1;
         }
-        output = makeConfiguration.expandMacros(makeConfiguration.getOutputValue());
+        output = makeConfiguration.getOutputValue();
     }
 
     public String getProjectLocation() {
@@ -212,6 +217,10 @@ public class MakeArtifact {
     }
 
     public String getOutput() {
+        return makeConfiguration.expandMacros(output);
+    }
+
+    public String getStoredOutput() {
         return output;
     }
 
@@ -244,6 +253,7 @@ public class MakeArtifact {
                 workingDirectory,
                 buildCommand,
                 cleanCommand,
-                output);
+                output,
+                makeConfiguration);
     }
 }

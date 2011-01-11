@@ -244,6 +244,14 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        );
     }
 
+    public void testCreateClassForThrow() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private void test() { throw new Unde|fined(); } }",
+                       "CreateClass:test.Undefined:[]:CLASS",
+                       "test/Undefined.java",
+                       "package test; class Undefined extends Exception { public Undefined() { } } ");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

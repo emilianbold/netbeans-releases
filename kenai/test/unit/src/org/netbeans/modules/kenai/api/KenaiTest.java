@@ -43,89 +43,42 @@ package org.netbeans.modules.kenai.api;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.junit.After;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Maros Sandor
  * @author Jan Becicka
  */
-public class KenaiTest extends NbTestCase {
+public class KenaiTest extends AbstractKenaiTestCase {
 
-    static String UNITTESTUNIQUENAME_BASE = "test";
-    static String UNITTESTUNIQUENAME = "java-inline"; // initial value, will be changed in setUpClass method
-    private static Kenai instance;
     private static boolean firstRun = true;
-    private static String uname = null;
-    private static String passw = null;
-
-    static {
-        try {
-            instance = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-
+    private static String UNITTESTUNIQUENAME_BASE = "test";    
+    private static String UNITTESTUNIQUENAME; 
+    
     public KenaiTest(String S) {
         super(S);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    public void setInstance() {
-    }
-
-    @Before
     @Override
-    public void setUp() {
-        try {
-            final Logger logger = Logger.getLogger("TIMER.kenai");
-            logger.setLevel(Level.FINE);
-            if (uname == null) {
-                uname = System.getProperty("kenai.user.login");
-                passw = System.getProperty("kenai.user.password");
-            }
-            if (uname == null) { // if it is still null, check the file in ~
-                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-                uname = br.readLine();
-                passw = br.readLine();
-                br.close();
-            }
-            if (firstRun) {
-                instance.login(uname, passw.toCharArray());
-                UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
-                System.out.println("== Name: " + UNITTESTUNIQUENAME);
-                firstRun = false;
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @After
-    @Override
-    public void tearDown() {
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        if (firstRun) {            
+            UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
+            System.out.println("== Name: " + UNITTESTUNIQUENAME);
+            firstRun = false;
+        }        
     }
 
     /**
@@ -134,14 +87,14 @@ public class KenaiTest extends NbTestCase {
     @Test
     public void testSearchProjects() throws Exception {
         System.out.println("testSearchProjects");
-        String pattern = "JRuby-parser";
-        Collection<KenaiProject> result = instance.searchProjects(pattern);
+        String pattern = getTestProject();
+        Collection<KenaiProject> result = getKenai().searchProjects(pattern);
 
         if (result.size() != 1) {
-            fail("The search returned incorrect number of the results when [JRuby-parser] was entered");
+            fail("The search returned [" + result.size() + "] instead of [1] when [" + getTestProject() + "] was entered");
         }
         for (KenaiProject prj : result) {
-            assertEquals(prj.getDisplayName(), "JRuby-parser: A Ruby parser");
+            assertEquals("NetBeans java.net tests", prj.getDisplayName());
             System.out.println("Search projects: " + prj.getDisplayName());
         }
     }
@@ -152,8 +105,8 @@ public class KenaiTest extends NbTestCase {
     @Test
     public void testSearchProjectsLessSpecific() throws Exception {
         System.out.println("testSearchProjects");
-        String pattern = "java";
-        Collection<KenaiProject> result = instance.searchProjects(pattern);
+        String pattern = "netbeans";
+        Collection<KenaiProject> result = getKenai().searchProjects(pattern);
 
         if (result.size() == 0) {
             fail("The search returned no results when [java] was entered");
@@ -166,28 +119,45 @@ public class KenaiTest extends NbTestCase {
     @Test
     public void testSearchProjectsWithSpace() throws Exception {
         System.out.println("testSearchProjectsWithSpace");
-        String pattern = "java inline";
-        Collection<KenaiProject> result = instance.searchProjects(pattern);
+        String pattern = "NetBeans java.net Tests";
+        Collection<KenaiProject> result = getKenai().searchProjects(pattern);
 
         if (result.size() != 1) {
-            fail("The search returned incorrect number of the results when [java inline] was entered");
+            fail("The search returned [" + result.size() + "] instead of [1] when [" + getTestProject() + "] was entered");
         }
         for (KenaiProject prj : result) {
-            assertEquals(prj.getDisplayName(), "JavaInline for JRuby");
+            assertEquals("NetBeans java.net tests", prj.getDisplayName());
             System.out.println("Search projects: " + prj.getDisplayName());
         }
     }
 
+    /**
+     * Test of searchProjects method, of class Kenai.
+     */
+    @Test
+    public void testSearchProjectsCAPITALIZED() throws Exception {
+        System.out.println("testSearchProjectsWithSpace");
+        String pattern = "NETBEANS JAVA.NET TESTS";
+        Collection<KenaiProject> result = getKenai().searchProjects(pattern);
+
+        if (result.size() != 1) {
+            fail("The search returned [" + result.size() + "] instead of [1] when [" + getTestProject() + "] was entered");
+        }
+        for (KenaiProject prj : result) {
+            assertEquals("NetBeans java.net tests", prj.getDisplayName());
+            System.out.println("Search projects: " + prj.getDisplayName());
+        }
+    }
+    
     @Test
     /**
      * Test of getProject method of class Kenai
      */
     public void testGetProject() throws Exception {
         System.out.println("testGetProject");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
         System.out.println("Project: " + prj.getName());
-        if (!prj.getName().equals("java-inline")) {
+        if (!prj.getName().equals(getTestProject())) {
             fail("Call to getProject failed.");
         }
     }
@@ -198,10 +168,9 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetDisplayName() throws Exception {
         System.out.println("testGetDisplayName");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
         System.out.println("Project: " + prj.getDisplayName());
-        if (!prj.getDisplayName().equals("JavaInline for JRuby")) {
+        if (!prj.getDisplayName().equals("NetBeans java.net tests")) {
             fail("Display Name of the project has changed.");
         }
     }
@@ -212,10 +181,9 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetDescription() throws Exception {
         System.out.println("testGetDescription");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
         System.out.println(prj.getDescription());
-        if (!prj.getDescription().equals("JavaInline provides a way to embed Java code into Ruby code under JRuby and have it compiled and available at runtime. Depends on Java 6 compiler API.")) {
+        if (!prj.getDescription().equals("NetBeans test project.")) {
             fail("Description of the project has changed.");
         }
     }
@@ -226,10 +194,9 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetImageUrl() throws Exception {
         System.out.println("testGetImageURL");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
         System.out.println(prj.getImageUrl());
-        if (!prj.getImageUrl().equals("https://testkenai.com/images/defaultProjectImage.jpg")) {
+        if (!prj.getImageUrl().equals("https://testjava.net/images/defaultProjectImage.jpg")) {
             fail("Image URL has changed.");
         }
     }
@@ -240,10 +207,9 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetWebLocation() throws Exception {
         System.out.println("testGetWebLocation");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
         System.out.println(prj.getWebLocation());
-        if (!prj.getWebLocation().toString().endsWith("kenai.com/projects/java-inline")) {
+        if (!prj.getWebLocation().toString().endsWith("java.net/projects/" + getTestProject())) {
             fail("Web Location of the project has changed.");
         }
     }
@@ -254,10 +220,9 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetTags() throws Exception {
         System.out.println("testGetTags");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
         System.out.println(prj.getTags());
-        if (prj.getTags() == null || !prj.getTags().equals("java javac jruby ruby")) {
+        if (prj.getTags() == null || !prj.getTags().equals("tag1 tag2 tag3")) {
             fail("Tags of the project have changed.");
         }
     }
@@ -269,7 +234,7 @@ public class KenaiTest extends NbTestCase {
     public void testLogin() throws Exception {
         System.out.println("testLogin");
         try {
-            instance.login("jerry_randomname", "mouse".toCharArray());
+            getKenai().login("jerry_randomname", "mouse".toCharArray());
             assert false : "Bogus login successful";
         } catch (KenaiException e) {
             // this is the expected result
@@ -282,11 +247,11 @@ public class KenaiTest extends NbTestCase {
      */
     public void testPasswordAuthentication() throws Exception {
         System.out.println("testPasswordAuthentication");
-        PasswordAuthentication passAuth = instance.getPasswordAuthentication();
-        assertEquals(uname, passAuth.getUserName());
-        assertEquals(passw, new String(passAuth.getPassword()));
+        PasswordAuthentication passAuth = getKenai().getPasswordAuthentication();
+        assertEquals(getUsername(), passAuth.getUserName());
+        assertEquals(getPassword(), new String(passAuth.getPassword()));
         if ("true".equals(System.getProperty("show_login"))) {
-            System.out.println("cred:" + uname + "/" + passw);
+            System.out.println("cred:" + getUsername() + "/" + getPassword());
         }
     }
 
@@ -297,23 +262,23 @@ public class KenaiTest extends NbTestCase {
     public void testLogout() throws Exception {
         System.out.println("testLogout");
         // Check if user is logged in at the moment
-        PasswordAuthentication passAuth = instance.getPasswordAuthentication();
-        assertEquals(uname, passAuth.getUserName());
-        assertEquals(passw,  new String(passAuth.getPassword()));
+        PasswordAuthentication passAuth = getKenai().getPasswordAuthentication();
+        assertEquals(getUsername(), passAuth.getUserName());
+        assertEquals(getPassword(),  new String(passAuth.getPassword()));
         // Do log out
-        instance.logout();
+        getKenai().logout();
         System.out.println("Originally logged in, OK");
         // User should be logged out
-        assertNull(instance.getPasswordAuthentication());
-        final Collection<KenaiProject> myProjects = instance.getMyProjects();
+        assertNull(getKenai().getPasswordAuthentication());
+        final Collection<KenaiProject> myProjects = getKenai().getMyProjects();
         assert myProjects.isEmpty(): "My Projects Must Be Empty";
         System.out.println("Logged out, OK - 1/2");
         System.out.println("Logged out, OK - 2/2");
         // Login again and check if user is logged in
-        instance.login(uname, passw.toCharArray());
-        passAuth = instance.getPasswordAuthentication();
-        assertEquals(uname, passAuth.getUserName());
-        assertEquals(passw,  new String(passAuth.getPassword()));
+        getKenai().login(getUsername(), getPassword().toCharArray(), false); // XXX
+        passAuth = getKenai().getPasswordAuthentication();
+        assertEquals(getUsername(), passAuth.getUserName());
+        assertEquals(getPassword(),  new String(passAuth.getPassword()));
         System.out.println("Logged out, OK");
     }
 
@@ -323,42 +288,41 @@ public class KenaiTest extends NbTestCase {
      */
     public void testIsAuthorized() throws Exception {
         System.out.println("testIsAuthorized");
-        String name = "java-inline";
-        KenaiProject prj = instance.getProject(name);
+        KenaiProject prj = getKenai().getProject(getTestProject());
 
-        boolean authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_READ);
+        boolean authorized = getKenai().isAuthorized(prj, KenaiActivity.FORUM_READ);
         System.out.println("Forum - Read? " + authorized);
         assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.FORUM_ADMIN);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.FORUM_ADMIN);
         System.out.println("Forum - Admin? " + authorized);
-        assertFalse(authorized);
+        assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.ISSUES_READ);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.ISSUES_READ);
         System.out.println("Issues - Read? " + authorized);
         assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.ISSUES_WRITE);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.ISSUES_WRITE);
         System.out.println("Issues - Write? " + authorized);
         assertFalse(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.WIKI_READ);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.WIKI_READ);
         System.out.println("Wiki - Read? " + authorized);
         assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.WIKI_WRITE);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.WIKI_WRITE);
         System.out.println("Wiki - Write? " + authorized);
-        assertFalse(authorized);
+        assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_CREATE);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.PROJECTS_CREATE);
         System.out.println("Project - Create? " + authorized);
         assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_DELETE);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.PROJECTS_DELETE);
         System.out.println("Projects - Delete? " + authorized);
-        assertFalse(authorized);
+        assertTrue(authorized);
 
-        authorized = instance.isAuthorized(prj, KenaiActivity.SOURCE_WRITE);
+        authorized = getKenai().isAuthorized(prj, KenaiActivity.SOURCE_WRITE);
         System.out.println("Source - Write? " + authorized);
         assertFalse(authorized);
 
@@ -372,9 +336,9 @@ public class KenaiTest extends NbTestCase {
 //        System.out.println("testIsAuthorized2");
 //        String name = UNITTESTUNIQUENAME;
 //        try {
-//            KenaiProject prj = instance.getProject(name);
+//            KenaiProject prj = getKenai().getProject(name);
 //
-//            boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
+//            boolean authorized = getKenai().isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
 //            System.out.println("PROJECTS_ADMIN? " + authorized);
 //            assertTrue(authorized);
 //        } catch (KenaiException mes) {
@@ -395,7 +359,7 @@ public class KenaiTest extends NbTestCase {
         String[] licenses = {"MIT"};
         KenaiProject result;
         try {
-            result = instance.createProject(name, displayName, description, licenses, "java");
+            result = getKenai().createProject(name, displayName, description, licenses, "java");
             assert result.getName().equals(name);
             assert result.getDisplayName().equals(displayName);
             assert result.getDescription().equals(description);
@@ -415,24 +379,25 @@ public class KenaiTest extends NbTestCase {
         String displayName = "Test Display Name";
         String description = "Test Description";
         String[] licenses = {"MIT"};
-        KenaiProject result;
         try {
-            result = instance.createProject(name, displayName, description, licenses, "java");
-            assert result.getName().equals(name);
-            assert result.getDisplayName().equals(displayName);
-            assert result.getDescription().equals(description);
-
-            result.delete();
+            KenaiProject project = getKenai().getProject(UNITTESTUNIQUENAME);
+            if(project == null) {
+                project = getKenai().createProject(name, displayName, description, licenses, "java");
+                assert project.getName().equals(name);
+                assert project.getDisplayName().equals(displayName);
+                assert project.getDescription().equals(description);
+            }
+            project.delete();
 
             try {
-                instance.getProject(UNITTESTUNIQUENAME);
+                getKenai().getProject(UNITTESTUNIQUENAME);
                 fail(UNITTESTUNIQUENAME + " not deleted");
             } catch (KenaiException kenaiException) {
                 System.out.println(kenaiException);
             }
 
             try {
-                result.getDescription();
+                project.getDescription();
                 fail(UNITTESTUNIQUENAME + " not deleted");
             } catch (KenaiException kenaiException) {
                 System.out.println(kenaiException);
@@ -453,7 +418,7 @@ public class KenaiTest extends NbTestCase {
         String name = "unittestfeature01";
         String displayName = "Feature 1";
         String description = "Test Description - FORUM";
-        KenaiProject project = instance.getProject(UNITTESTUNIQUENAME);
+        KenaiProject project = getKenai().getProject(UNITTESTUNIQUENAME);
         try {
             KenaiFeature feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.FORUM.getId(), null, null, null);
             assert feature.getName().equals(name);
@@ -472,13 +437,6 @@ public class KenaiTest extends NbTestCase {
             feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.DOWNLOADS.getId(), null, null, null);
             assert feature.getName().equals(name);
             assert feature.getDisplayName().equals(displayName);
-
-//            name = "unittestfeature02b";
-//            displayName = "Feature 2b";
-//            description = "Test Description - chat";
-//            feature = project.createProjectFeature(name, displayName, description, KenaiService.Type.CHAT.getId(), null, null, null);
-//            assert feature.getName().equals(UNITTESTUNIQUENAME);
-//            assert feature.getDisplayName().equals(displayName);
 
             name = "unittestfeature03";
             displayName = "Feature 3";
@@ -514,125 +472,59 @@ public class KenaiTest extends NbTestCase {
      * Test of getFeatures method of class Kenai<br />
      * Note: This test also checks all methods from KenaiFeature
      */
-    public void testGetFeatures() throws KenaiException {
-        BufferedReader br = null;
-        try {
-            System.out.println("testGetFeatures");
-            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-java-inline.data";
-            br = new BufferedReader(new FileReader(_fileName));
-            String line = null;
-            System.out.println("getFeature");
-            KenaiProject project = instance.getProject("java-inline");
-            for (KenaiFeature feature : project.getFeatures()) {
-                System.out.println("===");
-                // Check feature's name
-                line = br.readLine().trim();
-                assertEquals(line, feature.getName());
-                System.out.println(feature.getName());
-                // Check feature's type
-                line = br.readLine().trim();
-                assertEquals(line, feature.getType().toString());
-                System.out.println(feature.getType().toString());
-                // Check feature's display name
-                line = br.readLine().trim();
-                assertEquals(line, feature.getDisplayName());
-                System.out.println(feature.getDisplayName());
-                // Check feature's location
-                line = br.readLine().trim();
-                if (line.equals("null")) { // feature is not present
-                    assertEquals(null, feature.getLocation());
-                } else {
-                    assertEquals(line, feature.getLocation().toString());
-                }
-                System.out.println(feature.getLocation());
-                // Check feature's service
-                line = br.readLine().trim();
-                assertEquals(line, feature.getService());
-                System.out.println(feature.getService());
-                // Check feature's web location
-                line = br.readLine().trim();
-                assertEquals(line, feature.getWebLocation().toString());
-                System.out.println(feature.getWebLocation().toString());
-            }
-        } catch (KenaiException mes) {
-            System.out.println(mes.getAsString());
-            throw mes;
-        } catch (IOException ex) {
-            fail("Failure while reading the features-java-inline.data golden file.");
+    public void testGetFeaturesGolden() throws KenaiException, FileNotFoundException {
+        System.out.println("testGetFeatures");        
+        System.out.println("getFeatures");
+        KenaiProject project = getKenai().getProject(getTestProject());
+        KenaiFeature[] kfs = project.getFeatures();
+        String fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-golden.data";
+       
+        assertNotNull(kfs);   
+        
+        Map<String, FeatureDesc> goldenFeatures = getGoldenFeatures(fileName);
+            
+        if(kfs.length < goldenFeatures.size()) {
+            fail("at least " + goldenFeatures.size() + " features expected but returned only " + kfs.length);
         }
-    }
 
-    @Test
-    /**
-     * Test of getFeatures method of class Kenai<br />
-     * Note: This test also checks all methods from KenaiFeature
-     */
-    public void testGetFeaturesGolden() throws KenaiException {
-        BufferedReader br = null;
-        boolean doAsserts = true; //set false to list all features returned by json to stdout
-        try {
-            System.out.println("testGetFeaturesGolden");
-            String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "features-golden.data";
-            br = new BufferedReader(new FileReader(_fileName));
-            String line = null;
-            System.out.println("getFeature");
-            KenaiProject project = instance.getProject("golden-project-1");
-            for (KenaiFeature feature : project.getFeatures()) {
-                System.out.println("===");
-                // Check feature's name
-                if (doAsserts) {
-                    line = br.readLine().trim();
-                    assertEquals(line, feature.getName());
-                }
-                System.out.println(feature.getName());
-                // Check feature's type
-                if (doAsserts) {
-                    line = br.readLine().trim();
-                    assertEquals(line, feature.getType().toString());
-                }
-                System.out.println(feature.getType().toString());
-                // Check feature's display name
-                if (doAsserts) {
-                    line = br.readLine().trim();
-                    assertEquals(line, feature.getDisplayName());
-                }
-                System.out.println(feature.getDisplayName());
-                // Check feature's location
-                if (doAsserts) {
-                    line = br.readLine().trim();
-                    if (line.equals("null")) { // feature is not present
-                        assertEquals(null, feature.getLocation());
-                    } else {
-                        assertEquals(line, feature.getLocation().toString());
-                    }
-                }
-                System.out.println(feature.getLocation());
-                // Check feature's service
-                if (doAsserts) {
-                    line = br.readLine().trim();
-                    assertEquals(line, feature.getService());
-                }
-                System.out.println(feature.getService());
-                // Check feature's web location
-                if (doAsserts) {
-                    line = br.readLine().trim();
-                    assertEquals(line, feature.getWebLocation().toString());
-                }
-                System.out.println(feature.getWebLocation().toString());
-            }
-        } catch (KenaiException mes) {
-            System.out.println(mes.getAsString());
-            throw mes;
-        } catch (IOException ex) {
-            fail("Failure while reading the features-java-inline.data golden file.");
+        HashMap<String, KenaiFeature> features = new HashMap<String, KenaiFeature>();
+        for (KenaiFeature kenaiFeature : kfs) {
+            features.put(getFeatureID(kenaiFeature), kenaiFeature);
         }
-        try {
-            if (br.readLine() != null) {
-                fail("There are some features in the golden file that are not in the Kenai project...");
+
+        for (Entry<String, FeatureDesc> entry : goldenFeatures.entrySet()) {
+            System.out.println("===");
+
+            FeatureDesc fd = entry.getValue();
+            KenaiFeature feature = features.get(getFeatureID(fd));
+            if(feature == null) {
+                fail("expected to find feature " + getFeatureID(fd));
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            // Check feature's name
+
+            assertEquals(fd.name, feature.getName());
+            System.out.println(feature.getName());
+            // Check feature's type
+            assertEquals(fd.type, feature.getType().toString());
+            System.out.println(feature.getType().toString());
+            // Check feature's display name
+            assertEquals(fd.displayName, feature.getDisplayName());
+            System.out.println(feature.getDisplayName());
+            // Check feature's location
+            if (fd.featureLocation.equals("null")) { // feature is not present
+                assertEquals(null, feature.getLocation());
+            } else {
+                assertEquals(fd.featureLocation, feature.getLocation().toString());
+            }
+            System.out.println(feature.getLocation());
+            // Check feature's service
+            assertEquals(fd.service, feature.getService());
+            System.out.println(feature.getService());
+            // Check feature's web location
+            assertEquals(fd.webLocation, feature.getWebLocation().toString());
+            System.out.println(feature.getWebLocation().toString());
+        }   
+        
     }
 
     @Test
@@ -647,7 +539,7 @@ public class KenaiTest extends NbTestCase {
             String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "licences.data";
             br = new BufferedReader(new FileReader(_fileName));
             String line = null;
-            for (KenaiLicense lic : instance.getLicenses()) {
+            for (KenaiLicense lic : getKenai().getLicenses()) {
                 // Check the licence name
                 line = br.readLine().trim();
                 assertEquals(line, lic.getName());
@@ -679,7 +571,7 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetServices() throws KenaiException {
         System.out.println("testGetServices");
-        for (KenaiService ser : instance.getServices()) {
+        for (KenaiService ser : getKenai().getServices()) {
             System.out.println(ser.getName());
             System.out.println(ser.getDescription());
             System.out.println(ser.getDisplayName());
@@ -693,10 +585,10 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetMyProjects() throws Exception {
         System.out.println("testGetMyProjects (takes quite long - please wait...)");
-        Collection<KenaiProject> result = instance.getMyProjects();
+        Collection<KenaiProject> result = getKenai().getMyProjects();
         System.out.println("size: " + result.size());
 
-        KenaiProject myprj = instance.getProject("my-project-1");
+        KenaiProject myprj = getKenai().getProject(getTestProject());
         assertTrue("My project was not found.", result.contains(myprj));
         for (KenaiProject prj : result) {
             System.out.println("My projects: " + prj.getDisplayName());
@@ -708,10 +600,10 @@ public class KenaiTest extends NbTestCase {
      * Test of getMyProjects method of class Kenai
      */
     public void testJoinLeaveProject() throws Exception {
-        KenaiProject prj = instance.getProject("eduni-hearts");
-        KenaiUser user = KenaiUser.forName(instance.getPasswordAuthentication().getUserName() + "@" + instance.getName());
+        KenaiProject prj = getKenai().getProject("eduni-hearts");
+        KenaiUser user = KenaiUser.forName(getKenai().getPasswordAuthentication().getUserName() + "@" + getKenai().getName());
         prj.addMember(user, KenaiProjectMember.Role.OBSERVER);
-        assert instance.getMyProjects().contains(prj);
+        assert getKenai().getMyProjects().contains(prj);
         boolean found = false;
         int i=0;
         KenaiProjectMember members[] = prj.getMembers();
@@ -725,10 +617,56 @@ public class KenaiTest extends NbTestCase {
         assert found : "User was not added";
 
         prj.deleteMember(user);
-        assert !instance.getMyProjects().contains(prj);
+        assert !getKenai().getMyProjects().contains(prj);
     }
 
+    private class FeatureDesc {
+        String name;
+        String type;
+        String displayName;
+        String featureLocation;
+        String service;
+        String webLocation;
+    }
 
+    private Map<String, FeatureDesc> getGoldenFeatures(String fileName) throws FileNotFoundException {
+        HashMap<String, FeatureDesc> ret = new HashMap<String, FeatureDesc>();        
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+            
+        while(true) {
+            String line;
+            try {
+                line = br.readLine();
+                if(line == null) {
+                    br.close();
+                    break;
+                }
+                FeatureDesc fd = new FeatureDesc();
+                fd.name = line.trim();
+                fd.type = br.readLine().trim();
+                fd.displayName = br.readLine().trim();
+                fd.featureLocation = br.readLine().trim();
+                fd.service = br.readLine().trim();
+                fd.webLocation = br.readLine().trim();
+                if(!getKenai().getUrl().toString().startsWith("https://testjava.net")) {
+                    ret.put(getFeatureID(fd), fd);
+                }
+            } catch (IOException ex) {                
+                try { br.close(); } catch (IOException ex1) { }
+                break;
+            }          
+        }        
+        return ret;
+    }
+    
+    private String getFeatureID(FeatureDesc fd) {
+        return fd.type.toLowerCase() + "#" + fd.name.toLowerCase();
+    }
+    
+    private String getFeatureID(KenaiFeature f) {
+        return f.getType().getId().toLowerCase() + "#" + f.getName().toLowerCase();
+    }
+    
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
@@ -753,5 +691,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testDeleteProject"));
         return _suite;
     }
-    ;
+    
+    
+    
 }

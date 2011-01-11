@@ -784,6 +784,16 @@ public final class CreateElementUtilities {
             
             return Collections.singletonList(proposedType[0]);
         }
+
+        Tree id = nct.getIdentifier();
+
+        if (id.getKind() == Kind.PARAMETERIZED_TYPE) {
+            id = ((ParameterizedTypeTree) id).getType();
+        }
+
+        if (id == error) {
+            return resolveType(types, info, parent.getParentPath(), nct, offset, null, null);
+        }
         
         return null;
     }

@@ -50,6 +50,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -63,6 +66,9 @@ import org.openide.util.actions.NodeAction;
  * 
  * @author Jiri Skrivanek
  */
+@ActionID(id = "org.netbeans.core.ui.options.filetypes.OpenAsAction", category = "Edit")
+@ActionRegistration(displayName = "#OpenAsAction.name")
+@ActionReference(path = "Loaders/content/unknown/Actions", position = 150)
 public final class OpenAsAction extends NodeAction {
     
     private static final Logger LOGGER = Logger.getLogger(OpenAsAction.class.getName());

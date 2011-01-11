@@ -2,28 +2,31 @@
  * Copyright (c) 2005, 2006 Henri Sivonen
  * Copyright (c) 2007-2010 Mozilla Foundation
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in 
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
 package org.netbeans.modules.html.validation;
 
+import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
@@ -33,9 +36,7 @@ import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -50,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 
-import nu.validator.gnu.xml.aelfred2.SAXDriver;
 import nu.validator.htmlparser.common.DoctypeExpectation;
 import nu.validator.htmlparser.common.DocumentMode;
 import nu.validator.htmlparser.common.DocumentModeHandler;
@@ -60,7 +60,6 @@ import nu.validator.htmlparser.sax.HtmlParser;
 import nu.validator.messages.MessageEmitterAdapter;
 import nu.validator.messages.TooManyErrorsException;
 import nu.validator.servlet.ParserMode;
-import nu.validator.servlet.VerifierServletXMLReaderCreator;
 import nu.validator.source.SourceCode;
 import nu.validator.spec.Spec;
 import nu.validator.spec.html5.Html5SpecBuilder;
@@ -85,6 +84,7 @@ import org.whattf.checker.XmlPiChecker;
 
 import org.whattf.checker.jing.CheckerSchema;
 import org.whattf.io.DataUri;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -109,7 +109,10 @@ import com.thaiopensource.validate.auto.AutoSchemaReader;
 import com.thaiopensource.validate.prop.rng.RngProperty;
 import com.thaiopensource.validate.prop.wrap.WrapProperty;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
+import com.thaiopensource.xml.sax.XMLReaderCreator;
+import java.io.StringReader;
 import java.util.logging.Handler;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 
 /**
@@ -139,10 +142,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             }
         });
     }
-
     private static final Pattern SPACE = Pattern.compile("\\s+");
     protected static final int HTML5_SCHEMA = 3;
     protected static final int XHTML1STRICT_SCHEMA = 2;
+    protected static final int XHTML1FRAMESET_SCHEMA = 4;
     protected static final int XHTML1TRANSITIONAL_SCHEMA = 1;
     protected static final int XHTML5_SCHEMA = 7;
     private static Spec html5spec;
@@ -169,7 +172,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
     protected String document = null;
-    private ParserMode parser = ParserMode.AUTO;
+    ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
     protected MessageEmitterAdapter errorHandler;
     protected final AttributesImpl attrs = new AttributesImpl();
@@ -182,8 +185,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private BufferingRootNamespaceSniffer bufferingRootNamespaceSniffer = null;
     private String contentType = null;
     protected HtmlParser htmlParser = null;
-    protected SAXDriver xmlParser = null;
+    protected SAXParser xmlParser = null;
     protected XMLReader reader;
+    private CharacterHandlerReader sourceReader;
     protected TypedInputSource documentInput;
     protected PrudentHttpEntityResolver httpRes;
     protected DataUriEntityResolver dataRes;
@@ -201,19 +205,14 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private long validationTime;
     private ProblemsHandler problemsHandler = new ProblemsHandler();
     private LinesMapper linesMapper = new LinesMapper();
-
     private HtmlVersion version;
-    private boolean bodyFragmentContextMode;
+    private String encoding;
 
     public static synchronized ValidationTransaction create(HtmlVersion version) {
         return new ValidationTransaction(version);
     }
 
-    public void setBodyFragmentContextMode(boolean bodyFragmentContextMode) {
-        this.bodyFragmentContextMode = bodyFragmentContextMode;
-    }
-
-    private static void  initializeLocalEntities_HACK() {
+    private static void initializeLocalEntities_HACK() {
         //some of the validator's resources are read directly by URLConnection-s
         //using no entity resolver. The URLs are first checked in System properties
         //and if there's no property value defined the default network URL (http://...)
@@ -320,7 +319,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             pmb.put(ValidateProperty.ERROR_HANDLER, eh);
             pmb.put(ValidateProperty.ENTITY_RESOLVER, er);
             pmb.put(ValidateProperty.XML_READER_CREATOR,
-                    new VerifierServletXMLReaderCreator(eh, er));
+                    new XMLReaderCreatorImpl(eh, er));
             RngProperty.CHECK_ID_IDREF.add(pmb);
             PropertyMap pMap = pmb.toPropertyMap();
 
@@ -394,7 +393,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
             html5spec = Html5SpecBuilder.parseSpec(LocalCacheEntityResolver.getHtml5SpecAsStream());
 //            progress.progress(50);
-            
+
             LOGGER.fine("Spec read.");
 
             LOGGER.fine("Initialization complete.");
@@ -405,7 +404,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             throw new RuntimeException(e);
         } finally {
             progress.finish();
-        
+
         }
     }
 
@@ -450,9 +449,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     /** return a list of problems with the given severity and higher (more severe issues) */
     public List<ProblemDescription> getFoundProblems(int ofThisTypeAndMoreSevere) {
+        return getFoundProblems(new ProblemDescriptionFilter.SeverityFilter(ofThisTypeAndMoreSevere));
+    }
+
+    public List<ProblemDescription> getFoundProblems(ProblemDescriptionFilter filter) {
         List<ProblemDescription> filtered = new ArrayList<ProblemDescription>();
-        for(ProblemDescription pd : getFoundProblems()) {
-            if(pd.getType() >= ofThisTypeAndMoreSevere) {
+        for (ProblemDescription pd : getFoundProblems()) {
+            if (filter.accepts(pd)) {
                 filtered.add(pd);
             }
         }
@@ -463,14 +466,26 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return validationTime;
     }
 
-    public void validateCode(String code) throws SAXException {
+    public void validateCode(String code, String sourceURI, Set<String> filteredNamespaces, String encoding) throws SAXException {
         long from = System.currentTimeMillis();
-        
+
         codeToValidate = code;
-        document = null; //represents an URI where the document can be loaded
+        document = sourceURI; //represents an URI where the document can be loaded
         parser = htmlVersion2ParserMode(version);
+
+        LOGGER.fine(String.format("Using %s parser.", parser.name()));
+
 //        charsetOverride = "UTF-8";
-        filteredNamespaces = Collections.emptySet();
+        this.encoding = encoding;
+        this.filteredNamespaces = filteredNamespaces;
+        if (!filteredNamespaces.isEmpty()) {
+            StringBuilder fns = new StringBuilder();
+            for (String ns : filteredNamespaces) {
+                fns.append(ns).append(", ");
+            }
+            LOGGER.fine(String.format("Filtering following namespaces: %s", fns));
+        }
+
         int lineOffset = 0;
 
         errorHandler = new MessageEmitterAdapter(sourceCode,
@@ -481,7 +496,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         errorHandler.setErrorsOnly(false);
 
         validate();
-        
+
         validationTime = System.currentTimeMillis() - from;
     }
 
@@ -491,10 +506,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     }
 
     private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
-        if(version.isXhtml()) {
-            return ParserMode.XML_NO_EXTERNAL_ENTITIES;
+        if (version.isXhtml()) {
+            return ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION;
         } else {
-            switch(version) {
+            switch (version) {
                 case HTML41_STRICT:
                     return ParserMode.HTML401_STRICT;
                 case HTML41_TRANSATIONAL:
@@ -507,7 +522,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                     return ParserMode.AUTO;
             }
         }
-        
+
     }
 
     private boolean isHtmlUnsafePreset() {
@@ -551,7 +566,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             pmb.put(ValidateProperty.ERROR_HANDLER, errorHandler);
             pmb.put(ValidateProperty.ENTITY_RESOLVER, entityResolver);
             pmb.put(ValidateProperty.XML_READER_CREATOR,
-                    new VerifierServletXMLReaderCreator(errorHandler,
+                    new XMLReaderCreatorImpl(errorHandler,
                     entityResolver));
             pmb.put(ValidateProperty.SCHEMA_RESOLVER, this);
             RngProperty.CHECK_ID_IDREF.add(pmb);
@@ -562,24 +577,23 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             setAllowRnc(false);
 
             loadDocAndSetupParser();
-            if(htmlParser != null) {
+            if (htmlParser != null) {
                 setErrorProfile();
             }
 
             reader.setErrorHandler(errorHandler);
             contentType = documentInput.getType();
             sourceCode.initialize(documentInput);
-            if (validator == null) {
-                checkNormalization = true;
-            }
-            if (checkNormalization) {
-                reader.setFeature(
-                        "http://xml.org/sax/features/unicode-normalization-checking",
-                        true);
-            }
+
             WiretapXMLReaderWrapper wiretap = new WiretapXMLReaderWrapper(
                     reader);
-            ContentHandler recorder = sourceCode.getLocationRecorder();
+            boolean isXhtml = parser == ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION
+                    || parser == ParserMode.XML_NO_EXTERNAL_ENTITIES;
+
+            ContentHandler recorder = isXhtml
+                    ? new XercesInaccurateLocatorWorkaround(sourceCode.getLocationRecorder(), linesMapper)
+                    : sourceCode.getLocationRecorder();
+
             if (baseUriTracker == null) {
                 wiretap.setWiretapContentHander(recorder);
             } else {
@@ -602,9 +616,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                     reader = new NamespaceDroppingXMLReaderWrapper(reader,
                             filteredNamespaces);
                 }
-                xmlParser.setErrorHandler(errorHandler.getExactErrorHandler());
-                xmlParser.lockErrorHandler();
-                xmlParser.setCharacterHandler(linesMapper);
+                xmlParser.getXMLReader().setErrorHandler(errorHandler.getExactErrorHandler());
+                sourceReader.addCharacterHandler(linesMapper);
             } else {
                 throw new RuntimeException("Bug. Unreachable.");
             }
@@ -627,32 +640,43 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 documentInput.setEncoding(charsetOverride);
             }
             reader.parse(documentInput);
+        } catch (ParserConfigurationException e) {
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
+            errorHandler.internalError(
+                    e,
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } catch (TooManyErrorsException e) {
-            LOGGER.log(Level.INFO, "TooManyErrorsException", e);
+            LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
         } catch (SAXException e) {
-            LOGGER.log(Level.INFO, "SAXException", e);
+            LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "IOException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.ioError(e);
         } catch (IncorrectSchemaException e) {
-            LOGGER.log(Level.INFO, "IncorrectSchemaException", e);
+            LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "RuntimeException, doc: " + document + " schema: "
-                    + schemaUrls + " lax: " + laxType, e);
+            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Error, doc: " + document + " schema: " + schemaUrls
-                    + " lax: " + laxType, e);
+            LOGGER.log(Level.SEVERE, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. Unable to continue. Sorry. The admin was notified.");
+                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
+    }
+
+    private String getDocumentErrorMsg() {
+        return new StringBuilder().append("An error occured during validation of ").append(document).toString();
+    }
+
+    private String getDocumentInternalErrorMsg() {
+        return new StringBuilder().append("An internal error occured during validation of ").append(document).toString();
     }
 
     /**
@@ -703,7 +727,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
      */
     protected void loadDocAndSetupParser() throws SAXException, IOException,
             IncorrectSchemaException, SAXNotRecognizedException,
-            SAXNotSupportedException {
+            SAXNotSupportedException, ParserConfigurationException {
         switch (parser) {
             case HTML_AUTO:
             case HTML:
@@ -719,7 +743,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 setAllowHtml(true);
                 setAcceptAllKnownXmlTypes(false);
                 setAllowXhtml(false);
-                loadDocumentInput();
+                loadDocumentInput(false);
                 newHtmlParser();
                 DoctypeExpectation doctypeExpectation;
                 int schemaId;
@@ -746,6 +770,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 //                htmlParser.setProperty("http://validator.nu/properties/body-fragment-context-mode", bodyFragmentContextMode);
                 reader = htmlParser;
                 if (validator == null) {
+                    LOGGER.fine(String.format("Using following schemas: %s", getSchemasForDoctypeId(schemaId)));
                     validator = validatorByDoctype(schemaId);
                 }
                 if (validator != null) {
@@ -758,7 +783,31 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 setAllowHtml(false);
                 setAcceptAllKnownXmlTypes(true);
                 setAllowXhtml(true);
-                loadDocumentInput();
+                loadDocumentInput(true);
+
+                if (version != null) {
+                    switch (version) {
+                        case XHTML10_TRANSATIONAL:
+                            schemaId = XHTML1TRANSITIONAL_SCHEMA;
+                            break;
+                        case XHTML10_STICT:
+                            schemaId = XHTML1STRICT_SCHEMA;
+                            break;
+                        case XHTML10_FRAMESET:
+                            schemaId = XHTML1FRAMESET_SCHEMA;
+                            break;
+                        default:
+                            schemaId = 0;
+                    }
+
+                    if (schemaId != 0) {
+                        validator = validatorByDoctype(schemaId);
+
+                        LOGGER.fine(String.format("Using following schemas: %s", getSchemasForDoctypeId(schemaId)));
+                    }
+                }
+
+
                 setupXmlParser();
                 break;
             default:
@@ -766,7 +815,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 setAllowHtml(true);
                 setAcceptAllKnownXmlTypes(true);
                 setAllowXhtml(true);
-                loadDocumentInput();
+                loadDocumentInput(false);
                 if ("text/html".equals(documentInput.getType())) {
                     if (isHtmlUnsafePreset()) {
                         String message = "The Content-Type was \u201Ctext/html\u201D, but the chosen preset schema is not appropriate for HTML.";
@@ -793,7 +842,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     }
 
     /**
-     * 
+     *
      */
     protected void newHtmlParser() {
         htmlParser = new HtmlParser();
@@ -829,14 +878,24 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
      * @throws SAXNotSupportedException
      */
     protected void setupXmlParser() throws SAXNotRecognizedException,
-            SAXNotSupportedException {
-        xmlParser = new SAXDriver();
-        xmlParser.setCharacterHandler(sourceCode);
+            SAXNotSupportedException,
+            ParserConfigurationException,
+            SAXException {
+
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
+        xmlParser = factory.newSAXParser();
+//        xmlParser.getXMLReader().setFeature(
+//                "http://apache.org/xml/features/continue-after-fatal-error",
+//                true);
+        sourceReader.addCharacterHandler(sourceCode);
+        reader = new IdFilter(xmlParser.getXMLReader());
         if (lexicalHandler != null) {
             xmlParser.setProperty("http://xml.org/sax/properties/lexical-handler",
                     (LexicalHandler) lexicalHandler);
         }
-        reader = new IdFilter(xmlParser);
+
         reader.setFeature("http://xml.org/sax/features/string-interning", true);
         reader.setFeature(
                 "http://xml.org/sax/features/external-general-entities",
@@ -1037,7 +1096,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             String label = presetLabels[index];
             String urls = presetUrls[index];
             errorHandler.info("Using the preset for " + label
-                    + " based on the root namespace.");
+                    + " based on the root namespace " + namespace);
             try {
                 validator = validatorByUrls(urls);
             } catch (IOException ioe) {
@@ -1209,12 +1268,220 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 //        dataRes.setAllowXhtml(allowXhtml);
     }
 
-    public void loadDocumentInput() {
+    public void loadDocumentInput(boolean xhtmlContent) {
         assert codeToValidate != null;
 
-        documentInput = new TypedInputSource(new StringReader(codeToValidate));
-        documentInput.setType("text/html");
+        //Aelfred removal workaround - we need to somehow preserve the
+        //functionality added by hsivonen - CharacterHandler-s.
+        //So for xml we use a patched reader which does more or less the same.
+        //for html content the flow remains.
+        Reader readerImpl = xhtmlContent
+                ? sourceReader = new CharacterHandlerReader(codeToValidate)
+                : new StringReader(codeToValidate);
+
+        documentInput = new TypedInputSource(readerImpl);
+        documentInput.setType("text/html"); //NOI18N
         documentInput.setLength(codeToValidate.length());
-        documentInput.setEncoding("UTF-8");
+        documentInput.setEncoding(encoding);
+    }
+
+    private String getSchemasForDoctypeId(int schemaId) {
+        for (int i = 0; i < presetDoctypes.length; i++) {
+            if (presetDoctypes[i] == schemaId) {
+                return presetUrls[i];
+            }
+        }
+        return null;
+    }
+
+    private static class XMLReaderCreatorImpl implements XMLReaderCreator {
+
+        private ErrorHandler errorHandler;
+        private EntityResolver entityResolver;
+
+        public XMLReaderCreatorImpl(ErrorHandler errorHandler, EntityResolver entityResolver) {
+            this.errorHandler = errorHandler;
+            this.entityResolver = entityResolver;
+        }
+
+        public XMLReader createXMLReader() throws SAXException {
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                factory.setValidating(false);
+                XMLReader r = factory.newSAXParser().getXMLReader();
+                r.setFeature("http://xml.org/sax/features/external-general-entities", true); //NOI18N
+                r.setFeature("http://xml.org/sax/features/external-parameter-entities", true); //NOI18N
+                r.setEntityResolver(this.entityResolver);
+                r.setErrorHandler(this.errorHandler);
+                return r;
+            } catch (ParserConfigurationException ex) {
+                throw new SAXException("Cannot create XMLReader instance", ex); //NOI18N
+            }
+
+        }
+    }
+
+    //xerces's default locator returns slightly shifted positions for character content
+    //this affects the LocationRecorder and hence the error positions quite nastily
+    private static class XercesInaccurateLocatorWorkaround implements ContentHandler, LexicalHandler {
+
+        //nu.validator.source.LocationRecorder is not accessible
+        private ContentHandler contentHandler;
+        private LexicalHandler lexicalHandler;
+        private LinesMapper mapper;
+        private FikanyLocator locator;
+        private Locator originalLocator;
+
+        public XercesInaccurateLocatorWorkaround(Object source, LinesMapper mapper) {
+            this.contentHandler = (ContentHandler) source;
+            this.lexicalHandler = (LexicalHandler) source;
+            this.mapper = mapper;
+        }
+
+        public void setDocumentLocator(Locator locator) {
+            contentHandler.setDocumentLocator(locator);
+            this.originalLocator = locator;
+            this.locator = new FikanyLocator(locator);
+            contentHandler.setDocumentLocator(this.locator);
+        }
+
+        public void startDocument() throws SAXException {
+            contentHandler.startDocument();
+        }
+
+        public void endDocument() throws SAXException {
+            contentHandler.endDocument();
+        }
+
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+            contentHandler.startPrefixMapping(prefix, uri);
+        }
+
+        public void endPrefixMapping(String prefix) throws SAXException {
+            contentHandler.endPrefixMapping(prefix);
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+            contentHandler.startElement(uri, localName, qName, atts);
+        }
+
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            contentHandler.endElement(uri, localName, qName);
+        }
+
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            assert locator != null;
+            int line = originalLocator.getLineNumber();
+            int column = originalLocator.getColumnNumber();
+            int offset = mapper.getSourceOffsetForLocation(line - 1, column);
+
+            CharSequence text = mapper.getSourceText(0, offset);
+            int diff = findBackwardDiff(text, ch, start, length);
+            locator.setColumnNumberDiff(-diff);
+            contentHandler.characters(ch, start, length);
+            locator.setColumnNumberDiff(0);
+        }
+
+        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+            contentHandler.ignorableWhitespace(ch, start, length);
+        }
+
+        public void processingInstruction(String target, String data) throws SAXException {
+            contentHandler.processingInstruction(target, data);
+        }
+
+        public void skippedEntity(String name) throws SAXException {
+            contentHandler.skippedEntity(name);
+        }
+
+        public void startDTD(String name, String publicId, String systemId) throws SAXException {
+            lexicalHandler.startDTD(name, publicId, systemId);
+        }
+
+        public void endDTD() throws SAXException {
+            lexicalHandler.endDTD();
+        }
+
+        public void startEntity(String name) throws SAXException {
+            lexicalHandler.startEntity(name);
+        }
+
+        public void endEntity(String name) throws SAXException {
+            lexicalHandler.endEntity(name);
+        }
+
+        public void startCDATA() throws SAXException {
+            lexicalHandler.startCDATA();
+        }
+
+        public void endCDATA() throws SAXException {
+            lexicalHandler.endCDATA();
+        }
+
+        public void comment(char[] ch, int start, int length) throws SAXException {
+            lexicalHandler.comment(ch, start, length);
+        }
+
+        private static class FikanyLocator implements Locator {
+
+            private Locator delegate;
+            private int diff;
+
+            public FikanyLocator(Locator delegate) {
+                this.delegate = delegate;
+            }
+
+            public void setColumnNumberDiff(int diff) {
+                this.diff = diff;
+            }
+
+            public String getPublicId() {
+                return delegate.getPublicId();
+            }
+
+            public String getSystemId() {
+                return delegate.getSystemId();
+            }
+
+            public int getLineNumber() {
+                return delegate.getLineNumber();
+            }
+
+            public int getColumnNumber() {
+                return delegate.getColumnNumber() + diff;
+            }
+        }
+    }
+
+    static int findBackwardDiff(CharSequence text, char[] pattern, int pstart, int plen) {
+        assert plen > 0;
+        int pend = pstart + plen - 1;
+        int pidx = pend;
+        int tlen = text.length();
+        int point = tlen;
+        boolean inp = false;
+        for (int i = tlen - 1; i >= 0; i--) {
+            char textChar = text.charAt(i);
+            char patternChar = pattern[pidx--];
+            if (textChar != patternChar) {
+                pidx = pend;
+                if (inp) {
+                    i = point - 1;
+                    inp = false;
+                }
+                point = i;
+
+            } else {
+                if (pstart == pidx) {
+                    break; //match, reached start of prefix
+                }
+                if (pidx == 0) {
+                    break;
+                }
+                inp = true;
+            }
+        }
+        return tlen - point;
     }
 }

@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.dataview.table;
@@ -162,7 +162,7 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
 
             @Override
             public Object getCellEditorValue() {
-                Boolean bolVal = new Boolean(checkBox.isSelected());
+                Boolean bolVal = checkBox.isSelected();
                 if (val == null && !checkBox.isSelected()) {
                     return null;
                 } else {
@@ -272,6 +272,7 @@ class StringTableCellEditor extends ResultSetTableCellEditor implements TableCel
         return panel;
     }
 
+    @Override
     public final void actionPerformed(ActionEvent e) {
         assert table != null;
         super.cancelCellEditing();
@@ -282,7 +283,7 @@ class StringTableCellEditor extends ResultSetTableCellEditor implements TableCel
         JTextArea textArea = new JTextArea(10, 50);
         Object value = table.getValueAt(row, column);
         if (value != null) {
-            textArea.setText((String) value);
+            textArea.setText(value.toString());
             textArea.setCaretPosition(0);
             textArea.setEditable(editable);
         }
@@ -336,6 +337,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
         datePicker.addActionListener(getPickerActionListener());
     }
 
+    @Override
     public Timestamp getCellEditorValue() {
         return datePicker.getDateTime();
     }
@@ -360,6 +362,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
         return false;
     }
 
+    @Override
     public Component getTableCellEditorComponent(final JTable table, Object value,
             boolean isSelected, int row, int column) {
         this.table = table;
@@ -415,7 +418,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
         datePicker.setFormats(formats);
     }
 
-    protected ActionListener getPickerActionListener() {
+    private ActionListener getPickerActionListener() {
         if (pickerActionListener == null) {
             pickerActionListener = createPickerActionListener();
         }
@@ -425,6 +428,7 @@ class DateTimePickerCellEditor extends AbstractCellEditor implements TableCellEd
     protected ActionListener createPickerActionListener() {
         ActionListener l = new ActionListener() {
 
+            @Override
             public void actionPerformed(final ActionEvent e) {
                 // avoid duplicate trigger from
                 // commit in stopCellEditing

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.java.api.common.project.ui;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
@@ -66,6 +68,8 @@ import org.openide.util.actions.NodeAction;
  * @author Tomas Zezula
  */
 final class ShowJavadocAction extends NodeAction {
+    
+    private static final Logger LOG = Logger.getLogger(ShowJavadocAction.class.getName()); 
 
     /**
      * Implementation of this interfaces has to be placed
@@ -149,13 +153,24 @@ final class ShowJavadocAction extends NodeAction {
                 base+="/"; // NOI18N
             }
             try {
-                URL u = new URL(base+resource);
-                FileObject fo = URLMapper.findFileObject(u);
-                if (fo != null) {
-                    return u;
+                final URL u = new URL(base+resource);
+                if (u.getProtocol().startsWith("http")) {   //NOI18N
+                    try {
+                        final InputStream in = u.openStream();
+                        in.close();
+                        return u;
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, "Ignoring non existent URL: ", u.toExternalForm()); //NOI18N
+                        //continue
+                    }
+                } else {
+                    final FileObject fo = URLMapper.findFileObject(u);
+                    if (fo != null) {
+                        return u;
+                    }
                 }
             } catch (MalformedURLException ex) {
-                Logger.getLogger("global").log(Level.SEVERE, "Cannot create URL for " + base + resource + ". " + ex.toString());
+                LOG.log(Level.SEVERE, "Cannot create URL for " + base + resource + ". " + ex.toString());
                 continue;
             }
         }

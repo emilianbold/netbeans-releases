@@ -93,8 +93,26 @@ int main(int argc, char** argv) {
 
     /* parent */
 
+    int loop_result = 0;
+
     if (master_fd > 0) {
-        loop(master_fd); /* copies stdin -> ptym, ptym -> stdout */
+        // At least on Windows, when gdb is started through this pty process
+        // and calling process is killed (i.e. stdin gets broken)
+        // and even when we close master_fd, gdb continues to work... 
+        // ??? will kill the process (gdb) in this case...
+        loop_result = loop(master_fd); /* copies stdin -> ptym, ptym -> stdout */
+    }
+
+    if (loop_result != 0) {
+        int attempt = 2;
+        while (attempt-- >= 0 && kill(pid, 0) == 0) {
+            kill(pid, SIGTERM);
+            sleep(1);
+        }
+
+        if (kill(pid, 0) == 0) {
+            kill(pid, SIGKILL);
+        }
     }
 
     w = waitpid(pid, &status, WUNTRACED | WCONTINUED);

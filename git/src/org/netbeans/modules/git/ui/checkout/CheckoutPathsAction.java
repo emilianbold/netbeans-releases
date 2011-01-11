@@ -79,9 +79,9 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
 
                 @Override
                 protected void perform () {
+                    final Collection<File> notifiedFiles = new HashSet<File>();
                     try {
                         GitClient client = getClient();
-                        final Collection<File> notifiedFiles = new HashSet<File>();
                         client.addNotificationListener(new FileListener() {
                             @Override
                             public void notifyFile (File file, String relativePathToRoot) {
@@ -91,10 +91,13 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                         client.addNotificationListener(new DefaultFileListener(roots));
                         LOG.log(Level.FINE, "Checking out paths, revision: {0}", checkout.getRevision()); //NOI18N
                         client.checkout(roots, checkout.getRevision(), this);
-                        setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                        Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(getRepositoryRoot(), notifiedFiles));
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
+                    } finally {
+                        if (!notifiedFiles.isEmpty()) {
+                            setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                            Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(getRepositoryRoot(), notifiedFiles));
+                        }
                     }
                 }
             };

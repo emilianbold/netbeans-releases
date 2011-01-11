@@ -37,7 +37,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/error.o
 
 # C Compiler Flags
-CFLAGS=--std=c99
+CFLAGS=-m64 --std=c99
 
 # CC Compiler Flags
 CCFLAGS=

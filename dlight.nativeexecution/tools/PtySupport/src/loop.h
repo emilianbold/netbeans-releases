@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-    void loop(int master_fd);
+    int loop(int master_fd);
 
 #ifdef	__cplusplus
 }

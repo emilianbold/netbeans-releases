@@ -73,6 +73,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -815,10 +816,10 @@ public class RepositoryUpdater2Test extends NbTestCase {
         // the indexer does not store any data and so physically there is no lucene index on the disk
         // therefore we have to forcibly create one
         Context ctx = indexer.indexed.get(0).first;
-        IndexImpl ii = SPIAccessor.getInstance().getIndexFactory(ctx).createIndex(ctx);
-        ii.fileModified("file1.txt"); // marks index as dirty and adds file1.txt among stale files
-        assertEquals("Wrong number of stale files", 1, ii.getStaleFiles().size());
-        assertEquals("file1.txt should be a stale file", "file1.txt", ii.getStaleFiles().iterator().next());
+        DocumentIndex ii = SPIAccessor.getInstance().getIndexFactory(ctx).createIndex(ctx);
+        ii.markKeyDirty("file1.txt"); // marks index as dirty and adds file1.txt among stale files
+        assertEquals("Wrong number of stale files", 1, ii.getDirtyKeys().size());
+        assertEquals("file1.txt should be a stale file", "file1.txt", ii.getDirtyKeys().iterator().next());
 
         indexer.indexed.clear();
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 1);
@@ -829,7 +830,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         assertEquals("Expecting root", root.getURL(), indexer.indexed.get(0).first.getRootURI());
         assertEquals("Wrong number of files under root", 1, indexer.indexed.get(0).second.size());
         assertEquals("Wrong file indexed", file1.getURL(), indexer.indexed.get(0).second.get(0).getURL());
-        assertEquals("Expecting no stale files", 0, ii.getStaleFiles().size());
+        assertEquals("Expecting no stale files", 0, ii.getDirtyKeys().size());
     }
 
     private static final class TestCustomIndexer extends CustomIndexer {

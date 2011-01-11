@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.gizmo.actions;
 
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
@@ -71,6 +72,14 @@ public class GizmoRunActionHandlerFactory implements ProjectActionHandlerFactory
     @Override
     public ProjectActionHandler createHandler() {
         return new GizmoRunActionHandler();
+    }
+
+    @Override
+    public boolean canHandle(ProjectActionEvent pae) {
+        if (!pae.getProfile().isSimpleRunCommand()) {
+            return false;
+        }
+        return canHandle(pae.getType(), pae.getConfiguration());
     }
 
 }

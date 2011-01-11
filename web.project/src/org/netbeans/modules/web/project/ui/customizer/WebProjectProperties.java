@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -57,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
@@ -147,6 +150,7 @@ final public class WebProjectProperties {
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
     public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; //NOI18N
+    public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -242,6 +246,7 @@ final public class WebProjectProperties {
     ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
+    JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
     
     // CustomizerWar
     Document WAR_NAME_MODEL; 
@@ -267,7 +272,7 @@ final public class WebProjectProperties {
     Document CONTEXT_PATH_MODEL;
     Document LAUNCH_URL_RELATIVE_MODEL;
     ButtonModel DISPLAY_BROWSER_MODEL;
-    ButtonModel DEPLOY_ON_SAVE_MODEL; 
+    JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
     Document RUNMAIN_JVM_MODEL;
     
@@ -423,6 +428,24 @@ final public class WebProjectProperties {
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_COMPILE_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                    DEPLOY_ON_SAVE_MODEL.setSelected(false);
+                }
+            }
+        });
+        DEPLOY_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                    COMPILE_ON_SAVE_MODEL.setSelected(true);
+                }
+            }
+        });
+        
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
                 Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM)),
@@ -563,7 +586,7 @@ final public class WebProjectProperties {
             }
             
             //Delete COS mark
-            if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+            if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
                 DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir", false); // NOI18N
             }
         } 

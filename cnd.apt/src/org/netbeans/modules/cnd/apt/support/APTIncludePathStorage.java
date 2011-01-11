@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -56,18 +57,20 @@ import org.openide.util.CharSequences;
  */
 public final class APTIncludePathStorage {
     private final ConcurrentMap<CharSequence, List<IncludeDirEntry>> allIncludes = new ConcurrentHashMap<CharSequence, List<IncludeDirEntry>>();
+    private final FileSystem fileSystem;
     
-    public APTIncludePathStorage() {
+    public APTIncludePathStorage(FileSystem fs) {
+        this.fileSystem = fs;
     }
 
-    public List<IncludeDirEntry> get(CharSequence configID, List<String> sysIncludes) {
+    public List<IncludeDirEntry> get(CharSequence configID,  List<String> sysIncludes) {
         CharSequence key = CharSequences.create(configID);
         List<IncludeDirEntry> list = allIncludes.get(key);
         if (list == null) {
             // create new one with light char sequences and put in map
             list = new ArrayList<IncludeDirEntry>(sysIncludes.size());
             for (String cs : sysIncludes) {
-                IncludeDirEntry inclEntry = IncludeDirEntry.get(cs);
+                IncludeDirEntry inclEntry = IncludeDirEntry.get(fileSystem, cs);
                 list.add(inclEntry);
             }
             List<IncludeDirEntry> old = allIncludes.putIfAbsent(key, list);

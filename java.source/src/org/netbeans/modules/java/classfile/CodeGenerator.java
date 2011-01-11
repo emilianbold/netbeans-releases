@@ -96,6 +96,7 @@ public class CodeGenerator {
     private static final Logger LOG = Logger.getLogger(CodeGenerator.class.getName());
     private static final Set<ElementKind> UNUSABLE_KINDS = EnumSet.of(ElementKind.PACKAGE);
     private static final String HASH_ATTRIBUTE_NAME = "origin-hash";
+    private static final String DISABLE_ERRORS = "disable-java-errors";
 
     public static FileObject generateCode(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpenHandle) {
 	if (UNUSABLE_KINDS.contains(toOpenHandle.getKind())) {
@@ -204,6 +205,7 @@ public class CodeGenerator {
                 }
                 if (resultFile != null) {
                     resultFile.setReadOnly();
+                    result[0].setAttribute(DISABLE_ERRORS, true);
                 }
             }
 

@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -123,7 +122,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private WizardDescriptor.Panel<WizardDescriptor> selectBinaryPanel;
     private int lastNewHostPanel = -1;
     
-    private final SelectModeDescriptorPanel importPanel;
+    private SelectModeDescriptorPanel selectModePanel;
     private final PanelConfigureProject panelConfigureProjectTrue;
 //    private final PanelConfigureProject panelConfigureProjectFalse;
 //    private final MakefileOrConfigureDescriptorPanel makefileOrConfigureDescriptorPanel;
@@ -156,16 +155,22 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         advancedPanels.add(new SourceFoldersDescriptorPanel());
         advancedPanels.add(new ParserConfigurationDescriptorPanel());
         advancedPanels.add(new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false));
-
-        importPanel = new SelectModeDescriptorPanel(fullRemote);
-        importPanel.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                setupPanelsAndStepsIfNeed();
-            }
-        });
     }
 
+    private synchronized SelectModeDescriptorPanel getSelectModePanel() {
+        if (selectModePanel == null) {
+            selectModePanel = new SelectModeDescriptorPanel(fullRemote);
+            selectModePanel.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    setupPanelsAndStepsIfNeed();
+                }
+            });
+        }
+        return selectModePanel;
+    }
+    
     public static NewMakeProjectWizardIterator newApplication() {
         String name = APPLICATION_PROJECT_NAME; //getString("NativeNewApplicationName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/newApplication.xml"); // NOI18N
@@ -288,6 +293,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
             List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+            final SelectModeDescriptorPanel modeSelectionPanel = getSelectModePanel();
             if (fullRemote) {
                 if (selectHostPanel == null) {
                     selectHostPanel = getSelectHostWizardProvider().getSelectHostPanel();
@@ -296,18 +302,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 if (getSelectHostWizardProvider().isNewHost()) {
                     panelsList.addAll(getSelectHostWizardProvider().getAdditionalPanels());
                     lastNewHostPanel = panelsList.size() - 1;
-                    panelsList.add(importPanel);
+                    panelsList.add(modeSelectionPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
                     }
                 } else {
-                    panelsList.add(importPanel);
+                    panelsList.add(modeSelectionPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
                     }
                 }
             } else {
-                panelsList.add(importPanel);
+                panelsList.add(modeSelectionPanel);
                 if (!isSimple()) {
                     panelsList.addAll(advancedPanels);
                 }
@@ -416,6 +422,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
@@ -427,7 +434,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(importPanel.getWizardStorage())));
+                resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(getSelectModePanel().getWizardStorage())));
             }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -467,7 +474,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
                 mainFile = fname + "|" + template; // NOI18N
             }
-            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain); // NOI18N
+            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -481,7 +488,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 debug.setLinkerConfiguration(linkerConfiguration);
             }
-            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain); // NOI18N
+            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);

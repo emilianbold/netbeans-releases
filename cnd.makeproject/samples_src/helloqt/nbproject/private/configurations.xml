@@ -6,6 +6,7 @@
     <conf name="Debug" type="4">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <gdbdebugger version="2">
         <gdb_command>gdb</gdb_command>
@@ -24,6 +25,7 @@
     <conf name="Release" type="4">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <gdbdebugger version="2">
         <gdb_command>gdb</gdb_command>

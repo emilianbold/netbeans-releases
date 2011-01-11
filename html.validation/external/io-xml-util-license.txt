@@ -1,6 +1,6 @@
 Name: IO-XML-UTIL
 Version: -
-License: Apache
+License: Apache-2.0
 OSR: -
 Files: io-xml-util.jar
 Description: This module hosts utility classes for other Java stuff in the repository.

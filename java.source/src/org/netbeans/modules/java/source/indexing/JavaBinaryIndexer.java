@@ -254,12 +254,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                 if (uq.getState() != ClassIndexImpl.State.NEW) {
                                     //Already checked
                                     return true;
-                                }
-                                try {
-                                    return uq.isValid();
-                                } finally {
-                                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                                }
+                                }                                
+                                return uq.isValid();
                             }
                         });
                     }
@@ -272,5 +268,22 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 return false;
             }
         }
+
+        @Override
+        public void scanFinished(Context context) {
+            try {
+                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
+                if (uq == null) {
+                    //Closing...
+                    return;
+                }
+                uq.setState(ClassIndexImpl.State.INITIALIZED);
+                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.FALSE.toString());
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);                
+            }
+        }
+        
+        
     }
 }

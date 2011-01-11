@@ -56,6 +56,7 @@ import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AllPermission;
@@ -573,7 +574,18 @@ public final class AntBridge {
         }
         
         public AllPermissionURLClassLoader(URL[] urls, ClassLoader parent) {
-            super(urls, parent);
+            super(sanitize(urls), parent);
+        }
+
+        private static URL[] sanitize(URL[] urls) { // #192190
+            for (int i = 0; i < urls.length; i++) {
+                try {
+                    urls[i] = URI.create(urls[i].toURI().toASCIIString()).toURL();
+                } catch (/*URISyntax,MalformedURL*/Exception x) {
+                    assert false : "converting " + urls[i] + ": " + x;
+                }
+            }
+            return urls;
         }
         
         @Override

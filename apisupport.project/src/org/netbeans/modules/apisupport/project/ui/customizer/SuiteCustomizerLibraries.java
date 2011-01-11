@@ -78,6 +78,7 @@ import java.util.logging.Logger;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
@@ -93,6 +94,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo.Provider;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -299,7 +301,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         moduleCh.setComparator(MODULES_COMPARATOR);
         Set<NbModuleProject> modules = SuiteUtils.getSubProjects(ci.getProject());
         for (NbModuleProject modPrj : modules) {
-            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, 
+            NbModuleProvider nbmp = modPrj.getLookup().lookup(NbModuleProvider.class);
+            if (nbmp == null || nbmp.getModuleType() != NbModuleProvider.SUITE_COMPONENT) {
+                continue;
+            }
+            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, nbmp,
                     ! disabledModuleCNB.contains(modPrj.getCodeNameBase()) && ci.isEnabled()) });
         }
         return new ClusterNode(ci, moduleCh);
@@ -883,7 +889,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         public @Override String getHtmlDisplayName() {
             if (isDeprecated()) {
                 try {
-                    return "<html><strike>" + XMLUtil.toElementContent(getDisplayName()) + "</strike>"; // NOI18N
+                    return "<html><s>" + XMLUtil.toElementContent(getDisplayName()) + "</s>"; // NOI18N
                 } catch (CharConversionException ex) {}
             }
             return null;
@@ -985,31 +991,27 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     final class SuiteComponentNode extends Enabled {
-        private Project project;
+        private final Project project;
+        private final NbModuleProvider nbmp;
 
-        public SuiteComponentNode(Project prj, boolean enabled) {
+        public SuiteComponentNode(Project prj, NbModuleProvider nbmp, boolean enabled) {
             super(Children.LEAF, enabled);
             this.project = prj;
-            NbModuleProvider nbmp = prj.getLookup().lookup(NbModuleProvider.class);
-            if (nbmp == null) {
-                String msg = NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                        "MSG_NotANBMProject", FileUtil.getFileDisplayName(prj.getProjectDirectory()));
-                throw new IllegalArgumentException(msg);
-            }
-            if (nbmp.getModuleType() != NbModuleProvider.SUITE_COMPONENT) {
-                String msg = NbBundle.getMessage(SuiteCustomizerLibraries.class,
-                        "MSG_NotASuiteComponentProject", FileUtil.getFileDisplayName(prj.getProjectDirectory()));
-                throw new IllegalArgumentException(msg);
-            }
+            this.nbmp = nbmp;
             final String cnb = nbmp.getCodeNameBase();
             setName(cnb);
             setDisplayName(ProjectUtils.getInformation(prj).getDisplayName());
-            String desc = prj.getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo().getShortDescription();
-            setShortDescription(formatEntryDesc(cnb, desc));
+            Provider provider = prj.getLookup().lookup(LocalizedBundleInfo.Provider.class);
+            if (provider != null) {
+                LocalizedBundleInfo bundleInfo = provider.getLocalizedBundleInfo();
+                if (bundleInfo != null) {
+                    setShortDescription(formatEntryDesc(cnb, bundleInfo.getShortDescription()));
+                }
+            }
         }
 
         public boolean isDeprecated() {
-            return ManifestManager.getInstance(Util.getManifest(project.getLookup().lookup(NbModuleProvider.class).getManifestFile()), false).isDeprecated();
+            return ManifestManager.getInstance(Util.getManifest(nbmp.getManifestFile()), false).isDeprecated();
         }
 
         @Override
@@ -1047,9 +1049,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 NbModuleProvider nbmp = prj.getLookup().lookup(NbModuleProvider.class);
                 if (nbmp != null) {
                     // standalone module, format in the same way as other modules
-                    String desc = prj.getLookup().lookup(LocalizedBundleInfo.Provider.class)
-                            .getLocalizedBundleInfo().getShortDescription();
-                    setShortDescription(formatEntryDesc(nbmp.getCodeNameBase(), desc));
+                    Provider provider = prj.getLookup().lookup(LocalizedBundleInfo.Provider.class);
+                    if (provider != null) {
+                        LocalizedBundleInfo bundleInfo = provider.getLocalizedBundleInfo();
+                        if (bundleInfo != null) {
+                            setShortDescription(formatEntryDesc(nbmp.getCodeNameBase(), bundleInfo.getShortDescription()));
+                        }
+                    }
                 } else {
                     setShortDescription(ci.getClusterDir().getAbsolutePath());
                 }
@@ -1317,7 +1323,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     }
 
-    private String formatEntryDesc(final String cnb, String desc) throws MissingResourceException {
+    private String formatEntryDesc(final String cnb, @NullAllowed String desc) throws MissingResourceException {
         String tooltip;
         if (desc != null) {
             if (desc.startsWith("<html>")) {

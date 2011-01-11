@@ -89,7 +89,7 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-//        TreeLoader.DISABLE_CONFINEMENT_TEST = true;
+        TreeLoader.DISABLE_CONFINEMENT_TEST = true;
     }
 
     public void testFindUsableFields() throws Exception {

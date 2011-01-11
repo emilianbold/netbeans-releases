@@ -127,16 +127,9 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                             break;
 
                         }else if(node instanceof ArtifactNode){
-                            NBVersionInfo info=null;
                             ArtifactNode an=(ArtifactNode) node;
                             List<NBVersionInfo> infos = an.getVersionInfos();
-                            for (NBVersionInfo nbvi : infos) {
-                                if(info==null || nbvi.getVersion().compareTo(info.getVersion())>0){
-                                
-                                  info=nbvi;
-                                }
-                            }
-                            nbvi=info;
+                            nbvi = infos.isEmpty() ? null : infos.get(0);
                         }
                     }
                     if(nbvi!=null){

@@ -44,6 +44,7 @@
 package org.netbeans.modules.editor.codegen;
 
 import java.awt.Frame;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -61,6 +62,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -87,24 +89,41 @@ public class NbGenerateCodeAction extends BaseAction {
     }
     
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-        Task task = new Task(getFullMimePath(target.getDocument(), target.getCaretPosition()));
-        task.run(Lookups.singleton(target));
-        if (task.codeGenerators.size() > 0) {
-            int altHeight = -1;
-            Point where = null;
-            try {
-                Rectangle carretRectangle = target.modelToView(target.getCaretPosition());
-                altHeight = carretRectangle.height;
-                where = new Point( carretRectangle.x, carretRectangle.y + carretRectangle.height );
-                SwingUtilities.convertPointToScreen(where, target);
-            } catch (BadLocationException ble) {
+        final Task task = new Task(getFullMimePath(target.getDocument(), target.getCaretPosition()));
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                if (cancel != null && cancel.get())
+                    return ;
+                task.run(Lookups.singleton(target));
+                if (cancel != null && cancel.get())
+                    return ;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (task.codeGenerators.size() > 0) {
+                            int altHeight = -1;
+                            Point where = null;
+                            try {
+                                Rectangle carretRectangle = target.modelToView(target.getCaretPosition());
+                                altHeight = carretRectangle.height;
+                                where = new Point(carretRectangle.x, carretRectangle.y + carretRectangle.height);
+                                SwingUtilities.convertPointToScreen(where, target);
+                            } catch (BadLocationException ble) {
+                            }
+                            if (where == null) {
+                                where = new Point(-1, -1);
+                                
+                            }
+                            PopupUtil.showPopup(new GenerateCodePanel(target, task.codeGenerators), (Frame)SwingUtilities.getAncestorOfClass(Frame.class, target), where.x, where.y, true, altHeight);
+                        } else {
+                            target.getToolkit().beep();
+                        }
+                    }
+                });
             }
-            if (where == null)
-                where = new Point(-1, -1);
-            PopupUtil.showPopup(new GenerateCodePanel(target, task.codeGenerators), (Frame)SwingUtilities.getAncestorOfClass(Frame.class, target), where.x, where.y, true, altHeight);
-        } else {
-            target.getToolkit().beep();
-        }
+        }, NbBundle.getBundle(NbGenerateCodeAction.class).getString("generate-code-trimmed"), cancel, false);
     }
     
     static String[] test(Document doc, int pos) {

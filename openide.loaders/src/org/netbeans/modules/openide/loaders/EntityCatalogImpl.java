@@ -44,25 +44,30 @@
 
 package org.netbeans.modules.openide.loaders;
 
-import java.io.*;
-import java.util.*;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
-import org.openide.util.*;
-import org.openide.xml.*;
+import org.openide.loaders.XMLDataObject;
+import org.openide.util.RequestProcessor;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * This Entity Catalog implementation recognizes registrations defined at XMLayer.
- *
+ * Recognizes catalogs defined by {@link EntityCatalog#PUBLIC_ID}, which presumably must 
+ * Do not use this style; {@link FileEntityResolver} implements the preferred system.
  * @author  Petr Kuzel
- * @version 1.0
  */
+@Deprecated
 public final class EntityCatalogImpl extends EntityCatalog {
 
     /** map between publicId and privateId (String, String); must be synchronized */
@@ -132,7 +137,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
         public InputSource resolveEntity(String pid, String sid) {
             if (EntityCatalog.PUBLIC_ID.equals(pid)) {
                 // Don't use a nbres: URL here; can deadlock NbURLStreamHandlerFactory during startup
-                return new InputSource(EntityCatalogImpl.class.getClassLoader().getResource("org/openide/xml/EntityCatalog.dtd").toExternalForm()); // NOI18N
+                return new InputSource(EntityCatalogImpl.class.getResource("EntityCatalog.dtd").toExternalForm()); // NOI18N
             }
             return null;
         }

@@ -451,13 +451,17 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             throw new FileNotFoundException(name);
         }
         TreeAttribute externalName = el.getAttribute("url"); // NOI18N
-        if (externalName != null && !URI.create(externalName.getValue()).isAbsolute()) {
-            // Delete the external file if it can be found.
-            FileObject externalFile = URLMapper.findFileObject(new URL(location, externalName.getValue()));
-            if (externalFile != null) {
-                externalFile.removeFileChangeListener(fileChangeListener);
-                externalFile.delete();
+        try {
+            if (externalName != null && !new URI(externalName.getValue()).isAbsolute()) {
+                // Delete the external file if it can be found.
+                FileObject externalFile = URLMapper.findFileObject(new URL(location, externalName.getValue()));
+                if (externalFile != null) {
+                    externalFile.removeFileChangeListener(fileChangeListener);
+                    externalFile.delete();
+                }
             }
+        } catch (URISyntaxException x) {
+            // #189739: never mind
         }
         try {
             deleteWithIndent((TreeChild) el);

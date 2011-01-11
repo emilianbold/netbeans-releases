@@ -45,6 +45,8 @@ package org.netbeans.modules.db.explorer.node;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -68,7 +70,6 @@ import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -86,6 +87,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     private static final String TOOLTIP_COLUMN = NbBundle.getMessage(ColumnNode.class, "ND_Column");
     private static final String TOOLTIP_PRIMARY = NbBundle.getMessage(ColumnNode.class, "ND_PrimaryKey");
     private static final String TOOLTIP_INDEX = NbBundle.getMessage(ColumnNode.class, "ND_Index");
+    private static final Logger LOG = Logger.getLogger(ColumnNode.class.getName());
 
     /**
      * Create an instance of ColumnNode.
@@ -209,7 +211,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             addProperty(DIGITS, DIGITSDESC, Short.class, false, column.getScale());
             addProperty(POSITION, POSITIONDESC, Integer.class, false, column.getPosition());
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.INFO, e.getMessage(), e);
         }
     }
 
@@ -237,6 +239,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         MetadataModel metaDataModel = connection.getMetadataModel();
         final int[] array = new int[1];
         array[0] = 1;
+        
+        if (metaDataModel == null) {
+            LOG.log(Level.INFO, "Null MetadataModel for " + connection);
+            return array[0];
+        }
 
         try {
             metaDataModel.runReadAction(
@@ -274,7 +281,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             command.removeColumn(getName());
             command.execute();
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.INFO, e.getMessage(), e);
         }
 
         SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });

@@ -173,6 +173,16 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
         return nodesAsMap;
     }
 
+    protected final T[] getSelectedNodes () {
+        int[] selection = table.getSelectedRows();
+        List<T> nodes = new LinkedList<T>();
+        for (int i : selection) {
+            T selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
+            nodes.add(selectedNode);
+        }
+        return nodes.toArray((T[]) java.lang.reflect.Array.newInstance(tableModel.getItemClass(), nodes.size()));
+    }
+
     public final File[] getSelectedFiles () {
         int[] selection = table.getSelectedRows();
         List<File> files = new LinkedList<File>();
