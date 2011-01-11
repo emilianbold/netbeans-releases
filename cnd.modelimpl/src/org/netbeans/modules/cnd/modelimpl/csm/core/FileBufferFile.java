@@ -65,10 +65,6 @@ public class FileBufferFile extends AbstractFileBuffer {
     private volatile SoftReference<String> cachedString;
     private volatile long lastModifiedWhenCachedString;
 
-    public FileBufferFile(CharSequence absPath) {
-        super(absPath);
-    }
-
     public FileBufferFile(FileObject fileObject) {
         super(fileObject);
     }

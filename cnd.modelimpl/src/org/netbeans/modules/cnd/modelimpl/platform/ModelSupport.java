@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import java.io.File;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -523,10 +522,8 @@ public class ModelSupport implements PropertyChangeListener {
                 Document doc = editor != null ? editor.getDocument() : null;
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
-                    File file = FileUtil.toFile(primaryFile);
-                    long lastModified = (file == null) ? primaryFile.lastModified().getTime() : file.lastModified();
-                    CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
-                    final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
+                    long lastModified = primaryFile.lastModified().getTime();
+                    final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
 
                     for (NativeFileItem nativeFile : set.getItems()) {
                         ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());

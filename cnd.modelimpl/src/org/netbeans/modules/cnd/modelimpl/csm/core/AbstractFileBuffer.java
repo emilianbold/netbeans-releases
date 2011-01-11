@@ -75,19 +75,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
     private Charset encoding;
-    
-    protected AbstractFileBuffer(CharSequence absPath) {        
-        if (CndUtils.isDebugMode()) {
-            File file = new File(absPath.toString());
-            CndUtils.assertFileMode(file);
-            CndUtils.assertNormalized(file);
-            if (CndTraceFlags.USE_FILE_OBJECTS) {
-                System.err.printf("Warning: AbstractFileBuffer(String): %s\n", absPath);
-            }
-        }
-        this.absPath = FilePathCache.getManager().getString(absPath);
-        this.fileSystem = CndFileUtils.getLocalFileSystem();
-    }
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(fileObject.getPath());

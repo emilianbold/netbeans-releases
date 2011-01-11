@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * base Tree walker for APT
@@ -97,6 +98,7 @@ public abstract class APTWalker {
             init(true);
         }
         
+        @Override
         public APTToken nextToken() {
             try {
                 return nextTokenImpl();
@@ -379,6 +381,10 @@ public abstract class APTWalker {
     public final APTFile getRootFile() {
         return root;
     }
+    
+    protected final FileObject getFileObject(CharSequence absPath) {
+        return this.getRootFile().getFileSystem().findResource(absPath.toString());
+    }    
 
     // fields to be used when generating token stream
     private APT curAPT;
