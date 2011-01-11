@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
+AutoUpdate-Show-In-Client: true
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.properties
