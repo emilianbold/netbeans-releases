@@ -96,7 +96,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -1069,16 +1068,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        String entryKey;
-        if (CndTraceFlags.USE_FILE_OBJECTS) {
-            FileObject fo = nativeFile.getFileObject();
-            // no normalization is needed
-            entryKey = FileContainer.getFileKey(fo.getPath(), true).toString();
-        } else {
-            File file = nativeFile.getFile();
-            CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getName() + ") returned null file; FileObject is " + nativeFile.getFileObject()); //NOI18N
-            entryKey = FileContainer.getFileKey(file, true).toString();
-        }
+        String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
         CndUtils.assertTrue(nativeFile.getNativeProject().getFileSystem().equals(getFileSystem()), "File systems differ"); //NOI18N
         StartEntry startEntry = new StartEntry(getFileSystem(), entryKey,
                 RepositoryUtils.UIDtoKey(getUID()));

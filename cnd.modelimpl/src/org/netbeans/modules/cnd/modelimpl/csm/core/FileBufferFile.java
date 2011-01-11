@@ -49,7 +49,6 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -183,16 +182,12 @@ public class FileBufferFile extends AbstractFileBuffer {
     @Override
     public InputStream getInputStream() throws IOException {
         InputStream is;
-        if (CndTraceFlags.USE_FILE_OBJECTS) {
-            FileObject fo = getFileObject();
-            CndUtils.assertNotNull(fo, "Null file object for " + this.getAbsolutePath()); // NOI18N
-            if (fo != null) {
-                is = fo.getInputStream();
-            } else {
-                throw new FileNotFoundException("Null file object for " + this.getAbsolutePath()); // NOI18N
-            }
+        FileObject fo = getFileObject();
+        CndUtils.assertNotNull(fo, "Null file object for " + this.getAbsolutePath()); // NOI18N
+        if (fo != null) {
+            is = fo.getInputStream();
         } else {
-            is = CndFileUtils.getInputStream(getAbsolutePath());
+            throw new FileNotFoundException("Null file object for " + this.getAbsolutePath()); // NOI18N
         }
         return new BufferedInputStream(is, TraceFlags.BUF_SIZE);
     }

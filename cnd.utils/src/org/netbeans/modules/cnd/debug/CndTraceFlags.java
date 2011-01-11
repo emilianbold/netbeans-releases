@@ -48,5 +48,4 @@ package org.netbeans.modules.cnd.debug;
  */
 public interface CndTraceFlags {
     public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
-    public static final boolean USE_FILE_OBJECTS = DebugUtils.getBoolean("cnd.file.objects", false); // NOI18N
 }

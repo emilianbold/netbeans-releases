@@ -43,9 +43,7 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
@@ -260,38 +258,6 @@ public final class CndFileUtils {
         Flags flags = getFlags(fs, filePath, false);
         return flags.exist && flags.directory;
     }
-
-   /**
-    * Gets file input stream. File can be either a "classic" file,
-    * or other kind of file, say, remote one.
-    *
-    * NB: can be ver slow; e.g. can cause connection to the host in the case of the remote file
-    *
-    * NB: does nothing to buffer the file - it's up to caller
-    *
-    * @param filePath is either just a path to local file
-    * or a URL of remote or other kind of file
-    *
-    * @return input stream
-    *
-    * @throws java.io.IOException
-    */
-   public static InputStream getInputStream(CharSequence filePath) throws IOException {
-       FileObject fo = CndFileSystemProvider.toFileObject(filePath);
-       if (fo == null) {
-           File file = new File(filePath.toString());
-           fo = FileUtil.toFileObject(file);
-           InputStream is;
-           if (fo != null) {
-               is = fo.getInputStream();
-           } else {
-               is = new FileInputStream(file);
-           }
-           return is;
-       } else {
-           return fo.getInputStream();
-       }
-   }
 
     public static FileObject urlToFileObject(CharSequence url) {
         return CndFileSystemProvider.urlToFileObject(url);
