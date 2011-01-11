@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -98,6 +99,7 @@ import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -136,7 +138,7 @@ import org.openide.util.Exceptions;
  */
 public class RepositoryUpdaterTest extends NbTestCase {
 
-    private static final int TIME = 5000;
+    private static final int TIME = 5000000;
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
@@ -181,7 +183,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite(RepositoryUpdaterTest.class);
 //        TestSuite suite = new NbTestSuite ();
-//        suite.addTest(new RepositoryUpdaterTest("testMissedChanges"));
+//        suite.addTest(new RepositoryUpdaterTest("testPeerRootsCalculation"));
         return suite;
     }
 
@@ -712,30 +714,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false);
         assertFalse("The flw4 job should not have been absorbed", flw1.absorb(flw4));
     }
-
-    public void testIndexManagerRefreshIndexListensOnChanges() throws Exception {
-        final File _wd = this.getWorkDir();
-        final FileObject wd = FileUtil.toFileObject(_wd);
-        final FileObject refreshedRoot = wd.createFolder("refreshedRoot");
-        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
-        assertNotNull(refreshedRoot);
-        assertFalse (ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
-        IndexingManager.getDefault().refreshIndexAndWait(refreshedRoot.getURL(), Collections.<URL>emptyList());
-        assertSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        //Register the root => EMPTY_DEPS changes to regular deps
-        final TestHandler handler = new TestHandler();
-        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
-        logger.setLevel (Level.FINEST);
-        logger.addHandler(handler);
-        final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
-        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[]{cp});
-        handler.await();
-        assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        GlobalPathRegistry.getDefault().unregister(SOURCES, new ClassPath[]{cp});
-        assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
-    }
-
-
+    
     public void testScanStartScanFinishedCalled() throws Exception {
         indexerFactory.scanStartedFor.clear();
         indexerFactory.scanFinishedFor.clear();
@@ -1018,22 +997,54 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File root1 = new File(getWorkDir(), "root1");
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL>emptySet(),
+                false,
+                false,
+                null,
+                new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL>emptySet(),
+                true,
+                false,
+                null,
+                new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL>emptySet(),
+                true,
+                false,
+                null,
+                new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
-        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL>emptySet(),
+                false,
+                false,
+                null,
+                new RepositoryUpdater.FSRefreshInterceptor());
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
     }
@@ -1042,8 +1053,24 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File root1 = new File(getWorkDir(), "root1");
         File root2 = new File(getWorkDir(), "root2");
         {
-        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, Collections.singleton(root1), new RepositoryUpdater.FSRefreshInterceptor());
-        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL,List<URL>>emptyMap(), Collections.<URL>emptySet(), false, false, Collections.singleton(root2), new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw1 = new RepositoryUpdater.RefreshWork(
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL>emptySet(),
+                false,
+                false,
+                Collections.singleton(root1),
+                new RepositoryUpdater.FSRefreshInterceptor());
+        RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL,List<URL>>emptyMap(),
+                Collections.<URL, List<URL>>emptyMap(),
+                Collections.<URL>emptySet(),
+                false,
+                false,
+                Collections.singleton(root2),
+                new RepositoryUpdater.FSRefreshInterceptor());
         assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
         }
@@ -1224,10 +1251,126 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, indexerFactory.indexer.indexCounter);
         assertEquals(Collections.emptySet(), indexerFactory.indexer.expectedIndex);
     }
+    
+    public void testPeerRootsCalculation() throws Exception {
+        //Prepare
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        ClassPathProviderImpl.reset();
+        
+        //Register src path {srcRoot1, srcRootWithFiles1}
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
+        final MutableClassPathImplementation mcpi = new MutableClassPathImplementation ();
+        mcpi.addResource(this.srcRoot1);
+        mcpi.addResource(this.srcRootWithFiles1);
+        final ClassPath cp = ClassPathFactory.createClassPath(mcpi);
+        ClassPathProviderImpl.register(srcRoot1, SOURCES, cp);
+        ClassPathProviderImpl.register(srcRoot2, SOURCES, cp);
+        ClassPathProviderImpl.register(srcRootWithFiles1, SOURCES, cp);        
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp});
+        assertTrue (handler.await());
+        Map<URL,List<URL>> peersMap = IndexingController.getDefault().getRootPeers();
+        assertEquals(2, peersMap.size());
+        List<URL> peers = peersMap.get(srcRoot1.getURL());       
+        assertEquals(Collections.singletonList(srcRootWithFiles1.getURL()), peers);
+        peers = peersMap.get(srcRootWithFiles1.getURL());       
+        assertEquals(Collections.singletonList(srcRoot1.getURL()), peers);
+        
+        //Remove srcRootWithFiles1 from src path
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
+        mcpi.removeResource(this.srcRootWithFiles1);
+        assertTrue (handler.await());
+        peersMap = IndexingController.getDefault().getRootPeers();
+        assertEquals(1, peersMap.size());
+        peers = peersMap.get(srcRoot1.getURL());       
+        assertEquals(Collections.<URL>emptyList(), peers);        
+        
+        //Readd the srcRootWithFiles1 to src path
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
+        mcpi.addResource(this.srcRootWithFiles1);
+        assertTrue (handler.await());
+        peersMap = IndexingController.getDefault().getRootPeers();
+        assertEquals(2, peersMap.size());
+        peers = peersMap.get(srcRoot1.getURL());       
+        assertEquals(Collections.singletonList(srcRootWithFiles1.getURL()), peers);
+        peers = peersMap.get(srcRootWithFiles1.getURL());       
+        assertEquals(Collections.singletonList(srcRoot1.getURL()), peers);
+                
+        //Add srcRoot2 to src path
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
+        mcpi.addResource(this.srcRoot2);
+        assertTrue (handler.await());
+        peersMap = IndexingController.getDefault().getRootPeers();
+        assertEquals(3, peersMap.size());
+        List<URL> returnedPeers = new ArrayList<URL> (peersMap.get(srcRoot1.getURL()));
+        Collections.sort(returnedPeers, new URLComparator());
+        List<URL> expectedPeers = new ArrayList<URL> () {{add(srcRootWithFiles1.getURL()); add(srcRoot2.getURL());}};
+        Collections.sort(expectedPeers, new URLComparator());
+        assertEquals(expectedPeers, returnedPeers);        
+        returnedPeers = new ArrayList<URL> (peersMap.get(srcRoot2.getURL()));
+        Collections.sort(returnedPeers, new URLComparator());
+        expectedPeers = new ArrayList<URL> () {{add(srcRootWithFiles1.getURL()); add(srcRoot1.getURL());}};
+        Collections.sort(expectedPeers, new URLComparator());
+        assertEquals(expectedPeers, returnedPeers);        
+        returnedPeers = new ArrayList<URL> (peersMap.get(srcRootWithFiles1.getURL()));
+        Collections.sort(returnedPeers, new URLComparator());
+        expectedPeers = new ArrayList<URL> () {{add(srcRoot1.getURL()); add(srcRoot2.getURL());}};
+        Collections.sort(expectedPeers, new URLComparator());
+        assertEquals(expectedPeers, returnedPeers);
+        
+        //Remove srcRoot2 from src path
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
+        mcpi.removeResource(this.srcRoot2);
+        assertTrue (handler.await());
+        peersMap = IndexingController.getDefault().getRootPeers();
+        assertEquals(2, peersMap.size());
+        peers = peersMap.get(srcRoot1.getURL());       
+        assertEquals(Collections.singletonList(srcRootWithFiles1.getURL()), peers);
+        peers = peersMap.get(srcRootWithFiles1.getURL());       
+        assertEquals(Collections.singletonList(srcRoot1.getURL()), peers);
+        
+        //Remove srcRootWithFiles1
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
+        mcpi.removeResource(this.srcRootWithFiles1);
+        assertTrue (handler.await());
+        peersMap = IndexingController.getDefault().getRootPeers();
+        assertEquals(1, peersMap.size());
+        peers = peersMap.get(srcRoot1.getURL());       
+        assertEquals(Collections.<URL>emptyList(), peers);        
+               
+    }
+    
+    /**
+     * Does not unregister refreshedRoot -> may affect other test
+     * @throws Exception 
+     */
+    public void testIndexManagerRefreshIndexListensOnChanges() throws Exception {
+        final File _wd = this.getWorkDir();
+        final FileObject wd = FileUtil.toFileObject(_wd);
+        final FileObject refreshedRoot = wd.createFolder("refreshedRoot");
+        final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertNotNull(refreshedRoot);
+        assertFalse (ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
+        IndexingManager.getDefault().refreshIndexAndWait(refreshedRoot.getURL(), Collections.<URL>emptyList());
+        assertSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        //Register the root => EMPTY_DEPS changes to regular deps
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        final ClassPath cp = ClassPathSupport.createClassPath(refreshedRoot);
+        GlobalPathRegistry.getDefault().register(SOURCES, new ClassPath[]{cp});
+        handler.await();
+        assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        GlobalPathRegistry.getDefault().unregister(SOURCES, new ClassPath[]{cp});
+        assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
+    }
 
     public static class TestHandler extends Handler {
 
-        public static enum Type {BATCH, DELETE, FILELIST};
+        public static enum Type {BATCH, DELETE, FILELIST, ROOTS_WORK_FINISHED};
 
         private Type type;
         private CountDownLatch latch;
@@ -1295,6 +1438,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 }
             } else if (type == Type.FILELIST) {
                 if ("filelist".equals(msg)) {
+                    latch.countDown();
+                }
+            } else if (type == Type.ROOTS_WORK_FINISHED) {
+                if ("RootsWork-finished".equals(msg)) { //NOI18N
                     latch.countDown();
                 }
             }
@@ -2141,6 +2288,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
     public static final class ClassPathProviderImpl implements ClassPathProvider {
 
         private static final Map<Entry<FileObject, String>, ClassPath> classPathSpec = new HashMap<Entry<FileObject, String>, ClassPath>();
+        
+        public static void reset() {
+            classPathSpec.clear();
+        }
 
         public static void register(FileObject root, String type, ClassPath cp) {
             classPathSpec.put(new SimpleEntry<FileObject, String>(root, type), cp);
@@ -2164,5 +2315,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return null;
         }
 
+    }
+    
+    private static class URLComparator implements Comparator<URL> {
+
+        @Override
+        public int compare(URL o1, URL o2) {
+            return o1.toExternalForm().compareTo(o2.toExternalForm());
+        }
+        
     }
 }
