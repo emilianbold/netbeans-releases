@@ -115,7 +115,7 @@ public class LogCommand extends GitCommand {
                 } else if (revisionFrom != null) {
                     cmd.not(Utils.findCommit(repository, revisionFrom));
                 } else {
-                    BranchCommand branchCommand = new BranchCommand(repository, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    ListBranchCommand branchCommand = new ListBranchCommand(repository, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
                     branchCommand.execute();
                     for (Map.Entry<String, GitBranch> e : branchCommand.getBranches().entrySet()) {
                         cmd.add(Utils.findCommit(repository, e.getValue().getId()));

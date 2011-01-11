@@ -58,11 +58,11 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  *
  * @author ondra
  */
-public class BranchCommand extends GitCommand {
+public class ListBranchCommand extends GitCommand {
     private final boolean all;
     private HashMap<String, GitBranch> allBranches;
 
-    public BranchCommand (Repository repository, boolean all, ProgressMonitor monitor) {
+    public ListBranchCommand (Repository repository, boolean all, ProgressMonitor monitor) {
         super(repository, monitor);
         this.all = all;
     }
