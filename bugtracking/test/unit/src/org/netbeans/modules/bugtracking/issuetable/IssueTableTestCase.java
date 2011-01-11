@@ -69,14 +69,19 @@ public class IssueTableTestCase extends NbTestCase {
 
     public void testColumnsCount() throws Throwable {
         IssuetableTestFactory factory = IssuetableTestFactory.getInstance(this);
-        Query q = factory.createQuery();
+        final Query q = factory.createQuery();
         assertEquals(0,q.getIssues().length);
 
         final NodeTableModel model = getModel(q);       
         assertEquals(factory.getColumnsCountBeforeSave(), model.getColumnCount());
-        new QueryAccessor(q).setSaved(true);
-        IssuetableTestFactory.getInstance(this).getTable(q).initColumns();
         final int[] columnCount = new int[1];
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                new QueryAccessor(q).setSaved(true);
+                IssuetableTestFactory.getInstance(IssueTableTestCase.this).getTable(q).initColumns();                
+            }
+        });
         // awt things happening in .setSaved and .initColumns so wait until done
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
