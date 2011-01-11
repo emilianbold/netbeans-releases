@@ -1330,7 +1330,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         private ContentHandler contentHandler;
         private LexicalHandler lexicalHandler;
         private LinesMapper mapper;
-        private FikanyLocator locator;
+        private ColumnAdjustingLocator locator;
         private Locator originalLocator;
 
         public XercesInaccurateLocatorWorkaround(Object source, LinesMapper mapper) {
@@ -1340,9 +1340,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
 
         public void setDocumentLocator(Locator locator) {
-            contentHandler.setDocumentLocator(locator);
             this.originalLocator = locator;
-            this.locator = new FikanyLocator(locator);
+            this.locator = new ColumnAdjustingLocator(locator);
             contentHandler.setDocumentLocator(this.locator);
         }
 
@@ -1376,8 +1375,8 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             int column = originalLocator.getColumnNumber();
             int offset = mapper.getSourceOffsetForLocation(line - 1, column);
 
-            CharSequence text = mapper.getSourceText(0, offset);
-            int diff = findBackwardDiff(text, ch, start, length);
+            int diff = findBackwardDiff(mapper.getSourceText(), offset, ch, start, length);
+            
             locator.setColumnNumberDiff(-diff);
             contentHandler.characters(ch, start, length);
             locator.setColumnNumberDiff(0);
@@ -1423,12 +1422,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             lexicalHandler.comment(ch, start, length);
         }
 
-        private static class FikanyLocator implements Locator {
+        private static class ColumnAdjustingLocator implements Locator {
 
             private Locator delegate;
             private int diff;
 
-            public FikanyLocator(Locator delegate) {
+            public ColumnAdjustingLocator(Locator delegate) {
                 this.delegate = delegate;
             }
 
@@ -1454,11 +1453,13 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         }
     }
 
-    static int findBackwardDiff(CharSequence text, char[] pattern, int pstart, int plen) {
+    static int PATTERN_LEN_LIMIT = 10; //consider backward match PATTER_LEN_LIMIT long as OK
+
+    static int findBackwardDiff(CharSequence text, int tlen, char[] pattern, int pstart, int plen) {
         assert plen > 0;
         int pend = pstart + plen - 1;
+        int limitedpstart = plen - PATTERN_LEN_LIMIT > 0 ? pstart + (plen - PATTERN_LEN_LIMIT) : pstart;
         int pidx = pend;
-        int tlen = text.length();
         int point = tlen;
         boolean inp = false;
         for (int i = tlen - 1; i >= 0; i--) {
@@ -1473,7 +1474,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 point = i;
 
             } else {
-                if (pstart == pidx) {
+                if (limitedpstart == pidx) {
                     break; //match, reached start of prefix
                 }
                 if (pidx == 0) {

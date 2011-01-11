@@ -83,10 +83,10 @@ public class ValidationTransactionTest extends TestBase {
 
     }
 
-    public static Test Xsuite() {
+    public static Test suite() {
         ValidationTransaction.enableDebug();
 
-        String testName = "testXhtmlErrorsPositions";
+        String testName = "testFindBackwardDiff";
         System.err.println("Running only following test: " + testName);
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidationTransactionTest(testName));
@@ -284,43 +284,57 @@ public class ValidationTransactionTest extends TestBase {
 
         String suffix = "234!";
         String text = "\n1234" + suffix;
-        int diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        int diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        assertSame(suffix.length(), diff);
+
+        suffix = "234!";
+        text = "\n1234" + suffix;
+        int tlen = text.length();
+        text += "0000000000000";
+        diff = ValidationTransaction.findBackwardDiff(text, tlen, pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "4!";
         text = "\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "";
         text = "\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "!34";
         text = "\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         suffix = "";
         text = suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(suffix.length(), diff);
 
         //does not match, but is suffix, lets return 0 diff in this case
         suffix = "34";
         text = suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
         suffix = "\n1234";
         text = "abcdXXXXX\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
         suffix = "\n1234";
         text = "abcd\n1234" + suffix;
-        diff = ValidationTransaction.findBackwardDiff(text, pattern.toCharArray(), 3, 5);
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
+        assertSame(0, diff);
+
+        //try limited pattern length
+        suffix = "\nxx34";
+        text = "abcd" + suffix;
+        ValidationTransaction.PATTERN_LEN_LIMIT = 2;
+        diff = ValidationTransaction.findBackwardDiff(text, text.length(), pattern.toCharArray(), 3, 5);
         assertSame(0, diff);
 
     }
