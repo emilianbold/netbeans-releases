@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -342,10 +342,11 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv90</friend>
-                <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
                 <friend>org.netbeans.modules.j2ee.sun.avk</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
                 <package>org.netbeans.modules.j2ee.sun.share</package>
                 <package>org.netbeans.modules.j2ee.sun.share.configbean</package>
                 <package>org.netbeans.modules.j2ee.sun.share.plan</package>
