@@ -580,7 +580,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {                
         //get dependencies
         Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
-
+        Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();
         //create inverse dependencies
         final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
@@ -595,13 +595,14 @@ public class JavaCustomIndexer extends CustomIndexer {
                 l2.add (u1);
             }
         }
-        return findDependent(root, deps, inverseDeps, classes, includeFilesInError, true);
+        return findDependent(root, deps, inverseDeps, peers, classes, includeFilesInError, true);
     }
 
 
     public static Map<URL, Set<URL>> findDependent(final URL root,
             final Map<URL, List<URL>> sourceDeps,
             final Map<URL, List<URL>> inverseDeps,
+            final Map<URL, List<URL>> peers,
             final Collection<ElementHandle<TypeElement>> classes,
             boolean includeFilesInError,
             boolean includeCurrentSourceRoot) throws IOException {
@@ -647,8 +648,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         } else {
                             depRoots = new ArrayList<URL>();
                             depRoots.add(root);
-                            final List<? extends URL> srcRoots = getSrcRootPeers(root, rootPrj);
-                            depRoots.addAll(srcRoots);
+                            depRoots.addAll(getSrcRootPeers(peers, root));
                         }
                     } else {                        
                         if (rootPrj == null) {
@@ -667,8 +667,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             l.add(root);
                             depRoots = Utilities.topologicalSort(l, inverseDeps);                            
-                            final List<? extends URL> srcRoots = getSrcRootPeers(root, rootPrj);
-                            depRoots.addAll(srcRoots);
+                            depRoots.addAll(getSrcRootPeers(peers, root));
                         }
                     }
                     break;
@@ -681,8 +680,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         l.add(root);
                         depRoots = Utilities.topologicalSort(l, inverseDeps);
                     }
-                    final List<? extends URL> srcRoots = getSrcRootPeers(root, null);
-                    depRoots.addAll(srcRoots);
+                    depRoots.addAll(getSrcRootPeers(peers, root));
                     break;
             }
         } catch (TopologicalSortException ex) {
@@ -954,25 +952,16 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     };
     
-    private static List<? extends URL> getSrcRootPeers(final URL rootURL, final Project prj) {
-        final FileObject root = URLMapper.findFileObject(rootURL);
-        if (root == null) {
-            return Collections.<URL>emptyList();
+    private static List<? extends URL> getSrcRootPeers(final Map<URL,List<URL>> root2Peers, final URL rootURL) {        
+        List<URL> result = root2Peers.get(rootURL);
+        if (result == null) {
+            result = Collections.<URL>emptyList();
         }
-        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.SOURCE);
-        if (cp == null) {
-            return Collections.<URL>emptyList();
-        }
-        final List<? extends ClassPath.Entry> entries = cp.entries();
-        final List<URL> result = new ArrayList<URL>(entries.size());
-        for (ClassPath.Entry entry : entries) {
-            final FileObject cpRoot = entry.getRoot();
-            if (!root.equals(cpRoot) &&
-                    (prj == null || 
-                     (cpRoot != null && prj.equals(FileOwnerQuery.getOwner(cpRoot))))) {
-                result.add(entry.getURL());
-            }
-        }
+        JavaIndex.LOG.log(Level.FINE,"Peer source roots for root {0} -> {1}",
+            new Object[] {
+                rootURL,
+                result
+            });
         return result;
     }
 }
