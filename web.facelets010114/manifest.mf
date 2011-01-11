@@ -4,4 +4,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/web/facelets010114/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/facelets010114/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
 AutoUpdate-Show-In-Client: true
+OpenIDE-Module-Provides: org.netbeans.modules.web.project.framework
 
