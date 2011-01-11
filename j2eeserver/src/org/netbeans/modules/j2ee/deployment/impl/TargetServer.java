@@ -774,6 +774,11 @@ public class TargetServer {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
 
+        if (provider.isOnlyCompileOnSaveEnabled()) {
+            // XXXX is this right response? it should not result in any error
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+            
         if (!DeployOnSaveManager.isServerStateSupported(instance)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
@@ -785,6 +790,13 @@ public class TargetServer {
             Exceptions.printStackTrace(ex);
         }
 
+        // This may happen because of events coming in for server resources
+        // because of COS enabled all the time :( For web resources these
+        // events are not even fired.
+        if (dtarget.getTargetModules() == null) {
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+        
         TargetModule[] modules = getDeploymentDirectoryModules();
 
         try {
@@ -834,10 +846,7 @@ public class TargetServer {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
-            if (provider.isOnlyCompileOnSaveEnabled()) {
-                // XXXX is this right response? it should not result in any error
-                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
-            }
+
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");
@@ -882,21 +891,19 @@ public class TargetServer {
         }
 
         Set<TargetModule> ret = new HashSet<TargetModule>();
-        if (null != modules) {
-            for (TargetModule module : modules) {
-                // not my module
-                if (!module.getInstanceUrl().equals(serverInstance.getUrl())
-                        || ! targetNames.contains(module.getTargetName())) {
-                    continue;
-                }
+        for (TargetModule module : modules) {
+            // not my module
+            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
+                    || ! targetNames.contains(module.getTargetName())) {
+                continue;
+            }
 
-                TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
+            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
 
-                // no longer a deployed module on server
-                if (tmID != null) {
-                    module.initDelegate(tmID);
-                    ret.add(module);
-                }
+            // no longer a deployed module on server
+            if (tmID != null) {
+                module.initDelegate(tmID);
+                ret.add(module);
             }
         }
         return ret.toArray(new TargetModule[ret.size()]);
