@@ -395,12 +395,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (projectImpl == null) {
             return null;
         }
-        return projectImpl.getPreprocHandler(fileBuffer.getFile(), statePair);
+        return projectImpl.getPreprocHandler(fileBuffer.getAbsolutePath(), statePair);
     }
 
     public Collection<APTPreprocHandler> getPreprocHandlers() {
         final ProjectBase projectImpl = getProjectImpl(true);
-        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this.getFile());
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this.getAbsolutePath());
     }
 
     public Collection<PreprocessorStatePair> getPreprocStatePairs() {
@@ -957,8 +957,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (projectImpl == null) {
                 return file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
             }
-            APTPreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(getFile());
-            APTPreprocHandler restorePreprocHandlerFromIncludeStack = projectImpl.restorePreprocHandlerFromIncludeStack(reverseInclStack, getFile(), preprocHandler, thisFileStartState);
+            APTPreprocHandler preprocHandler = projectImpl.createEmptyPreprocHandler(getAbsolutePath());
+            APTPreprocHandler restorePreprocHandlerFromIncludeStack = projectImpl.restorePreprocHandlerFromIncludeStack(reverseInclStack, getAbsolutePath(), preprocHandler, thisFileStartState);
             // using restored preprocessor handler, ask included file for parsing token stream filtered by language          
             TokenStream includedFileTS = file.createParsingTokenStreamForHandler(restorePreprocHandlerFromIncludeStack, true, null, null);
             APTLanguageFilter languageFilter = file.getLanguageFilter(thisFileStartState);
