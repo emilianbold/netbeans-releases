@@ -139,7 +139,7 @@ public final class CreateElement implements ErrorRule<Void> {
         TreePath firstInitializer = null;
         TreePath methodInvocation = null;
         TreePath newClass = null;
-        TreePath baseTypeOf = null;
+        boolean baseType = false;
         boolean lookupMethodInvocation = true;
         boolean lookupNCT = true;
 
@@ -149,8 +149,8 @@ public final class CreateElement implements ErrorRule<Void> {
             Tree leaf = path.getLeaf();
             Kind leafKind = leaf.getKind();
 
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) && parent != null && (((ClassTree)leaf).getExtendsClause() == parent.getLeaf() || ((ClassTree)leaf).getImplementsClause().contains(parent.getLeaf())))
-                baseTypeOf = path;
+            if (!baseType && TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) && parent != null && (((ClassTree)leaf).getExtendsClause() == parent.getLeaf() || ((ClassTree)leaf).getImplementsClause().contains(parent.getLeaf())))
+                baseType = true;
             if (parent != null && parent.getLeaf() == errorPath.getLeaf())
                 parent = path;
             if (leaf == errorPath.getLeaf() && parent == null)
@@ -313,7 +313,7 @@ public final class CreateElement implements ErrorRule<Void> {
 		    List<Fix> currentResult = new LinkedList<Fix>();
 
 		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
-                    if (baseTypeOf != firstClass)
+                    if (!baseType || outermostTypeElement != source)
 		        currentResult.addAll(prepareCreateInnerClassFix(info, newClass, outermostTypeElement, EnumSet.of(outermostTypeElement != null && outermostTypeElement.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
 		    
                     return currentResult;
@@ -335,7 +335,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {
                 result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
-                if (baseTypeOf != firstClass)
+                if (!baseType || outermostTypeElement != source)
                     result.addAll(prepareCreateInnerClassFix(info, null, outermostTypeElement, EnumSet.of(outermostTypeElement != null && outermostTypeElement.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PRIVATE, Modifier.STATIC), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
