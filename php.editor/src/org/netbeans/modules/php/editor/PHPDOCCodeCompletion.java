@@ -51,6 +51,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -66,12 +68,16 @@ import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author tomslot
  */
 public class PHPDOCCodeCompletion {
+    
+    private static final Logger LOGGER = Logger.getLogger(PHPDOCCodeCompletion.class.getName());
+    
     private static final String TAG_PREFIX = "@";
     private static final String TAGS[] = new String[]{
         "abstract", "access", "author", "category", "copyright", "deprecated", "example", "final",
@@ -99,8 +105,10 @@ public class PHPDOCCodeCompletion {
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {
-                // nothing to do
+                LOGGER.log(Level.INFO, "Is not possible to obtain documentation for PHP Documentor.", e);
                 }
+        } else {
+            docURLBase = null;
         }
     }
     
@@ -167,26 +175,48 @@ public class PHPDOCCodeCompletion {
     }
 
     public static String getDoc(String tag) {
-        String resPath = String.format("%s%s.desc", docURLBase, tag); //NOI18N
-        
-        try{
-            URL url = new URL(resPath);
-            InputStream is = url.openStream();
-            byte buffer[] = new byte[1000];
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int count = 0;
-            do {
-                count = is.read(buffer);
-                if (count > 0) baos.write(buffer, 0, count);
-            } while (count > 0);
-            
-            is.close();
-            String text = baos.toString();
-            baos.close();
-            return text;
-        } catch (java.io.IOException e){
-            return null;
+        if (docURLBase != null) {
+            String resPath = String.format("%s%s.desc", docURLBase, tag); //NOI18N
+
+            try{
+                URL url = new URL(resPath);
+                InputStream is = url.openStream();
+                byte buffer[] = new byte[1000];
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int count = 0;
+                do {
+                    count = is.read(buffer);
+                    if (count > 0) baos.write(buffer, 0, count);
+                } while (count > 0);
+
+                is.close();
+                String text = baos.toString();
+                baos.close();
+                return text;
+            } catch (java.io.IOException e){
+                return null;
+            }
+        } else {
+            // Try to find the documentation file
+            File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
+            if (file != null) {
+                try {
+                    URL urll = file.toURL();
+                    urll = FileUtil.getArchiveRoot(urll);
+                    docURLBase = urll.toString();
+                } catch (java.net.MalformedURLException e) {
+                    LOGGER.log(Level.INFO, "Is not possible to obtain documentation for PHP Documentor.", e);
+                }
+            }
+            if (docURLBase != null) {
+                // the documentation file was found, probably installed during this session
+                return getDoc(tag);
+            } else {
+                // the documentation is not available. 
+                return NbBundle.getMessage(PHPDOCCodeCompletion.class, "MSG_DOWNLOAD_PHPDOC_DOCUMENTATION");
+            }
         }
+        
     }
 
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
