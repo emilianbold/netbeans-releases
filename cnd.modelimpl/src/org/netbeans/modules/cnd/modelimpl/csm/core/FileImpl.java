@@ -105,6 +105,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
 /**
@@ -1425,6 +1426,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileBuffer.getAbsolutePath();
     }
 
+    @Override
+    public FileObject getFileObject() {
+        return fileBuffer.getFileObject();
+    }
+        
     public File getFile() {
         return fileBuffer.getFile();
     }
