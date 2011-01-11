@@ -199,7 +199,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
             System.out.println(result);
             System.out.println(golden);
         }
-        assertEquals(result.toString(),golden);
+        assertEqualsText(result.toString(),golden);
     }
 
     private void testDynamicLibrary(String testName, String flavorName, int platform, String golden) {
@@ -265,7 +265,60 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (TRACE) {
             System.out.println(result);
         }
-        assertEquals(result.toString(),golden);
+        assertEqualsText(result.toString(),golden);
+    }
+
+    protected void assertEqualsText(String docText, String expectedText) {
+        if (!docText.equals(expectedText)) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("\n----- expected text: -----\n");
+            appendDebugText(sb, expectedText);
+            sb.append("\n----- document text: -----\n");
+            appendDebugText(sb, docText);
+            sb.append("\n-----\n");
+            int startLine = 1;
+            for (int i = 0; i < docText.length() && i < expectedText.length(); i++) {
+                if (expectedText.charAt(i) == '\n') {
+                    startLine++;
+                }
+                if (expectedText.charAt(i) != docText.charAt(i)) {
+                    sb.append("Diff starts in line ").append(startLine).append("\n");
+                    String context = expectedText.substring(i);
+                    if (context.length() > 40) {
+                        context = context.substring(0, 40);
+                    }
+                    sb.append("Expected:").append(context).append("\n");
+                    context = docText.substring(i);
+                    if (context.length() > 40) {
+                        context = context.substring(0, 40);
+                    }
+                    sb.append("   Found:").append(context).append("\n");
+                    break;
+                }
+            }
+            fail(sb.toString());
+        }
+    }
+
+    protected final void appendDebugChar(StringBuffer sb, char ch) {
+        switch (ch) {
+            case '\n':
+                sb.append("\\n\n");
+                break;
+            case '\t':
+                sb.append("\\t");
+                break;
+
+            default:
+                sb.append(ch);
+                break;
+        }
+    }
+
+    protected final void appendDebugText(StringBuffer sb, String text) {
+        for (int i = 0; i < text.length(); i++) {
+            appendDebugChar(sb, text.charAt(i));
+        }
     }
 
     @Test
