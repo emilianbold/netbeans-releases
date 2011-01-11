@@ -478,13 +478,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
-    private class BranchesTopChildren extends Children.Keys<BranchNodeType> {
+    private class BranchesTopChildren extends Children.Keys<BranchNodeType> implements PropertyChangeListener {
         private final File repository;
         private java.util.Map<String, GitBranch> branches = new TreeMap<String, GitBranch>();
         private BranchesNode local, remote;
 
         private BranchesTopChildren (File repository) {
             this.repository = repository;
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         }
 
         @Override
@@ -531,25 +533,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         GitClient client = getClient();
                         final java.util.Map<String, GitBranch> branches = client.getBranches(true, this);
                         if (!isCanceled()) {
-                            if (branches.isEmpty()) {
-                                BranchesTopChildren.this.branches.clear();
-                            } else {
-                                BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
-                                for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
-                                    GitBranch newBranchInfo = branches.get(e.getKey());
-                                    // refresh also branches that changed head or active state
-                                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() != e.getValue().isActive())) {
-                                        branches.remove(e.getKey());
-                                    }
-                                }
-                                BranchesTopChildren.this.branches.putAll(branches);
-                            }
-                            if (local != null) {
-                                local.refresh();
-                            }
-                            if (remote != null) {
-                                remote.refresh();
-                            }
+                            refreshBranches(branches);
                         }
                     } catch (GitException ex) {
                         LOG.log(Level.INFO, "refreshBranches()", ex); //NOI18N
@@ -557,7 +541,40 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingBranches")); //NOI18N
         }
+        
+        private void refreshBranches (java.util.Map<String, GitBranch> branches) {
+            if (branches.isEmpty()) {
+                BranchesTopChildren.this.branches.clear();
+            } else {
+                BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
+                for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
+                    GitBranch newBranchInfo = branches.get(e.getKey());
+                    // refresh also branches that changed head or active state
+                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() != e.getValue().isActive())) {
+                        branches.remove(e.getKey());
+                    }
+                }
+                BranchesTopChildren.this.branches.putAll(branches);
+            }
+            if (local != null) {
+                local.refresh();
+            }
+            if (remote != null) {
+                remote.refresh();
+            }
+        }
 
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            if (RepositoryInfo.PROPERTY_BRANCHES.equals(evt.getPropertyName())) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        refreshBranches((java.util.Map<String, GitBranch>) evt.getNewValue());
+                    }
+                });
+            }
+        }
     }
 
     private class BranchesNode extends RepositoryBrowserNode {

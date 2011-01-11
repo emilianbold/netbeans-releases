@@ -51,6 +51,7 @@ import java.io.File;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.git.utils.GitUtils;
 
 /**
  *
@@ -68,8 +69,12 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private final File[] roots;
 
     public RevisionDialogController (File repository, File[] roots) {
+        this(repository, roots, GitUtils.HEAD);
+    }
+    
+    public RevisionDialogController (File repository, File[] roots, String initialRevision) {
         infoPanelController = new RevisionInfoPanelController(repository);
-        panel = new RevisionDialog(infoPanelController.getPanel());
+        panel = new RevisionDialog(infoPanelController.getPanel(), initialRevision);
         this.repository = repository;
         this.roots = roots;
         this.support = new PropertyChangeSupport(this);

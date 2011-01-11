@@ -41,31 +41,26 @@
  */
 
 /*
- * RevisionPicker.java
+ * CreateBranchPanel.java
  *
- * Created on Oct 18, 2010, 3:57:00 PM
+ * Created on Oct 18, 2010, 3:28:45 PM
  */
 
-package org.netbeans.modules.git.ui.repository;
+package org.netbeans.modules.git.ui.branch;
 
-import org.netbeans.modules.git.utils.GitUtils;
+import javax.swing.JPanel;
+import org.netbeans.modules.git.ui.repository.RevisionDialog;
 
 /**
  *
  * @author ondra
  */
-public class RevisionDialog extends javax.swing.JPanel {
-    private final RevisionInfoPanel panel;
+public class CreateBranchPanel extends JPanel {
+    private final RevisionDialog revisionPanel;
 
-    /** Creates new form RevisionPicker */
-    public RevisionDialog (RevisionInfoPanel panel, String initialRevision) {
-        this.panel = panel;
-        initComponents();
-        revisionField.setText(initialRevision);
-    }
-
-    public RevisionDialog () {
-        this.panel = new RevisionInfoPanel();
+    /** Creates new form CreateBranchPanel */
+    public CreateBranchPanel (RevisionDialog revisionPanel) {
+        this.revisionPanel = revisionPanel;
         initComponents();
     }
 
@@ -78,13 +73,13 @@ public class RevisionDialog extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        org.netbeans.modules.git.ui.repository.RevisionDialog revisionPickerDialog1 = this.revisionPanel;
         jLabel1 = new javax.swing.JLabel();
-        org.netbeans.modules.git.ui.repository.RevisionInfoPanel revisionInfoPanel = panel;
 
-        jLabel1.setLabelFor(revisionField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(branchNameField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "CreateBranchPanel.jLabel1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnSelectRevision, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.btnSelectRevision.text")); // NOI18N
+        branchNameField.setText(org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "CreateBranchPanel.branchNameField.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -93,13 +88,11 @@ public class RevisionDialog extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(revisionInfoPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(revisionField, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnSelectRevision)))
+                        .addComponent(branchNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -108,19 +101,16 @@ public class RevisionDialog extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(revisionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSelectRevision))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(revisionInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                .addContainerGap())
+                    .addComponent(branchNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton btnSelectRevision = new javax.swing.JButton();
+    final javax.swing.JTextField branchNameField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
-    final javax.swing.JTextField revisionField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
 
 }
