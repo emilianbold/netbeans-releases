@@ -1554,6 +1554,9 @@ public class BaseKit extends DefaultEditorKit {
                                         } else { // already chars on the line
                                             insertTabString(doc, dotPos);
                                         }
+                                    } catch (GuardedException ge) {
+                                        LOG.log(Level.FINE, null, ge);
+                                        target.getToolkit().beep();
                                     } catch (BadLocationException e) {
                                         // use the same pos
                                         LOG.log(Level.WARNING, null, e);

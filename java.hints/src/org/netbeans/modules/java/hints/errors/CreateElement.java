@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import java.util.Collection;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -138,6 +139,7 @@ public final class CreateElement implements ErrorRule<Void> {
         TreePath firstInitializer = null;
         TreePath methodInvocation = null;
         TreePath newClass = null;
+        boolean baseType = false;
         boolean lookupMethodInvocation = true;
         boolean lookupNCT = true;
 
@@ -147,6 +149,8 @@ public final class CreateElement implements ErrorRule<Void> {
             Tree leaf = path.getLeaf();
             Kind leafKind = leaf.getKind();
 
+            if (!baseType && TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) && parent != null && (((ClassTree)leaf).getExtendsClause() == parent.getLeaf() || ((ClassTree)leaf).getImplementsClause().contains(parent.getLeaf())))
+                baseType = true;
             if (parent != null && parent.getLeaf() == errorPath.getLeaf())
                 parent = path;
             if (leaf == errorPath.getLeaf() && parent == null)
@@ -288,6 +292,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
         //XXX: should reasonably consider all the found type candidates, not only the one:
         final TypeMirror type = types != null && !types.isEmpty() && types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
+        TypeElement outermostTypeElement = info.getElementUtilities().outermostTypeElement(source);
 
         if (newClass != null) {
             NewClassTree nct = (NewClassTree) newClass.getLeaf();
@@ -308,7 +313,8 @@ public final class CreateElement implements ErrorRule<Void> {
 		    List<Fix> currentResult = new LinkedList<Fix>();
 
 		    currentResult.addAll(prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
-		    currentResult.addAll(prepareCreateInnerClassFix(info, newClass, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
+                    if (!baseType || outermostTypeElement != source)
+		        currentResult.addAll(prepareCreateInnerClassFix(info, newClass, outermostTypeElement, EnumSet.of(outermostTypeElement != null && outermostTypeElement.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PRIVATE, Modifier.STATIC), simpleName, nct.getArguments(), type, ElementKind.CLASS, numTypeArguments));
 		    
                     return currentResult;
                 }
@@ -329,7 +335,8 @@ public final class CreateElement implements ErrorRule<Void> {
                 result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {
                 result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
-                result.addAll(prepareCreateInnerClassFix(info, null, info.getElementUtilities().outermostTypeElement(source), EnumSet.of(Modifier.PRIVATE, Modifier.STATIC), simpleName, null, superType[0], classType, numTypeParameters[0]));
+                if (!baseType || outermostTypeElement != source)
+                    result.addAll(prepareCreateInnerClassFix(info, null, outermostTypeElement, EnumSet.of(outermostTypeElement != null && outermostTypeElement.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PRIVATE, Modifier.STATIC), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
 

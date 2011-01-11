@@ -59,8 +59,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -71,9 +73,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 
@@ -89,6 +93,8 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.TypeKindVisitor7;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 
@@ -324,7 +330,7 @@ public final class GeneratorUtilities {
                 parameterModifiers = make.Modifiers(1L << 34,
                         Collections.<AnnotationTree>emptyList());
             }
-            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
+            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), resolveWildcard(formArgType), null));
         }
 
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
@@ -634,6 +640,42 @@ public final class GeneratorUtilities {
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
         }
         return sb;
+    }
+
+    private Tree resolveWildcard(TypeMirror type) {
+        TreeMaker make = copy.getTreeMaker();
+        Tree result;
+
+        if (type != null && type.getKind() == TypeKind.WILDCARD) {
+            WildcardType wt = (WildcardType) type;
+            TypeMirror bound = wt.getSuperBound();
+
+            if (bound == null) {
+                bound = wt.getExtendsBound();
+            }
+
+            if (bound == null) {
+                return make.Type("java.lang.Object");
+            }
+
+            result = make.Type(bound);
+        } else {
+            result = make.Type(type);
+        }
+
+        final Map<Tree, Tree> translate = new IdentityHashMap<Tree, Tree>();
+        new TreeScanner<Void, Void>() {
+            @Override public Void visitWildcard(WildcardTree node, Void p) {
+                Tree bound = node.getBound();
+
+                if (bound != null && (bound.getKind() == Kind.EXTENDS_WILDCARD || bound.getKind() == Kind.SUPER_WILDCARD)) {
+                    translate.put(bound, ((WildcardTree) bound).getBound());
+                }
+                return super.visitWildcard(node, p);
+            }
+        }.scan(result, null);
+
+        return copy.getTreeUtilities().translate(result, translate);
     }
 
     private static class ClassMemberComparator {

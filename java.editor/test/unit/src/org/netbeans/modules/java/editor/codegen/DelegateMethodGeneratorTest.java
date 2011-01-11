@@ -122,6 +122,26 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
     }
 
     public void testGenerate129140() throws Exception {
+        performTestGenerateTest("ll", "toArray", 1);
+    }
+
+    public void testGenerate133625a() throws Exception {
+        performTestGenerateTest("lext", "add", 1);
+    }
+
+    public void testGenerate133625b() throws Exception {
+        performTestGenerateTest("lsup", "add", 1);
+    }
+
+    public void testGenerate133625c() throws Exception {
+        performTestGenerateTest("lsup", "addAll", 1);
+    }
+
+    public void testGenerate133625d() throws Exception {
+        performTestGenerateTest("lub", "add", 1);
+    }
+
+    private void performTestGenerateTest(String field, final String methodName, final int paramCount) throws Exception {
         prepareTest("MethodProposals");
 
         CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(source, Phase.RESOLVED);
@@ -129,7 +149,7 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
         VariableElement variable = null;
 
         for (VariableElement v : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
-            if ("ll".contentEquals(v.getSimpleName())) {
+            if (field.contentEquals(v.getSimpleName())) {
                 variable = v;
             }
         }
@@ -137,9 +157,9 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
         assertNotNull(variable);
 
         final VariableElement variableFinal = variable;
-        
+
         final TreePath ct = info.getTrees().getPath(clazz);
-        
+
         source.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
@@ -147,19 +167,19 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
                 TreePath tp = TreePathHandle.create(ct, wc).resolve(wc);
                 TypeElement type = (TypeElement) ((DeclaredType) var.asType()).asElement();
                 for (ExecutableElement ee : ElementFilter.methodsIn(type.getEnclosedElements())) {
-                    if ("toArray".equals(ee.getSimpleName().toString()) && !ee.getTypeParameters().isEmpty()) {
+                    if (methodName.equals(ee.getSimpleName().toString()) && ee.getParameters().size() == paramCount) {
                         DelegateMethodGenerator.generateDelegatingMethods(wc, tp, var, Collections.singletonList(ee), 0);
                     }
                 }
             }
         }).commit();
-        
+
         source.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController parameter) throws Exception {
                 getRef().print(parameter.getText());
             }
         }, true);
-        
+
         compareReferenceFiles();
     }
      

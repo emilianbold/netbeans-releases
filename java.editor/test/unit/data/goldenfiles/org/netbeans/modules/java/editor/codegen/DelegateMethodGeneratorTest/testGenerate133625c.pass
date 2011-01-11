@@ -1,8 +1,13 @@
 package test;
 
+import java.util.Collection;
 import java.util.List;
 
 public class MethodProposals {
+
+    public boolean addAll(Collection<? extends String> clctn) {
+        return lsup.addAll(clctn);
+    }
 
     private Auxiliary a;
     private List l;
