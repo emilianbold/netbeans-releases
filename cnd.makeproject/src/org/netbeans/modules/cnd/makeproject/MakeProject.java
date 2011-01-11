@@ -1037,21 +1037,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Configuration[] confs = projectDescriptor.getConfs().toArray();
-
-//            String projectLocation = null;
-//            int configurationType = 0;
-//            String configurationName = null;
-//            boolean active = false;
-//            String workingDirectory = null;
-//            String buildCommand = null;
-//            String cleanCommand = null;
-//            String output = null;
-
-//            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
+            if (projectDescriptor != null) {
+                Configuration[] confs = projectDescriptor.getConfs().toArray();
+                for (int i = 0; i < confs.length; i++) {
+                    MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                    artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
+                }
             }
             return artifacts.toArray(new MakeArtifact[artifacts.size()]);
         }
