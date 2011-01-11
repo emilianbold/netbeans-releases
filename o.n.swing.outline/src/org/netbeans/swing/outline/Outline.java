@@ -460,10 +460,10 @@ public class Outline extends ETable {
                     return 0;
                 }
                 if (obj1 == null) {
-                    return -1;
+                    return (ascending) ? -1 : 1;
                 }
                 if (obj2 == null) {
-                    return 1;
+                    return (ascending) ? 1 : -1;
                 }
                 // check nested comparator
                 if (getNestedComparator () != null) {
