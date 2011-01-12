@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -559,10 +560,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return storage;
     }
 
-    void ensureChildSync(RemotePlainFile child) throws
+    InputStream _getInputStream(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
-        if (child.cache.exists() && child.cache.length() > 0) {
+        if (child.cache.exists()) {
+            return new FileInputStream(child.cache);
+        }
+        checkConnection(child, true);
+        DirectoryStorage storage = getDirectoryStorage(true);
+        return new CachedRemoteInputStream(child, execEnv);
+    }
+
+    synchronized void ensureChildSync(RemotePlainFile child) throws
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        if (child.cache.exists()) {
             return;
         }
         checkConnection(child, true);
