@@ -596,7 +596,7 @@ public class BugzillaRepository extends Repository {
             Bugzilla.LOG.log(Level.WARNING, " wrong query refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_QUERY_REFRESH}); // NOI18N
             delay = BugzillaConfig.DEFAULT_QUERY_REFRESH;
         }
-        refreshQueryTask.schedule(10); // given in minutes
+        refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     public void scheduleForRefresh(String id) {

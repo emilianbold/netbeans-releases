@@ -117,9 +117,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     // -J-Dorg.netbeans.modules.editor.lib2.view.DocumentView.level=FINE
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
+    // -J-Dorg.netbeans.modules.editor.lib2.view.DebugRepaintManager.level=FINE
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
-
-    static final boolean REQUIRE_EDT = Boolean.getBoolean("org.netbeans.editor.linewrap.edt");
 
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
@@ -1261,9 +1260,6 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             if (!DocumentUtilities.isReadLocked(getDocument())) {
                 LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
             }
-        }
-        if (REQUIRE_EDT && !SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Not in Event Dispatch Thread"); // NOI18N
         }
     }
 

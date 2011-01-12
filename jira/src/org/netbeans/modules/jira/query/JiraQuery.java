@@ -98,7 +98,10 @@ public class JiraQuery extends Query {
         this.name = name;
         this.jiraFilter = jiraFilter;
         this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
-        if(initControler) createControler(repository, this, jiraFilter);
+        if(initControler) {
+            // enforce controller creation
+            getController();
+        }
         if(repository instanceof KenaiRepository) {
             boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
             if(autoRefresh) {

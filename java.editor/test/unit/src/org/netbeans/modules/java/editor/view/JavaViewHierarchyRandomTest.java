@@ -67,6 +67,8 @@ import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  *
@@ -595,4 +597,36 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         container.run(1286796912276L);
     }
     
+    public void testParralelMods() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        final Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/x-java");
+        final RandomTestContainer.Context context = container.context();
+        DocumentTesting.setSameThreadInvoke(context, true); // Do not post to EDT
+        // (Done automatically) Logger.getLogger("org.netbeans.editor.BaseDocument.EDT").setLevel(Level.OFF);
+//        ViewHierarchyRandomTesting.disableHighlighting(container);
+        int opCount = 100;
+        final int throughput = 5; // How many truly parallel invocations
+        RequestProcessor rp = new RequestProcessor("Doc-Mod", throughput, false, false);
+        Task task = null;
+        for (int i = opCount - 1; i >= 0; i--) {
+            task = rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    // make sure insert won't fail for multiple threads
+                    int offset = Math.max(doc.getLength() - throughput, 0);
+                    try {
+                        DocumentTesting.insert(context, offset, "ab");
+                        DocumentTesting.remove(context, offset, 1);
+                    } catch (Exception ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            });
+        }
+        task.waitFinished();
+    }
+
 }
