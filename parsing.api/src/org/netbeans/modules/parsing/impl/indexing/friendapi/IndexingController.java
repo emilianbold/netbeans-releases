@@ -66,6 +66,8 @@ public abstract class IndexingController {
     public abstract Map<URL, List<URL>> getRootDependencies();
 
     public abstract Map<URL, List<URL>> getBinaryRootDependencies();
+    
+    public abstract Map<URL, List<URL>> getRootPeers();
 
     public abstract int getFileLocksDelay();
     
