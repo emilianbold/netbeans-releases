@@ -44,7 +44,10 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -52,31 +55,34 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public final class ResolvedPath {
     private final CharSequence folder;
+    private final FileSystem fileSystem;
     private final CharSequence path;
-    private final CharSequence notNormalizedPath;
     private final boolean isDefaultSearchPath;
     private final int index;
     
-    public ResolvedPath(CharSequence folder, CharSequence path, CharSequence notNormalizedPath, boolean isDefaultSearchPath, int index) {
+    public ResolvedPath(FileSystem fileSystem, CharSequence folder, CharSequence path, boolean isDefaultSearchPath, int index) {
         this.folder = folder;// should be already shared
+        this.fileSystem = fileSystem;
         this.path = FilePathCache.getManager().getString(path);
-        this.notNormalizedPath = FilePathCache.getManager().getString(notNormalizedPath);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;
+        CndUtils.assertNormalized(fileSystem, folder);
+        CndUtils.assertNormalized(fileSystem, path);
     }
+
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    public FileObject getFileObject() {
+        return fileSystem.findResource(path.toString());
+    }
+    
     /**
      * Resolved file path (normalized version)
      */
     public CharSequence getPath(){
         return path;
-    }
-
-    /**
-     * Resolved file path (not normalized version)
-     * @return
-     */
-    public CharSequence getNotNormalizedPath() {
-        return notNormalizedPath;
     }
 
     /**
