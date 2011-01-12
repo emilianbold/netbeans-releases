@@ -1279,6 +1279,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (binaryLibraryIds == null) {
                         binaryLibraryIds = blids;
                     }
+                } else if (sourceIds == null) {
+                    sourceIds = Collections.emptySet();
                 }
             }
 

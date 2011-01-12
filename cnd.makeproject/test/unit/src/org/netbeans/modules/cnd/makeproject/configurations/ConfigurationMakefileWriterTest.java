@@ -159,6 +159,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         conf.getDevelopmentHost().setBuildPlatform(platform);
         
         // Check conf
+        System.err.println("Check conf"); // NOI18N
         assertNotNull(conf);
         LinkerConfiguration lc = conf.getLinkerConfiguration();
         assertNotNull(lc);

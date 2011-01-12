@@ -84,8 +84,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private static final RequestProcessor RP = 
             new RequestProcessor("Highlights-Coalescing", 1, false, false); // NOI18N
 
-    private static final boolean SYNC_HIGHLIGHTS = 
-            Boolean.getBoolean("org.netbeans.editor.sync.highlights"); //NOI18N
+//    private static final boolean SYNC_HIGHLIGHTS = 
+//            Boolean.getBoolean("org.netbeans.editor.sync.highlights"); //NOI18N
 
     private final HighlightsContainer highlightsContainer;
 
@@ -109,7 +109,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private final RequestProcessor.Task dirtyRegionTask = RP.create(new Runnable() {
         private boolean insideRender = false;
         public @Override void run() {
-            if (SwingUtilities.isEventDispatchThread()) {
+            if (true || SwingUtilities.isEventDispatchThread()) {
                 if (insideRender) {
                     int[] region = getAndClearDirtyRegion();
                     if (region != null) {
@@ -129,7 +129,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 }
             } else {
                 try {
-                    SwingUtilities.invokeAndWait(this);
+                    // Must be invoke-later since 
+                    SwingUtilities.invokeLater(this);
                 } catch (Exception ex) {
                     LOG.log(Level.WARNING, null, ex);
                 }
@@ -300,11 +301,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
             // Coalesce highglihts events by reposting to RP and then to EDT
             extendDirtyRegion(startOffset, endOffset);
-            if (SYNC_HIGHLIGHTS) {
-                dirtyRegionTask.run();
-            } else {
-                dirtyRegionTask.schedule(0);
-            }
+            dirtyRegionTask.schedule(0);
         }
     }
 

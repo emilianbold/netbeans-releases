@@ -648,7 +648,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                         } else {
                             depRoots = new ArrayList<URL>();
                             depRoots.add(root);
-                            depRoots.addAll(getSrcRootPeers(peers, root));
+                            int index = depRoots.indexOf(root);
+                            depRoots.addAll(index+1, getSrcRootPeers(peers, root));
                         }
                     } else {                        
                         if (rootPrj == null) {
@@ -667,7 +668,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                             l.add(root);
                             depRoots = Utilities.topologicalSort(l, inverseDeps);                            
-                            depRoots.addAll(getSrcRootPeers(peers, root));
+                            int index = depRoots.indexOf(root);
+                            depRoots.addAll(index+1, getSrcRootPeers(peers, root));
                         }
                     }
                     break;
@@ -680,7 +682,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                         l.add(root);
                         depRoots = Utilities.topologicalSort(l, inverseDeps);
                     }
-                    depRoots.addAll(getSrcRootPeers(peers, root));
+                    int index = depRoots.indexOf(root);
+                    depRoots.addAll(index+1, getSrcRootPeers(peers, root));
                     break;
             }
         } catch (TopologicalSortException ex) {

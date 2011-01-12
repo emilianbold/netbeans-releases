@@ -139,7 +139,8 @@ public final class ContextUtil {
                     fs = null;
                 }
             }
-            message += parent + " valid=" + parent.isValid() + " id=" + System.identityHashCode(parent) + " filesystem=" + fs + "\n";  //NOI18N
+            String valid = parent != null ? String.valueOf(parent.isValid()) : "null"; // NOI18N
+            message += parent + " valid=" + valid + " id=" + System.identityHashCode(parent) + " filesystem=" + fs + "\n";  //NOI18N
             throw new IllegalArgumentException(message);
             //throw new IllegalArgumentException("" + rootFolder + " / " + relativeObject); // NOI18N
         }
