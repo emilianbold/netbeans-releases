@@ -61,6 +61,7 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
 
     public RemotePkgConfigTestCase() {
         super("RemotePkgConfig");
+        OPTIMIZE_SIMPLE_PROJECTS = false;
     }
 
     @Override

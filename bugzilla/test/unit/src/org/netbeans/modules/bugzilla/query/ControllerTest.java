@@ -102,7 +102,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         String[] parametersGiven = parametersUrl.split("&");
         String params = c.getUrlParameters();
         assertTrue(params.startsWith("&"));
-        params = params.substring(1, params.length() - 1);
+        params = params.substring(1, params.length());
         String[] parametersReturned = params.split("&");
 //        assertEquals(parametersGiven.length, parametersReturned.length);
 
@@ -113,7 +113,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         for (int i = 1; i < parametersGiven.length; i++) { // skip the first elemenent - its = ""
             String p = parametersGiven[i];
             if(!s.contains(p)) {
-                fail("missing given parameter [" + p + "] between returned");
+                fail("missing given parameter [" + p + "] between returned at index " + i);
             }
         }
 

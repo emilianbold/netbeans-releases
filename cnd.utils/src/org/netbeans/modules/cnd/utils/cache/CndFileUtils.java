@@ -43,9 +43,7 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
@@ -69,6 +67,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -143,6 +142,38 @@ public final class CndFileUtils {
         return fo;
     }
 
+    public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
+        if (isLocalFileSystem(fs)) {
+//            FileObject fo = FileUtil.toFileObject(new File(absolutePath.toString()));
+//            if (fo == null) {
+//                try {
+//                    // sync if needed
+//                    FileObject fo2 = CndFileSystemProvider.toFileObject(absolutePath);
+//                    if (fo2 != null && !isLocalFileSystem(fo2.getFileSystem()) && fo2.isData()) {
+//                        try {
+//                            fo2.asBytes();
+//                        } catch (IOException ex) {
+////                            Exceptions.printStackTrace(ex);
+//                        }
+//                    }
+//                    absolutePath = CndFileSystemProvider.getCaseInsensitivePath(absolutePath);
+//                    File file = new File(absolutePath.toString());
+//                    FileUtil.refreshFor(file);
+//                    fo = FileUtil.toFileObject(file);
+//                    if (fo == null) {
+//                        fo = fo2;
+//                    }
+//                } catch (FileStateInvalidException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//            return fo;
+            return toFileObject(absolutePath);
+        } else {
+            return fs.findResource(absolutePath.toString());
+        }
+    }
+    
     public static FileObject toFileObject(CharSequence absoluteLocalPath) {
         return CndFileSystemProvider.toFileObject(absoluteLocalPath);
     }
@@ -261,38 +292,6 @@ public final class CndFileUtils {
         return flags.exist && flags.directory;
     }
 
-   /**
-    * Gets file input stream. File can be either a "classic" file,
-    * or other kind of file, say, remote one.
-    *
-    * NB: can be ver slow; e.g. can cause connection to the host in the case of the remote file
-    *
-    * NB: does nothing to buffer the file - it's up to caller
-    *
-    * @param filePath is either just a path to local file
-    * or a URL of remote or other kind of file
-    *
-    * @return input stream
-    *
-    * @throws java.io.IOException
-    */
-   public static InputStream getInputStream(CharSequence filePath) throws IOException {
-       FileObject fo = CndFileSystemProvider.toFileObject(filePath);
-       if (fo == null) {
-           File file = new File(filePath.toString());
-           fo = FileUtil.toFileObject(file);
-           InputStream is;
-           if (fo != null) {
-               is = fo.getInputStream();
-           } else {
-               is = new FileInputStream(file);
-           }
-           return is;
-       } else {
-           return fo.getInputStream();
-       }
-   }
-
     public static FileObject urlToFileObject(CharSequence url) {
         return CndFileSystemProvider.urlToFileObject(url);
     }
@@ -307,7 +306,7 @@ public final class CndFileUtils {
     private static Flags getFlags(FileSystem fs, String absolutePath, boolean indexParentFolder) {
         assert fs != null;
         assert absolutePath != null;
-        if (isWindows) {
+        if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
         }
         absolutePath = changeStringCaseIfNeeded(fs, absolutePath);
@@ -354,19 +353,19 @@ public final class CndFileUtils {
         return exists;
     }
 
-    private static boolean isLocalFS(FileSystem fs) {
+    public static boolean isLocalFileSystem(FileSystem fs) {
         return fs == getLocalFileSystem();
     }
     
     private static void index(FileSystem fs, String path, ConcurrentMap<String, Flags> files) {
-        if (isLocalFS(fs)) {
+        if (isLocalFileSystem(fs)) {
             File file = new File(path);
             if (CndFileSystemProvider.canRead(path)) {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
                 for (int i = 0; i < listFiles.length; i++) {
                     CndFileSystemProvider.FileInfo curFile = listFiles[i];
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
-                    if (isWindows) {
+                    if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
                     }
                     if (curFile.directory) {
@@ -395,7 +394,7 @@ public final class CndFileUtils {
     }
 
     private static String changeStringCaseIfNeeded(FileSystem fs, String path) {
-        if (isLocalFS(fs)) {
+        if (isLocalFileSystem(fs)) {
             if (CndFileUtils.isSystemCaseSensitive()) {
                 return path;
             } else {
@@ -458,6 +457,14 @@ public final class CndFileUtils {
         }
         return fileFileSystem;
     }
+    
+    public static char getFileSeparatorChar(FileSystem fs) {
+        if (isLocalFileSystem(fs)) {
+            return File.separatorChar;
+        } else {
+            return '/'; //NOI18N
+        }
+    }
 
     private static final Lock maRefLock = new ReentrantLock();
     private static FileSystem fileFileSystem;
@@ -481,7 +488,7 @@ public final class CndFileUtils {
         
         private static Flags get(FileSystem fs, String absPath) {
             FileObject fo;
-            if (isLocalFS(fs)) {
+            if (isLocalFileSystem(fs)) {
                 absPath = FileUtil.normalizePath(absPath);
                 fo = CndFileSystemProvider.toFileObject(absPath);                
             } else {

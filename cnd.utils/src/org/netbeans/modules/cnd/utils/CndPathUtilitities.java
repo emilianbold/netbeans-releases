@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -532,14 +533,14 @@ public class CndPathUtilitities {
         return s;
     }
 
-    public static boolean isPathAbsolute(String path) {
+    public static boolean isPathAbsolute(CharSequence path) {
         if (path == null || path.length() == 0) {
             return false;
         } else if (path.charAt(0) == '/') {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;
-        } else if (path.indexOf(':') == 1 && isWindows) {
+        } else if (CharSequenceUtils.indexOf(path, ':') == 1 && isWindows) {
             return true;
         } else {
             return false;
@@ -732,4 +733,3 @@ public class CndPathUtilitities {
         return string;
     }
 }
-

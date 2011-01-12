@@ -111,6 +111,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                 final BinaryAnalyser.Changes changes = ba.finish();
                                 final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
                                 final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
+                                final Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();
                                 final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
                                 changed.addAll(changes.changed);
                                 changed.addAll(changes.removed);
@@ -121,7 +122,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                         preBuildArgs(context.getRootURI());
                                     }
                                 }                                
-                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty(), false);
+                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, peers, changed, !changes.added.isEmpty(), false);
                                 for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
                                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                                 }
