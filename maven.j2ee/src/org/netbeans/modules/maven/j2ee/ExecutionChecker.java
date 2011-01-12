@@ -326,7 +326,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
 
-    private static class DLogger implements Deployment.Logger {
+    static class DLogger implements Deployment.Logger {
 
         private OutputWriter logger;
 
