@@ -90,6 +90,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener",  //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
+            "createBranch", //NOI18N - does not update index or files in WT
             "getBranches",  //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N
@@ -104,6 +105,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
             "checkout", //NOI18N
             "commit", //NOI18N
+            "createBranch", //NOI18N // should refresh set of known branches
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
