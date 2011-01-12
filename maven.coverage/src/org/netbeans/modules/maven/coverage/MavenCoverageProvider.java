@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.maven.coverage;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
@@ -67,7 +70,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -82,6 +84,8 @@ public final class MavenCoverageProvider implements CoverageProvider {
     private static final String ARTIFACT_COBERTURA = "cobertura-maven-plugin"; // NOI18N
     private static final String GROUP_SITE = "org.apache.maven.plugins"; // NOI18N
     private static final String ARTIFACT_SITE = "maven-site-plugin"; // NOI18N
+
+    private static final Logger LOG = Logger.getLogger(MavenCoverageProvider.class.getName());
 
     private final Project p;
 
@@ -159,23 +163,19 @@ public final class MavenCoverageProvider implements CoverageProvider {
         // XXX add plugin configuration here if not already present
     }
 
-    private @CheckForNull FileObject report() {
+    private File report() {
         // XXX read overridden location acc. to http://mojo.codehaus.org/cobertura-maven-plugin/cobertura-mojo.html#outputDirectory
-        return p.getProjectDirectory().getFileObject("target/site/cobertura/coverage.xml"); // NOI18N
+        return new File(FileUtil.toFile(p.getProjectDirectory()), "target/site/cobertura/coverage.xml"); // NOI18N
     }
 
     private @NullAllowed org.w3c.dom.Document report;
 
     public @Override synchronized void clear() {
-        FileObject r = report();
-        if (r != null) {
-            try {
-                r.delete();
-            } catch (IOException x) {
-                Exceptions.printStackTrace(x);
-            }
+        File r = report();
+        if (r.isFile() && r.delete()) {
+            report = null;
+            CoverageManager.INSTANCE.resultsUpdated(p, MavenCoverageProvider.this);
         }
-        report = null;
     }
 
     private FileChangeListener listener;
@@ -184,10 +184,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (report != null) {
             return report;
         }
-        FileObject r = report();
-        if (r == null) {
-            return null;
-        }
+        File r = report();
         CoverageManager.INSTANCE.setEnabled(p, true); // XXX otherwise it defaults to disabled?? not clear where to call this
         if (listener == null) {
             listener = new FileChangeAdapter() {
@@ -205,10 +202,17 @@ public final class MavenCoverageProvider implements CoverageProvider {
                     CoverageManager.INSTANCE.resultsUpdated(p, MavenCoverageProvider.this);
                 }
             };
-            FileUtil.addFileChangeListener(listener, FileUtil.toFile(r));
+            FileUtil.addFileChangeListener(listener, r);
+        }
+        if (!r.isFile()) {
+            return null;
+        }
+        if (r.length() == 0) {
+            // When not previously existent, seems to get created first and written later; file event picks it up when empty.
+            return null;
         }
         try {
-            return report = XMLUtil.parse(new InputSource(r.getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
+            return report = XMLUtil.parse(new InputSource(r.toURI().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
                 public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     if (systemId.equals("http://cobertura.sourceforge.net/xml/coverage-04.dtd")) {
                         return new InputSource(MavenCoverageProvider.class.getResourceAsStream("coverage-04.dtd")); // NOI18N
@@ -217,8 +221,8 @@ public final class MavenCoverageProvider implements CoverageProvider {
                     }
                 }
             });
-        } catch (Exception x) {
-            Exceptions.printStackTrace(x);
+        } catch (/*IO,SAX*/Exception x) {
+            LOG.log(Level.INFO, "Could not parse " + r, x);
             return null;
         }
     }
@@ -271,8 +275,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
                 return true;
             }
             public @Override long lastUpdated() {
-                FileObject r = report();
-                return r != null ? r.lastModified().getTime() : 0L;
+                return report().lastModified();
             }
             public @Override FileCoverageSummary getSummary() {
                 return summaryOf(fo, _name, lines);
