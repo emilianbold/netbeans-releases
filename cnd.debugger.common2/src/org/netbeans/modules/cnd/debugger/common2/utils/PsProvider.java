@@ -424,11 +424,12 @@ public abstract class PsProvider {
 	    if (Log.Ps.null_uid)
 		uid = null;
 
+            // Always show all processes on Windows (-W option), see IZ 193743
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
-		return getUtilityPath("ps");	// NOI18N
+		return getUtilityPath("ps") + " -W";	// NOI18N
 	    } else {
-		return getUtilityPath("ps") + " -u " + uid;	// NOI18N
+		return getUtilityPath("ps") + " -u " + uid + " -W";	// NOI18N
 	    }
 	}
         
@@ -683,13 +684,6 @@ public abstract class PsProvider {
 		return null;
 	    } 
 
-	    int exitCode = process.waitFor();
-	    if (exitCode != 0) {
-		String msg = "ps command failed with " + exitCode; // NOI18N
-		logger.log(Level.WARNING, msg);
-		return null;
-	    }
-
 	    int lineNo = 0;
 	    for (String line : ProcessUtils.readProcessOutput(process)) {
 		if (Log.Ps.debug) 
@@ -704,6 +698,13 @@ public abstract class PsProvider {
 			psData.addProcess(line);
                     }
 		}
+	    }
+            
+            int exitCode = process.waitFor();
+	    if (exitCode != 0) {
+		String msg = "ps command failed with " + exitCode; // NOI18N
+		logger.log(Level.WARNING, msg);
+		return null;
 	    }
 
 	} catch (Exception e) {
