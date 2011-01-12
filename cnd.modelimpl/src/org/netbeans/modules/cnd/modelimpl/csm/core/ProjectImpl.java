@@ -76,10 +76,6 @@ public final class ProjectImpl extends ProjectBase {
     // RepositoryUtils.put(this);
     }
 
-    public static ProjectImpl createInstance(ModelImpl model, String platformProject, String name) {
-        return createInstance(model, (Object) platformProject, name);
-    }
-
     public static ProjectImpl createInstance(ModelImpl model, NativeProject platformProject, String name) {
         return createInstance(model, (Object) platformProject, name);
     }
