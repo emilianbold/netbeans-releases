@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import javax.swing.text.Document;
-import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.List;
 import java.util.logging.Level;
@@ -106,23 +104,9 @@ public class HtmlGSFParser extends Parser {
 
     /** logger for timers/counters */
     private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
-    private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
-        boolean embedded = snapshot.getMimePath().size() > 1;
-
-        //override fallback dtd if set to document property
-        Document sourceDocument = snapshot.getSource().getDocument(false);
-        DTD fallbackDTD = sourceDocument != null ? (DTD)sourceDocument.getProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME) : null;
-        
         HtmlSource source = new HtmlSource(snapshot);
-
-        //disable html structure checks for embedded html code
-        if(embedded) {
-            //XXX FIX THIS!!!!
-//            context.setProperty(SyntaxAnalyzer.Behaviour.DISABLE_STRUCTURE_CHECKS.name(), Boolean.TRUE); //NOI18N
-        }
         SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze();
         
         HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(spresult);
