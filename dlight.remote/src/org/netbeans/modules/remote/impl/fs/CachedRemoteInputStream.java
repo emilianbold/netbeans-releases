@@ -72,7 +72,7 @@ final class CachedRemoteInputStream extends InputStream {
         int prefferedBufferSize = 8192;
         int defaultBufferSize = -1;
         try {
-            Field field = BufferedInputStream.class.getDeclaredField("defaultBufferSize");
+            Field field = BufferedInputStream.class.getDeclaredField("defaultBufferSize"); // NOI18N
             if (field != null) {
                 field.setAccessible(true);
                 defaultBufferSize = field.getInt(BufferedInputStream.class);
