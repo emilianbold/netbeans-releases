@@ -2688,7 +2688,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private void genericStoppedWithSrc(MIRecord record, MIRecord srcRecord) {
         final MITList srcResults = (srcRecord == null) ? null : srcRecord.results();
-	final MITList results = (record == null) ? null : record.results();
+	MITList results = (record == null) ? null : record.results();
+        // make results null if empty to avoid later checks, IZ194272
+        if (results != null && results.isEmpty()) {
+            results = null;
+        }
         final MIValue reasonValue = (results == null) ? null : results.valueOf("reason"); // NOI18N
         final String reason;
         if (reasonValue == null) {
@@ -2894,7 +2898,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
          */
 
         final MITList results = stopRecord.results();
-        final MIValue reasonValue = results.valueOf("reason"); //NOI18N
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
@@ -2909,6 +2912,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         //detect silent stop
         if (gdb.isSignalled()) {
+            final MIValue reasonValue = results.valueOf("reason"); //NOI18N
             if (reasonValue != null && "signal-received".equals(reasonValue.asConst().value())) { //NOI18N
                 MIValue signalValue = results.valueOf("signal-name"); //NOI18N
                 if (signalValue != null) {

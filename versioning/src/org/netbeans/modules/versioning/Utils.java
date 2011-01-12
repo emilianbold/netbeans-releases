@@ -78,7 +78,7 @@ public class Utils {
     /**
      * Request processor for long running tasks.
      */
-    private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
+    private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1, false, false);
 
     /**
      * Keeps the nb masterfilesystem

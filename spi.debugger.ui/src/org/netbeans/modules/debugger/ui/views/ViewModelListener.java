@@ -67,6 +67,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -576,7 +577,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                             }
                         }
                         GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(3, 3, 3, 3), 0, 0);
-                        buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
+                        javax.swing.JPanel pushUpPanel = new javax.swing.JPanel();
+                        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                            pushUpPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+                        }
+                        buttonsPane.add(pushUpPanel, c); // Push-panel
+                        //Exceptions.printStackTrace(new IllegalArgumentException("L&F = '"+UIManager.getLookAndFeel().getID()+"'"));
 
                         // [TODO]
                         //GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);

@@ -55,11 +55,10 @@ public class LinesMapper implements CharacterHandler {
     private final List<Line> lines = new ArrayList<Line>();
     private Line currentLine = null;
     private boolean prevWasCr = false;
-    private final int expectedLength = 2048;
     StringBuilder content = new StringBuilder();
 
-    public CharSequence getSourceText(int start, int length) {
-        return content.subSequence(start, length);
+    public CharSequence getSourceText() {
+        return content;
     }
 
     @Override

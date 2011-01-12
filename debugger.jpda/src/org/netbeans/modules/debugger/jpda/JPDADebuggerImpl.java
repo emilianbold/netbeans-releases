@@ -496,21 +496,26 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void fixBreakpoints() {
-        Session s = getSession();
-        DebuggerEngine de = s.getEngineForLanguage ("Java");
-        BreakpointsEngineListener bel = null;
-        List lazyListeners = de.lookup(null, LazyActionsManagerListener.class);
-        for (int li = 0; li < lazyListeners.size(); li++) {
-            Object service = lazyListeners.get(li);
-            if (service instanceof BreakpointsEngineListener) {
-                bel = (BreakpointsEngineListener) service;
-                break;
-            }
-        }
         // Just reset the time stamp so that new line numbers are taken.
         EditorContextBridge.getContext().disposeTimeStamp(this);
         EditorContextBridge.getContext().createTimeStamp(this);
-        if (bel != null) bel.fixBreakpointImpls ();
+        Session s = getSession();
+        DebuggerEngine de = s.getEngineForLanguage ("Java");
+        if (de == null) {
+            de = s.getCurrentEngine();
+        }
+        if (de != null) {
+            BreakpointsEngineListener bel = null;
+            List lazyListeners = de.lookup(null, LazyActionsManagerListener.class);
+            for (int li = 0; li < lazyListeners.size(); li++) {
+                Object service = lazyListeners.get(li);
+                if (service instanceof BreakpointsEngineListener) {
+                    bel = (BreakpointsEngineListener) service;
+                    break;
+                }
+            }
+            if (bel != null) bel.fixBreakpointImpls ();
+        }
     }
 
     public Session getSession() {

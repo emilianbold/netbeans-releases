@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
@@ -103,13 +104,22 @@ class RevisionInfoPanelController {
         panel.tbRevisionId.setText(MSG_LOADING);
     }
 
-    public void updateInfoFields (GitRevisionInfo info) {
+    public void updateInfoFields (String revision, GitRevisionInfo info) {
         assert EventQueue.isDispatchThread();
         panel.tbAuthor.setText(info.getAuthor().toString());
         if (!panel.tbAuthor.getText().isEmpty()) {
             panel.tbAuthor.setCaretPosition(0);
         }
-        panel.tbRevisionId.setText(info.getRevision());
+        if (revision.equals(info.getRevision())) {
+            panel.tbRevisionId.setText(info.getRevision());
+        } else {
+            if (revision.startsWith(GitUtils.PREFIX_R_HEADS)) { //NOI18N
+                revision = revision.substring(GitUtils.PREFIX_R_HEADS.length());
+            } else if (revision.startsWith(GitUtils.PREFIX_R_REMOTES)) { //NOI18N
+                revision = revision.substring(GitUtils.PREFIX_R_REMOTES.length());
+            }
+            panel.tbRevisionId.setText(new StringBuilder(revision).append(" (").append(info.getRevision()).append(')').toString()); //NOI18N
+        }
         if (!panel.tbRevisionId.getText().isEmpty()) {
             panel.tbRevisionId.setCaretPosition(0);
         }
@@ -147,7 +157,7 @@ class RevisionInfoPanelController {
 
         @Override
         public void run () {
-            String revision = currentCommit;
+            final String revision = currentCommit;
             GitRevisionInfo revisionInfo;
             try {
                 monitor = new ProgressMonitor.DefaultProgressMonitor();
@@ -172,7 +182,7 @@ class RevisionInfoPanelController {
                             if (info == null) {
                                 setUnknownRevision();
                             } else {
-                                updateInfoFields(info);
+                                updateInfoFields(revision, info);
                                 setValid(true);
                             }
                         }

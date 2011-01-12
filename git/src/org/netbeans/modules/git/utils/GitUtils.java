@@ -85,6 +85,8 @@ public final class GitUtils {
     public static final String HEAD = "HEAD"; //NOI18N
     public static final String INDEX = "INDEX"; //NOI18N
     public static final String CURRENT = "CURRENT"; //NOI18N
+    public static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
+    public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata

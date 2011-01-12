@@ -108,6 +108,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "clean",
                 "commit",
                 "copyAfter",
+                "createBranch",
                 "getBranches",
                 "getConflicts",
                 "getRepositoryState",
@@ -164,6 +165,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "clean",
                 "commit",
                 "copyAfter",
+                "createBranch",
                 "getBranches",
                 "getConflicts",
                 "getRepositoryState",
@@ -181,6 +183,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "addNotificationListener",
                 "catFile",
                 "catIndexEntry",
+                "createBranch",
                 "getBranches",
                 "getConflicts",
                 "getRepositoryState",
@@ -226,6 +229,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "clean",
                 "commit",
                 "copyAfter",
+                "createBranch",
                 "getBranches",
                 "getConflicts",
                 "getRepositoryState",
@@ -242,6 +246,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
                 "commit",
+                "createBranch",
                 "reset"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
@@ -326,6 +331,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "clean",
                 "commit",
                 "copyAfter",
+                "createBranch",
                 "getBranches",
                 "getConflicts",
                 "getRepositoryState",

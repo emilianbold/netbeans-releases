@@ -1070,6 +1070,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     @Override
     public CompilerSet getCompilerSet(String name) {
+        if (CndUtils.isUnitTestMode() || CndUtils.isDebugMode()) {
+            System.err.println("Looking for : " + name); // NOI18N
+            System.err.println("CompilerSets: "); // NOI18N
+            for (CompilerSet cs : sets) {
+                System.err.println(cs);
+            }
+        }
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name)) {
                 return cs;
