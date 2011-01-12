@@ -184,6 +184,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
             engineProc = npb.call();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
+            return 0;
         }
 
         // npb.call() may fail because of some Exception
@@ -215,7 +216,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
             return pid;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return 1;
+            return 0;
         }
     }
 
