@@ -186,6 +186,10 @@ public class ElementDescription {
         return ImageUtilities.image2Icon(ImageUtilities.mergeImages(icon, badge, 16, 0));
     }
 
+    public boolean isOverridden() {
+        return overriddenFlag;
+    }
+
     public String getDisplayName() {
         return displayName;
     }
