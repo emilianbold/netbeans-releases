@@ -88,6 +88,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -417,7 +418,8 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public static FileBuffer createFileBuffer(FileObject fo) {
-        if (fo != null && fo.isValid()) {
+        Parameters.notNull("null file object", fo); // NOI18N
+        if (fo.isValid()) {
             try {
                 DataObject dao = DataObject.find(fo);
                 if (dao.isModified()) {

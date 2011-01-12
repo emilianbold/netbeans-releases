@@ -1861,7 +1861,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             impl = getFile(absPath, treatSymlinkAsSeparateFile);
             if (impl == null) {
                 assert preprocHandler != null : "null preprocHandler for " + absPath;
-                FileObject fo = fileSystem.findResource(absPath.toString());
+                FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
+                CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
                 impl = new FileImpl(ModelSupport.createFileBuffer(fo), this, fileType, nativeFileItem);
                 if (nativeFileItem != null) {
                     putNativeFileItem(impl.getUID(), nativeFileItem);

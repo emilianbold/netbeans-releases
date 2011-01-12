@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -383,7 +384,7 @@ public abstract class APTWalker {
     }
     
     protected final FileObject getFileObject(CharSequence absPath) {
-        return this.getRootFile().getFileSystem().findResource(absPath.toString());
+        return CndFileUtils.toFileObject(this.getRootFile().getFileSystem(), absPath);
     }    
 
     // fields to be used when generating token stream

@@ -67,6 +67,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -141,6 +142,38 @@ public final class CndFileUtils {
         return fo;
     }
 
+    public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
+        if (isLocalFileSystem(fs)) {
+//            FileObject fo = FileUtil.toFileObject(new File(absolutePath.toString()));
+//            if (fo == null) {
+//                try {
+//                    // sync if needed
+//                    FileObject fo2 = CndFileSystemProvider.toFileObject(absolutePath);
+//                    if (fo2 != null && !isLocalFileSystem(fo2.getFileSystem()) && fo2.isData()) {
+//                        try {
+//                            fo2.asBytes();
+//                        } catch (IOException ex) {
+////                            Exceptions.printStackTrace(ex);
+//                        }
+//                    }
+//                    absolutePath = CndFileSystemProvider.getCaseInsensitivePath(absolutePath);
+//                    File file = new File(absolutePath.toString());
+//                    FileUtil.refreshFor(file);
+//                    fo = FileUtil.toFileObject(file);
+//                    if (fo == null) {
+//                        fo = fo2;
+//                    }
+//                } catch (FileStateInvalidException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//            return fo;
+            return toFileObject(absolutePath);
+        } else {
+            return fs.findResource(absolutePath.toString());
+        }
+    }
+    
     public static FileObject toFileObject(CharSequence absoluteLocalPath) {
         return CndFileSystemProvider.toFileObject(absoluteLocalPath);
     }
