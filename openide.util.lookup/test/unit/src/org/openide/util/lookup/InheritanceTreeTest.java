@@ -44,13 +44,6 @@
 package org.openide.util.lookup;
 
 import junit.framework.TestCase;
-import junit.framework.*;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup.ReferenceIterator;
-import org.openide.util.lookup.AbstractLookup.ReferenceToResult;
-import java.io.*;
-import java.lang.ref.WeakReference;
-import java.util.*;
 
 /**
  *
@@ -62,9 +55,11 @@ public class InheritanceTreeTest extends TestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
