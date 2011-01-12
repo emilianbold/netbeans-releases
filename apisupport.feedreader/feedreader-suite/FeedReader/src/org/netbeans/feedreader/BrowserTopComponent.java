@@ -49,7 +49,7 @@ import org.openide.windows.TopComponent;
 /**
  * A top component which can display a feed entry.
  */
-final class BrowserTopComponent extends TopComponent {
+public final class BrowserTopComponent extends TopComponent {
 
     /** The cache of opened browser components. */
     private static Map<String,BrowserTopComponent> browserComponents = new HashMap<String,BrowserTopComponent>();
