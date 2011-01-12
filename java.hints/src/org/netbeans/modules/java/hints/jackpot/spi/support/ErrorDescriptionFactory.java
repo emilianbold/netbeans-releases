@@ -247,7 +247,7 @@ public class ErrorDescriptionFactory {
             if (obj == null) {
                 return false;
             }
-            if (!(obj instanceof DisableConfigure)) {
+            if (this.getClass() != obj.getClass()) {
                 return false;
             }
             final DisableConfigure other = (DisableConfigure) obj;

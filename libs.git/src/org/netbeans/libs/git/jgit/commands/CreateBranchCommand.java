@@ -40,37 +40,68 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.repository;
+package org.netbeans.libs.git.jgit.commands;
+
+import java.io.IOException;
+import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.JGitBranch;
+import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public class Revision {
+public class CreateBranchCommand extends GitCommand {
     private final String revision;
-    private final String name;
+    private final String branchName;
+    private GitBranch branch;
 
-    public Revision (String revision, String name) {
+    public CreateBranchCommand (Repository repository, String branchName, String revision, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.branchName = branchName;
         this.revision = revision;
-        this.name = name;
-    }
-
-    public String getRevision () {
-        return revision;
-    }
-
-    public String getName () {
-        return name;
     }
 
     @Override
-    public String toString () {
-        StringBuilder sb = new StringBuilder();
-        if (name != null && !name.equals(revision)) {
-            sb.append(name).append(" (").append(revision).append(")"); //NOI18N
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        org.eclipse.jgit.api.CreateBranchCommand cmd = new Git(repository).branchCreate();
+        cmd.setName(branchName);
+        Ref ref;
+        if (revision.startsWith(Constants.R_HEADS) || revision.startsWith(Constants.R_REMOTES)) {
+            cmd.setUpstreamMode(SetupUpstreamMode.TRACK);
         } else {
-            sb.append(revision);
+            cmd.setStartPoint(Utils.findCommit(repository, revision));
         }
-        return sb.toString();
+        cmd.setStartPoint(revision);
+        try {
+            ref = cmd.call();
+        } catch (GitAPIException ex) {
+            throw new GitException(ex);
+        }
+        branch = getBranch(false, ref);
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        return new StringBuilder("git branch --track ").append(branchName).append(' ').append(revision).toString(); //NOI18N
+    }
+    
+    public GitBranch getBranch () {
+        return branch;
+    }
+    
+    private GitBranch getBranch (boolean isRemote, Ref ref) {
+        String refName = ref.getLeaf().getName();
+        String name = refName.substring(refName.indexOf('/', 5) + 1);
+        return new JGitBranch(name, isRemote, false, ref.getLeaf().getObjectId());
     }
 }
