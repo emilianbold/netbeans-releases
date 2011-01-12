@@ -1,7 +1,7 @@
 #!/bin/sh
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
 # Contributor(s):
 #
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
 # Microsystems, Inc. All Rights Reserved.
 #
 # If you wish your version of this file to be governed by only the CDDL
@@ -368,6 +368,15 @@ detect_gnome_proxy () {
                     http_proxy_tmp="DIRECT"
                 fi
                 return 0
+            else
+                if [ "$proxy_mode" = "auto" ] ; then
+                    detect_system_proxy
+                    pac_file=`$gconftool --get /system/proxy/autoconfig_url 2>/dev/null`
+                    if [ -z "$http_proxy_tmp" ]; then
+                        http_proxy_tmp="PAC "$pac_file
+                    fi
+                    return 0
+                fi
             fi
         fi
     fi
@@ -450,6 +459,7 @@ if [ -z "$http_proxy_tmp" ]; then
 fi
 
 if [ ! -z "$http_proxy_tmp" ] ; then
+        echo http_proxy_tmp: $http_proxy_tmp
 	jargs="-Dnetbeans.system_http_proxy=\"$http_proxy_tmp\" -Dnetbeans.system_http_non_proxy_hosts=\"$http_non_proxy_hosts\" $jargs"
 fi
 
