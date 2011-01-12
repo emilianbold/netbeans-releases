@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import java.io.File;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
@@ -74,7 +73,7 @@ public class APTIncludeUtils {
     public static ResolvedPath resolveFilePath(FileSystem fs, String inclString, CharSequence baseFile) {
         if (baseFile != null) {
             String folder = CndPathUtilitities.getDirName(baseFile.toString());
-            String absolutePath = folder + File.separatorChar + inclString; //NOI18N // File - sic!
+            String absolutePath = folder + CndFileUtils.getFileSeparatorChar(fs) + inclString;
             if (isExistingFile(fs, absolutePath)) {
                 return new ResolvedPath(FilePathCache.getManager().getString(folder), normalize(fs, absolutePath), absolutePath, true, 0);
             }
@@ -93,8 +92,9 @@ public class APTIncludeUtils {
     }    
     
     public static ResolvedPath resolveFilePath(FileSystem fs, Iterator<IncludeDirEntry> searchPaths, String includedFile, int dirOffset) {
-        if (Utilities.isWindows()){
-            includedFile = includedFile.replace('/', File.separatorChar); // File - sic!
+        char fileSeparatorChar = CndFileUtils.getFileSeparatorChar(fs);
+        if (Utilities.isWindows()){            
+            includedFile = includedFile.replace('/', fileSeparatorChar);
         }
         SupportAPIAccessor accessor = SupportAPIAccessor.get();
         while( searchPaths.hasNext() ) {
@@ -103,10 +103,10 @@ public class APTIncludeUtils {
                 String prefix = dirPrefix.getPath();
                 int len = prefix.length();
                 String absolutePath;
-                if (len > 0 && prefix.charAt(len - 1) == File.separatorChar) { // File - sic!
+                if (len > 0 && prefix.charAt(len - 1) == fileSeparatorChar) {
                     absolutePath = prefix + includedFile;
                 } else {
-                    absolutePath = CharSequenceUtils.toString(prefix, File.separatorChar, includedFile); // File - sic!
+                    absolutePath = CharSequenceUtils.toString(prefix, fileSeparatorChar, includedFile);
                 }
                 if (isExistingFile(fs, absolutePath)) {
                     return new ResolvedPath(dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), absolutePath, false, dirOffset);

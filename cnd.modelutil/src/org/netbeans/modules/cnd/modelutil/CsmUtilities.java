@@ -506,23 +506,25 @@ public class CsmUtilities {
     }
 
     public static FileObject getFileObject(CsmFile csmFile) {
-        FileObject fo = null;
-        if (csmFile != null) {
-            try {
-                try {                    
-                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
-                    if (fo == null /*paranoia*/ || !fo.isValid()) {
-                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
-                        fo = CndFileUtils.toFileObject(file.getCanonicalFile());
-                    }
-                } catch (IOException e) {
-                    fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(csmFile.getAbsolutePath().toString()));
-                }
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
-        return fo;
+        return (csmFile == null) ? null : csmFile.getFileObject();
+//        FileObject fo = null;
+//        if (csmFile != null) {
+//            
+//            try {
+//                try {                    
+//                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
+//                    if (fo == null /*paranoia*/ || !fo.isValid()) {
+//                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
+//                        fo = CndFileUtils.toFileObject(file.getCanonicalFile());
+//                    }
+//                } catch (IOException e) {
+//                    fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(csmFile.getAbsolutePath().toString()));
+//                }
+//            } catch (IllegalArgumentException ex) {
+//                ex.printStackTrace(System.err);
+//            }
+//        }
+//        return fo;
     }
 
     public static FileObject getFileObject(Document doc) {

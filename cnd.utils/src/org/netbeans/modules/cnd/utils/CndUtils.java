@@ -217,18 +217,6 @@ public class CndUtils {
         }
     }
     
-    public static void assertFileMode(File file) {
-        if (isDebugMode() && CndTraceFlags.USE_FILE_OBJECTS) {
-            assertTrueInConsole(false, "Should use file object instead of file " + file); // NOI18N
-        }
-    }    
-    
-    public static void assertFileObjectMode(FileObject fileObject) {
-        if (isDebugMode() && !CndTraceFlags.USE_FILE_OBJECTS) {
-            assertTrueInConsole(false, "Should use file instead of file object" + fileObject); // NOI18N
-        }
-    }    
-
     public static Logger getLogger() {
         return LOG;
     }

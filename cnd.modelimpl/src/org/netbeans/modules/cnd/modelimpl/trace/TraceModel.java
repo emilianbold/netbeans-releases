@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -951,7 +952,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
-        FileBuffer buffer = new FileBufferFile(item.getAbsolutePath());
+        FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT Parser"); // NOI18N
         File file = buffer.getFile();
         long time = System.currentTimeMillis();
@@ -972,7 +973,7 @@ public class TraceModel extends TraceModelBase {
 
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         File file = item.getFile();
-        FileBuffer buffer = new FileBufferFile(file.getAbsolutePath());
+        FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT: " + file.getName()); // NOI18N
         long minLexer = Long.MAX_VALUE;
         long maxLexer = Long.MIN_VALUE;

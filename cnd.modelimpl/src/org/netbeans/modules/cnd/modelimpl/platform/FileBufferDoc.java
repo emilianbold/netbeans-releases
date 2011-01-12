@@ -86,13 +86,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
     private long changedSegmentTaken;
     private volatile boolean preprocessorBlockChanged = false;
     
-    public FileBufferDoc(CharSequence absPath, Document doc) {
-        super(absPath);
-        this.doc = doc;
-        changedSegment = new ChangedSegment(doc);
-        resetLastModified();
-    }
-
     public FileBufferDoc(FileObject fileObject, Document doc) {
         super(fileObject);
         this.doc = doc;
