@@ -106,7 +106,6 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-bash ${SCRIPT_DIR}/pack-base.sh
 cd $NB_ALL
 
 #Build JNLP
