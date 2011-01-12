@@ -253,6 +253,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // don't report, this just means that we aren't connected
             RemoteLogger.finest(ex);
             return null;
+        } catch (FileNotFoundException ex) {
+            RemoteLogger.finest(ex);
+            return null;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             //RemoteLogger.finest(ex);
