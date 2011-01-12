@@ -56,6 +56,8 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -329,9 +331,13 @@ public class PackageViewTest extends NbTestCase {
                      
         // Rename rootfolder 
         FileObject e = root.getFileObject( "src/e/" );
+        final Collection<? extends String> hContentBeforeRename = toFileNameExt(root.getFileObject("src/e/r/h").getChildren());
         lock = e.lock();
         e.rename( lock, "t", null );
         lock.releaseLock();
+        final Collection<? extends String> hContentAfterRename = toFileNameExt(root.getFileObject("src/t/r/h").getChildren());
+        //Filesystems rename issue
+        assertEquals(hContentBeforeRename,hContentAfterRename);
         assertNodes( ch, 
                      new String[] { "a.b.c", "t.r.g", "t.r.h", "t.r.i" },
                      new int[] { 0, 0, 1, 0 } );                
@@ -940,6 +946,15 @@ public class PackageViewTest extends NbTestCase {
             public void run() {
             }
         } );
+    }
+    
+    private static Collection<? extends String> toFileNameExt(final FileObject... files) {
+        final List<String> names = new ArrayList<String>(files.length);
+        for (FileObject fo : files) {
+            names.add(fo.getNameExt());
+        }
+        Collections.sort(names);
+        return names;
     }
     
     private static class SimpleSourceGroup implements SourceGroup {
