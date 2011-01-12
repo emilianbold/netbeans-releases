@@ -52,6 +52,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.util.ImageUtilities;
@@ -100,8 +101,8 @@ public class VariablesViewButtons {
         // ensure small size, just for the icon
         Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         button.setPreferredSize(size);
-        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
         button.setMargin(new Insets(1, 1, 1, 1));
+        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
         button.setToolTipText(tooltip);
         button.setFocusable(false);
         return button;
@@ -114,8 +115,11 @@ public class VariablesViewButtons {
         // ensure small size, just for the icon
         Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
         toggleButton.setPreferredSize(size);
-        toggleButton.setBorder(new EmptyBorder(toggleButton.getBorder().getBorderInsets(toggleButton)));
         toggleButton.setMargin(new Insets(1, 1, 1, 1));
+        if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            // We do not want an ugly border with the exception of Mac, where it paints the toggle state!
+            toggleButton.setBorder(new EmptyBorder(toggleButton.getBorder().getBorderInsets(toggleButton)));
+        }
         toggleButton.setToolTipText(tooltip);
         toggleButton.setFocusable(false);
         return toggleButton;
