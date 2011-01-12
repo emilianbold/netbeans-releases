@@ -84,17 +84,18 @@ public class CreateBranchAction extends SingleRepositoryAction {
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        LOG.log(Level.FINE, "Creating a branch: {0}", createBranch.getRevision()); //NOI18N
+                        String revision = createBranch.getRevision();
+                        LOG.log(Level.FINE, "Creating a branch: {0}", revision); //NOI18N
                         GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), this);
-                        log(branch);
+                        log(revision, branch);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     }
                 }
 
-                private void log (GitBranch branch) {
+                private void log (String revision, GitBranch branch) {
                     OutputLogger logger = getLogger();
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranchAction.branchCreated", new Object[] { branch.getName(), branch.getId() })); //NOI18N
+                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranchAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
                 }
             };
             supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction.progressName")); //NOI18N

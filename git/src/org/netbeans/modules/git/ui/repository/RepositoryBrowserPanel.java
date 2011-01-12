@@ -200,8 +200,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 currRevision = selectedNode.getLookup().lookup(Revision.class);
                 currRepository = lookupRepository(selectedNode);
             }
-            if ((currRevision != null || oldRevision != null) 
-                    && !(currRevision != null && oldRevision != null && currRevision.getRevision().equals(oldRevision.getRevision()))) {
+            if ((currRevision != null || oldRevision != null) && !(currRevision != null && oldRevision != null 
+                    && currRevision.getName().equals(oldRevision.getName()) && currRevision.getRevision().equals(oldRevision.getRevision()))) {
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
             if (options.contains(Option.DISPLAY_REVISIONS) && currRevision != null) {
@@ -264,7 +264,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             } else if (selectedRevision != null) {
                 currRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision());
-                if (oldRevision == null || !currRevision.getRevision().equals(oldRevision.getRevision())) {
+                if (oldRevision == null || !currRevision.getName().equals(oldRevision.getName())
+                        || !currRevision.getRevision().equals(oldRevision.getRevision())) {
                     firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
                 }
             }
