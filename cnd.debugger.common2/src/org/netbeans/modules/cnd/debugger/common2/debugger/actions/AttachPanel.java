@@ -847,40 +847,9 @@ public final class AttachPanel extends TopComponent {
     }
 
     private void requestProcesses(final Pattern re, final String hostname, final boolean getAll) {
-        final Host selectedHost = getHost(hostname);
-
-	/* use RP instead of Thread
-        Thread t = new Thread() {
-
-            @Override
-            public void run() {
-                finishFilter(selectedHost, fpsProvider, re, getAll);
-            }
-        };
-        t.start();
-	*/
-
-        getDataAsyc(selectedHost, getAll, new Runnable() {
-            public void run() {
-                filterProcesses(re);
-            }
-        });
-    }
-
-    private static class AttachTableModel extends DefaultTableModel {
-        @Override
-        public boolean isCellEditable(int row, int col) {
-            return false;
-        }
-    }
-
-    private final static RequestProcessor getPcRP =  
-				new RequestProcessor("processes"); // throughput 1 // NOI18N
-
-    private void getDataAsyc(final Host selectedHost,
-            final boolean getAll, final Runnable continuation) {
-	Runnable asycData = new Runnable() {
+        Runnable asycData = new Runnable() {
 	    public void run() {
+                final Host selectedHost = getHost(hostname);
                 PsProvider psProvider = PsProvider.getDefault(selectedHost);
                 if (psProvider == null) {
                     // "clear" the table
@@ -895,7 +864,11 @@ public final class AttachPanel extends TopComponent {
 			psProvider.getData(getAll); // may take a while
 		setPsData(data);
 		try {
-		    javax.swing.SwingUtilities.invokeAndWait(continuation);
+		    javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            filterProcesses(re);
+                        }
+                    });
 		} catch (Exception x) {
 		    x.printStackTrace();
 		}
@@ -904,6 +877,16 @@ public final class AttachPanel extends TopComponent {
 
 	RequestProcessor.Task task = getPcRP.post(asycData);
     }
+
+    private static class AttachTableModel extends DefaultTableModel {
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return false;
+        }
+    }
+
+    private final static RequestProcessor getPcRP =  
+				new RequestProcessor("processes"); // throughput 1 // NOI18N
 
     private PsProvider.PsData psData = null;
 
