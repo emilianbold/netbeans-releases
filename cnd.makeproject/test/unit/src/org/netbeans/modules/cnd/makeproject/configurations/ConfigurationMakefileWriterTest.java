@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -156,7 +157,14 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
-
+        
+        // Check conf
+        assertNotNull(conf);
+        LinkerConfiguration lc = conf.getLinkerConfiguration();
+        assertNotNull(lc);
+        CompilerSet cs = lc.getMakeConfiguration().getCompilerSet().getCompilerSet();
+        assertNotNull(cs);
+        
         // Setup streams
         PipedOutputStream pipedOutputStream = new PipedOutputStream();
         PipedInputStream pipedInputStream = new PipedInputStream();
