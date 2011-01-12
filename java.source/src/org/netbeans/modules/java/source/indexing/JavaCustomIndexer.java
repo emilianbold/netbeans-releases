@@ -698,16 +698,22 @@ public class JavaCustomIndexer extends CustomIndexer {
         for (URL depRoot : depRoots) {            
             if (!ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).isEmpty()) {
                 final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
-
-                final List<URL> dep = sourceDeps != null ? sourceDeps.get(depRoot) : null;
-                if (dep != null) {
-                    for (URL url : dep) {
-                        final Set<ElementHandle<TypeElement>> b = bases.get(url);
-                        if (b != null)
-                            queue.addAll(b);
-                    }
+                final Collection<Map<URL,List<URL>>> depMaps = new ArrayList<Map<URL,List<URL>>>(2);
+                if (sourceDeps != null) {
+                    depMaps.add(sourceDeps);
                 }
-
+                depMaps.add(peers);
+                for (Map<URL,List<URL>> depMap : depMaps) {
+                    final List<URL> dep =  depMap.get(depRoot);
+                    if (dep != null) {
+                        for (URL url : dep) {
+                            final Set<ElementHandle<TypeElement>> b = bases.get(url);
+                            if (b != null)
+                                queue.addAll(b);
+                        }
+                    }                    
+                }
+                
                 final Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
                 while (!queue.isEmpty()) {
                     final ElementHandle<TypeElement> e = queue.poll();
