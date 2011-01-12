@@ -115,7 +115,10 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
         }
 
         if (embeddings.isEmpty()) {
-            return Collections.emptyList();
+            //always embed html even if there isn't any
+            //this causes the parsing api to run tasks registered to text/html
+            //even if there isn't any html content
+            return Collections.singletonList(snapshot.create("", "text/html"));
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
         }
