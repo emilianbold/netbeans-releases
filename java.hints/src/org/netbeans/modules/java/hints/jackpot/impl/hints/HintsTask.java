@@ -66,6 +66,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -92,6 +93,10 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     
     public void run(CompilationInfo info) {
         cancel.set(false);
+
+        if (org.netbeans.modules.editor.java.Utilities.disableErrors(info.getFileObject()).contains(Severity.VERIFIER)) {
+            return;
+        }
 
         Document doc = info.getSnapshot().getSource().getDocument(false);
         long version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;

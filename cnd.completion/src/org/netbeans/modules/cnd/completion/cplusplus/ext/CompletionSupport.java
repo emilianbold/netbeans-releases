@@ -248,15 +248,15 @@ public final class CompletionSupport implements DocumentListener {
     }
 
     /** Get the class that belongs to the given position */
-    public CsmClass getClass(int docPos) {
+    public CsmClass getClass(CsmFile file, int docPos) {
         int pos = doc2context(docPos);
-        return CompletionUtilities.findClassOnPosition(getDocument(), pos);
+        return CompletionUtilities.findClassOnPosition(file, getDocument(), pos);
     }
 
     /** Get the class or function definition that belongs to the given position */
-    public CsmOffsetableDeclaration getDefinition(int docPos, FileReferencesContext fileContext) {
+    public CsmOffsetableDeclaration getDefinition(CsmFile file, int docPos, FileReferencesContext fileContext) {
         int pos = doc2context(docPos);
-        return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos, fileContext);
+        return CompletionUtilities.findFunDefinitionOrClassOnPosition(file, getDocument(), pos, fileContext);
     }
 
     public boolean isStaticBlock(int docPos) {

@@ -129,7 +129,7 @@ final class WrapInfoUpdater {
         TextLayout lineContinuationTextLayout = documentView.getLineContinuationCharTextLayout();
         // Make reasonable minimum width so that the number of visual lines does not double suddenly
         // when user would minimize the width too much. Also have enough space for line continuation mark
-        availableWidth = Math.max(visibleWidth - lineContinuationTextLayout.getAdvance(),
+        availableWidth = Math.max(visibleWidth - TextLayoutUtils.getWidth(lineContinuationTextLayout),
                 documentView.getDefaultCharWidth() * 4);
         logMsgBuilder = LOG.isLoggable(Level.FINE) ? new StringBuilder(100) : null;
         if (logMsgBuilder != null) {

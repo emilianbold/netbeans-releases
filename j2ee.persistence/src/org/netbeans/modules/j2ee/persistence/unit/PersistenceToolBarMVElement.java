@@ -200,13 +200,17 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                         break;
                     }
                 }
-                SectionPanel sp = nsp!=null && nsp instanceof SectionPanel ? ((SectionPanel)nsp) : null;
-                PersistenceUnitPanel up = (PersistenceUnitPanel) (sp.getInnerPanel() != null && sp.getInnerPanel() instanceof PersistenceUnitPanel ? sp.getInnerPanel() : null);
-                if(up != null) {
-                    up.initEntityList();
-                }
-                else {
-                    needInit = true;//at least mark as required to be refreshed
+                if(nsp == null){
+                    needInit = true;
+                } else {
+                    SectionPanel sp = nsp!=null && nsp instanceof SectionPanel ? ((SectionPanel)nsp) : null;
+                    PersistenceUnitPanel up = (PersistenceUnitPanel) (sp.getInnerPanel() != null && sp.getInnerPanel() instanceof PersistenceUnitPanel ? sp.getInnerPanel() : null);
+                    if(up != null) {
+                        up.initEntityList();
+                    }
+                    else {
+                        needInit = true;//at least mark as required to be refreshed
+                    }
                 }
             } else {
                 needInit = true;//at least mark as required to be refreshed

@@ -354,7 +354,12 @@ public final class DeployOnSaveManager {
                 if (entry.getValue().isEmpty()) {
                     continue;
                 }
-                notifyServer(entry.getKey(), entry.getValue());
+                try {
+                    notifyServer(entry.getKey(), entry.getValue());
+                } catch (Throwable t) {
+                    // do not throw away any exception:
+                    LOGGER.log(Level.SEVERE, null, t);
+                }
             }
         }
 
@@ -367,6 +372,17 @@ public final class DeployOnSaveManager {
                 builder.setLength(builder.length() - 1);
                 builder.append("]");
                 LOGGER.log(Level.FINEST, builder.toString());
+            }
+
+            String instanceID = provider.getServerInstanceID ();
+            ServerInstance inst = ServerRegistry.getInstance ().getServerInstance (instanceID);
+            if (inst == null && "DEV-NULL".equals(instanceID)) { // NOI18N
+                LOGGER.log(Level.INFO, "No server set for Maven project - Deploy on Save will not be performed"); // NOI18N
+                return;
+            } else if (null == inst) {
+                // the server is not in the registry... so we should not try to deploy
+                LOGGER.log(Level.INFO, "Project''s server {0} is not registered - Deploy on Save will not be performed", instanceID); // NOI18N
+                return;
             }
 
             DeploymentState lastState;

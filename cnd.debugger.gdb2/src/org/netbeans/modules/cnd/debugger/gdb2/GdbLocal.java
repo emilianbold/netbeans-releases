@@ -69,7 +69,7 @@ public final class GdbLocal {
 	    value = valuev.asConst().value();
 	    isLeaf = true;
 	} else {
-	    value = "{...}"; // NOI18N
+	    value = GdbDebuggerImpl.STRUCT_VALUE;
 	    isLeaf = false;
         }
     }

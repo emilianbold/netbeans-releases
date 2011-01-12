@@ -49,7 +49,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.remote.test.RemoteApiBaseTestSuite;
+import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
  *
@@ -90,6 +90,6 @@ public class RemoteFileChooserBuilderTestCase extends NativeExecutionBaseTestCas
 
     @SuppressWarnings("unchecked")
     public static Test suite() {
-        return new RemoteApiBaseTestSuite(RemoteFileChooserBuilderTestCase.class);
+        return RemoteApiTest.createSuite(RemoteFileChooserBuilderTestCase.class);
     }
 }

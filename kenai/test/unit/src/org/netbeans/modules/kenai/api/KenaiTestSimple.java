@@ -48,14 +48,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.kenai.utils.ServicesChecker;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,7 +68,15 @@ public class KenaiTestSimple extends NbTestCase {
     private static String passw = null;
     private static boolean firstRun = true;
 
-    private String UNITTESTUNIQUENAME =  "java-inline";
+    private static final String TEST_PROJECT = "nb-jnet-test";   
+    
+    static {
+        try {
+            instance = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public KenaiTestSimple(String S) {
         super(S);
@@ -89,9 +96,6 @@ public class KenaiTestSimple extends NbTestCase {
         try {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
-            System.setProperty("kenai.com.url", "https://kenai.com");
-            instance = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
-            System.out.println("kurl " + instance.getUrl());
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
                 passw = System.getProperty("kenai.user.password");
@@ -103,8 +107,7 @@ public class KenaiTestSimple extends NbTestCase {
                 br.close();
             }
             if (firstRun) {
-                System.out.println("UNAME/PASSWD: " + uname + "/" + passw);
-                instance.login(uname, passw.toCharArray());
+                instance.login(uname, passw.toCharArray(), false);
                 firstRun = false;
             }
         } catch (Exception ex) {
@@ -119,20 +122,18 @@ public class KenaiTestSimple extends NbTestCase {
 
     public void testForRepositoryHg() throws Exception {
         KenaiProjectTest kpt = new KenaiProjectTest(getName());
-        kpt.setProjectName("java-inline");
         kpt.testForRepositoryHg();
     }
 
     public void testForRepositorySvn() throws Exception {
         KenaiProjectTest kpt = new KenaiProjectTest(getName());
-        kpt.setProjectName("motorbikediary");
         kpt.testForRepositorySvn();
     }
 
     public void testCheckName() throws KenaiException, MalformedURLException {
         assertNull(instance.checkProjectName("non-existing-project"));
-        assertNotNull("Project does not exist, but it should...", instance.checkProjectName(UNITTESTUNIQUENAME));
-        assertTrue(instance.checkProjectName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
+        assertNotNull("Project does not exist, but it should...", instance.checkProjectName(TEST_PROJECT));
+        assertTrue(instance.checkProjectName(TEST_PROJECT).equals("Name has already been taken"));
     }
 
     public void testService() throws IOException {
@@ -141,73 +142,57 @@ public class KenaiTestSimple extends NbTestCase {
         kst.testService();
     }
 
-    public void testServiceDescriptionAndDisplayableName() throws IOException {
-        KenaiServiceTest kst = new KenaiServiceTest(getName());
-        kst.setServicesChecker(new ServicesChecker(getDataDir().getAbsolutePath() + File.separatorChar + "services.data"));
-        kst.testServiceDescriptionAndDisplayableName();
-    }
-
     public void testType() {
         new KenaiFeatureTest(getName()).testType();
     }
 
     public void testSearchProjects() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testSearchProjects();
     }
 
     public void testSearchProjectsLessSpecific() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testSearchProjectsLessSpecific();
     }
 
     public void testSearchProjectsWithSpace() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testSearchProjectsWithSpace();
     }
 
     public void testGetProject() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetProject();
     }
 
     public void testGetDescription() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetDescription();
     }
 
     public void testGetDisplayName() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetDisplayName();
     }
 
     public void testGetTags() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetTags();
     }
 
     public void testGetLicenses() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetLicenses();
     }
     
     public void testGetServices() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetServices();
     }
     
     public void testGetWebLocation() throws Exception {
         KenaiTest kt = new KenaiTest(getName());
-        kt.setInstance();
         kt.testGetWebLocation();
     }
 

@@ -84,7 +84,6 @@ public class Reformatter implements ReformatTask {
     private Context context;
     private CompilationController controller;
     private Document doc;
-    private int shift;
 
     public Reformatter(Source source, Context context) {
         this.source = source;
@@ -173,8 +172,8 @@ public class Reformatter implements ReformatTask {
     
     private void reformatImpl(Context.Region region, CodeStyle cs) throws BadLocationException {
         boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
-        int startOffset = region.getStartOffset() - shift;
-        int endOffset = region.getEndOffset() - shift;
+        int startOffset = region.getStartOffset();
+        int endOffset = region.getEndOffset();
         int originalEndOffset = endOffset;
         startOffset = controller.getSnapshot().getEmbeddedOffset(startOffset);
         if (startOffset < 0)
@@ -287,8 +286,6 @@ public class Reformatter implements ReformatTask {
                             if (text != null && t != null)
                                 text = text.length() > t.length() ? text.substring(t.length()) : null;
                         }
-                    } else if (templateEdit) {
-                        text = null;
                     }
                 }
                 start = startOffset;
@@ -315,13 +312,10 @@ public class Reformatter implements ReformatTask {
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
             if (start == (-1) || end == (-1)) continue;
-            start += shift;
-            end += shift;
             doc.remove(start, end - start);
             if (text != null && text.length() > 0)
                 doc.insertString(start, text, null);
         }
-        shift = region.getEndOffset() - originalEndOffset;
         return;
     }
 
@@ -510,7 +504,9 @@ public class Reformatter implements ReformatTask {
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
                 }
                 if (tree.getKind() != Tree.Kind.ERRONEOUS && tree.getKind() != Tree.Kind.BLOCK
-                        && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)) {
+                        && (tree.getKind() != Tree.Kind.CLASS || getCurrentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS)
+                        && (tree.getKind() != Tree.Kind.NEW_ARRAY
+                        || getCurrentPath().getLeaf().getKind() != Tree.Kind.ASSIGNMENT && getCurrentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)) {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
@@ -532,7 +528,7 @@ public class Reformatter implements ReformatTask {
             if (pkg != null) {
                 blankLines(cs.getBlankLinesBeforePackage());
                 if (!node.getPackageAnnotations().isEmpty()) {
-                    wrapList(cs.wrapAnnotations(), false, false, true, node.getPackageAnnotations());
+                    wrapList(cs.wrapAnnotations(), false, false, COMMA, node.getPackageAnnotations());
                     newline();
                 }
                 accept(PACKAGE);
@@ -654,7 +650,7 @@ public class Reformatter implements ReformatTask {
                 List<? extends Tree> impls = node.getImplementsClause();
                 if (impls != null && !impls.isEmpty()) {
                     wrapToken(cs.wrapExtendsImplementsKeyword(), -1, 1, id == INTERFACE ? EXTENDS : IMPLEMENTS);
-                    wrapList(cs.wrapExtendsImplementsList(), cs.alignMultilineImplements(), true, true, impls);
+                    wrapList(cs.wrapExtendsImplementsList(), cs.alignMultilineImplements(), true, COMMA, impls);
                 }
                 indent = old;
             }
@@ -823,6 +819,7 @@ public class Reformatter implements ReformatTask {
                 }
                 tokens.moveNext();
             }
+            col = indent;
             accept(RBRACE);
             indent = old;
             return true;
@@ -832,11 +829,11 @@ public class Reformatter implements ReformatTask {
         public Boolean visitVariable(VariableTree node, Void p) {
             int old = indent;
             Tree parent = getCurrentPath().getParentPath().getLeaf();
-            boolean insideFor = parent.getKind() == Tree.Kind.FOR_LOOP;
+            boolean insideForOrCatch = EnumSet.of(Tree.Kind.FOR_LOOP, Tree.Kind.CATCH).contains(parent.getKind());
             ModifiersTree mods = node.getModifiers();
             if (mods != null && !fieldGroup && sp.getStartPosition(root, mods) < sp.getEndPosition(root, mods)) {
                 if (scan(mods, p)) {
-                    if (!insideFor) {
+                    if (!insideForOrCatch) {
                         indent += continuationIndentSize;
                         if (cs.placeNewLineAfterModifiers())
                             newline();
@@ -881,7 +878,7 @@ public class Reformatter implements ReformatTask {
                     List<? extends ExpressionTree> args = nct.getArguments();
                     if (args != null && !args.isEmpty()) {
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                        wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, true, args);
+                        wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
                     }
                     if (id == LPAREN)
@@ -891,7 +888,7 @@ public class Reformatter implements ReformatTask {
                         scan(body, p);
                 }
             } else {
-                if (indent == old && !insideFor)
+                if (indent == old && !insideForOrCatch)
                     indent += continuationIndentSize;
                 if (scan(node.getType(), p)) {
                     spaces(1, fieldGroup);
@@ -985,14 +982,14 @@ public class Reformatter implements ReformatTask {
             List<? extends VariableTree> params = node.getParameters();
             if (params != null && !params.isEmpty()) {
                 spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, true, params);
+                wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, COMMA, params);
                 spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
             }
             accept(RPAREN);
             List<? extends ExpressionTree> threxs = node.getThrows();
             if (threxs != null && !threxs.isEmpty()) {
                 wrapToken(cs.wrapThrowsKeyword(), -1, 1, THROWS);
-                wrapList(cs.wrapThrowsList(), cs.alignMultilineThrows(), true, true, threxs);
+                wrapList(cs.wrapThrowsList(), cs.alignMultilineThrows(), true, COMMA, threxs);
             }
             Tree init = node.getDefaultValue();
             if (init != null) {
@@ -1061,13 +1058,13 @@ public class Reformatter implements ReformatTask {
                         lastBlankLines = lbl;
                         lastBlankLinesTokenIndex = lblti;
                         lastBlankLinesDiff = lbld;
-                        if (!isStandalone) {
+                        wrapAnnotation = cs.wrapAnnotations() == CodeStyle.WrapStyle.WRAP_ALWAYS;
+                        if (!isStandalone || !afterAnnotation) {
                             scan(annotations.next(), p);
                         } else {
-                            wrapAnnotation = cs.wrapAnnotations() == CodeStyle.WrapStyle.WRAP_ALWAYS;
                             wrapTree(cs.wrapAnnotations(), -1, 0, annotations.next());
-                            wrapAnnotation = false;
                         }
+                        wrapAnnotation = false;
                         afterAnnotation = true;
                         ret = false;
                         continue;
@@ -1091,7 +1088,7 @@ public class Reformatter implements ReformatTask {
             accept(LPAREN);
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
-                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, true, args);
+                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, COMMA, args);
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1320,6 +1317,8 @@ public class Reformatter implements ReformatTask {
                     if (node instanceof FakeBlock) {
                         appendToDiff(getNewlines(1) + getIndent());
                         col = indent;
+                    } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT) {
+                        spaces(0, true);
                     } else if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE) {
                         blankLines();
                     }
@@ -1374,7 +1373,6 @@ public class Reformatter implements ReformatTask {
                             diff.text = getIndent();
                         else
                             diff.text = diff.text.substring(0, idx + 1) + getIndent();
-
                     }
                     String spaces = diff.text != null ? diff.text : getIndent();
                     if (spaces.equals(fText.substring(diff.start, diff.end)))
@@ -1402,6 +1400,7 @@ public class Reformatter implements ReformatTask {
                     }
                     tokens.moveNext();
                 }
+                col = indent;
                 accept(RBRACE);
             }
             indent = old;
@@ -1473,7 +1472,7 @@ public class Reformatter implements ReformatTask {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, true, args);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
             }
             accept(RPAREN);
@@ -1535,7 +1534,7 @@ public class Reformatter implements ReformatTask {
             List<? extends ExpressionTree> args = node.getArguments();
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true); 
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, true, args);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1608,7 +1607,7 @@ public class Reformatter implements ReformatTask {
                 spaces(cs.spaceBeforeTryParen() ? 1 : 0);
                 accept(LPAREN);
                 spaces(cs.spaceWithinTryParens() ? 1 : 0, true);
-                wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, false, res);
+                wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, SEMICOLON, res);
                 spaces(cs.spaceWithinTryParens() ? 1 : 0);
                 accept(RPAREN);
                 indent = old;
@@ -1650,21 +1649,10 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
-        public Boolean visitDisjointType(DisjointTypeTree node, Void p) {
-            Iterator<? extends Tree> it = node.getTypeComponents().iterator();
-            Tree tcomp = it.hasNext() ? it.next() : null;
-            while (true) {
-                scan(tcomp, p);
-                tcomp = it.hasNext() ? it.next() : null;
-                if (tcomp == null)
-                    break;
-                if (tcomp.getKind() != Tree.Kind.ERRONEOUS || !((ErroneousTree)tcomp).getErrorTrees().isEmpty() || it.hasNext()) {
-                    spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
-                    accept(BAR);
-                    spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
-                } else {
-                    scan(tcomp, p);
-                }
+        public Boolean visitDisjunctiveType(DisjunctiveTypeTree node, Void p) {
+            List<? extends Tree> alts = node.getTypeAlternatives();
+            if (alts != null && !alts.isEmpty()) {
+                wrapList(cs.wrapDisjunctiveCatchTypes(), cs.alignMultilineDisjunctiveCatchTypes(), false, BAR, alts);
             }
             return true;
         }
@@ -2103,7 +2091,7 @@ public class Reformatter implements ReformatTask {
                 switch (parent.getKind()) {
                     case ASSIGNMENT:
                         Tree grandParent = getCurrentPath().getParentPath().getParentPath().getLeaf();
-                        if (grandParent.getKind() != Tree.Kind.BLOCK && !org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind()))
+                        if (grandParent.getKind() == Tree.Kind.ANNOTATION)
                             break;
                     case VARIABLE:
                     case METHOD:
@@ -2144,7 +2132,7 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0, true);
-                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), false, true, inits);
+                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), false, COMMA, inits);
                     if (tokens.token().text().toString().indexOf('\n') >= 0)
                         afterNewline = true;
                     int index = tokens.index();
@@ -2540,7 +2528,7 @@ public class Reformatter implements ReformatTask {
                         break;
                     default:
                         if (lastWSToken != null) {
-                            lastBlankLines = 0;
+                            lastBlankLines = -1;
                             lastBlankLinesTokenIndex = tokens.index() - 1;
                             lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                         }
@@ -2915,6 +2903,9 @@ public class Reformatter implements ReformatTask {
                     diffs.removeFirst();
             }
             this.col = col;
+            if (index < lastBlankLinesTokenIndex) {
+                lastBlankLinesTokenIndex = -1;
+            }
         }
         
         private void appendToDiff(String s) {
@@ -3131,8 +3122,8 @@ public class Reformatter implements ReformatTask {
                     if (stats.hasNext()) {
                         StatementTree stat = stats.next();
                         if (!stats.hasNext() && stat.getKind() != Tree.Kind.VARIABLE) {
-                            int start = tokens.offset();
                             accept(LBRACE);
+                            int start = tokens.offset() - 1;
                             Diff d;
                             while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= start)
                                 diffs.removeFirst();
@@ -3141,8 +3132,22 @@ public class Reformatter implements ReformatTask {
                             indent += indentSize;
                             wrapTree(wrapStyle, -1, spacesCnt, stat);
                             indent = old;
-                            start = tokens.offset();
                             accept(RBRACE);
+                            tokens.moveIndex(tokens.index() - 2);
+                            tokens.moveNext();
+                            if (tokens.token().id() == JavaTokenId.WHITESPACE) {
+                                start = tokens.offset();
+                                if (tokens.movePrevious()) {
+                                    if (tokens.token().id() == JavaTokenId.LINE_COMMENT)
+                                        start--;
+                                    tokens.moveNext();
+                                }
+                                tokens.moveNext();
+                            } else {
+                                tokens.moveNext();
+                                start = tokens.offset();
+                            }
+                            tokens.moveNext();
                             while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= start)
                                 diffs.removeFirst();
                             addDiff(new Diff(start, tokens.offset(), null));
@@ -3164,13 +3169,27 @@ public class Reformatter implements ReformatTask {
             return false;
         }
 
-        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, boolean commaSeparated, List<? extends Tree> trees) {
+        private void wrapList(CodeStyle.WrapStyle wrapStyle, boolean align, boolean prependSpace, JavaTokenId separator, List<? extends Tree> trees) {
             boolean first = true;
             int alignIndent = -1;
+            boolean spaceBeforeSeparator, spaceAfterSeparator;
+            switch (separator) {
+                case COMMA:
+                    spaceBeforeSeparator = cs.spaceBeforeComma();
+                    spaceAfterSeparator = cs.spaceAfterComma();
+                    break;
+                case SEMICOLON:
+                    spaceBeforeSeparator = cs.spaceBeforeSemi();
+                    spaceAfterSeparator = cs.spaceAfterSemi();
+                    break;
+                default:
+                    spaceBeforeSeparator = spaceAfterSeparator = cs.spaceAroundBinaryOps();
+                    break;
+            }
             for (Iterator<? extends Tree> it = trees.iterator(); it.hasNext();) {
                 Tree impl = it.next();
                 if (wrapAnnotation && impl.getKind() == Tree.Kind.ANNOTATION) {
-                    wrapTree(CodeStyle.WrapStyle.WRAP_ALWAYS, alignIndent, (commaSeparated ? cs.spaceAfterComma() : cs.spaceAfterSemi()) ? 1 : 0, impl);
+                    wrapTree(CodeStyle.WrapStyle.WRAP_ALWAYS, alignIndent, spaceAfterSeparator ? 1 : 0, impl);
                 } else if (impl.getKind() == Tree.Kind.ERRONEOUS) {
                     scan(impl, null);
                 } else if (first) {
@@ -3188,17 +3207,12 @@ public class Reformatter implements ReformatTask {
                         scan(impl, null);
                     }
                 } else {
-                    wrapTree(wrapStyle, alignIndent, (commaSeparated ? cs.spaceAfterComma() : cs.spaceAfterSemi()) ? 1 : 0, impl);
+                    wrapTree(wrapStyle, alignIndent, spaceAfterSeparator ? 1 : 0, impl);
                 }
                 first = false;
                 if (it.hasNext()) {
-                    if (commaSeparated) {
-                        spaces(cs.spaceBeforeComma() ? 1 : 0);
-                        accept(COMMA);
-                    } else {
-                        spaces(cs.spaceBeforeSemi() ? 1 : 0);
-                        accept(SEMICOLON);
-                    }
+                    spaces(spaceBeforeSeparator ? 1 : 0);
+                    accept(separator);
                 }
             }
         }

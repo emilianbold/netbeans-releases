@@ -51,9 +51,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 public interface TestConstants {
     public static final String TEST_PROJECT = "unittest";
     public static final String TEST_PROJECT2 = "unittest2";
-//    public static final String REPO_PASSWD  = "kenai";
     public static final String REPO_PASSWD  = "unittest";
-    public static final String REPO_HOST     = "kenai-test.czech.sun.com";
+    public static final String REPO_HOST     = "bugtracking-test.cz.oracle.com";
     public static final String REPO_URL     = "http://" + REPO_HOST + "/bugzilla";
     public static final String REPO_USER    = "unittest@unit.test";
     public static final String REPO_USER_NAME    = "Mr. Unit Test Sr.";

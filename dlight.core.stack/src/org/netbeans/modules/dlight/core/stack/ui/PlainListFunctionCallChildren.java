@@ -57,13 +57,16 @@ import org.openide.nodes.Node;
 public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
     private final List<FunctionCall> functionCalls;
     private final SourceFileInfoDataProvider sourceInfoProvider;
+    private final boolean useHtmlFormat;
 
-    PlainListFunctionCallChildren(SourceFileInfoDataProvider sourceInfoProvider, List<FunctionCall> functionCalls) {
+    PlainListFunctionCallChildren(SourceFileInfoDataProvider sourceInfoProvider, 
+            List<FunctionCall> functionCalls, boolean useHtmlFormat) {
         //create a copy and reverse copied
         this.functionCalls = new ArrayList<FunctionCall>();
         this.functionCalls.addAll(functionCalls);
         Collections.reverse(this.functionCalls);
         this.sourceInfoProvider = sourceInfoProvider;
+        this.useHtmlFormat = useHtmlFormat;
     }
 
     @Override
@@ -76,6 +79,6 @@ public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
 
     @Override
     protected Node[] createNodes(FunctionCall key) {
-        return new PlainListFunctionCallNode[]{new PlainListFunctionCallNode(sourceInfoProvider, key)};
+        return new PlainListFunctionCallNode[]{new PlainListFunctionCallNode(sourceInfoProvider, key, useHtmlFormat)};
     }
 }

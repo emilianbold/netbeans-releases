@@ -50,15 +50,13 @@ package org.netbeans.modules.nativeexecution.support.ui;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class GrantPrivilegesDialog extends javax.swing.JPanel {
-    private volatile  boolean res;
+
+    private volatile boolean res;
 
     /** Creates new form GrantPrivilegesDialog */
     public GrantPrivilegesDialog() {
@@ -150,28 +148,28 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
                 }, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
         res = false;
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.addWindowFocusListener(new WindowAdapter() {
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                suPasswordField.requestFocusInWindow();
+            }
+        });
+        
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-
-                @Override
-                public void run() {
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-                    dialog.addWindowFocusListener(new WindowAdapter() {
-
-                        @Override
-                        public void windowGainedFocus(WindowEvent e) {
-                            suPasswordField.requestFocusInWindow();
-                        }
-                    });
-                    dialog.setVisible(true);
-                    res = dd.getValue() == DialogDescriptor.OK_OPTION;
-                }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
         }
+        
+        res = dd.getValue() == DialogDescriptor.OK_OPTION;
         
         return res;
     }
@@ -187,7 +185,6 @@ public class GrantPrivilegesDialog extends javax.swing.JPanel {
     private static String loc(String key, Object... params) {
         return NbBundle.getMessage(GrantPrivilegesDialog.class, key, params);
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField suLoginField;

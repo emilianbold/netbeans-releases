@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
@@ -65,9 +66,8 @@ public final class SUNErrorParser extends ErrorParser {
     private Pattern SUN_DIRECTORY_ENTER;
     private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
 
-
-    public SUNErrorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-        super(execEnv, relativeTo);
+    public SUNErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
+        super(project, execEnv, relativeTo);
 	init(flavor);
     }
 

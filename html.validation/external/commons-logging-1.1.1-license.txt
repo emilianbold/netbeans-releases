@@ -1,8 +1,8 @@
 Name: Apache Commons Logging
 Version: 1.1.1
-License: Apache
+License: Apache-2.0
 OSR: -
-Files: commons-logging-1.1.1-license.jar, commons-logging-api-1.1.1.jar
+Files: commons-logging-1.1.1.jar, commons-logging-api-1.1.1.jar
 Description: Logging support library
 Origin: http://commons.apache.org/logging/
 

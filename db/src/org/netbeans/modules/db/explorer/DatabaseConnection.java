@@ -217,29 +217,29 @@ public final class DatabaseConnection implements DBConnection {
      * @param password User password
      */
     public DatabaseConnection(String driver, String database, String user, String password) {
-        this(driver, null, database, null, user, password, false);
+        this(driver, null, database, null, user, password, null);
     }
 
     public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password) {
-        this(driver, driverName, database, theschema, user, password, false);
+        this(driver, driverName, database, theschema, user, password, null);
     }
 
     public DatabaseConnection(String driver, String driverName, String database, 
             String theschema, String user) {
-        this(driver, driverName, database, theschema, user, null, false);
+        this(driver, driverName, database, theschema, user, null, null);
     }
 
     public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password,
-            boolean rememberPassword) {
+            Boolean rememberPassword) {
         this();
         drv = driver;
         drvname = driverName;
         db = database;
         usr = user;
         pwd = password;
-        rpwd = Boolean.valueOf(rememberPassword);
+        rpwd = rememberPassword == null ? null : Boolean.valueOf(rememberPassword);
         schema = theschema;
         name = getName();
     }
@@ -588,7 +588,7 @@ public final class DatabaseConnection implements DBConnection {
 
     private synchronized void restorePassword() {
         if (this.connectionFileName == null) {
-            LOGGER.log(Level.FINEST, "No connectionFileName for " + this);
+            LOGGER.log(Level.FINE, "No connectionFileName for " + this);
             pwd = "";
             rpwd = false;
             return ;

@@ -68,7 +68,7 @@ final class Erprint {
     private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
     private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .*:0x([0-9a-f]+) +\\((.*)\\)"); // NOI18N
     private static final String choiceMarker = "Available name list:"; // NOI18N
-    private final Logger log = DLightLogger.getLogger(Erprint.class);
+    private static final Logger log = DLightLogger.getLogger(Erprint.class);
     private final AtomicInteger locks = new AtomicInteger();
     private final NativeProcess process;
     private final InputStream out;
@@ -91,7 +91,7 @@ final class Erprint {
         }
 
         if (log.isLoggable(Level.FINEST)) {
-            log.finest(logPrefix + "started"); // NOI18N
+            log.log(Level.FINEST, "{0} started", logPrefix); // NOI18N
         }
         out = process.getInputStream();
         in = process.getOutputStream();
@@ -107,7 +107,7 @@ final class Erprint {
             }
             locks.incrementAndGet();
             if (log.isLoggable(Level.FINEST)) {
-                log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+                log.log(Level.FINEST, "{0}locks count == {1}", new Object[]{logPrefix, locks.toString()}); // NOI18N
             }
         }
     }
@@ -116,7 +116,7 @@ final class Erprint {
         synchronized (this) {
             locks.decrementAndGet();
             if (log.isLoggable(Level.FINEST)) {
-                log.finest(logPrefix + "locks count == " + locks.toString()); // NOI18N
+                log.log(Level.FINEST, "{0} locks count == {1}", new Object[]{logPrefix, locks.toString()}); // NOI18N
             }
         }
     }
@@ -132,16 +132,17 @@ final class Erprint {
 
         DLightExecutorService.submit(new Runnable() {
 
+            @Override
             public void run() {
                 if (log.isLoggable(Level.FINEST)) {
-                    log.finest(logPrefix + "Scheduled for termination"); // NOI18N
+                    log.log(Level.FINEST, "{0} scheduled for termination", logPrefix); // NOI18N
                 }
                 int attempts = 30;
 
                 while (locks.get() != 0 && --attempts > 0) {
                     try {
                         if (log.isLoggable(Level.FINEST)) {
-                            log.finest(logPrefix + "waiting for lock release [" + locks.get() + "] ..."); // NOI18N
+                            log.log(Level.FINEST, "{0} waiting for lock release [{1}] ...", new Object[]{logPrefix, locks.get()}); // NOI18N
                         }
                         Thread.sleep(500);
                     } catch (InterruptedException ex) {
@@ -154,9 +155,9 @@ final class Erprint {
 
                 if (log.isLoggable(Level.FINEST)) {
                     if (locks.get() > 0) {
-                        log.finest(logPrefix + "do force termination"); // NOI18N
+                        log.log(Level.FINEST, "{0} do force termination", logPrefix); // NOI18N
                     } else {
-                        log.finest(logPrefix + "do termination"); // NOI18N
+                        log.log(Level.FINEST, "{0} do termination", logPrefix); // NOI18N
                     }
                 }
 
@@ -285,8 +286,8 @@ final class Erprint {
                 Matcher m = objs_pattern.matcher(o);
                 if (m.matches()) {
                     String object = m.group(1);
-                    if (selectedObjects.contains(object) ||
-                            !hiddenObjects.contains(object)) {
+                    if (selectedObjects.contains(object)
+                            || !hiddenObjects.contains(object)) {
                         object_select.append(object).append(","); // NOI18N
                     }
                 }
@@ -354,8 +355,8 @@ final class Erprint {
                         fname = m.group(3);
 
                         try {
-                            if (Long.parseLong(address, 16) == funcRef ||
-                                    (srcFile != null && fname.endsWith(srcFile))) {
+                            if (Long.parseLong(address, 16) == funcRef
+                                    || (srcFile != null && fname.endsWith(srcFile))) {
                                 break;
                             }
                         } catch (NumberFormatException ex) {
@@ -388,7 +389,7 @@ final class Erprint {
 
             try {
                 if (log.isLoggable(Level.FINEST)) {
-                    log.finest("> '" + command.getCmd() + "'"); // NOI18N
+                    log.log(Level.FINEST, "> '{0}'", command.getCmd()); // NOI18N
                 }
                 post(command.getCmd());
             } catch (IOException ex) {
@@ -399,9 +400,10 @@ final class Erprint {
             String[] output = outProcessor.getOutput();
 
             if (log.isLoggable(Level.FINEST)) {
-                log.finest("Command '" + command.getCmd() + "' done in " + // NOI18N
-                        (System.currentTimeMillis() - startTime) / 1000 +
-                        " secs. Response is " + output.length + " lines."); // NOI18N
+                log.log(Level.FINEST, "Command '{0}' done in {1} secs. Response is {2} lines.", // NOI18N
+                        new Object[]{command.getCmd(),
+                            (System.currentTimeMillis() - startTime) / 1000,
+                            output.length});
             }
 
             return output;

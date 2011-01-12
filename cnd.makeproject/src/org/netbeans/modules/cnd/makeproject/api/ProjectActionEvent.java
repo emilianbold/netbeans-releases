@@ -44,12 +44,18 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class ProjectActionEvent {
 
@@ -97,6 +103,7 @@ public final class ProjectActionEvent {
     private final boolean wait;
     private final Lookup context;
     private boolean isFinalExecutable;
+    private String[] runCommandCache = null;
 
     public ProjectActionEvent(Project project, Type type, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
         this(project, type, executable, configuration, profile, wait, Lookup.EMPTY);
@@ -135,8 +142,67 @@ public final class ProjectActionEvent {
         return type.getLocalizedName();
     }
 
+    private String getExecutableFromRunCommand() {
+        String[] runCommand = getRunCommand();
+        if (runCommand.length == 0) {
+            return "";
+        }
+        return runCommand[0];
+    }
+
     public String getExecutable() {
+	if (type == PredefinedType.RUN) {
+            return getExecutableFromRunCommand();
+        }
+        // FIXUP: This is temporary solution to avoid Select Executable window appearance
+        // during the debug of the library.
+        // The fix is made based on assumption that for debugging library some binary should be chosen as Run Command
+	if ((type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) && configuration.isLibraryConfiguration()) {
+            return getExecutableFromRunCommand();
+        }
 	return executable;
+    }
+
+    private String[] getRunCommand() {
+        if (runCommandCache == null || runCommandCache.length == 0) {
+            String command = getProfile().getRunCommand();
+
+            // not clear what is the difference between getPlatformInfo
+            // and getDevelopmentHost. 
+            // TODO: get rid off one of ifs below
+            assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
+
+            String outputValue;
+            if (configuration.isLibraryConfiguration()) {
+                outputValue = "";
+            }
+            else {
+                outputValue = configuration.getOutputValue();
+            }
+            if (outputValue.length() > 0) {
+                outputValue = configuration.getAbsoluteOutputValue();
+            }
+            if (configuration.getPlatformInfo().isLocalhost()) {
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
+            } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
+                PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+                command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", mapper.getRemotePath(outputValue, true)); // NOI18N
+            }
+            runCommandCache = Utilities.parseParameters(configuration.expandMacros(command));
+        }
+        return runCommandCache;
+    }
+  
+    public ArrayList<String> getArguments() {
+        ArrayList<String> result = new ArrayList<String>();
+        if (type == PredefinedType.RUN) {
+            String[] params = getRunCommand();
+            if (params.length > 1) {
+                result.addAll(Arrays.asList(Arrays.copyOfRange(params, 1, params.length)));
+            }
+        }
+        result.addAll(Arrays.asList(getProfile().getArgsArray()));
+        return result;
     }
 
     public MakeConfiguration getConfiguration() {
@@ -164,7 +230,7 @@ public final class ProjectActionEvent {
     }
 
     boolean isFinalExecutable(){
-        return isFinalExecutable;
+        return isFinalExecutable || type == PredefinedType.RUN;
     }
 
     @Override

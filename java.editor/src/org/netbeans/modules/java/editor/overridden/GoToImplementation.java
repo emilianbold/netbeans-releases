@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.java.GoToSupport;
 import org.netbeans.modules.editor.java.GoToSupport.Context;
@@ -87,11 +88,23 @@ public final class GoToImplementation extends BaseAction {
     public void actionPerformed(ActionEvent e, final JTextComponent c) {
         goToImplementation(c);
     }
-
+    
     public static void goToImplementation(final JTextComponent c) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                goToImpl(c, cancel);
+            }
+        }, NbBundle.getMessage(GoToImplementation.class, "CTL_GoToImplementation"), cancel, false);
+    }
+
+    public static void goToImpl(final JTextComponent c, final AtomicBoolean cancel) {
         try {
             JavaSource.forDocument(c.getDocument()).runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
+                    if (cancel != null && cancel.get())
+                        return ;
                     parameter.toPhase(Phase.RESOLVED);
                     
                     Context context = GoToSupport.resolveContext(parameter, c.getDocument(), c.getCaretPosition(), false);
@@ -129,10 +142,14 @@ public final class GoToImplementation extends BaseAction {
         }
     }
 
-    static void performGoToAction(List<ElementDescription> declarations, Point position, boolean method) {
-        String caption = NbBundle.getMessage(GoToImplementation.class, method ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
-        
-        PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
+    static void performGoToAction(final List<ElementDescription> declarations, final Point position, final boolean method) {
+        final String caption = NbBundle.getMessage(GoToImplementation.class, method ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
+            }
+        });
     }
 
     private static Set<ElementKind> SUPPORTED_ELEMENTS = EnumSet.of(ElementKind.METHOD, ElementKind.ANNOTATION_TYPE, ElementKind.CLASS, ElementKind.ENUM, ElementKind.INTERFACE);

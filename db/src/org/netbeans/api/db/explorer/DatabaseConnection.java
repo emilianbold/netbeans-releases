@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -87,6 +87,7 @@ public final class DatabaseConnection {
     
     static {
         DatabaseConnectionAccessor.DEFAULT = new DatabaseConnectionAccessor() {
+            @Override
             public DatabaseConnection createDatabaseConnection(org.netbeans.modules.db.explorer.DatabaseConnection conn) {
                 return new DatabaseConnection(conn);
             }    
@@ -109,7 +110,8 @@ public final class DatabaseConnection {
     }
     
     /**
-     * Creates a new DatabaseConnection instance. 
+     * Creates a new DatabaseConnection instance w/ a default display name based
+     * on connection URL and user
      * 
      * @param driver the JDBC driver the new connection uses; cannot be null.
      * @param databaseURL the URL of the database to connect to; cannot be null.
@@ -124,6 +126,28 @@ public final class DatabaseConnection {
      */
     public static DatabaseConnection create(JDBCDriver driver, String databaseURL, 
             String user, String schema, String password, boolean rememberPassword) {
+            return create(driver, databaseURL, user, schema, password, rememberPassword, null);
+    }
+
+    /**
+     * Creates a new DatabaseConnection instance.
+     *
+     * @param driver the JDBC driver the new connection uses; cannot be null.
+     * @param databaseURL the URL of the database to connect to; cannot be null.
+     * @param user the username.
+     * @param schema the schema to use, or null for the default schema
+     * @param password the password.
+     * @param rememberPassword whether to remember the password for the current session.
+     * @param displayName the display name of the connection as it shows under the Databases node
+     *
+     * @return the new instance.
+     *
+     * @since 1.42
+     * @throws NullPointerException if driver or database are null.
+     */
+    public static DatabaseConnection create(JDBCDriver driver, String databaseURL, 
+            String user, String schema, String password, boolean rememberPassword,
+            String displayName) {
         if (driver == null || databaseURL == null) {
             throw new NullPointerException();
         }
@@ -135,7 +159,7 @@ public final class DatabaseConnection {
         conn.setSchema(schema);
         conn.setPassword(password);
         conn.setRememberPassword(rememberPassword);
-        
+        conn.setDisplayName(displayName);
         return conn.getDatabaseConnection();
     }
     

@@ -55,8 +55,9 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  * simple test implementation of walker
@@ -93,7 +94,8 @@ public class APTWalkerTest extends APTAbstractWalker {
             APTFile apt;
             boolean res = false;
             try {
-                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(resolvedPath.getPath()));
+                FileObject fo = getFileObject(resolvedPath.getPath());
+                apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fo));
                 APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                 walker.visit();
                 resolvingTime += walker.resolvingTime;

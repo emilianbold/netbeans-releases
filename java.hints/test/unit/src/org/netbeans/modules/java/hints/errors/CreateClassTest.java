@@ -74,7 +74,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
     }
 
     public void test116853() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public interface Test {public Non|Existing test();}", "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS");
+        performAnalysisTest("test/Test.java", "package test; public interface Test {public Non|Existing test();}", "CreateClass:test.NonExisting:[]:CLASS", "CreateInnerClass:test.Test.NonExisting:[public, static]:CLASS");
     }
 
     public void testPerformCreateClass() throws Exception {
@@ -188,8 +188,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java",
                        "package test; public class Test implements UU {}",
                        69 - 25,
-                       "CreateClass:test.UU:[]:INTERFACE",
-		       "CreateInnerClass:test.Test.UU:[private, static]:INTERFACE");
+                       "CreateClass:test.UU:[]:INTERFACE");
     }
 
     public void testCreate106773() throws Exception {
@@ -242,6 +241,14 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "test/State.java",
                        "package test; class State { public State() { } } "
                        );
+    }
+
+    public void testCreateClassForThrow() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private void test() { throw new Unde|fined(); } }",
+                       "CreateClass:test.Undefined:[]:CLASS",
+                       "test/Undefined.java",
+                       "package test; class Undefined extends Exception { public Undefined() { } } ");
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {

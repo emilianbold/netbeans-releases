@@ -51,7 +51,6 @@ import org.openide.modules.ModuleInstall;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 public final class DbgGuiModule extends ModuleInstall {
 
@@ -59,21 +58,8 @@ public final class DbgGuiModule extends ModuleInstall {
 
     @Override
     public void restored() {
-
-	// Initialize DebuggerManager
-	DebuggerManager.get().init();
-	
-	// restore breakpints if any
-	DebuggerManager.get().breakpointBag();
-
-	// restore debugtarget list, host list if any
-        DebuggerManager.get().restoreDT();
-        
-	ExternalStartManager.startLocal();
-
-        // Workaround for IZ 185691, we should assure EditorContextDispatcher is created
-        // TODO: remove as soon as IZ 187386 is fixed
-        EditorContextDispatcher.getDefault();
+        // no activity, please...
+        // #191731 -  Too many CND classes loaded for JavaSE project
     }
 
     @Override

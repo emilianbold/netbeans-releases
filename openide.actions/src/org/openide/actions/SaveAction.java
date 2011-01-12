@@ -45,8 +45,9 @@
 package org.openide.actions;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -64,11 +65,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.actions.CookieAction;
 
-/** Save a single object.
-* @see SaveCookie
-*
-* @author   Jan Jancura, Petr Hamernik, Ian Formanek, Dafe Simonek
-*/
+/** Save a one or more objects. Since version 6.20 this handles ANY selection
+ * instead of EXACTLY_ONE selection.
+ * @see SaveCookie
+ *
+ * @author   Jan Jancura, Petr Hamernik, Ian Formanek, Dafe Simonek
+ */
 public class SaveAction extends CookieAction {
     private static Class<? extends Node.Cookie> dataObject;
     private static java.lang.reflect.Method getNodeDelegate;
@@ -87,24 +89,37 @@ public class SaveAction extends CookieAction {
     }
 
     final void performAction(Lookup context) {
-        SaveCookie sc = context.lookup(SaveCookie.class);
-        if (sc == null) {
-            return;
+        Collection<? extends SaveCookie> cookieList = context.lookupAll(SaveCookie.class);
+        Collection<? extends Node> nodeList = new LinkedList<Node>(context.lookupAll(Node.class));
+
+        COOKIE: for (SaveCookie saveCookie : cookieList) {
+
+            //Determine if the saveCookie belongs to a node in our context
+            for (Node node : nodeList) {
+                if (saveCookie.equals(node.getCookie(SaveCookie.class))) {
+                    performAction(saveCookie, node);
+                    nodeList.remove(node);
+                    continue COOKIE;
+                }
+            }
+
+            //The saveCookie was not found in any node in our context - save it by itself.
+            performAction(saveCookie, null);
         }
-        Node n = context.lookup(Node.class);
-        performAction(sc, n);
     }
 
-
     protected void performAction(final Node[] activatedNodes) {
-        SaveCookie sc = activatedNodes[0].getCookie(SaveCookie.class);
-        assert sc != null : "SaveCookie must be present on " + activatedNodes[0] + ". " +
-                "See http://www.netbeans.org/issues/show_bug.cgi?id=68285 for details on overriding " + activatedNodes[0].getClass().getName() + ".getCookie correctly.";
-        
-        // avoid NPE if disabled assertions
-        if (sc == null) return ;
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node node = activatedNodes[i];
+            SaveCookie sc = node.getCookie(SaveCookie.class);
+            assert sc != null : "SaveCookie must be present on " + node + ". "
+                    + "See http://www.netbeans.org/issues/show_bug.cgi?id=68285 for details on overriding " + node.getClass().getName() + ".getCookie correctly.";
 
-        performAction(sc, activatedNodes[0]);
+            // avoid NPE if disabled assertions
+            if (sc == null) return ;
+
+            performAction(sc, node);
+        }
     }
 
     private void performAction(SaveCookie sc, Node n) {
@@ -182,7 +197,7 @@ public class SaveAction extends CookieAction {
     }
 
     protected int mode() {
-        return MODE_EXACTLY_ONE;
+        return MODE_ANY;
     }
 
     public String getName() {

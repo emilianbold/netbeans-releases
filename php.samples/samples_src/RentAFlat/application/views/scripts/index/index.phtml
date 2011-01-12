@@ -1,0 +1,204 @@
+<div class="cleaner"></div>
+<div id="conbox">
+    <div id="skip" class="none"><a name="skip"></a></div>
+    <div id="con">
+
+        <h1>About the Project</h1>
+
+        Welcome to Rent-a-Flat. 
+        <br><br>
+        This is sample project created to demonstrate 
+        Zend Framework support in NetBeans IDE. Don't worry to dig into code to 
+        see how it works and how you can make your development easier with Zend and NetBeans!
+        <br><br>
+        Let us know what you think on our mailing list <a href="mailto:users@php.netbeans.org">users@php.netbeans.org</a> 
+        <br>
+        Let us know if you find any mistake or place for improvement. <br>
+
+        <br><br>
+
+        <h1>How To Make This Work</h1>
+        <ol>
+            <li>Import database. You can find SQL dump in /database folder in project sources.</li>
+            <li>Set database name and access in /application/config/application.ini. You need to change following 
+                directives: 
+                <code>
+                    <br><br>
+                    resources.db.params.username = "root"<br>
+                    resources.db.params.password = "root"<br>
+                    resources.db.params.dbname = "rentaflat"
+                    <br><br>
+                </code>
+            </li>
+            <li>Get Zend Framework. You need to download Zend Framework from 
+                <a href="http://zendframework.com/download/latest" target="_blank">zend download page</a>. Version 
+                1.10.8 was used to develop this sample. 
+            </li>
+            <li>Copy Zend Framework files to /library/Zend folder in project sources. So the folder will look like this:
+                <code><br /><br />
+                    /library<br />
+                    &nbsp;&nbsp;└── Zend<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Acl<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Acl.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Amf<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Application<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Application.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Auth<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Auth.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Barcode<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Barcode.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Cache<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Cache.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Captcha<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── CodeGenerator<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Config<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Config.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Console<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Controller<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Crypt<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Crypt.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Currency<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Currency.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Datev<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Date.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Db<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Db.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Debug.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Dojo<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Dojo.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Dom<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Exception.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Feed<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Feed.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── File<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Filter<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Filter.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Form<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Form.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Gdata<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Gdata.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Http<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── InfoCard<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── InfoCard.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Json<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Json.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Layout<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Layout.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Ldap<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Ldap.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Loader<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Loader.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Locale<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Locale.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Log<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Log.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Mail<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Mail.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Markup<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Markup.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Measure<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Memory<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Memory.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Mime<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Mime.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Navigation<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Navigation.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Oauth<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Oauth.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── OpenId<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── OpenId.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Paginator<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Paginator.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Pdf<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Pdf.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── ProgressBar<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── ProgressBar.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Queue<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Queue.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Reflection<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Registry.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Rest<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Search<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Serializer<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Serializer.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Server<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Service<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Session<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Session.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Soap<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Tag<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Test<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Text<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── TimeSync<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── TimeSync.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Tool<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Translate<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Translate.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Uri<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Uri.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Validate<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Validate.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Version.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── View<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── View.php<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── Wildfire<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;└── XmlRpc<br />
+                    <br /><br />
+                </code>
+
+            </li>
+            <li>Configure your apache path as following: 
+                <code><br><br>
+                    DocumentRoot "/path/to/project/public"
+                    <br>
+                    &lt;Directory /&gt;<br>
+                    &nbsp;&nbsp;&nbsp;Options FollowSymLinks<br>
+                    &nbsp;&nbsp;&nbsp;AllowOverride All<br>
+                    &nbsp;&nbsp;&nbsp;Order deny,allow<br>
+                    &nbsp;&nbsp;&nbsp;Allow from all<br>
+                    &lt;/Directory&gt;<br><br>
+
+                    &lt;Directory "/path/to/project/public/"&gt;<br>
+                    &nbsp;&nbsp;&nbsp;Options Indexes FollowSymLinks MultiViews<br>
+                    &nbsp;&nbsp;&nbsp;AllowOverride All<br>
+                    &lt;/Directory&gt;<br>
+                    <br>
+                </code>
+            </li>
+            <li>Now you should be able to access sample page on your localhost</li>
+            <li>Have fun! Don't forget to try all 
+                <a href="http://blogs.sun.com/netbeansphp/entry/using_zend_framework_with_netbeans" target="_blank">
+                    NetBeans features for Zend Framework</a> 
+                and 
+                <a href="http://blogs.sun.com/netbeansphp/" target="_blank">
+                    many other great things</a> NetBeans can do!. 
+            </li>
+            <li>Finally, I'd like to ask you 
+                to <a href="http://netbeans.org/community/" target="_blank">help us</a> 
+                make NetBeans better because <strong>better NetBeans makes your life easier! :)</strong>
+            </li>
+        </ol>
+        <br><br>
+
+        <h1>Zend Framework support in NetBeans IDE</h1>
+
+        If you want to use implemented Zend support than you need to download 
+        zend framework, provide NetBeans with a path to it and you need to 
+        provide path to PHP interpreter if necessary. 
+        <br><br>
+        Check out information on this 
+        <a href="http://blogs.sun.com/netbeansphp/entry/using_zend_framework_with_netbeans" target="_blank">
+            blog
+        </a>.
+        <br><br>
+        <br>
+
+        Wish you best luck! <br>
+        Regards, <br>
+        <br><br>
+        Filip Zamboj (fzamboj [at] netbeans [dot] org) 
+        <br><br><br>
+
+
+    </div>
+</div>

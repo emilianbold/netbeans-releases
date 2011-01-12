@@ -100,7 +100,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final Column blockerColumn =
         new Column("blocker", Integer.class, loc("SyncTool.ColumnName.blocker"), null); // NOI18N
     private static final Column timeColumn =
-        new Column("time", Long.class, loc("SyncTool.ColumnName.time"), null); // NOI18N
+        new Column("time", Time.class, loc("SyncTool.ColumnName.time"), null); // NOI18N
     private static final Column stackColumn =
         new Column("stackid", Long.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
     private static final Column locksColumn =
@@ -302,14 +302,14 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
-        Column syncTimeColumn = new Column("time", Long.class, loc("SyncTool.ColumnName.e_sync"), null);//NOI18N
+        Column syncTimeColumn = new Column("time", Time.class, loc("SyncTool.ColumnName.e_sync"), null);//NOI18N
         Column syncCountColumn = new Column("count", Long.class, loc("SyncTool.ColumnName.syncn"), null);//NOI18N
         List<Column> viewColumns = Arrays.asList(
             new Column("id", Integer.class, "id", null),// NOI18N
             new Column("func_name", FunctionName.class, "Function", null),// NOI18N
             syncTimeColumn,
             syncCountColumn);
-        String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
+        String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time) as time, COUNT(*) as count" +// NOI18N
             " FROM sync, node AS node, func" +// NOI18N
             " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +// NOI18N
             " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N

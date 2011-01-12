@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -84,7 +85,7 @@ public final class IncludeDirEntry {
         this.asCharSeq = asCharSeq;
     }
 
-    public static IncludeDirEntry get(String dir) {
+    public static IncludeDirEntry get(FileSystem fs, String dir) {
         CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(dir);
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
@@ -93,7 +94,7 @@ public final class IncludeDirEntry {
             if (out == null) {
                 boolean framework = dir.endsWith("/Frameworks"); // NOI18N
                 CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
-                boolean exists = CndFileUtils.isExistingDirectory(dir);
+                boolean exists = CndFileUtils.isExistingDirectory(fs, dir);
                 out = new IncludeDirEntry(exists, framework, asCharSeq);
                 delegate.put(key, out);
             }
@@ -109,9 +110,9 @@ public final class IncludeDirEntry {
         return isFramework;
     }
 
-    /*package*/ boolean isExistingDirectory() {
+    /*package*/ boolean isExistingDirectory(FileSystem fs) {
         if (exists == null) {
-            exists = CndFileUtils.isExistingDirectory(getPath());
+            exists = CndFileUtils.isExistingDirectory(fs, getPath());
         }
         return exists;
     }

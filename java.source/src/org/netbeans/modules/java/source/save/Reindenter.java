@@ -162,10 +162,11 @@ public class Reindenter implements IndentTask {
                 while (!startOffsets.isEmpty()) {
                     startOffset = startOffsets.removeLast();
                     Integer newIndent = newIndents.get(startOffset);
-                    context.modifyIndent(startOffset, newIndent);
                     if (linesToAddStar.contains(startOffset)) {
-                        context.document().insertString(startOffset + newIndent, "* ", null); //NOI18N
+                        context.modifyIndent(startOffset, 0);
+                        context.document().insertString(startOffset, "* ", null); //NOI18N
                     }
+                    context.modifyIndent(startOffset, newIndent);
                     if (!startOffsets.isEmpty()) {
                         char c;
                         int len = 0;
@@ -428,7 +429,7 @@ public class Reindenter implements IndentTask {
                                 break;
                         }
                     } else {
-                        currentIndent += cs.getIndentSize();
+                        currentIndent = getCurrentIndent(path.get(1)) + cs.getIndentSize();
                     }
                     if (nextTokenId != null && nextTokenId == JavaTokenId.LBRACE) {
                         switch (cs.getOtherBracePlacement()) {
@@ -490,7 +491,7 @@ public class Reindenter implements IndentTask {
                 if (t != null) {
                     currentIndent = getCurrentIndent(t);
                 } else {
-                    currentIndent += cs.getIndentSize();
+                    currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.COLON), (int)sp.getEndPosition(cut, ((CaseTree)last).getExpression()), currentIndent);
                 }
                 break;
             case NEW_ARRAY:

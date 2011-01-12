@@ -89,6 +89,7 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javacard.Installer;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.api.AntClasspathClosureProvider;
 import org.netbeans.modules.javacard.common.Utils;
@@ -156,6 +157,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+//import org.netbeans.modules.javacard.ri.bundle.Installer;
 
 /**
  *
@@ -1138,6 +1141,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
         @Override
         protected void projectOpened() {
+            //Installer.install();
             final String[] platformAndDevice = new String[2];
             try {
                 //Disable dialog in unit tests

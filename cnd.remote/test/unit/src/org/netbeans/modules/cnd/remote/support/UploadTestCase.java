@@ -123,6 +123,7 @@ public class UploadTestCase extends RemoteTestBase {
         assertTrue(dir.exists());
         assertTrue(dir.isDirectory());
         File[] files = dir.listFiles();
+        assert files != null;
         long totalSize = 0;
         int totalCount = 0;
         long totalTime = System.currentTimeMillis();

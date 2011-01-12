@@ -172,6 +172,20 @@ public abstract class NativeDebuggerInfo {
 	    profile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
 	return profile;
     }
+    
+    public int getConsoleType(boolean remote) {
+        //TODO: we can determine remoteness from the configuration
+        RunProfile _profile = getProfile();
+        if (_profile != null) {
+            int value = _profile.getConsoleType().getValue();
+            // no external console remotely for now
+            if (remote && value == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+                value = RunProfile.CONSOLE_TYPE_INTERNAL;
+            }
+            return value;
+        }
+        return RunProfile.CONSOLE_TYPE_INTERNAL;
+    }
 
     public final void setProfile(RunProfile profile) {
 	this.profile = profile;

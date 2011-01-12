@@ -160,7 +160,7 @@ public class EarActionProvider implements ActionProvider {
         String realCommand = command;
         J2eeModuleProvider.DeployOnSaveSupport support = project.getAppModule().getDeployOnSaveSupport();
         if (COMMAND_BUILD.equals(realCommand)
-                && isDosEnabled() && support != null && support.containsIdeArtifacts()) {
+                && isCosEnabled() && support != null && support.containsIdeArtifacts()) {
             boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
                     new DeployOnSaveUtils.CustomizerPresenter() {
 
@@ -294,7 +294,7 @@ public class EarActionProvider implements ActionProvider {
         }
 
         J2eeModuleProvider.DeployOnSaveSupport support = project.getAppModule().getDeployOnSaveSupport();
-        if (isDosEnabled() && support != null && support.containsIdeArtifacts() && COMMAND_COMPILE_SINGLE.equals(command)) {
+        if (isCosEnabled() && support != null && support.containsIdeArtifacts() && COMMAND_COMPILE_SINGLE.equals(command)) {
             return false;
         }
 
@@ -383,7 +383,7 @@ public class EarActionProvider implements ActionProvider {
         return "".equals(domain) && "".equals(location); //NOI18N
     }
     
-    private boolean isDosEnabled() {
-        return Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    private boolean isCosEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE));
     }
 }

@@ -76,6 +76,7 @@ abstract class Sampler implements Runnable, ActionListener {
     private ByteArrayOutputStream out;
     private SamplesOutputStream samplesStream;
     private long startTime;
+    private long nanoTimeCorrection;
     private long samples;
     private long laststamp;
     private double max;
@@ -140,6 +141,7 @@ abstract class Sampler implements Runnable, ActionListener {
             return;
         }
         startTime = System.currentTimeMillis();
+        nanoTimeCorrection = startTime * 1000000 - System.nanoTime();
         timer = new Timer(name);
         timer.scheduleAtFixedRate(new TimerTask() {
 
@@ -151,7 +153,7 @@ abstract class Sampler implements Runnable, ActionListener {
                     }
                     try {
                         ThreadInfo[] infos = threadBean.dumpAllThreads(false, false);
-                        long timestamp = System.nanoTime();
+                        long timestamp = System.nanoTime() + nanoTimeCorrection;
                         samplesStream.writeSample(infos, timestamp, Thread.currentThread().getId());
                         updateStats(timestamp);
                     } catch (Throwable ex) {

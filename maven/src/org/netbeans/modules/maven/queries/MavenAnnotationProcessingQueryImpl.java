@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
@@ -78,8 +79,13 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 return FileUtil.urlForArchiveOrDir(new File(FileUtil.toFile(prj.getProjectDirectory()), "target/generated-sources/annotations")); // NOI18N
             }
             public @Override Map<? extends String, ? extends String> processorOptions() {
-                // XXX read from maven-compiler-plugin config
-                return Collections.emptyMap();
+                 Map<String, String> options = new LinkedHashMap<String, String>();
+                 //here should be some parsing for ap parameters, but for now it's just a solution for issue 192101
+                 //after ap paremeters support in maven and nb maven project will be implemented this workaround should be moved to PersistenceScopesProviderImpl
+                String key = "eclipselink.canonicalmodel.use_static_factory";//NOI18N
+                String value = "false";//NOI18N
+                options.put(key, value);
+                return options;
             }
             public @Override void addChangeListener(ChangeListener l) {}
             public @Override void removeChangeListener(ChangeListener l) {}

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.awt.Image;
 import java.io.File;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.spi.autoupdate.*;
@@ -73,6 +74,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
 import org.openide.filesystems.FileUtil;
 
 
@@ -86,7 +88,7 @@ import org.openide.filesystems.FileUtil;
 public final class UpdateUnitProviderImpl {
 
     private UpdateProvider provider;
-    private static Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl");
+    private static final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl");
     private static final String REMOVED_MASK ="_removed";
     private static final String URL = "url";
     private static final String DISPLAY_NAME = "displayName";    
@@ -114,6 +116,22 @@ public final class UpdateUnitProviderImpl {
     public CATEGORY getCategory() {
         return getUpdateProvider().getCategory();
     }
+    public Image getSourceIcon() {
+        UpdateProvider up = getUpdateProvider();
+        if (up instanceof AutoupdateCatalogProvider) {
+            return ((AutoupdateCatalogProvider)up).getProviderCategory().getIcon();
+        }
+        return ProviderCategory.forValue(CATEGORY.COMMUNITY).getIcon();
+    }
+    public String getSourceDescription() {
+        UpdateProvider up = getUpdateProvider();
+        if (up instanceof AutoupdateCatalogProvider) {
+            return ((AutoupdateCatalogProvider) up).getProviderCategory().getDisplayName();
+        }
+        return ProviderCategory.forValue(CATEGORY.COMMUNITY).getDisplayName();
+    }
+
+    
     
     /** Display name of provider. This display name can be visualized in UI.
      * 
@@ -201,14 +219,14 @@ public final class UpdateUnitProviderImpl {
     }
 
     public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url) {
-        return createUpdateUnitProvider(codeName, displayName, url, CATEGORY.COMMUNITY);
+        return createUpdateUnitProvider(codeName, displayName, url, ProviderCategory.forValue(CATEGORY.COMMUNITY));
     }
     
     // static factory methods
-    public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url, CATEGORY category) {
+    public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url, ProviderCategory category) {
         codeName = normalizeCodeName (codeName);
         // store to Preferences
-        storeProvider(codeName, displayName, url);
+        storeProvider(codeName, displayName, url, category);
         
         AutoupdateCatalogProvider catalog = new AutoupdateCatalogProvider (codeName, displayName, url, category);
         
@@ -309,7 +327,9 @@ public final class UpdateUnitProviderImpl {
         UpdateManagerImpl.getInstance().clearCache ();
     }
     
-    private static void storeProvider (String codeName, String displayName, URL url) {
+    private static void storeProvider(
+        String codeName, String displayName, URL url, ProviderCategory c
+    ) {
         if (codeName.contains ("/")) {
             codeName = codeName.replaceAll ("/", "_");
         }
@@ -318,6 +338,8 @@ public final class UpdateUnitProviderImpl {
         
         providerPreferences.put (URL, url.toString ());
         providerPreferences.put (DISPLAY_NAME, displayName);
+        providerPreferences.put(CATEGORY_NAME, c.getDisplayName());
+        providerPreferences.put(AutoupdateCatalogFactory.ORIGINAL_CATEGORY_ICON_BASE, c.getIconBase());
     }
     
     private static Preferences getPreferences() {
@@ -337,7 +359,20 @@ public final class UpdateUnitProviderImpl {
         
         String toUrl = providerPreferences.get (URL, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_URL, null));
         String displayName = providerPreferences.get (DISPLAY_NAME, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_DISPLAY_NAME, codeName));
-        CATEGORY category = CATEGORY.valueOf(providerPreferences.get (CATEGORY_NAME, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_CATEGORY_NAME, CATEGORY.COMMUNITY.name())));
+        String categoryName = providerPreferences.get (CATEGORY_NAME, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_CATEGORY_NAME, CATEGORY.COMMUNITY.name()));
+        CATEGORY c;
+        try {
+            c = CATEGORY.valueOf(categoryName);
+        } catch (IllegalArgumentException ex) {
+            c = null;
+        }
+        String categoryIconBase = providerPreferences.get(AutoupdateCatalogFactory.ORIGINAL_CATEGORY_ICON_BASE, null);
+        ProviderCategory pc;
+        if (c != null) {
+            pc = ProviderCategory.forValue(c);
+        } else {
+            pc = ProviderCategory.create(categoryIconBase, categoryName);
+        }
         
         // filter Providers which store only its state
         if (toUrl == null) {
@@ -350,8 +385,7 @@ public final class UpdateUnitProviderImpl {
         } catch (MalformedURLException mue) {
             assert false : mue;
         }
-        
-        return new AutoupdateCatalogProvider (codeName, displayName, url, category);
+        return new AutoupdateCatalogProvider (codeName, displayName, url, pc);
     }
     
     private static boolean loadState (String codename) {
@@ -443,7 +477,7 @@ public final class UpdateUnitProviderImpl {
             }
         }
     }
-    
+
     private static class LookupListenerImpl implements LookupListener {
         final Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookupResult(UpdateProvider.class);
         
@@ -476,5 +510,10 @@ public final class UpdateUnitProviderImpl {
             buf.append (ch);
         }
         return buf.toString ();
+    }
+
+    @Override
+    public String toString() {
+        return provider.toString();
     }
 }

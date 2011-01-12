@@ -68,9 +68,11 @@ public class CreateHtmlFromTemplateAttributeProvider implements CreateFromTempla
         if(project == null) {
             version = HtmlVersion.getDefaultVersion();
         } else {
-            version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
+            String mimeType = template.getPrimaryFile().getMIMEType();
+            boolean xhtml = "text/xhtml".equals(mimeType); //NOI18N
+            version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project, xhtml);
             if(version == null) {
-                version = HtmlVersion.getDefaultVersion();
+                version = xhtml ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion();
             }
         }
 

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -224,14 +225,14 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     //TODO: what about Serializable
     private static final class MultiTokenInclude extends APTTokenAbstact {
 
-        private List<APTToken> origTokens;
+        private final List<APTToken> origTokens;
 
         public MultiTokenInclude(APTToken token) {
             if (token != null) {
                 origTokens = new ArrayList<APTToken>(1);
                 origTokens.add(token);
             } else {
-                origTokens = new ArrayList<APTToken>(0);
+                origTokens = Collections.emptyList();
             }
         }
 

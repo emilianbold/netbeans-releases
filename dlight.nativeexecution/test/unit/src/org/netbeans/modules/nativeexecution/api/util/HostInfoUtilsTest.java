@@ -52,7 +52,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -131,7 +130,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         for (Pair pair : pairs) {
             ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(pair.mspec);
             if (env == null) {
-                System.err.printf("Warning: execution environment not found for mspec {0}\n" + pair.mspec);
+                System.err.printf("Warning: execution environment not found for mspec %s\n", pair.mspec);
             } else {
                 ConnectionManager.getInstance().connectTo(env);
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
@@ -180,9 +179,9 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
             // As SlowHostInfoProviderEnabled we know that fetching info will
             // take at least 3 seconds. From the other hand it should not take
-            // more than 10 seconds (as we are on the localhost).
+            // more than 30 seconds (as we are on the localhost).
 
-            int count = 20;
+            int count = 60;
 
             while (!HostInfoUtils.isHostInfoAvailable(local)) {
                 try {
@@ -203,8 +202,8 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
                 Exceptions.printStackTrace(ex);
             }
 
-            assertTrue("HostInfo MUST be available already (10 seconds passed)", count > 0); // NOI18N
-            assertTrue("HostInfo cannot be available already (only " + ((20 - count) * 2) + " seconds passed)", count < 15); // NOI18N
+            assertTrue("HostInfo MUST be available already (30 seconds passed)", count > 0); // NOI18N
+            assertTrue("HostInfo cannot be available already (only " + ((60 - count) / 2) + " seconds passed)", count < 55); // NOI18N
 
             long startTime = System.currentTimeMillis();
             HostInfoUtils.dumpInfo(HostInfoUtils.getHostInfo(local), System.out);

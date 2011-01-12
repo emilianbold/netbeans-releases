@@ -50,8 +50,10 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -66,6 +68,9 @@ import org.openide.util.actions.SystemAction;
  * @author Jesse Glick
  * @see "issue #43143"
  */
+@ActionID(id = "org.netbeans.modules.project.ui.actions.StopBuildingAction", category = "Project")
+@ActionRegistration(displayName = "#LBL_stop_building")
+@ActionReference(path = "Menu/BuildProject", position = 1100)
 public final class StopBuildingAction extends CallableSystemAction implements ChangeListener {
     
    public StopBuildingAction()  {
@@ -115,7 +120,7 @@ public final class StopBuildingAction extends CallableSystemAction implements Ch
             public SpecialMenuItem() {
                 super(StopBuildingAction.this);
             }
-            public JComponent[] getMenuPresenters() {
+            public @Override JComponent[] getMenuPresenters() {
                 String label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building");
                 List<BuildExecutionSupport.Item> items = BuildExecutionSupportImpl.getInstance().getRunningItems();
                 switch (items.size()) {
@@ -132,18 +137,18 @@ public final class StopBuildingAction extends CallableSystemAction implements Ch
                 Mnemonics.setLocalizedText(this, label);
                 return new JComponent[] {this};
             }
-            public JComponent[] synchMenuPresenters(JComponent[] items) {
+            public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
                 return getMenuPresenters();
             }
         }
         return new SpecialMenuItem();
     }
 
-    public void stateChanged(ChangeEvent e) {
+    public @Override void stateChanged(ChangeEvent e) {
         final List<BuildExecutionSupport.Item> items = BuildExecutionSupportImpl.getInstance().getRunningItems();
 
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 SystemAction.get(StopBuildingAction.class).setEnabled(items.size() > 0);
             }
         });

@@ -62,7 +62,7 @@ package org.netbeans.modules.cnd.api.model;
  * Z<int> z;
  * int is specialization parameter based on type.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmTypeBasedSpecializationParameter extends CsmSpecializationParameter, CsmType {
 

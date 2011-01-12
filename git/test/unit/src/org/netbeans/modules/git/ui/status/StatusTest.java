@@ -47,20 +47,27 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
 import org.netbeans.modules.git.AbstractGitTestCase;
+import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileStatusCache;
+import org.netbeans.modules.git.FileStatusCache.ChangedEvent;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
+import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -158,6 +165,86 @@ public class StatusTest extends AbstractGitTestCase {
         commit();
         RepositoryInfo.getInstance(repositoryLocation).refresh();
         assertName(tc, "Git - work - master");
+    }
+    
+    public void test193781 () throws Exception {
+        File file = new File(repositoryLocation, "f");
+        file.createNewFile();
+        add();
+        commit();
+        
+        RequestProcessor.Task refreshNodesTask;
+        RequestProcessor.Task changeTask;
+        final VersioningPanelController[] controllers = new VersioningPanelController[1];
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run () {
+                controllers[0] = new VersioningPanelController();
+            }
+        });
+        VersioningPanelController controller = controllers[0];
+        Field f = VersioningPanelController.class.getDeclaredField("refreshNodesTask");
+        f.setAccessible(true);
+        refreshNodesTask = (Task) f.get(controller);
+        f = VersioningPanelController.class.getDeclaredField("changeTask");
+        f.setAccessible(true);
+        changeTask = (Task) f.get(controller);
+        f = VersioningPanelController.class.getDeclaredField("syncTable");
+        f.setAccessible(true);
+        GitStatusTable statusTable = (GitStatusTable) f.get(controller);
+        f = VCSStatusTable.class.getDeclaredField("tableModel");
+        f.setAccessible(true);
+        VCSStatusTableModel model = (VCSStatusTableModel) f.get(statusTable);
+        f = VersioningPanelController.class.getDeclaredField("changes");
+        f.setAccessible(true);
+        Map<File, FileStatusCache.ChangedEvent> changes = (Map<File, ChangedEvent>) f.get(controller);
+        final boolean barrier[] = new boolean[1];
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                while (!barrier[0]) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        
+        // do a modification
+        write(file, "modification");
+        getCache().refreshAllRoots(new File[] { file });
+        // and simultaneously refresh all nodes ...
+        controller.setContext(VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(file)) }));
+        // ... and simulate parallel change event from cache
+        refreshNodesTask.waitFinished();
+        synchronized (changes) {
+            FileInformation fi = getCache().getStatus(file);
+            assertTrue(fi.containsStatus(FileInformation.Status.MODIFIED_HEAD_WORKING_TREE));
+            changes.put(file, new ChangedEvent(file, null, fi));
+        }
+        changeTask.schedule(0);
+        for (;;) {
+            synchronized (changes) {
+                if (changes.isEmpty()) {
+                    break;
+                }
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(0, model.getNodes().length);
+        barrier[0] = true;
+        for (int i = 0; i < 100 && model.getNodes().length == 0; ++i) {
+            Thread.sleep(100);
+        }
+        changeTask.waitFinished();
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+        assertEquals(1, model.getNodes().length);
     }
 
     private void assertTable (final JTable table, Set<File> files) throws Exception {

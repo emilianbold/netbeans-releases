@@ -78,6 +78,7 @@ public class ProjectGenerator {
         private String hostUID;
         private boolean fullRemote;
         private CompilerSet cs;
+        private boolean defaultToolchain;
         private String postCreationClassName;
         private String mainProject;
         private String subProjects;
@@ -161,9 +162,10 @@ public class ProjectGenerator {
             return this;
         }
         
-        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs) {
+        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs, boolean defaultCS) {
             this.hostUID = hostUID;
             this.cs = cs;
+            this.defaultToolchain = defaultCS;
             return this;
         }
 
@@ -239,6 +241,10 @@ public class ProjectGenerator {
 
         public CompilerSet getToolchain() {
             return cs;
+        }
+
+        public boolean isDefaultToolchain() {
+            return defaultToolchain;
         }
 
         /**

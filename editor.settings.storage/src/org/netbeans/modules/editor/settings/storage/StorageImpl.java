@@ -158,17 +158,8 @@ public final class StorageImpl <K extends Object, V extends Object> {
 
             Map<K, V> dataForSave = new HashMap<K, V>(data);
             filterBeforeSave(dataForSave, mimePath, profile, defaults);
-            boolean resetCache = _save(mimePath, profile, defaults, dataForSave);
-            
-            if (cacheKey == null) {
-                cacheKey = cacheKey(profile, defaults);
-            }
-            
-            if (!resetCache) {
-                profilesData.put(cacheKey, Collections.unmodifiableMap(new HashMap<K, V>(data)));
-            } else {
-                profilesData.remove(cacheKey);
-            }
+            _save(mimePath, profile, defaults, dataForSave);
+            profilesCache.clear();
         }
     }
 

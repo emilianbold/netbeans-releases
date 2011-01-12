@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
  */
 public final class FunctionMetricFormatter {
     private static NumberFormat format = null;
+    private static NumberFormat longFormat = null;
 
     private static String formatValue(Object value) {
         // format with three decimals (including 0s)
@@ -67,7 +68,19 @@ public final class FunctionMetricFormatter {
         return format.format(value);
     }
 
-    public static final String getFormattedValue(FunctionCallWithMetric functionCall, String metricID){
+    private static String longFormatValue(Object value) {
+        // format with three decimals (including 0s)
+        if (longFormat == null) {
+            longFormat = NumberFormat.getNumberInstance();
+            longFormat.setGroupingUsed(false);
+            longFormat.setMinimumIntegerDigits(1);
+            longFormat.setMinimumFractionDigits(1);
+            longFormat.setMaximumFractionDigits(5);
+        }
+        return longFormat.format(value);
+    }
+
+    public static String getFormattedValue(FunctionCallWithMetric functionCall, String metricID){
         Object value = functionCall.getMetricValue(metricID);
         if (value instanceof Double || value instanceof Float) {
             return formatValue(value);
@@ -81,6 +94,23 @@ public final class FunctionMetricFormatter {
             editor.setValue(value);
             return editor.getAsText();
         }      
+        return value + "";
+    }
+
+    public static String getLongFormattedValue(FunctionCallWithMetric functionCall, String metricID){
+        Object value = functionCall.getMetricValue(metricID);
+        if (value instanceof Double || value instanceof Float) {
+            return longFormatValue(value);
+        }
+        if (value instanceof Time) {
+            return longFormatValue(((Time) value).getNanos() / 1e9);
+        }
+
+        PropertyEditor editor = value == null ? null : PropertyEditorManager.findEditor(value.getClass());
+        if (editor != null){
+            editor.setValue(value);
+            return editor.getAsText();
+        }
         return value + "";
     }
 

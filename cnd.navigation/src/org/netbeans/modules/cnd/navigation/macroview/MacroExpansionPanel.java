@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 /**
  * Macro Expansion panel.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 

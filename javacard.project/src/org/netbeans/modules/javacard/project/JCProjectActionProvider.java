@@ -325,7 +325,7 @@ public class JCProjectActionProvider implements ActionProvider {
         Card card = project.getCard();
         if (actionRequiresValidPlatform(command)) {
             boolean result = pform != null && pform.isValid() && card != null && card.isValid();
-            if (debug) {
+            if (result && debug) {
                 result &= card.getCapability(DebugCapability.class) != null;
             }
             return result;
@@ -336,6 +336,7 @@ public class JCProjectActionProvider implements ActionProvider {
 
     private boolean actionRequiresValidPlatform (String command) {
         return COMMAND_BUILD.equals(command) || COMMAND_DEBUG.equals(command) ||
+                COMMAND_REBUILD.equals(command) || COMMAND_CLEAN.equals(command) ||
                 COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) ||
                 COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_RUN.equals(command) ||
                 COMMAND_RUN_SINGLE.equals(command) || COMMAND_TEST.equals(command) ||

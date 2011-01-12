@@ -160,7 +160,7 @@ public class CssIndex {
             if(prefix.length() == 0) {
                 results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
             } else {
-                String searchExpression = ".*("+prefix+").*"; //NOI18N
+                String searchExpression = ".*("+encodeValueForRegexp(prefix)+").*"; //NOI18N
                 results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
             }
             for (IndexResult result : results) {
@@ -221,7 +221,7 @@ public class CssIndex {
     public Collection<FileObject> find(RefactoringElementType type, String value) {
         String keyName = type.getIndexKey();
         try {
-            String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
+            String searchExpression = ".*(" + encodeValueForRegexp(value) + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
             for (IndexResult result : filterDeletedFiles(results)) {
@@ -363,6 +363,24 @@ public class CssIndex {
             }
         }
         return filtered;
+    }
+
+    private static final String REGEXP_CHARS_TO_ENCODE = ".\\?*+&:{}[]()^$";
+    static String encodeValueForRegexp(String value) {
+        StringBuilder encoded = new StringBuilder();
+
+        out: for(int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            for(int j = 0; j < REGEXP_CHARS_TO_ENCODE.length(); j++) {
+                if(c == REGEXP_CHARS_TO_ENCODE.charAt(j)) {
+                    encoded.append('\\');
+                    encoded.append(c);
+                    continue out;
+                }
+            }
+            encoded.append(c);
+        }
+        return encoded.toString();
     }
 
     public static class AllDependenciesMaps {

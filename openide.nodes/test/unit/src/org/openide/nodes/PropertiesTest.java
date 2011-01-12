@@ -70,7 +70,8 @@ public class PropertiesTest extends NbTestCase {
         // Test normal property
         TestBean tb = new TestBean();
         np = new PropertySupport.Reflection( tb, int.class, "number" );        
-        assertEquals( "Value", np.getValue(), new Integer( 1 ) ); 
+        assertEquals( "Value", np.getValue(), new Integer( 1 ) );
+        assertEquals("number", np.getName());
         
         // Test setter only of type String
         NoSuchMethodException thrownException = null;
@@ -106,11 +107,21 @@ public class PropertiesTest extends NbTestCase {
         // Test get/set boolean
         np = new PropertySupport.Reflection( tb, boolean.class, "getSetBoolean" );        
         assertEquals( "Value", np.getValue(), Boolean.TRUE ); 
+        assertEquals("getSetBoolean", np.getName());
                 
         // Test is/set boolean
         np = new PropertySupport.Reflection( tb, boolean.class, "isSetBoolean" );        
         assertEquals( "Value", np.getValue(), Boolean.TRUE ); 
-        
+
+        // Test names with just one getter or setter
+        np = new PropertySupport.Reflection<Integer>(tb, int.class, "getNumber", null);
+        assertTrue(np.canRead());
+        assertFalse(np.canWrite());
+        assertEquals("number", np.getName());
+        np = new PropertySupport.Reflection<Integer>(tb, int.class, null, "setNumber");
+        assertFalse(np.canRead());
+        assertTrue(np.canWrite());
+        assertEquals("number", np.getName());
     }
     
     public static class TestBean {

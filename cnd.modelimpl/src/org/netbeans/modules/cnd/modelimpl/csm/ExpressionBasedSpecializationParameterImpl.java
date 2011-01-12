@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 /**
  * Template specialization parameter based on expression implementation.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ExpressionBasedSpecializationParameterImpl extends OffsetableBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
 

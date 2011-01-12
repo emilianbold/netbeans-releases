@@ -50,6 +50,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -150,7 +151,7 @@ public final class FileUtilities {
         return FileUtil.normalizeFile(f);    
     }
     
-   public static URI getDirURI(File root, String path) {
+   public static URI getDirURI(@NonNull File root, @NonNull String path) {
        String pth = path.trim();
        pth = pth.replaceFirst("^\\./", ""); //NOI18N
        pth = pth.replaceFirst("^\\.\\\\", ""); //NOI18N
@@ -158,8 +159,16 @@ public final class FileUtilities {
        return FileUtil.normalizeFile(src).toURI();
    }
     
-   public static URI getDirURI(FileObject root, String path) {
-       return getDirURI(FileUtil.toFile(root), path);
+   public static URI getDirURI(@NonNull FileObject root, @NonNull String path) {
+        File rootF = FileUtil.toFile(root);
+        if (rootF == null) {
+            try {
+                return root.getURL().toURI().resolve(path);
+            } catch (Exception x) { // FileStateInvalidException, URISyntaxException
+                return URI.create("file:/invalid/"); // NOI18N
+            }
+        }
+       return getDirURI(rootF, path);
    }
 
 //copied from o.o.f.FileUtil
@@ -208,7 +217,7 @@ public final class FileUtilities {
         if (basedir.equals(file)) {
             return "."; // NOI18N
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         File base = basedir;
         String filepath = file.getAbsolutePath();
         while (!filepath.startsWith(slashify(base.getAbsolutePath()))) {

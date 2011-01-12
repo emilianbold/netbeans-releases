@@ -146,10 +146,11 @@ public class ParentVersionError implements POMErrorFixProvider {
             if (!loadedRepos.isEmpty()) {
                 List<NBVersionInfo> infos = RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId(), loadedRepos.toArray(new RepositoryInfo[]{}));
                 for (NBVersionInfo info : infos) {
-                    ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
                     if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
                         continue;
                     }
+                    // XXX can probably just pick the first one, since RQ now sorts
+                    ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
                     if (currentAV.compareTo(av) < 0) {
                         currentAV = av;
                     }

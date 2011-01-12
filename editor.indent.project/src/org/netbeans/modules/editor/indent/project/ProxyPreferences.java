@@ -67,8 +67,13 @@ public final class ProxyPreferences extends AbstractPreferences {
 
     @Override
     protected void putSpi(String key, String value) {
-//        delegates[0].put(key, value);
-        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        checkDelegates();
+        for(int i = 0; i < delegates.length; i++) {
+            if (delegates[i] != null) {
+                delegates[i].put(key, value);
+                return;
+            }
+        }
     }
 
     @Override

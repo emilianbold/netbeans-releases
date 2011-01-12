@@ -57,33 +57,22 @@ public class ConvertAnonymousToInnerAction extends HintAction {
         final Fix[] f = new Fix[1];
         String error = null;
         
-        if (selection[0] == selection[1]) {
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
 
-                    public void run(CompilationController parameter) throws Exception {
-                        parameter.toPhase(JavaSource.Phase.RESOLVED);
-                        TreePath path = parameter.getTreeUtilities().pathFor(selection[0]);
-                        
-                        while (path != null && path.getLeaf().getKind() != Kind.NEW_CLASS)
-                            path = path.getParentPath();
-                        
-                        if (path == null)
-                            return ;
-                        
-                        f[0] = ConvertAnonymousToInner.computeFix(parameter, path, -1);
-                    }
-                }, true);
-                
-                if (f[0] == null) {
-                    error = "ERR_CaretNotInAnonymousInnerclass";
+                public void run(CompilationController parameter) throws Exception {
+                    parameter.toPhase(JavaSource.Phase.RESOLVED);
+                    
+                    f[0] = ConvertAnonymousToInner.computeFix(parameter, selection[0], selection[1], false);
                 }
-            } catch (IOException e) {
-                error = "ERR_SelectionNotSupported";
-                Exceptions.printStackTrace(e);
+            }, true);
+
+            if (f[0] == null) {
+                error = selection[0] == selection[1] ? "ERR_CaretNotInAnonymousInnerclass" : "ERR_SelectionNotSupported";
             }
-        } else {
+        } catch (IOException e) {
             error = "ERR_SelectionNotSupported";
+            Exceptions.printStackTrace(e);
         }
         
         if (f[0] != null) {

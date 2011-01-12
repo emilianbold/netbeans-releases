@@ -89,15 +89,6 @@ public class CompletionUtilities {
         return CsmContextUtilities.findFunctionLocalVariables(context);
     }
 
-    public static List<CsmField> findClassFields(Document doc, int offset) {
-        CsmClass clazz = findClassOnPosition(doc, offset);
-        List<CsmField> res = null;
-        if (clazz != null) {
-            res = new CsmProjectContentResolver().getFields(clazz, false);
-        }
-        return res;
-    }
-
     public static List<CsmDeclaration> findFileVariables(Document doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         if (file == null || !file.isValid()) {
@@ -108,8 +99,10 @@ public class CompletionUtilities {
     }
 
     // TODO: think if we need it?
-    public static CsmClass findClassOnPosition(Document doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
+    public static CsmClass findClassOnPosition(CsmFile file, Document doc, int offset) {
+        if (file == null) {
+            file = CsmUtilities.getCsmFile(doc, true, false);
+        }
         if (file == null || !file.isValid()) {
             return null;
         }
@@ -117,14 +110,12 @@ public class CompletionUtilities {
         CsmClass clazz = CsmContextUtilities.getClass(context, true, false);
         return clazz;
     }
-
-    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(Document doc, int offset) {
-        return findFunDefinitionOrClassOnPosition(doc, offset, null);
-    }
-
-    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(Document doc, int offset, FileReferencesContext fileReferncesContext) {
+    
+    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(CsmFile file, Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmOffsetableDeclaration out = null;
-        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
+        if (file == null) {
+            file = CsmUtilities.getCsmFile(doc, true, false);
+        }
         if (file != null) {
             CsmContext context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
             out = CsmContextUtilities.getFunctionDefinition(context);
@@ -155,7 +146,10 @@ public class CompletionUtilities {
             if (idBlk == null) {
                 idBlk = new int[]{dotPos, dotPos};
             }
-            CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
+            CsmFile currentFile = query.getCsmFile();
+            if (currentFile == null) {
+                currentFile = CsmUtilities.getCsmFile(doc, false, false);
+            }
             for (int ind = idBlk.length - 1; ind >= 1; ind--) {
                 CsmCompletionResult result = query.query(target, baseDoc, idBlk[ind], true, false, false);
                 if (result != null && !result.getItems().isEmpty()) {

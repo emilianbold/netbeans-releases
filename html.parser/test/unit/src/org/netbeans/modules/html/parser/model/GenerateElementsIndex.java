@@ -178,9 +178,9 @@ public class GenerateElementsIndex extends NbTestCase {
         TestSuite suite = new TestSuite();
 //        suite.addTest(new GenerateElementsIndex("test_GenerateNamedCharacterReferencesIndex"));
 
-        suite.addTest(new GenerateElementsIndex("test_GenerateSVGAndMATHMLElementsIndex"));
+//        suite.addTest(new GenerateElementsIndex("test_GenerateSVGAndMATHMLElementsIndex"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateElementsIndex"));
-//        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
+        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateAttributesIndex"));
         return suite;
     }
@@ -555,7 +555,10 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("\tnew Link(\"");
             out.write(e.name.getName());
             out.write("\", \"");
-            out.write(e.name.getLink());
+
+            //relativize the absolute link
+            String link = e.name.getLink().substring(GLOBAL_ATTRIBUTES_BASE_URL.length());
+            out.write(link);
             out.write("\"),\n\t \"");
             out.write(e.getDescription());
             out.write("\", ");
@@ -588,7 +591,9 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("new Link(\"");
             out.write(e.interfacee.getName());
             out.write("\", \"");
-            out.write(e.interfacee.getLink());
+            //relativize the absolute link
+            link = e.interfacee.getLink().substring(GLOBAL_ATTRIBUTES_BASE_URL.length());
+            out.write(link);
             out.write("\")");
 
             out.write("\n), \n\n");

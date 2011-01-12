@@ -77,7 +77,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.util.MylynUtils;
+import org.netbeans.libs.bugtracking.MylynUtils;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -583,13 +583,20 @@ public class BugzillaRepository extends Repository {
     }
 
     private void scheduleQueryRefresh() {
+        String schedule = System.getProperty("netbeans.t9y.bugzilla.force.refresh.schedule", "");
+        if(!schedule.isEmpty()) {
+            int delay = Integer.parseInt(schedule);
+            refreshQueryTask.schedule(delay); 
+            return;
+        }
+        
         int delay = BugzillaConfig.getInstance().getQueryRefreshInterval();
         Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
-        if(delay < 5 && System.getProperty("netbeans.t9y.bugzilla.force.refresh.delay") == null) {
+        if(delay < 5) {
             Bugzilla.LOG.log(Level.WARNING, " wrong query refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_QUERY_REFRESH}); // NOI18N
             delay = BugzillaConfig.DEFAULT_QUERY_REFRESH;
         }
-        refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
+        refreshQueryTask.schedule(10); // given in minutes
     }
 
     public void scheduleForRefresh(String id) {

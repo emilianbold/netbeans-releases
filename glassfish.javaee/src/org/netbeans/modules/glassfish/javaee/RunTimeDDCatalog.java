@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -328,9 +328,13 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         loc="schemas";
         for (int i=0;i<SchemaToURLMap.length;i = i+2){
             if (SchemaToURLMap[i].equals(publicId)){
-                return "nbres:/org/netbeans/modules/j2ee/sun/ide/resources/"+SchemaToURLMap[i+1]+".dtd";
-                
-                
+                File file = new File(installRoot+"/lib/"+loc+"/"+SchemaToURLMap[i+1]);
+                try{
+                    return file.toURI().toURL().toExternalForm();
+                }catch(Exception e){
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, file.getAbsolutePath(), e); // NOI18N
+                    return "";
+                }
             }
         }
         if (hasAdditionalMap) {
@@ -429,7 +433,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      */
     @Override
     public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/glassfish/javaee/resources/ServerInstanceIcon.png"); // NOI18N
     }
     
     /**

@@ -112,7 +112,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public void applyChanges() {                                 
         // executable
         if(!panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath())) {
-            SvnClientFactory.reset();
+            SvnClientFactory.resetCLI();
         }
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());

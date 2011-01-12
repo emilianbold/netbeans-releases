@@ -64,8 +64,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
+import javax.swing.undo.UndoableEdit;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -80,11 +83,13 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.ErrorManager;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -229,7 +234,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Result localCompletionResult;
-                synchronized (this) {
+                synchronized (CompletionImpl.this) {
                     localCompletionResult = completionResult;
                 }
                 if (localCompletionResult != null && !localCompletionResult.isQueryInvoked()) {
@@ -254,7 +259,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 String waitText = PLEASE_WAIT;
                 boolean politeWaitText = false;
                 Result localCompletionResult;
-                synchronized (this) {
+                synchronized (CompletionImpl.this) {
                     localCompletionResult = completionResult;
                 }
                 List<CompletionResultSetImpl> resultSets;
@@ -305,12 +310,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             return;
         }
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             try {
                 int modEndOffset = e.getOffset() + e.getLength();
-                if (getActiveComponent().getSelectionStart() != modEndOffset)
-                    return;
-
                 String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
                 for (int i = 0; i < activeProviders.length; i++) {
                     int type = activeProviders[i].getAutoQueryTypes(getActiveComponent(), typedText);
@@ -352,7 +354,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     public synchronized void caretUpdate(javax.swing.event.CaretEvent e) {
         assert (SwingUtilities.isEventDispatchThread());
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             // Check whether there is an active result being computed but not yet displayed
             // Caret update should be notified AFTER document modifications
             // thank to document listener priorities
@@ -458,16 +460,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 }
             }
             if (component != null) {
-                if (activeProviders != null) {
-                    component.addCaretListener(this);
-                    component.addKeyListener(this);
-                    component.addFocusListener(this);
-                    component.addMouseListener(this);
-                    Container parent = component.getParent();
-                    if (parent instanceof JViewport) {
-                        JViewport viewport = (JViewport) parent;
-                        viewport.addChangeListener(this);
-                    }
+                component.addCaretListener(this);
+                component.addKeyListener(this);
+                component.addFocusListener(this);
+                component.addMouseListener(this);
+                Container parent = component.getParent();
+                if (parent instanceof JViewport) {
+                    JViewport viewport = (JViewport) parent;
+                    viewport.addChangeListener(this);
                 }
             }
             activeComponent = (component != null)
@@ -486,7 +486,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             if (getActiveDocument() != null)
                 DocumentUtilities.removeDocumentListener(getActiveDocument(), this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
-            if (activeProviders != null)
+            if (document != null)
                 DocumentUtilities.addDocumentListener(document, this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
             activeDocument = (document != null) ? new WeakReference<Document>(document) : null;
@@ -498,7 +498,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     
     private void initActiveProviders(JTextComponent component) {
         activeProviders = (component != null)
-                ? getCompletionProvidersForComponent(component)
+                ? getCompletionProvidersForComponent(component, true)
                 : null;
         if (LOG.isLoggable(Level.FINE)) {
             StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
@@ -513,6 +513,29 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
             LOG.fine(sb.toString());
         }
+    }
+    
+    private boolean ensureActiveProviders() {
+        if (activeProviders != null)
+            return true;
+        JTextComponent component = getActiveComponent();
+        activeProviders = (component != null)
+                ? getCompletionProvidersForComponent(component, false)
+                : null;
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
+            if (activeProviders != null) {
+                for (int i = 0; i < activeProviders.length; i++) {
+                    sb.append("providers["); // NOI18N
+                    sb.append(i);
+                    sb.append("]: "); // NOI18N
+                    sb.append(activeProviders[i].getClass());
+                    sb.append('\n');
+                }
+            }
+            LOG.fine(sb.toString());
+        }
+        return activeProviders != null;
     }
     
     private void restartCompletionAutoPopupTimer() {
@@ -531,7 +554,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         docAutoPopupTimer.restart();
     }
     
-    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component) {
+    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component, boolean asyncWarmUp) {
         assert (SwingUtilities.isEventDispatchThread());
 
         if (component == null)
@@ -555,7 +578,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         if (providersCache.containsKey(mimeType))
             return providersCache.get(mimeType);
 
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        final Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        if (asyncWarmUp) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    lookup.lookupAll(CompletionProvider.class);
+                }
+            });
+            return null;
+        }
         Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
         int size = col.size();
         CompletionProvider[] ret = size == 0 ? null : col.toArray(new CompletionProvider[size]);
@@ -569,7 +601,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         JTextComponent comp = getActiveComponent();
         boolean compEditable = (comp != null && comp.isEditable());
-        boolean guardedPos = comp.getDocument() instanceof GuardedDocument && ((GuardedDocument)comp.getDocument()).isPosGuarded(comp.getSelectionEnd());
+        Document doc = comp.getDocument();
+        boolean guardedPos = doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(comp.getSelectionEnd());
         Object obj = inputMap.get(ks);
         if (obj != null) {
             Action action = actionMap.get(obj);
@@ -583,38 +616,43 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         if (layout.isCompletionVisible()) {
             CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null) {
-                if (compEditable && !guardedPos) {
-                    LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT"); // NOI18N
-                    r.setParameters(new Object[] {e.getKeyChar(), layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                    item.processKeyEvent(e);
-                    if (e.isConsumed()) {
-                        uilog(r);
+                sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
+                try {
+                    if (compEditable && !guardedPos) {
+                        LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT"); // NOI18N
+                        r.setParameters(new Object[] {e.getKeyChar(), layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                        item.processKeyEvent(e);
+                        if (e.isConsumed()) {
+                            uilog(r);
+                            return;
+                        }
+                    }
+                    // Call default action if ENTER was pressed
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
+                        e.consume();
+                        if (guardedPos) {
+                            Toolkit.getDefaultToolkit().beep();
+                        } else if (compEditable) {
+                            // Consuming completion
+                            if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) { // CTRL+ENTER
+                                consumeIdentifier();
+                            }
+                            LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
+                            r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                            item.defaultAction(getActiveComponent());
+                            uilog(r);
+                        }
                         return;
                     }
-                }
-                // Call default action if ENTER was pressed
-                if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
-                    e.consume();
-                    if (guardedPos) {
-                        Toolkit.getDefaultToolkit().beep();
-                    } else if (compEditable) {
-                        // Consuming completion
-                        if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) { // CTRL+ENTER
-                            consumeIdentifier();
-                        }
-                        LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
-                        r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                        item.defaultAction(getActiveComponent());
-                        uilog(r);
-                    }
-                    return;
+                } finally {
+                    sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
                     || e.getKeyCode() == KeyEvent.VK_PAGE_UP || e.getKeyCode() == KeyEvent.VK_PAGE_DOWN
                     || e.getKeyCode() == KeyEvent.VK_HOME || e.getKeyCode() == KeyEvent.VK_END) {
                 hideCompletion(false);                
             }
-            if (e.getKeyCode() == KeyEvent.VK_TAB && comp.getDocument().getProperty(CT_HANDLER_DOC_PROPERTY) == null) {
+            if (e.getKeyCode() == KeyEvent.VK_TAB && doc.getProperty(CT_HANDLER_DOC_PROPERTY) == null) {
                 e.consume();
                 if (guardedPos) {
                     Toolkit.getDefaultToolkit().beep();
@@ -624,6 +662,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         }
         layout.processKeyEvent(e);
+    }
+
+    static void sendUndoableEdit(Document d, UndoableEdit ue) {
+        if(d instanceof AbstractDocument) {
+            UndoableEditListener[] uels = ((AbstractDocument)d).getUndoableEditListeners();
+            UndoableEditEvent ev = new UndoableEditEvent(d, ue);
+            for(UndoableEditListener uel : uels) {
+                uel.undoableEditHappened(ev);
+            }
+        }
     }
     
     private void completionQuery(boolean refreshedQuery, boolean delayQuery, int queryType) {
@@ -822,7 +870,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         uilog(r);
         
         this.explicitQuery = explicitQuery;
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             completionAutoPopupTimer.stop();
             synchronized(this) {
                 if (explicitQuery && completionResult != null) {
@@ -922,23 +970,28 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final boolean displayAdditionalItems = hasAdditionalItems;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
-                synchronized(this) {
+                synchronized(CompletionImpl.this) {
                     if (result != completionResult)
                         return;
                 }
                 JTextComponent c = getActiveComponent();
+                Document doc = c.getDocument();
                 CompletionSettings cs = CompletionSettings.getInstance(c);
                 int caretOffset = c.getSelectionStart();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
                         && cs.completionInstantSubstitution()
-                        && c.isEditable() && !(c.getDocument() instanceof GuardedDocument && ((GuardedDocument)c.getDocument()).isPosGuarded(caretOffset))) {
+                        && c.isEditable() && !(doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(caretOffset))) {
                     try {
                         int[] block = Utilities.getIdentifierBlock(c, caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
                             CompletionItem item = sortedResultItems.get(0);
-                            if (item.instantSubstitution(c)) {
-                                return;
+                            sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
+                            try {
+                                if (item.instantSubstitution(c))
+                                    return;
+                            } finally {
+                                sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
                             }
                         }
                     } catch (BadLocationException ex) {
@@ -1040,7 +1093,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             documentationCancel();
             layout.clearDocumentationHistory();
             documentationQuery();
@@ -1166,7 +1219,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
-        if (activeProviders != null) {
+        if (ensureActiveProviders()) {
             toolTipCancel();
             toolTipQuery();
         }

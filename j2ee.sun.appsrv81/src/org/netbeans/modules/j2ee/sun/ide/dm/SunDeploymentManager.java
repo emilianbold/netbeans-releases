@@ -214,7 +214,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 this.userName = userName;
             }
             if (password == null && props != null) {
-                this.password = DeploymentManagerProperties.getPassword(props);
+                this.password = ""; // DeploymentManagerProperties.getPassword(props);
             } else {
                 this.password = password;
             }
@@ -251,7 +251,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try {
             if (isConnected){
                 if (df!=null) {
-                    innerDM = df.getDeploymentManager(uri,userName,password);
+                    innerDM = df.getDeploymentManager(uri,userName,getPassword());
                 }
             } else{
                 if (df!=null) {

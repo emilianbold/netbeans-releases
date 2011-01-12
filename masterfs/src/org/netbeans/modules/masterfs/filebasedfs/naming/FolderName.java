@@ -57,8 +57,8 @@ public class FolderName extends FileName {
 
 
     @SuppressWarnings("LeakingThisInConstructor")
-    FolderName(final FileNaming parent, final File file) {
-        super(parent, file);
+    FolderName(final FileNaming parent, final File file, Integer theKey) {
+        super(parent, file, theKey);
         synchronized (FolderName.class) {
             FolderName.fileCache.put(this, file);
         }

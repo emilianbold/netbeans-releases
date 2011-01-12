@@ -131,7 +131,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
      * since the last application (via initialApply())
      */
 
-    private static final int DIRTY_ARGS		= 1<<0;
+    private static final int DIRTY_ARGS		= 1;
     private static final int DIRTY_DIR		= 1<<1;
     private static final int DIRTY_ENVVARS	= 1<<2;
     private static final int DIRTY_PRELOAD	= 1<<3;
@@ -253,10 +253,12 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
         RunProfile mainRunProfile = mainSettings.runProfile();
         DbgProfile mainDbgProfile = mainSettings.dbgProfile();
 	String args = mainRunProfile.getArgsFlat();
+	/*
 	if (mainDbgProfile.getRedirection() != null) {
 	    args += ' ';
 	    args += mainDbgProfile.getRedirection();
 	}
+	 */
 	return args;
     }
 
@@ -323,6 +325,14 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
     public void noteRedir(String infile, String outfile, boolean append) {
 	ignoreSettingsChange = true;
 	currentDbgProfile().setRedirection(infile, outfile, append);
+	String args = currentRunProfile().getArgsFlat();
+	String redirection = currentDbgProfile().getRedirection();
+	if (redirection != null) {
+	    args += " ";//NOI18N
+	    args += currentDbgProfile().getRedirection();
+	}
+	if (args != null)
+	    currentRunProfile().setArgsRaw(args);
 	ignoreSettingsChange = false;
     } 
 

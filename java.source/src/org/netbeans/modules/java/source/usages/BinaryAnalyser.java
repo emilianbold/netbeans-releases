@@ -107,8 +107,8 @@ import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
-import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -166,7 +166,7 @@ public class BinaryAnalyser {
     private final File cacheRoot;
     private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
-    private final LMListener lmListener;
+    private final LowMemoryWatcher lmListener;
     private Continuation cont;
     private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
@@ -175,7 +175,7 @@ public class BinaryAnalyser {
        Parameters.notNull("cacheRoot", cacheRoot);  //NOI18N
        this.writer = writer;
        this.cacheRoot = cacheRoot;
-       this.lmListener = new LMListener();
+       this.lmListener = LowMemoryWatcher.getInstance();
     }
 
 

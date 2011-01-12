@@ -10,13 +10,11 @@ public class SwitchNode extends JavaVMOption<OptionValue.SwitchOnly> {
     public SwitchNode(Token t) {
         super(t);
         if (t != null) {
-//            throw new IllegalArgumentException("Cannot provide null token.");
             setName(t.getText());
             setValue((OptionValue.SwitchOnly) OptionValue.createSwitch());
         }
-
     }
-
+        
     public SwitchNode(int ttype, Token t) {
         this(t);
     }

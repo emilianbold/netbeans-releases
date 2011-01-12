@@ -17,9 +17,8 @@ import javax.swing.text.JTextComponent;
  */
 public class EndTagAutocompletionResultItem extends XMLResultItem {
     
-    /** Creates a new instance of EndTagAutocompletionResultItem */
-    public EndTagAutocompletionResultItem(String text) {
-        super(endtagize(text));
+    public EndTagAutocompletionResultItem(int position, String text) {
+        super(position, endtagize(text));
     }
 
     private static String endtagize(String text) {

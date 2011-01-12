@@ -202,21 +202,27 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
             String logfolder = root.substring(0, i) + "/log"; // NOI18N
             File log = new File(logfolder);
             if (log.exists() && log.isDirectory() && log.canRead()) {
-                for (File when : log.listFiles()) {
-                    if (when.exists() && when.isDirectory() && when.canRead()) {
-                        for (File l : when.listFiles()) {
-                            String current = l.getAbsolutePath();
-                            if (current.endsWith("/nightly.log")) { // NOI18N
-                                if (latest == null) {
-                                    latest = current;
-                                } else {
-                                    String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
-                                    String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
-                                    if (folder1.compareTo(folder2) < 0) {
-                                        latest = current;
+                File[] ff = log.listFiles();
+                if (ff != null) {
+                    for (File when : ff) {
+                        if (when.exists() && when.isDirectory() && when.canRead()) {
+                            File[] ww = when.listFiles();
+                            if (ww != null) {
+                                for (File l : ww) {
+                                    String current = l.getAbsolutePath();
+                                    if (current.endsWith("/nightly.log")) { // NOI18N
+                                        if (latest == null) {
+                                            latest = current;
+                                        } else {
+                                            String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                            String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
+                                            if (folder1.compareTo(folder2) < 0) {
+                                                latest = current;
+                                            }
+                                        }
+                                        break;
                                     }
                                 }
-                                break;
                             }
                         }
                     }
@@ -239,7 +245,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeMakeLog.class, "NotFoundMakeLog")));
         }
-        return new ApplicableImpl(true, null, null, 80, false, null, null, null);
+        return new ApplicableImpl(true, null, null, 80, false, null, null, null, null);
     }
 
     @Override

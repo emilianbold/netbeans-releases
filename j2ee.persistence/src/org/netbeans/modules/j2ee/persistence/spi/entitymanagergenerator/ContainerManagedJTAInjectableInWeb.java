@@ -50,12 +50,18 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.spi.targetinfo.JPATargetInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Generates the code needed for invoking an <code>EntityManager</code> in Java EE 5
@@ -69,6 +75,15 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
     public ClassTree generate() {
         
         ClassTree modifiedClazz = getClassTree();
+        FileObject fo = FileUtil.toFileObject(new File(getWorkingCopy().getCompilationUnit().getSourceFile().toUri().getPath()));
+
+        Project project = FileOwnerQuery.getOwner(fo);
+        JPATargetInfo ti = project != null ? project.getLookup().lookup(JPATargetInfo.class) : null;
+        boolean isEJB = false;
+        if(ti != null){
+            JPATargetInfo.TargetType tt = ti.getType(fo, getClassElement().getQualifiedName().toString());
+            isEJB = JPATargetInfo.TargetType.EJB.equals(tt);
+        }
         
         FieldInfo em = getEntityManagerFieldInfo();
         
@@ -92,7 +107,7 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
                 Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),
-                "{ " + getMethodBody(em) + "}",
+                "{ " + getMethodBody(em, isEJB) + "}",
                 null
                 );
         
@@ -100,17 +115,17 @@ public final class ContainerManagedJTAInjectableInWeb extends EntityManagerGener
     }
     
 
-    private String getMethodBody(FieldInfo em){
+    private String getMethodBody(FieldInfo em, boolean isEJB){
         String ctxInit = em.isExisting() ? "" : "    javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup(\"java:comp/env\");\n";
         String emInit = em.isExisting() ? "    {0}.joinTransaction();\n" :"    javax.persistence.EntityManager {0} =  (javax.persistence.EntityManager) ctx.lookup(\"persistence/LogicalName\");\n";
         
         String text =
                 "try '{'\n" +
                 ctxInit +
-                "    utx.begin();\n" +
+                (isEJB ? "" : "    utx.begin();\n") +
                 emInit +
                 generateCallLines(em.getName()) +
-                "    utx.commit();\n" +
+                (isEJB ? "" : "    utx.commit();\n") +
                 "} catch(Exception e) '{'\n" +
                 "    java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,\"exception caught\", e);\n" +
                 "    throw new RuntimeException(e);\n" +

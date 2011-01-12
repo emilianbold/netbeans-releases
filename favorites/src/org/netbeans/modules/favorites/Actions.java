@@ -45,8 +45,6 @@
 package org.netbeans.modules.favorites;
 
 import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -56,9 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
@@ -77,11 +73,9 @@ import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /** List of all actions available for Favorites module.
@@ -100,11 +94,6 @@ public final class Actions extends Object {
         // noinstances
     }
     
-    @ActionID(id = "org.netbeans.modules.favorites.View", category = "Window")
-    @ActionRegistration(displayName = "#ACT_View", iconBase = "org/netbeans/modules/favorites/resources/actionView.png")
-    @ActionReference(position = 350, name = "ViewFavoritesTabAction", path = "Menu/Window")
-    public static Action view () { return View.getDefault(); }
-
     @ActionID(id = "org.netbeans.modules.favorites.Add", category = "Window")
     @ActionRegistration(displayName = "#ACT_Add")
     @ActionReference(position = 300, path = "UI/ToolActions/Files")
@@ -120,40 +109,6 @@ public final class Actions extends Object {
     @ActionRegistration(displayName = "#ACT_Select_Main_Menu")
     @ActionReference(position = 2800, name = "org-netbeans-modules-favorites-SelectInFavorites", path = "Menu/GoTo")
     public static ContextAwareAction select () { return Select.getDefault(); }
-    
-    /**
-     * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
-     *
-     * @author  Peter Zavadsky
-     */
-    private static class View extends AbstractAction implements HelpCtx.Provider {
-        
-        private static final View VIEW = new View ();
-        
-        public View() {
-            putValue(NAME, NbBundle.getMessage(Actions.class,
-                    "ACT_View"));
-            Image image = ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
-            putValue(SMALL_ICON, image != null ? new ImageIcon(image) : null);
-        }
-        
-        public static Action getDefault () {
-            return VIEW;
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            final TopComponent projectsTab = Tab.findDefault();
-            projectsTab.open();
-            projectsTab.requestActive();
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(View.class);
-        }
-    } // end of View
-    
     
     /** An action which selects activated nodes in the Explorer's tab.
     * @author   Dusan Balek

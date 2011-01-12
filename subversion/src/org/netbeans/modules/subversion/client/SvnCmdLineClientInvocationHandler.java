@@ -83,11 +83,7 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
     }
 
     private boolean isHandledIntern(Method method, Object[] args) {
-        boolean exec = ISVNSTATUS_IMPL.equals("exec"); // NOI18N
-        if(exec) {
-            return false;
-        }                
-        return isLocalReadCommand(method, args);
+        return false;
     }
 
     private Object handleIntern(Method method, Object[] args) throws LocalSubversionException {

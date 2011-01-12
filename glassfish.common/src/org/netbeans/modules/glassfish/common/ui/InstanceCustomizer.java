@@ -163,14 +163,17 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
 
+        labelLocation.setLabelFor(textLocation);
         org.openide.awt.Mnemonics.setLocalizedText(labelLocation, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Location")); // NOI18N
 
         textLocation.setEditable(false);
 
+        labelDomainsFolder.setLabelFor(textDomainsFolder);
         org.openide.awt.Mnemonics.setLocalizedText(labelDomainsFolder, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_DomainsFolder")); // NOI18N
 
         textDomainsFolder.setEditable(false);
 
+        labelDomainName.setLabelFor(textDomainName);
         org.openide.awt.Mnemonics.setLocalizedText(labelDomainName, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_DomainName")); // NOI18N
 
         textDomainName.setEditable(false);
@@ -228,9 +231,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                             .addComponent(labelDomainName))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                            .addComponent(textDomainsFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                            .addComponent(textDomainName, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)))
+                            .addComponent(textLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                            .addComponent(textDomainsFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                            .addComponent(textDomainName, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)))
                     .addComponent(enableSessionsCheckBox))
                 .addContainerGap())
         );

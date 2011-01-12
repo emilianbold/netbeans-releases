@@ -54,6 +54,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -192,7 +193,7 @@ public class TraceXRef extends TraceModel {
             }
         } finally {
             super.shutdown(true);
-            APTDriver.getInstance().close();
+            APTDriver.close();
             APTFileCacheManager.close();
         }
     }
@@ -246,8 +247,9 @@ public class TraceXRef extends TraceModel {
     }
     private static final int FACTOR = 1;
 
-    public static void traceProjectRefsStatistics(CsmProject csmPrj, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
+    public static void traceProjectRefsStatistics(CsmProject csmPrj, final Map<CharSequence, Long> times, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
         final XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
+        final boolean collect = times.isEmpty();
         Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
         int i = 0;
         for (CsmFile file : csmPrj.getAllFiles()) {
@@ -277,8 +279,15 @@ public class TraceXRef extends TraceModel {
                         }
                         String oldName = Thread.currentThread().getName();
                         try {
-                            Thread.currentThread().setName("Testing xRef " + file.getAbsolutePath()); //NOI18N
-                            analyzeFile(file, params, bag, printOut, printErr, canceled);
+                            CharSequence absolutePath = file.getAbsolutePath();
+                            if (!collect && !times.containsKey(absolutePath)) {
+                                return;
+                            }
+                            Thread.currentThread().setName("Testing xRef " + absolutePath); //NOI18N
+                            long time = analyzeFile(file, params, bag, printOut, printErr, canceled);
+                            if (collect && (time > params.timeThreshold)) {
+                                times.put(absolutePath, time);
+                            }
                         } finally {
                             Thread.currentThread().setName(oldName);
                         }
@@ -358,7 +367,7 @@ public class TraceXRef extends TraceModel {
         }
     };
 
-    private static void analyzeFile(final CsmFile file, final StatisticsParameters params,
+    private static long analyzeFile(final CsmFile file, final StatisticsParameters params,
             final XRefResultSet<UnresolvedEntry> bag, final PrintWriter out, final OutputWriter printErr,
             final AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
@@ -380,6 +389,7 @@ public class TraceXRef extends TraceModel {
         }
         bag.incrementLineCounter(lineCount);
         out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time + "ms"); // NOI18N
+        return time;
     }
 
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<UnresolvedEntry> bag,
@@ -1124,11 +1134,13 @@ public class TraceXRef extends TraceModel {
         public final boolean analyzeSmartAlgorith;
         public final boolean reportUnresolved;
         public final int numThreads;
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads) {
+        public final long timeThreshold;
+        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads, long timeThreshold) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
             this.reportUnresolved = reportUnresolved;
             this.numThreads = numThreads;
+            this.timeThreshold = timeThreshold;
         }
     }
 

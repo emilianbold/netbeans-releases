@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.SignalSupport;
+import org.openide.util.NotImplementedException;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
@@ -122,6 +123,25 @@ public final class CommonTasksSupport {
             final Writer error) {
 
         return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFile.getAbsolutePath(), error);
+    }
+
+    /**
+     * Read remote file content
+     *
+     * @param srcFileName full path to the source file with file name
+     * @param srcExecEnv execution environment that describes the host to copy file from
+     * @param offset in source file
+     * @param count number of reading bytes
+     * @param error if not <tt>NULL</tt> and some error occurs during reading,
+     *        an error message will be written to this <tt>Writer</tt>.
+     * @return byte array with file content. Returns byte[0] in case error. Result can be less of count in case end of file.
+     */
+    public static byte[] readFile(
+            final String srcFileName,
+            final ExecutionEnvironment srcExecEnv,
+            final long offset, final int count,
+            final Writer error) {
+            throw new NotImplementedException();
     }
 
     public static Future<Integer> uploadFile(UploadParameters parameters) {

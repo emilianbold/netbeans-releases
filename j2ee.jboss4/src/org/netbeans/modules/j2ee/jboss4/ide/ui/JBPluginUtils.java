@@ -105,6 +105,7 @@ public class JBPluginUtils {
 
     // For JBoss 5.0 under JBOSS_ROOT_DIR/lib
     public static final String[] JBOSS5_CLIENT_LIST = {
+        "javassist.jar",
         "jbossall-client.jar",
         "jboss-deployment.jar",
         "jnp-client.jar",

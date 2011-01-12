@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.io.*;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 
 import org.openide.ErrorManager;
@@ -56,6 +57,7 @@ import org.openide.text.Line.Part;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 
 
@@ -69,6 +71,7 @@ import org.openide.util.Lookup;
  * in the debuggerjpda module.
  */
 public final class EvalAnnotation extends Annotation {
+    private final RequestProcessor RP = new RequestProcessor("Debugger tooltip evaluation", 2); //NOI18N
 
     // interface Annotation
     public String getAnnotationType() {
@@ -92,27 +95,17 @@ public final class EvalAnnotation extends Annotation {
         if (lp == null) {
             return null;
         }
-
-        evalExpression(lp);
+        
+        RP.post(new Runnable() {
+            public void run() {
+                evalExpression(lp);
+            }
+        });
 
         return null;
     }
 
     private void evalExpression(final Part lp) {
-
-        if (!SwingUtilities.isEventDispatchThread()) {
-            try {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        evalExpression(lp);
-                    }
-                });
-            } catch (Exception e) {
-            }
-            return;
-        }
-
         try {
             Line line = lp.getLine();
             Lookup lineLookup = line.getLookup();
@@ -120,22 +113,10 @@ public final class EvalAnnotation extends Annotation {
 
             final EditorCookie ec = dO.getCookie(EditorCookie.class);
             StyledDocument doc = ec.openDocument();
-            Element lineElem =
-                    NbDocument.findLineRootElement(doc).
-                    getElement(line.getLineNumber());
 
-            if (lineElem == null) {
+            JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
+            if (ep == null) {
                 return;
-            }
-
-
-            JEditorPane[] eps = ec.getOpenedPanes();
-
-            JEditorPane ep;
-            if (eps == null || eps.length < 1) {
-                return;
-            } else {
-                ep = eps[0];
             }
 
             int pos = lp.getColumn();
@@ -143,6 +124,13 @@ public final class EvalAnnotation extends Annotation {
             String expr = getExpr(doc, ep,
                     NbDocument.findLineOffset(doc, line.getLineNumber()) + pos);
             if (expr == null) {
+                Element lineElem =
+                    NbDocument.findLineRootElement(doc).
+                    getElement(line.getLineNumber());
+
+                if (lineElem == null) {
+                    return;
+                }
                 // not selected case
                 int lineStartOffset = lineElem.getStartOffset();
                 int lineLen = lineElem.getEndOffset() - lineStartOffset;

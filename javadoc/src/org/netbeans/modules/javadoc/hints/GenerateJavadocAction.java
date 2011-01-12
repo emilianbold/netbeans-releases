@@ -103,44 +103,58 @@ public final class GenerateJavadocAction extends TextAction {
             return;
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        if (!SourceUtils.isScanInProgress()) {
+            try {
+                Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
 
-            @Override
-            public void run() {
-                try {
-                    if (SourceUtils.isScanInProgress()) {
-                        //wait 1ms
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        //still scanning? -> exit!
-                        if (SourceUtils.isScanInProgress()) {
-                            return;
-                        }
-
-                    }
-                    final Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
-                    if (desc != null) {
-                        // add javadoc content
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    generate(doc, desc, jtc);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (desc != null) {
+                    // add javadoc content
+                    generate(doc, desc, jtc);
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        });
-        
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        if (SourceUtils.isScanInProgress()) {
+                            //wait 1ms
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            //still scanning? -> exit!
+                            if (SourceUtils.isScanInProgress()) {
+                                return;
+                            }
+
+                        }
+                        final Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
+                        if (desc != null) {
+                            // add javadoc content
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        generate(doc, desc, jtc);
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                            });
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
     }
     
     private Descriptor prepareGenerating(final Document doc, final int offset) throws IOException {

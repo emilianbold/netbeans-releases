@@ -53,7 +53,9 @@ import java.util.logging.Logger;
  *
  * @author ivan
  */
-final class Util {
+
+// public because it's needed by "Term Driver".
+public final class Util {
 
     /**
      * Assign a numeric value to the {@link FileDescriptor} object.

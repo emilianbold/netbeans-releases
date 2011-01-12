@@ -63,7 +63,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
@@ -88,6 +87,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         return new HelpCtx(CheckoutStep.class);
     }    
 
+    @Override
     protected JComponent createComponent() {
         if (workdirPanel == null) {
             workdirPanel = new CheckoutPanel();
@@ -134,6 +134,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         workdirPanel.scanForProjectsCheckBox.setSelected(SvnModuleConfig.getDefault().getShowCheckoutCompleted());
     }    
      
+    @Override
     protected void validateBeforeNext() {
         if (validateUserInput(true)) {
             String text = workdirPanel.workdirTextField.getText();
@@ -211,9 +212,11 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
         }
         fileChooser.addChoosableFileFilter(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory();
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(CheckoutStep.class, "BK0008");// NOI18N
             }
@@ -273,22 +276,27 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         return defaultDir;
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {        
         validateUserInput(false);
         repositoryFoldersChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput(false);
         repositoryFoldersChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {        
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         if (!invalidTarget) {
             // click on Finish triggers in a series of focus events which results in deletion of the invalid target message
@@ -298,11 +306,13 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         repositoryFoldersChanged();
     }
         
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert e.getSource() == workdirPanel.browseWorkdirButton;
         onBrowseWorkdir();
     }
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         Object source = e.getSource();
         if (source == workdirPanel.scanForProjectsCheckBox) {

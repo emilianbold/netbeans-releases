@@ -225,12 +225,15 @@ final class NewTCIterator extends BasicWizardIterator {
         final String mode = model.getMode();
 
         boolean actionLessTC;
+        boolean xmlLessTC;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.windows");
             actionLessTC = current == null || current.compareTo(new SpecificationVersion("6.24")) >= 0; // NOI18N
+            xmlLessTC = current == null || current.compareTo(new SpecificationVersion("6.37")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
             actionLessTC = false;
+            xmlLessTC = false;
         }
         boolean propertiesPersistence;
         try {
@@ -295,7 +298,8 @@ final class NewTCIterator extends BasicWizardIterator {
         final String tcName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.java"); //NOI18N
         FileObject template = CreatedModifiedFiles.getTemplate(
-            propertiesPersistence ? "templateTopComponentAnno.java" : "templateTopComponent.java" //NOI18N
+            xmlLessTC ? "templateTopComponent637.java" :    
+            (propertiesPersistence ? "templateTopComponentAnno.java" : "templateTopComponent.java")
         );
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
         // x. generate java classes
@@ -311,17 +315,23 @@ final class NewTCIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.createFileWithSubstitutions(actionName, template, replaceTokens));
         }
         
-        final String settingsName = name + "TopComponent.settings"; //NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateSettings.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null)); // NOI18N
+        if (!xmlLessTC) {
+            final String settingsName = name + "TopComponent.settings"; //NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateSettings.xml");//NOI18N
+            fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null)); // NOI18N
+        }
         
-        final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateWstcref.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
-                             template, replaceTokens, null, null));
+        if (!xmlLessTC) {
+            final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateWstcref.xml");//NOI18N
+            fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
+                                 template, replaceTokens, null, null));
+        }
 
         String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties"); //NOI18N
-        if (actionLessTC) {
+        if (xmlLessTC) {
+            // nothing in layer
+        } else if (actionLessTC) {
             String path = "Actions/Window/" + packageName.replace('.','-') + "-" + name + "Action.instance"; // NOI18N
             {
                 Map<String,Object> attrs = new HashMap<String,Object>();

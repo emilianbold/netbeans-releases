@@ -75,7 +75,12 @@ public class PositionManager {
     }
     
     public static CsmOffsetable.Position getPosition(CsmUID<CsmFile> uid, int posID) {
-        return new LazyOffsPositionImpl((FileImpl) UIDCsmConverter.UIDtoFile(uid), getOffset(uid, posID));
+        CsmFile file = UIDCsmConverter.UIDtoFile(uid);
+        if (file instanceof FileImpl) {
+            return new LazyOffsPositionImpl((FileImpl) file, getOffset(uid, posID));
+        } else {
+            return new PositionImpl(posID);
+        }
     }
 
     private static MapBasedTable getPositionTable(Key key) {
@@ -177,6 +182,34 @@ public class PositionManager {
 
             FOWARD,
             BACKWARD,
+        }
+    }
+    
+    private static class PositionImpl implements CsmOffsetable.Position {
+        private final int offset;
+
+        public PositionImpl(int offset) {
+            this.offset = offset;
+        }
+
+        @Override
+        public int getOffset() {
+            return offset;
+        }
+
+        @Override
+        public int getLine() {
+            return -1;
+        }
+
+        @Override
+        public int getColumn() {
+            return -1;
+        }
+
+        @Override
+        public String toString() {
+            return "offset=" + offset; // NOI18N
         }
     }
 }

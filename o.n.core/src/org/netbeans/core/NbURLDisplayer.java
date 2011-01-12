@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +58,8 @@ import org.netbeans.core.ui.SwingBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -212,10 +215,11 @@ public final class NbURLDisplayer extends URLDisplayer {
                 private URL url;
                 public @Override void setURL(URL url) {
                     this.url = url;
+                    URL url2 = externalize(url);
                     try {
-                        desktop.browse(url.toURI());
+                        desktop.browse(url2.toURI());
                     } catch (Exception x) {
-                        Logger.getLogger(NbURLDisplayer.class.getName()).log(Level.INFO, "showing: " + url, x);
+                        Logger.getLogger(NbURLDisplayer.class.getName()).log(Level.INFO, "showing: " + url2, x);
                     }
                 }
                 public @Override URL getURL() {
@@ -241,6 +245,39 @@ public final class NbURLDisplayer extends URLDisplayer {
                 public @Override boolean isHistory() {return false;}
                 public @Override void showHistory() {}
             };
+        }
+        // Adapted from org.netbeans.modules.extbrowser.URLUtil. Useful in conjunction with o.n.m.httpserver.
+        private static URL externalize(URL u) {
+            String proto = u.getProtocol();
+            // Standard browser *might* handle jar protocol, but cannot be relied upon.
+            if (proto == null || proto.equals("file") || proto.equals("http") || proto.equals("https")) { // NOI18N
+                return u;
+            }
+            // Possibly internal protocol; try to convert to an external form, useful e.g. with httpserver module.
+            FileObject f = URLMapper.findFileObject(u);
+            if (f == null) {
+                // Oh well, hope for the best.
+                return u;
+            }
+            URL u2 = URLMapper.findURL(f, URLMapper.NETWORK);
+            if (u2 == null) {
+                // Again, hope for the best.
+                return u;
+            }
+            try {
+                String query = u.getQuery();
+                if (query != null) {
+                    u2 = new URL(u2, "?" + query); // XXX encoding?
+                }
+                String anchor = u.getRef();
+                if (anchor != null) {
+                    u2 = new URL(u2, "#" + anchor); // XXX encoding?
+                }
+            } catch (MalformedURLException x) {
+                // Query/anchor might have been important.
+                return u;
+            }
+            return u2;
         }
     }
 

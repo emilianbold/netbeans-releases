@@ -6,6 +6,7 @@
     <conf name="Debug" type="1">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <runprofile version="5">
         <args>"arg 1" "arg 2" "arg 3" "arg 4"</args>
@@ -20,6 +21,7 @@
     <conf name="Release" type="1">
       <toolsSet>
         <developmentServer>X-HOST-UID-X</developmentServer>
+        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <runprofile version="5">
         <args>"arg 1" "arg 2" "arg 3" "arg 4"</args>

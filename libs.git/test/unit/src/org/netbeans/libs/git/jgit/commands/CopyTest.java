@@ -83,13 +83,13 @@ public class CopyTest extends AbstractGitTestCase {
             client.copyAfter(folder, target, m);
             fail();
         } catch (GitException ex) {
-            assertEquals("folder/subFolder lies under folder", ex.getMessage());
+            assertEquals("Target folder [folder/subFolder] lies under the source [folder]", ex.getMessage());
         }
         try {
             client.copyAfter(target, folder, m);
             fail();
         } catch (GitException ex) {
-            assertEquals("folder/subFolder lies under folder", ex.getMessage());
+            assertEquals("Source folder [folder/subFolder] lies under the target [folder]", ex.getMessage());
         }
     }
 

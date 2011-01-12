@@ -57,10 +57,10 @@ import java.beans.PropertyChangeEvent;
 
 import org.openide.text.Annotation;
 import org.openide.text.Line;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.openide.util.Utilities;
 
 /**
  * Debugger Annotation class.
@@ -76,16 +76,16 @@ public class DebuggerAnnotation
         extends Annotation
         implements PropertyChangeListener {
 
-    public static final String TYPE_CURRENT_PC = "Dbx_PC"; // NOI18N
+    public static final String TYPE_CURRENT_PC = "CurrentPC"; // NOI18N
     public static final String TYPE_CALLSITE = "CallSite"; // NOI18N
-    public static final String TYPE_BPT = "Dbx_Bpt"; // NOI18N
-    public static final String TYPE_BPTX_COMPLEX = "_cmpx"; // NOI18N
+    public static final String TYPE_BPT = "Breakpoint"; // NOI18N
+    public static final String TYPE_BPTX_COMPLEX = "Cond"; // NOI18N
     public static final String TYPE_BPTX_BROKEN = "_broken"; // NOI18N
-    public static final String TYPE_BPTX_DISABLED = "_dis"; // NOI18N
-    private Listener owner;
+    public static final String TYPE_BPTX_DISABLED = "Disabled"; // NOI18N
+    private final Listener owner;
     private Line line;
     private String type;
-    private long addr = 0;
+    private final long addr;
     private String shortDescription = null;
 
     public static interface Listener {
@@ -107,6 +107,7 @@ public class DebuggerAnnotation
         this.owner = owner;
         this.type = type;
         this.line = line;
+        this.addr = 0;
         ourAttach(line, isCurrent);
     }
 
@@ -243,6 +244,9 @@ public class DebuggerAnnotation
             return false;
         }
         String fileName = EditorBridge.filenameFor(line);
+        if (Utilities.isWindows()) {
+            fileName = fileName.replace("\\", "/"); //NOI18N
+        }
         return src.equals(fileName) && getLineNo() == ln;
     }
 
