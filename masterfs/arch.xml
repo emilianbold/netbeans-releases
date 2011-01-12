@@ -436,6 +436,11 @@ No.
         used from core.ui module to show refresh progress and tested
         in <code>masterfs/test/unit/src/org/netbeans/modules/masterfs/SlowRefreshTest.java</code>.
     </api>
+    <api name="org.netbeans.modules.masterfs.watcher.disable" category="private" type="export" group="systemproperty">
+        It is possible to disable native listening on filesystem changes.
+        Useful mostly in testing environment, but it may be interesting for some
+        users too. Don't rely (much) on this property from production code however.
+    </api>
 </answer>
 
 
