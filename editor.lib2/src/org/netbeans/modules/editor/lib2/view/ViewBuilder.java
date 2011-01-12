@@ -124,6 +124,8 @@ final class ViewBuilder {
 
     private boolean createLocalViews; // Whether children of paragraph views are created
     
+    private static boolean wrongStartOffsetReported; // TODO remove when ISE gets fixed
+    
     /**
      * Construct view builder.
      * @param paragraphView paragraph view in which a first replace will occur.
@@ -181,8 +183,13 @@ final class ViewBuilder {
         endAffectedOffset = Math.min(endAffectedOffset, docViewEndOffset - offsetDelta);
         if (fReplace != null) {
             int paragraphViewStartOffset = paragraphView.getStartOffset();
-            assert (paragraphViewStartOffset <= startOffset) : "paragraphViewStartOffset=" + // NOI18N
-                    paragraphViewStartOffset + " > startOffset=" + startOffset; // NOI18N
+            if ((startOffset < paragraphViewStartOffset) && !wrongStartOffsetReported) {
+                wrongStartOffsetReported = true;
+                throw new IllegalStateException("startOffset=" + startOffset + // NOI18N
+                        " < paragraphViewStartOffset=" + paragraphViewStartOffset + // NOI18N
+                        "\ndocViewEndOffset=" + docViewEndOffset + ", paragraph-views-count=" + documentView.getViewCount() + // NOI18N
+                        "\n" + documentView.toStringDetail()); // NOI18N
+            }                
             EditorView childView = fReplace.childViewAtIndex();
             // Round start offset to child's start offset
             int childStartOffset = childView.getStartOffset();

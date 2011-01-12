@@ -46,6 +46,8 @@ package org.netbeans.lib.editor.util.random;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -307,6 +309,10 @@ public class DocumentTesting {
     
     public static void setSameThreadInvoke(Context context, boolean sameThreadInvoke) {
         context.putProperty(SAME_THREAD_INVOKE, sameThreadInvoke);
+        if (sameThreadInvoke) { // Disable logging of non-EDT usage
+            Logger.getLogger("org.netbeans.editor.BaseDocument.EDT").setLevel(Level.OFF);
+            Logger.getLogger("org.netbeans.modules.editor.lib2.view.DocumentView.EDT").setLevel(Level.OFF);
+        }
     }
     
     /**
