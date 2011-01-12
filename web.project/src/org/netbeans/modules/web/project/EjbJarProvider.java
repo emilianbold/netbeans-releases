@@ -76,8 +76,7 @@ public class EjbJarProvider implements EjbJarImplementation2 {
     }
 
     public FileObject getMetaInf() {
-        // There is no META-INF dir in the web project
-        return null;
+        return webModule.getWebInf();
     }
 
     public FileObject getDeploymentDescriptor() {
