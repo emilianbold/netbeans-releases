@@ -153,22 +153,22 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (file == null) {
             return null;
         }        
-        String name = file.getAbsolutePath();
+        String absPath = CndFileUtils.getNormalizedPath(fo);
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(name, false);
+            CsmFile csmFile = ModelImpl.instance().findFile(absPath, false);
             if (csmFile != null) {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
             }
             synchronized (lock) {
-                if (toBeRmoved.contains(name)){
+                if (toBeRmoved.contains(absPath)){
                     return null;
                 }
                 NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(fo);
                 if (platformProject != null) {
-                    project = ModelImpl.instance().addProject(platformProject, name, true);
+                    project = ModelImpl.instance().addProject(platformProject, absPath, true);
                     if (TRACE) {trace("added project %s", project.toString());} //NOI18N
                     project.ensureFilesCreated();
                 }
@@ -176,7 +176,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
         if (project != null && project.isValid()) {
             try {
-                CsmFile out = project.getFile(file, false);
+                CsmFile out = project.getFile(absPath, false);
                 if (TRACE) {trace("RETURNS STANALONE FILE %s", out);} //NOI18N
                 return out;
             } catch (BufferUnderflowException ex) {
@@ -199,7 +199,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (dummy.getPlatformProject() instanceof NativeProjectImpl) {
                 for (CsmFile file : dummy.getAllFiles()) {
                     if (TRACE) {trace("\nchecking file %s", file.getAbsolutePath());} //NOI18N
-                    if (projectOpened.getFile(((FileImpl) file).getFile(), false) != null) {
+                    if (projectOpened.getFile(((FileImpl) file).getAbsolutePath(), false) != null) {
                         scheduleProjectRemoval(dummy);
                         continue;
                     }

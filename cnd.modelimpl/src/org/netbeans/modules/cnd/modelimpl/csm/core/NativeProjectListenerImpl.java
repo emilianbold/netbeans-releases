@@ -281,7 +281,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 if (fo != null) {
                     fo.addFileChangeListener(FileUtil.weakFileChangeListener(new FileDeleteListener(project), fo));
                 }
-                project.onFileRemoved(item.getFile());
+                project.onFileRemoved(item.getAbsolutePath());
             }
         } catch( Exception e ) {
             //TODO: FIX (most likely in Makeproject: path == null in this situation,
@@ -307,8 +307,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         try {
             final ProjectBase project = getProject(newFileIetm, false);
             if( project != null ) {
-                File file = CndFileUtils.normalizeFile(new File(oldPath));
-                project.onFileRemoved(file);
+                project.onFileRemoved(oldPath);
                 project.onFileAdded(newFileIetm);
             }
         } catch( Exception e ) {
@@ -377,7 +376,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         @Override
         public void fileDeleted(FileEvent fe) {
             FileObject fo = fe.getFile();
-            project.onFileRemoved(CndFileUtils.toFile(fo));
+            project.onFileRemoved(CndFileUtils.getNormalizedPath(fo));
             fo.removeFileChangeListener(this);
         }
     };
