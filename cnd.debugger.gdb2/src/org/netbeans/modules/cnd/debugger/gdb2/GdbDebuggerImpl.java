@@ -1180,8 +1180,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
         
         // set terminal mode on windows, see IZ 193220
-        if (getHost().getPlatform() == Platform.Windows_x86 &&
-                gdi.getConsoleType(Host.isRemote(getHost())) == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+        if (getHost().getPlatform() == Platform.Windows_x86 && getIOPack().isExternal()) {
             send("set new-console"); //NOI18N
         }
 
