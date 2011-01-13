@@ -326,11 +326,16 @@ class WebActionProvider extends BaseActionProvider {
                 // run HTML file
                 FileObject[] htmlFiles = findHtml(context);
                 if ((htmlFiles != null) && (htmlFiles.length > 0)) {
-                    String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
-                    if (url != null) {
-                        url = url.replace(" ", "%20");
-                        p.setProperty("client.urlPart", url); //NOI18N
-                        p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+                    String requestParams = RequestParametersQuery.getFileAndParameters(htmlFiles[0]);
+                    if (requestParams == null) {
+                        requestParams = FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
+                        if (requestParams != null) {
+                            requestParams = "/" + requestParams.replace(" ", "%20"); // NOI18N
+                        }
+                    }
+                    if (requestParams != null) {
+                        p.setProperty("client.urlPart", requestParams); //NOI18N
+                        p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes"); // NOI18N
                         return targetNames;
                     } else {
                         return null;
