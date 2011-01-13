@@ -74,14 +74,6 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
-    public  FileObject normalizeFileObject(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObjectBase) {
-            return fileObject;
-        }
-        return null;
-    }
-
-    @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();

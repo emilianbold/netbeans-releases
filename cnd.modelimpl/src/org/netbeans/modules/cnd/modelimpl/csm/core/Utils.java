@@ -359,7 +359,7 @@ public class Utils {
     public static FileImpl getStartFile(final APTPreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
         ProjectBase startProject = getStartProject(startEntry);
-        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile().toString()), false);
+        FileImpl csmFile = startProject == null ? null : startProject.getFile(startEntry.getStartFile(), false);
         return csmFile;
     }
 

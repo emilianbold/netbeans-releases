@@ -33,7 +33,6 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,7 +65,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
@@ -379,7 +377,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 ProjectBase startProject = Utils.getStartProject(startEntry);
                 if (startProject != null) {
                     CharSequence path = startEntry.getStartFile();
-                    CsmFile startFile = startProject.getFile(new File(path.toString()), false);
+                    CsmFile startFile = startProject.getFile(path, false);
                     if (startFile != null) {
                         addBackup = false;
                     }
@@ -409,7 +407,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
             ProjectBase startProject = Utils.getStartProject(startEntry);
             if (startProject != null) {
-                CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
+                CsmFile startFile = startProject.getFile(startEntry.getStartFile(), false);
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
                     Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();

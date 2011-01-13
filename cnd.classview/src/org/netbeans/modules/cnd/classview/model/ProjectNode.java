@@ -78,9 +78,14 @@ public class ProjectNode extends NPNode {
 
     private void init(CsmProject project){
         setName(project.getName().toString());
-        setDisplayName(project.getName().toString());
+        setDisplayName(project.getDisplayName());
     }
-    
+
+    @Override
+    public String getHtmlDisplayName() {
+        return getProject().getHtmlDisplayName();
+    }
+        
     protected CsmNamespace getNamespace() {
         CsmProject prj = getProject();
         if (prj != null){

@@ -383,10 +383,6 @@ public abstract class APTWalker {
         return root;
     }
     
-    protected final FileObject getFileObject(CharSequence absPath) {
-        return CndFileUtils.toFileObject(this.getRootFile().getFileSystem(), absPath);
-    }    
-
     // fields to be used when generating token stream
     private APT curAPT;
     private boolean curWasInChild;
