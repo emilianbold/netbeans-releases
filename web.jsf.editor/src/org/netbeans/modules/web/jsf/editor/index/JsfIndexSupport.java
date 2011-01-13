@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.web.jsf.editor.index;
 
+import java.io.IOException;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -49,12 +53,36 @@ import org.openide.filesystems.FileObject;
  */
 public class JsfIndexSupport {
 
-    public static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
-    public static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
+    static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
+    static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
+    static final String TIMESTAMP_KEY = "timestamp"; //NOI18N
+    static final String TLD_LIBRARY_MARK_KEY = "tagLibraryDescriptor"; //NOI18N
+    static final String FACELETS_LIBRARY_MARK_KEY = "faceletsLibraryDescriptor"; //NOI18N
+    static final String LIBRARY_NAMESPACE_KEY = "namespace"; //NOI18N
 
-    public static final String TIMESTAMP_KEY = "timestamp"; //NOI18N
-
-    public static boolean isFaceletsLibraryDescriptor(FileObject file) {
+    static boolean isFaceletsLibraryDescriptor(FileObject file) {
         return file.getNameExt().endsWith(FACELETS_LIB_SUFFIX);
+    }
+
+    static boolean isTagLibraryDescriptor(FileObject file) {
+        return file.getNameExt().endsWith(TLD_LIB_SUFFIX);
+    }
+
+    static void indexTagLibraryDescriptor(Context context, FileObject file, String namespace) throws IOException {
+        IndexingSupport sup = IndexingSupport.getInstance(context);
+        IndexDocument doc = sup.createDocument(file);
+        doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
+        doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
+        doc.addPair(TLD_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
+        sup.addDocument(doc);
+    }
+
+    static void indexFaceletsLibraryDescriptor(Context context, FileObject file, String namespace) throws IOException {
+        IndexingSupport sup = IndexingSupport.getInstance(context);
+        IndexDocument doc = sup.createDocument(file);
+        doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
+        doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
+        doc.addPair(FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
+        sup.addDocument(doc);
     }
 }

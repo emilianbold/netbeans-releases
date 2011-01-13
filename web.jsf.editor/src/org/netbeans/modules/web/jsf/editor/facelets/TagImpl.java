@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-package org.netbeans.modules.web.jsfapi.api;
+import java.util.Collection;
+import java.util.Map;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
-public interface Attribute {
+/**
+ *
+ * @author marekfukala
+ */
+public final class TagImpl implements Tag {
 
-    public String getName();
+    private static final String ID_ATTR_NAME = "id"; //NOI18N
+    private String name;
+    private String description;
+    private Map<String, Attribute> attrs;
 
-    public String getDescription();
-
-    public boolean isRequired();
-
-    public static class DefaultAttribute implements Attribute {
-
-        private String name;
-        private String description;
-        private boolean required;
-
-        public DefaultAttribute(String name, String description, boolean required) {
-            this.name = name;
-            this.description = description;
-            this.required = required;
+    public TagImpl(String name, String description, Map<String, Attribute> attrs) {
+        this.name = name;
+        this.description = description;
+        this.attrs = attrs;
+        //add the default ID attribute
+        if (getAttribute(ID_ATTR_NAME) == null) {
+            attrs.put(ID_ATTR_NAME, new Attribute.DefaultAttribute(ID_ATTR_NAME, "", false));
         }
+    }
 
-        @Override
-        public String getDescription() {
-            return description;
-        }
+    @Override
+    public String getName() {
+        return name;
+    }
 
-        @Override
-        public String getName() {
-            return name;
-        }
+    @Override
+    public String getDescription() {
+        return description;
+    }
 
-        @Override
-        public boolean isRequired() {
-            return required;
-        }
+    @Override
+    public boolean hasNonGenenericAttributes() {
+        return getAttributes().size() > 1; //the ID attribute is the default generic one
+    }
 
-        @Override
-        public String toString() {
-            return "Attribute[name=" + getName() + ", required=" + isRequired() + "]"; //NOI18N
-        }
+    @Override
+    public Collection<Attribute> getAttributes() {
+        return attrs.values();
+    }
 
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final DefaultAttribute other = (DefaultAttribute) obj;
-            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-                return false;
-            }
-            if (this.required != other.required) {
-                return false;
-            }
-            return true;
-        }
+    @Override
+    public Attribute getAttribute(String name) {
+        return attrs.get(name);
+    }
 
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
-            hash = 13 * hash + (this.required ? 1 : 0);
-            return hash;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
+        for (Attribute attr : getAttributes()) {
+            sb.append(attr.toString()).append(",");
         }
-        
+        sb.append("}]");
+        return sb.toString();
     }
 }
