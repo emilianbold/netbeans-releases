@@ -329,6 +329,9 @@ public class JavaFixAllImports {
                     }
                     data.fqn2TE.put(e.getQualifiedName().toString(), e);
                 }
+                
+                if (data.defaults[index] != null)
+                    minImportanceLevel = Integer.MIN_VALUE;
 
                 for (TypeElement e : unfilteredVars) {
                     if (filteredVars.contains(e))

@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -127,6 +128,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         assertFalse(lh.isDone());    // but this one wasn't yet
     }
 
+    @RandomlyFails
     public void testQueryOpenAndRefresh() throws Throwable {
         long ts = System.currentTimeMillis();
         final String summary = "summary" + System.currentTimeMillis();
