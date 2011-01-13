@@ -111,19 +111,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
-    public Object getAttribute(String attrName) {
-//        if (attrName.equals("java.io.File")) { // NOI18N
-//            return cache;
-//        }
-        return null;
-    }
-
-    @Override
-    public Enumeration<String> getAttributes() {
-        return Collections.enumeration(Collections.singleton("java.io.File")); // NOI18N
-    }
-
-    @Override
     public String getExt() {
         String nameExt = getNameExt();
         int pointPos = nameExt.lastIndexOf('.');
@@ -175,8 +162,11 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public long getSize() {
-        // FIXUP
-        return 1024;
+        RemoteDirectory parent = this.getParent();
+        if (parent != null) {
+            return parent.getSize(this);
+        }
+        return 0;
     }
 
     @Override
@@ -237,7 +227,10 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Date lastModified() {
-        // FIXUP
+        RemoteDirectory parent = this.getParent();
+        if (parent != null) {
+            return parent.lastModified(this);
+        }
         return new Date(cache.lastModified());
     }
 
@@ -257,9 +250,18 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
+    public Object getAttribute(String attrName) {
+        return fileSystem.getAttribute(this, attrName);
+    }
+
+    @Override
+    public Enumeration<String> getAttributes() {
+        return fileSystem.getAttributes(this);
+    }
+
+    @Override
     public void setAttribute(String attrName, Object value) throws IOException {
-        String text = "setAttribute(" + attrName + ", " + value + " is unsupported"; //NOI18N
-        RemoteLogger.getInstance().log(Level.INFO, text, new UnsupportedOperationException(text)); // NOI18N
+        fileSystem.setAttribute(this, attrName, value);
     }
 
     @Override

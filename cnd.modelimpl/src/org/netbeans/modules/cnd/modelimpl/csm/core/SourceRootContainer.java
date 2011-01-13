@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -103,17 +103,18 @@ public class SourceRootContainer {
     
     public void addSources(List<NativeFileItem> items){
         for( NativeFileItem nativeFileItem : items ) {
-            addFile(nativeFileItem.getFile());
+            addFile(nativeFileItem);
         }
     }
     
-    private void addFile(File file){
-        File parentFile = CndFileUtils.normalizeFile(file).getParentFile();
-        String path = parentFile.getAbsolutePath();
+    private void addFile(NativeFileItem nativeFileItem) {
+        FileObject fo = nativeFileItem.getFileObject();
+        FileObject parent = fo.getParent();
+        String path = CndFileUtils.getNormalizedPath(parent);
         addPath(path);
         String canonicalPath;
         try {
-            canonicalPath = parentFile.getCanonicalPath();
+            canonicalPath = CndFileUtils.getCanonicalPath(parent);
             if (!path.equals(canonicalPath)) {
                 addPath(canonicalPath);
             }
