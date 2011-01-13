@@ -83,6 +83,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
 
     public ConfigurationMakefileWriterTest(String name) {
         super(name);
+        cleanUserDir();
     }
 
     public static File getBaseFolder(){

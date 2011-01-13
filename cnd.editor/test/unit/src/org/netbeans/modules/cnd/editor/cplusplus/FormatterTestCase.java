@@ -5175,4 +5175,25 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+
+    public void test194239() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class Foo\n" +
+                "{\n" +
+                "    Foo& operator=(const Foo& other);\n" +
+                "    Foo* operator ==(const Foo& other);\n" +
+                "    Foo& xxx(const Foo& other);\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect \\ formatting",
+                "class Foo\n" +
+                "{\n" +
+                "    Foo& operator=(const Foo& other);\n" +
+                "    Foo* operator ==(const Foo& other);\n" +
+                "    Foo& xxx(const Foo& other);\n" +
+                "};\n"
+                );
+    }
 }

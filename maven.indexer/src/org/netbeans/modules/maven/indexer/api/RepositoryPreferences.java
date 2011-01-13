@@ -172,18 +172,6 @@ public final class RepositoryPreferences {
         return toRet;
     }
 
-    public Set<String> getKnownRepositoryUrls() {
-        Set<String> urls = new HashSet<String>();
-        for (RepositoryInfo ri : getRepositoryInfos()) {
-            if (ri.getRepositoryUrl() != null) {
-                urls.add(ri.getRepositoryUrl());
-            }
-        }
-        // essential for correct resolution of maven pom urls in libraries
-        urls.add(REPO_CENTRAL);
-        return urls;
-    }
-
     /**
      * 
      * @param info

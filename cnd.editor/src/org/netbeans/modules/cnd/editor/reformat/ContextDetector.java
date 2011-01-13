@@ -391,6 +391,7 @@ public class ContextDetector extends ExtendedTokenSequence {
             String prevCategory = previous.id().primaryCategory();
             if (KEYWORD_CATEGORY.equals(prevCategory) ||
                 KEYWORD_DIRECTIVE_CATEGORY.equals(prevCategory) ||
+                next.id() == OPERATOR ||
                 (SEPARATOR_CATEGORY.equals(prevCategory) &&
                  previous.id() != RPAREN && previous.id() != RBRACKET)){
                 switch(current.id()){

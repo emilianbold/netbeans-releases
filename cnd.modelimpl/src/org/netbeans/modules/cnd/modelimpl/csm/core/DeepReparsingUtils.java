@@ -331,7 +331,7 @@ public final class DeepReparsingUtils {
     }
 
     private static void addToReparse(final ProjectBase project, final NativeFileItem nativeFile, final FileImpl file) {
-        if (nativeFile.getFile() != null) {
+        if (nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid()) {
             file.markReparseNeeded(true);
             APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {

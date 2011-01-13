@@ -49,13 +49,13 @@ import org.openide.windows.InputOutput;
  *
  * @author Egor Ushakov
  */
-public class OutputPack extends IOPack {
+class OutputPack extends IOPack {
     private final IOProxy ioProxy;
 
     public OutputPack(TermComponent console,
             InputOutput io,
             ExecutionEnvironment exEnv) {
-        super(console, exEnv);
+        super(console, exEnv, false);
         this.ioProxy = IOProxy.create(exEnv, io);
     }
 
