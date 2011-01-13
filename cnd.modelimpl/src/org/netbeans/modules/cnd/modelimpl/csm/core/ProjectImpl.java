@@ -154,7 +154,7 @@ public final class ProjectImpl extends ProjectBase {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); //NOI18N
         }
-        FileImpl file = getFile(buf.getFile(), false);
+        FileImpl file = getFile(buf.getAbsolutePath(), false);
         if (file != null) {
             synchronized (editedFiles) {
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
@@ -237,8 +237,7 @@ public final class ProjectImpl extends ProjectBase {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             List<FileImpl> toReparse = new ArrayList<FileImpl>();
             for (NativeFileItem item : items) {
-                File file = item.getFile();
-                FileImpl impl = getFile(file, false);
+                FileImpl impl = getFile(item.getAbsolutePath(), false);
                 if (impl != null) {
                     toReparse.add(impl);
                 }
@@ -297,7 +296,7 @@ public final class ProjectImpl extends ProjectBase {
             for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandler(file.getBuffer().getFile()).getState(), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(file, getPreprocHandler(file.getAbsolutePath()).getState(), ParserQueue.Position.TAIL);
                 }
             }
         }

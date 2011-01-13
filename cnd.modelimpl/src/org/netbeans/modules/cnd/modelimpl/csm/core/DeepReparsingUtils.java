@@ -78,7 +78,7 @@ public final class DeepReparsingUtils {
      * Reparse one file when fileImpl content changed.
      */
     static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
-        project.markAsParsingPreprocStates(fileImpl.getFile());
+        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
                 ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
@@ -112,7 +112,7 @@ public final class DeepReparsingUtils {
             }
         } else {
             if (scheduleParsing) {
-                ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getBuffer().getFile()).getState(), ParserQueue.Position.HEAD);
+                ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getAbsolutePath()).getState(), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -130,7 +130,7 @@ public final class DeepReparsingUtils {
                 coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
-                    ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getBuffer().getFile()).getState(), ParserQueue.Position.HEAD);
+                    ParserQueue.instance().add(fileImpl, project.getPreprocHandler(fileImpl.getAbsolutePath()).getState(), ParserQueue.Position.HEAD);
                 }
             }
         }
@@ -188,7 +188,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
             for (NativeFileItem item : items) {
                 if (Utils.acceptNativeItem(item)) {
-                    FileImpl file = project.getFile(item.getFile(), false);
+                    FileImpl file = project.getFile(item.getAbsolutePath(), false);
                     if (file != null) {
                         file.clearStateCache();
                         pairs.put(file, item);
@@ -322,9 +322,9 @@ public final class DeepReparsingUtils {
     }
 
     private static void addToReparse(final ProjectBase project, final FileImpl parentImpl, final boolean invalidateCache) {
-        project.invalidatePreprocState(parentImpl.getFile());
+        project.invalidatePreprocState(parentImpl.getAbsolutePath());
         parentImpl.markReparseNeeded(invalidateCache);
-        ParserQueue.instance().add(parentImpl, project.getPreprocHandler(parentImpl.getBuffer().getFile()).getState(), ParserQueue.Position.HEAD);
+        ParserQueue.instance().add(parentImpl, project.getPreprocHandler(parentImpl.getAbsolutePath()).getState(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse " + parentImpl.getAbsolutePath()); // NOI18N
         }
@@ -347,7 +347,7 @@ public final class DeepReparsingUtils {
         if (parent.getProject() == project) {
             FileImpl parentImpl = (FileImpl) parent;
             parentImpl.clearStateCache();
-            project.invalidatePreprocState(parentImpl.getFile());
+            project.invalidatePreprocState(parentImpl.getAbsolutePath());
             parentImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
                 System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N
@@ -361,7 +361,7 @@ public final class DeepReparsingUtils {
             if (project instanceof ProjectBase) {
                 FileImpl parentImpl = (FileImpl) parent;
                 parentImpl.clearStateCache();
-                ((ProjectBase) project).invalidatePreprocState(parentImpl.getFile());
+                ((ProjectBase) project).invalidatePreprocState(parentImpl.getAbsolutePath());
                 parentImpl.markReparseNeeded(false);
                 if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
                     System.out.println("Invalidate file to reparse " + parent.getAbsolutePath()); // NOI18N

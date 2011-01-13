@@ -67,6 +67,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -242,6 +243,15 @@ public final class CndFileUtils {
         File file = new File(uri);
         CndUtils.assertAbsoluteFileInConsole(file); //NOI18N
         return file;
+    }
+
+    public static String getNormalizedPath(FileObject fo) {
+        try {
+            return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return fo.getPath();
+        }
     }
 
     public static String normalizeAbsolutePath(FileSystem fs, String path) {
