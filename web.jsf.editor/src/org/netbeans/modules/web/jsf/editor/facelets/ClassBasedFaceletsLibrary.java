@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
-    private FaceletsLibraryDescriptor libraryDescriptor;
+    private LibraryDescriptor libraryDescriptor;
     private final String defaultPrefix;
     private final URL libraryDescriptorSource;
 
@@ -67,7 +67,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
         FileObject libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
         try {
-            libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
+            libraryDescriptor = new TldProxyLibraryDescriptor(FaceletsLibraryDescriptor.create(libraryDescriptorFile), support.getJsfSupport().getIndex());
         } catch (LibraryDescriptorException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -106,7 +106,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     }
 
     @Override
-    public FaceletsLibraryDescriptor getLibraryDescriptor() {
+    public LibraryDescriptor getLibraryDescriptor() {
         return libraryDescriptor;
     }
 

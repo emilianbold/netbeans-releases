@@ -68,16 +68,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
+ * Looks for .taglib.xml and .tld descriptors and composite component libraries in binary files
  *
  * @author marekfukala
  */
 public class JsfBinaryIndexer extends BinaryIndexer {
 
     static final String INDEXER_NAME = "jsfBinary"; //NOI18N
-    static final int INDEX_VERSION = 7;
-    static final String TLD_LIBRARY_MARK_KEY = "tagLibraryDescriptor"; //NOI18N
-    static final String FACELETS_LIBRARY_MARK_KEY = "faceletsLibraryDescriptor"; //NOI18N
-    static final String LIBRARY_NAMESPACE_KEY = "namespace"; //NOI18N
+    static final int INDEX_VERSION = 8;
 
     private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
 
@@ -89,9 +87,30 @@ public class JsfBinaryIndexer extends BinaryIndexer {
             return;
         }
 
+        processTlds(context);
+
         processFaceletsLibraryDescriptors(context);
 
         processFaceletsCompositeLibraries(context);
+
+    }
+    
+    private void processTlds(Context context) {
+        FileObject root = context.getRoot();
+        //find all TLDs in the jar file
+        for (FileObject file : findLibraryDescriptors(root, JsfIndexSupport.TLD_LIB_SUFFIX)) {
+            try {
+                String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream(), "taglib", "uri");
+                if (namespace != null) {
+                    JsfIndexSupport.indexTagLibraryDescriptor(context, file, namespace);
+                    LOGGER.log(Level.FINE, "The file {0} indexed as a TLD (namespace={1})", new Object[]{file, namespace}); //NOI18N
+                }
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
     }
 
@@ -101,13 +120,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
             try {
                 String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
                 if(namespace != null) {
-                    IndexingSupport sup = IndexingSupport.getInstance(context);
-                    IndexDocument doc = sup.createDocument(file);
-                    doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
-                    doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
-                    doc.addPair(FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
-                    sup.addDocument(doc);
-
+                    JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
                     LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                 }
             } catch (FileNotFoundException ex) {

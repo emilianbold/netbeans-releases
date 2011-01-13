@@ -60,10 +60,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * Jsf content indexer
+ * Looks for composite component libraries on source classpath.
  *
- * - zero or more jsp page models per xhtml file
- * - one index document per jsf page model instance
+ * @todo possibly join with JsfCustomIndexer and use explicit parse on .xhtml files like JsfBinaryIndexer does
  *
  * @author mfukala@netbeans.org
  */

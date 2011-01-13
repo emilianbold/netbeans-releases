@@ -163,7 +163,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     }
     private static final String STOP_PARSING_MGS = "regularly_stopped"; //NOI18N
 
-    protected static String parseNamespace(InputStream content, final String tagTagName, final String namespaceTagName) {
+    public static String parseNamespace(InputStream content, final String tagTagName, final String namespaceTagName) {
         final String[] ns = new String[1];
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -241,7 +241,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
         return found == null ? null : found.getTextContent().trim();
     }
 
-    protected static Node getNodeByName(Node parent, String childName) {
+    static Node getNodeByName(Node parent, String childName) {
         Collection<Node> found = getNodesByName(parent, childName);
         if (!found.isEmpty()) {
             return found.iterator().next();
@@ -250,7 +250,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
         }
     }
 
-    protected static Collection<Node> getNodesByName(Node parent, String childName) {
+    static Collection<Node> getNodesByName(Node parent, String childName) {
         Collection<Node> nodes = new ArrayList<Node>();
         NodeList nl = parent.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
@@ -262,57 +262,4 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
         return nodes;
     }
 
-    private final class TagImpl implements Tag {
-
-        private static final String ID_ATTR_NAME = "id"; //NOI18N
-        private String name;
-        private String description;
-        private Map<String, Attribute> attrs;
-
-        public TagImpl(String name, String description, Map<String, Attribute> attrs) {
-            this.name = name;
-            this.description = description;
-            this.attrs = attrs;
-            //add the default ID attribute
-            if (getAttribute(ID_ATTR_NAME) == null) {
-                attrs.put(ID_ATTR_NAME, new Attribute.DefaultAttribute(ID_ATTR_NAME, "", false));
-            }
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getDescription() {
-            return description;
-        }
-
-        @Override
-        public boolean hasNonGenenericAttributes() {
-            return getAttributes().size() > 1; //the ID attribute is the default generic one
-        }
-
-        @Override
-        public Collection<Attribute> getAttributes() {
-            return attrs.values();
-        }
-
-        @Override
-        public Attribute getAttribute(String name) {
-            return attrs.get(name);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
-            for (Attribute attr : getAttributes()) {
-                sb.append(attr.toString()).append(",");
-            }
-            sb.append("}]");
-            return sb.toString();
-        }
-    }
 }
