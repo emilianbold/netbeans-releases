@@ -91,7 +91,7 @@ public class ValidatorImpl implements Validator {
             URL sourceFileURL = file != null ? URLMapper.findURL(file, URLMapper.EXTERNAL) : null;
 
             Set<String> filteredNamespaces = Collections.emptySet();
-            if(context.isFeaturesEnabled("filter.foreign.namespaces")) { //NOI18N
+            if(context.isFeatureEnabled("filter.foreign.namespaces")) { //NOI18N
                 filteredNamespaces = context.getSyntaxAnalyzerResult().getAllDeclaredNamespaces().keySet();
                 filteredNamespaces.remove("http://www.w3.org/1999/xhtml"); //NOI18N
             }

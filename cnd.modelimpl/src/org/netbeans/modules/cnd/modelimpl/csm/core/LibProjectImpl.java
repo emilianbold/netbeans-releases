@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileSystem;
 
 /**
  * @author Vladimir Kvasihn
@@ -63,34 +65,34 @@ public final class LibProjectImpl extends ProjectBase {
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
-    private LibProjectImpl(ModelImpl model, String includePathName) {
-        super(model, includePathName, includePathName);
+    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName) {
+        super(model, fs, includePathName, includePathName);
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
 
-    public static LibProjectImpl createInstance(ModelImpl model, String includePathName) {
+    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName) {
         ProjectBase instance = null;
         assert includePathName != null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, includePathName, includePathName);
+                instance = readInstance(model, fs, includePathName, includePathName);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(includePathName, true);
+                cleanRepository(fs, includePathName, true);
                 DiagnosticExceptoins.register(e);
             }
         }
         if (instance == null) {
-            instance = new LibProjectImpl(model, includePathName);
+            instance = new LibProjectImpl(model, fs, includePathName);
         }
         if (instance instanceof LibProjectImpl) {
             assert ((LibProjectImpl) instance).includePath != null;
         }
+        CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (LibProjectImpl) instance;
-
     }
 
     protected CharSequence getPath() {

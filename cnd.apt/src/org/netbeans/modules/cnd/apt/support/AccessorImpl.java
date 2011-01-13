@@ -62,7 +62,7 @@ class AccessorImpl extends SupportAPIAccessor {
     }
 
     @Override
-    public boolean isExistingDirectory(FileSystem fs, IncludeDirEntry entry) {
-        return entry.isExistingDirectory(fs);
+    public boolean isExistingDirectory(IncludeDirEntry entry) {
+        return entry.isExistingDirectory();
     }
 }

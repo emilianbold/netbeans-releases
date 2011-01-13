@@ -183,10 +183,6 @@ public class RemoteFileUtil {
         }
     }
 
-    public static FileObject normalizeFileObject(FileObject fileObject) {
-        return FileSystemProvider.normalizeFileObject(fileObject);
-    }
-
     public static String getAbsolutePath(FileObject fileObject) {
         return fileObject.getPath();
     }

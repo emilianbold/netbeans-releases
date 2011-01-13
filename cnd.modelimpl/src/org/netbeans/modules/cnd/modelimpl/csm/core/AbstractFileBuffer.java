@@ -76,7 +76,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private Charset encoding;
 
     protected AbstractFileBuffer(FileObject fileObject) {
-        this.absPath = FilePathCache.getManager().getString(fileObject.getPath());
+        this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
         if (CndUtils.isDebugMode()) {
             FileObject fo2 = fileSystem.findResource(absPath.toString());

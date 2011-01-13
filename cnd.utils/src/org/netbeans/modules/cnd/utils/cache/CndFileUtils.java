@@ -245,6 +245,24 @@ public final class CndFileUtils {
         return file;
     }
 
+    public static String getNormalizedPath(FileObject fo) {
+        try {
+            return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return fo.getPath();
+        }
+    }
+
+    public static String normalizeAbsolutePath(FileSystem fs, String path) {
+        if (isLocalFileSystem(fs)) {
+            return normalizeAbsolutePath(path);
+        } else {
+            FileObject fo = fs.findResource(path);
+            return (fo == null) ? normalizeAbsolutePath(path) : fo.getPath(); //XXX:fullRemote use FileSystemProvider for this
+        }
+    }
+    
     /**
      * normalize absolute paths
      * @param path
@@ -306,6 +324,9 @@ public final class CndFileUtils {
     private static Flags getFlags(FileSystem fs, String absolutePath, boolean indexParentFolder) {
         assert fs != null;
         assert absolutePath != null;
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrueInConsole(!absolutePath.contains("var/cache/remote-files"), "trying to get access to " + absolutePath);  //NOI18N
+        }
         if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
         }
