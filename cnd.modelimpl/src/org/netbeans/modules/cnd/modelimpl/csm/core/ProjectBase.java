@@ -132,6 +132,7 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -287,6 +288,25 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
 
+    @Override
+    public String getDisplayName() {
+        if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+            return name.toString();
+        } else {
+            return NbBundle.getMessage(getClass(), "ProjectDisplayName", name, fileSystem.getDisplayName());
+        }
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+            return name.toString();
+        } else {
+            return NbBundle.getMessage(getClass(), "ProjectHtmlDisplayName", name, fileSystem.getDisplayName());
+        }
+    }
+
+    
     public static CharSequence getUniqueName(FileSystem fs, Object platformProject) {
         Parameters.notNull("FileSystem", fs); //NOI18N
         String postfix = CndFileUtils.isLocalFileSystem(fs) ? "" : fs.getDisplayName();
