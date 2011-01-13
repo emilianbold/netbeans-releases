@@ -120,6 +120,9 @@ final class CachedRemoteInputStream extends InputStream {
                 } else {
                     remoteFile.getParent().ensureChildSync(remoteFile);
                     delegate = new FileInputStream(remoteFile.cache);
+                    if (remoteFile.cache.length() > 1024*1024) {
+                        new Exception("Too long remote file "+remoteFile.remotePath).printStackTrace();
+                    }
                     while (position > 0) {
                         ((FileInputStream) delegate).read();
                         position--;
