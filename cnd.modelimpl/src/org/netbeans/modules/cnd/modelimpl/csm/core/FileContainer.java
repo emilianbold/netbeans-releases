@@ -209,8 +209,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return impl;
     }
     
-    public CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
-        FileEntry f = getFileEntry(file, treatSymlinkAsSeparateFile, false);
+    public CsmUID<CsmFile> getFileUID(CharSequence absPath, boolean treatSymlinkAsSeparateFile) {
+        FileEntry f = getFileEntry(absPath, treatSymlinkAsSeparateFile, false);
         if (f == null) {
             return null;
         }

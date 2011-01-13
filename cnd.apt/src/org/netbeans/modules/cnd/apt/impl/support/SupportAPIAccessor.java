@@ -81,5 +81,5 @@ public abstract class SupportAPIAccessor {
 
     public abstract void invalidateFileBasedCache(String file);
     public abstract void invalidateCache();
-    public abstract boolean isExistingDirectory(FileSystem fileSystem, IncludeDirEntry entry);
+    public abstract boolean isExistingDirectory(IncludeDirEntry entry);
 }
