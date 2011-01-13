@@ -254,6 +254,8 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
                 getAnnotatedMembers( stereotype, impl.getHelper());
             result.addAll( stereotypedMembers );
         }
+        PackagingFilter filter = new PackagingFilter(impl);
+        filter.filter(result);
         
         return result;
     }
