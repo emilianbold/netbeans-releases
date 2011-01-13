@@ -111,7 +111,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
                 PathsCollectionIterator paths = 
                         new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
-                result = APTIncludeUtils.resolveFilePath(fileSystem, paths, includedFile, startOffset);
+                result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
             }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next

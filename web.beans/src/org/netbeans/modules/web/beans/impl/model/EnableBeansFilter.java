@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -80,20 +83,28 @@ class EnableBeansFilter {
         myResult = result;
         myHelper = model.getHelper();
         myBeansModel = model.getBeansModel();
+        myModel = model;
     }
     
     Result filter(){
         myAlternatives = new HashSet<Element>();
         myEnabledAlternatives = new HashSet<Element>();
         
+        PackagingFilter filter = new PackagingFilter(myModel);
         Set<TypeElement> typeElements = getResult().getTypeElements();
+        
+        // remove elements defined in compile class path which doesn't have beans.xml 
+        filter.filter( typeElements );
+        
         for (TypeElement typeElement : typeElements) {
             if ( getResult().isAlternative(typeElement)){
                 myAlternatives.add( typeElement );
                 addEnabledAlternative( typeElement , typeElement);
             }
         }
-        Set<Element> productions = getResult().getProductions();
+        // remove elements defined in compile class path which doesn't have beans.xml
+        Set<Element> productions = packagedFilterProductions ( );
+        
         for (Element element : productions) {
             TypeElement enclosingTypeElement = myHelper.getCompilationController().
                 getElementUtilities().enclosingTypeElement(element);
@@ -166,6 +177,35 @@ class EnableBeansFilter {
         return new ResolutionErrorImpl( getResult() , message, enabledTypes);
     }
     
+    /*
+     * This method should filter production elements which are defined
+     * in the classes inside compile class path without beans.xml.
+     * But NB doesn't perform indexing and search for fields and methods
+     * inside compile class path at all so there will be no production 
+     * elements inside compile class path.  
+     * So I commented out this block of logic to avoid wasting time .
+     */
+    private Set<Element> packagedFilterProductions() {
+        return getResult().getProductions();
+        /*Map<Element, List<DeclaredType>> productions = 
+            getResult().getAllProductions();
+        List<Element> filtered = new ArrayList<Element>( productions.size());
+        for (Entry<Element, List<DeclaredType>> entry : productions.entrySet()) {
+            Element element = entry.getKey();
+            List<DeclaredType> list = entry.getValue();
+            int size = list.size();
+            PackagingFilter filter = new PackagingFilter(myModel);
+            filter.filterTypes( list );
+            if ( list.size() == 0 ){
+                filtered.add( element );
+            }
+        }
+        for( Element element : filtered ){
+            productions.remove( element );
+        }
+        return productions.keySet();*/
+    }
+
     private void findEnabledProductions(Set<Element> productions )
     {
         /*
@@ -351,4 +391,5 @@ class EnableBeansFilter {
     private ResultImpl myResult;
     private final AnnotationModelHelper myHelper;
     private final BeansModel myBeansModel;
+    private WebBeansModelImplementation myModel;
 }

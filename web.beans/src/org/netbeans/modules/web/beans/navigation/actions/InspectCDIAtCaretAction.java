@@ -176,7 +176,7 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
         }
         catch (MetadataModelException e) {
             Logger.getLogger( AbstractInjectableAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
+                log( Level.INFO, e.getMessage(), e);
         }
         catch (IOException e) {
             Logger.getLogger( AbstractInjectableAction.class.getName()).

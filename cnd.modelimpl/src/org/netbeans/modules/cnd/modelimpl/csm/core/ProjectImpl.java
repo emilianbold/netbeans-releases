@@ -61,7 +61,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -71,34 +73,31 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class ProjectImpl extends ProjectBase {
 
-    private ProjectImpl(ModelImpl model, Object platformProject, String name) {
-        super(model, platformProject, name);
+    private ProjectImpl(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+        super(model, fs, platformProject, name);
     // RepositoryUtils.put(this);
     }
 
-    public static ProjectImpl createInstance(ModelImpl model, String platformProject, String name) {
-        return createInstance(model, (Object) platformProject, name);
-    }
-
     public static ProjectImpl createInstance(ModelImpl model, NativeProject platformProject, String name) {
-        return createInstance(model, (Object) platformProject, name);
+        return createInstance(model, platformProject.getFileSystem(), platformProject, name);
     }
 
-    private static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
+    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, Object platformProject, String name) {
         ProjectBase instance = null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, platformProject, name);
+                instance = readInstance(model, fs, platformProject, name);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(platformProject, false);
+                cleanRepository(fs, platformProject, false);
                 DiagnosticExceptoins.register(e);
             }
         }
         if (instance == null) {
-            instance = new ProjectImpl(model, platformProject, name);
+            instance = new ProjectImpl(model, fs, platformProject, name);
         }
+        CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (ProjectImpl) instance;
     }
 
@@ -155,7 +154,7 @@ public final class ProjectImpl extends ProjectBase {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); //NOI18N
         }
-        FileImpl file = getFile(buf.getFile(), false);
+        FileImpl file = getFile(buf.getAbsolutePath(), false);
         if (file != null) {
             synchronized (editedFiles) {
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
@@ -238,8 +237,7 @@ public final class ProjectImpl extends ProjectBase {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             List<FileImpl> toReparse = new ArrayList<FileImpl>();
             for (NativeFileItem item : items) {
-                File file = item.getFile();
-                FileImpl impl = getFile(file, false);
+                FileImpl impl = getFile(item.getAbsolutePath(), false);
                 if (impl != null) {
                     toReparse.add(impl);
                 }
@@ -298,7 +296,7 @@ public final class ProjectImpl extends ProjectBase {
             for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandler(file.getBuffer().getFile()).getState(), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(file, getPreprocHandler(file.getAbsolutePath()).getState(), ParserQueue.Position.TAIL);
                 }
             }
         }

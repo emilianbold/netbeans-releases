@@ -153,22 +153,22 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (file == null) {
             return null;
         }        
-        String name = file.getAbsolutePath();
+        String absPath = CndFileUtils.getNormalizedPath(fo);
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(name, false);
+            CsmFile csmFile = ModelImpl.instance().findFile(absPath, false);
             if (csmFile != null) {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
             }
             synchronized (lock) {
-                if (toBeRmoved.contains(name)){
+                if (toBeRmoved.contains(absPath)){
                     return null;
                 }
                 NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(fo);
                 if (platformProject != null) {
-                    project = ModelImpl.instance().addProject(platformProject, name, true);
+                    project = ModelImpl.instance().addProject(platformProject, absPath, true);
                     if (TRACE) {trace("added project %s", project.toString());} //NOI18N
                     project.ensureFilesCreated();
                 }
@@ -176,7 +176,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
         if (project != null && project.isValid()) {
             try {
-                CsmFile out = project.getFile(file, false);
+                CsmFile out = project.getFile(absPath, false);
                 if (TRACE) {trace("RETURNS STANALONE FILE %s", out);} //NOI18N
                 return out;
             } catch (BufferUnderflowException ex) {
@@ -199,7 +199,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (dummy.getPlatformProject() instanceof NativeProjectImpl) {
                 for (CsmFile file : dummy.getAllFiles()) {
                     if (TRACE) {trace("\nchecking file %s", file.getAbsolutePath());} //NOI18N
-                    if (projectOpened.getFile(((FileImpl) file).getFile(), false) != null) {
+                    if (projectOpened.getFile(((FileImpl) file).getAbsolutePath(), false) != null) {
                         scheduleProjectRemoval(dummy);
                         continue;
                     }
@@ -457,9 +457,8 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public NativeFileItemImpl findFileItem(FileObject fileObject) {
-            String path = fileObject.getPath();
             for (NativeFileItemImpl item : files) {
-                if (item.getFileObject().getPath().equals(path)) {
+                if (item.getFileObject().equals(fileObject)) {
                     return item;
                 }
             }
@@ -534,14 +533,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final class NativeFileItemImpl implements NativeFileItem {
 
-        private final FileObject file;
+        private final FileObject fileObject;
         private final NativeProjectImpl project;
         private final NativeFileItem.Language lang;
 
         public NativeFileItemImpl(FileObject file, NativeProjectImpl project, NativeFileItem.Language language) {
 
             this.project = project;
-            this.file = file;
+            this.fileObject = file;
             this.lang = language;
         }
 
@@ -552,27 +551,22 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public File getFile() {
-            File result = FileUtil.toFile(file);
-            if (result == null) { // XXX:fullRemote
-                result = new File(file.getPath());
-            }
-            CndUtils.assertAbsoluteFileInConsole(result);
-            return result;
+            return CndFileUtils.toFile(fileObject);
         }
 
         @Override
         public FileObject getFileObject() {
-            return file;
+            return fileObject;
         }
         
         @Override
         public String getAbsolutePath() {
-            return file.getPath();
+            return CndFileUtils.getNormalizedPath(fileObject);
         }
 
         @Override
         public String getName() {
-            return file.getNameExt();
+            return fileObject.getNameExt();
         }       
 
         @Override
@@ -588,7 +582,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private List<String> toAbsolute(List<String> orig) {
-            FileObject base = file.getParent();
+            FileObject base = fileObject.getParent();
             List<String> result = new ArrayList<String>(orig.size());
             for (String path : orig) {
                 if (CndPathUtilitities.isPathAbsolute(path)) {
@@ -628,7 +622,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public String toString() {
-            return "SA " + file + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
+            return "SA " + fileObject + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
         }
     }
     
