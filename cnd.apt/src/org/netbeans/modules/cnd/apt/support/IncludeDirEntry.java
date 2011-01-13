@@ -109,7 +109,7 @@ public final class IncludeDirEntry {
                     try {
                         entryFS = fo.getFileSystem();
                         // FIXME XXX:FullRemote 
-                        dir = fo.getPath();
+                        dir = CndFileUtils.normalizeAbsolutePath(entryFS, fo.getPath());
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
                     }
