@@ -358,7 +358,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         if (select) {
             scrollTo(endPos);
             getCaret().setDot(endPos);
-            getCaret().moveDot(Math.max(0, startPos));
+            getCaret().moveDot(startPos);
             textView.repaint();
         } else {
             getCaret().setDot(startPos);
