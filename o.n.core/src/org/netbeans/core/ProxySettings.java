@@ -76,6 +76,7 @@ public class ProxySettings {
     public static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
     public static final String USE_PROXY_ALL_PROTOCOLS = "useProxyAllProtocols";
     public static final String DIRECT = "DIRECT";
+    public static final String PAC = "PAC";
     
     private static String presetNonProxyHosts;
 
@@ -404,7 +405,7 @@ public class ProxySettings {
         return reguralProxyHosts.toString();
     }
 
-    private static String normalizeProxyHost (String proxyHost) {
+    public static String normalizeProxyHost (String proxyHost) {
         if (proxyHost.toLowerCase (Locale.US).startsWith ("http://")) { // NOI18N
             return proxyHost.substring (7, proxyHost.length ());
         } else {

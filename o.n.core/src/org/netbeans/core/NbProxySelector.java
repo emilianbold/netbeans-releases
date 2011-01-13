@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -100,6 +100,16 @@ public final class NbProxySelector extends ProxySelector {
             if (useSystemProxies ()) {
                 if (original != null) {
                     res = original.select (uri);                   
+                }
+            } else if (usePAC()) {
+                String init = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
+                String pacURL = init.substring(4).trim();
+                System.out.println("###: Special? uri: " + uri + ", pac: " + pacURL);
+                if (uri.toASCIIString().equals(pacURL)) {
+                    System.out.println("###: Download direct!");
+                    return Collections.singletonList(Proxy.NO_PROXY);
+                } else {
+                    res = ProxyAutoConfig.get().findProxyForURL(uri); // NOI18N
                 }
             } else {
                 String protocol = uri.getScheme ();
@@ -178,7 +188,7 @@ public final class NbProxySelector extends ProxySelector {
     public void connectFailed (URI arg0, SocketAddress arg1, IOException arg2) {
         LOG.log  (Level.INFO, "connectionFailed(" + arg0 + ", " + arg1 +")", arg2);
     }
-    
+
     // several modules listenes on these properties and propagates it futher
     private class ProxySettingsListener implements PreferenceChangeListener {
         @Override
@@ -346,4 +356,11 @@ public final class NbProxySelector extends ProxySelector {
         }
         return useSystemProxies != null && "true".equalsIgnoreCase (useSystemProxies.toString ());
     }
+    
+    boolean usePAC() {
+        String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
+        boolean usePAC = s != null && s.startsWith(ProxySettings.PAC);
+        return usePAC;
+    }
+    
 }
