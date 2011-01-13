@@ -48,13 +48,13 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Egor Ushakov
  */
-public class ExternalTerminalPack extends IOPack {
+class ExternalTerminalPack extends IOPack {
     private DebuggerExternalTerminal terminal = null;
     private final String termPath;
     private String slaveName = null;
 
     public ExternalTerminalPack(TermComponent console, String termPath, ExecutionEnvironment exEnv) {
-        super(console, exEnv);
+        super(console, exEnv, false);
         this.termPath = termPath;
     }
 

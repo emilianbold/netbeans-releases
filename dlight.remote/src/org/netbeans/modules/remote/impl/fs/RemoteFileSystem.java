@@ -43,17 +43,24 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -64,11 +71,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.io.NbObjectInputStream;
 import org.openide.windows.WindowManager;
 
 /**
@@ -82,6 +89,8 @@ import org.openide.windows.WindowManager;
 public class RemoteFileSystem extends FileSystem {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
+    private static final String ATTRIBUTES_FILE_NAME = ".attr"; // NOI18N
+    private static final String READONLY_ATTRIBUTES = "readOnlyAttrs"; //NOI18N
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
     private final RootFileObject root;
@@ -96,18 +105,6 @@ public class RemoteFileSystem extends FileSystem {
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
-
-    private static Map<String, String> getNormalizedFilesMap() {
-        Map<String, String> map = normalizedRef.get();
-        synchronized (RemoteFileSystem.class) {
-            map = normalizedRef.get();
-            if (map == null) {
-                map = new ConcurrentHashMap<String, String>();
-                normalizedRef = new SoftReference<Map<String, String>>(map);
-            }
-        }
-        return map;
-    }
 
     public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -281,6 +278,170 @@ public class RemoteFileSystem extends FileSystem {
     @Override
     public String toString() {
         return getDisplayName();
+    }
+
+    void setAttribute(RemoteFileObjectBase file, String attrName, Object value) {
+        RemoteFileObjectBase parent = file.getParent();
+        if (parent != null) {
+            File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
+            Properties table = readProperties(attr);
+            table.setProperty(translateAttributeName(file, attrName), encodeValue(value));
+            FileOutputStream fileOtputStream = null;
+            try {
+                fileOtputStream = new FileOutputStream(attr);
+                table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (fileOtputStream != null) {
+                    try {
+                        fileOtputStream.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
+
+    Object getAttribute(RemoteFileObjectBase file, String attrName) {
+        RemoteFileObjectBase parent = file.getParent();
+        if (parent != null) {
+            if (attrName.equals(READONLY_ATTRIBUTES)) {
+                return Boolean.FALSE;
+            } else if (attrName.equals("FileSystem.rootPath")) { //NOI18N
+                return this.getRoot().getPath();
+            } else if (attrName.equals("java.io.File")) { //NOI18N
+                return null;
+            } else if (attrName.equals("ExistsParentNoPublicAPI")) { //NOI18N
+                return true;
+            } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
+                return null;
+            }
+            File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
+            Properties table = readProperties(attr);
+            return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
+        }
+        return null;
+    }
+
+    Enumeration<String> getAttributes(RemoteFileObjectBase file) {
+        RemoteFileObjectBase parent = file.getParent();
+        if (parent != null) {
+            File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
+            Properties table = readProperties(attr);
+            List<String> res = new ArrayList<String>();
+            Enumeration<Object> keys = table.keys();
+            String prefix = file.getNameExt()+"["; // NOI18N
+            while(keys.hasMoreElements()) {
+                String aKey = keys.nextElement().toString();
+                if (aKey.startsWith(prefix)) {
+                    aKey = aKey.substring(prefix.length(),aKey.length()-1);
+                    res.add(aKey);
+                }
+            }
+            return Collections.enumeration(res);
+        }
+        return Collections.enumeration(Collections.<String>emptyList());
+    }
+
+    private Properties readProperties(File attr) {
+        Properties table = new Properties();
+        if (attr.exists()) {
+            FileInputStream fileInputStream = null;
+            try {
+                fileInputStream = new FileInputStream(attr);
+                table.load(fileInputStream);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (fileInputStream != null) {
+                    try {
+                        fileInputStream.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        return table;
+    }
+
+    private String translateAttributeName(RemoteFileObjectBase file, String attrName) {
+        return file.getNameExt()+"["+attrName+"]"; // NOI18N
+    }
+    
+    /**
+     * Creates serialized object, which was encoded in HEX format
+     * @param value Encoded serialized object in HEX format
+     * @return Created object from encoded HEX format
+     * @throws IOException
+     */
+    private Object decodeValue(String value) {
+        if ((value == null) || (value.length() == 0)) {
+            return null;
+        }
+
+        byte[] bytes = new byte[value.length() / 2];
+        int tempI;
+        int count = 0;
+
+        for (int i = 0; i < value.length(); i += 2) {
+            try {
+                tempI = Integer.parseInt(value.substring(i, i + 2), 16);
+
+                if (tempI > 127) {
+                    tempI -= 256;
+                }
+
+                bytes[count++] = (byte) tempI;
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes, 0, count);
+
+        try {
+            ObjectInputStream ois = new NbObjectInputStream(bis);
+            Object ret = ois.readObject();
+
+            return ret;
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    /**
+     * Encodes Object into String encoded in HEX format
+     * @param value Object, which will be encoded
+     * @return  serialized Object in String encoded in HEX format
+     * @throws IOException
+     */
+    private String encodeValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(value);
+            oos.close();
+        } catch (Exception e) {
+        }
+
+        byte[] bArray = bos.toByteArray();
+        StringBuilder strBuff = new StringBuilder(bArray.length * 2);
+
+        for (int i = 0; i < bArray.length; i++) {
+            if ((bArray[i] < 16) && (bArray[i] >= 0)) {
+                strBuff.append("0"); // NOI18N
+            }
+
+            strBuff.append(Integer.toHexString((bArray[i] < 0) ? (bArray[i] + 256) : bArray[i]));
+        }
+
+        return strBuff.toString();
     }
 
     private static class RootFileObject extends RemoteDirectory {
