@@ -472,7 +472,6 @@ class VDLParser {
 	boolean delta = false;
 	boolean isopen = false;
 	boolean no_ch = true;
-	boolean has_inherit = false;
 
 	for (aggr = aggr.cdr(); aggr != null; aggr = aggr.cdr()) {
 	    LispVal aitem = aggr.car();
@@ -514,25 +513,28 @@ class VDLParser {
 		// of (:ch <ch>)'s, one per inherited aggregate?
 
 		no_ch = false;
-		if (!has_inherit)
-		    acts.startAggregate(name, deref_name, type, atype, stat, delta, isopen);
+		acts.startAggregate(name, deref_name, type, atype, stat, delta, isopen);
 		parse_ch(aitem.cdr());
 		// CR 6189942, for c++ inherit members
 		// moved out of the for loop
 		//acts.endAggregate();
-		has_inherit = true;
 	    } else {
 		if (Log.VDL.debug) {
 		    error("aggr: Expected :id|:ltype|:qual|:offset|:size|:ch but got " + aitem.car()); // NOI18N
 		}
 	    }
-	}
+	} // for loop
+
 	if (no_ch) {
-	    // CR 5032536
-	    acts.setType(type, atype);
-	    // CR 4925431, struct with no child is not expandable
-	    // CR 6218025, struct with no child is not expandable
-	    // CR 6853316
+	    // CR 6871201, member struct is missing if no child
+	    // still needs to create a var for struct member struct
+	    acts.newSmplval(name, deref_name,
+			    type, atype, stat,
+			    " ", null, null, null, delta);
+	    // CR 5032536, empty struct show <unset type> in local view
+	    // acts.setType(type, atype);
+	    // CR 4925431, 6218025, struct with no child is not expandable
+	    // CR 6853316, presence of a std::map member causes this to not expand
 	    //acts.setLeaf(true); 
 	    return;
         }
