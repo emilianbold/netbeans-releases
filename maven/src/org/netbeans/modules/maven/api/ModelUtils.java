@@ -52,6 +52,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -78,6 +79,8 @@ import org.openide.filesystems.FileObject;
  * @author Anuradha G
  */
 public final class ModelUtils {
+
+    private ModelUtils() {}
 
     /**
      * 
@@ -357,6 +360,7 @@ public final class ModelUtils {
      * @param pom library to check
      * @return LibraryDescriptor corresponding to the library, or null if the pom URL format is not recognized.
      */
+    @SuppressWarnings("SBSC_USE_STRINGBUFFER_CONCATENATION")
     public static LibraryDescriptor checkLibrary(URL pom) {
         String path = pom.getPath();
         Matcher match = LEGACY.matcher(path);
