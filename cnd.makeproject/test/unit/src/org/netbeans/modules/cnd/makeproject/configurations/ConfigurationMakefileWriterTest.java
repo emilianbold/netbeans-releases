@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
@@ -157,6 +159,44 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
+        
+        // Dump state
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        System.err.println("ExecutionEnvironment " + env);
+        System.err.println("host: " + env.getHost());
+        System.err.println("host address: " + env.getHostAddress());
+        System.err.println("user: " + env.getUser());
+        System.err.println("local: " + env.isLocal());
+        System.err.println("remote: " + env.isRemote());
+        
+        DevelopmentHostConfiguration host = conf.getDevelopmentHost();        
+        System.err.println("DevelopmentHost " + host);
+        System.err.println("platform: " + host.getBuildPlatformName());
+        System.err.println("name: " + host.getHostDisplayName(true));
+        System.err.println("key: " + host.getHostKey());
+
+        System.err.println("DefaultDevelopmentHostID " + CppUtils.getDefaultDevelopmentHost());
+        
+        env = ExecutionEnvironmentFactory.fromUniqueID(CppUtils.getDefaultDevelopmentHost());
+        System.err.println("DefaultExecutionEnvironment " + env);
+        System.err.println("host: " + env.getHost());
+        System.err.println("host address: " + env.getHostAddress());
+        System.err.println("user: " + env.getUser());
+        System.err.println("local: " + env.isLocal());
+        System.err.println("remote: " + env.isRemote());
+        
+        host = new DevelopmentHostConfiguration(env);        
+        System.err.println("DefaultDevelopmentHost " + host);
+        System.err.println("platform: " + host.getBuildPlatformName());
+        System.err.println("name: " + host.getHostDisplayName(true));
+        System.err.println("key: " + host.getHostKey());
+        
+        System.err.println("CompilerSets"); // NOI18N        
+        for (CompilerSet cs : conf.getCompilerSet().getCompilerSetManager().getCompilerSets()) {
+            System.err.println(cs);
+            System.err.println("flavor: " + cs.getCompilerFlavor());
+            System.err.println("dir: " + cs.getDirectory());
+        }
         
         // Check conf
         System.err.println("Check conf"); // NOI18N
