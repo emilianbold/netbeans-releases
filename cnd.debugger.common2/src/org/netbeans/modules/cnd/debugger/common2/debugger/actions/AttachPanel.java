@@ -990,7 +990,7 @@ public final class AttachPanel extends TopComponent {
     private final AttachController controller = new AttachController();
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
-        public abstract void documentChanged(DocumentEvent e);
+        protected abstract void documentChanged(DocumentEvent e);
 
         public void changedUpdate(DocumentEvent e) {
             documentChanged(e);

@@ -222,7 +222,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (".".equals(relativePath)) { // NOI18N
             return this;
         } else if ("..".equals(relativePath)) { // NOI18N
-            return getParent();
+            RemoteDirectory parent = getParent();
+            return (parent == null) ? this : parent ;
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {

@@ -67,7 +67,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -245,6 +244,15 @@ public final class CndFileUtils {
         return file;
     }
 
+    public static String normalizeAbsolutePath(FileSystem fs, String path) {
+        if (isLocalFileSystem(fs)) {
+            return normalizeAbsolutePath(path);
+        } else {
+            FileObject fo = fs.findResource(path);
+            return (fo == null) ? normalizeAbsolutePath(path) : fo.getPath(); //XXX:fullRemote use FileSystemProvider for this
+        }
+    }
+    
     /**
      * normalize absolute paths
      * @param path
@@ -306,6 +314,9 @@ public final class CndFileUtils {
     private static Flags getFlags(FileSystem fs, String absolutePath, boolean indexParentFolder) {
         assert fs != null;
         assert absolutePath != null;
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrueInConsole(!absolutePath.contains("var/cache/remote-files"), "trying to get access to " + absolutePath);  //NOI18N
+        }
         if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
         }
