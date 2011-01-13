@@ -3070,10 +3070,14 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void setOptionHelp(String name, String value) {
-        if (getOptionDebug()) {
-            dbx.sendCommand(0, 0,
-                    "### setOption " + name + " = '" + value + "'");// NOI18N
-        }
+	// CR 6995039
+        //if (getOptionDebug()) {
+	if (name != null && name.startsWith("DBX_")) { // NOI18N
+	    String dbxenv = name.substring(4); // strip "DBX_"
+	    dbx.sendCommand(0, 0,
+                    "### dbxenv " + dbxenv + " " + value );// NOI18N
+	}
+        //}
         dbx.prop_set(name, value);
     }
 
