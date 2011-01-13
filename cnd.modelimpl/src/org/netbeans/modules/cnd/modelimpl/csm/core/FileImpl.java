@@ -409,7 +409,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (projectImpl == null) {
             return Collections.<PreprocessorStatePair>emptyList();
         }
-        return projectImpl.getPreprocessorStatePairs(this.getFile());
+        return projectImpl.getPreprocessorStatePairs(this.getAbsolutePath());
     }
 
     private PreprocessorStatePair getContextPreprocStatePair(int startContext, int endContext) {
@@ -417,7 +417,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (projectImpl == null) {
             return null;
         }
-        Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this.getFile());
+        Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this.getAbsolutePath());
         // select the best based on context offsets
         for (PreprocessorStatePair statePair : preprocStatePairs) {
             if (statePair.pcState.isInActiveBlock(startContext, endContext)) {

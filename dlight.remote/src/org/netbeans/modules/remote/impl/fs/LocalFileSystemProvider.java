@@ -80,16 +80,6 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public FileObject normalizeFileObject(FileObject fileObject) {
-        String normalizedPath = FileUtil.normalizePath(fileObject.getPath());
-        if (normalizedPath.equals(fileObject.getPath())) {
-            return fileObject;
-        } else {
-            return FileUtil.toFileObject(new File(normalizedPath));
-        }
-    }
-
-    @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         return baseFileObject.getFileObject(relativeOrAbsolutePath);
     }

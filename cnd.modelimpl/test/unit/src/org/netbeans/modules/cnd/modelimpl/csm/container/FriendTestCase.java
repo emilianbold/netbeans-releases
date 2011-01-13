@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FriendResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.openide.filesystems.FileUtil;
 
 /**
  * base class for friends tests
@@ -98,7 +99,7 @@ public class FriendTestCase extends TraceModelTestBase {
             file.scheduleParsing(true);
         }
         checkFriend();
-        getProject().onFileRemoved(testFile);
+        getProject().onFileRemoved(FileUtil.normalizeFile(testFile).getAbsolutePath());
         checkEmpty();
     }
 

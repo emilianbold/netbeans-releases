@@ -126,16 +126,6 @@ public final class FileSystemProvider {
         return FileUtil.normalizePath(absPath); // or should it return just absPath?
     }
 
-    public static FileObject normalizeFileObject(FileObject fileObject) {
-        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
-            if (provider.isMine(fileObject)) {
-                return provider.normalizeFileObject(fileObject);
-            }
-        }
-        noProvidersWarning(fileObject);
-        return fileObject;
-    }
-
     /**
      * In many places, standard sequence is as follows:
      *  - convert path to absolute if need
