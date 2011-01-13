@@ -102,9 +102,16 @@ public class MakeArtifact {
         active = makeConfiguration.isDefault();
         build = true;
         this.makeConfiguration = makeConfiguration;
-        workingDirectory = projectLocation;
-        buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-        cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+        if (makeConfiguration.isMakefileConfiguration()) {
+            workingDirectory = makeConfiguration.getMakefileConfiguration().getAbsBuildCommandWorkingDir();
+            buildCommand = makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue();
+            cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
+        } else {
+            workingDirectory = projectLocation;
+            buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+            cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+        }
+
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_MAKEFILE:
                 configurationType = MakeArtifact.TYPE_UNKNOWN;
