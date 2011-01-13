@@ -125,7 +125,7 @@ abstract class AbstractObserversAction extends AbstractWebBeansAction {
         }
         catch (MetadataModelException e) {
             Logger.getLogger( AbstractObserversAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
+                log( Level.INFO, e.getMessage(), e);
         }
         catch (IOException e) {
             Logger.getLogger( AbstractObserversAction.class.getName()).
