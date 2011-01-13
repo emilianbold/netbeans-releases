@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import java.io.File;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -396,7 +395,7 @@ public class Utils {
     }
 
     public static boolean acceptNativeItem(NativeFileItem item) {
-        if (item.getFile() == null) {
+        if (item.getFileObject() == null || !item.getFileObject().isValid()) {
             return false;
         }
         NativeFileItem.Language language = item.getLanguage();

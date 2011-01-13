@@ -72,14 +72,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -248,12 +246,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 NativeProjectImpl nativeProject = (NativeProjectImpl) platformProject;
                 if (nativeProject.getProjectRoot().equals(closedFilePath)) {
                     for (CsmFile csmf : csmProject.getAllFiles()) {
-                        File f = ((FileImpl) csmf).getFile();
-                        DataObject dao = NativeProjectProvider.getDataObject(f);
+                        FileObject fo = ((FileImpl) csmf).getFileObject();
+                        DataObject dao = NativeProjectProvider.getDataObject(fo);
                         if (dao != null) {
                             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
                             if (set != null) {
-                                set.remove(nativeProject.findFileItem(f));
+                                set.remove(nativeProject.findFileItem(fo));
                             }
                         }
                     }
@@ -459,16 +457,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public NativeFileItemImpl findFileItem(FileObject fileObject) {
             for (NativeFileItemImpl item : files) {
                 if (item.getFileObject().equals(fileObject)) {
-                    return item;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public NativeFileItem findFileItem(File file) {
-            for (NativeFileItem item : files) {
-                if (item.getFile().equals(file)) {
                     return item;
                 }
             }

@@ -635,13 +635,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             time = System.currentTimeMillis() - time;
                             System.err.println("getting files from project system + put in queue took " + time + "ms");
                         }
-                        try {
-                            System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
-                            Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
-                            System.err.println("woke up after sleep");
-                        } catch (InterruptedException ex) {
-                            // do nothing
-                        }
+                        System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
+                        sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
+                        System.err.println("woke up after sleep");
                         ParserQueue.instance().resume();
                     }
                     notify = true;
@@ -652,6 +648,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         if (notify) {
             ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
+    
+    private void sleep(int millisec) {
+        try {
+            Thread.sleep(millisec);
+        } catch (InterruptedException ex) {
+            // do nothing
         }
     }
 
@@ -847,7 +851,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile, boolean isSourceFile){
-        assert (nativeFile != null && nativeFile.getFile() != null);
+        assert (nativeFile != null && nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid());
         if (!Utils.acceptNativeItem(nativeFile)) {
             return null;
         }
@@ -1817,7 +1821,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (getPlatformProject() instanceof NativeProject) {
                 NativeProject prj = (NativeProject) getPlatformProject();
                 if (prj != null) {
-                    nativeFile = prj.findFileItem(new File(absolutePath.toString()));
+                    FileObject fo = prj.getFileSystem().findResource(absolutePath.toString());
+                    if (fo != null) {
+                        nativeFile = prj.findFileItem(fo);
+                    }
                     if (nativeFile == null) {
                         // if not belong to NB project => not our file
                         return null;
@@ -1847,7 +1854,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject) {
                 NativeProject prj = nativeFile.getNativeProject();
-                if (prj != null && nativeFile.getFile() != null) {
+                if (prj != null && nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid()) {
                     preprocHandler = createPreprocHandler(nativeFile);
                 }
             }
@@ -2407,7 +2414,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileImpl csmFile = startProject == null ? null : startProject.getFile(startEntry.getStartFile(), false);
         if (csmFile != null) {
             NativeFileItem nativeFile = csmFile.getNativeFileItem();
-            if (nativeFile != null && nativeFile.getFile() != null) {
+            if (nativeFile != null && nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid()) {
                 preprocHandler = startProject.createPreprocHandler(nativeFile);
             }
         }

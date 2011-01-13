@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -121,6 +122,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
@@ -273,6 +275,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     public ExecutionEnvironment getRemoteFileSystemHost() {
         return remoteFileSystemHost;
+    }
+    
+    private FileSystem getSourceFileSystem() {
+        if (remoteFileSystemHost == null || remoteFileSystemHost.isLocal()) {
+            return CndFileUtils.getLocalFileSystem();
+        } else {
+            return FileSystemProvider.getFileSystem(remoteFileSystemHost);
+        }
     }
 
     /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
@@ -1148,14 +1158,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         
         @Override
         public String resolveRelativeRemotePath(String path) {
-            if (!path.startsWith("/")) { //NOI18N
+            if (!CndPathUtilitities.isPathAbsolute(path)) {
                 if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES && remoteBaseDir != null && !remoteBaseDir.isEmpty()) {
                     String resolved = remoteBaseDir;
                     if (!resolved.endsWith("/")) { //NOI18N
                         resolved += "/"; //NOI18N
                     }
                     resolved = resolved+path;
-                    return CndFileUtils.normalizeAbsolutePath(resolved);
+                    return CndFileUtils.normalizeAbsolutePath(getSourceFileSystem(), resolved);
                 }
             }
             return path;

@@ -259,12 +259,12 @@ public final class CndFileUtils {
             return normalizeAbsolutePath(path);
         } else {
             FileObject fo = fs.findResource(path);
-            return (fo == null) ? normalizeAbsolutePath(path) : fo.getPath(); //XXX:fullRemote use FileSystemProvider for this
+            return (fo == null) ? normalizeAbsolutePath(path) : fo.getPath();
         }
     }
     
     /**
-     * normalize absolute paths
+     * normalize LOCAL absolute paths
      * @param path
      * @return
      */
