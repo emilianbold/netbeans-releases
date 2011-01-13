@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
@@ -84,6 +85,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         }
     }
 
+    @RandomlyFails
     public void testParameters() throws MalformedURLException, CoreException, InterruptedException {
         LogHandler h = new LogHandler("Finnished populate query controller");
         Bugzilla.LOG.addHandler(h);
