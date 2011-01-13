@@ -86,7 +86,7 @@ public final class ValidationContext {
         return result;
     }
 
-    public boolean isFeaturesEnabled(String featureName) {
+    public boolean isFeatureEnabled(String featureName) {
         Boolean val = features != null ? features.get(featureName) : null;
         return val != null ? val : false;
     }
