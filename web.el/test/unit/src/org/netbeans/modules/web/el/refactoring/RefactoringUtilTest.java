@@ -91,6 +91,8 @@ public class RefactoringUtilTest {
         assertEquals("foo", RefactoringUtil.getPropertyName("getFoo"));
         assertEquals("foo", RefactoringUtil.getPropertyName("isFoo"));
         assertEquals("foo", RefactoringUtil.getPropertyName("foo"));
+        assertEquals("FOO", RefactoringUtil.getPropertyName("getFOO"));
+        assertEquals("FOo", RefactoringUtil.getPropertyName("getFOo"));
 
         assertEquals("gettyFoo", RefactoringUtil.getPropertyName("gettyFoo"));
         assertEquals("issyFoo", RefactoringUtil.getPropertyName("issyFoo"));
