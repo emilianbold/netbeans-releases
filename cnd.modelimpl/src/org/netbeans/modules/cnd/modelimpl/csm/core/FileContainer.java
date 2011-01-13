@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
@@ -362,20 +363,20 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
     }
     
-    public static CharSequence getFileKey(FileObject fileObject, boolean sharedText) {
-        Parameters.notNull("null file", fileObject); //NOI18N
-        String key = null;
-        if (TraceFlags.USE_CANONICAL_PATH) {
-            try {
-                key = CndFileUtils.getCanonicalPath(fileObject);
-            } catch (IOException ex) {
-                key = fileObject.getPath();
-            }
-        } else {
-            key = fileObject.getPath();
-        }
-        return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
-    }
+//    public static CharSequence getFileKey(FileObject fileObject, boolean sharedText) {
+//        Parameters.notNull("null file", fileObject); //NOI18N
+//        String key = null;
+//        if (TraceFlags.USE_CANONICAL_PATH) {
+//            try {
+//                key = CndFileUtils.getCanonicalPath(fileObject);
+//            } catch (IOException ex) {
+//                key = CndFileUtils.getNormalizedPath(fileObject);
+//            }
+//        } else {
+//            key = CndFileUtils.getNormalizedPath(fileObject);
+//        }
+//        return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
+//    }
     
     public static CharSequence getFileKey(CharSequence file, boolean sharedText) {
         return sharedText ? FilePathCache.getManager().getString(file) : DefaultCache.getManager().getString(file);

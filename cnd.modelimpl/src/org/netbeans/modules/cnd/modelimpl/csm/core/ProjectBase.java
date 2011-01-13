@@ -2560,23 +2560,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final static class DefaultFileItem implements NativeFileItem {
 
         private final NativeProject project;
-        private final Object fileObjectOrAbsPath;
+        private final String normalizedAbsPath;
 
         public DefaultFileItem(NativeProject project, String absolutePath) {
             Parameters.notNull("project", project);
             Parameters.notNull("absolutePath", absolutePath);
             this.project = project;
-            this.fileObjectOrAbsPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
+            this.normalizedAbsPath = CndFileUtils.normalizeAbsolutePath(project.getFileSystem(), absolutePath);
         }
 
         public DefaultFileItem(NativeFileItem nativeFile) {
             Parameters.notNull("nativeFile", nativeFile);
             this.project = nativeFile.getNativeProject();
-            this.fileObjectOrAbsPath = nativeFile.getFileObject();
-//            if (fileObjectOrAbsPath == null || !((FileObject) fileObjectOrAbsPath).isValid()) {
-//                nativeFile.getFileObject();
-//            }
-            Parameters.notNull("nativeFile.getFileObject()", fileObjectOrAbsPath);
+            this.normalizedAbsPath = nativeFile.getAbsolutePath(); // always normalized
+            CndUtils.assertNormalized(project.getFileSystem(), normalizedAbsPath);
+            Parameters.notNull("nativeFile.getAbsolutePath()", normalizedAbsPath);
         }
 
         public static NativeFileItem toDefault(NativeFileItem nativeFile) {
@@ -2625,39 +2623,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public File getFile() {
-            if (fileObjectOrAbsPath instanceof FileObject) {
-                return CndFileUtils.toFile((FileObject)fileObjectOrAbsPath);
-            } else {
-                return new File((String) fileObjectOrAbsPath);
-            }
+        public File getFile() {            
+            return CndFileUtils.toFile(getFileObject());
         }
 
         @Override
         public FileObject getFileObject() {
-            if (fileObjectOrAbsPath instanceof FileObject) {
-                return (FileObject) fileObjectOrAbsPath;
-            } else {
-                return CndFileUtils.toFileObject((String) fileObjectOrAbsPath);
-            }
+            return CndFileUtils.toFileObject(project.getFileSystem(), normalizedAbsPath);
         }
 
         @Override
         public String getAbsolutePath() {
-            if (fileObjectOrAbsPath instanceof FileObject) {
-                return ((FileObject) fileObjectOrAbsPath).getPath();
-            } else {
-                return (String) fileObjectOrAbsPath;
-            }
+            return normalizedAbsPath;
         }
 
         @Override
         public String getName() {
-            if (fileObjectOrAbsPath instanceof FileObject) {
-                return ((FileObject) fileObjectOrAbsPath).getNameExt();
-            } else {
-                return CndPathUtilitities.getBaseName((String) fileObjectOrAbsPath);
-            }
+            return CndPathUtilitities.getBaseName(normalizedAbsPath);
         }
         
         @Override
@@ -2677,7 +2659,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public String toString() {
-            return (fileObjectOrAbsPath instanceof FileObject) ? ((FileObject)fileObjectOrAbsPath).getPath() : (String) fileObjectOrAbsPath;
+            return normalizedAbsPath + ' ' + project.getFileSystem().getDisplayName(); //NOI18N
         }
     }
 
