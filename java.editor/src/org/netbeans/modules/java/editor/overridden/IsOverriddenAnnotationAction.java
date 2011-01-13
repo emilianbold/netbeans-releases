@@ -233,7 +233,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         return false;
     }
 
-    private static void mouseClicked(Map<String, List<ElementDescription>> caption2Descriptions, JTextComponent c, Point p) {
+    static void mouseClicked(Map<String, List<ElementDescription>> caption2Descriptions, JTextComponent c, Point p) {
         if (caption2Descriptions.size() == 1 && caption2Descriptions.values().iterator().next().size() == 1) {
             ElementDescription desc = caption2Descriptions.values().iterator().next().get(0);
             FileObject file = desc.getSourceFile();
@@ -267,7 +267,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         PopupUtil.showPopup(new IsOverriddenPopup(caption.toString(), descriptions), caption.toString(), position.x, position.y, true, 0);
     }
 
-    private static String computeCaption(AnnotationType type, String shortDescription) throws MissingResourceException, IllegalStateException {
+    static String computeCaption(AnnotationType type, String shortDescription) throws MissingResourceException, IllegalStateException {
         String caption;
         switch (type) {
             case IMPLEMENTS:
