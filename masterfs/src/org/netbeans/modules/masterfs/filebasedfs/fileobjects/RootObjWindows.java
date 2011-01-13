@@ -178,7 +178,11 @@ public final class RootObjWindows extends FileObject {
                 // replace '/' by '\'
                 name = name.replace('/', '\\');  //NOI18N
             }
-            if (FileInfo.composeName(name, ext).equals(fileObject.getNameExt())) {
+            String real = fileObject.getNameExt();
+            if (real.endsWith("\\")) {
+                real = real.substring(0, real.length() - 1);
+            }
+            if (FileInfo.composeName(name, ext).equals(real)) {
                 return fileObject;
             }
         }

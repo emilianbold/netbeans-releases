@@ -282,9 +282,9 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         assertNotNull (toInstall.getInstalled ());
         
         if (r == null) {
-            assertTrue ("Config module files are more than before Install test, " + Arrays.asList (configModules.listFiles ()), configModules.listFiles ().length > configModulesSize);
-            assertTrue ("Installed modules are more than before Install test, " + Arrays.asList (modules.listFiles ()), modules.listFiles ().length > modulesSize);
             if (incrementNumberOfModuleConfigFiles()) {
+                assertTrue ("Config module files are more than before Install test, " + Arrays.asList (configModules.listFiles ()), configModules.listFiles ().length > configModulesSize);
+                assertTrue ("Installed modules are more than before Install test, " + Arrays.asList (modules.listFiles ()), modules.listFiles ().length > modulesSize);
                 assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length > foConfigModulesSize);
                 assertEquals (configModules.listFiles ()[0], FileUtil.toFile (foConfigModules.getChildren ()[0]));
             }
@@ -292,7 +292,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             if (incrementNumberOfModuleConfigFiles()) {
                 assertTrue (fileChanges[0]);
             } else {
-                assertTrue(fileChanges[2]);
+                assertFalse("Don't expect any changes", fileChanges[2]);
+                return installElement;
             }
             fileChanges[0]=false;
         }
