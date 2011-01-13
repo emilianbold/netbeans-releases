@@ -161,8 +161,13 @@ public final class ProjectEar extends J2eeApplicationProvider
         return project.getOrCreateMetaInfDir();
     }
     
+    @Override
     public File getResourceDirectory() {
-        return project.getFile(EarProjectProperties.RESOURCE_DIR);
+        File f = project.getFile(EarProjectProperties.RESOURCE_DIR);
+        if (f == null) {
+            f = new File(FileUtil.toFile(project.getProjectDirectory()), "setup"); // NOI18N
+        }
+        return f;
     }
 
     public ClassPathProvider getClassPathProvider () {
