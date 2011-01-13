@@ -94,8 +94,7 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
 
     // interface SystemAction
     protected String iconResource () {
-        return "org/netbeans/modules/cnd/debugger/common2/icons/run.png"; // NOI18N
-// NOI18N
+        return "org/netbeans/modules/cnd/debugger/common2/icons/continue-at-line_24x24.png"; // NOI18N
     }
 
 
