@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -114,14 +113,6 @@ public interface NativeProject {
       */
      public void removeProjectItemsListener(NativeProjectItemsListener listener);
      
-     /**
-      * Finds a file item in the project.
-      * @param file the file item to find
-      * @return the file item if found. Otherwise it returns null.
-      */
-     // XXX:FileObject conversion: remove
-     public NativeFileItem findFileItem(File file);
-
      /**
       * Finds a file item in the project.
       * @param fileObject  a file object to find item for
