@@ -905,7 +905,7 @@ public abstract class Children extends Object {
         */
         @Override
         final void callAddNotify() {
-            entrySupport().setEntries(createEntries(getMap()));
+            entrySupport().setEntries(createEntries(getMap()), true);
             super.callAddNotify();
         }
 
@@ -976,7 +976,7 @@ public abstract class Children extends Object {
         protected final void putAll(final java.util.Map<? extends T,? extends Node> map) {
             try {
                 PR.enterWriteAccess();
-                nodes.putAll(map);
+                getMap().putAll(map);
                 refreshImpl();
 
                 // PENDING sometime we should also call refreshKey...
@@ -993,7 +993,7 @@ public abstract class Children extends Object {
             try {
                 PR.enterWriteAccess();
 
-                if (nodes.put(key, node) != null) {
+                if (getMap().put(key, node) != null) {
                     refreshKeyImpl(key);
                 } else {
                     refreshImpl();
@@ -1009,7 +1009,7 @@ public abstract class Children extends Object {
         protected final void removeAll(final Collection<? extends T> keys) {
             try {
                 PR.enterWriteAccess();
-                nodes.keySet().removeAll(keys);
+                getMap().keySet().removeAll(keys);
                 refreshImpl();
             } finally {
                 PR.exitWriteAccess();
@@ -1023,7 +1023,7 @@ public abstract class Children extends Object {
             try {
                 PR.enterWriteAccess();
 
-                if (nodes.remove(key) != null) {
+                if (nodes != null && nodes.remove(key) != null) {
                     refreshImpl();
                 }
             } finally {
