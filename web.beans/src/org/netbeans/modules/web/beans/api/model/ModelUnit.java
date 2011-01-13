@@ -46,6 +46,7 @@ package org.netbeans.modules.web.beans.api.model;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileObject;
 
 

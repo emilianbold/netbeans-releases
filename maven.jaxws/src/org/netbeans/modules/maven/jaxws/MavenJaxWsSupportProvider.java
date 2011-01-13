@@ -203,10 +203,10 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             //requestModelUpdate();
             updateJaxWsTask.schedule(1000);
         }
-
+        
         private void updateJaxWs() {
             try {
-                Map<String, ServiceInfo> newServices = wsModel.runReadAction(
+                final Map<String, ServiceInfo> newServices = wsModel.runReadAction(
                         new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
 
                     public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
@@ -233,63 +233,76 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                         return result;
                     }
                 });
-                List<JaxWsService> oldJaxWsServices = jaxWsSupport.getServices();
-                Map<String, JaxWsService> oldServices = new HashMap<String, JaxWsService>();
-
-                for (JaxWsService s : oldJaxWsServices) {
-                    // implementationClass -> Service
-                    if (s.isServiceProvider()) {
-                        oldServices.put(s.getImplementationClass(), s);
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        doUpdateJaxWs(newServices);        
                     }
-                }
-                // compare new services with existing
-                // looking for common services (implementationClass)
-                Set<String> commonServices = new HashSet<String>();
-                Set<String> keys1 = oldServices.keySet();
-                Set<String> keys2 = newServices.keySet();
-                for (String key : keys1) {
-                    if (keys2.contains(key)) {
-                        commonServices.add(key);
-                    }
-                }
-                for (String key : commonServices) {
-                    oldServices.remove(key);
-                    newServices.remove(key);
-                }
-
-                // remove old services
-                boolean needToSave = false;
-                for (String key : oldServices.keySet()) {
-                    jaxWsSupport.removeService(oldServices.get(key));
-                }
-                // add new services
-                for (String key : newServices.keySet()) {
-                    ServiceInfo serviceInfo = newServices.get(key);
-                    String wsdlLocation = serviceInfo.getWsdlLocation();
-                    JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
-                    if (wsdlLocation != null && wsdlLocation.length() > 0) {
-                        service.setWsdlLocation(wsdlLocation);
-                        if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
-                            service.setLocalWsdl(wsdlLocation.substring(13));
-                        } else if (wsdlLocation.startsWith("META-INF/wsdl/")) {
-                            service.setLocalWsdl(wsdlLocation.substring(14));
-                        } else {
-                            service.setLocalWsdl(wsdlLocation);
-                        }
-                        FileObject wsdlFo = WSUtils.getLocalWsdl(jaxWsSupport, service.getLocalWsdl());
-                        if (wsdlFo != null) {
-                            service.setId(WSUtils.getUniqueId(wsdlFo.getName(), oldJaxWsServices));
-                        }
-                        service.setWsdlUrl(WSUtils.getOriginalWsdlUrl(prj, service.getId(), true));
-                    }
-                    service.setPortName(serviceInfo.getPortName());
-                    jaxWsSupport.addService(service);
-                }
+                };
+                jaxWsSupport.runAtomic(runnable);
+                
             } catch (java.io.IOException ioe) {
                 ioe.printStackTrace();
             }
 
         }
+
+        private void doUpdateJaxWs( Map<String, ServiceInfo> newServices ) {
+            List<JaxWsService> oldJaxWsServices = jaxWsSupport.getServices();
+            Map<String, JaxWsService> oldServices = new HashMap<String, JaxWsService>();
+
+            for (JaxWsService s : oldJaxWsServices) {
+                // implementationClass -> Service
+                if (s.isServiceProvider()) {
+                    oldServices.put(s.getImplementationClass(), s);
+                }
+            }
+            // compare new services with existing
+            // looking for common services (implementationClass)
+            Set<String> commonServices = new HashSet<String>();
+            Set<String> keys1 = oldServices.keySet();
+            Set<String> keys2 = newServices.keySet();
+            for (String key : keys1) {
+                if (keys2.contains(key)) {
+                    commonServices.add(key);
+                }
+            }
+            for (String key : commonServices) {
+                oldServices.remove(key);
+                newServices.remove(key);
+            }
+
+            // remove old services
+            boolean needToSave = false;
+            for (String key : oldServices.keySet()) {
+                jaxWsSupport.removeService(oldServices.get(key));
+            }
+            // add new services
+            for (String key : newServices.keySet()) {
+                ServiceInfo serviceInfo = newServices.get(key);
+                String wsdlLocation = serviceInfo.getWsdlLocation();
+                JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
+                if (wsdlLocation != null && wsdlLocation.length() > 0) {
+                    service.setWsdlLocation(wsdlLocation);
+                    if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
+                        service.setLocalWsdl(wsdlLocation.substring(13));
+                    } else if (wsdlLocation.startsWith("META-INF/wsdl/")) {
+                        service.setLocalWsdl(wsdlLocation.substring(14));
+                    } else {
+                        service.setLocalWsdl(wsdlLocation);
+                    }
+                    FileObject wsdlFo = WSUtils.getLocalWsdl(jaxWsSupport, service.getLocalWsdl());
+                    if (wsdlFo != null) {
+                        service.setId(WSUtils.getUniqueId(wsdlFo.getName(), oldJaxWsServices));
+                    }
+                    service.setWsdlUrl(WSUtils.getOriginalWsdlUrl(prj, service.getId(), true));
+                }
+                service.setPortName(serviceInfo.getPortName());
+                jaxWsSupport.addService(service);
+            }
+        }
+        
+        
     }
 
     private class ServiceInfo {

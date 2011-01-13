@@ -47,8 +47,11 @@ package org.netbeans.modules.maven.jaxws.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -62,6 +65,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -90,29 +94,51 @@ public class JaxWsNodeFactory implements NodeFactory {
         private JAXWSLightSupport jaxwsSupport;
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private Lookup.Result<JAXWSLightSupportProvider> lookupResult;
+        private AtomicReference<List<String>> nodeList; 
+        
+        private RequestProcessor.Task jaxWsTask =
+            new RequestProcessor("JaxWs-maven-request-processor").create(new Runnable() { //NOI18N
+                @Override
+                public void run() {
+                    List<String> result = new ArrayList<String>(2);
+                    if ( jaxwsSupport != null) {
+                        List<JaxWsService> services = jaxwsSupport.getServices();
+                        boolean hasServices = false;
+                        boolean hasClients = false;
+                        for (JaxWsService s:services) {
+                            if (!hasServices && s.isServiceProvider()) {
+                                hasServices = true;
+                            } else if (!hasClients && !s.isServiceProvider()) {
+                                hasClients = true;
+                            }
+                            if (hasServices && hasClients) break;
+                        }
+                        if (hasServices) {
+                            result.add(KEY_SERVICES);
+                        }
+                        if (hasClients) {
+                            result.add(KEY_SERVICE_REFS);
+                        }
+                    }
+                    nodeList.set( result );
+                    fireChange();
+                }
+            });
         
         public WsNodeList(Project proj) {
             project = proj;
+            nodeList = new AtomicReference<List<String>>();
         }
         
         public List<String> keys() {
-            List<String> result = new ArrayList<String>();
-            if ( jaxwsSupport != null) {
-                List<JaxWsService> services = jaxwsSupport.getServices();
-                boolean hasServices = false;
-                boolean hasClients = false;
-                for (JaxWsService s:services) {
-                    if (!hasServices && s.isServiceProvider()) {
-                        hasServices = true;
-                    } else if (!hasClients && !s.isServiceProvider()) {
-                        hasClients = true;
-                    }
-                    if (hasServices && hasClients) break;
-                }
-                if (hasServices) result.add(KEY_SERVICES);
-                if (hasClients) result.add(KEY_SERVICE_REFS);
+            List<String> keys = nodeList.get();
+            if ( keys != null && !keys.isEmpty()) {
+                nodeList.compareAndSet( keys, null);
+                return keys;
+            } else {
+                jaxWsTask.schedule(100);
             }
-            return result;
+            return Collections.emptyList();
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
