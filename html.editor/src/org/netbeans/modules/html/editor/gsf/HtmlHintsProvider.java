@@ -205,7 +205,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     }
 
                     //add custom hint fixes
-                    fixes.addAll(getCustomHintFixesForError(context, e));
+//                    fixes.addAll(getCustomHintFixesForError(context, e));
                     
                     Hint h = new Hint(getRule(e.getSeverity()),
                             e.getDescription(),
@@ -243,6 +243,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
+    //possibly reenable later once hint fixes are implementd for validator.nu errors
     private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
         List<HintFix> fixes = new ArrayList<HintFix>();
         if(e.getKey().equals(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES)) {
