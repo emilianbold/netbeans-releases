@@ -88,6 +88,7 @@
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
                 <friend>com.sun.tools.dlight.branding</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
