@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import org.netbeans.modules.cnd.apt.structure.APTFile;

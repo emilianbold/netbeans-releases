@@ -81,6 +81,7 @@ public class Terminator implements Runnable {
         RequestProcessor.getDefault().post(new Terminator(project));
     }
     
+    @Override
     public void run() {
         synchronized (lock) {
             inParse++;
@@ -88,6 +89,7 @@ public class Terminator implements Runnable {
         System.err.println("Parse started. " + inParse + " projects in list"); // NOI18N
         if (TraceFlags.CLOSE_TIMEOUT > 0) {
             ActionListener terminator2 = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     ((ModelImpl)CsmModelAccessor.getModel()).shutdown();
                     synchronized (lock) {
@@ -103,6 +105,7 @@ public class Terminator implements Runnable {
             System.err.println("Parse finished. " + inParse + " projects left"); // NOI18N
             if (inParse == 0) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         terminate();
                     }
