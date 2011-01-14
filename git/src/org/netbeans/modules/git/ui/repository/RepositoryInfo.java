@@ -215,6 +215,12 @@ public class RepositoryInfo {
     public String getName () {
         return name;
     }
+    
+    public Map<String, GitBranch> getBranches () {
+        synchronized (branches) {
+            return new HashMap<String, GitBranch>(branches);
+        }
+    }
 
     public static void refreshAsync (File repositoryRoot) {
         RepositoryInfo info = null;
