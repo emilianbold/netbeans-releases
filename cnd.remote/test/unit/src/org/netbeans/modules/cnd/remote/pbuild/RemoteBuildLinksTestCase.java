@@ -87,7 +87,7 @@ public class RemoteBuildLinksTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildMakefileWithExt() throws Exception {
+    public void testSymLinksBuild() throws Exception {
         doTest(Toolchain.GNU);
     }
 

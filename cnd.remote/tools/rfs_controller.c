@@ -74,6 +74,24 @@ static const char LC_PROTOCOL_PING    = 'p';
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+static bool mutex_lock(pthread_mutex_t* mutex) {
+    if (pthread_mutex_lock(mutex) == 0) {
+        return true;
+    } else {
+        report_error("Error locking mutex: %s\n", strerror(errno));
+        return false;
+    }
+}
+
+static bool mutex_unlock(pthread_mutex_t* mutex) {
+    if (pthread_mutex_unlock(mutex) == 0) {
+        return true;
+    } else {
+        report_error("Error unlocking mutex: %s\n", strerror(errno));
+        return false;
+    }
+}
+
 static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
@@ -115,7 +133,9 @@ static void serve_connection(void* data) {
         file_data *fd = find_file_data(filename);
 
         if (pkg->kind == pkg_written) {
-            if (fd == NULL) {
+            // NB 1: process that wrote a file does NOT wait any response
+            // NB 2: MODIFIED status is final => no need to sync here
+            if (fd == NULL) {                
                 trace("File %s is unknown - nothing to uncontrol\n", filename);
             } else if (fd->state == MODIFIED) {
                 trace("File %s already reported as modified\n", filename);
@@ -123,20 +143,21 @@ static void serve_connection(void* data) {
                 fd->state = MODIFIED;
                 trace("File %s sending uncontrol request to LC\n", filename);
                 // TODO: this is a very primitive sync!
-                pthread_mutex_lock(&mutex);
+                mutex_lock(&mutex);
                 fprintf(stdout, "%c %s\n", LC_PROTOCOL_WRITTEN, filename);
                 fflush(stdout);
-                pthread_mutex_unlock(&mutex);
+                mutex_unlock(&mutex);
             }
         } else { // pkg->kind == pkg_request
             char response[64];
             response[1] = 0;
             if (fd != NULL) {
+                mutex_lock(&fd->mutex); //NB: never return unless unlocked !!!
                 switch (fd->state) {
                     case TOUCHED:
                         trace("File %s state %c - requesting LC\n", filename, (char) fd->state);
                         /* TODO: this is a very primitive sync!  */
-                        pthread_mutex_lock(&mutex);
+                        mutex_lock(&mutex);
 
                         fprintf(stdout, "%c %s\n", LC_PROTOCOL_REQUEST, filename);
                         fflush(stdout);
@@ -149,7 +170,7 @@ static void serve_connection(void* data) {
                             break;
                         }
                         fd->state = (response[0] == response_ok) ? COPIED : ERROR;
-                        pthread_mutex_unlock(&mutex);
+                        mutex_unlock(&mutex);
                         trace("File %s state %c - got from LC %s, replying %s\n", filename, (char) fd->state, response, response);
                         break;
                     case COPIED:    // fall through
@@ -170,6 +191,7 @@ static void serve_connection(void* data) {
                         trace("File %s state %c (0x%x)- unexpected state, replying %s\n", filename, (char) fd->state, (char) fd->state, response);
                         break;
                 }
+                mutex_unlock(&fd->mutex);
             } else {
                 response[0] = response_ok;
                 trace("File %s: state n/a, replying: %s\n", filename, response);
@@ -585,13 +607,13 @@ static int init_files() {
  */
 static void check_stdout_pipe(void* data) {
     do {
-        pthread_mutex_lock(&mutex);
+        mutex_lock(&mutex);
         fprintf(stdout, "%c\n", LC_PROTOCOL_PING);
         fflush(stdout);
         // no response needed
         // char response[64];
         // fgets(response, sizeof response, stdin);
-        pthread_mutex_unlock(&mutex);
+        mutex_unlock(&mutex);
         sleep(20);
     } while (1);
 }
