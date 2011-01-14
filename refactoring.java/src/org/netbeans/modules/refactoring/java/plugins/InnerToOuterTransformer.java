@@ -217,9 +217,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper        
         if (currentElement!=null && currentElement == outer) {
             Element outerouter = outer.getEnclosingElement();
-            
-            super.visitClass(classTree, element);
+            Tree superVisit = super.visitClass(classTree, element);
             TreePath tp = workingCopy.getTrees().getPath(inner);
+            if (tp==null) {
+                //#194346
+                return superVisit;
+            }
             ClassTree innerClass = (ClassTree) tp.getLeaf();
 
             ClassTree newInnerClass = innerClass;
