@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
 /**
@@ -805,15 +806,15 @@ public class TraceModel extends TraceModelBase {
 //	}
 //	return result;
 //    }
-    private long testAPTLexer(File file, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
+    private long testAPTLexer(FileObject fo, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         print("Testing APT lexer:"); // NOI18N
         long time = System.currentTimeMillis();
         Reader reader = null;
         InputStream stream = null;
         try {
-            stream = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
+            stream = new BufferedInputStream(fo.getInputStream(), TraceFlags.BUF_SIZE);
             reader = new InputStreamReader(stream, FileEncodingQuery.getDefaultEncoding());
-            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, getFileLanguage(file));
+            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(fo.getPath(), reader, getFileLanguage(fo));
             for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
                 if (printTokens) {
                     print("" + t);
@@ -821,7 +822,7 @@ public class TraceModel extends TraceModelBase {
             }
             time = System.currentTimeMillis() - time;
             if (isShowTime()) {
-                print("APT Lexing " + file.getName() + " took " + time + " ms"); // NOI18N
+                print("APT Lexing " + fo.getNameExt() + " took " + time + " ms"); // NOI18N
             }
             return time;
         } finally {
@@ -871,12 +872,13 @@ public class TraceModel extends TraceModelBase {
 
     private long testAPTWalkerGetStream(APTFile apt, FileBuffer buffer, boolean expand, boolean filter, boolean printTokens) throws TokenStreamException, IOException {
         File file = buffer.getFile();
+        FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.findAPT(buffer, getFileLanguage(file));
+            apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
         }
         APTMacroMap macroMap = getMacroMap(file);
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
@@ -910,7 +912,6 @@ public class TraceModel extends TraceModelBase {
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
         FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT Parser"); // NOI18N
-        File file = buffer.getFile();
         long time = System.currentTimeMillis();
         if (cleanAPT) {
             invalidateAPT(buffer);
@@ -928,16 +929,16 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
-        File file = item.getFile();
+        FileObject fo = item.getFileObject();
         FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
-        print("Testing APT: " + file.getName()); // NOI18N
+        print("Testing APT: " + fo.getNameExt()); // NOI18N
         long minLexer = Long.MAX_VALUE;
         long maxLexer = Long.MIN_VALUE;
         long minAPTLexer = Long.MAX_VALUE;
         long maxAPTLexer = Long.MIN_VALUE;
         if (testAPTLexer) {
             for (int i = -1; i < testAPTIterations; i++) {
-                long val = testAPTLexer(file, i == -1 ? printTokens : false);
+                long val = testAPTLexer(fo, i == -1 ? printTokens : false);
                 minAPTLexer = Math.min(minAPTLexer, val);
                 maxAPTLexer = Math.max(maxAPTLexer, val);
             }
@@ -1001,7 +1002,7 @@ public class TraceModel extends TraceModelBase {
             }
         }
         if (isShowTime()) {
-            print("APT BEST/WORST results for " + file.getAbsolutePath()); // NOI18N
+            print("APT BEST/WORST results for " + fo.getPath()); // NOI18N
             if (minLexer != Long.MAX_VALUE) {
                 print(minLexer + " ms BEST Plain lexer"); // NOI18N
                 print(maxLexer + " ms WORST Plain lexer"); // NOI18N
@@ -1044,9 +1045,9 @@ public class TraceModel extends TraceModelBase {
     private static String firstFile = null;
 
     private void invalidateAPT(final FileBuffer buffer) {
-        File file = buffer.getFile();
-        if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
-            firstFile = file.getAbsolutePath();
+        String absPath = buffer.getAbsolutePath().toString();
+        if (firstFile == null || firstFile.equalsIgnoreCase(absPath)) {
+            firstFile = absPath;
             APTDriver.invalidateAll();
             APTFileCacheManager.invalidateAll();
             getProject().debugInvalidateFiles();
@@ -1059,23 +1060,23 @@ public class TraceModel extends TraceModelBase {
     long maxDriver = Long.MIN_VALUE;
 
     private APTFile testAPTDriver(final FileBuffer buffer, boolean buildXML) throws IOException, FileNotFoundException {
-        File file = buffer.getFile();
+        FileObject fo = buffer.getFileObject();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(file));
+        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {
             minDriver = Math.min(minDriver, time);
             maxDriver = Math.max(maxDriver, time);
-            print("Building APT for " + file.getName() + "\n SIZE OF FILE:" + file.length() / 1024 + "Kb\n TIME: took " + time + " ms\n MEMORY: changed from " + (oldMem) / (1024) + " to " + newMem / (1024) + "[" + (newMem - oldMem) / 1024 + "]Kb"); // NOI18N
+            print("Building APT for " + fo.getNameExt() + "\n SIZE OF FILE:" + fo.getSize() / 1024 + "Kb\n TIME: took " + time + " ms\n MEMORY: changed from " + (oldMem) / (1024) + " to " + newMem / (1024) + "[" + (newMem - oldMem) / 1024 + "]Kb"); // NOI18N
         }
 
         //        System.out.println("apt tree: \n" + APTTraceUtils.toStringList(apt));
         if (buildXML) {
             File outDir = new File("/tmp/aptout/"); // NOI18N
             outDir.mkdirs();
-            File outFile = new File(outDir, file.getName() + ".xml"); // NOI18N
+            File outFile = new File(outDir, fo.getNameExt() + ".xml"); // NOI18N
             if (outFile.exists()) {
                 outFile.delete();
             }
@@ -1084,7 +1085,7 @@ public class TraceModel extends TraceModelBase {
             APTTraceUtils.xmlSerialize(apt, out);
             out.flush();
             APT light = APTBuilder.buildAPTLight(apt);
-            File outFileLW = new File(outDir, file.getName() + "_lw.xml"); // NOI18N
+            File outFileLW = new File(outDir, fo.getNameExt() + "_lw.xml"); // NOI18N
             if (outFileLW.exists()) {
                 outFileLW.delete();
             }
@@ -1421,13 +1422,13 @@ public class TraceModel extends TraceModelBase {
         return result;
     }
 
-    private static String getFileLanguage(File file) {
+    private static String getFileLanguage(FileObject fo) {
         String lang = APTLanguageSupport.GNU_CPP;
-        final String fileName = file.getName();
-        if (file.getName().length() > 2 && fileName.endsWith(".c")) { // NOI18N
+        String ext = fo.getExt();
+        if (ext.equals("c")) { // NOI18N
             lang = APTLanguageSupport.GNU_C;
         }
-        if (file.getName().length() > 2 && fileName.endsWith(".f")) { // NOI18N
+        if (ext.equals("f")) { // NOI18N
             lang = APTLanguageSupport.FORTRAN;
         }
         return lang;
