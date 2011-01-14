@@ -141,6 +141,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public String getCanonicalPath(FileObject fileObject) throws IOException {
         return getCanonicalFileObject(fileObject).getPath();
     }
+
+    public String getCanonicalPath(String absPath) throws IOException {
+        //TODO:fullRemote implement (see issue #194361)
+        return absPath;
+    }
     
     @Override
     public ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
