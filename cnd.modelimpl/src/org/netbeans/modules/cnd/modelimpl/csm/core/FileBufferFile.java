@@ -121,10 +121,10 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
 
     private byte[] doGetBytes() throws IOException {
-        File file = getFile();
-        long length = file.length();
+        FileObject fo = getFileObject();
+        long length = fo.getSize();
         if (length > Integer.MAX_VALUE) {
-            new IllegalArgumentException("File is too large: " + file.getAbsolutePath()).printStackTrace(System.err); // NOI18N
+            new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
         }
         byte[] readBytes = new byte[(int)length];
         InputStream is = getInputStream();
@@ -194,7 +194,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     @Override
     public int getLength() {
-        return (int) getFile().length();
+        return (int) getFileObject().getSize();
     }
     
     @Override
@@ -204,7 +204,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     @Override
     public long lastModified() {
-	return getFile().lastModified();
+	return getFileObject().lastModified().getTime();
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

@@ -254,6 +254,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 setExecutable(exe).
                 setArguments(args.toArray(new String[args.size()])).
                 addNativeProcessListener(processChangeListener);
+        
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+            npb.redirectError();
+        }
 
         npb.getEnvironment().putAll(env);
 

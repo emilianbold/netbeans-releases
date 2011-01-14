@@ -687,7 +687,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 changedSegment = ((FileBufferDoc) getBuffer()).getLastChangedSegment();
             }
         } catch (FileNotFoundException ex) {
-            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
+            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getAbsolutePath()});// NOI18N
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
         }
@@ -696,7 +696,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull) {
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
+            Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
         }
         synchronized(snapShotLock) {
             fileSnapshot = new FileSnapshot(this);
@@ -815,14 +815,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         CsmParserResult parsing = doParse(preprocHandler, aptFull);
         if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
-            sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+            sw.stopAndReport("Parsing of " + fileBuffer.getUrl() + " took \t"); // NOI18N
         }
         if (parsing != null) {
             Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (isValid()) {   // FIXUP: use a special lock here
                 parsing.render();
                 if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
-                    sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+                    sw2.stopAndReport("Rendering of " + fileBuffer.getUrl() + " took \t"); // NOI18N
                 }
             }
         }
@@ -832,7 +832,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private void logParse(String title, APTPreprocHandler preprocHandler) {
         if (reportParse || logState || TraceFlags.DEBUG) {
             System.err.printf("# %s %s \n#\t(%s %s %s) \n#\t(Thread=%s)\n", //NOI18N
-                    title, fileBuffer.getFile().getPath(),
+                    title, fileBuffer.getUrl(),
                     TraceUtils.getPreprocStateString(preprocHandler.getState()),
                     TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros),
                     TraceUtils.getPreprocStartEntryString(preprocHandler.getState()),
@@ -1085,14 +1085,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
             if (tokenStream != null) {
-                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), tokenStream, flags);
+                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFileObject().getNameExt(), tokenStream, flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
                 parser.translation_unit();
                 return new ParserBasedTokenBuffer(parser);
             }
         } catch (Throwable ex) {
-            System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
+            System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getAbsolutePath()); // NOI18N
         } finally {
             if (TraceFlags.TRACE_ERROR_PROVIDER) {
                 System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
@@ -1276,7 +1276,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     @Override
     public CharSequence getName() {
-        return CharSequences.create(fileBuffer.getFile().getName());
+        return CharSequences.create(fileBuffer.getFileObject().getNameExt());
     }
 
     @Override
@@ -1668,7 +1668,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         wereFakes = true;
                                     }
                                 } else {
-                                    APTUtils.LOG.log(Level.WARNING, "fixFakeIncludeRegistrations: file {0} has not tokens, probably empty or removed?", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N                            
+                                    APTUtils.LOG.log(Level.WARNING, "fixFakeIncludeRegistrations: file {0} has not tokens, probably empty or removed?", new Object[]{getBuffer().getUrl()});// NOI18N                            
                                 }
                             }
                         }

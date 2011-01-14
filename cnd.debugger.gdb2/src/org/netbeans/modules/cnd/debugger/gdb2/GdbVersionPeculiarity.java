@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,72 +40,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 
 /**
+ * Contains actions which may vary in different versions of gdb
  *
  * @author Egor Ushakov
  */
-public class GdbUtils {
-    private GdbUtils() {
+public class GdbVersionPeculiarity {
+    private final double version;
+    private final Platform platform;
+
+    private GdbVersionPeculiarity(double version, Platform platform) {
+        this.version = version;
+        this.platform = platform;
     }
-    
-    public static String gdbToUserEncoding(String string, final String encoding) {
-        // The first part transforms string to byte array
-        char[] chars = string.toCharArray();
-        char next;
-        boolean escape = false;
-        ArrayList<Byte> _bytes = new ArrayList<Byte>();
-        for (int i = 0; i < chars.length; i++) {
-            char ch = chars[i];
-            next = (i + 1) < chars.length ? chars[i + 1] : 0;
-            if (escape) {
-                // skip escaped char
-                escape = false;
-            } else if (ch == '\\') {
-                if (Character.isDigit(next)) {
-                    char[] charVal = {chars[++i], chars[++i], chars[++i]};
-                    ch = (char) Integer.parseInt(String.valueOf(charVal), 8);
-                } else {
-                    escape = true;
-                }
-            }
-            _bytes.add((byte) ch);
-        }
-        byte[] bytes = new byte[_bytes.size()];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = _bytes.get(i);
-        }
 
-        // The second part performs encoding to current coding system
-        try {
-            string = new String(bytes, encoding);
-        } catch (UnsupportedEncodingException e) {
-        }
-        return string;
+    public static GdbVersionPeculiarity create(double version, Platform platform) {
+        return new GdbVersionPeculiarity(version, platform);
     }
-    
-    public static double parseVersionString(String msg) throws NumberFormatException {
-        int dot = msg.indexOf('.');
 
-        int first = dot - 1;
-        while (first > 0 && Character.isDigit(msg.charAt(first))) {
-            first--;
+    public String environmentDirectoryCommand() {
+        if (version > 6.3 || platform == Platform.MacOSX_x86) {
+            return "-environment-directory"; // NOI18N
+        } else {
+            return "directory"; // NOI18N
         }
+    }
 
-        int last = dot + 1;
-        while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
-            last++;
+    public String environmentCdCommand() {
+        if (version > 6.3) {
+            return "-environment-cd"; // NOI18N
+        } else {
+            return "cd"; // NOI18N
         }
-        return Double.parseDouble(msg.substring(first+1, last));
+    }
+
+    public String execAbortCommand() {
+        if (version > 6.6) {
+            return "-exec-abort"; // NOI18N
+        } else {
+            return "kill"; // NOI18N
+        }
+    }
+
+    private static final boolean DISABLE_PENDING = Boolean.getBoolean("gdb.breakpoints.pending.disabled"); //NOI18N
+
+    public String breakPendingFlag() {
+        if (!DISABLE_PENDING
+                && (version >= 6.8 || platform == Platform.MacOSX_x86)) {
+            return " -f"; // NOI18N
+        } else {
+            return "";
+        }
+    }
+
+    public boolean isSupported() {
+        return (version >= 6.8) || (platform == Platform.MacOSX_x86 && version >= 6.3);
     }
 }

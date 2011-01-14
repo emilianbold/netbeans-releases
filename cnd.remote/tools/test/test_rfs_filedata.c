@@ -23,7 +23,6 @@ static void test_trivial() {
     printf("Launched threads, sleeping\n");
     sleep(3);
     printf("Awoke\n");
-    signal_on_file_data(fd);
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     printf("Done\n");

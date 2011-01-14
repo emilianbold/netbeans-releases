@@ -156,7 +156,13 @@ public final class CommonTasksSupport {
         byte[] buffer = new byte[(int)cnt * bs];
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(srcExecEnv);
-        npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "iseek=" + iseek, "count=" + cnt); // NOI18N
+        if (iseek > 0) {
+            // iseek paremeter is Solaris and Mac OS X only.
+            //npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "iseek=" + iseek, "count=" + cnt); // NOI18N
+            npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "skip=" + iseek, "count=" + cnt); // NOI18N
+        } else {
+            npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "count=" + cnt); // NOI18N
+        }
 
         int actual = -1;
 
@@ -164,7 +170,11 @@ public final class CommonTasksSupport {
             NativeProcess process = npb.call();
             if (process.getState() == State.ERROR) {
                 String err = ProcessUtils.readProcessErrorLine(process);
-                throw new IOException("Cannot start /bin/dd if=" + srcFileName + " ibs=" + bs + " iseek=" + iseek + " count=" + cnt + ": " + err); // NOI18N
+                if (iseek > 0) {
+                    throw new IOException("Cannot start /bin/dd if=" + srcFileName + " ibs=" + bs + " skip=" + iseek + " count=" + cnt + ": " + err); // NOI18N
+                } else {
+                    throw new IOException("Cannot start /bin/dd if=" + srcFileName + " ibs=" + bs + " count=" + cnt + ": " + err); // NOI18N
+                }
             }
 
             int start = 0;
