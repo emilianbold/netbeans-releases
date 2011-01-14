@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
@@ -124,7 +126,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -132,7 +133,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private GdbEngineProvider engineProvider;
     private Gdb gdb;				// gdb proxy
-    private String gdb_version;			// gdb version
+    private GdbVersionPeculiarity peculiarity;  // gdb version differences
+    
+    private static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
     private final GdbHandlerExpert handlerExpert;
     private Location homeLoc;
@@ -562,8 +565,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
     */
 
-    void gdbVersionString(String version) {
-        gdb_version = version;
+    void setGdbVersion(String version) {
+        double gdbVersion = 6.8;
+        try {
+             gdbVersion = GdbUtils.parseVersionString(version);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Unable to parse gdb version {0}", version); //NOI18N
+        }
+        peculiarity = GdbVersionPeculiarity.create(gdbVersion, getHost().getPlatform());
+        if (!peculiarity.isSupported()) {
+            DebuggerManager.warning(Catalog.format("ERR_UnsupportedVersion", gdbVersion));
+        }
     }
 
     /**
@@ -770,9 +782,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendResumptive(cmdString);
     }
 
-    // e.g. "GNU gdb 6.3"
-    public String getGdbVersion() {
-        return gdb_version;
+    public GdbVersionPeculiarity getGdbVersionPeculiarity() {
+        return peculiarity;
     }
 
     public void pause() {
