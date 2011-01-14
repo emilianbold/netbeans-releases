@@ -886,8 +886,8 @@ final class DebugCorePanel extends javax.swing.JPanel {
         projectComboBox.setEnabled(true);
 	// match opened Project first
 	for (int i = 0; i < projectComboBox.getItemCount(); i++) {
-	    if (executable.toLowerCase().equals(
-                projectComboBox.getItemAt(i).toString().toLowerCase())) {
+	    if (executable.equalsIgnoreCase(
+                projectComboBox.getItemAt(i).toString())) {
 	        projectComboBox.setSelectedIndex(i);
 		return true;
 	    }
