@@ -562,7 +562,7 @@ public class Gdb {
     private void initializeGdb(String version, FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
 	    System.out.printf("Gdb.initializeGdb()\n"); // NOI18N
-	debugger.gdbVersionString(version);
+	debugger.setGdbVersion(version);
 	debugger.initializeGdb(fmap);
 	if (!debugger.willBeLoading())
 	    startProgressManager().finishProgress();

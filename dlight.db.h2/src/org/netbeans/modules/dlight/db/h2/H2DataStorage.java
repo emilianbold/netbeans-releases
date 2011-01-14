@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -194,6 +195,12 @@ public final class H2DataStorage extends SQLDataStorage {
     @Override
     public String toString() {
         return "dburl=" + dbURL; // NOI18N
+    }
+
+    @Override
+    public String createForeignKeyConstraint(ForeignKeyConstraint fKey) {
+        return " FOREIGN KEY (" + fKey.getColumn().getColumnName() + ") REFERENCES " +
+                fKey.getReferenceTable().getName()  + "(" + fKey.getReferenceColumn().getColumnName() +  ") ";
     }
 
     @Override
