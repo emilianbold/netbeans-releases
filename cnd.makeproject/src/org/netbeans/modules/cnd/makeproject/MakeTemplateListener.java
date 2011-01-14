@@ -175,7 +175,7 @@ public class MakeTemplateListener implements OperationListener {
         assert makeConfigurationDescriptor != null;
 
         FileObject file = copy.getObject().getPrimaryFile();
-//        Project owner = FileOwnerQuery.getOwner(file);
+        Project owner = FileOwnerQuery.getOwner(file);
 
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "processing file=" + file); // NOI18N
@@ -184,7 +184,7 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-//        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) { // See 193227
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) { // See 193227
             File ioFile = FileUtil.toFile(file);
             if (ioFile.isDirectory()) {
                 return;
@@ -201,10 +201,10 @@ public class MakeTemplateListener implements OperationListener {
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "folder: " + folder + ", added: " + file); // NOI18N
             }
-//        } else {
-//            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-//                ERR.log(ErrorManager.INFORMATIONAL, "not adding: " + file + " because it is not owned by this project"); // NOI18N
-//            }
-//        }
+        } else {
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log(ErrorManager.INFORMATIONAL, "not adding: " + file + " because it is not owned by this project"); // NOI18N
+            }
+        }
     }
 }

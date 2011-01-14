@@ -57,13 +57,14 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
+ * Looks for .taglib.xml and .tld descriptors on source path
  *
  * @author marekfukala
  */
 public class JsfCustomIndexer extends CustomIndexer {
 
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
-    static final int INDEXER_VERSION = 2;
+    static final int INDEXER_VERSION = 3;
 
     public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
 
@@ -85,14 +86,21 @@ public class JsfCustomIndexer extends CustomIndexer {
                 try {
                     String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
                     if(namespace != null) {
-                        IndexingSupport sup = IndexingSupport.getInstance(context);
-                        IndexDocument doc = sup.createDocument(file);
-                        doc.addPair(JsfIndexSupport.TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()), false, true);
-                        doc.addPair(JsfBinaryIndexer.LIBRARY_NAMESPACE_KEY, namespace, true, true);
-                        doc.addPair(JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
-                        sup.addDocument(doc);
-
+                        JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
                         LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            } else if (JsfIndexSupport.isTagLibraryDescriptor(file)) {
+                LOGGER.log(Level.FINE, "indexing {0}", file); //NOI18N
+
+                try {
+                    String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
+                    if(namespace != null) {
+                        JsfIndexSupport.indexTagLibraryDescriptor(context, file, namespace);
+                        LOGGER.log(Level.FINE, "The file {0} indexed as a Tag Library Descriptor", file); //NOI18N
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

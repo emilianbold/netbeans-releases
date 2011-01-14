@@ -86,7 +86,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         //descriptor for anything else than declaring the composite component
         //non-default namespace. So all the information about tags, their attributes
         //etc. needs to be parsed from the components themselves.
-        generatedLibraryDescriptor = new CCVirtualLibraryDescriptor();
+        generatedLibraryDescriptor = new TldProxyLibraryDescriptor(new CCVirtualLibraryDescriptor(), support.getJsfSupport().getIndex());
 
         //the descriptor just defines the library namespace and location
         this.libraryDescriptorURL = libraryDescriptorURL;
