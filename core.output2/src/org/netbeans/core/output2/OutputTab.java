@@ -60,7 +60,9 @@ import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
@@ -95,6 +97,9 @@ import org.openide.windows.OutputListener;
 import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
+import static org.netbeans.core.output2.OutputTab.ACTION.*;
+
+
 /**
  * A component representing one tab in the output window.
  */
@@ -106,32 +111,25 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         this.io = io;
         if (Controller.LOG) Controller.log ("Created an output component for " + io);
         outWriter = ((NbWriter) io.getOut()).out();
+        createActions();
         OutputDocument doc = new OutputDocument(outWriter);
         setDocument(doc);
 
         installKBActions();
-        getActionMap().put("jumpPrev", this.prevErrorAction); // NOI18N
-        getActionMap().put("jumpNext", this.nextErrorAction); // NOI18N
-        getActionMap().put(FindAction.class.getName(), this.findAction);
-        getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, this.copyAction);
+        getActionMap().put("jumpPrev", action(PREV_ERROR)); // NOI18N
+        getActionMap().put("jumpNext", action(NEXT_ERROR)); // NOI18N
+        getActionMap().put(FindAction.class.getName(), action(FIND));
+        getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, action(COPY));
+    }
+
+    private final TabAction action(ACTION a) {
+        return actions.get(a);
     }
 
     private void installKBActions() {
-        installKeyboardAction(copyAction);
-        installKeyboardAction(selectAllAction);
-        installKeyboardAction(findAction);
-        installKeyboardAction(findNextAction);
-        installKeyboardAction(findPreviousAction);
-        installKeyboardAction(wrapAction);
-        installKeyboardAction(largerFontAction);
-        installKeyboardAction(smallerFontAction);
-        installKeyboardAction(saveAsAction);
-        installKeyboardAction(closeAction);
-        installKeyboardAction(copyAction);
-        installKeyboardAction(navToLineAction);
-        installKeyboardAction(postMenuAction);
-        installKeyboardAction(clearAction);
-        installKeyboardAction(filterAction);
+        for (ACTION a : actionsToInstall) {
+            installKeyboardAction(action(a));
+        }
     }
 
     @Override
@@ -188,8 +186,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
     public void hasSelectionChanged(boolean val) {
         if (isShowing()) {
-            copyAction.setEnabled(val);
-            selectAllAction.setEnabled(!getOutputPane().isAllSelected());
+            actions.get(ACTION.COPY).setEnabled(val);
+            actions.get(ACTION.SELECT_ALL).setEnabled(!getOutputPane().isAllSelected());
         }
     }
 
@@ -564,27 +562,28 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
         List<TabAction> activeActions = new ArrayList<TabAction>(popupItems.length);
         for (int i = 0; i < popupItems.length; i++) {
-            if (popupItems[i] instanceof JSeparator) {
-                popup.add((JSeparator) popupItems[i]);
+            if (popupItems[i] == null) {
+                popup.add(new JSeparator());
             } else {
-                if (popupItems[i] == wrapAction) {
-                    JCheckBoxMenuItem item = new JCheckBoxMenuItem((Action) popupItems[i]);
+                TabAction ta = action(popupItems[i]);
+                if (popupItems[i] == ACTION.WRAP) {
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem(ta);
                     item.setSelected(getOutputPane().isWrapped());
-                    activeActions.add((TabAction) popupItems[i]);
+                    activeActions.add(ta);
                     popup.add(item);
-                } else if (popupItems[i] == filterAction) {
-                    JCheckBoxMenuItem item = new JCheckBoxMenuItem((Action) popupItems[i]);
+                } else if (popupItems[i] == ACTION.FILTER) {
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem(ta);
                     item.setSelected(origPane != null);
-                    activeActions.add((TabAction) popupItems[i]);
+                    activeActions.add(ta);
                     popup.add(item);
                 } else {
-                    if ((popupItems[i] == closeAction && !io.getIOContainer().isCloseable(this))
-                            || (popupItems[i] == fontTypeAction && getOutputPane().isWrapped())) {
+                    if ((popupItems[i] == ACTION.CLOSE && !io.getIOContainer().isCloseable(this))
+                            || (popupItems[i] == ACTION.FONT_TYPE && getOutputPane().isWrapped())) {
                         continue;
                     }
-                    JMenuItem item = popup.add((Action) popupItems[i]);
-                    activeActions.add((TabAction) popupItems[i]);
-                    if (popupItems[i] == findAction) {
+                    JMenuItem item = popup.add(ta);
+                    activeActions.add(ta);
+                    if (popupItems[i] == ACTION.FIND) {
                         item.setMnemonic(KeyEvent.VK_F);
                     }
                 }
@@ -607,12 +606,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         int len = pane.getLength();
         boolean enable = len > 0;
         OutWriter out = getOut();
-        saveAsAction.setEnabled(enable);
-        selectAllAction.setEnabled(enable);
-        copyAction.setEnabled(pane.hasSelection());
+        action(SAVEAS).setEnabled(enable);
+        action(SELECT_ALL).setEnabled(enable);
+        action(COPY).setEnabled(pane.hasSelection());
         boolean hasErrors = out == null ? false : out.getLines().hasListeners();
-        nextErrorAction.setEnabled(hasErrors);
-        prevErrorAction.setEnabled(hasErrors);
+        action(NEXT_ERROR).setEnabled(hasErrors);
+        action(PREV_ERROR).setEnabled(hasErrors);
     }
 
     private void showFontChooser() {
@@ -683,56 +682,68 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         io.getIOContainer().setTitle(this, escaped.replace("&apos;", "'"));
     }
 
-    private static final int ACTION_COPY = 0;
-    private static final int ACTION_WRAP = 1;
-    private static final int ACTION_SAVEAS = 2;
-    private static final int ACTION_CLOSE = 3;
-    private static final int ACTION_NEXTERROR = 4;
-    private static final int ACTION_PREVERROR = 5;
-    private static final int ACTION_SELECTALL = 6;
-    private static final int ACTION_FIND = 7;
-    private static final int ACTION_FINDNEXT = 8;
-    private static final int ACTION_NAVTOLINE = 9;
-    private static final int ACTION_POSTMENU = 10;
-    private static final int ACTION_FINDPREVIOUS = 11;
-    private static final int ACTION_CLEAR = 12;
-    private static final int ACTION_NEXTTAB = 13;
-    private static final int ACTION_PREVTAB = 14;
-    private static final int ACTION_LARGERFONT = 15;
-    private static final int ACTION_SMALLERFONT = 16;
-    private static final int ACTION_FONTTYPE = 17;
-    private static final int ACTION_FILTER = 18;
-    private static final int ACTION_PASTE = 19;
+    static enum ACTION { COPY, WRAP, SAVEAS, CLOSE, NEXT_ERROR, PREV_ERROR,
+                         SELECT_ALL, FIND, FIND_NEXT, NAVTOLINE, POSTMENU,
+                         FIND_PREVIOUS, CLEAR, NEXTTAB, PREVTAB, LARGER_FONT,
+                         SMALLER_FONT, FONT_TYPE, FILTER, PASTE }
 
-    Action copyAction = new TabAction(ACTION_COPY, "ACTION_COPY"); //NOI18N
-    Action pasteAction = new TabAction(ACTION_PASTE, "ACTION_PASTE"); //NOI18N
-    Action wrapAction = new TabAction(ACTION_WRAP, "ACTION_WRAP"); //NOI18N
-    Action saveAsAction = new TabAction(ACTION_SAVEAS, "ACTION_SAVEAS"); //NOI18N
-    Action closeAction = new TabAction(ACTION_CLOSE, "ACTION_CLOSE"); //NOI18N
-    Action nextErrorAction = new TabAction(ACTION_NEXTERROR, "ACTION_NEXT_ERROR"); //NOI18N
-    Action prevErrorAction = new TabAction(ACTION_PREVERROR, "ACTION_PREV_ERROR"); //NOI18N
-    Action selectAllAction = new TabAction(ACTION_SELECTALL, "ACTION_SELECT_ALL"); //NOI18N
-    Action findAction = new TabAction(ACTION_FIND, "ACTION_FIND"); //NOI18N
-    Action findNextAction = new TabAction(ACTION_FINDNEXT, "ACTION_FIND_NEXT"); //NOI18N
-    Action findPreviousAction = new TabAction(ACTION_FINDPREVIOUS, "ACTION_FIND_PREVIOUS"); //NOI18N
-    Action filterAction = new TabAction(ACTION_FILTER, "ACTION_FILTER"); //NOI18N
-    Action largerFontAction = new TabAction(ACTION_LARGERFONT, "ACTION_LARGER_FONT"); //NOI18N
-    Action smallerFontAction = new TabAction(ACTION_SMALLERFONT, "ACTION_SMALLER_FONT"); //NOI18N
-    Action fontTypeAction = new TabAction(ACTION_FONTTYPE, "ACTION_FONT_TYPE"); //NOI18N
+    private static final ACTION[] popupItems = new ACTION[] {
+        COPY, PASTE, null, FIND, FIND_NEXT, FIND_PREVIOUS, FILTER, null,
+        WRAP, LARGER_FONT, SMALLER_FONT, FONT_TYPE, null,
+        SAVEAS, CLEAR, CLOSE,
+    };
 
-    Action navToLineAction = new TabAction(ACTION_NAVTOLINE, "navToLine", //NOI18N
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-    Action postMenuAction = new TabAction(ACTION_POSTMENU, "postMenu", //NOI18N
-            KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
-    Action clearAction = new TabAction(ACTION_CLEAR, "ACTION_CLEAR");
-    Action nextTabAction = new TabAction(ACTION_NEXTTAB, "NextViewAction", //NOI18N
-            (KeyStroke) null);
-    Action prevTabAction = new TabAction(ACTION_PREVTAB, "PreviousViewAction", //NOI18N
-            (KeyStroke) null);
-    private Object[] popupItems = new Object[]{
-        copyAction, pasteAction, new JSeparator(), findAction, findNextAction, findPreviousAction, filterAction, new JSeparator(),
-        wrapAction, largerFontAction, smallerFontAction, fontTypeAction, new JSeparator(), saveAsAction,
-        clearAction, closeAction,};
+    private static final ACTION[] actionsToInstall = new ACTION[] {
+            COPY, SELECT_ALL, FIND, FIND_NEXT, FIND_PREVIOUS, WRAP, LARGER_FONT,
+            SMALLER_FONT, SAVEAS, CLOSE, COPY, NAVTOLINE, POSTMENU, CLEAR, FILTER,
+    };
+
+    private final Map<ACTION, TabAction> actions = new EnumMap<ACTION, TabAction>(ACTION.class);;
+
+    private void createActions() {
+        for (ACTION a : ACTION.values()) {
+            TabAction action;
+            switch(a) {
+                case COPY:
+                case PASTE:
+                case WRAP:
+                case SAVEAS:
+                case CLOSE:
+                case NEXT_ERROR:
+                case PREV_ERROR:
+                case SELECT_ALL:
+                case FIND:
+                case FIND_NEXT:
+                case FIND_PREVIOUS:
+                case FILTER:
+                case LARGER_FONT:
+                case SMALLER_FONT:
+                case FONT_TYPE:
+                case CLEAR:
+                    action = new TabAction(a, "ACTION_"+a.name());
+                    break;
+                case NAVTOLINE:
+                    action = new TabAction(a, "navToLine", //NOI18N
+                                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+                    break;
+                case POSTMENU:
+                    action = new TabAction(a, "postMenu", //NOI18N
+                                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
+                    break;
+                case NEXTTAB:
+                    action = new TabAction(a, "NextViewAction", //NOI18N
+                                (KeyStroke) null);
+                    break;
+                case PREVTAB:
+                    action = new TabAction(a, "PreviousViewAction", //NOI18N
+                                (KeyStroke) null);
+                    break;
+                default:
+                    throw new IllegalStateException("Unhandled action "+a);
+            }
+            actions.put(a, action);
+        }
+    }
 
     /**
      * A stateless action which will find the owning OutputTab's controller and call
@@ -740,7 +751,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      */
     class TabAction extends AbstractAction {
 
-        private int id;
+        private ACTION action;
 
         /**
          * Create a ControllerAction with the specified action ID (constants defined in Controller),
@@ -753,11 +764,11 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
          * @param bundleKey A key for the bundle associated with the Controller class
          * @see org.openide.util.Utilities#stringToKey
          */
-        TabAction(int id, String bundleKey) {
+        TabAction(ACTION action, String bundleKey) {
             if (bundleKey != null) {
                 String name = NbBundle.getMessage(OutputTab.class, bundleKey);
                 KeyStroke accelerator = getAcceleratorFor(bundleKey);
-                this.id = id;
+                this.action = action;
                 putValue(NAME, name);
                 putValue(ACCELERATOR_KEY, accelerator);
             }
@@ -771,8 +782,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
          * @param name A programmatic name for the item
          * @param stroke An accelerator keystroke
          */
-        TabAction(int id, String name, KeyStroke stroke) {
-            this.id = id;
+        TabAction(ACTION action, String name, KeyStroke stroke) {
+            this.action = action;
             putValue(NAME, name);
             putValue(ACCELERATOR_KEY, stroke);
         }
@@ -799,60 +810,85 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             return Utilities.stringToKey(NbBundle.getMessage(OutputTab.class, key));
         }
 
-        public int getID() {
-            return id;
+        public ACTION getAction() {
+            return action;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            if (getIO().isClosed()) {
+                // Cached action for an already closed tab.
+                // Try to find the appropriate action for a new active tab...
+                JComponent selected = getIO().getIOContainer().getSelected();
+                if (selected instanceof OutputTab) {
+                    OutputTab tab = (OutputTab) selected;
+                    return tab.action(action).isEnabled();
+                }
+                return false;
+            }
+            return super.isEnabled();
         }
 
         public void actionPerformed(ActionEvent e) {
-            switch (id) {
-                case ACTION_COPY:
+            if (getIO().isClosed()) {
+                // Cached action for an already closed tab.
+                // Try to find the appropriate action for a new active tab...
+                JComponent selected = getIO().getIOContainer().getSelected();
+                if (selected instanceof OutputTab) {
+                    OutputTab tab = (OutputTab) selected;
+                    tab.action(action).actionPerformed(e);
+                }
+                return ;
+            }
+            switch (getAction()) {
+                case COPY:
                     getOutputPane().copy();
                     break;
-                case ACTION_PASTE:
+                case PASTE:
                     getOutputPane().paste();
                     break;
-                case ACTION_WRAP:
+                case WRAP:
                     boolean wrapped = getOutputPane().isWrapped();
                     getOutputPane().setWrapped(!wrapped);
                     break;
-                case ACTION_SAVEAS:
+                case SAVEAS:
                     saveAs();
                     break;
-                case ACTION_CLOSE:
+                case CLOSE:
                     io.getIOContainer().remove(OutputTab.this);
                     break;
-                case ACTION_NEXTERROR:
+                case NEXT_ERROR:
                     sendCaretToError(false);
                     break;
-                case ACTION_PREVERROR:
+                case PREV_ERROR:
                     sendCaretToError(true);
                     break;
-                case ACTION_SELECTALL:
+                case SELECT_ALL:
                     getOutputPane().selectAll();
                     break;
-                case ACTION_FIND:
+                case FIND:
                      {
                         String pattern = getFindDlgResult(getOutputPane().getSelectedText(), "LBL_Find_Title", "LBL_Find_What", "BTN_Find"); //NOI18N
                         if (pattern != null && find(false)) {
-                            findNextAction.setEnabled(true);
-                            findPreviousAction.setEnabled(true);
+                            action(FIND_NEXT).setEnabled(true);
+                            action(FIND_PREVIOUS).setEnabled(true);
                             requestFocus();
                         }
                     }
                     break;
-                case ACTION_FINDNEXT:
+                case FIND_NEXT:
                     find(false);
                     break;
-                case ACTION_FINDPREVIOUS:
+                case FIND_PREVIOUS:
                     find(true);
                     break;
-                case ACTION_NAVTOLINE:
+                case NAVTOLINE:
                     openHyperlink();
                     break;
-                case ACTION_POSTMENU:
+                case POSTMENU:
                     postPopupMenu(new Point(0, 0), OutputTab.this);
                     break;
-                case ACTION_CLEAR:
+                case CLEAR:
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
@@ -866,16 +902,16 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                         }
                     }
                     break;
-                case ACTION_SMALLERFONT:
+                case SMALLER_FONT:
                     Controller.getDefault().changeFontSizeBy(-1, getOutputPane().isWrapped());
                     break;
-                case ACTION_LARGERFONT:
+                case LARGER_FONT:
                     Controller.getDefault().changeFontSizeBy(1, getOutputPane().isWrapped());
                     break;
-                case ACTION_FONTTYPE:
+                case FONT_TYPE:
                     showFontChooser();
                     break;
-                case ACTION_FILTER:
+                case FILTER:
                     if (origPane != null) {
                         setFilter(null, false, false);
                     } else {
@@ -895,7 +931,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     @Override
     public void setInputVisible(boolean val) {
         super.setInputVisible(val);
-        pasteAction.setEnabled(val);
+        action(PASTE).setEnabled(val);
     }
 
     private boolean validRegExp(String pattern) {

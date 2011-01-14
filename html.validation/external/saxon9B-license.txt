@@ -1,5 +1,5 @@
 Name: Saxon
-Version: 9B
+Version: Saxon-B, version 9.1.0.2
 License: MPL-1.1
 OSR: -
 Files: saxon9B.jar
