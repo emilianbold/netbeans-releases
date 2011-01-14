@@ -47,6 +47,7 @@ import java.util.Collection;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -174,7 +175,7 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;
         try {
-            doc = getBaseDocument(testFile.getFile());
+            doc = getBaseDocument(FileUtil.toFile(testFile.getFileObject()));
         } catch (Exception e) {
             e.printStackTrace(System.err);
             doc = null;

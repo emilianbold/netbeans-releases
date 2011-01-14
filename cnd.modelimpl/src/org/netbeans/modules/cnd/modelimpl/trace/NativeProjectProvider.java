@@ -389,11 +389,6 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public File getFile() {
-            return file;
-        }
-
-        @Override
         public FileObject getFileObject() {
             return CndFileUtils.toFileObject(file); // XXX:FileObject conversion
         }

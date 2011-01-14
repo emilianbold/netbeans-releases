@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.spi.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -114,6 +115,11 @@ public abstract class CndFileSystemProvider {
         CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
         return result;
     }
+    
+    public static CharSequence getCanonicalPath(FileSystem fileSystem, CharSequence absPath) throws IOException {
+        CndUtils.assertAbsolutePathInConsole(absPath.toString());
+        return getDefault().getCanonicalPathImpl(fileSystem, absPath);
+    }
 
     /**
      * Checks whether the file specified by path exists or not
@@ -133,6 +139,8 @@ public abstract class CndFileSystemProvider {
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
 
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
+    
+    protected abstract CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException;
 
     private static class DefaultProvider extends CndFileSystemProvider {
 
@@ -248,5 +256,16 @@ public abstract class CndFileSystemProvider {
             }
             return path.toString();
         }
+
+        @Override
+        protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
+            for (CndFileSystemProvider provider : cache) {
+                CharSequence canonical = provider.getCanonicalPathImpl(fileSystem, absPath);
+                if (canonical != null) {
+                    return canonical;
+                }
+            }
+            return absPath;
+        }        
     }
 }

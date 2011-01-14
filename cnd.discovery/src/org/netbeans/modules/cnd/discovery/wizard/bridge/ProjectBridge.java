@@ -431,7 +431,7 @@ public class ProjectBridge {
         //itemConfiguration.setTool(Tool.CustomTool);
     }
     
-    public void setHeaderTool(Item item){
+    public static void setHeaderTool(Item item){
         MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {

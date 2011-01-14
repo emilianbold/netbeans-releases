@@ -292,12 +292,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return file;
     }
 
-    @Override
-    public File getFile() {
-        // let's try to use normalized, not canonical paths
-        return getNormalizedFile();
-    }
-
     public String getCanonicalPath() {
         return getCanonicalFile().getAbsolutePath();
     }

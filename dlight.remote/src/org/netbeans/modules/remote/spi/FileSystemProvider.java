@@ -171,6 +171,15 @@ public final class FileSystemProvider {
         return fileObject.getPath();
     }
 
+    public static String getCanonicalPath(FileSystem fileSystem, String absPath) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.getCanonicalPath(absPath);
+            }
+        }
+        return absPath;
+    }
+
     public static boolean isAbsolute(String path) {
         if (path == null || path.length() == 0) {
             return false;

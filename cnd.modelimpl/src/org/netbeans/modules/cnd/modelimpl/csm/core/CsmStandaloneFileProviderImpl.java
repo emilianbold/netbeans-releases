@@ -538,11 +538,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public File getFile() {
-            return CndFileUtils.toFile(fileObject);
-        }
-
-        @Override
         public FileObject getFileObject() {
             return fileObject;
         }

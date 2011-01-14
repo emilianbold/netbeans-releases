@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
  */
 public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable {
 
-    /** Gets this file absolute path */
+    /** Gets this file normalized absolute path */
     CharSequence getAbsolutePath();
     
     /** Gets file object */

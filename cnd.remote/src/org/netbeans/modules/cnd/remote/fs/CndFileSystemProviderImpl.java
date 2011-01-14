@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -88,6 +89,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
         return FileSystemProvider.fileObjectToUrl(fileObject);
     }
+
+    @Override
+    protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
+        return FileSystemProvider.getCanonicalPath(fileSystem, absPath.toString());
+    }            
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {
