@@ -2220,19 +2220,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("update_list " + update_list.toString()); // NOI18N
         }
 
-        int size = update_list.size();
         // iterate through update list
-        for (int vx = 0; vx < size; vx++) {
-
+        for (MITListItem item : update_list) {
             MIValue updatevar;
 
 	    // On the Mac a 'changelist' is a list of results not values
 	    if (update_list.isResultList()) {
-		MIResult result = (MIResult) update_list.get(vx);
+		MIResult result = (MIResult)item;
 		assert result.variable().equals("varobj");
 		updatevar = result.value();
 	    } else {
-		updatevar = (MIValue) update_list.get(vx);
+		updatevar = (MIValue)item;
 	    }
 
             String mi_name = updatevar.asTuple().valueOf("name").asConst().value(); // NOI18N
@@ -2246,12 +2244,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (type_changed_entry != null)
             type_changed = type_changed_entry.asConst().value();
              */
-            if (in_scope != null && in_scope.equals("true")) { // NOI18N
-                Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
-                if (wv != null) {
-                    evalMIVar(wv);
-                }
-            }
+//            if (in_scope != null && in_scope.equals("true")) { // NOI18N
+//                Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
+//                if (wv != null) {
+//                    evalMIVar(wv);
+//                }
+//            }
             GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
 		if (wv instanceof GdbWatch && in_scope != null) {
@@ -2410,7 +2408,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void evalMIVar(final Variable v) {
 	GdbVariable gv = (GdbVariable) v;
         String mi_name = gv.getMIName();
-        String expr = v.getVariableName();
 	// value of mi_name
         String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
         final MICommand cmd =
@@ -2434,11 +2431,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         }
                     }
                 };
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		gdb.sendCommand(cmd);
-	    }
-	});
+        gdb.sendCommand(cmd);
     }
 
     private class DeleteMIVarCommand extends MiCommandImpl {
@@ -4160,9 +4153,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     void setEnv(String envVar) {
         sendSilent("-gdb-set environment " + envVar); // NOI18N
     }
-
-    private void assignMIVar(String expr, String value) {
-        String cmdString = "-var-assign  " + expr + " " + value; // NOI18N
+    
+    void assignVar(final GdbVariable var, final String value, final boolean miVar) {
+        String cmdString;
+        if (miVar) {
+            cmdString = "-var-assign " + var.getMIName() + " " + value; // NOI18N
+        } else {
+            cmdString = "-data-evaluate-expression " + var.getVariableName() + '=' + value; // NOI18N
+        }
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -4190,11 +4188,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     }
             };
         gdb.sendCommand(cmd);
-    }
-
-    /** Execute a gdb "assign" command */
-    public void execute(String expr, String value) {
-        assignMIVar(expr, value);
     }
 
     /**
