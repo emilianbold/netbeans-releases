@@ -684,8 +684,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return false;
     }
 
+    @Override
     public File getResourceDirectory() {
-        return getFile(WebProjectProperties.RESOURCE_DIR);
+        File f = getFile(WebProjectProperties.RESOURCE_DIR);
+        if (f == null) {
+            f = new File(FileUtil.toFile(project.getProjectDirectory()), "setup"); // NOI18N
+        }
+        return f;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

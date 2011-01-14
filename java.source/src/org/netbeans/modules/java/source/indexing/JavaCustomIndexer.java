@@ -75,6 +75,7 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -110,6 +111,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
@@ -137,13 +139,17 @@ public class JavaCustomIndexer extends CustomIndexer {
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
-            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
             if (sourcePath == null || bootPath == null || compilePath == null) {
                 JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
-            }
+            }            
             if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
                 JavaIndex.LOG.log(Level.WARNING, "Source root: {0} is not on its sourcepath", FileUtil.getFileDisplayName(root)); // NOI18N
+                return;
+            }
+            if (isAptBuildGeneratedFolder(context.getRootURI(),sourcePath)) {
+                JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
@@ -766,6 +772,19 @@ public class JavaCustomIndexer extends CustomIndexer {
         } catch (IOException ioe) {
             //Nothing to delete - pass
         }
+    }
+    
+    private static boolean isAptBuildGeneratedFolder(
+            @NonNull final URL root,
+            @NonNull final ClassPath srcPath) {
+        Parameters.notNull("root", root);       //NOI18N
+        Parameters.notNull("srcPath", srcPath); //NOI18N
+        for (FileObject srcRoot : srcPath.getRoots()) {
+            if (root.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(srcRoot).sourceOutputDirectory())) {
+               return true;
+            }
+        }
+        return false;
     }
 
     public static class Factory extends CustomIndexerFactory {

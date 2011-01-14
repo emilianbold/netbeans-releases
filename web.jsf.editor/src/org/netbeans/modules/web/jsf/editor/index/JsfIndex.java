@@ -45,9 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -192,45 +190,69 @@ public class JsfIndex {
         Collection<IndexedFile> files = new ArrayList<IndexedFile>();
         try {
             //order of the following queries DOES matter! read comment #3 in FaceletsLibrarySupport.parseLibraries()
-
-            //query binary index
-            Collection<? extends IndexResult> binResults = createBinaryIndex().query(
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
-                    "true", //NOI18N
-                    QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
-                    JsfIndexSupport.TIMESTAMP_KEY);
-
-            for (IndexResult result : binResults) {
-                FileObject file = result.getFile();
-                if (file != null) {
-                    long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
-                    files.add(new IndexedFile(timestamp, file));
-                }
-
-            }
-
-            //query custom (sources) index
-            Collection<? extends IndexResult> eiResults = createCustomIndex().query(
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
-                    "true", //NOI18N
-                    QuerySupport.Kind.EXACT,
-                    JsfBinaryIndexer.FACELETS_LIBRARY_MARK_KEY,
-                    JsfIndexSupport.TIMESTAMP_KEY);
-
-            for (IndexResult result : eiResults) {
-                FileObject file = result.getFile();
-                if (file != null) {
-                    long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
-                    files.add(new IndexedFile(timestamp, file));
-                }
-
-            }
-
+            queryFaceletsLibraryDescriptors(createBinaryIndex(), files);
+            queryFaceletsLibraryDescriptors(createCustomIndex(), files);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return files;
     }
+
+    private void queryFaceletsLibraryDescriptors(QuerySupport index, Collection<IndexedFile> files) throws IOException {
+        Collection<? extends IndexResult> results = index.query(
+                JsfIndexSupport.FACELETS_LIBRARY_MARK_KEY,
+                "true", //NOI18N
+                QuerySupport.Kind.EXACT,
+                JsfIndexSupport.FACELETS_LIBRARY_MARK_KEY,
+                JsfIndexSupport.TIMESTAMP_KEY);
+
+        convertToFiles(results, files);
+    }
+
+    public IndexedFile getTagLibraryDescriptor(String namespace) {
+        try {
+            IndexedFile file = findTLD(createCustomIndex(), namespace);
+            return file != null ? file : findTLD(createBinaryIndex(), namespace);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    //returns the first indexed TLD file matching the namespace
+    private IndexedFile findTLD(QuerySupport index, String namespace) throws IOException {
+        Collection<? extends IndexResult> results = index.query(
+                JsfIndexSupport.LIBRARY_NAMESPACE_KEY,
+                namespace, //NOI18N
+                QuerySupport.Kind.EXACT,
+                JsfIndexSupport.TLD_LIBRARY_MARK_KEY,
+                JsfIndexSupport.TIMESTAMP_KEY);
+
+        //filter TLD descriptors since the query returns even facelets library descriptors
+        for (IndexResult result : results) {
+            if(result.getValue(JsfIndexSupport.TLD_LIBRARY_MARK_KEY) == null) {
+                continue; //facelets lib. descr., ignore
+            }
+            FileObject file = result.getFile();
+            if (file != null) {
+                long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
+                return new IndexedFile(timestamp, file);
+            }
+        }
+
+        return null;
+
+    }
+
+    private void convertToFiles(Collection<? extends IndexResult> results, Collection<IndexedFile> files) {
+        for (IndexResult result : results) {
+            FileObject file = result.getFile();
+            if (file != null) {
+                long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
+                files.add(new IndexedFile(timestamp, file));
+            }
+        }
+    }
+
 
 }

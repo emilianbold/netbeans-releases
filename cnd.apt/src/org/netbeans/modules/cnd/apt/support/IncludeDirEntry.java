@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -99,7 +100,7 @@ public final class IncludeDirEntry {
             if (out == null) {
                 boolean framework = dir.endsWith("/Frameworks"); // NOI18N
                 // FIXME XXX:FullRemote 
-                if (dir.contains("/remote-files/")) { //NOI18N
+                if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
                     fs = CndFileUtils.getLocalFileSystem();
                 }
                 boolean exists = CndFileUtils.isExistingDirectory(fs, dir);

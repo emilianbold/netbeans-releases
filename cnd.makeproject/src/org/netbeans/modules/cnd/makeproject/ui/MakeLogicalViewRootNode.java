@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -144,6 +145,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         pi.addPropertyChangeListener(MakeLogicalViewRootNode.this);
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        ExecutionEnvironment env = provider.getProject().getRemoteFileSystemHost();
+        if (env != null && env.isRemote()) {
+            return NbBundle.getMessage(MakeLogicalViewProvider.class, "ProjectHtmlDisplayName", getName(), env.getDisplayName());
+        }
+        return super.getHtmlDisplayName();
+    }
+    
     public void reInit(MakeConfigurationDescriptor configurationDescriptor) {
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
         if (folder != null) {
