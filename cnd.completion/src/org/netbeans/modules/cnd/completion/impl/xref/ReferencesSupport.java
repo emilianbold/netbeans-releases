@@ -109,6 +109,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
@@ -345,8 +346,13 @@ public final class ReferencesSupport {
                 csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY, fileReferencesContext);
             }
         }
-        // then full check if needed
-        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
+        if (csmItem == null || !CsmIncludeResolver.getDefault().isObjectVisible(csmFile, csmItem)) {
+            // then full check 
+            CsmObject other = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
+            if (other != null) {
+                csmItem = other;
+            }
+        }
         return csmItem;
     }
 

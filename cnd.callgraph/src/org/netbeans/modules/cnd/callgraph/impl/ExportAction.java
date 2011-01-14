@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.awt.Dialog;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -115,7 +116,19 @@ public class ExportAction extends AbstractAction  implements Presenter.Popup {
             DialogDescriptor descriptor = new DialogDescriptor(
                     MessageFormat.format(message, new Object[]{file.getAbsolutePath()}),
                     getString("FileExists"), true, DialogDescriptor.YES_NO_OPTION, DialogDescriptor.NO_OPTION, null); // NOI18N
-            DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+            
+            try {
+                dialog.setVisible(true);
+            } catch (Throwable th) {
+                if (!(th.getCause() instanceof InterruptedException)) {
+                    throw new RuntimeException(th);
+                }
+                descriptor.setValue(DialogDescriptor.CLOSED_OPTION);
+            } finally {
+                dialog.dispose();
+            }
+            
             if (descriptor.getValue() != DialogDescriptor.YES_OPTION) {
                 return;
             }

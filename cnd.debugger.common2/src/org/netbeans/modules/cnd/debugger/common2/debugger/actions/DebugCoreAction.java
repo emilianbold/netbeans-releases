@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarge
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -124,7 +125,7 @@ public class DebugCoreAction extends SystemAction {
         // Convert corefileNode to corefilePath or reuse last corefilePath.
         //
         if (corefileNode != null && corefileNode.getDataObject() != null) {
-            corefilePath = FileUtil.toFile(corefileNode.getDataObject().getPrimaryFile()).getPath();
+            corefilePath = corefileNode.getDataObject().getPrimaryFile().getPath();
         } else {
             corefilePath = lastCorefilePath;
         }

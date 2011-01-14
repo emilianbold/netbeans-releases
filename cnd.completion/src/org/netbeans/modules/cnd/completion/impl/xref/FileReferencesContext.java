@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -80,6 +81,7 @@ public final class FileReferencesContext {
     private boolean isClened = false;
     private Map<String,List<CsmUID<CsmVariable>>> fileLocalVars;
     private Map<String,Collection<CsmEnumerator>> libEnumerators;
+    private Map<String,CsmEnumerator> hotSpotEnumerators;
     private List<Offsets> fileObjectOffsets;
     private List<Offsets> fileDeclarationsOffsets;
     private Map<CharSequence,CsmUID<CsmMacro>> projectMacros;
@@ -125,6 +127,34 @@ public final class FileReferencesContext {
 
     public SymTabCache getSymTabCache(){
         return symTabCache;
+    }
+
+    public void putHotSpotEnum(Collection<CsmEnumerator> enumerators) {
+        if (isCleaned()){
+            return;
+        }
+        if (hotSpotEnumerators == null) {
+            hotSpotEnumerators = new HashMap<String, CsmEnumerator>();
+        }
+        Set<CsmEnum> enums = new HashSet<CsmEnum>();
+        for(CsmEnumerator e : enumerators) {
+            enums.add(e.getEnumeration());
+        }
+        for(CsmEnum e : enums) {
+            for(CsmEnumerator i : e.getEnumerators()) {
+                hotSpotEnumerators.put(i.getName().toString(), i);
+            }
+        }
+    }
+    
+    public CsmEnumerator getHotSpotEnum(String name) {
+        if (isCleaned()){
+            return null;
+        }
+        if (hotSpotEnumerators == null) {
+            hotSpotEnumerators = new HashMap<String, CsmEnumerator>();
+        }
+        return hotSpotEnumerators.get(name);
     }
 
     public Collection<CsmEnumerator> getLibEnumerators(String name){

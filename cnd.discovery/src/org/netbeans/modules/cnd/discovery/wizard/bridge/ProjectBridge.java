@@ -55,7 +55,6 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -74,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
@@ -108,8 +106,8 @@ public class ProjectBridge {
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
-        String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalize(workingDir));
-        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalizeSlashes(workingDir));
+        workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         String prjName = "DiscoveryProject"; // NOI18N
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, baseFolder);// NOI18N
@@ -121,7 +119,7 @@ public class ProjectBridge {
     }
     
     public Folder createFolder(Folder parent, String name){
-        return new Folder(makeConfigurationDescriptor, parent, name, name, true);
+        return new Folder(makeConfigurationDescriptor, parent, name, name, true, null);
     }
     
     public void addSourceRoot(String path){
@@ -228,7 +226,7 @@ public class ProjectBridge {
         }
         path = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = cutLocalRelative(path);
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         return path;
     }
     
@@ -385,10 +383,13 @@ public class ProjectBridge {
         makeConfigurationDescriptor.setModified();
     }
 
-    public CCCCompilerConfiguration getFolderConfiguration(ItemProperties.LanguageKind lang, Folder folder) {
+    public FolderConfiguration getFolderConfiguration(Folder folder) {
         MakeConfiguration makeConfiguration = folder.getConfigurationDescriptor().getActiveConfiguration();
-        //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
-        FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
+        return folder.getFolderConfiguration(makeConfiguration);
+    }
+
+    public CCCCompilerConfiguration getFolderConfiguration(ItemProperties.LanguageKind lang, Folder folder) {
+        FolderConfiguration folderConfiguration = getFolderConfiguration(folder);
         if (folderConfiguration == null) {
             return null;
         }
@@ -574,8 +575,7 @@ public class ProjectBridge {
     
     private CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
-        final ExecutionEnvironment env = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
-        return CompilerSetManager.get(env).getCompilerSets().get(makeConfiguration.getCompilerSet().getValue());
+        return makeConfiguration.getCompilerSet().getCompilerSet();
     }
 
     public String getCygwinDrive(){

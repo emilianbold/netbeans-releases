@@ -59,10 +59,14 @@ import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
@@ -87,6 +91,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
@@ -478,7 +483,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (msg instanceof javax.accessibility.Accessible) {
             strMsg = ((javax.accessibility.Accessible)msg).getAccessibleContext().getAccessibleDescription();
         }
-        
+
         JOptionPane optionPane;
         if (override) {
             // initialize component (override max char count per line in a message)
@@ -523,10 +528,37 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         }
         optionPane.setWantsInput(false);
         optionPane.getAccessibleContext().setAccessibleDescription(strMsg);
-        
+        if( null != strMsg ) {
+            final String clipboardText = strMsg;
+            optionPane.addMouseListener( new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    showCopyToClipboardPopupMenu( e );
+                }
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    showCopyToClipboardPopupMenu( e );
+                }
+
+                private void showCopyToClipboardPopupMenu(MouseEvent e) {
+                    if( e.isPopupTrigger() ) {
+                        JPopupMenu pm = new JPopupMenu();
+                        pm.add(new AbstractAction(NbBundle.getMessage(NbPresenter.class, "Lbl_CopyToClipboard")) { //NOI18N
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+                                c.setContents(new StringSelection(clipboardText), null);
+                            }
+                        });
+                        pm.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+
+            } );
+        }
         return optionPane;
     }
-    
+
     private void uninitializeButtons() {
         if (currentButtonsPanel != null) {
             if (currentPrimaryButtons != null) {

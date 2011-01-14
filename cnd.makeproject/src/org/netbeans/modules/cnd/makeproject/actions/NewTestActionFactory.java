@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -80,8 +81,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
- *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  * @author Vladimir Voskresensky
  */
 public final class NewTestActionFactory {
@@ -92,10 +92,13 @@ public final class NewTestActionFactory {
     public static Action[] getTestCreationActions(Project project) {
         ArrayList<Action> actions = new ArrayList<Action>();
         FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
-        if (testFiles.isFolder()) {
-            for (FileObject test : testFiles.getChildren()) {
-                if (!"hidden".equals(test.getAttribute("templateCategory"))) { //NOI18N
-                    actions.add(new NewTestAction(test, project, null, false));
+        // if user deleted all test templates => folder is null
+        if (testFiles != null) {
+            if (testFiles.isFolder()) {
+                for (FileObject test : testFiles.getChildren()) {
+                    if (!"hidden".equals(test.getAttribute("templateCategory"))) { //NOI18N
+                        actions.add(new NewTestAction(test, project, null, false));
+                    }
                 }
             }
         }
@@ -124,6 +127,11 @@ public final class NewTestActionFactory {
             this.project = project;
             this.context = context;
             this.generateCode = generateCode;
+            
+            MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+            if(mcd != null && mcd.getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                this.setEnabled(false);
+            }
         }
 
         public

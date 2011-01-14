@@ -45,6 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuilder;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -367,6 +370,53 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(m.isCanceled());
         assertEquals(1, m.count);
         assertEquals(null, exs[0]);
+    }
+
+    public void testConflictScan () throws Exception {
+        GitClient client = getClient(workDir);
+        File f = new File(workDir, "f");
+        f.createNewFile();
+        File f2 = new File(workDir, "f2");
+        f2.createNewFile();
+        File[] roots = new File[] { f, f2 };
+        add(roots);
+        commit(roots);
+        Map<File, GitStatus> conflicts = client.getConflicts(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(0, conflicts.size());
+
+        DirCache cache = repository.lockDirCache();
+        try {
+            DirCacheEntry e = cache.getEntry("f");
+            DirCacheBuilder builder = cache.builder();
+            DirCacheEntry toAdd = new DirCacheEntry("f", 1);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+            toAdd = new DirCacheEntry("f", 2);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+
+            e = cache.getEntry("f2");
+            toAdd = new DirCacheEntry("f2", 1);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+            toAdd = new DirCacheEntry("f2", 2);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+            builder.finish();
+            builder.commit();
+        } finally {
+            cache.unlock();
+        }
+        conflicts = client.getConflicts(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, conflicts.size());
+        conflicts = client.getConflicts(new File[] { f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, conflicts.size());
+        conflicts = client.getConflicts(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, conflicts.size());
     }
 
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {

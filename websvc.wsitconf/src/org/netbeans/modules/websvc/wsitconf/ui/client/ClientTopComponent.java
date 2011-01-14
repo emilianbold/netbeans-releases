@@ -116,7 +116,7 @@ public class ClientTopComponent extends TopComponent {
     } 
 
     private Service getService(String name, WSDLModel m) {
-        if ((name != null) && (m != null)) {
+        if ((name != null) && (m != null) && (m.getDefinitions()!=null)) {
             Collection services = m.getDefinitions().getServices();
             if (services != null) {
                 Iterator i = services.iterator();

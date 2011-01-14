@@ -137,13 +137,14 @@ public class ResolveConflictsExecutor {
         f2.deleteOnExit();
         f3.deleteOnExit();
 
-        final Difference[] diffs = copyParts(true, file, f1, true);
+        Charset encoding = FileEncodingQuery.getEncoding(fo);
+        final Difference[] diffs = copyParts(true, file, f1, true, encoding);
         if (diffs.length == 0) {
             DialogDisplayer.getDefault ().notify (new org.openide.NotifyDescriptor.Message(
                             org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "NoConflictsInFile", file)));
                 return false;
         }
-        copyParts(false, file, f2, false);
+        copyParts(false, file, f2, false, encoding);
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
@@ -162,7 +163,6 @@ public class ResolveConflictsExecutor {
 
         final StreamSource s1;
         final StreamSource s2;
-        Charset encoding = FileEncodingQuery.getEncoding(fo);
         Utils.associateEncoding(file, f1);
         Utils.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
@@ -191,10 +191,10 @@ public class ResolveConflictsExecutor {
      * Copy the file and conflict parts into another file.
      */
     private Difference[] copyParts(boolean generateDiffs, File source,
-                                   File dest, boolean leftPart) throws IOException {
+                                   File dest, boolean leftPart, Charset charset) throws IOException {
         //System.out.println("copyParts("+generateDiffs+", "+source+", "+dest+", "+leftPart+")");
-        BufferedReader r = new BufferedReader(new FileReader(source));
-        BufferedWriter w = new BufferedWriter(new FileWriter(dest));
+        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(source), charset));
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList();

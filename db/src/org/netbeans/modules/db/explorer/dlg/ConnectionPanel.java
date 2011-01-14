@@ -176,7 +176,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     public void storeSettings(AddConnectionWizard settings) {
         // store values from from into connection
         component.setConnectionInfo();
-        pw.setCurrentSchema(databaseConnection.getUser());
+        pw.setCurrentSchema(databaseConnection.getUser().toUpperCase());
         pw.setDatabaseConnection(databaseConnection);
     }
 

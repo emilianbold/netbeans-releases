@@ -871,7 +871,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         PropertiesClient client = new PropertiesClient(base);
         try {
-            Map<String, byte[]> baseProps = client.getBaseProperties();
+            Map<String, byte[]> baseProps = client.getBaseProperties(currentType == Setup.DIFFTYPE_ALL);
             Map<String, byte[]> localProps = client.getProperties();
 
             Set<String> allProps = new TreeSet<String>(localProps.keySet());

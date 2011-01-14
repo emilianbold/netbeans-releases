@@ -49,6 +49,49 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="attribute.methodvalue">
+            <api name="filesystems"/>
+            <summary>setAttribute("methodvalue:attrname", method) and "newvalue:"</summary>
+            <version major="7" minor="43"/>
+            <date day="24" month="11" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    You can use prefix <code>"methodvalue:"</code> to
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html#setAttribute(java.lang.String,%20java.lang.Object)">
+                    setAttribute    
+                    </a>
+                    with type of <a href="@JDK@/java/lang/reflect/Method.html">Method</a>.
+                    When the attribute is queried (without the prefix), the
+                    method is called as is common in
+                    <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>
+                    attributes. You can also use <code>newvalue:</code> prefix
+                    for attribute of type 
+                    <a href="@JDK@/java/lang/Class.html">Class</a>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="120724"/>
+        </change>
+        <change id="private-constructor">
+            <api name="filesystems"/>
+            <summary>XMLFileSystem's newvalue can create private instances</summary>
+            <version major="7" minor="43"/>
+            <date day="25" month="10" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                If the class referenced from <code>newvalue</code> 
+                <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>
+                attribute is not public, it is made accessible for reflection.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="XMLFileSystem"/>
+            <issue number="141698"/>
+        </change>
         <change id="createAndOpen">
             <api name="filesystems"/>
             <summary>FileObject.createAndOpen</summary>

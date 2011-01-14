@@ -46,6 +46,8 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  * APT Walker which only gathers macromap. Shouldn't be used directly but
@@ -67,9 +69,10 @@ public class APTSelfWalker extends APTAbstractWalker {
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             try {
-                APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(resolvedPath.getPath()));
+                FileObject fo = getFileObject(resolvedPath.getPath());
+                APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fo));
                 APTPreprocHandler preprocHandler = getPreprocHandler();
-                APTFileCacheEntry cache = APTFileCacheManager.getEntry(resolvedPath.getPath(), preprocHandler, null);
+                APTFileCacheEntry cache = APTFileCacheManager.getInstance(apt.getFileSystem()).getEntry(resolvedPath.getPath(), preprocHandler, null);
                 createIncludeWalker(apt, this, resolvedPath.getPath(), cache).visit();
                 // does not remember walk to safe memory
                 // APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);

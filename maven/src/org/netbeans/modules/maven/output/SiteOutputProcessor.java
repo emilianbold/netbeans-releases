@@ -43,15 +43,14 @@
 package org.netbeans.modules.maven.output;
 
 import java.io.File;
-import java.net.URL;
-import org.netbeans.modules.maven.api.FileUtilities;
+import java.net.MalformedURLException;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.project.Project;
 import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.FileObject;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -90,25 +89,24 @@ public class SiteOutputProcessor implements OutputProcessor {
     }
     
     private static class Listener implements OutputListener {
-        private File root;
+        private final Project prj;
         private Listener(Project prj) {
-            File fl = FileUtil.toFile(prj.getProjectDirectory());
-            root = new File(fl, "target" + File.separator + "site"); //NOI18N
+            this.prj = prj;
         }
         public void outputLineSelected(OutputEvent arg0) {
             
         }
         
         public void outputLineAction(OutputEvent arg0) {
-            File site = FileUtil.normalizeFile(root);
-            FileUtil.refreshFor(site);
-            FileObject fo = FileUtil.toFileObject(site);
-            if (fo != null) {
-                FileObject index = fo.getFileObject("index.html"); //NOI18N
-                if (index != null) {
-                    URL link = URLMapper.findURL(index, URLMapper.EXTERNAL);
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(link);
+            File html = new File(FileUtil.toFile(prj.getProjectDirectory()), "target/site/index.html");
+            if (html.isFile()) {
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(html.toURI().toURL());
+                } catch (MalformedURLException x) {
+                    assert false : x;
                 }
+            } else {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SiteOutputProcessor.class, "SiteOutputProcessor.not_found", html));
             }
         }
         

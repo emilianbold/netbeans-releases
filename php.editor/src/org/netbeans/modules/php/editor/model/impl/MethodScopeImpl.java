@@ -61,30 +61,41 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
  * @author Radek Matous
  */
-final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableNameFactory {
+final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, VariableNameFactory, LazyBuild {
     private String classNormName;
+    private boolean scanned;
+    private MethodDeclaration originalNode;
+    private ModelVisitor visitor;
+    
 
     //new contructors
-    MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo) {
+    MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo, ModelVisitor visitor) {
         super(inScope, nodeInfo, returnType);
         assert inScope instanceof TypeScope;
         classNormName = inScope.getNormalizedName();
+        scanned = false;
+        originalNode = nodeInfo.getOriginalNode();
+        this.visitor = visitor;
     }
+    
     MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         assert inScope instanceof TypeScope;
         classNormName = inScope.getNormalizedName();
+        scanned = true;
     }
 
     MethodScopeImpl(Scope inScope, BaseFunctionElement element) {
         super(inScope, element, PhpElementKind.METHOD);
         assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
+        scanned = true;
     }
 
     @Override
@@ -96,6 +107,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     @Override
     public Collection<? extends VariableName> getDeclaredVariables() {
+        scan();
         final Scope inScope = getInScope();
         if (inScope instanceof ClassScope) {
             ClassScope classScope = (ClassScope) inScope;
@@ -104,7 +116,11 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return Collections.emptyList();
     }
 
-
+    @Override
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
+        scan();
+        return super.getReturnTypes(resolve);
+    }
 
     @Override
     public String toString() {
@@ -227,5 +243,19 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         sb.append(";"); //NOI18N
         sb.append(getPhpModifiers().toFlags()).append(";");
         return sb.toString();
+    }
+
+    @Override
+    public boolean isScanned() {
+        return scanned;
+    }
+
+    @Override
+    public void scan() {
+        if (!scanned && visitor != null) {
+            scanned =  true;
+            visitor.scanNoLazy(originalNode, this);
+        }
+        
     }
 }

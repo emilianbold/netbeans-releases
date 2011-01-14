@@ -47,6 +47,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,17 +71,17 @@ public class RenameCommand extends MoveTreeCommand {
         boolean retval = super.prepareCommand();
         if (retval) {
             if (source.equals(getRepository().getWorkTree())) {
-                throw new GitException("Cannot move working copy root " + source.getAbsolutePath()); //NOI18N
+                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_CannotMoveWT", source.getAbsolutePath())); //NOI18N
             }
             if (!source.exists() && !after) {
-                throw new GitException("Source does not exist: " + source.getAbsolutePath());
+                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_SourceDoesNotExist", source.getAbsolutePath())); //NOI18N
             }
             if (target.exists()) {
                 if (!after) {
-                    throw new GitException("Target already exists: " + target.getAbsolutePath());
+                    throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_TargetExists", target.getAbsolutePath())); //NOI18N
                 }
             } else if (after) {
-                throw new GitException("Target does not exist: " + target.getAbsolutePath());
+                throw new GitException(NbBundle.getMessage(RenameCommand.class, "MSG_Exception_TargetDoesNotExist", target.getAbsolutePath())); //NOI18N
             }
         }
         return retval;

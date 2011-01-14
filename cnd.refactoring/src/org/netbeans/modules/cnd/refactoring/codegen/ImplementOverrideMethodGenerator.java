@@ -149,7 +149,16 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel,
                 NbBundle.getMessage(ConstructorGenerator.class, isImplement ? "LBL_generate_implement" : "LBL_generate_override")); //NOI18N  //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.setVisible(true);
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dialogDescriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
 //            JavaSource js = JavaSource.forDocument(component.getDocument());
 //            if (js != null) {

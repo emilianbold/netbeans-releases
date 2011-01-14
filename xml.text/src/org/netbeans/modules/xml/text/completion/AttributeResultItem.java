@@ -60,8 +60,8 @@ class AttributeResultItem extends XMLResultItem {
     // we are requested to avoid appending extra data
     private boolean inline = false;
 
-    public AttributeResultItem(GrammarResult res, boolean inline){
-        super(res.getNodeName());
+    public AttributeResultItem(int position, GrammarResult res, boolean inline){
+        super(position, res.getNodeName());
         selectionForeground = foreground = Color.green.darker().darker();        
         this.inline = inline;
     }

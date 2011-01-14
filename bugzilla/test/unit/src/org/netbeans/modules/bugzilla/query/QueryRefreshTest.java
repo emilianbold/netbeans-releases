@@ -42,19 +42,27 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.loaders.DataObject;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -80,7 +88,12 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        System.setProperty("netbeans.t9y.bugzilla.force.refresh.delay", "please!");
+        
+        // bypass bugtracking owner logic
+        System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
+        
+        // refresh faster
+        System.setProperty("netbeans.t9y.bugzilla.force.refresh.schedule", "60000");
     }
 
     @Override
@@ -135,9 +148,8 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         String id = TestUtil.createIssue(repo, summary);
         assertNotNull(id);
 
-        BugzillaConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
         BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, true);
-
+        
         LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 120);
         LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
@@ -152,9 +164,55 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
 
         assertTrue(schedulingHandler.isDone());
         assertTrue(refreshHandler.isDone());
-
+        
         issues = q.getIssues();
         assertEquals(1, issues.length);
+    }
+
+    public static final class TestLookup extends AbstractLookup {
+        public TestLookup() {
+            this(new InstanceContent());
+        }
+        private TestLookup(InstanceContent ic) {
+            super(ic);
+            ic.add(new DummyBugtrackingOwnerSupport());
+            ic.add(new BugzillaIssueProvider());
+        }
+    }
+    
+    public static class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
+        @Override
+        protected Repository getRepository(DataObject dataObj) {
+            return null;
+        }
+        @Override
+        public Repository getRepository(Project project, boolean askIfUnknown) {
+            return null;
+        }
+        @Override
+        public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
+            return null;
+        }
+        @Override
+        protected Repository getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
+            return null;
+        }
+        @Override
+        public void setFirmAssociation(File file, Repository repository) {
+            // do nothing
+        }
+        @Override
+        public void setFirmAssociations(File[] files, Repository repository) {
+            // do nothing
+        }
+        @Override
+        public void setLooseAssociation(ContextType contextType, Repository repository) {
+            // do nothing
+        }
+        @Override
+        public void setLooseAssociation(File file, Repository repository) {
+            // do nothing
+        }        
     }
 
 }

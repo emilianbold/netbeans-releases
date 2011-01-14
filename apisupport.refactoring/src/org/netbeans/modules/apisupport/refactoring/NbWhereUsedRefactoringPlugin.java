@@ -138,7 +138,6 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             if (infoholder.isConstructor) {
                 checkConstructorLayer(infoholder, handle.getFileObject(), refactoringElements);
             }
-            err.log("Gonna return problem: " + problem);
             return problem;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -163,21 +162,24 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+        FileObject fo = handle.getLayerFile();
+        return fo != null ? new LayerWhereUsedRefactoringElement(fo, layerFileObject, layerAttribute) : null;
     }
     
     protected RefactoringElementImplementation createMethodLayerRefactoring(String method, String fqname,
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+        FileObject fo = handle.getLayerFile();
+        return fo != null ? new LayerWhereUsedRefactoringElement(fo, layerFileObject, layerAttribute) : null;
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
             LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+        FileObject fo = handle.getLayerFile();
+        return fo != null ? new LayerWhereUsedRefactoringElement(fo, layerFileObject, layerAttribute) : null;
     }
         
     public final class LayerWhereUsedRefactoringElement extends AbstractRefactoringElement {
@@ -185,7 +187,7 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
         private String path;
         private String attrValue;
         public LayerWhereUsedRefactoringElement(FileObject fo, FileObject layerFo, String attribute) {
-            parentFile = fo;
+            super(fo);
             attr = attribute;
             this.path = layerFo.getPath();
             if (attr != null) {
@@ -327,8 +329,8 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
         private String attrName;
         private String sectionName = null;
         public ManifestWhereUsedRefactoringElement(String name, FileObject parentFile, String attributeName) {
+            super(parentFile);
             this.name = name;
-            this.parentFile = parentFile;
             attrName = attributeName;
         }
         public ManifestWhereUsedRefactoringElement(String name, FileObject parentFile, String attributeName, String secName) {

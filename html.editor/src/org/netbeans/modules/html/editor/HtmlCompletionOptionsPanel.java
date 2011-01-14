@@ -65,6 +65,8 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
     public static final boolean HTML_AUTOCOMPLETE_QUOTES_DEFAULT = true;
     public static final String HTML_COMPLETION_END_TAG_ADTER_LT = "htmlCompletionOffersEndTagsAfterLt"; //NOI18N
     public static final boolean HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT = false;
+    public static final String HTML_COMPLETION_AUTOPOPUP_WINDOW = "htmlCompletionAutoPopupWindow"; //NOI18N
+    public static final boolean HTML_COMPLETION_AUTOPOPUP_WINDOW_DEFAULT = true;
 
     private Preferences preferences;
 
@@ -75,6 +77,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
         autocompleteQuotesAfterEQSCheckBox.setSelected(preferences.getBoolean(HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS, HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS_DEFAULT));
         autocompleteQuotesCheckBox.setSelected(preferences.getBoolean(HTML_AUTOCOMPLETE_QUOTES, HTML_AUTOCOMPLETE_QUOTES_DEFAULT));
         completionOffersEndTagAfterLt.setSelected(preferences.getBoolean(HTML_COMPLETION_END_TAG_ADTER_LT, HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT));
+        autoPopupCompletionWindow.setSelected(preferences.getBoolean(HTML_COMPLETION_AUTOPOPUP_WINDOW, HTML_COMPLETION_AUTOPOPUP_WINDOW_DEFAULT));
     }
 
     /** This method is called from within the constructor to
@@ -89,6 +92,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
         autocompleteQuotesAfterEQSCheckBox = new javax.swing.JCheckBox();
         autocompleteQuotesCheckBox = new javax.swing.JCheckBox();
         completionOffersEndTagAfterLt = new javax.swing.JCheckBox();
+        autoPopupCompletionWindow = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(550, 400));
 
@@ -113,6 +117,13 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
             }
         });
 
+        autoPopupCompletionWindow.setText(org.openide.util.NbBundle.getMessage(HtmlCompletionOptionsPanel.class, "HtmlCompletionOptionsPanel.autoPopupCompletionWindow.text")); // NOI18N
+        autoPopupCompletionWindow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoPopupCompletionWindowActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -120,6 +131,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(autoPopupCompletionWindow)
                     .addComponent(autocompleteQuotesAfterEQSCheckBox)
                     .addComponent(autocompleteQuotesCheckBox)
                     .addComponent(completionOffersEndTagAfterLt))
@@ -129,12 +141,14 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(autoPopupCompletionWindow)
+                .addGap(2, 2, 2)
                 .addComponent(autocompleteQuotesAfterEQSCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(autocompleteQuotesCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(completionOffersEndTagAfterLt)
-                .addContainerGap(314, Short.MAX_VALUE))
+                .addContainerGap(289, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -150,8 +164,13 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
         preferences.putBoolean(HTML_COMPLETION_END_TAG_ADTER_LT, completionOffersEndTagAfterLt.isSelected());
     }//GEN-LAST:event_completionOffersEndTagAfterLtActionPerformed
 
+    private void autoPopupCompletionWindowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoPopupCompletionWindowActionPerformed
+        preferences.putBoolean(HTML_COMPLETION_AUTOPOPUP_WINDOW, completionOffersEndTagAfterLt.isSelected());
+    }//GEN-LAST:event_autoPopupCompletionWindowActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox autoPopupCompletionWindow;
     private javax.swing.JCheckBox autocompleteQuotesAfterEQSCheckBox;
     private javax.swing.JCheckBox autocompleteQuotesCheckBox;
     private javax.swing.JCheckBox completionOffersEndTagAfterLt;

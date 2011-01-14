@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 public class GdbHandlerExpert implements HandlerExpert {
+    private static final boolean sendShortPaths = Boolean.getBoolean("gdb.breakpoints.shortpaths"); // NOI18N
 
     // "infinity" for gdb is largest signed 32bit number:
     static final Integer infinity = new Integer(0x7fffffff);
@@ -192,9 +193,17 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    int line = lb.getLineNumber();
 
 	    file = debugger.localToRemote("LineBreakpoint", file); // NOI18N
+            
+            // unify separators
+            file = file.replace("\\","/"); //NOI18N
 
 	    // gdb break command seems to not like full pathnames.
-	    file = IpeUtils.getBaseName(file);
+            if (sendShortPaths) {
+                int pos = file.lastIndexOf('/');
+		if (pos >= 0) {
+		    file = file.substring(pos + 1);
+		}
+            }
 
 	    String fileLine = null;
 	    if (file != null && file.length() > 0) {
@@ -203,7 +212,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 		fileLine = "" + line;		// NOI18N
 	    }
 
-	    cmd += " " + fileLine; // NOI18N
+	    cmd += " \"" + fileLine + "\""; // NOI18N
 
 	} else if (bClass == InstructionBreakpoint.class) {
 	    InstructionBreakpoint ib = (InstructionBreakpoint) breakpoint;

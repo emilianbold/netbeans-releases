@@ -80,7 +80,7 @@ public class UseSpecificCatchTest extends TestBase {
                         "        try {\n" +
                         "            if (true) throw new java.io.FileNotFoundException();\n" +
                         "            else      throw new java.net.MalformedURLException();\n" +
-                        "        } catch (final FileNotFoundException | MalformedURLException e) {\n" +
+                        "        } catch (FileNotFoundException | MalformedURLException e) {\n" +
                         "            e.printStackTrace();\n" +
                         "        }\n" +
                         "    }\n" +
@@ -96,14 +96,14 @@ public class UseSpecificCatchTest extends TestBase {
                        "        try {\n" +
                        "            if (true) throw new java.io.FileNotFoundException();\n" +
                        "            else      throw new java.net.MalformedURLException();\n" +
-                       "        } catch (Throwable e) {\n" +
+                       "        } catch (final Throwable e) {\n" +
                        "            e.printStackTrace();\n" +
                        "        } finally {\n" +
                        "            System.err.println(1);\n" +
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "6:17-6:26:verifier:ERR_UseSpecificCatch",
+                       "6:23-6:32:verifier:ERR_UseSpecificCatch",
                        "FIX_UseSpecificCatch",
                        ("package test;\n" +
                         "import java.io.FileNotFoundException;\n" +
@@ -132,6 +132,22 @@ public class UseSpecificCatchTest extends TestBase {
                             "            else      throw new Throwable();\n" +
                             "        } catch (Throwable e) {\n" +
                             "            e.printStackTrace();\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
+    public void testNeg2() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    {\n" +
+                            "        try {\n" +
+                            "            if (true) throw new java.io.FileNotFoundException();\n" +
+                            "            else      throw new java.net.MalformedURLException();\n" +
+                            "        } catch (Throwable e) {\n" +
+                            "            e = new FileNotFoundException();\n" +
                             "        }\n" +
                             "    }\n" +
                             "}\n");

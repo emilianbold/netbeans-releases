@@ -73,6 +73,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
+import org.openide.util.NbPreferences;
 
 /**
  * @author David Kaspar
@@ -155,7 +156,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         sceneSelectAction = new FlowSceneSelectAction ();
         sceneKeyAction = new FlowSceneKeyAction (); // HINT - FlowDescriptor.KeyActionBehaviour is used for FlowScene/rootComponent only
 
-        edgeRouter = RouterFactory.createOrthogonalSearchRouter (new OrthogonalCollisionsCollector (mainLayer, connectionLayer));
+        edgeRouter = NbPreferences.forModule(RouterFactory.class).getBoolean("vmd.direct.routing", false) ? RouterFactory.createDirectRouter() : RouterFactory.createOrthogonalSearchRouter (new OrthogonalCollisionsCollector (mainLayer, connectionLayer)); //NOI18N
 
         getActions ().addAction (ActionFactory.createMouseCenteredZoomAction (1.2));
         getActions ().addAction (ActionFactory.createPanAction ());

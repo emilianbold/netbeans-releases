@@ -57,11 +57,14 @@ import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,13 +72,25 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
+    private final FileSystem fileSystem;
     private Charset encoding;
-    
-    protected AbstractFileBuffer(CharSequence absPath) {
+
+    protected AbstractFileBuffer(FileObject fileObject) {
+        this.absPath = FilePathCache.getManager().getString(fileObject.getPath());
+        this.fileSystem = getFileSystem(fileObject);
         if (CndUtils.isDebugMode()) {
-            CndUtils.assertNormalized(new File(absPath.toString()));
+            FileObject fo2 = fileSystem.findResource(absPath.toString());
+            CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
         }
-        this.absPath = FilePathCache.getManager().getString(absPath);
+    }
+
+    private static FileSystem getFileSystem(FileObject fileObject) {
+        try {
+            return fileObject.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return InvalidFileObjectSupport.getDummyFileSystem();
+        }       
     }
 
     @Override
@@ -92,21 +107,33 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
 
     @Override
+    public CharSequence getUrl() {
+        return CndFileUtils.fileObjectToUrl(getFileObject());
+    }
+
+    @Override
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }    
+
+    @Override
     public File getFile() {
         return new File(absPath.toString());
     }
 
     @Override
     public FileObject getFileObject() {
-        return CndFileUtils.toFileObject(absPath); // XXX:FileObject conversion
+        FileObject result = fileSystem.findResource(absPath.toString());
+        if (result == null) {
+            CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
+        }
+        return result;
     }
 
     @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
-            File file = getFile();
-            // file must be normalized
-            FileObject fo = CndFileUtils.toFileObject(file);
+            FileObject fo = getFileObject();
             if (fo != null && fo.isValid()) {
                 encoding = FileEncodingQuery.getEncoding(fo);
             } else { // paranoia
@@ -118,18 +145,21 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return reader;
     }
     
-    public abstract InputStream getInputStream() throws IOException;
+        public abstract InputStream getInputStream() throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
-    protected void write(DataOutput output) throws IOException {
+
+    // final is important here - see PersistentUtils.writeBuffer/readBuffer
+    public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
+        PersistentUtils.writeFileSystem(fileSystem, output);
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
     }
 

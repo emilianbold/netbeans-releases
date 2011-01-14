@@ -87,7 +87,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event fileAdded:"); // NOI18N
-            System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
 	onProjectItemAdded(fileItem);
     }
@@ -98,7 +98,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event filesAdded:"); // NOI18N
             for(NativeFileItem fileItem: fileItems){
-                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
 	for (List<NativeFileItem> list : divideByProjects(fileItems)){
@@ -111,7 +111,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event fileRemoved:"); // NOI18N
-            System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
 	onProjectItemRemoved(fileItem);
     }
@@ -122,7 +122,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event filesRemoved:"); // NOI18N
             for(NativeFileItem fileItem: fileItems){
-                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
 	for (List<NativeFileItem> list : divideByProjects(fileItems)){
@@ -136,7 +136,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event fileRenamed:"); // NOI18N
             System.err.println("\tOld Name:"+oldPath); // NOI18N
-            System.err.println("\tNew Name:"+newFileIetm.getFile().getAbsolutePath()); // NOI18N
+            System.err.println("\tNew Name:"+newFileIetm.getAbsolutePath()); // NOI18N
         }
 	onProjectItemRenamed(oldPath, newFileIetm);
     }
@@ -146,7 +146,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event filePropertiesChanged:"); // NOI18N
-            System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
         }
 	onProjectItemChanged(fileItem);
     }
@@ -157,7 +157,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event filesPropertiesChanged:"); // NOI18N
             for(NativeFileItem fileItem: fileItems){
-                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
         if (enabledEventsHandling) {
@@ -196,7 +196,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             new Exception().printStackTrace(System.err);
             System.err.println("Native event projectPropertiesChanged:"); // NOI18N
             for(NativeFileItem fileItem : nativeProject.getAllFiles()){
-                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+                System.err.println("\t"+fileItem.getAbsolutePath()); // NOI18N
             }
         }
         if (enabledEventsHandling) {
@@ -349,12 +349,14 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     
     private ProjectBase getProject(NativeFileItem nativeFile, boolean createIfNeeded) {
         assert nativeFile != null : "must not be null";
-        assert nativeFile.getFile() != null : "must be associated with valid file";
-        assert nativeFile.getNativeProject() != null : "must have container project";
         ProjectBase csmProject = null;
         try {
             NativeProject aNnativeProject = nativeFile.getNativeProject();
-	    assert(aNnativeProject != null) : "NativeFileItem should never return null NativeProject";
+            assert (aNnativeProject == null) || this.nativeProject.equals(aNnativeProject) : "listener was attached to " + this.nativeProject + "\n was notified from " + aNnativeProject;
+            // removed file can have null project
+            if (aNnativeProject == null) {
+                aNnativeProject = this.nativeProject;
+            }
             if (aNnativeProject != null) {
                 csmProject = createIfNeeded ? (ProjectBase) model._getProject(aNnativeProject) :
                     (ProjectBase) model.findProject(aNnativeProject);

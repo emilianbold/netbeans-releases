@@ -161,7 +161,10 @@ public class ResetTest extends AbstractGitTestCase {
         logs.next();
         RevCommit commit = logs.next();
         String revision = commit.getId().getName();
+        long ts = file2.lastModified();
+        Thread.sleep(1000);
         client.reset(revision, ResetType.HARD, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(ts, file2.lastModified());
 
         assertEquals(revision, new Git(repository).log().call().iterator().next().getId().getName());
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);

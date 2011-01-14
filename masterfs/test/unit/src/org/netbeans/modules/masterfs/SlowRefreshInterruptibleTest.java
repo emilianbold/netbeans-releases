@@ -53,6 +53,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RefreshSlowTest;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -89,6 +91,7 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         System.setSecurityManager(new FileChangedManager());
     }
 
+    @RandomlyFails // jglick: "No change detected expected:<0> but was:<1>"
     public void testRefreshCanBeInterrupted() throws Exception {
         long lm = System.currentTimeMillis();
         FileObject fld = testFolder;
@@ -139,7 +142,7 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
         }
 
-        Object obj = testFolder.getFileSystem().getRoot().getAttribute("refreshSlow");
+        Object obj = RefreshSlowTest.findSlowRefresh(testFolder);
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 

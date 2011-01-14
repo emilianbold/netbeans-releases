@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.rest.codegen;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.SpringHelper;
@@ -54,8 +55,10 @@ import org.netbeans.modules.websvc.rest.support.SpringHelper;
 public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public SpringEntityResourcesGenerator() {
+    public SpringEntityResourcesGenerator( boolean hasAop) {
         injectEntityManager = true;
+	// Fix for BZ#193626 -  RESTful WS from DB ( or entities ) doesn't work with Spring 3
+	hasAopAlliance = hasAop;
     }
 
     @Override
@@ -88,25 +91,54 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
 
     @Override
     protected String[] getAdditionalContainerResourceAnnotations() {
+        if ( hasAopAlliance ){
         return new String[] {
-            RestConstants.SINGLETON_ANNOTATION,
-            SpringConstants.AUTOWIRE_ANNOTATION
+                RestConstants.SINGLETON_ANNOTATION,
+                SpringConstants.AUTOWIRE_ANNOTATION };
+	}
+	else {
+        return new String[] {
+                RestConstants.SINGLETON_ANNOTATION,
+                SpringConstants.AUTOWIRE_ANNOTATION,
+                "Error"                 // NOI18N
         };
+	}
     }
     
     @Override
     protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
-        return new Object[] {null, null};
+        if ( hasAopAlliance ){
+            return new Object[] {null, null };
+	}
+	else {
+            return new Object[] {null, null, 
+		"Please fix your project manually, for instructions see "
+		    +"http://wiki.netbeans.org/SpringWithAopalliance"}; //NOI18N
+	}
     }
     
     @Override
     protected String[] getAdditionalItemResourceAnnotations() {
-        return new String[] {SpringConstants.AUTOWIRE_ANNOTATION};
+        if ( hasAopAlliance ){
+            return new String[] {SpringConstants.AUTOWIRE_ANNOTATION };
+	}
+	else {
+            return new String[] {SpringConstants.AUTOWIRE_ANNOTATION,
+	         "Error"					// NOI18N
+	};
+	}
     }
     
     @Override
     protected Object[] getAdditionalItemResourceAnnotationAttrs() {
-        return new Object[] {null};
+        if ( hasAopAlliance ){
+	    return new Object[] {null};
+	}
+	else {
+	    return new Object[] {null,
+		"Please fix your project manually, for instructions see "
+		+"http://wiki.netbeans.org/SpringWithAopalliance"}; //NOI18N
+	}
     }
     
     private String[] getTransactionalAnnotation() {
@@ -176,4 +208,6 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
     protected Object[] getAdditionalItemGetResourceMethodAnnotationAttrs() {
         return getTransactionalAnnotationAttr();
     }
+
+    private boolean hasAopAlliance;
 }

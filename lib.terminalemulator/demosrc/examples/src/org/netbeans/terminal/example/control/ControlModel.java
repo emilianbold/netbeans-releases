@@ -39,7 +39,8 @@ public class ControlModel {
     public static void add(InputOutput io, Config config, String name) {
 	IOInfo ii = new IOInfo(io, config, name);
 	list.add(ii);
-	view.refresh();
+        if (view != null)
+            view.refresh();
     }
 
     public static List<IOInfo> list() {

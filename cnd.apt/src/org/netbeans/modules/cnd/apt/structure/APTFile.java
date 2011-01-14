@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
+import org.openide.filesystems.FileSystem;
+
 /**
  * APT root element to present whole file
  * it doesn't have any siblings, only children
@@ -51,6 +53,12 @@ package org.netbeans.modules.cnd.apt.structure;
  * @author Vladimir Voskresensky
  */
 public interface APTFile extends APT {
+    /**
+     * Gets file system
+     * @return 
+     */
+    public FileSystem getFileSystem();
+    
     /**
      * returns the full path of file
      */

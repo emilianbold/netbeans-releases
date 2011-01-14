@@ -74,6 +74,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -608,7 +609,7 @@ public final class BrandingSupport {
     public class BrandedFile {
         private final ModuleEntry moduleEntry;
         private final String entryPath;
-        private URL brandingSource;
+        private @NonNull URL brandingSource;
         private boolean modified = false;
         
         private BrandedFile(final ModuleEntry moduleEntry, final String entry) throws MalformedURLException {
@@ -639,11 +640,12 @@ public final class BrandingSupport {
             return new File(getModuleEntryDirectory(getModuleEntry()), getEntryPath());
         }
         
-        public URL getBrandingSource()  {
+        public @NonNull URL getBrandingSource()  {
             return brandingSource;
         }
         
-        public void setBrandingSource(URL brandingSource) {
+        public void setBrandingSource(@NonNull URL brandingSource) {
+            Parameters.notNull("brandingSource", brandingSource);
             if (!Utilities.compareObjects(brandingSource, this.brandingSource)) {
                 modified = true;
             }

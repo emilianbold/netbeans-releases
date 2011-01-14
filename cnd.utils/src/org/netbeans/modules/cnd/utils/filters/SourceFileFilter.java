@@ -119,7 +119,7 @@ public abstract class SourceFileFilter extends FileFilterFactory.FileAndFileObje
         return getDescription();
     }
 
-    private static boolean areFilenamesEqual(String firstFile, String secondFile) {
+    protected static boolean areFilenamesEqual(String firstFile, String secondFile) {
         return CndFileUtils.isSystemCaseSensitive() ? firstFile.equals(secondFile) : firstFile.equalsIgnoreCase(secondFile);
     }
 

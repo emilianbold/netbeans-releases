@@ -42,6 +42,8 @@
 
 package org.netbeans.libs.git;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ondra
@@ -65,7 +67,7 @@ public class GitException extends Exception {
         private final GitObjectType objectType;
 
         public MissingObjectException (String objectName, GitObjectType objectType) {
-            super(objectType.toString() + "[" + objectName + "] does not exist");
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_ObjectDoesNotExist", new Object[] { objectType.toString(), objectName })); //NOI18N
             this.objectName = objectName;
             this.objectType = objectType;
         }

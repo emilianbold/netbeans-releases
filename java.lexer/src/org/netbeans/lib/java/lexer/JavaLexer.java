@@ -96,7 +96,8 @@ public class JavaLexer implements Lexer<JavaTokenId> {
             JavaTokenId lookupId = null;
             switch (c) {
                 case '#':
-                    if (this.version < 7 || input.read() != '"') {
+                    //Support for exotic identifiers has been removed 6999438
+                    if (true || this.version < 7 || input.read() != '"') {
                         return token(JavaTokenId.ERROR);
                     }
                     lookupId = JavaTokenId.IDENTIFIER;

@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.jsf.editor.TestBase;
 
@@ -65,14 +66,16 @@ public class JsfVariablesModelTest extends TestBase {
     }
 
     public void testCreateModel() throws ParseException {
-        HtmlParserResult result = getHtmlParserResult("testfiles/test.xhtml");
-        JsfVariablesModel model = JsfVariablesModel.getModel(result);
+        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
+        HtmlParserResult result = getHtmlParserResult(ri);
+        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
         assertNotNull(model);
     }
 
     public void testModel() throws ParseException {
-        HtmlParserResult result = getHtmlParserResult("testfiles/test.xhtml");
-        JsfVariablesModel model = JsfVariablesModel.getModel(result);
+        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
+        HtmlParserResult result = getHtmlParserResult(ri);
+        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -124,8 +127,9 @@ public class JsfVariablesModelTest extends TestBase {
     }
 
     public void testGetAncestors() throws ParseException {
-        HtmlParserResult result = getHtmlParserResult("testfiles/test.xhtml");
-        JsfVariablesModel model = JsfVariablesModel.getModel(result);
+        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
+        HtmlParserResult result = getHtmlParserResult(ri);
+        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -152,8 +156,9 @@ public class JsfVariablesModelTest extends TestBase {
     }
 
     public void testResolveProperties() throws ParseException {
-        HtmlParserResult result = getHtmlParserResult("testfiles/test.xhtml");
-        JsfVariablesModel model = JsfVariablesModel.getModel(result);
+        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
+        HtmlParserResult result = getHtmlParserResult(ri);
+        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();

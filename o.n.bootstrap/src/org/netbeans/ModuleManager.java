@@ -1469,6 +1469,10 @@ public final class ModuleManager extends Modules {
                             probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                             continue;
                         }
+                        SpecificationVersion otherSpec = other.getSpecificationVersion();
+                        if (otherSpec == null) {
+                            otherSpec = new SpecificationVersion("0"); // NOI18N
+                        }
                         if (relVersionMin == relVersionMax) {
                             // Non-ranged dep.
                             if (relVersionMin != other.getCodeNameRelease()) {
@@ -1485,7 +1489,7 @@ public final class ModuleManager extends Modules {
                             }
                             if (dep.getComparison() == Dependency.COMPARE_SPEC &&
                                     new SpecificationVersion(dep.getVersion()).compareTo(
-                                        other.getSpecificationVersion()) > 0) {
+                                        otherSpec) > 0) {
                                 // Spec version not high enough, bad.
                                 probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;
@@ -1505,7 +1509,7 @@ public final class ModuleManager extends Modules {
                                     // Spec comparisons only apply to the earliest major rel.
                                     otherRel == relVersionMin &&
                                     new SpecificationVersion(dep.getVersion()).compareTo(
-                                        other.getSpecificationVersion()) > 0) {
+                                        otherSpec) > 0) {
                                 // Spec version not high enough, bad.
                                 probs.add(Union2.<Dependency,InvalidException>createFirst(dep));
                                 continue;

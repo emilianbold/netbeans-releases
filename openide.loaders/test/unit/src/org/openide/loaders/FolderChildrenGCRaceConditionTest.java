@@ -46,14 +46,18 @@ package org.openide.loaders;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.logging.Logger;
+import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
-public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
+public class FolderChildrenGCRaceConditionTest extends NbTestCase {
+    private Logger LOG;
+    
     public FolderChildrenGCRaceConditionTest() {
         super("");
     }
@@ -64,8 +68,8 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
     
     @Override
     protected void setUp() throws Exception {
-    	super.setUp();
         clearWorkDir();
+        LOG = Logger.getLogger(FolderChildrenGCRaceConditionTest.class.getName());
 
         FileObject[] arr = FileUtil.getConfigRoot().getChildren();
         for (int i = 0; i < arr.length; i++) {
@@ -86,16 +90,17 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
         arr = null;
         
         class R implements Runnable {
+            @Override
             public void run() {
-                ErrorManager.getDefault().log("Ready to GC");
+                LOG.info("Ready to GC");
                 assertGC("Node can go away in the worst possible moment", ref);
-                ErrorManager.getDefault().log("Gone");
+                LOG.info("Gone");
             }
         }
         R r = new R();
         RequestProcessor.Task t = new RequestProcessor("Inter", 1, true).post(r);
         
-        registerSwitches(
+        Log.controlFlow(Logger.getLogger("org.openide.loaders"), null,
             "THREAD:FolderChildren_Refresh MSG:Children computed" +
             "THREAD:FolderChildren_Refresh MSG:notifyFinished.*" +
             "THREAD:Inter MSG:Gone.*" +
@@ -103,10 +108,11 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
             "THREAD:FolderChildren_Refresh MSG:Clearing the ref.*" +
             "", 200);
         
+        LOG.info("Before getNodes(true");
         int cnt = n.getChildren().getNodes(true).length;
-        
+        LOG.info("Children are here: " + cnt);
         t.cancel();
-        
+        LOG.info("Cancel done");
         assertEquals("Count is really one", 1, cnt);
     }
    

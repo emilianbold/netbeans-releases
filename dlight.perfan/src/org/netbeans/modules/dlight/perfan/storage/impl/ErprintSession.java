@@ -45,11 +45,14 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -58,6 +61,7 @@ import org.openide.util.Exceptions;
 public class ErprintSession {
 
     private static final AtomicInteger idCounter = new AtomicInteger(0);
+    private static final Logger log = DLightLogger.getLogger(Erprint.class);
     private final int id;
     private final NativeProcessBuilder npb;
     private volatile Erprint er_print;
@@ -90,7 +94,7 @@ public class ErprintSession {
      * @param dataFiltersProvider
      * @return
      */
-    public static final ErprintSession createNew(final ExecutionEnvironment execEnv, final String sproHome, final String experimentDirectory, final SunStudioFiltersProvider dataFiltersProvider) {
+    public static ErprintSession createNew(final ExecutionEnvironment execEnv, final String sproHome, final String experimentDirectory, final SunStudioFiltersProvider dataFiltersProvider) {
         final ErprintSession session = new ErprintSession(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
         session.ready = false;
         session.error = false;
@@ -98,6 +102,7 @@ public class ErprintSession {
 
         Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 while (true) {
                     if (session.stopped || Thread.interrupted()) {
@@ -190,6 +195,7 @@ public class ErprintSession {
             }
         } catch (Throwable ex) {
             // failed to start er_print ?
+            log.log(Level.FINE, "Erprint restartAndLock() - caught an exception {0}", ex.getMessage()); // NOI18N
         }
 
         if (er_print == null) {

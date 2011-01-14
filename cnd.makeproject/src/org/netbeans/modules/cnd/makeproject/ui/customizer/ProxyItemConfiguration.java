@@ -96,9 +96,9 @@ class ProxyItemConfiguration extends ItemConfiguration {
             if (cCCompilerConfiguration == null) {
                 FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
                 if (folderConfiguration != null) {
-                    cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
+                    cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCCompilerConfiguration(), null);
                 } else {
-                    cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null);
+                    cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null, null);
                 }
             }
             return cCCompilerConfiguration;
@@ -112,9 +112,9 @@ class ProxyItemConfiguration extends ItemConfiguration {
         } else {
             FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
             if (folderConfiguration != null) {
-                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCompilerConfiguration());
+                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCompilerConfiguration(), null);
             } else {
-                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null);
+                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null, null);
             }
             return cCompilerConfiguration;
         }

@@ -144,6 +144,10 @@ public class Frame {
             return func + args;
         }
     }
+    
+    public String getFullPath() {
+        return null;
+    }
 
     public String getLocation() {
         if (isSpecial())

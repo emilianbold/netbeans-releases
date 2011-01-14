@@ -93,88 +93,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Utility class collecting library methods related to XML processing.
- *
- * <div class="nonnormative">
- *
- * <p>Remember that when parsing XML files you often want to set an explicit
- * entity resolver. For example, consider a file such as this:</p>
- *
- * <pre>
- * &lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font> <font class="variable-name">encoding</font>=<font class="string">"UTF-8"</font>?&gt;
- * &lt;!<font class="keyword">DOCTYPE</font> <font class="type">root</font> <font class="keyword">PUBLIC</font> <font class="string">"-//NetBeans//DTD Foo 1.0//EN"</font> <font class="string">"http://www.netbeans.org/dtds/foo-1_0.dtd"</font>&gt;
- * &lt;<font class="function-name">root</font>/&gt;
- * </pre>
- *
- * <p>If you parse this with a null entity resolver, or you use the
- * default resolver ({@link EntityCatalog#getDefault}) but do not do
- * anything special with this DTD, you will probably find the parse
- * blocking to make a network connection <em>even when you are not
- * validating</em>. That is because DTDs can be used to define
- * entities and other XML oddities, and are not a pure constraint
- * language like Schema or RELAX-NG.</p>
- *
- * <p>There are three basic ways to avoid the network connection.</p>
- *
- * <ol>
- *
- * <li><p>Register the DTD. This is generally the best thing to do. See
- * {@link EntityCatalog}'s documentation for details, but for example
- * in your layer use:</p>
- *
- * <pre>
- * &lt;<font class="function-name">filesystem</font>&gt;
- *   &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"xml"</font>&gt;
- *     &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"entities"</font>&gt;
- *       &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"NetBeans"</font>&gt;
- *         &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"DTD_Foo_1_0"</font>
- *               <font class="variable-name">url</font>=<font class="string">"nbres:/org/netbeans/modules/mymod/resources/foo-1_0.dtd"</font>&gt;
- *           &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"hint.originalPublicID"</font>
- *                 <font class="variable-name">stringvalue</font>=<font class="string">"-//NetBeans//DTD Foo 1.0//EN"</font>/&gt;
- *         &lt;/<font class="function-name">file</font>&gt;
- *       &lt;/<font class="function-name">folder</font>&gt;
- *     &lt;/<font class="function-name">folder</font>&gt;
- *   &lt;/<font class="function-name">folder</font>&gt;
- * &lt;/<font class="function-name">filesystem</font>&gt;
- * </pre>
- *
- * <p>Now the default system entity catalog will resolve the public ID
- * to the local copy in your module, not the network copy.
- * Additionally, anyone who mounts the "NetBeans Catalog" in the XML
- * Entity Catalogs node in the Runtime tab will be able to use your
- * local copy of the DTD automatically, for validation, code
- * completion, etc. (The network URL should really exist, though, for
- * the benefit of other tools!)</p></li>
- *
- * <li><p>You can also set an explicit entity resolver which maps that
- * particular public ID to some local copy of the DTD, if you do not
- * want to register it globally in the system for some reason. If
- * handed other public IDs, just return null to indicate that the
- * system ID should be loaded.</p></li>
- *
- * <li><p>In some cases where XML parsing is very
- * performance-sensitive, and you know that you do not need validation
- * and furthermore that the DTD defines no infoset (there are no
- * entity or character definitions, etc.), you can speed up the parse.
- * Turn off validation, but also supply a custom entity resolver that
- * does not even bother to load the DTD at all:</p>
- *
- * <pre>
- * <font class="keyword">public</font> <font class="type">InputSource</font> <font class="function-name">resolveEntity</font>(<font class="type">String</font> <font class="variable-name">pubid</font>, <font class="type">String</font> <font class="variable-name">sysid</font>)
- *     <font class="keyword">throws</font> <font class="type">SAXException</font>, <font class="type">IOException</font> {
- *   <font class="keyword">if</font> (pubid.equals(<font class="string">"-//NetBeans//DTD Foo 1.0//EN"</font>)) {
- *     <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">InputSource</font>(<font class="keyword">new</font> <font class="type">ByteArrayInputStream</font>(<font class="keyword">new</font> <font class="type">byte</font>[0]));
- *   } <font class="keyword">else</font> {
- *     <font class="keyword">return</font> EntityCatalog.getDefault().resolveEntity(pubid, sysid);
- *   }
- * }
- * </pre></li>
- *
- * </ol>
- *
- * </div>
- *
- * @author  Petr Kuzel
- * @since release 3.2 */
+ */
 public final class XMLUtil extends Object {
 
     /*
@@ -209,11 +128,9 @@ public final class XMLUtil extends Object {
     }
 
     private static SAXParserFactory[][] saxes  = new SAXParserFactory[2][2];
-    /** Create a SAX parser from the JAXP factory.
-     * The result can be used to parse XML files.
+    /** Creates a SAX parser.
      *
-     * <p>See class Javadoc for hints on setting an entity resolver.
-     * This parser has its entity resolver set to the system entity resolver chain.
+     * <p>See {@link #parse} for hints on setting an entity resolver.
      *
      * @param validate if true, a validating parser is returned
      * @param namespaceAware if true, a namespace aware parser is returned
@@ -243,7 +160,7 @@ public final class XMLUtil extends Object {
     // ~~~~~~~~~~~~~~~~~~~~~ DOM related ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * Creates empty DOM Document using JAXP factoring. E.g.:
+     * Creates an empty DOM document. E.g.:
      * <p><pre>
      * Document doc = createDocument("book", null, null, null);
      * </pre><p>
@@ -317,14 +234,92 @@ public final class XMLUtil extends Object {
     }
 
     /**
-     * Create from factory a DocumentBuilder and let it create a org.w3c.dom.Document.
-     * This method takes InputSource. After successful finish the document tree is returned.
+     * Parses an XML document into a DOM tree.
      *
-     * @param input a parser input (for URL users use: <code>new InputSource(url.toExternalForm())</code>
+     * <div class="nonnormative">
+     *
+     * <p>Remember that when parsing XML files you often want to set an explicit
+     * entity resolver. For example, consider a file such as this:</p>
+     *
+     * <pre>
+     * &lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font> <font class="variable-name">encoding</font>=<font class="string">"UTF-8"</font>?&gt;
+     * &lt;!<font class="keyword">DOCTYPE</font> <font class="type">root</font> <font class="keyword">PUBLIC</font> <font class="string">"-//NetBeans//DTD Foo 1.0//EN"</font> <font class="string">"http://www.netbeans.org/dtds/foo-1_0.dtd"</font>&gt;
+     * &lt;<font class="function-name">root</font>/&gt;
+     * </pre>
+     *
+     * <p>If you parse this with a null entity resolver, or you use the
+     * default resolver ({@link EntityCatalog#getDefault}) but do not do
+     * anything special with this DTD, you will probably find the parse
+     * blocking to make a network connection <em>even when you are not
+     * validating</em>. That is because DTDs can be used to define
+     * entities and other XML oddities, and are not a pure constraint
+     * language like Schema or RELAX-NG.</p>
+     *
+     * <p>There are three basic ways to avoid the network connection.</p>
+     *
+     * <ol>
+     *
+     * <li><p>Register the DTD. This is generally the best thing to do. See
+     * {@link EntityCatalog}'s documentation for details, but for example
+     * in your layer use:</p>
+     *
+     * <pre>
+     * &lt;<font class="function-name">filesystem</font>&gt;
+     *   &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"xml"</font>&gt;
+     *     &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"entities"</font>&gt;
+     *       &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"NetBeans"</font>&gt;
+     *         &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"DTD_Foo_1_0"</font>
+     *               <font class="variable-name">url</font>=<font class="string">"resources/foo-1_0.dtd"</font>&gt;
+     *           &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"hint.originalPublicID"</font>
+     *                 <font class="variable-name">stringvalue</font>=<font class="string">"-//NetBeans//DTD Foo 1.0//EN"</font>/&gt;
+     *         &lt;/<font class="function-name">file</font>&gt;
+     *       &lt;/<font class="function-name">folder</font>&gt;
+     *     &lt;/<font class="function-name">folder</font>&gt;
+     *   &lt;/<font class="function-name">folder</font>&gt;
+     * &lt;/<font class="function-name">filesystem</font>&gt;
+     * </pre>
+     *
+     * <p>Now the default system entity catalog will resolve the public ID
+     * to the local copy in your module, not the network copy.
+     * Additionally, anyone who mounts the "NetBeans Catalog" in the XML
+     * Entity Catalogs node in the Runtime tab will be able to use your
+     * local copy of the DTD automatically, for validation, code
+     * completion, etc. (The network URL should really exist, though, for
+     * the benefit of other tools!)</p></li>
+     *
+     * <li><p>You can also set an explicit entity resolver which maps that
+     * particular public ID to some local copy of the DTD, if you do not
+     * want to register it globally in the system for some reason. If
+     * handed other public IDs, just return null to indicate that the
+     * system ID should be loaded.</p></li>
+     *
+     * <li><p>In some cases where XML parsing is very
+     * performance-sensitive, and you know that you do not need validation
+     * and furthermore that the DTD defines no infoset (there are no
+     * entity or character definitions, etc.), you can speed up the parse.
+     * Turn off validation, but also supply a custom entity resolver that
+     * does not even bother to load the DTD at all:</p>
+     *
+     * <pre>
+     * <font class="keyword">public</font> <font class="type">InputSource</font> <font class="function-name">resolveEntity</font>(<font class="type">String</font> <font class="variable-name">pubid</font>, <font class="type">String</font> <font class="variable-name">sysid</font>)
+     *     <font class="keyword">throws</font> <font class="type">SAXException</font>, <font class="type">IOException</font> {
+     *   <font class="keyword">if</font> (pubid.equals(<font class="string">"-//NetBeans//DTD Foo 1.0//EN"</font>)) {
+     *     <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">InputSource</font>(<font class="keyword">new</font> <font class="type">ByteArrayInputStream</font>(<font class="keyword">new</font> <font class="type">byte</font>[0]));
+     *   } <font class="keyword">else</font> {
+     *     <font class="keyword">return</font> EntityCatalog.getDefault().resolveEntity(pubid, sysid);
+     *   }
+     * }
+     * </pre></li>
+     *
+     * </ol>
+     *
+     * </div>
+     *
+     * @param input a parser input (for URL users use: <code>new InputSource(url.toString())</code>
      * @param validate if true validating parser is used
      * @param namespaceAware if true DOM is created by namespace aware parser
-     * @param errorHandler a error handler to notify about exception or <code>null</code>
-     * @param entityResolver SAX entity resolver or <code>null</code>; see class Javadoc for hints
+     * @param errorHandler a error handler to notify about exception (such as {@link #defaultErrorHandler}) or <code>null</code>
+     * @param entityResolver SAX entity resolver (such as {@link EntityCatalog#getDefault}) or <code>null</code>
      *
      * @throws IOException if an I/O problem during parsing occurs
      * @throws SAXException is thrown if a parser error occurs

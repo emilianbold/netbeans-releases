@@ -1,0 +1,32 @@
+<?php $this->placeholder('menu')->captureStart() ?>
+<ul>
+    <li class="m1"><a href="<?php echo $this->url(array('controller' => 'index', 'action' => 'index'), null, true) ?>" title=""><strong><span class="ml"></span><span class="mr"></span>Homepage</strong></a></li>
+    
+    <li class="modd"></li>
+    <li class="m2 <?php if ($this->controller == "rent-estate")
+    echo 'active'; ?>"><a href="<?php echo $this->url(array('controller' => 'sell-estate', 'action' => 'index'), null, true) ?>" title=""><strong><span class="ml"></span><span class="mr"></span>Offer</strong></a></li>
+   
+    <li class="modd"></li>
+    <li class="m3 <?php if ($this->controller == 'exclusive-investment')
+    echo 'active'; ?>"><a href="<?php echo $this->url(array('controller' => 'property', 'action' => 'add'), null, true) ?>" title=""><strong><span class="ml"></span><span class="mr"></span>Add new offer</strong></a></li>
+    
+    <li class="modd"></li>
+    <li class="m4 <?php if ($this->controller == 'my-favorites') echo 'active'; ?>">
+        <a href="<?php echo $this->url(array('controller' => 'my-favorites', 'action' => 'index'), null, true) ?>" title="">
+            <strong>
+                <span class="ml"></span>
+                <span class="mr"></span>My Favorites
+            </strong>
+        </a>
+    </li>
+    <li class="modd"></li>
+    <li class="m5 <?php
+        if ($this->controller == 'about-us' ||
+                $this->controller == 'information-for-buyers' ||
+                $this->controller == 'available-positions')
+            echo 'active';
+?>">
+        
+<a href="<?php echo $this->url(array('controller' => 'contacts', 'action' => 'index'), null, true) ?>" title=""><strong><span class="ml"></span><span class="mr"></span>Contacts</strong></a></li>
+</ul>
+<?php $this->placeholder('menu')->captureEnd() ?>

@@ -45,21 +45,17 @@
 package org.netbeans.modules.tasklist.impl;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
 import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 import org.netbeans.spi.tasklist.FileTaskScanner;
@@ -70,11 +66,12 @@ import org.openide.util.WeakSet;
 
 /**
  * @author S. Aubrecht
+ * @author Tomas Stupka
  */
 public class TaskList {
     
-    private ArrayList<Task> sortedTasks = new ArrayList<Task>(0);
-    private Set<Task> allTasks = new HashSet<Task>(0);
+    private TreeSet<Task> sortedTasks;
+    private ArrayList<Task> tasksList;
     
     private Map<PushTaskScanner, List<Task>> pushScanner2tasks = new HashMap<PushTaskScanner, List<Task>>( 10 );
     private Map<FileTaskScanner, List<Task>> fileScanner2tasks = new HashMap<FileTaskScanner, List<Task>>( 10 );
@@ -89,6 +86,7 @@ public class TaskList {
     
     /** Creates a new instance of TaskList */
     public TaskList() {
+        sortedTasks = new TreeSet<Task>(getComparator());
     }
     
     void setTasks( PushTaskScanner scanner, FileObject resource, List<? extends Task> tasks, TaskFilter filter ) throws IOException {
@@ -102,7 +100,7 @@ public class TaskList {
             if( filter.accept( t ) && !filter.isTaskCountLimitReached(currentCount) ) {
                 currentCount++;
                 
-                if( allTasks.contains( t ) )
+                if( sortedTasks.contains( t ) || (tasksToAdd != null && tasksToAdd.contains( t ) ) )
                     continue;
                 
                 if( null == tasksToAdd )
@@ -124,12 +122,10 @@ public class TaskList {
                 tasksToAdd.add( t );
                 scannerTasks.add( t );
                 groupTasks.add( t );
-                allTasks.add( t );
             }
         }
         if( null != tasksToAdd ) {
-            sortedTasks.addAll( tasksToAdd );
-            Collections.sort( sortedTasks, getComparator()  );
+            addTasks( tasksToAdd );
         }
         
         lock.writeLock().unlock();
@@ -148,8 +144,7 @@ public class TaskList {
             for( List<Task> groupTasks : group2tasks.values() ) {
                 groupTasks.removeAll( toRemove );
             }
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
         }
         lock.writeLock().unlock();
         
@@ -182,8 +177,7 @@ public class TaskList {
         }
         
         if( null != toRemove ) {
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
             tasks.removeAll( toRemove );
             for( List<Task> groupTasks : group2tasks.values() ) {
                 groupTasks.removeAll( toRemove );
@@ -199,7 +193,7 @@ public class TaskList {
 
         ArrayList<Task> tasksToAdd = new ArrayList<Task>( newTasks.size() );
         for( Task t : newTasks ) {
-            if( allTasks.contains( t ) )
+            if( sortedTasks.contains( t ) || tasksToAdd.contains( t ) )
                 continue;
             if( !filter.isTaskCountLimitReached( countTasks( scanner ) ) && filter.accept( t ) ) {
                 List<Task> scannerTasks = fileScanner2tasks.get( scanner );
@@ -216,12 +210,10 @@ public class TaskList {
                 scannerTasks.add( t );
                 groupTasks.add( t );
                 tasksToAdd.add( t );
-                allTasks.add( t );
             }
         }
         if( !tasksToAdd.isEmpty() ) {
-            sortedTasks.addAll( tasksToAdd );
-            Collections.sort( sortedTasks, getComparator()  );
+            addTasks( tasksToAdd );
         }
 
         lock.writeLock().unlock();
@@ -258,7 +250,7 @@ public class TaskList {
         Task retValue = null;
         lock.readLock().lock();
         if( index >= 0 && index < sortedTasks.size() )
-            retValue = sortedTasks.get( index );
+            retValue = getTasksList().get( index );
         lock.readLock().unlock();
         return retValue;
     }
@@ -271,8 +263,7 @@ public class TaskList {
             for( List<Task> groupTasks : group2tasks.values() ) {
                 groupTasks.removeAll( toRemove );
             }
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
         }
         lock.writeLock().unlock();
         
@@ -300,8 +291,7 @@ public class TaskList {
         
         if( null != toRemove && !toRemove.isEmpty() ) {
             lock.writeLock().lock();
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
             tasks.removeAll( toRemove );
             for( List<Task> groupTasks : group2tasks.values() ) {
                 groupTasks.removeAll( toRemove );
@@ -326,8 +316,7 @@ public class TaskList {
         }
         
         if( null != toRemove ) {
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
             tasks.removeAll( toRemove );
             for( List<Task> groupTasks : group2tasks.values() ) {
                 groupTasks.removeAll( toRemove );
@@ -352,9 +341,7 @@ public class TaskList {
         }
 
         if( null != toRemove ) {
-
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
             for( List<Task> scannerTasks : fileScanner2tasks.values() ) {
                 scannerTasks.removeAll( toRemove );
             }
@@ -373,7 +360,7 @@ public class TaskList {
     void clear() {
         lock.writeLock().lock();
         sortedTasks.clear();
-        allTasks.clear();
+        tasksList = null; 
         fileScanner2tasks.clear();
         pushScanner2tasks.clear();
         group2tasks.clear();
@@ -384,15 +371,14 @@ public class TaskList {
     void clearDeletedFiles() {
         lock.writeLock().lock();
         LinkedList<Task> toRemove = new LinkedList<Task>();
-        for( Task t : allTasks ) {
+        for( Task t : sortedTasks ) {
             FileObject fo = Accessor.getFile(t);
             if( null != fo && !fo.isValid() )
                 toRemove.add(t);
             }
 
         if( !toRemove.isEmpty() ) {
-            sortedTasks.removeAll( toRemove );
-            allTasks.removeAll( toRemove );
+            removeTasks( toRemove );
             for( List<Task> scannerTasks : fileScanner2tasks.values() ) {
                 scannerTasks.removeAll( toRemove );
             }
@@ -421,7 +407,10 @@ public class TaskList {
     }
     
     public int indexOf( Task t ) {
-        return sortedTasks.indexOf( t );
+        lock.readLock().lock();
+        int idx = getTasksList().indexOf(t);
+        lock.readLock().unlock();
+        return idx;
     }
     
     private Comparator<Task> getComparator() {
@@ -438,7 +427,9 @@ public class TaskList {
         lock.writeLock().lock();
         
         this.comparator = comparator;
-        Collections.sort( sortedTasks, getComparator()  );
+        TreeSet<Task> s = sortedTasks;
+        sortedTasks = new TreeSet<Task>(comparator);
+        addTasks(s);
         
         lock.writeLock().unlock();
     }
@@ -469,6 +460,23 @@ public class TaskList {
             }
         }
     }
+    
+    private List<Task> getTasksList() {
+        if(tasksList == null) {
+            tasksList = new ArrayList<Task>(sortedTasks);
+        }
+        return tasksList;
+    }
+    
+    private void addTasks(Collection<Task> tasksToAdd) {
+        sortedTasks.addAll( tasksToAdd );
+        tasksList = null; 
+    }
+    
+    private void removeTasks(List<Task> toRemove) {
+        sortedTasks.removeAll( toRemove );
+        tasksList = null; 
+    }    
     
     public static interface Listener {
         void tasksAdded( List<? extends Task> tasks );

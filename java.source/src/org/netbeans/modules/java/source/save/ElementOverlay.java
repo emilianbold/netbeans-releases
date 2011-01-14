@@ -373,7 +373,9 @@ public class ElementOverlay {
         result.addAll(el.getEnclosedElements());
 
         for (Element parent : getAllSuperElements(ast, elements, el)) {
-            result.addAll(getAllMembers(ast, elements, parent));
+            if (!el.equals(parent)) {
+                result.addAll(getAllMembers(ast, elements, parent));
+            }
         }
 
         return result;

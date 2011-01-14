@@ -103,7 +103,12 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     }
 
     public int run() {
-        if (!isFailedOrCancelled()) {
+        //should check if the host is connected before running the command
+        //in the parent constructor there is a check if host is actually connected
+        //but if it is not it is not reflected... at all..
+        //TODO: log somehow the reason the command was not executed at all and 
+        //the exist status returned is just default one (-1)
+        if (isConnected() && !isFailedOrCancelled()) {
             RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport<Init>: Running [{0}] on {1}", new Object[]{cmd, executionEnvironment});
             if (SwingUtilities.isEventDispatchThread()) {
                 String text = "Running remote command in EDT: " + cmd; //NOI18N

@@ -27,6 +27,7 @@ made subject to such option by the copyright holder.
 <toc version="2.0">
 	<tocitem text="PHP Development" expand="false">
 		<tocitem text="About PHP Development in the NetBeans IDE" target="org.netbeans.modules.php.help.about" />
+                <tocitem text="PHP Projects" target="org.netbeans.modules.php.help.project"/>
 		<tocitem text="Creating a PHP Project without Previously Developed Sources" target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" />
 		<tocitem text="Importing Previously Developed Source Files into a New Project" target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" />
 		<tocitem text="Defining the Default Run Configuration" target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" />

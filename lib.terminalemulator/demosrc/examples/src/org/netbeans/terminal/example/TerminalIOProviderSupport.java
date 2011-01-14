@@ -28,6 +28,7 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.PtyProcess;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -348,10 +349,12 @@ public final class TerminalIOProviderSupport {
 	    // comment out to verify fix for bug #181064
 	    io.select();
 
-	    if (IOTerm.isSupported(io)) {
-		// Term term = IOTerm.term(io);
-		// term.setDebugFlags(Term.DEBUG_INPUT);
-	    }
+            if (config.isDebug()) {
+                if (IOTerm.isSupported(io)) {
+                    Term term = IOTerm.term(io);
+                    term.setDebugFlags(Term.DEBUG_INPUT|Term.DEBUG_OUTPUT |Term.DEBUG_OPS);
+                }
+            }
 	    tprintln("GREETINGS");
 	    try {
 		if (IOColorPrint.isSupported(io)) {
@@ -572,17 +575,10 @@ public final class TerminalIOProviderSupport {
 	    //
 	    // Connect the IO
 	    //
-	    org.netbeans.modules.nativeexecution.api.pty.Pty
-	    // TMP pty = PtySupport.getPty(nativeProcess);
-	    // PtySupport.getPty() is gone.
-	    pty = null;
 	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
-		IOTerm.connect(io,
-			       pty.getOutputStream(),
-			       pty.getInputStream(),
-			       null);
+                PtySupport.connect(io, nativeProcess);
 	    } else {
-		startShuttle(pty.getOutputStream(), pty.getInputStream());
+		startShuttle(nativeProcess.getOutputStream(), nativeProcess.getInputStream());
 	    }
 
 	    if (IOResizable.isSupported(io)) {

@@ -43,19 +43,20 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -63,7 +64,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -103,7 +107,12 @@ public final class CndFileUtils {
     }
 
     public static void clearFileExistenceCache() {
-        mapRef.clear();
+        try {
+            maRefLock.lock();
+            maps.clear();
+        } finally {
+            maRefLock.unlock();
+        }
         for (CndFileExistSensitiveCache cache : getCaches()) {
             cache.invalidateAll();
         }
@@ -126,24 +135,64 @@ public final class CndFileUtils {
     }
 
     public static FileObject toFileObject(File file) {
-        return CndFileSystemProvider.toFileObject(file);
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return InvalidFileObjectSupport.getInvalidFileObject(file);
+        }
+        return fo;
     }
 
-    public static FileObject toFileObject(CharSequence path) {
-        return CndFileSystemProvider.toFileObject(path);
+    public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
+        if (isLocalFileSystem(fs)) {
+//            FileObject fo = FileUtil.toFileObject(new File(absolutePath.toString()));
+//            if (fo == null) {
+//                try {
+//                    // sync if needed
+//                    FileObject fo2 = CndFileSystemProvider.toFileObject(absolutePath);
+//                    if (fo2 != null && !isLocalFileSystem(fo2.getFileSystem()) && fo2.isData()) {
+//                        try {
+//                            fo2.asBytes();
+//                        } catch (IOException ex) {
+////                            Exceptions.printStackTrace(ex);
+//                        }
+//                    }
+//                    absolutePath = CndFileSystemProvider.getCaseInsensitivePath(absolutePath);
+//                    File file = new File(absolutePath.toString());
+//                    FileUtil.refreshFor(file);
+//                    fo = FileUtil.toFileObject(file);
+//                    if (fo == null) {
+//                        fo = fo2;
+//                    }
+//                } catch (FileStateInvalidException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//            return fo;
+            return toFileObject(absolutePath);
+        } else {
+            return fs.findResource(absolutePath.toString());
+        }
+    }
+    
+    public static FileObject toFileObject(CharSequence absoluteLocalPath) {
+        return CndFileSystemProvider.toFileObject(absoluteLocalPath);
     }
 
     public static String getCanonicalPath(CharSequence path) throws IOException {
-        return new File(path.toString()).getCanonicalPath(); // XXX:FileObject conversion - delegate to provider!
+        return new File(path.toString()).getCanonicalPath(); // XXX:fullRemote conversion - delegate to provider!
     }
 
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
         File file = FileUtil.toFile(fo);
         if (file != null) {
-            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:FileObject conversion - delegate to provider!
+            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:fullRemote - delegate to provider!
         } else {
             return fo;
         }
+    }
+    
+    public static String getCanonicalPath(FileObject fo) throws IOException {
+        return getCanonicalFileObject(fo).getPath(); // XXX:fullRemote - delegate to provider!
     }
 
     public static boolean isValidLocalFile(String absolutePath) {
@@ -219,20 +268,11 @@ public final class CndFileUtils {
     }
 
     public static boolean exists(File file) {
-        return getFlags(file, null, true).exist;
-    }
-
-    /**
-     * Tests whether the file exists and not directory.
-     * @param file
-     * @return
-     */
-    public static boolean isExistingFile(File file) {
-        return isExistingFile(file, null);
+        return getFlags(getLocalFileSystem(), file.getAbsolutePath(), true).exist;
     }
 
     public static boolean isExistingFile(String filePath) {
-        return isExistingFile(null, filePath);
+        return isExistingFile(getLocalFileSystem(), filePath);
     }
 
     /**
@@ -242,84 +282,45 @@ public final class CndFileUtils {
      * @param filePath
      * @return
      */
-    public static boolean isExistingFile(File file, String filePath) {
-        Flags flags = getFlags(file, filePath, true);
+    public static boolean isExistingFile(FileSystem fs, String filePath) {
+        Flags flags = getFlags(fs, filePath, true);
         return flags.exist && !flags.directory;
     }
-    /**
-     * Tests whether the file is an existing directory.
-     * @param file
-     * @return
-     */
-    public static boolean isExistingDirectory(File file) {
-        return isExistingDirectory(file, null);
-    }
 
-    public static boolean isExistingDirectory(String filePath) {
-        return isExistingDirectory(null, filePath);
-    }
-
-    public static boolean isExistingDirectory(File file, String filePath) {
-        Flags flags = getFlags(file, filePath, false);
+    public static boolean isExistingDirectory(FileSystem fs, String filePath) {
+        Flags flags = getFlags(fs, filePath, false);
         return flags.exist && flags.directory;
     }
 
-   /**
-    * Gets file input stream. File can be either a "classic" file,
-    * or other kind of file, say, remote one.
-    *
-    * NB: can be ver slow; e.g. can cause connection to the host in the case of the remote file
-    *
-    * NB: does nothing to buffer the file - it's up to caller
-    *
-    * @param filePath is either just a path to local file
-    * or a URL of remote or other kind of file
-    *
-    * @return input stream
-    *
-    * @throws java.io.IOException
-    */
-   public static InputStream getInputStream(CharSequence filePath) throws IOException {
-       FileObject fo = CndFileSystemProvider.toFileObject(filePath);
-       if (fo == null) {
-           File file = new File(filePath.toString());
-           fo = FileUtil.toFileObject(file);
-           InputStream is;
-           if (fo != null) {
-               is = fo.getInputStream();
-           } else {
-               is = new FileInputStream(file);
-           }
-           return is;
-       } else {
-           return fo.getInputStream();
-       }
-   }
+    public static FileObject urlToFileObject(CharSequence url) {
+        return CndFileSystemProvider.urlToFileObject(url);
+    }
+
+    public static CharSequence fileObjectToUrl(FileObject fileObject) {
+        return CndFileSystemProvider.fileObjectToUrl(fileObject);
+    }
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
 
-    private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
-        assert file != null || absolutePath != null;
-        absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
-        if (isWindows) {
+    private static Flags getFlags(FileSystem fs, String absolutePath, boolean indexParentFolder) {
+        assert fs != null;
+        assert absolutePath != null;
+        if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
         }
-        absolutePath = changeStringCaseIfNeeded(absolutePath);
+        absolutePath = changeStringCaseIfNeeded(fs, absolutePath);
         Flags exists;
-        ConcurrentMap<String, Flags> files = getFilesMap();
+        ConcurrentMap<String, Flags> files = getFilesMap(fs);
         exists = files.get(absolutePath);
         if (exists == null) {
-            file = (file == null) ? new File(absolutePath) : file;
-            String parent = file.getParent();
+            String parent = CndPathUtilitities.getDirName(absolutePath);
             if (parent != null) {
-                parent = changeStringCaseIfNeeded(parent);
                 Flags parentDirFlags = files.get(parent);
                 if (parentDirFlags == null || parentDirFlags == Flags.DIRECTORY) {
-                    File parentFile = file.getParentFile();
                     if (parentDirFlags == null) {
                         // not yet checked
-                        parentDirFlags = Flags.get(parentFile);
+                        parentDirFlags = Flags.get(fs, parent);
                         files.put(parent, parentDirFlags);
                     }
                     if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.FILE) {
@@ -329,7 +330,7 @@ public final class CndFileUtils {
                     } else if (indexParentFolder) {
                         assert (parentDirFlags == Flags.DIRECTORY) : "must be DIRECTORY but was " + parentDirFlags; // NOI18N
                         // let's index not indexed directory
-                        index(parentFile, parent, files);
+                        index(fs, parent, files);
                         exists = files.get(absolutePath);
                     }
                 } else {
@@ -339,12 +340,12 @@ public final class CndFileUtils {
                 }
             }
             if (exists == null) {
-                exists = Flags.get(file);
+                exists = Flags.get(fs, absolutePath);
                 files.put(absolutePath, exists);
             }
             if (exists == Flags.DIRECTORY) {
                 // let's index not indexed directory
-                index(file, absolutePath, files);
+                index(fs, absolutePath, files);
             }
         } else {
             //hits ++;
@@ -352,58 +353,78 @@ public final class CndFileUtils {
         return exists;
     }
 
-    private static void index(File file, String path, ConcurrentMap<String, Flags> files) {
-        if (file.canRead()) {
-            CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
-            for (int i = 0; i < listFiles.length; i++) {
-                CndFileSystemProvider.FileInfo curFile = listFiles[i];
-                String absPath = changeStringCaseIfNeeded(curFile.absolutePath);
-                if (curFile.directory) {
-                    files.putIfAbsent(absPath, Flags.DIRECTORY);
-                } else {
-                    files.put(absPath, Flags.FILE);
+    public static boolean isLocalFileSystem(FileSystem fs) {
+        return fs == getLocalFileSystem();
+    }
+    
+    private static void index(FileSystem fs, String path, ConcurrentMap<String, Flags> files) {
+        if (isLocalFileSystem(fs)) {
+            File file = new File(path);
+            if (CndFileSystemProvider.canRead(path)) {
+                CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
+                for (int i = 0; i < listFiles.length; i++) {
+                    CndFileSystemProvider.FileInfo curFile = listFiles[i];
+                    String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
+                    if (isWindows) { //  isLocalFS(fs) checked above
+                        absPath = absPath.replace('/', '\\');
+                    }
+                    if (curFile.directory) {
+                        files.putIfAbsent(absPath, Flags.DIRECTORY);
+                    } else {
+                        files.put(absPath, Flags.FILE);
+                    }
+                }
+            }        
+        } else {
+            FileObject file = fs.findResource(path);
+            if (file != null && file.isFolder() && file.canRead()) {
+                for (FileObject child : file.getChildren()) {
+                    String absPath = child.getPath();
+                    if (child.isFolder()) {
+                        files.putIfAbsent(absPath, Flags.DIRECTORY);
+                    } else {
+                        files.put(absPath, Flags.FILE);
+                    }
                 }
             }
         }
         // path is already converted into correct case
-        assert changeStringCaseIfNeeded(path).equals(path);
+        assert changeStringCaseIfNeeded(fs, path).equals(path);
         files.put(path, Flags.INDEXED_DIRECTORY);
     }
 
-    private static String changeStringCaseIfNeeded(String path) {
-        return CndFileSystemProvider.lowerPathCaseIfNeeded(path).toString();
+    private static String changeStringCaseIfNeeded(FileSystem fs, String path) {
+        if (isLocalFileSystem(fs)) {
+            if (CndFileUtils.isSystemCaseSensitive()) {
+                return path;
+            } else {
+                return path.toString().toLowerCase();
+            }
+        } else {
+            return path; // remote is always case sensitive
+        }
     }
-    
+
 //    public static String getHitRate() {
 //	return "" + hits + "/" + calls; // NOI18N
 //    }
 //    private static int calls = 0;
 //    private static int hits = 0;
 
-    private static ConcurrentMap<String, Flags> getFilesMap() {
-        ConcurrentMap<String, Flags> map = mapRef.get();
-        if (map == null) {
-            try {
-                maRefLock.lock();
-                map = mapRef.get();
-                if (map == null) {
-                    map = new ConcurrentHashMap<String, Flags>();
-                    mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
-                }
-            } finally {
-                maRefLock.unlock();
+    private static ConcurrentMap<String, Flags> getFilesMap(FileSystem fs) {
+        ConcurrentMap<String, Flags> map;        
+        try {
+            maRefLock.lock();
+            Reference<ConcurrentMap<String, Flags>> mapRef = maps.get(fs);
+            if (mapRef == null || (map = mapRef.get()) == null) {
+                map = new ConcurrentHashMap<String, Flags>();
+                mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
+                maps.put(fs, mapRef);
             }
+        } finally {
+            maRefLock.unlock();
         }
         return map;
-    }
-
-    private static boolean existsImpl(File file) {
-       Boolean exists = CndFileSystemProvider.exists(file.getAbsolutePath());
-       if (exists == null) {
-            return file.exists();
-       } else {
-            return exists.booleanValue();
-       }
     }
 
     private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
@@ -417,10 +438,40 @@ public final class CndFileUtils {
        }
        return info;
     }
+    
+    public static synchronized FileSystem getLocalFileSystem() {
+        if (fileFileSystem == null) {
+            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
+            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
+            if (tmpDirFo != null) {
+                try {
+                    fileFileSystem = tmpDirFo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    // it's no use to log it here
+                }
+            }
+            if (fileFileSystem == null) {
+                fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            }
+        }
+        return fileFileSystem;
+    }
+    
+    public static char getFileSeparatorChar(FileSystem fs) {
+        if (isLocalFileSystem(fs)) {
+            return File.separatorChar;
+        } else {
+            return '/'; //NOI18N
+        }
+    }
 
     private static final Lock maRefLock = new ReentrantLock();
+    private static FileSystem fileFileSystem;
     
-    private static Reference<ConcurrentMap<String, Flags>> mapRef = new SoftReference<ConcurrentMap<String, Flags>>(new ConcurrentHashMap<String, Flags>());
+    private static final Map<FileSystem, Reference<ConcurrentMap<String, Flags>>> maps = 
+            new WeakHashMap<FileSystem, Reference<ConcurrentMap<String, Flags>>>();
+
     private final static class Flags {
 
         private final boolean exist;
@@ -434,10 +485,21 @@ public final class CndFileUtils {
         private static final Flags INDEXED_DIRECTORY = new Flags(true,true);
         private static final Flags NOT_FOUND = new Flags(false,true);
         private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
-
-        private static Flags get(File file) {
-            if (existsImpl(file)) {
-                if (file.isDirectory()) {
+        
+        private static Flags get(FileSystem fs, String absPath) {
+            FileObject fo;
+            if (isLocalFileSystem(fs)) {
+                absPath = FileUtil.normalizePath(absPath);
+                fo = CndFileSystemProvider.toFileObject(absPath);                
+            } else {
+                fo = fs.findResource(absPath);
+            }
+            return get(fo);
+        }
+        
+        private static Flags get(FileObject fo) {
+            if (fo != null && fo.isValid()) {
+                if (fo.isFolder()) {
                     return DIRECTORY;
                 } else {
                     return FILE;
@@ -528,7 +590,7 @@ public final class CndFileUtils {
             if (TRACE_EXTERNAL_CHANGES) {
                 System.err.println("clean cache for " + file);
             }
-            getFilesMap().remove(file);
+            getFilesMap(getLocalFileSystem()).remove(file);
             for (CndFileExistSensitiveCache cache : getCaches()) {
                 cache.invalidateFile(file);
             }

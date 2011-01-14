@@ -66,15 +66,16 @@ class GoToSourceAction extends AbstractAction {
     private boolean isEnabled = false;
     private boolean gotTheInfo = false;
     private final GoToSourceActionReadnessListener listener;
+    private SourceFileInfo sourceInfo;
 
-     GoToSourceAction(final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall, GoToSourceActionReadnessListener listener) {
+    GoToSourceAction(final SourceFileInfoDataProvider dataProvider, FunctionCall funcCall, GoToSourceActionReadnessListener listener) {
         super(NbBundle.getMessage(GoToSourceAction.class, "GoToSourceActionName"));//NOI18N
         this.functionCall = funcCall;
         this.listener = listener;
         sourceFileInfoTask = DLightExecutorService.submit(new Callable<SourceFileInfo>() {
 
             public SourceFileInfo call() {
-                if (dataProvider == null){
+                if (dataProvider == null) {
                     return null;
                 }
                 return dataProvider.getSourceFileInfo(functionCall);
@@ -83,13 +84,21 @@ class GoToSourceAction extends AbstractAction {
         waitForSourceFileInfo();
     }
 
+    synchronized SourceFileInfo getSource() {
+        return sourceInfo;
+    }
+
     private void waitForSourceFileInfo() {
         DLightExecutorService.submit(new Runnable() {
 
             public void run() {
                 try {
+
                     SourceFileInfo sourceFileInfo = sourceFileInfoTask.get();
                     isEnabled = sourceFileInfo != null && sourceFileInfo.isSourceKnown();
+                    synchronized (GoToSourceAction.this) {
+                        sourceInfo = sourceFileInfo;
+                    }
                 } catch (InterruptedException ex) {
                     isEnabled = false;
                 } catch (ExecutionException ex) {
@@ -105,7 +114,7 @@ class GoToSourceAction extends AbstractAction {
 
             }
         }, "Wait For the SourceFileInfo in Call Stack UI");//NOI18N
-        }
+    }
 
     @Override
     public boolean isEnabled() {
@@ -117,7 +126,7 @@ class GoToSourceAction extends AbstractAction {
 
             public void run() {
                 SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
-                if (sourceSupportProvider == null){
+                if (sourceSupportProvider == null) {
                     return;
                 }
                 SourceFileInfo sourceFileInfo = null;
@@ -130,13 +139,16 @@ class GoToSourceAction extends AbstractAction {
                 }
                 if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
                     return;
-                }                
+                }
                 sourceSupportProvider.showSource(sourceFileInfo);
             }
         }, "GoToSource from Call Stack UI"); // NOI18N
-        }
+    }
 
-    interface GoToSourceActionReadnessListener{
+
+
+    interface GoToSourceActionReadnessListener {
+
         void ready();
     }
 }

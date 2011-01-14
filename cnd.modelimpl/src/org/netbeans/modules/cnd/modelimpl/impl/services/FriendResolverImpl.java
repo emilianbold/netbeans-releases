@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
@@ -89,6 +88,7 @@ public final class FriendResolverImpl extends CsmFriendResolver {
      * @return true if 'friendDecl' is the declarated friend declaration of 'target'
      * @throws IllegalArgumentException if friendDecl is null
      */
+    @Override
     public boolean isFriend(CsmOffsetableDeclaration friendDecl, CsmClass target) {
         if (friendDecl == null) {
             throw new IllegalArgumentException("friendDecl must not be null"); // NOI18N
@@ -103,13 +103,7 @@ public final class FriendResolverImpl extends CsmFriendResolver {
         for (CsmFriend friend : target.getFriends()){
             if (CsmKindUtilities.isFriendClass(friend)){
                 CsmFriendClass cls = (CsmFriendClass) friend;
-                CsmClass reference;
-                if (cls instanceof FriendClassImpl) {
-                    Resolver resolver = ResolverFactory.createResolver(friendDecl);
-                    reference = ((FriendClassImpl)cls).getReferencedClass(resolver);
-                } else {
-                    reference = cls.getReferencedClass();
-                }
+                CsmClass reference = cls.getReferencedClass();
                 if (friendDecl.equals(reference)){
                     return true;
                 }
@@ -149,6 +143,7 @@ public final class FriendResolverImpl extends CsmFriendResolver {
      * @return friend class declaration "friendClass" for class declaration "friendClass" or
      *         friend method declaration "friendMethod" for method definition "friendMethod"
      */
+    @Override
     public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl) {
         CsmProject prj = decl.getContainingFile().getProject();
         if (prj instanceof ProjectBase) {

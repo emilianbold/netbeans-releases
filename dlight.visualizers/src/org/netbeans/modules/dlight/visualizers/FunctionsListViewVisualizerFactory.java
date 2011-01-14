@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
@@ -54,20 +53,22 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
+public final class FunctionsListViewVisualizerFactory implements VisualizerFactory<FunctionsListViewVisualizerConfiguration> {
 
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
-public final class FunctionsListViewVisualizerFactory implements VisualizerFactory<FunctionsListViewVisualizerConfiguration>{
-
+    @Override
     public String getID() {
         return FunctionsListViewVisualizerConfigurationAccessor.getDefault().getID();
     }
 
+    @Override
     public Visualizer<FunctionsListViewVisualizerConfiguration> create(FunctionsListViewVisualizerConfiguration configuration, VisualizerDataProvider provider) {
-        if (!(provider instanceof FunctionsListDataProvider)){
+        if (!(provider instanceof FunctionsListDataProvider)) {
             return null;
         }
-        return new FunctionsListViewVisualizer((FunctionsListDataProvider)provider, configuration);
+        
+        FunctionsListViewVisualizer result = new FunctionsListViewVisualizer((FunctionsListDataProvider) provider, configuration);
+        result.init();
+        return result;
     }
-
-
 }

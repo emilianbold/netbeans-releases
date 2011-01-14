@@ -52,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -81,7 +82,9 @@ public class Utilities {
             for (FileObject root : roots) {
                 Project curr = FileOwnerQuery.getOwner(root);
 
-                if (curr != null && curr.getProjectDirectory() == p.getProjectDirectory()) {
+                if (   curr != null
+                    && curr.getProjectDirectory() == p.getProjectDirectory()
+                    && PathRegistry.getDefault().getSources().contains(root.getURL())) {
                     result.add(root);
                 }
             }

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.html.validation;
 
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import nu.validator.htmlparser.common.CharacterHandler;
@@ -56,8 +55,11 @@ public class LinesMapper implements CharacterHandler {
     private final List<Line> lines = new ArrayList<Line>();
     private Line currentLine = null;
     private boolean prevWasCr = false;
-    private final int expectedLength = 2048;
     StringBuilder content = new StringBuilder();
+
+    public CharSequence getSourceText() {
+        return content;
+    }
 
     @Override
     public void characters(char[] ch, int start, int length)

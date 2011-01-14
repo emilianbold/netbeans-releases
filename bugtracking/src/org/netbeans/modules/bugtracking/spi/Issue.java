@@ -154,15 +154,26 @@ public abstract class Issue {
     public abstract boolean isNew();
 
     /**
-     * Refreshes this Issues data from its bugtracking repositry
+     * Refreshes this Issues data from its bugtracking repository
      *
      * @return true if the issue was refreshed, otherwise false
      */
     public abstract boolean refresh();
 
+    /**
+     * Add a comment to this issue and close it as fixed eventually.
+     * 
+     * @param comment
+     * @param closeAsFixed 
+     */
     // XXX throw exception
     public abstract void addComment(String comment, boolean closeAsFixed);
 
+    /**
+     * Attach a file to this issue
+     * @param file
+     * @param description 
+     */
     // XXX throw exception; attach Patch or attachFile?
     public abstract void attachPatch(File file, String description);
 

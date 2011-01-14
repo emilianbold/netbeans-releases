@@ -766,6 +766,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         }
                         break;
                     case STATIC_CAST:
+                    case DYNAMIC_CAST:
+                    case CONST_CAST:
+                    case REINTERPRET_CAST:
                         pushExp(createTokenExp(CONVERSION_OPEN));
                         break;
                     case TRUE:
@@ -897,6 +900,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                     break;
                                 case TERNARY_OPERATOR:
                                     popExp();
+                                    top = peekExp();
+                                    while (getValidExpID(top) == VARIABLE
+                                            || getValidExpID(top) == OPERATOR
+                                            || getValidExpID(top) == CONSTANT) {
+                                        popExp();
+                                        top = peekExp();
+                                    }                                    
                                     pushExp(createTokenExp(VARIABLE));
                                     break;
 
@@ -1230,29 +1240,31 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         }
 
                         boolean conversion = false;
-                        CsmCompletionExpression top2 = peekExp2();
-                        switch (getValidExpID(top2)) {
-                            case CLASSIFIER:
-                                CsmCompletionExpression top3 = peekExp(3);
-                                if (getValidExpID(top3) == CONVERSION_OPEN && CsmCompletionExpression.isValidType(top)) {
-                                    popExp();
-                                    popExp();
-                                    top3.addParameter(top);
-                                    top3.addParameter(top2);
-                                    addTokenTo(top3);
+                        if (!errorState && !genericType) {
+                            CsmCompletionExpression top2 = peekExp2();
+                            switch (getValidExpID(top2)) {
+                                case CLASSIFIER:
+                                    CsmCompletionExpression top3 = peekExp(3);
+                                    if (getValidExpID(top3) == CONVERSION_OPEN && CsmCompletionExpression.isValidType(top)) {
+                                        popExp();
+                                        popExp();
+                                        top3.addParameter(top);
+                                        top3.addParameter(top2);
+                                        addTokenTo(top3);
 
-                                    conversion = true;
-                                }
-                                break;
-                            case CONVERSION_OPEN:
-                                if (CsmCompletionExpression.isValidType(top)) {
-                                    popExp();
-                                    top2.addParameter(top);
-                                    addTokenTo(top2);
+                                        conversion = true;
+                                    }
+                                    break;
+                                case CONVERSION_OPEN:
+                                    if (CsmCompletionExpression.isValidType(top)) {
+                                        popExp();
+                                        top2.addParameter(top);
+                                        addTokenTo(top2);
 
-                                    conversion = true;
-                                }
-                                break;
+                                        conversion = true;
+                                    }
+                                    break;
+                            }
                         }
 
                         if (!errorState && !genericType && !conversion) { // not generics - handled compatibly

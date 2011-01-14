@@ -79,6 +79,7 @@ import org.openide.windows.TopComponentGroup;
 @ActionReference(position = 3000, path = "Menu/Window")
 public class ResetWindowsAction implements ActionListener {
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         final WindowSystem ws = Lookup.getDefault().lookup( WindowSystem.class );
         if( null == ws ) {
@@ -90,10 +91,8 @@ public class ResetWindowsAction implements ActionListener {
         
         final WindowManagerImpl wm = WindowManagerImpl.getInstance();
         
-        if( wm.getMainWindow() instanceof MainWindow ) {
-            //cancel full-screen mode
-            ((MainWindow) wm.getMainWindow()).setFullScreenMode( false );
-        }
+        //cancel full-screen mode
+        MainWindow.getInstance().setFullScreenMode(false);
         
         wm.getMainWindow().setExtendedState( JFrame.NORMAL );
 
@@ -116,6 +115,7 @@ public class ResetWindowsAction implements ActionListener {
         wm.deselectEditorTopComponents();
         
         SwingUtilities.invokeLater( new Runnable() {
+            @Override
             public void run() {
                 //find the local folder that must be deleted
                 FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
@@ -150,6 +150,7 @@ public class ResetWindowsAction implements ActionListener {
                     editorMode.addOpenedTopComponentNoNotify(editors[i]);
                 }
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         Frame mainWindow = wm.getMainWindow();
                         mainWindow.invalidate();
@@ -159,6 +160,7 @@ public class ResetWindowsAction implements ActionListener {
                 //activate some editor window
                 if( null != activeEditor ) {
                     SwingUtilities.invokeLater( new Runnable() {
+                        @Override
                         public void run() {
                             activeEditor.requestActive();
                         }

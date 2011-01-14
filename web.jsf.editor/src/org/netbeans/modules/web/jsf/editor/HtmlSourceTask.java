@@ -59,8 +59,9 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
  * 
@@ -109,7 +110,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
             return;
         }
 
-        JsfSupport sup = JsfSupport.findFor(source); //activate the jsf support
+        JsfSupportImpl sup = JsfSupportImpl.findFor(source); //activate the jsf support
         if (sup == null) {
             return;
         }
@@ -141,9 +142,11 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
             //input attributes and then html lexer takes this information into account
             //when lexing the html code
             Map<String, Collection<String>> cssClassTagAttrMap = new HashMap<String, Collection<String>>();
-            FaceletsLibraryDescriptor descr = sup.getFaceletsLibraryDescriptor(HTML_FACELETS_LIB_NS);
-            if (descr != null) {
-                for (Tag tag : descr.getTags().values()) {
+            Library lib = sup.getLibrary(HTML_FACELETS_LIB_NS);
+            if (lib != null) {
+                Collection<? extends LibraryComponent> components = lib.getComponents();
+                for (LibraryComponent comp : components) {
+                    Tag tag = comp.getTag();
                     //hacking datatable's attributes embedding - waiting for Tomasz' tag metadata API
                     if ("dataTable".equals(tag.getName())) { //NOI18N
                         cssClassTagAttrMap.put(prefix + ":" + tag.getName(),

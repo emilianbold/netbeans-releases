@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
@@ -84,18 +86,17 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
     
     @Override
     public CsmNamespace getReferencedNamespace() {
-        return getReferencedNamespace(null);
-    }
-    
-    public CsmNamespace getReferencedNamespace(Resolver resolver) {
         // TODO: process preceding aliases
         CsmNamespace referencedNamespace = _getReferencedNamespace();
         if (referencedNamespace == null) {
             _setReferencedNamespace(null);
-            CsmObject result = ResolverFactory.createResolver(
-                    getContainingFile(),
-                    getStartOffset(), resolver).
-                    resolve(name, Resolver.NAMESPACE);
+            CsmObject result = null;
+            Resolver aResolver = ResolverFactory.createResolver(this);
+            try {
+                result = aResolver.resolve(Utils.splitQualifiedName(name.toString()), Resolver.NAMESPACE);
+            } finally {
+                ResolverFactory.releaseResolver(aResolver);
+            }
             if (result != null && result instanceof CsmNamespaceDefinition) {
                 result = ((CsmNamespaceDefinition)result).getNamespace();
             }

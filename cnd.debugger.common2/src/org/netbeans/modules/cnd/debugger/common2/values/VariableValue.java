@@ -55,6 +55,7 @@ public class VariableValue {
 	this.bold = bold;
     }
 
+    @Override
     public String toString() {
 	if (!bold)
 	    return text;

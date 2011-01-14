@@ -44,8 +44,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.PrintStream;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 
 /**
@@ -61,5 +70,9 @@ public class ModelImplTest extends ModelImplBaseTestCase {
         CsmModel csmModel = CsmModelAccessor.getModel();
         assertNotNull("Null model", csmModel);
         assertTrue("Unknown model provider " + csmModel.getClass().getName(), csmModel instanceof ModelImpl);
+    }
+    
+    public static void dumpProjectContainers(ProjectBase project) {
+        project.traceProjectContainers(System.err);
     }
 }

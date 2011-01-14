@@ -41,61 +41,75 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
  * @author marekfukala
  */
-public class FaceletsLibraryDescriptor extends LibraryDescriptor {
+public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
 
     static FaceletsLibraryDescriptor create(FileObject definitionFile) throws LibraryDescriptorException {
         return new FaceletsLibraryDescriptor(definitionFile);
     }
-
-    static FaceletsLibraryDescriptor create(InputStream content) throws LibraryDescriptorException {
-        return new FaceletsLibraryDescriptor(content);
-    }
+    private FileObject definitionFile;
+    private String uri;
+    private Map<String, Tag> tags = new HashMap<String, Tag>();
 
     private FaceletsLibraryDescriptor(FileObject definitionFile) throws LibraryDescriptorException {
-        super(definitionFile);
+        this.definitionFile = definitionFile;
         parseLibrary();
     }
 
-    private FaceletsLibraryDescriptor(InputStream content) throws LibraryDescriptorException {
-        super(content);
-        parseLibrary(content);
-    }
-
-    //since the web-facelettaglibrary_2_0.xsd schema doesn't define any library default prefixes as the TLDs do,
-    //we need to define them manually
-    @Override
-    public String getDefaultPrefix() {
-        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getURI());
+    public FileObject getDefinitionFile() {
+        return definitionFile;
     }
 
     @Override
-    public String getDisplayName() {
-        return DefaultFaceletLibraries.getLibraryDisplayName(getURI());
+    public String getNamespace() {
+        return uri;
+    }
+
+    @Override
+    public Map<String, Tag> getTags() {
+        return tags;
     }
 
     public static String parseNamespace(InputStream content) {
         return parseNamespace(content, "facelet-taglib", "namespace"); //NOI18N
+    }
+
+    protected void parseLibrary() throws LibraryDescriptorException {
+        try {
+            parseLibrary(getDefinitionFile().getInputStream());
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
@@ -129,7 +143,7 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
 
-                        attrs.put(aName, new Attribute(aName, aDescription, aRequired));
+                        attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aRequired));
                     }
 
                     tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));
@@ -146,5 +160,159 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
         }
 
 
+    }
+    private static final String STOP_PARSING_MGS = "regularly_stopped"; //NOI18N
+
+    protected static String parseNamespace(InputStream content, final String tagTagName, final String namespaceTagName) {
+        final String[] ns = new String[1];
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setValidating(false);
+            SAXParser parser = factory.newSAXParser();
+
+            class Handler extends DefaultHandler {
+
+                private boolean inTaglib = false;
+                private boolean inURI = false;
+
+                @Override
+                public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                    String tagName = qname.toLowerCase();
+                    if (tagTagName.equals(tagName)) { //NOI18N
+                        inTaglib = true;
+                    }
+                    if (inTaglib) {
+                        if (namespaceTagName.equals(tagName)) { //NOI18N
+                            inURI = true;
+                        }
+
+                    }
+                }
+
+                @Override
+                public void characters(char[] ch, int start, int length) throws SAXException {
+                    if (inURI) {
+                        ns[0] = new String(ch, start, length).trim();
+                        //stop parsing
+                        throw new SAXException(STOP_PARSING_MGS);
+                    }
+                }
+
+                @Override
+                public InputSource resolveEntity(String publicId, String systemId) {
+                    return new InputSource(new StringReader("")); //prevent the parser to use catalog entity resolver // NOI18N
+                }
+            }
+
+
+            parser.parse(content, new Handler());
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            if (!STOP_PARSING_MGS.equals(ex.getMessage())) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return ns[0];
+    }
+
+    @Override
+    public String toString() {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
+            sb.append("; uri = ").append(getNamespace()).append("; tags={"); //NOI18N
+            for (Tag t : getTags().values()) {
+                sb.append(t.toString());
+            }
+            sb.append("}]"); //NOI18N
+            return sb.toString();
+        } catch (FileStateInvalidException ex) {
+            return null;
+        }
+    }
+
+    protected static String getTextContent(Node parent, String childName) {
+        Node found = getNodeByName(parent, childName);
+        return found == null ? null : found.getTextContent().trim();
+    }
+
+    protected static Node getNodeByName(Node parent, String childName) {
+        Collection<Node> found = getNodesByName(parent, childName);
+        if (!found.isEmpty()) {
+            return found.iterator().next();
+        } else {
+            return null;
+        }
+    }
+
+    protected static Collection<Node> getNodesByName(Node parent, String childName) {
+        Collection<Node> nodes = new ArrayList<Node>();
+        NodeList nl = parent.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE && n.getNodeName().equals(childName)) {
+                nodes.add(n);
+            }
+        }
+        return nodes;
+    }
+
+    private final class TagImpl implements Tag {
+
+        private static final String ID_ATTR_NAME = "id"; //NOI18N
+        private String name;
+        private String description;
+        private Map<String, Attribute> attrs;
+
+        public TagImpl(String name, String description, Map<String, Attribute> attrs) {
+            this.name = name;
+            this.description = description;
+            this.attrs = attrs;
+            //add the default ID attribute
+            if (getAttribute(ID_ATTR_NAME) == null) {
+                attrs.put(ID_ATTR_NAME, new Attribute.DefaultAttribute(ID_ATTR_NAME, "", false));
+            }
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public boolean hasNonGenenericAttributes() {
+            return getAttributes().size() > 1; //the ID attribute is the default generic one
+        }
+
+        @Override
+        public Collection<Attribute> getAttributes() {
+            return attrs.values();
+        }
+
+        @Override
+        public Attribute getAttribute(String name) {
+            return attrs.get(name);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Tag[name=").append(getName()).append(", attributes={"); //NOI18N
+            for (Attribute attr : getAttributes()) {
+                sb.append(attr.toString()).append(",");
+            }
+            sb.append("}]");
+            return sb.toString();
+        }
     }
 }

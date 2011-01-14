@@ -265,6 +265,11 @@ public abstract class Variable {
 	}
     }
 
+    @Override
+    public String toString() {
+        return getVariableName() + '=' + getAsText();
+    }
+
     public abstract String getDebugInfo();
     public abstract NativeDebugger getDebugger();
     public abstract void removeAllDescendantFromOpenList(boolean isLocal);

@@ -36,6 +36,7 @@ import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.save.DiffContext;
 
 /** Temporary Should be removed soon
  *
@@ -47,7 +48,7 @@ public class ElementHeaderFormater {
     }
     
     public static String getMethodHeader(MethodTree tree, Name enclosingClassName, CompilationInfo info, String s) {
-        VeryPretty veryPretty = new VeryPretty(info);
+        VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
         if (enclosingClassName != null) {
             veryPretty.enclClassName = (com.sun.tools.javac.util.Name) enclosingClassName;
         }
@@ -55,12 +56,12 @@ public class ElementHeaderFormater {
     }
 
     public static String getClassHeader(ClassTree tree, CompilationInfo info, String s) {
-        VeryPretty veryPretty = new VeryPretty(info);
+        VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
         return veryPretty.getClassHeader(tree, s);
     }
     
     public static String getVariableHeader(VariableTree tree, CompilationInfo info, String s) {
-        VeryPretty veryPretty = new VeryPretty(info);
+        VeryPretty veryPretty = new VeryPretty(new DiffContext(info));
         return veryPretty.getVariableHeader(tree, s);
     }
     

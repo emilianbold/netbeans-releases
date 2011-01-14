@@ -79,9 +79,8 @@ import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.util.LMListener;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
 
@@ -102,7 +101,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         final Set<CompileTuple> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<CompileTuple>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
-        final LMListener mem = new LMListener();
+        final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
         final LinkedList<CompilationUnitTree> trees = new LinkedList<CompilationUnitTree>();
         LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();

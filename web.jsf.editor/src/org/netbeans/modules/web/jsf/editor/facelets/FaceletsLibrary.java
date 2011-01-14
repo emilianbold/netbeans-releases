@@ -41,12 +41,12 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Attribute;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 
-public abstract class FaceletsLibrary {
+public abstract class FaceletsLibrary implements Library {
 
     protected FaceletsLibrarySupport support;
     private String namespace;
@@ -56,37 +56,20 @@ public abstract class FaceletsLibrary {
         this.support = support;
     }
 
-    public abstract Collection<NamedComponent> getComponents();
+    @Override
+    public abstract Collection<? extends NamedComponent> getComponents();
+
+    public abstract URL getLibraryDescriptorSource();
 
     public abstract LibraryDescriptor getLibraryDescriptor();
 
-     public Tag getTag(String name) {
-        FaceletsLibraryDescriptor fld = support.getJsfSupport().getFaceletsLibraryDescriptor(getNamespace());
-        Tag faceletsTag = getTag(fld, name);
-        TldLibrary tld = support.getJsfSupport().getTldLibrary(getNamespace());
-        Tag tldTag = getTag(tld, name);
-        Tag coreTag = getTag(getLibraryDescriptor(), name);
-
-        if(faceletsTag == null) {
-            return tldTag != null ? new ProxyTag(tldTag, coreTag) : coreTag;
-        } else {
-            return new ProxyTag(new ProxyTag(faceletsTag, tldTag), coreTag);
-        }
-    }
-
-    private Tag getTag(LibraryDescriptor ld, String tagName) {
-        if(ld == null) {
-            return null;
-        } else {
-            return ld.getTags().get(tagName);
-        }
-    }
-
+    @Override
     public String getNamespace() {
         return namespace;
     }
 
     //linear search, do we call this often?
+    @Override
     public NamedComponent getComponent(String componentName) {
         for(NamedComponent comp : getComponents()) {
             if(comp.getName().equals(componentName)) {
@@ -96,29 +79,24 @@ public abstract class FaceletsLibrary {
         return null;
     }
 
+    //since the web-facelettaglibrary_2_0.xsd schema doesn't define any library default prefixes as the TLDs do,
+    //we need to define them manually
+    @Override
     public String getDefaultPrefix() {
-        //returns either facelets or tld library
-        String prefixFromTheLibrary = getLibraryDescriptor() != null ? getLibraryDescriptor().getDefaultPrefix() : null;
-        if(prefixFromTheLibrary == null && namespace != null) {
-            //workaround - the facelets libraries (.taglib.xml) files don't declare the default prefix for the library
-            //so workarounding by using corrsponding .tld file if found
-            TldLibrary tldl = support.getJsfSupport().getTldLibrary(namespace);
-            return tldl != null ? tldl.getDefaultPrefix() : null;
-        } else {
-            return prefixFromTheLibrary;
-        }
-
+        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getNamespace());
     }
 
+    @Override
     public String getDisplayName() {
-        return getLibraryDescriptor() != null ? getLibraryDescriptor().getDisplayName() : getNamespace();
+        String displayName = DefaultFaceletLibraries.getLibraryDisplayName(getNamespace());
+        return displayName != null ? displayName : getNamespace();
     }
 
     @Override
     public String toString() {
         return "FaceletsLibrary(namespace=" + getNamespace() +
                 ", default prefix= " + getDefaultPrefix() +
-                ", tld library= " + getLibraryDescriptor(); //NOI18N
+                ", descriptor= " + getLibraryDescriptor(); //NOI18N
     }
 
 
@@ -148,7 +126,7 @@ public abstract class FaceletsLibrary {
         return hash;
     }
 
-    public class NamedComponent {
+    public class NamedComponent implements LibraryComponent {
 
         protected String name;
 
@@ -156,18 +134,21 @@ public abstract class FaceletsLibrary {
             this.name = name;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
-        public TldLibrary.Tag getTag() {
-            return FaceletsLibrary.this.getTag(getName());
+        @Override
+        public Tag getTag() {
+            return getLibraryDescriptor().getTags().get(getName());
         }
 
         public FaceletsLibrary getLibrary() {
             return FaceletsLibrary.this;
         }
 
+        @Override
         public String[][] getDescription() {
             return new String[][]{{"name", getName()}}; //NOI18N
         }
@@ -369,22 +350,27 @@ public abstract class FaceletsLibrary {
             assert tag1 != null;
         }
 
+        @Override
         public String getName() {
             return tag1.getName() == null && tag2 != null ? tag2.getName() : tag1.getName();
         }
 
+        @Override
         public String getDescription() {
             return tag1.getDescription() == null && tag2 != null ? tag2.getDescription() : tag1.getDescription();
         }
 
+        @Override
         public boolean hasNonGenenericAttributes() {
             return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.hasNonGenenericAttributes() : tag1.hasNonGenenericAttributes();
         }
 
+        @Override
         public Collection<Attribute> getAttributes() {
             return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.getAttributes() : tag1.getAttributes();
         }
 
+        @Override
         public Attribute getAttribute(String name) {
             return tag1.getAttribute(name) == null && tag2 != null ? tag2.getAttribute(name) : tag1.getAttribute(name);
         }

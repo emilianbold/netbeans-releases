@@ -81,7 +81,8 @@ public final class WebLogicDDVisualPanel extends JPanel {
         Lookup lookup = project.getLookup();
         J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
-        sunDDFileName = getConfigFileName(j2eeModule,provider.getServerID());
+        sunDDFileName = getConfigFileName(j2eeModule,
+                org.netbeans.modules.glassfish.eecommon.api.Utils.getInstanceReleaseID(provider));
 
         // Calculate location:
         sunDDFile = (sunDDFileName != null) ? j2eeModule.getDeploymentConfigurationFile(sunDDFileName) : null;

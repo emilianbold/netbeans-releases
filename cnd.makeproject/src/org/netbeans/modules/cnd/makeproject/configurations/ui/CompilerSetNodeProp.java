@@ -55,6 +55,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
@@ -182,8 +183,13 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 //                list.add(getOldname());
 //            }
             if (configuration.isDevHostSetUp()) {
-                for(CompilerSet cs : configuration.getCompilerSetManager().getCompilerSets()) {
+                CompilerSetManager compilerSetManager = configuration.getCompilerSetManager();
+                CompilerSet defaultCompilerSet = compilerSetManager.getDefaultCompilerSet();
+                for(CompilerSet cs : compilerSetManager.getCompilerSets()) {
                     list.add(cs.getName());
+                }
+                if (defaultCompilerSet != null) {
+                    list.add(0, DEFAULT_CS+" ("+defaultCompilerSet.getName()+")"); //NOI18N
                 }
             }
             return list.toArray(new String[list.size()]);
@@ -235,4 +241,6 @@ public class CompilerSetNodeProp extends Node.Property<String> {
             }
         }
     }
+
+    public static final String DEFAULT_CS = NbBundle.getBundle(CompilerSetNodeProp.class).getString("default_cs"); //NOI18N
 }

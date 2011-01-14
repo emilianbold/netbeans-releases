@@ -64,11 +64,13 @@ public class StartStopServer extends NbTestCase {
         super(testName);
     }
 
+    private static final String PRELUDE_URL = "["+Util._PRELUDE_LOCATION+"]deployer:gfv3:localhost:4848";
 
     public void startPreludeServer() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._PRELUDE_LOCATION, Util._HOST, 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL);
+                    
 
             if(inst.isRunning())
                 return;
@@ -94,7 +96,7 @@ public class StartStopServer extends NbTestCase {
     public void stopPreludeServer() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._PRELUDE_LOCATION, Util._HOST, 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL);
 
             if(!inst.isRunning())
                 return;
@@ -116,7 +118,7 @@ public class StartStopServer extends NbTestCase {
     public void restartPreludeServer() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL); 
 
             if(!inst.isRunning())
                 return;
@@ -138,7 +140,7 @@ public class StartStopServer extends NbTestCase {
      public void startDebugPreludeServer() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._PRELUDE_LOCATION, "localhost", 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL);
 
             if(inst.isRunning())
                 return;
@@ -160,12 +162,13 @@ public class StartStopServer extends NbTestCase {
         }
     }
 
+     private static final String V_URL = "["+Util._V3_LOCATION+"]deployer:gfv3ee6:localhost:4848";
 
 
     public void startV3Server() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, Util._HOST, 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(inst.isRunning())
                 return;
@@ -194,7 +197,7 @@ public class StartStopServer extends NbTestCase {
     public void stopV3Server() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, Util._HOST, 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(!inst.isRunning())
                 return;
@@ -217,7 +220,7 @@ public class StartStopServer extends NbTestCase {
     public void restartV3Server() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(!inst.isRunning())
                 return;
@@ -239,7 +242,7 @@ public class StartStopServer extends NbTestCase {
     public void startDebugV3Server() {
         try {
             GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(gip.formatUri(Util._V3_LOCATION, "localhost", 4848));
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(inst.isRunning())
                 return;

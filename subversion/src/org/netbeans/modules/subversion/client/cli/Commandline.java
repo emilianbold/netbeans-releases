@@ -100,7 +100,10 @@ class Commandline {
         Subversion.LOG.fine("cli: Process destroyed");                          // NOI18N
     }
 
-    void exec(SvnCommand command) throws IOException {
+    // why synchronized? with 1.7, all commands go through this method, even those parallelizable ones
+    // so it may (and it does) happen that two commands run simultaneously and eventually a wrong output is read (because cli is an instance field)
+    // this is a hotfix, cli should probably be turned into a local var, but how would we interrupt the command in that case???
+    synchronized void exec(SvnCommand command) throws IOException {
         canceled = false;
         command.prepareCommand();        
         

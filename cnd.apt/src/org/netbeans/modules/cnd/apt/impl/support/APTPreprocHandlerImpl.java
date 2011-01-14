@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.filesystems.FileSystem;
 
 /**
  * composition of include handler and macro map for parsing file phase
@@ -288,9 +289,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             APTSerializeUtils.writeMacroMapState(this.macroState, output);
         }
 
-        public StateImpl(DataInput input) throws IOException {
+        public StateImpl(FileSystem fs, DataInput input) throws IOException {
             this.attributes = input.readByte();
-            this.inclState = APTSerializeUtils.readIncludeState(input);
+            this.inclState = APTSerializeUtils.readIncludeState(fs, input);
             this.macroState = APTSerializeUtils.readMacroMapState(input);
         }
     }    

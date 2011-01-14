@@ -424,6 +424,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         });
 
         jPanelCompile.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        jPanelCompile.setMinimumSize(new java.awt.Dimension(410, 250));
         jPanelCompile.setLayout(new java.awt.GridBagLayout());
 
         librariesJLabel1.setLabelFor(jListCpC);
@@ -544,6 +545,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesTab"), jPanelCompile); // NOI18N
 
         jPanelCompileProcessor.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        jPanelCompileProcessor.setMinimumSize(new java.awt.Dimension(410, 250));
         jPanelCompileProcessor.setLayout(new java.awt.GridBagLayout());
 
         librariesJLabel5.setLabelFor(jListCpP);
@@ -659,6 +661,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Processors_Tab"), jPanelCompileProcessor); // NOI18N
 
         jPanelRun.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        jPanelRun.setMinimumSize(new java.awt.Dimension(410, 250));
         jPanelRun.setLayout(new java.awt.GridBagLayout());
 
         librariesJLabel3.setLabelFor(jListCpR);
@@ -768,6 +771,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Run_Tab"), jPanelRun); // NOI18N
 
         jPanelCompileTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        jPanelCompileTests.setMinimumSize(new java.awt.Dimension(410, 250));
         jPanelCompileTests.setLayout(new java.awt.GridBagLayout());
 
         librariesJLabel2.setLabelFor(jListCpCT);
@@ -877,6 +881,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_TestLibrariesTab"), jPanelCompileTests); // NOI18N
 
         jPanelRunTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        jPanelRunTests.setMinimumSize(new java.awt.Dimension(410, 250));
         jPanelRunTests.setLayout(new java.awt.GridBagLayout());
 
         librariesJLabel4.setLabelFor(jListCpRT);
@@ -1009,8 +1014,8 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                     .addComponent(jLabelTarget))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
-                    .addComponent(jComboBoxTarget, 0, 317, Short.MAX_VALUE))
+                    .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
+                    .addComponent(jComboBoxTarget, 0, 342, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(librariesBrowse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
@@ -105,10 +106,14 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         for (Unit unit : newUnits) {
             Boolean isChecked = capturedState.get(unit.updateUnit.getCodeName());
             if (isChecked != null) {
-                if (isChecked.booleanValue() && !unit.isMarked() && unit.canBeMarked()) {
-                    unit.setMarked(true);
-                } else if (!isChecked.booleanValue() && unit.isMarked() && unit.canBeMarked()) {
-                    unit.setMarked(false);
+                try {
+                    if (isChecked.booleanValue() && !unit.isMarked() && unit.canBeMarked()) {
+                        unit.setMarked(true);
+                    } else if (!isChecked.booleanValue() && unit.isMarked() && unit.canBeMarked()) {
+                        unit.setMarked(false);
+                    }
+                } catch (IllegalArgumentException ex) {
+                    Unit.log.log(Level.FINE, "Cannot change the unit state", ex);
                 }
             } else if (isMarkedAsDefault && !unit.isMarked() && unit.canBeMarked()) {
                 unit.setMarked(true);

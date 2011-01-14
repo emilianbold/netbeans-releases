@@ -181,7 +181,7 @@ public class QmakeConfiguration implements Cloneable {
     }
 
     private String getDestdirDefault() {
-        return "${CND_DISTDIR}" + "/" + "${CND_CONF}" + "/" + "${CND_PLATFORM}"; // NOI18N
+        return MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO; // NOI18N
     }
 
     public StringConfiguration getDestdir() {

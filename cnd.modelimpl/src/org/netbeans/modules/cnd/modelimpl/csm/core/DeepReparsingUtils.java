@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
@@ -93,6 +95,7 @@ public final class DeepReparsingUtils {
         if (cuStartFiles.size() > 0) {
             fileImpl.clearStateCache();
             Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFiles();
+            updateStartFilesWithBestStartFiles(coherence, cuStartFiles);
             for (CsmFile file : coherence) {
                 if (cuStartFiles.contains(file)) {
                     ((FileImpl)file).clearStateCache();
@@ -133,6 +136,10 @@ public final class DeepReparsingUtils {
         }
         if (topParents.size() > 0) {
             Set<CsmFile> topParentsImpl = new HashSet<CsmFile>();
+            for (CsmUID<CsmFile> file : coherence) {
+                CsmFile fileImpl = UIDCsmConverter.UIDtoFile(file);
+                updateStartFilesWithBestStartFiles(Collections.singleton(fileImpl), topParentsImpl);
+            }
             for (CsmUID<CsmFile> file : coherence) {
                 FileImpl fileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
                 if (fileImpl != null) {
@@ -190,6 +197,7 @@ public final class DeepReparsingUtils {
                     }
                 }
             }
+            updateStartFilesWithBestStartFiles(coherence, top);
             for (CsmFile parent : coherence) {
                 if (!top.contains(parent)) {
                     CsmProject parentPoject = parent.getProject();
@@ -225,26 +233,25 @@ public final class DeepReparsingUtils {
     /**
      * Reparse included files at file added.
      */
-    public static void reparseOnAdded(NativeFileItem nativeFile, ProjectBase project) {
-        reparseOnAdded(nativeFile.getFile().getName(), project);
+    public static void reparseOnAdded(FileObject addedFile, ProjectBase project) {
+        reparseOnAdded(Collections.singleton(addedFile.getNameExt()), project);
     }
 
     /**
      * Reparse included files at file added.
      */
-    public static void reparseOnAdded(FileObject addedFile, ProjectBase project) {
-        reparseOnAdded(addedFile.getNameExt(), project);
+    static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectBase project) {
+        Set<String> names = new HashSet<String>();
+        for (NativeFileItem item : toReparse) {
+            names.add(item.getName());
+        }
+        reparseOnAdded(names, project);
     }
-
-    private static void reparseOnAdded(String name, ProjectBase project) {
+    
+    private static void reparseOnAdded(Set<String> names, ProjectBase project) {
         Set<CsmFile> resolved = new HashSet<CsmFile>();
         for (CsmFile file : project.getAllFiles()) {
-            for (CsmInclude incl : file.getIncludes()) {
-                if (incl.getIncludeName().toString().endsWith(name)/* && incl.getIncludeFile() == null*/) {
-                    resolved.add(file);
-                    break;
-                }
-            }
+            findResolved(names, resolved, file);
         }
         if (resolved.size() > 0) {
             Set<CsmFile> top = new HashSet<CsmFile>();
@@ -254,29 +261,7 @@ public final class DeepReparsingUtils {
                 coherence.add(file);
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
-            addToReparse(project, top, coherence, true);
-        }
-    }
-
-    static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectBase project) {
-        Set<String> names = new HashSet<String>();
-        for (NativeFileItem item : toReparse) {
-            names.add(item.getFile().getName());
-        }
-        Set<CsmFile> resolved = new HashSet<CsmFile>();
-        for (CsmFile file : project.getSourceFiles()) {
-            findResolved(names, resolved, file);
-        }
-        for (CsmFile file : project.getHeaderFiles()) {
-            findResolved(names, resolved, file);
-        }
-        if (resolved.size() > 0) {
-            Set<CsmFile> top = new HashSet<CsmFile>();
-            Set<CsmFile> coherence = new HashSet<CsmFile>();
-            for (CsmFile file : resolved) {
-                top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
-                coherence.addAll(project.getGraph().getIncludedFiles(file));
-            }
+            updateStartFilesWithBestStartFiles(coherence, top);
             addToReparse(project, top, coherence, true);
         }
     }
@@ -384,4 +369,20 @@ public final class DeepReparsingUtils {
             }
         }
     }
+    
+    private static void updateStartFilesWithBestStartFiles(Set<CsmFile> coherence, Set<CsmFile> cuStartFiles) {
+        for (CsmFile csmFile : coherence) {
+            // append extra start files
+            if (!cuStartFiles.contains(csmFile)) {
+                Collection<CsmCompilationUnit> compilationUnits = CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0);
+                for (CsmCompilationUnit cu : compilationUnits) {
+                    CsmFile startFile = cu.getStartFile();
+                    if (startFile != null) {
+                        cuStartFiles.add(startFile);
+                    }
+                }
+            }
+        }
+    }
+    
 }

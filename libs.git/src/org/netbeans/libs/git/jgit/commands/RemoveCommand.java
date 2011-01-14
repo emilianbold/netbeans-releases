@@ -58,6 +58,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -123,7 +124,7 @@ public class RemoveCommand extends GitCommand {
                     if (!cached && (!treeWalk.isSubtree() || treeWalk.isPostChildren() && Utils.isUnderOrEqual(treeWalk, pathFilters))) {
                         // delete also the file
                         if (!path.delete() && path.exists()) {
-                            monitor.notifyError("Cannot delete " + path.getAbsolutePath());
+                            monitor.notifyError(NbBundle.getMessage(RemoveCommand.class, "MSG_Error_CannotDeleteFile", path.getAbsolutePath())); //NOI18N
                         }
                     }
                 }

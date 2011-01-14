@@ -76,6 +76,26 @@ public class ParserTest {
         performTest("    http://some.where/some-thing.html#section?cow=moo's\n", 4, 55);
         performTest("    h", null);
         performTest("    http://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 60);
+        performTest("    https://www.netbeans.org/\n", 4, 29);
+        performTest("    https://www.netbeans.org/~s?d=3_\n", 4, 36);
+        performTest("    https://www.test-test.test/\n", 4, 31);
+        performTest("    https://www.test-test.test/a.jsp?tt\\&t$=$\n", 4, 45);
+        performTest("    ftps://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
+        performTest("    f t p://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
+        performTest("    ftps://www.test-test.test/a.jsp?tt\\&t$=$", null);
+        performTest("    \"https://www.netbeans.org/\"", 5, 30);
+        performTest("    https://some.where/some-thing.html#section\n", 4, 46);
+        performTest("    https://netbeans.org/bugzilla/buglist.cgi?bug_id=181772,172312\n", 4, 66);
+        performTest("    https://some.where/some-thing.html#section?cow=moo's\n", 4, 56);
+        performTest("    h", null);
+        performTest("    https://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 61);
+        performTest("    https://some.where:1234/some-thing.html#section?cow=moo's\n", 4, 61);
+        performTest("    httpss://some.where:1234/some-thing.html#section?cow=moo's\n", null);
+        performTest("    httpps://some.where:1234/some-thing.html#section?cow=moo's\n", null);
+        performTest("    https//some.where:1234/some-thing.html#section?cow=moo's\n", null);
+        performTest("    http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 75);
+        performTest("    https://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 76);
+        performTest("    ht+tp://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", null);
     }
 
     @Test

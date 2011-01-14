@@ -46,17 +46,22 @@ package org.netbeans.modules.web.jsf.editor;
 import java.net.URL;
 import java.util.Collections;
 import java.util.StringTokenizer;
+import java.util.concurrent.Future;
+import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -65,6 +70,10 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache.JsfBeansProvider;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectState;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
@@ -76,11 +85,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -90,6 +107,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author Marek Fukala
@@ -105,6 +128,7 @@ public class TestBase extends CslTestBase {
     @Override
     protected void setUp() throws Exception {
         MockServices.setServices(MockMimeLookup.class);
+        System.setProperty("netbeans.dirs", "/Volumes/Mercurial/web-main/nbbuild/netbeans/enterprise");
         super.setUp();
     }
 
@@ -175,7 +199,7 @@ public class TestBase extends CslTestBase {
         return HtmlKit.HTML_MIME_TYPE;
     }
 
-    public HtmlParserResult getHtmlParserResult(String fileName) throws ParseException {
+    public ResultIterator getResultIterator(String fileName) throws ParseException {
         FileObject file = getTestFile(fileName);
 
         assertNotNull(file);
@@ -183,16 +207,23 @@ public class TestBase extends CslTestBase {
         Source source = getTestSource(file);
         assertNotNull(source);
 
-        final HtmlParserResult[] _result = new HtmlParserResult[1];
+        final ResultIterator[] _result = new ResultIterator[1];
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
+                _result[0] = resultIterator;
             }
         });
 
-        HtmlParserResult result = _result[0];
+        
+        assertNotNull(_result[0]);
+
+        return _result[0];
+    }
+
+    public HtmlParserResult getHtmlParserResult(ResultIterator ri) throws ParseException {
+        HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(ri, "text/html").getParserResult();
         assertNotNull(result);
 
         return result;
@@ -224,18 +255,18 @@ public class TestBase extends CslTestBase {
         return cps;
     }
 
-     /**
+    /**
      * Creates boot {@link ClassPath} for platform the test is running on,
      * it uses the sun.boot.class.path property to find out the boot path roots.
      * @return ClassPath
      * @throws java.io.IOException when boot path property contains non valid path
      */
-    public static ClassPath createBootClassPath () throws IOException {
-        String bootPath = System.getProperty ("sun.boot.class.path");
+    public static ClassPath createBootClassPath() throws IOException {
+        String bootPath = System.getProperty("sun.boot.class.path");
         String[] paths = bootPath.split(File.pathSeparator);
-        List<URL>roots = new ArrayList<URL> (paths.length);
+        List<URL> roots = new ArrayList<URL>(paths.length);
         for (String path : paths) {
-            File f = new File (path);
+            File f = new File(path);
             if (!f.exists()) {
                 continue;
             }
@@ -243,7 +274,7 @@ public class TestBase extends CslTestBase {
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
             }
-            roots.add (url);
+            roots.add(url);
 //            System.out.println(url);
         }
 //        System.out.println("-----------");
@@ -268,23 +299,24 @@ public class TestBase extends CslTestBase {
 
     protected static class FakeWebModuleProvider implements WebModuleProvider {
 
-        private FileObject webRoot;
+        private FileObject webRoot, javaSources;
 
-        public FakeWebModuleProvider(FileObject webRoot) {
+        public FakeWebModuleProvider(FileObject webRoot, FileObject javaSources) {
             this.webRoot = webRoot;
         }
 
         public WebModule findWebModule(FileObject file) {
-            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot));
+            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot, javaSources));
         }
     }
 
     private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
 
-        private FileObject webRoot;
+        private FileObject webRoot, javaSources;
 
-        public FakeWebModuleImplementation2(FileObject webRoot) {
+        public FakeWebModuleImplementation2(FileObject webRoot, FileObject javaSources) {
             this.webRoot = webRoot;
+            this.javaSources = javaSources;
         }
 
         public FileObject getDocumentBase() {
@@ -308,7 +340,7 @@ public class TestBase extends CslTestBase {
         }
 
         public FileObject[] getJavaSources() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new FileObject[]{javaSources};
         }
 
         public MetadataModel<WebAppMetadata> getMetadataModel() {
@@ -319,6 +351,243 @@ public class TestBase extends CslTestBase {
         }
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+    }
+
+    protected final class TestProjectFactory implements ProjectFactory {
+
+        private ClassPathProvider provider;
+        private Sources sources;
+
+        public  TestProjectFactory(ClassPathProvider provider, Sources sources) {
+            this.provider = provider;
+            this.sources = sources;
+        }
+
+        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+            return new TestProject(projectDirectory, state, provider, sources );
+        }
+
+        public void saveProject(Project project) throws IOException, ClassCastException {
+        }
+
+        public boolean isProject(FileObject dir) {
+            FileObject testproject = dir.getFileObject("web");
+            return testproject != null && testproject.isFolder();
+        }
+    }
+
+    protected static class TestProject implements Project {
+
+        private final FileObject dir;
+        final ProjectState state;
+        Throwable error;
+        int saveCount = 0;
+        private Lookup lookup;
+
+        public TestProject(FileObject dir, ProjectState state, ClassPathProvider classpathProvider, Sources sources) {
+            this.dir = dir;
+            this.state = state;
+
+            InstanceContent ic = new InstanceContent();
+            ic.add(classpathProvider);
+            ic.add(sources);
+            ic.add(new JsfSupportHandle());
+
+            this.lookup = new AbstractLookup(ic);
+
+        }
+
+        public Lookup getLookup() {
+            return lookup;
+        }
+
+        public FileObject getProjectDirectory() {
+            return dir;
+        }
+
+        public String toString() {
+            return "testproject:" + getProjectDirectory().getNameExt();
+        }
+    }
+
+    protected final class TestSources implements Sources {
+
+        private FileObject[] roots;
+
+        TestSources(FileObject... roots) {
+            this.roots = roots;
+        }
+
+        public SourceGroup[] getSourceGroups(String type) {
+            SourceGroup[] sg = new SourceGroup[roots.length];
+            for (int i = 0; i < roots.length; i++) {
+                sg[i] = new TestSourceGroup(roots[i]);
+            }
+            return sg;
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+        }
+    }
+
+    protected final class TestSourceGroup implements SourceGroup {
+
+        private FileObject root;
+
+        public TestSourceGroup(FileObject root) {
+            this.root = root;
+        }
+
+        public FileObject getRootFolder() {
+            return root;
+        }
+
+        public String getName() {
+            return root.getNameExt();
+        }
+
+        public String getDisplayName() {
+            return getName();
+        }
+
+        public Icon getIcon(boolean opened) {
+            return null;
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            return FileUtil.getRelativePath(root, file) != null;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+    }
+
+    protected class TestJsfBeansProvider implements JsfBeansProvider {
+
+        private List<? extends FacesManagedBean> beans;
+
+        public TestJsfBeansProvider(List<? extends FacesManagedBean> beans) {
+            this.beans = beans;
+        }
+
+        public List<FacesManagedBean> getBeans(WebModule webModule) {
+            return (List<FacesManagedBean>) beans;
+        }
+    }
+
+    protected static class FacesManagedBeanImpl implements FacesManagedBean {
+
+        private String name, clazz;
+
+        public FacesManagedBeanImpl(String name, String clazz) {
+            this.name = name;
+            this.clazz = clazz;
+        }
+
+        public Boolean getEager() {
+            return true; //???
+        }
+
+        public String getManagedBeanName() {
+            return name;
+        }
+
+        public String getManagedBeanClass() {
+            return clazz;
+        }
+
+        public Scope getManagedBeanScope() {
+            return Scope.REQUEST;
+        }
+
+        public String getManagedBeanScopeString() {
+            return getManagedBeanScope().toString(); //???
+        }
+
+        public List<ManagedProperty> getManagedProperties() {
+            return Collections.emptyList();
+        }
+    }
+
+    protected static class TestUserCatalog extends UserCatalog {
+
+        @Override
+        public EntityResolver getEntityResolver() {
+            return new EntityResolver() {
+
+                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                    return null;
+                }
+            };
+        }
+    }
+
+    protected static class OpenProject implements OpenProjectsTrampoline {
+
+        public
+        @Override
+        Project[] getOpenProjectsAPI() {
+            return new Project[0];
+        }
+
+        public
+        @Override
+        void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
+        }
+
+        public
+        @Override
+        void closeAPI(Project[] projects) {
+        }
+
+        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+        }
+
+        public Future<Project[]> openProjectsAPI() {
+            return new Future<Project[]>() {
+
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return true;
+                }
+
+                public boolean isCancelled() {
+                    return false;
+                }
+
+                public boolean isDone() {
+                    return true;
+                }
+
+                public Project[] get() throws InterruptedException, ExecutionException {
+                    return new Project[0];
+                }
+
+                public Project[] get(long timeout, TimeUnit unit)
+                        throws InterruptedException, ExecutionException, TimeoutException {
+                    return new Project[0];
+                }
+            };
+        }
+
+        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+        }
+
+        public
+        @Override
+        Project getMainProject() {
+            return null;
+        }
+
+        public
+        @Override
+        void setMainProject(Project project) {
         }
     }
 }

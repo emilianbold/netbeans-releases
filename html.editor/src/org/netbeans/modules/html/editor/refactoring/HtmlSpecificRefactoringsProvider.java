@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -80,18 +81,11 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
             return false;
         }
 
-        //workaround for bug 185814 -  LowPerformance took 3917 ms >>>
-        //do not call blocking ec.getOpenedPanes() if the document is not loaded
-        if(ec.getDocument() == null) {
+        //non-blocking call, return null if no document pane initialized yet
+        JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+        if(pane == null) {
             return false;
         }
-        //<<<
-
-        JEditorPane[] panes = ec.getOpenedPanes();
-        if(panes == null || panes.length == 0) {
-            return false;
-        }
-        JEditorPane pane = panes[0]; //get first pane, I hope the activated one is first
         Document doc = ec.getDocument();
 
         OffsetRange adjusted = adjustContextRange(doc, pane.getSelectionStart(), pane.getSelectionEnd());

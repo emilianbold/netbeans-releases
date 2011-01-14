@@ -35,12 +35,10 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.code.Symbol;
 
-import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -50,11 +48,9 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
-import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 
@@ -292,14 +288,14 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     }
 
     @Override
-    public Tree visitDisjointType(DisjointTypeTree node, Boolean p) {
-        List<? extends Tree> typeComponents = translateTree(node.getTypeComponents());
+    public Tree visitDisjunctiveType(DisjunctiveTypeTree node, Boolean p) {
+        List<? extends Tree> typeComponents = translateTree(node.getTypeAlternatives());
 
         if (make == null) return node;
 
-        if (typeComponents != node.getTypeComponents())
+        if (typeComponents != node.getTypeAlternatives())
         {
-            node = make.DisjointType(typeComponents);
+            node = make.DisjunctiveType(typeComponents);
         }
         return node;
     }
@@ -617,6 +613,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         
         if (typeDecls != node.getTypeDecls()) {
             node = make.CompilationUnit(
+                    node.getPackageAnnotations(),
                     node.getPackageName(),
                     node.getImports(),
                     typeDecls,
@@ -627,13 +624,15 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     }
 
     public Tree visitTry(TryTree node, Boolean p) {
+        List<? extends Tree> resources = translateTree(node.getResources());
         BlockTree block = (BlockTree) translateTree(node.getBlock());
         List<? extends CatchTree> catches = translateTree(node.getCatches());
         BlockTree finallyBlock = (BlockTree) translateTree(node.getFinallyBlock());
         
         if (make == null) return node;
         
-        if (block != node.getBlock() ||
+        if (resources != node.getResources() ||
+            block != node.getBlock() ||
             catches != node.getCatches() ||
             finallyBlock != node.getFinallyBlock())
         {
@@ -652,29 +651,6 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             typeArguments != node.getTypeArguments())
         {
             node = make.ParameterizedType(type, typeArguments);
-        }
-        return node;
-    }
-
-    public Tree visitAnnotatedType(AnnotatedTypeTree node, Boolean p) {
-        List<? extends AnnotationTree> annotations = translateTree(node.getAnnotations());
-        Tree type = translateTree(node.getUnderlyingType());
-
-        if (make == null) return node;
-
-        if (type != node.getUnderlyingType() ||
-            annotations != node.getAnnotations())
-        {
-            List<AnnotationTree> typeAnnotations = new LinkedList<AnnotationTree>();
-
-            for (AnnotationTree at : annotations) {
-                if (!(at instanceof JCTypeAnnotation)) {//XXX
-                    at = JavaSourceAccessor.getINSTANCE().makeTypeAnnotation(make, at);
-                }
-                typeAnnotations.add(at);
-            }
-
-            node = JavaSourceAccessor.getINSTANCE().makeAnnotatedType(make, typeAnnotations, node);
         }
         return node;
     }

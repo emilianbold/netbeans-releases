@@ -44,13 +44,9 @@
 
 package org.netbeans.api.autoupdate;
 
-import java.net.URL;
 import java.util.List;
-import junit.framework.TestCase;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -71,8 +67,8 @@ public class DeclarationOfUpdateUnitProviderTest extends NbTestCase {
         super(testName);                
     }
 
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
         for (UpdateUnitProvider updateUnitProvider : providers) {
             String name = updateUnitProvider.getName();

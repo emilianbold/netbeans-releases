@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.HashSet;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -58,7 +57,9 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 public final class WorkingCopyAttributesCache {
     private static WorkingCopyAttributesCache instance;
     
-    private HashSet<String> unsupportedWorkingCopies;
+    private final HashSet<String> unsupportedWorkingCopies;
+    private final HashSet<String> tooOldClientForWorkingCopies;
+    private final HashSet<String> tooOldWorkingCopies;
 
     /**
      * Returns (and creates if needed) an instance.
@@ -74,10 +75,36 @@ public final class WorkingCopyAttributesCache {
 
     private WorkingCopyAttributesCache () {
         unsupportedWorkingCopies = new HashSet<String>(5);
+        tooOldClientForWorkingCopies = new HashSet<String>(5);
+        tooOldWorkingCopies = new HashSet<String>(5);
     }
 
     private void init () {
 
+    }
+
+    public void logSuppressed (SVNClientException ex, File file) throws SVNClientException {
+        if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+            logUnsupportedWC(ex, file);
+        } else if (SvnClientExceptionHandler.isPartOf17OrGreater(ex.getMessage())) {
+            logTooOldClient(ex, file);
+        } else if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage())) {
+            logTooOldWC(ex, file);
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public boolean isSuppressed (SVNClientException ex) {
+        boolean retval = false;
+        if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+            retval = true;
+        } else if (SvnClientExceptionHandler.isPartOf17OrGreater(ex.getMessage())) {
+            retval = true;
+        } else if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage())) {
+            retval = true;
+        }
+        return retval;
     }
 
     /**
@@ -88,32 +115,52 @@ public final class WorkingCopyAttributesCache {
      * @param file
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    public void logUnsupportedWC(final SVNClientException ex, File file) throws SVNClientException {
-        String fileName = file.getAbsolutePath();
-        if (!isInUnsupportedWorkingCopies(fileName)) {
-            File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
-            unsupportedWorkingCopies.add(topManaged.getAbsolutePath());
-            EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
-                }
-            });
-        }
-        throw ex;
+    private void logUnsupportedWC(final SVNClientException ex, File file) throws SVNClientException {
+        logWC(ex, file, unsupportedWorkingCopies);
     }
 
     /**
-     * Checks if a file denoted by fileName or some of its parents is in a working copy which has already been identified as unsupported
-     * @param fileName
-     * @return
+     * Logs the too old client for this WC exception if the file's working copy has not been stored yet.
+     * The file's topmost managed parent is saved so next time the exception is not logged again.
+     * The exception is thrown again.
+     * @param ex
+     * @param file
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    public boolean isInUnsupportedWorkingCopies (String fileName) {
-        for (String unsupported : unsupportedWorkingCopies) {
-            if (fileName.startsWith(unsupported)) {
-                return true;
+    private void logTooOldClient (final SVNClientException ex, File file) throws SVNClientException {
+        logWC(ex, file, tooOldClientForWorkingCopies);
+    }
+
+    private void logTooOldWC (final SVNClientException ex, File file) throws SVNClientException {
+        logWC(ex, file, tooOldWorkingCopies);
+    }
+
+    private boolean isLogged (String fileName, HashSet<String> loggedWCs) {
+        synchronized (loggedWCs) {
+            for (String unsupported : loggedWCs) {
+                if (fileName.startsWith(unsupported)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
+    }
+
+    private void logWC (final SVNClientException ex, File file, HashSet<String> loggedWCs) throws SVNClientException {
+        String fileName = file.getAbsolutePath();
+        if (!isLogged(fileName, loggedWCs)) {
+            File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
+            synchronized (loggedWCs) {
+                loggedWCs.add(topManaged.getAbsolutePath());
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    }
+                });
+        }
+        throw ex;
     }
 
 }

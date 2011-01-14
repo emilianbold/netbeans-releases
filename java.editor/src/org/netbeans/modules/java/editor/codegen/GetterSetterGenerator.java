@@ -122,8 +122,8 @@ public class GetterSetterGenerator implements CodeGenerator {
                 if (ERROR.contentEquals(variableElement.getSimpleName()))
                     continue;
                 ElementNode.Description description = ElementNode.Description.create(controller, variableElement, null, true, false);
-                boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
-                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods);
+                boolean hasGetter = GeneratorUtils.hasGetter(controller, typeElement, variableElement, methods);
+                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, typeElement, variableElement, methods);
                 if (!hasGetter) {
                     List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getEnclosingElement());
                     if (descriptions == null) {

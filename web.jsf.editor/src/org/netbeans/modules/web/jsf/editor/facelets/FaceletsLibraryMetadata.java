@@ -51,6 +51,11 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Tomasz.Slota@Sun.COM
+ *
+ * @deprecated use DefaultFaceletLibraries
+ *
+ * @todo remove this class along with the **.libdefs.* package content
+ * since DefaultFaceletLibraries provides basically the same info
  */
 public class FaceletsLibraryMetadata {
     private static Map<String, LibraryMetadata> libMap = new TreeMap<String, LibraryMetadata>();

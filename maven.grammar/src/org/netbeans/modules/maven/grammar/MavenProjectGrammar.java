@@ -70,8 +70,8 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.TreeSet;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.Document;
@@ -712,7 +712,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         
         public void run() {
             List<NBVersionInfo> infos = RepositoryQueries.getVersions(groupId, artifactId);
-            Set<String> elems = new TreeSet<String>();
+            Set<String> elems = new LinkedHashSet<String>();
             for (NBVersionInfo inf : infos) {
                 elems.add(inf.getVersion());
             }

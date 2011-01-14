@@ -110,7 +110,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
@@ -158,7 +158,7 @@ public class JsfElExpression extends ELExpression {
     public JsfElExpression(WebModule wm, Document doc, int offset) throws BadLocationException{
         super(doc, offset);
         this.webModule = wm;
-	this.webBeansModel = JsfSupport.findFor(doc).getWebBeansModel();
+	this.webBeansModel = JsfSupportImpl.findFor(doc).getWebBeansModel();
     }
 
     @Override
@@ -211,7 +211,7 @@ public class JsfElExpression extends ELExpression {
                     public void run(ResultIterator resultIterator) throws Exception {
                         Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                         if (result instanceof HtmlParserResult) {
-                            JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
+                            JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result, resultIterator.getSnapshot());
                             _value[0] = model.resolveExpression(expr, findNearestMapableOffsetForward(result.getSnapshot(), offset), NESTING_AWARE);
                         }
                     }
@@ -462,7 +462,7 @@ public class JsfElExpression extends ELExpression {
                     //one level - works only if xhtml is top level
                     Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if (result instanceof HtmlParserResult) {
-                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
+                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result, resultIterator.getSnapshot());
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
                         for (JsfVariableContext var : contexts) {
                             if (var.getVariableName().startsWith(prefix)) {

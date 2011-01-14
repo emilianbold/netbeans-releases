@@ -56,6 +56,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.jar.Pack200;
+import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -92,6 +93,12 @@ public class NbmPack200Test extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    
     public static class MyProvider extends AutoupdateCatalogProvider {
 
         public MyProvider() {

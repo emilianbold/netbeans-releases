@@ -65,8 +65,8 @@ public class FileCoverageSummary implements Comparable<FileCoverageSummary> {
      * @param lineCount The total number of lines in the file
      * @param executedLineCount The total number of lines that were executed (including inferred and partial)
      * @param inferredCount The lines not recorded but inferred to be executed (such as comments and whitespace
-     *   between executed statements) Return -1 for "unknown/not recorded".
-     * @param partialCount The lines that were partially executed. Return -1 for "unknown/not recorded".
+     *   between executed statements) Return 0 for "unknown/not recorded".
+     * @param partialCount The lines that were partially executed. Return 0 for "unknown/not recorded".
      */
     public FileCoverageSummary(FileObject file, String displayName, int lineCount, int executedLineCount,
             int inferredCount, int partialCount) {

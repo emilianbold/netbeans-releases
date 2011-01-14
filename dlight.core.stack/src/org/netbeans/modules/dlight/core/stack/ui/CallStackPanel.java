@@ -63,7 +63,7 @@ public final class CallStackPanel extends JPanel implements ExplorerManager.Prov
         treeView.setRootVisible(isRootVisible);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(treeView);
-        manager.setRootContext(new StackRootNode(lineInfo, rootName, stack));//NOI18N
+        manager.setRootContext(new StackRootNode(lineInfo, rootName, stack, false));//NOI18N
     }
 
     

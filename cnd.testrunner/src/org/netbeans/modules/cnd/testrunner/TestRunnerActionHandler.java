@@ -95,7 +95,7 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionListener, RerunHandler {
 

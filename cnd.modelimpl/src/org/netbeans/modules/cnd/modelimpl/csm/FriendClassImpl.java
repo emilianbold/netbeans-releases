@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
@@ -61,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.openide.util.CharSequences;
 
 /**
@@ -74,6 +77,8 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     private final CsmUID<CsmClassForwardDeclaration> classForwardUID;
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
+    private int lastParseCount = -1;    
+    private int lastFileID = -1;
     
     private FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         super(ast, file);
@@ -88,8 +93,9 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
-            String fullName = "<" + TemplateUtils.getClassSpecializationSuffix(templateParams, null) + ">"; // NOI18N
-            setTemplateDescriptor(params, fullName, register);
+            final String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(templateParams, null);
+            String fullName = "<" + classSpecializationSuffix + ">"; // NOI18N
+            setTemplateDescriptor(params, fullName, !classSpecializationSuffix.isEmpty(), register);
         }
     }
 
@@ -138,31 +144,61 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION;
     }
 
-    @Override
-    public CsmClass getReferencedClass() {
-        return getReferencedClass(null);
+    private boolean needRecount(int newParseCount, Resolver currentResolver) {
+        if (lastParseCount != newParseCount) {
+            return true;
+        }
+        CsmFile startFile = null;
+        if (currentResolver != null) {
+            startFile = currentResolver.getStartFile();
+        }
+        if (startFile == null) {
+            startFile = getContainingFile();
+        }
+        int fileID = UIDUtilities.getFileID(UIDs.get(startFile));
+        if (lastFileID != fileID) {
+            return true;
+        }
+        return false;
     }
 
-    public CsmClass getReferencedClass(Resolver resolver) {
+    private void updateCache(int newParseCount, Resolver currentResolver) {
+        lastParseCount = newParseCount;
+        CsmFile startFile = null;
+        if (currentResolver != null) {
+            startFile = currentResolver.getStartFile();
+        }
+        if (startFile == null) {
+            startFile = getContainingFile();
+        }
+        int fileID = UIDUtilities.getFileID(UIDs.get(startFile));
+        lastFileID = fileID;
+    }
+    
+    @Override
+    public CsmClass getReferencedClass() {
         CsmClass cls = UIDCsmConverter.UIDtoClass(friendUID);
-        if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
-            cls = null;
-            CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
-            if(CsmBaseUtilities.isValid(cfd)) {
-                if (cfd instanceof ClassForwardDeclarationImpl) {
-                    cls = ((ClassForwardDeclarationImpl)cfd).getCsmClass(resolver);
-                } else {
+        int newParseCount = FileImpl.getParseCount();
+        Resolver currentResolver = ResolverFactory.getCurrentResolver();
+        if (needRecount(newParseCount, currentResolver)) {
+            if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
+                cls = null;
+                CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
+                if(CsmBaseUtilities.isValid(cfd)) {
                     cls = cfd.getCsmClass();
                 }
+                friendUID = UIDCsmConverter.declarationToUID(cls);
             }
-            friendUID = UIDCsmConverter.declarationToUID(cls);
-        }
-        if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
-            CsmObject o = resolve(resolver);
-            if (CsmKindUtilities.isClass(o)) {
-                cls = (CsmClass) o;
-                friendUID = UIDCsmConverter.objectToUID(cls);
+            if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
+                CsmObject o = resolve();
+                if (CsmKindUtilities.isClass(o)) {
+                    cls = (CsmClass) o;
+                    friendUID = UIDCsmConverter.objectToUID(cls);
+                }
             }
+            updateCache(newParseCount, currentResolver);
+        //} else {
+        //    System.err.println("cache hit FriendClassImpl");
         }
         return cls;
     }
@@ -174,8 +210,14 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return new CharSequence[0];
     }
     
-    private CsmObject resolve(Resolver resolver) {
-        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASS);
+    private CsmObject resolve() {
+        CsmObject result = null;
+        Resolver aResolver = ResolverFactory.createResolver(this);
+        try {
+            result = aResolver.resolve(nameParts, Resolver.CLASS);
+        } finally {
+            ResolverFactory.releaseResolver(aResolver);
+        }
         if (result == null) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
         }
@@ -197,8 +239,8 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         this.cleanUID();
     }
 
-    private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean global) {
-        templateDescriptor = new TemplateDescriptor(params, name, global);
+    private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization, boolean global) {
+        templateDescriptor = new TemplateDescriptor(params, name, specialization, global);
     }
 
     @Override
@@ -206,6 +248,11 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         return templateDescriptor != null;
     }
 
+    @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+    
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();

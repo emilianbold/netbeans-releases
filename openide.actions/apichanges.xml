@@ -52,6 +52,20 @@ made subject to such option by the copyright holder.
 <changes>
 <change>
       <api name="actions"/>
+      <summary><code>SelectionType ANY in SaveAction</code></summary>
+      <version major="6" minor="20"/>
+      <date day="14" month="12" year="2010"/>
+      <author login="krissco"/>
+      <compatibility binary="compatible" source="compatible" semantic="compatible" addition="no" deprecation="no" deletion="no" modification="yes"/>
+      <description>
+          <code>SaveAction</code> has been modified to allow one or more <code>SaveCookie</code>s
+          into it's context. The previous behavior was to allow EXACTLY_ONE.
+      </description>
+      <class package="org.openide.actions" name="SaveAction"/>
+      <issue number="192948"/>
+</change>
+<change>
+      <api name="actions"/>
       <summary><code>ToolsAction via layers</code></summary>
       <version major="6" minor="15"/>
       <date day="26" month="2" year="2010"/>
@@ -91,7 +105,7 @@ made subject to such option by the copyright holder.
  topComponent.getActionMap().put("jumpPrev", new YourPrevAction());
  topComponent.getActionMap().put("jumpNext", new YourNextAction());
           </pre>
-          if your component provides items and you want the user to jump 
+          if your component provides items and you want the user to jump
           among them using standard next/prev actions.
         </description>
         <issue number="40185"/>
@@ -107,7 +121,7 @@ made subject to such option by the copyright holder.
         This action was used only as default action on templates. It instantiates the
         template when it was double clicked in the Options dialog. This behaviour
         was changed and action is not useful anymore. It is deprecated and it usage
-        should be avoided. Part of the deprecatation was that 
+        should be avoided. Part of the deprecatation was that
         org.openide.loadersDataNode.getDefaultAction() does not return this action
         on templates anymore.
      </description>

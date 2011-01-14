@@ -134,13 +134,11 @@ public final class FolderBasedController extends OptionsPanelController implemen
     
     public final synchronized void update() {
         for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
-            AtomicBoolean used = new AtomicBoolean();
-            OptionsFilter f = createTreeModelFilter(filterDocument, used);
+            OptionsFilter f = createTreeModelFilter(filterDocument, new FilteringUsedCallback(e.getKey()));
             Lookup innerLookup = new ProxyLookup(masterLookup, Lookups.singleton(f));
             OptionsPanelController c = e.getValue();
             c.getComponent(innerLookup);
             c.update();
-            if (used.get()) this.supportFiltering.add(e.getKey());
         }
 
         assert panel != null;
@@ -194,13 +192,11 @@ public final class FolderBasedController extends OptionsPanelController implemen
         if (panel == null) {
             this.masterLookup = masterLookup;
             for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
-                AtomicBoolean used = new AtomicBoolean();
-                OptionsFilter f = createTreeModelFilter(filterDocument, used);
+                OptionsFilter f = createTreeModelFilter(filterDocument, new FilteringUsedCallback(e.getKey()));
                 Lookup innerLookup = new ProxyLookup(masterLookup, Lookups.singleton(f));
                 OptionsPanelController controller = e.getValue();
                 controller.getComponent(innerLookup);
                 controller.addPropertyChangeListener(this);
-                if (used.get()) this.supportFiltering.add(e.getKey());
             }
             panel = new FolderBasedOptionPanel(this, filterDocument, allowFiltering);
         }
@@ -290,13 +286,35 @@ public final class FolderBasedController extends OptionsPanelController implemen
         return supportFiltering.contains(mimeType);
     }
 
+    private final class FilteringUsedCallback implements Runnable {
+        private final String mimeType;
+
+        public FilteringUsedCallback(String mimeType) {
+            this.mimeType = mimeType;
+        }
+
+        @Override
+        public void run() {
+            FolderBasedController.this.supportFiltering.add(mimeType);
+            FolderBasedOptionPanel panel;
+            
+            synchronized (FolderBasedController.this) {
+                panel = FolderBasedController.this.panel;
+            }
+
+            if (panel != null) {
+                panel.searchEnableDisable();
+            }
+        }
+    }
+
     private static OptionsFilterAccessor filterAccessor;
 
     public static void setFilterAccessor(OptionsFilterAccessor filterAccessor) {
         FolderBasedController.filterAccessor = filterAccessor;
     }
 
-    public static OptionsFilter createTreeModelFilter(Document doc, AtomicBoolean used) {
+    public static OptionsFilter createTreeModelFilter(Document doc, Runnable usedCallback) {
         if (filterAccessor == null) {
             try {
                 Class.forName(OptionsFilter.class.getName(), true, OptionsFilter.class.getClassLoader());   //NOI18N
@@ -305,10 +323,10 @@ public final class FolderBasedController extends OptionsPanelController implemen
                 Exceptions.printStackTrace(e);
             }
         }
-        return filterAccessor.create(doc, used);
+        return filterAccessor.create(doc, usedCallback);
     }
 
     public interface OptionsFilterAccessor {
-        public OptionsFilter create(Document doc, AtomicBoolean used);
+        public OptionsFilter create(Document doc, Runnable usedCallback);
     }
 }

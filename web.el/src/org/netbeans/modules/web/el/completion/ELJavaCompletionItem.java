@@ -75,17 +75,23 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/jsf_bean_16.png";//NOI18N
 
+    private final String elementName;
     private final Element javaElement;
     private final ELElement elElement;
     private final ELTypeUtilities typeUtilities;
     private final ElementHandleAdapter adapter;
 
     public ELJavaCompletionItem(Element javaElement, ELElement elElement, ELTypeUtilities typeUtilities) {
+        this(javaElement, null, elElement, typeUtilities);
+    }
+    
+    public ELJavaCompletionItem(Element javaElement, String elementName, ELElement elElement, ELTypeUtilities typeUtilities) {
         assert javaElement != null;
         this.javaElement = javaElement;
         this.elElement = elElement;
         this.typeUtilities = typeUtilities;
         this.elementKind = ElementKind.METHOD;
+        this.elementName = elementName;
         this.adapter = new ElementHandleAdapter();
         setAnchorOffset(elElement.getOriginalOffset().getStart());
     }
@@ -158,7 +164,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getName() {
-            return RefactoringUtil.getPropertyName(javaElement.getSimpleName().toString(), true);
+            return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElement.getSimpleName().toString(), true);
         }
 
         @Override
