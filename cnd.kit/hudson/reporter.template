@@ -112,7 +112,11 @@ upBuild.downstreamBuilds.each {
           } else {
              %><tr><%
           }
-      %><td><a href="${it.url}" class="FAILURE">${it.displayName}</a></td><td>${it.age}</td></tr><%
+          def testName = it.displayName
+          if (it.age > 10) {
+             testName = '<blink>' + testName + '</blink>'
+          }
+      %><td><a href="${it.url}" class="FAILURE">${testName}</a></td><td>${it.age}</td></tr><%
      }
     } else {
       %><td>&nbsp;</td><td>&nbsp;</td></tr><%
