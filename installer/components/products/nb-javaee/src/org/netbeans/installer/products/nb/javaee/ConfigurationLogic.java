@@ -69,8 +69,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "{enterprise-cluster}"; // NOI18N
     //private static final String VISUALWEB_CLUSTER =
     //        "{visualweb-cluster}"; // NOI18N
-    private static final String IDENTITY_CLUSTER =
-            "{identity-cluster}"; // NOI18N
+    //private static final String IDENTITY_CLUSTER =
+    //        "{identity-cluster}"; // NOI18N
     private static final String ID =
             "WEBEE"; // NOI18N
     private static final String MOBILITY_END_2_END_KIT =
@@ -82,10 +82,9 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     // Instance
 
     public ConfigurationLogic() throws InitializationException {
-        super(new String[]{
-                    ENTERPRISE_CLUSTER,
-                    //VISUALWEB_CLUSTER,
-                    IDENTITY_CLUSTER}, ID);
+        super(new String[]{ENTERPRISE_CLUSTER},
+                    /* VISUALWEB_CLUSTER,
+                    IDENTITY_CLUSTER},*/ ID);
     }
 
     @Override
