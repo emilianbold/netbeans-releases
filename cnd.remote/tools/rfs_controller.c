@@ -133,7 +133,8 @@ static void serve_connection(void* data) {
         file_data *fd = find_file_data(filename);
 
         if (pkg->kind == pkg_written) {
-            // process that wrote a file does NOT wait any respone
+            // NB 1: process that wrote a file does NOT wait any response
+            // NB 2: MODIFIED status is final => no need to sync here
             if (fd == NULL) {                
                 trace("File %s is unknown - nothing to uncontrol\n", filename);
             } else if (fd->state == MODIFIED) {
@@ -151,6 +152,7 @@ static void serve_connection(void* data) {
             char response[64];
             response[1] = 0;
             if (fd != NULL) {
+                mutex_lock(&fd->mutex); //NB: never return unless unlocked !!!
                 switch (fd->state) {
                     case TOUCHED:
                         trace("File %s state %c - requesting LC\n", filename, (char) fd->state);
@@ -189,6 +191,7 @@ static void serve_connection(void* data) {
                         trace("File %s state %c (0x%x)- unexpected state, replying %s\n", filename, (char) fd->state, (char) fd->state, response);
                         break;
                 }
+                mutex_unlock(&fd->mutex);
             } else {
                 response[0] = response_ok;
                 trace("File %s: state n/a, replying: %s\n", filename, response);
