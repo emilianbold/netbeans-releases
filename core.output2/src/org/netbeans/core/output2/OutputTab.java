@@ -803,6 +803,15 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             return id;
         }
 
+        @Override
+        public boolean isEnabled() {
+            if (getIO().isClosed()) {
+                // Cached action for an already closed tab.
+                return false;
+            }
+            return super.isEnabled();
+        }
+
         public void actionPerformed(ActionEvent e) {
             switch (id) {
                 case ACTION_COPY:
