@@ -44,11 +44,13 @@
 package org.netbeans.modules.subversion.options;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.MissingResourceException;
 import javax.swing.filechooser.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +61,7 @@ import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -75,15 +78,11 @@ import org.openide.util.NbBundle;
 public final class SvnOptionsController extends OptionsPanelController implements ActionListener {
     
     private final SvnOptionsPanel panel;
-    private final Repository repository;
+    private Repository repository;
     private final AnnotationSettings annotationSettings;
     private static final HashSet<String> allowedExecutables = new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe", "libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
         
     public SvnOptionsController() {        
-        
-        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE;
-        String title = org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location");
-        repository = new Repository(repositoryModeMask, title); // NOI18N
         
         annotationSettings = new AnnotationSettings();
         
@@ -96,6 +95,12 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.annotationTextField.setToolTipText(tooltip);                
         panel.addButton.addActionListener(this);         
     }
+
+    private void createRepository() throws MissingResourceException {
+        int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE;
+        String title = org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location");
+        repository = new Repository(repositoryModeMask, title); // NOI18N
+    }
     
     public void update() {
         
@@ -103,7 +108,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
         annotationSettings.update();
-        repository.refreshUrlHistory();
+        if (repository != null) {
+            repository.refreshUrlHistory();
+        }
         panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
         panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
         
@@ -127,7 +134,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
     
     public void cancel() {
-        repository.refreshUrlHistory();
+        if (repository != null) {
+            repository.refreshUrlHistory();
+        }
     }
     
     public boolean isValid() {
@@ -137,7 +146,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public boolean isChanged() {        
         return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) || 
                !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault().getAnnotationFormat()) || 
-               repository.isChanged() || 
+               (repository != null && repository.isChanged()) || 
                annotationSettings.isChanged();
     }
         
@@ -201,11 +210,33 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
     
     private void onManageConnClick() {
-        boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class), true);
-        if(ok) {            
-            repository.storeRecentUrls();
-        } else {    
-            repository.refreshUrlHistory();
+        if (repository == null) {
+            panel.manageConnSettingsButton.setEnabled(false);
+            new SvnProgressSupport() {
+                @Override
+                protected void perform () {
+                    try {
+                        createRepository();
+                    } finally {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                panel.manageConnSettingsButton.setEnabled(true);
+                                if (repository != null) {
+                                    onManageConnClick();
+                                }
+                            }
+                        });
+                    }
+                }
+            }.start(Subversion.getInstance().getParallelRequestProcessor(), null, NbBundle.getMessage(SvnOptionsController.class, "MSG_ManageConnections.initializing")); //NOI18N
+        } else {
+            boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class), true);
+            if(ok) {            
+                repository.storeRecentUrls();
+            } else {    
+                repository.refreshUrlHistory();
+            }
         }
     }
     
