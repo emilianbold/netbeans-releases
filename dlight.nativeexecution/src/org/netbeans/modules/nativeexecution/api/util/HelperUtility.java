@@ -84,8 +84,6 @@ public class HelperUtility {
             throw new IllegalStateException(env.toString() + " is not connected"); // NOI18N
         }
 
-        Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
-
         String result = null;
 
         synchronized (cache) {
@@ -99,6 +97,7 @@ public class HelperUtility {
                     if (env.isLocal()) {
                         result = localFile;
                     } else {
+                        Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
                         final String fileName = new File(localFile).getName();
                         final String remoteFile = hinfo.getTempDir() + '/' + fileName;
 
