@@ -1038,7 +1038,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Set<FileImpl> candidates = new HashSet<FileImpl>();
         Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
         for (FileImpl file : getAllFileImpls()) {
-            if (!file.getFile().exists()) {
+            FileObject fo = file.getFileObject();
+            if (fo == null || !fo.isValid()) {
                 removedPhysically.add(file);
             } else if (projectFiles != null) { // they might be null for library
                 if (!projectFiles.contains(file.getAbsolutePath().toString())) {

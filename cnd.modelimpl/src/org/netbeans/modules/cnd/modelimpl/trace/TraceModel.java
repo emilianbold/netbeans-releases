@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
@@ -749,7 +750,7 @@ public class TraceModel extends TraceModelBase {
     private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance(CndFileUtils.getLocalFileSystem());
     private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage(CndFileUtils.getLocalFileSystem());
     
-    private APTIncludeHandler getIncludeHandler(File file) {
+    private APTIncludeHandler getIncludeHandler(FileObject fo) {
         List<String> systemIncludes = getSystemIncludes();
         List<IncludeDirEntry> sysIncludes = sysAPTData.getIncludes(systemIncludes.toString(), systemIncludes); // NOI18N
         List<String> qInc = getQuoteIncludePaths();
@@ -757,23 +758,27 @@ public class TraceModel extends TraceModelBase {
             qInc = new ArrayList<String>(getQuoteIncludePaths().size());
             for (Iterator<String> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
                 String path = it.next();
-                if (!(new File(path).isAbsolute())) {
-                    File dirFile = file.getParentFile();
-                    File pathFile = new File(dirFile, path.toString());
-                    path = pathFile.getAbsolutePath();
-                }
-                qInc.add(path);
+                if (CndPathUtilitities.isPathAbsolute(path)) {
+                    qInc.add(path);
+                } else {
+                    FileObject dirFO = fo.getParent();
+                    FileObject pathFile = dirFO.getFileObject(path);
+                    if (pathFile != null && pathFile.isValid()) {
+                        path = pathFile.getPath();
+                        qInc.add(path);
+                    }
+                }                
             }
         }
-        StartEntry startEntry = new StartEntry(CndFileUtils.getLocalFileSystem(), file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+        StartEntry startEntry = new StartEntry(CndFileUtils.getLocalFileSystem(), fo.getPath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
         List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
 
-    private APTMacroMap getMacroMap(File file) {
+    private APTMacroMap getMacroMap(FileObject fo) {
         //print("SystemIncludePaths: " + systemIncludePaths.toString() + "\n");
         //print("QuoteIncludePaths: " + quoteIncludePaths.toString() + "\n");
-        APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(file), getMacros());
+        APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(fo), getMacros());
         return map;
     }
 
@@ -781,7 +786,7 @@ public class TraceModel extends TraceModelBase {
 //	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
 //	return preprocHandler;
 //    }
-    private APTMacroMap getSysMap(File file) {
+    private APTMacroMap getSysMap(FileObject fo) {
         APTMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
         return map;
     }
@@ -836,7 +841,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTWalkerVisit(APTFile apt, FileBuffer buffer) throws TokenStreamException, IOException {
-        File file = buffer.getFile();
+        FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
         if (cleanAPT) {
@@ -844,7 +849,7 @@ public class TraceModel extends TraceModelBase {
             time = System.currentTimeMillis();
             apt = APTDriver.findAPTLight(buffer);
         }
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), true);
+        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true);
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         walker.visit();
         time = System.currentTimeMillis() - time;
@@ -871,7 +876,6 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTWalkerGetStream(APTFile apt, FileBuffer buffer, boolean expand, boolean filter, boolean printTokens) throws TokenStreamException, IOException {
-        File file = buffer.getFile();
         FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
@@ -880,8 +884,8 @@ public class TraceModel extends TraceModelBase {
             time = System.currentTimeMillis();
             apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
         }
-        APTMacroMap macroMap = getMacroMap(file);
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
+        APTMacroMap macroMap = getMacroMap(fo);
+        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true);
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         TokenStream ts = walker.getTokenStream();
         if (expand) {
