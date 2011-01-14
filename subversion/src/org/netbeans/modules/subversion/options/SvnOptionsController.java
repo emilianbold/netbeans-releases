@@ -102,6 +102,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         repository = new Repository(repositoryModeMask, title); // NOI18N
     }
     
+    @Override
     public void update() {
         
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
@@ -116,6 +117,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         
     }
     
+    @Override
     public void applyChanges() {                                 
         // executable
         if(!panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath())) {
@@ -133,16 +135,19 @@ public final class SvnOptionsController extends OptionsPanelController implement
         Subversion.getInstance().refreshAllAnnotations();        
     }
     
+    @Override
     public void cancel() {
         if (repository != null) {
             repository.refreshUrlHistory();
         }
     }
     
+    @Override
     public boolean isValid() {
         return true;
     }
     
+    @Override
     public boolean isChanged() {        
         return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) || 
                !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault().getAnnotationFormat()) || 
@@ -150,22 +155,27 @@ public final class SvnOptionsController extends OptionsPanelController implement
                annotationSettings.isChanged();
     }
         
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(getClass());
     }
     
+    @Override
     public javax.swing.JComponent getComponent(org.openide.util.Lookup masterLookup) {
         return panel;
     }
     
+    @Override
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         
     }
     
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
             onBrowseClick();
@@ -315,7 +325,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
             int pos = panel.annotationTextField.getCaretPosition();
             if(pos < 0) pos = annotation.length();
 
-            StringBuffer sb = new StringBuffer(annotation.length() + variable.length());
+            StringBuilder sb = new StringBuilder(annotation.length() + variable.length());
             sb.append(annotation.substring(0, pos));
             sb.append(variable);
             if(pos < annotation.length()) {
