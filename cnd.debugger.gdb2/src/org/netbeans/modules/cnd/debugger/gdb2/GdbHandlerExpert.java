@@ -157,26 +157,31 @@ public class GdbHandlerExpert implements HandlerExpert {
 	//
 	// Now we should breeze through
 	//
-	String cmd = "-break-insert";				// NOI18N
+	StringBuilder cmd = new StringBuilder("-break-insert");				// NOI18N
+        
+        cmd.append(debugger.getGdbVersionPeculiarity().breakPendingFlag());
 
-	if (breakpoint.getTemp())
-	    cmd += " -t";					// NOI18N
+	if (breakpoint.getTemp()) {
+	    cmd.append(" -t");					// NOI18N
+        }
 
-	if (breakpoint.getCondition() != null)
-	    cmd += " -c " + quote(breakpoint.getCondition());	// NOI18N
+	if (breakpoint.getCondition() != null) {
+	    cmd.append(" -c ").append(quote(breakpoint.getCondition()));	// NOI18N
+        }
 
 	if (breakpoint.hasCountLimit()) {
 	    if (breakpoint.getCountLimit() == -1) {
-		cmd += " -i " + infinity;			// NOI18N
+		cmd.append(" -i ").append(infinity);			// NOI18N
 	    } else {
 		Long limit = new Long(breakpoint.getCountLimit() - 1);
-		cmd += " -i " + limit;	// NOI18N
+		cmd.append(" -i ").append(limit);	// NOI18N
 	    }
 	}
 
 	// -p doesn't seem to be documented
-	if (breakpoint.getThread() != null)
-	    cmd += " -p " + breakpoint.getThread();		// NOI18N
+	if (breakpoint.getThread() != null) {
+	    cmd.append(" -p ").append(breakpoint.getThread());		// NOI18N
+        }
 
 	// Only gdb 6.8 and newer understand -d
 	/* LATER
@@ -215,11 +220,11 @@ public class GdbHandlerExpert implements HandlerExpert {
 		fileLine = "" + line;		// NOI18N
 	    }
 
-	    cmd += " \"" + fileLine + "\""; // NOI18N
+	    cmd.append(" \"").append(fileLine).append('"'); // NOI18N
 
 	} else if (bClass == InstructionBreakpoint.class) {
 	    InstructionBreakpoint ib = (InstructionBreakpoint) breakpoint;
-	    cmd += " *" + ib.getAddress(); // NOI18N
+	    cmd.append(" *").append(ib.getAddress()); // NOI18N
 
 	} else if (bClass == FunctionBreakpoint.class) {
 	    FunctionBreakpoint fb = (FunctionBreakpoint) breakpoint;
@@ -239,14 +244,14 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    // MI -break-insert doesn't like like spaces in function names.
 	    // Surrounding teh whole function signature with quotes seems
 	    // to help.
-	    cmd += " \"" + function + "\""; // NOI18N
+	    cmd.append(" \"").append(function).append('"'); // NOI18N
 
 	} else {
 	    return HandlerCommand.makeError(null);
 	}
 
 
-	return HandlerCommand.makeCommand(cmd);
+	return HandlerCommand.makeCommand(cmd.toString());
     }
 
     // interface HandlerExpert
