@@ -1479,12 +1479,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     <mkdir dir="${netbeans.build.dir}"/>
     <dirset id="source.dirset" dir="${nb_all}"
-            includes="${allmodules},${harness-modules},nbbuild,ide,nbi"
+            includes="${allmodules},${harness-modules},nbbuild,ide,nbi,libs.antlr3.devel"
             excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
     />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}">
+            <include name="libs.antlr3.devel/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
     <zip zipfile="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip" duplicate="preserve">
       <zipfileset dir="${nb_all}" includes="${source.dirs}">
           <exclude name="*/build/**/*"/>

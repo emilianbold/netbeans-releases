@@ -821,7 +821,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 currentDisPCMarker.setLine(null, isCurrent());
             } else {
                 visitMarker.setLine(null, isCurrent());
-                currentPCMarker.setLine(l, isCurrent());
+		// CR 7009746
+		if (!state.isRunning)
+		    currentPCMarker.setLine(l, isCurrent());
             }
         } else {
             visitMarker.setLine(null, isCurrent());
@@ -876,18 +878,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                     }
 
                     // Locations should already be in local path form.
-                    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
-                    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
-                    if (l != null) {
-                        setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), andShow);
-                    }
-                } else {
-                    setCurrentLine(null, false, false, andShow);
+		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
+		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
+		    if (l != null)
+			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), andShow);
+	    } else {
+		    setCurrentLine(null, false, false, andShow);
 
                     if (getVisitedLocation() != null) {
                         disStateModel().updateStateModel(getVisitedLocation(), true);
-
-                        openDis();
+			if (getVisitedLocation().pc() != 0)
+			    openDis();
                     }
                 }
             }

@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,8 +54,11 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -221,7 +225,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (".".equals(relativePath)) { // NOI18N
             return this;
         } else if ("..".equals(relativePath)) { // NOI18N
-            return getParent();
+            RemoteDirectory parent = getParent();
+            return (parent == null) ? this : parent ;
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
@@ -250,6 +255,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
+            RemoteLogger.finest(ex);
+            return null;
+        } catch (FileNotFoundException ex) {
             RemoteLogger.finest(ex);
             return null;
         } catch (IOException ex) {
@@ -559,10 +567,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return storage;
     }
 
-    void ensureChildSync(RemotePlainFile child) throws
+    synchronized InputStream _getInputStream(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
-        if (child.cache.exists() && child.cache.length() > 0) {
+        if (child.cache.exists()) {
+            return new FileInputStream(child.cache);
+        }
+        checkConnection(child, true);
+        DirectoryStorage storage = getDirectoryStorage(true);
+        return new CachedRemoteInputStream(child, execEnv);
+    }
+
+    synchronized void ensureChildSync(RemotePlainFile child) throws
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        if (child.cache.exists()) {
             return;
         }
         checkConnection(child, true);
@@ -669,5 +688,53 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private static boolean equals(String s1, String s2) {
         return (s1 == null) ? (s2 == null) : s1.equals(s2);
+    }
+
+    private Entry getChildEntry(RemoteFileObjectBase child) {
+        try {
+            DirectoryStorage directoryStorage = getDirectoryStorage(false);
+            if (directoryStorage != null) {
+                Entry entry = directoryStorage.getEntry(child.getNameExt());
+                if (entry != null) {
+                    return entry;
+                } else {
+                    RemoteLogger.getInstance().log(Level.INFO, "Not found entry for file {0}", child); // NOI18N
+                }
+            }
+        } catch (ConnectException ex) {
+        } catch (IOException ex) {
+        } catch (InterruptedException ex) {
+        } catch (CancellationException ex) {
+        }
+        return null;
+    }
+
+    long getSize(RemoteFileObjectBase child) {
+        Entry childEntry = getChildEntry(child);
+        if (childEntry != null) {
+            return childEntry.getSize();
+        }
+        return 0;
+    }
+
+    Date lastModified(RemoteFileObjectBase child) {
+        Entry childEntry = getChildEntry(child);
+        if (childEntry != null) {
+            String timestamp = childEntry.getTimestamp();
+            try {
+                if (timestamp != null) {
+                    int dot = timestamp.indexOf('.'); // NOI18N
+                    if (dot > 0) {
+                        int space = timestamp.indexOf(' ', dot); // NOI18N
+                        if (space > 0) {
+                            timestamp = timestamp.substring(0,dot)+timestamp.substring(space);
+                        }
+                    }
+                    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").parse(timestamp); // NOI18N
+                }
+            } catch (ParseException ex) {
+            }
+        }
+        return null;
     }
 }

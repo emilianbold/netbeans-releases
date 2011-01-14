@@ -754,6 +754,8 @@ public abstract class Properties {
         }
 
         private static final class ReaderHolder extends ServicesHolder<Reader> {
+            
+            private final DefaultReader defaultReader = new DefaultReader();
 
             public ReaderHolder() {
                 super(Reader.class);
@@ -761,7 +763,7 @@ public abstract class Properties {
 
             @Override
             protected void initServices() {
-                registerService(new DefaultReader());
+                registerService(defaultReader);
             }
 
             @Override
@@ -776,6 +778,10 @@ public abstract class Properties {
 
             @Override
             protected void unregisterService(Reader r) {
+                if (r == defaultReader) {
+                    // The default reader should not be unregistered.
+                    return ;
+                }
                 //System.err.println("unregisterReader("+r+")");
                 String[] ns = r.getSupportedClassNames ();
                 int j, jj = ns.length;

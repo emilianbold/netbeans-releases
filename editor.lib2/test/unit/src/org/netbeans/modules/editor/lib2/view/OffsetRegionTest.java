@@ -41,50 +41,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.overridden;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
+package org.netbeans.modules.editor.lib2.view;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Miloslav Metelka
  */
-public class ReverseSourceRootsLookup {
+public class OffsetRegionTest extends NbTestCase {
     
-    /** Creates a new instance of ReverseSourceRootsLookup */
-    private ReverseSourceRootsLookup() {
+    public OffsetRegionTest(String name) {
+        super(name);
     }
     
-    public static Set<FileObject> reverseSourceRootsLookup(FileObject baseSourceRoot) {
-//        System.err.println("baseSourceRoot=" + baseSourceRoot);
-        Set<FileObject> result = new HashSet<FileObject>();
-        
-        MAIN_LOOP: for (FileObject sourceRoot : GlobalPathRegistry.getDefault().getSourceRoots()) {
-//            System.err.println("sourceRoot=" + sourceRoot);
-//            System.err.println("cp=" + ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE));
-            for (Entry compileClassPathElement : ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE).entries()) {
-//                System.err.println("checking cp element=" + compileClassPathElement);
-                for (FileObject proposedSourceRoot : SourceForBinaryQuery.findSourceRoots(compileClassPathElement.getURL()).getRoots()) {
-//                    System.err.println("proposedSourceRoot=" + FileUtil.getFileDisplayName(proposedSourceRoot));
-                    if (baseSourceRoot.equals(proposedSourceRoot)) {
-                        result.add(sourceRoot);
-                        continue MAIN_LOOP;
-                    }
-                }
-            }
+    public void testUnionAndIntersection() throws Exception {
+        OffsetRegion empty = OffsetRegion.empty();
+        assertTrue(empty.isEmpty());
+        OffsetRegion empty2 = OffsetRegion.create(5, 5);
+        assertTrue(empty2.isEmpty());
+        try {
+            OffsetRegion i = OffsetRegion.create(5, 1);
+            fail("Creation succeeded"); // NOI18N
+        } catch (IllegalArgumentException ex) {
+            // Expected
         }
-        
-        return result;
+        OffsetRegion r1 = OffsetRegion.create(5, 9);
+        OffsetRegion r2 = OffsetRegion.create(1, 5);
+        OffsetRegion r3 = OffsetRegion.create(3, 7);
+        OffsetRegion r4 = OffsetRegion.create(5, 6);
+        OffsetRegion r = r1.union(r2);
+        assertRegion(r, 1, 9);
+        assertSame(r3, r3.union(r3));
+        assertSame(r3, r3.union(r4));
+        assertSame(r3, r3.union(r4));
+        assertSame(empty, r1.intersection(1, 4));
+        assertSame(empty, r1.intersection(10, 12));
+        assertSame(r1, r1.intersection(5, 9));
     }
     
+    private static void assertRegion(OffsetRegion r, int startOffset, int endOffset) {
+        assertEquals("Invalid startOffset", startOffset, r.startOffset());
+        assertEquals("Invalid endOffset", endOffset, r.endOffset());
+    }
+
 }

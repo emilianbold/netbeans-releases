@@ -1180,8 +1180,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
         
         // set terminal mode on windows, see IZ 193220
-        if (getHost().getPlatform() == Platform.Windows_x86 &&
-                gdi.getConsoleType(Host.isRemote(getHost())) == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+        if (getHost().getPlatform() == Platform.Windows_x86 && getIOPack().isExternal()) {
             send("set new-console"); //NOI18N
         }
 
@@ -2688,7 +2687,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private void genericStoppedWithSrc(MIRecord record, MIRecord srcRecord) {
         final MITList srcResults = (srcRecord == null) ? null : srcRecord.results();
-	final MITList results = (record == null) ? null : record.results();
+	MITList results = (record == null) ? null : record.results();
+        // make results null if empty to avoid later checks, IZ194272
+        if (results != null && results.isEmpty()) {
+            results = null;
+        }
         final MIValue reasonValue = (results == null) ? null : results.valueOf("reason"); // NOI18N
         final String reason;
         if (reasonValue == null) {
@@ -2894,7 +2897,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
          */
 
         final MITList results = stopRecord.results();
-        final MIValue reasonValue = results.valueOf("reason"); //NOI18N
         
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
@@ -2909,6 +2911,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         //detect silent stop
         if (gdb.isSignalled()) {
+            final MIValue reasonValue = results.valueOf("reason"); //NOI18N
             if (reasonValue != null && "signal-received".equals(reasonValue.asConst().value())) { //NOI18N
                 MIValue signalValue = results.valueOf("signal-name"); //NOI18N
                 if (signalValue != null) {

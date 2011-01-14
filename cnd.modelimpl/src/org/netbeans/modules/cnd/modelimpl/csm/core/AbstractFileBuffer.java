@@ -56,7 +56,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -65,7 +64,6 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,22 +74,9 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
     private Charset encoding;
-    
-    protected AbstractFileBuffer(CharSequence absPath) {        
-        if (CndUtils.isDebugMode()) {
-            File file = new File(absPath.toString());
-            CndUtils.assertFileMode(file);
-            CndUtils.assertNormalized(file);
-            if (CndTraceFlags.USE_FILE_OBJECTS) {
-                System.err.printf("Warning: AbstractFileBuffer(String): %s\n", absPath);
-            }
-        }
-        this.absPath = FilePathCache.getManager().getString(absPath);
-        this.fileSystem = CndFileUtils.getLocalFileSystem();
-    }
 
     protected AbstractFileBuffer(FileObject fileObject) {
-        this.absPath = FilePathCache.getManager().getString(fileObject.getPath());
+        this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
         if (CndUtils.isDebugMode()) {
             FileObject fo2 = fileSystem.findResource(absPath.toString());
@@ -138,24 +123,17 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public FileObject getFileObject() {
-        if (CndTraceFlags.USE_FILE_OBJECTS) {
-            return fileSystem.findResource(absPath.toString());
-        } else {
-            return CndFileUtils.toFileObject(absPath);
+        FileObject result = fileSystem.findResource(absPath.toString());
+        if (result == null) {
+            CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
         }
+        return result;
     }
 
     @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
-            FileObject fo;
-            if (CndTraceFlags.USE_FILE_OBJECTS) {
-                fo = getFileObject();
-            } else {
-                File file = getFile();
-                // file must be normalized
-                fo = CndFileUtils.toFileObject(file);
-            }
+            FileObject fo = getFileObject();
             if (fo != null && fo.isValid()) {
                 encoding = FileEncodingQuery.getEncoding(fo);
             } else { // paranoia
@@ -167,7 +145,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return reader;
     }
     
-    public abstract InputStream getInputStream() throws IOException;
+        public abstract InputStream getInputStream() throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

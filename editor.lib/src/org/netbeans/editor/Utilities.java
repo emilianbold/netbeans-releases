@@ -1831,7 +1831,7 @@ public class Utilities {
         }
     }
 
-    public static final class DelegatingBorder implements Border {
+    private static final class DelegatingBorder implements Border {
 
         private Border delegate;
         private Insets insets;

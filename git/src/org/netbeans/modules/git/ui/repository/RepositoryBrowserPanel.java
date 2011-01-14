@@ -200,8 +200,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 currRevision = selectedNode.getLookup().lookup(Revision.class);
                 currRepository = lookupRepository(selectedNode);
             }
-            if ((currRevision != null || oldRevision != null) 
-                    && !(currRevision != null && oldRevision != null && currRevision.getRevision().equals(oldRevision.getRevision()))) {
+            if ((currRevision != null || oldRevision != null) && !(currRevision != null && oldRevision != null 
+                    && currRevision.getName().equals(oldRevision.getName()) && currRevision.getRevision().equals(oldRevision.getRevision()))) {
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
             if (options.contains(Option.DISPLAY_REVISIONS) && currRevision != null) {
@@ -264,7 +264,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             } else if (selectedRevision != null) {
                 currRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision());
-                if (oldRevision == null || !currRevision.getRevision().equals(oldRevision.getRevision())) {
+                if (oldRevision == null || !currRevision.getName().equals(oldRevision.getName())
+                        || !currRevision.getRevision().equals(oldRevision.getRevision())) {
                     firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
                 }
             }
@@ -478,13 +479,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
-    private class BranchesTopChildren extends Children.Keys<BranchNodeType> {
+    private class BranchesTopChildren extends Children.Keys<BranchNodeType> implements PropertyChangeListener {
         private final File repository;
         private java.util.Map<String, GitBranch> branches = new TreeMap<String, GitBranch>();
         private BranchesNode local, remote;
 
         private BranchesTopChildren (File repository) {
             this.repository = repository;
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         }
 
         @Override
@@ -531,19 +534,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         GitClient client = getClient();
                         final java.util.Map<String, GitBranch> branches = client.getBranches(true, this);
                         if (!isCanceled()) {
-                            if (branches.isEmpty()) {
-                                BranchesTopChildren.this.branches.clear();
-                            } else {
-                                BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
-                                branches.keySet().removeAll(BranchesTopChildren.this.branches.keySet());
-                                BranchesTopChildren.this.branches.putAll(branches);
-                            }
-                            if (local != null) {
-                                local.refresh();
-                            }
-                            if (remote != null) {
-                                remote.refresh();
-                            }
+                            refreshBranches(branches);
                         }
                     } catch (GitException ex) {
                         LOG.log(Level.INFO, "refreshBranches()", ex); //NOI18N
@@ -551,7 +542,40 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingBranches")); //NOI18N
         }
+        
+        private void refreshBranches (java.util.Map<String, GitBranch> branches) {
+            if (branches.isEmpty()) {
+                BranchesTopChildren.this.branches.clear();
+            } else {
+                BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
+                for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
+                    GitBranch newBranchInfo = branches.get(e.getKey());
+                    // refresh also branches that changed head or active state
+                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() != e.getValue().isActive())) {
+                        branches.remove(e.getKey());
+                    }
+                }
+                BranchesTopChildren.this.branches.putAll(branches);
+            }
+            if (local != null) {
+                local.refresh();
+            }
+            if (remote != null) {
+                remote.refresh();
+            }
+        }
 
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            if (RepositoryInfo.PROPERTY_BRANCHES.equals(evt.getPropertyName())) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        refreshBranches((java.util.Map<String, GitBranch>) evt.getNewValue());
+                    }
+                });
+            }
+        }
     }
 
     private class BranchesNode extends RepositoryBrowserNode {
@@ -599,7 +623,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Node[] createNodes (GitBranch key) {
-            return new Node[] { new BranchNode(key) };
+            Node node = getNode();
+            while (!(node instanceof RepositoryNode)) {
+                node = node.getParentNode();
+            }
+            File repository = ((RepositoryNode) node).getRepository();
+            return new Node[] { new BranchNode(repository, key) };
         }
 
         private void refreshKeys () {
@@ -615,25 +644,67 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private class BranchNode extends RepositoryBrowserNode {
-        private final GitBranch branch;
+        private PropertyChangeListener list;
+        private boolean active;
+        private final String branchName;
+        private String branchId;
 
-        public BranchNode (GitBranch branch) {
+        public BranchNode (File repository, GitBranch branch) {
             super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
-            this.branch = branch;
+            branchName = branch.getName();
+            branchId = branch.getId();
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(list = new PropertyChangeListener() {
+                @Override
+                public void propertyChange (PropertyChangeEvent evt) {
+                    if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName()) || RepositoryInfo.PROPERTY_HEAD.equals(evt.getPropertyName())) {
+                        refreshActiveBranch((GitBranch) evt.getNewValue());
+                    }
+                }
+            }, info));
+            refreshActiveBranch(info.getActiveBranch());
         }
 
         @Override
         public String getDisplayName () {
-            return getName();
+            return getName(false);
         }
 
         @Override
-        public String getName () {
-            StringBuilder sb = new StringBuilder(branch.getName());
+        public String getHtmlDisplayName() {
+            return getName(true);
+        }
+
+        @Override
+        public String getName() {
+            return getName(false);
+        }
+        
+        public String getName (boolean html) {
+            StringBuilder sb = new StringBuilder();
+            if (active && html) {
+                sb.append("<html><strong>").append(branchName).append("</strong>"); //NOI18N
+            } else {
+                sb.append(branchName);
+            }
             if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
-                sb.append(" - ").append(branch.getId()); //NOI18N
+                sb.append(" - ").append(branchId); //NOI18N
             }
             return sb.toString();
+        }
+
+        private void refreshActiveBranch (GitBranch activeBranch) {
+            String oldHtmlName = getHtmlDisplayName();
+            if (activeBranch.getName().equals(branchName)) {
+                active = true;
+                this.branchId = activeBranch.getId();
+            } else {
+                active = false;
+            }
+            String newHtmlName = getHtmlDisplayName();
+            if (!oldHtmlName.equals(newHtmlName)) {
+                fireDisplayNameChange(null, null);
+            }
         }
     }
     //</editor-fold>

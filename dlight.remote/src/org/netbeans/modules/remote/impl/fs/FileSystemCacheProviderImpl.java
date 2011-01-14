@@ -58,6 +58,6 @@ public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
     protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
         String hostId = EnvUtils.toHostID(executionEnvironment);
         String root = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/remote-files/"; //NOI18N;
-        return root + '/' + hostId + '/';
+        return root + hostId + '/';
     }
 }

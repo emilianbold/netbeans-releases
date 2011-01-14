@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test for reaction for external modifications
@@ -97,7 +99,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
 
         writeFile(sourceFile, "void " + newName + "() {};");
-        fireFileChanged(project, sourceFile);
+        fireFileChanged(project, FileUtil.toFileObject(FileUtil.normalizeFile(sourceFile)));
 
         project.waitParse();
         assertNotNull(newName + " should be found", findDeclaration(newName, project));
@@ -122,7 +124,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
         writeFile(headerFile, "void foo();\n");
-        fireFileAdded(project, headerFile);
+        fireFileAdded(project, FileUtil.toFileObject(FileUtil.normalizeFile(headerFile)));
 
         project.waitParse();
 
@@ -150,7 +152,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
         writeFile(headerFile2, "void foo();\n");
-        fireFileAdded(project, headerFile2);
+        fireFileAdded(project, FileUtil.toFileObject(FileUtil.normalizeFile(headerFile2)));
 
         project.waitParse();
 
@@ -195,7 +197,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         CsmFile fileImpl = getCsmFile(sourceFile);
         checkDeadBlocks(project, fileImpl, "File must have one dead code block ", new int[][] {{4, 13, 5, 22}, {10, 13, 12, 2}});
         writeFile(sourceFile, newText);
-        fireFileChanged(project, sourceFile);
+        fireFileChanged(project, FileUtil.toFileObject(FileUtil.normalizeFile(sourceFile)));
 
         project.waitParse();
         assertNotNull(visibleFunction + " should be found", findDeclaration(visibleFunction, project));
@@ -204,19 +206,19 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
 
     }
     
-    private void fireFileChanged(final CsmProject project, File sourceFile) {
+    private void fireFileChanged(final CsmProject project, FileObject sourceFileObject) {
         Object platform = project.getPlatformProject();
         if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
             NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
-            nativeProject.fireFileChanged(sourceFile);
+            nativeProject.fireFileChanged(sourceFileObject);
         }
     }
 
-    private void fireFileAdded(final CsmProject project, File sourceFile) {
+    private void fireFileAdded(final CsmProject project, FileObject sourceFileObject) {
         Object platform = project.getPlatformProject();
         if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
             NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
-            nativeProject.fireFileAdded(sourceFile);
+            nativeProject.fireFileAdded(sourceFileObject);
         }
     }
 

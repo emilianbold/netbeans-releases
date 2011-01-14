@@ -153,10 +153,7 @@ public final class ReferencesSupport {
         return Utilities.getRowStartFromLineOffset(doc, lineIndex - 1) + (colIndex - 1);
     }
 
-    public static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
-        File file = new File(absPath);
-        // convert file into file object
-        FileObject fileObject = CndFileUtils.toFileObject(file);
+    private static BaseDocument getBaseDocument(FileObject fileObject) throws DataObjectNotFoundException, IOException {
         if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
@@ -555,7 +552,7 @@ public final class ReferencesSupport {
                     return pair.doc;
                 }
             }
-            doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath().toString());
+            doc = ReferencesSupport.getBaseDocument(file.getFileObject());
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace(System.err);
         } catch (IOException ex) {

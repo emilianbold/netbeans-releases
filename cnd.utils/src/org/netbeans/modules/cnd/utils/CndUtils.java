@@ -49,9 +49,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -216,19 +215,16 @@ public class CndUtils {
             }
         }
     }
-    
-    public static void assertFileMode(File file) {
-        if (isDebugMode() && CndTraceFlags.USE_FILE_OBJECTS) {
-            assertTrueInConsole(false, "Should use file object instead of file " + file); // NOI18N
-        }
-    }    
-    
-    public static void assertFileObjectMode(FileObject fileObject) {
-        if (isDebugMode() && !CndTraceFlags.USE_FILE_OBJECTS) {
-            assertTrueInConsole(false, "Should use file instead of file object" + fileObject); // NOI18N
-        }
-    }    
 
+    public static void assertNormalized(FileSystem fs, CharSequence absPath) {
+        if (isDebugMode()) {
+            String normFile = CndFileUtils.normalizeAbsolutePath(fs, absPath.toString());
+            if (!normFile.contentEquals(absPath)) {
+                assertTrueInConsole(false, "Parameter file was not normalized. Was " + absPath + " instead of " + normFile); // NOI18N
+            }
+        }
+    }
+    
     public static Logger getLogger() {
         return LOG;
     }

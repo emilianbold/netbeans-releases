@@ -58,8 +58,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -67,6 +69,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
@@ -80,6 +83,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
 
     public ConfigurationMakefileWriterTest(String name) {
         super(name);
+        cleanUserDir();
     }
 
     public static File getBaseFolder(){
@@ -156,7 +160,53 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
+        
+        // Dump state
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        System.err.println("ExecutionEnvironment " + env);
+        System.err.println("host: " + env.getHost());
+        System.err.println("host address: " + env.getHostAddress());
+        System.err.println("user: " + env.getUser());
+        System.err.println("local: " + env.isLocal());
+        System.err.println("remote: " + env.isRemote());
+        
+        DevelopmentHostConfiguration host = conf.getDevelopmentHost();        
+        System.err.println("DevelopmentHost " + host);
+        System.err.println("platform: " + host.getBuildPlatformName());
+        System.err.println("name: " + host.getHostDisplayName(true));
+        System.err.println("key: " + host.getHostKey());
 
+        System.err.println("DefaultDevelopmentHostID " + CppUtils.getDefaultDevelopmentHost());
+        
+        env = ExecutionEnvironmentFactory.fromUniqueID(CppUtils.getDefaultDevelopmentHost());
+        System.err.println("DefaultExecutionEnvironment " + env);
+        System.err.println("host: " + env.getHost());
+        System.err.println("host address: " + env.getHostAddress());
+        System.err.println("user: " + env.getUser());
+        System.err.println("local: " + env.isLocal());
+        System.err.println("remote: " + env.isRemote());
+        
+        host = new DevelopmentHostConfiguration(env);        
+        System.err.println("DefaultDevelopmentHost " + host);
+        System.err.println("platform: " + host.getBuildPlatformName());
+        System.err.println("name: " + host.getHostDisplayName(true));
+        System.err.println("key: " + host.getHostKey());
+        
+        System.err.println("CompilerSets"); // NOI18N        
+        for (CompilerSet cs : conf.getCompilerSet().getCompilerSetManager().getCompilerSets()) {
+            System.err.println(cs);
+            System.err.println("flavor: " + cs.getCompilerFlavor());
+            System.err.println("dir: " + cs.getDirectory());
+        }
+        
+        // Check conf
+        System.err.println("Check conf"); // NOI18N
+        assertNotNull(conf);
+        LinkerConfiguration lc = conf.getLinkerConfiguration();
+        assertNotNull(lc);
+        CompilerSet cs = lc.getMakeConfiguration().getCompilerSet().getCompilerSet();
+        assertNotNull(cs);
+        
         // Setup streams
         PipedOutputStream pipedOutputStream = new PipedOutputStream();
         PipedInputStream pipedInputStream = new PipedInputStream();
@@ -199,7 +249,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
             System.out.println(result);
             System.out.println(golden);
         }
-        assertEquals(result.toString(),golden);
+        assertEqualsText(result.toString(),golden);
     }
 
     private void testDynamicLibrary(String testName, String flavorName, int platform, String golden) {
@@ -265,7 +315,60 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (TRACE) {
             System.out.println(result);
         }
-        assertEquals(result.toString(),golden);
+        assertEqualsText(result.toString(),golden);
+    }
+
+    protected void assertEqualsText(String docText, String expectedText) {
+        if (!docText.equals(expectedText)) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("\n----- expected text: -----\n");
+            appendDebugText(sb, expectedText);
+            sb.append("\n----- document text: -----\n");
+            appendDebugText(sb, docText);
+            sb.append("\n-----\n");
+            int startLine = 1;
+            for (int i = 0; i < docText.length() && i < expectedText.length(); i++) {
+                if (expectedText.charAt(i) == '\n') {
+                    startLine++;
+                }
+                if (expectedText.charAt(i) != docText.charAt(i)) {
+                    sb.append("Diff starts in line ").append(startLine).append("\n");
+                    String context = expectedText.substring(i);
+                    if (context.length() > 40) {
+                        context = context.substring(0, 40);
+                    }
+                    sb.append("Expected:").append(context).append("\n");
+                    context = docText.substring(i);
+                    if (context.length() > 40) {
+                        context = context.substring(0, 40);
+                    }
+                    sb.append("   Found:").append(context).append("\n");
+                    break;
+                }
+            }
+            fail(sb.toString());
+        }
+    }
+
+    protected final void appendDebugChar(StringBuffer sb, char ch) {
+        switch (ch) {
+            case '\n':
+                sb.append("\\n\n");
+                break;
+            case '\t':
+                sb.append("\\t");
+                break;
+
+            default:
+                sb.append(ch);
+                break;
+        }
+    }
+
+    protected final void appendDebugText(StringBuffer sb, String text) {
+        for (int i = 0; i < text.length(); i++) {
+            appendDebugChar(sb, text.charAt(i));
+        }
     }
 
     @Test

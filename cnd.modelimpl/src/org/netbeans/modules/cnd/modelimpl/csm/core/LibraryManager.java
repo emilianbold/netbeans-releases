@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -63,12 +62,11 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
+import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Artificial libraries manager.
@@ -86,9 +84,9 @@ public final class LibraryManager {
     }
 
     private LibraryManager() {
-    }
-    private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
-
+    }    
+    private final Map<LibraryKey, LibraryEntry> librariesEntries = new ConcurrentHashMap<LibraryKey, LibraryEntry>();
+    
     private static final class Lock {}
     private final Object lock = new Lock();
 
@@ -144,23 +142,22 @@ public final class LibraryManager {
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
         String absPath = resolvedPath.getPath().toString();
-        File searchFor = new File(absPath);
-        ProjectBase res = searchInProjectFiles(baseProject, searchFor);
+        ProjectBase res = searchInProjectFiles(baseProject, resolvedPath);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects", curFile, resolvedPath, res, baseProject);//NOI18N
             }
             return res;
         }
-        String folder = CndFileUtils.normalizeAbsolutePath(resolvedPath.getFolder().toString());
-        res = searchInProjectRoots(baseProject, getPathToFolder(folder, absPath));
+        final String folder = resolvedPath.getFolder().toString(); // always normalized
+        res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath));
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Projects roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
             return res;
         }
-        res = searchInProjectFilesArtificial(baseProject, searchFor);
+        res = searchInProjectFilesArtificial(baseProject, resolvedPath);
         if (res != null) {
             if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                 trace("Libraries", curFile, resolvedPath, res, baseProject);//NOI18N
@@ -168,7 +165,7 @@ public final class LibraryManager {
             return res;
         }
         synchronized (lock) {
-            res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, absPath));
+            res = searchInProjectRootsArtificial(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath));
             if (res == null) {
                 if (resolvedPath.isDefaultSearchPath()) {
                     res = curFile.getProjectImpl(true);
@@ -176,7 +173,7 @@ public final class LibraryManager {
                         trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
                     }
                 } else if (!baseProject.isArtificial()) {
-                    res = getLibrary((ProjectImpl) baseProject, folder);
+                    res = getLibrary((ProjectImpl) baseProject, resolvedPath.getFileSystem(), folder);
                     if (res == null) {
                         if (CndUtils.isDebugMode()) {
                             trace("Not created library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
@@ -205,44 +202,42 @@ public final class LibraryManager {
         List<String> res = new ArrayList<String>(3);
         res.add(folder);
         if (path.startsWith(folder)) {
-            File file = CndFileUtils.normalizeFile(new File(path));
-            while (file != null) {
-                String dir = file.getParent();
-                if (folder.equals(dir) || !dir.startsWith(folder)) {
+            while (true) {
+                String dir = CndPathUtilitities.getDirName(path);
+                if (dir == null || folder.equals(dir) || !dir.startsWith(folder)) {
                     break;
                 }
                 res.add(dir);
                 if (res.size() == 3) {
                     break;
                 }
-                file = file.getParentFile();
+                path = dir;
             }
         }
         return res;
     }
 
-    private ProjectBase searchInProjectFiles(ProjectBase baseProject, File searchFor) {
-        return searchInProjectFiles(baseProject, searchFor, new HashSet<ProjectBase>());
+    private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath resolvedPath) {
+        return searchInProjectFiles(baseProject, resolvedPath, new HashSet<ProjectBase>());
     }
 
-    private ProjectBase searchInProjectFiles(ProjectBase baseProject, File searchFor, Set<ProjectBase> set) {
+    private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
         set.add(baseProject);
-        baseProject.ensureFilesCreated();
-        CsmUID<CsmFile> file = baseProject.getFileUID(searchFor, true);
-        if (file != null) {
-            return baseProject;
+        if (baseProject.getFileSystem() == searchFor.getFileSystem()) {
+            baseProject.ensureFilesCreated();
+            CsmUID<CsmFile> file = baseProject.getFileUID(searchFor.getPath(), true);
+            if (file != null) {
+                return baseProject;
+            }
         }
         List<CsmProject> libraries = baseProject.getLibraries();
-        int size = libraries.size();
-        for (int i = 0; i < size; i++) {
-            CsmProject prj = libraries.get(i);
+        for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
                 break;
             }
-            ((ProjectBase) prj).ensureFilesCreated();
             ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor, set);
             if (res != null) {
                 return res;
@@ -251,13 +246,10 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, File searchFor) {
+    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, ResolvedPath searchFor) {
         List<CsmProject> libraries = baseProject.getLibraries();
-        int size = libraries.size();
-        for (int i = 0; i < size; i++) {
-            CsmProject prj = libraries.get(i);
+        for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
-                ((ProjectBase) prj).ensureFilesCreated();
                 ProjectBase res = searchInProjectFiles((ProjectBase) prj, searchFor);
                 if (res != null) {
                     return res;
@@ -267,30 +259,28 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, List<String> folders) {
-        return searchInProjectRoots(baseProject, folders, new HashSet<ProjectBase>());
+    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders) {
+        return searchInProjectRoots(baseProject, fs, folders, new HashSet<ProjectBase>());
     }
 
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, List<String> folders, HashSet<ProjectBase> set) {
+    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders, HashSet<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
         set.add(baseProject);
-        int folderSize = folders.size();
-        for (int i = 0; i < folderSize; i++) {
-            String folder = folders.get(i);
-            if (baseProject.isMySource(folder)) {
-                return baseProject;
+        if (baseProject.getFileSystem() == fs) {
+            for (String folder : folders) {
+                if (baseProject.isMySource(folder)) {
+                    return baseProject;
+                }
             }
         }
         List<CsmProject> libraries = baseProject.getLibraries();
-        int size = libraries.size();
-        for (int i = 0; i < size; i++) {
-            CsmProject prj = libraries.get(i);
+        for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
                 break;
             }
-            ProjectBase res = searchInProjectRoots((ProjectBase) prj, folders, set);
+            ProjectBase res = searchInProjectRoots((ProjectBase) prj, fs, folders, set);
             if (res != null) {
                 return res;
             }
@@ -298,14 +288,12 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, List<String> folders) {
+    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, FileSystem fs, List<String> folders) {
         List<CsmProject> libraries = baseProject.getLibraries();
-        int size = libraries.size();
         ProjectBase candidate = null;
-        for (int i = 0; i < size; i++) {
-            CsmProject prj = libraries.get(i);
+        for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
-                ProjectBase res = searchInProjectRoots((ProjectBase) prj, folders);
+                ProjectBase res = searchInProjectRoots((ProjectBase) prj, fs, folders);
                 if (res != null) {
                     if (candidate == null) {
                         candidate = res;
@@ -322,11 +310,12 @@ public final class LibraryManager {
         return candidate;
     }
 
-    private LibProjectImpl getLibrary(ProjectImpl project, String folder) {
+    private LibProjectImpl getLibrary(ProjectImpl project, FileSystem fs, String folder) {
         CsmUID<CsmProject> projectUid = project.getUID();
-        LibraryEntry entry = librariesEntries.get(folder);
+        LibraryKey libraryKey = new LibraryKey(fs, folder);
+        LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
-            entry = getOrCreateLibrary(project.getModel(), folder);
+            entry = getOrCreateLibrary(libraryKey);
         }
         if (!entry.containsProject(projectUid)) {
             entry.addProject(projectUid);
@@ -334,15 +323,15 @@ public final class LibraryManager {
         return (LibProjectImpl) entry.getLibrary().getObject();
     }
 
-    private LibraryEntry getOrCreateLibrary(final ModelImpl model, final String includeFolder) {
-        LibraryEntry entry = librariesEntries.get(includeFolder);
+    private LibraryEntry getOrCreateLibrary(LibraryKey libraryKey) {
+        LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
             boolean needFire = false;
             synchronized (lock) {
-                entry = librariesEntries.get(includeFolder);
-                if (entry == null) {
-                    entry = new LibraryEntry(includeFolder);
-                    librariesEntries.put(includeFolder, entry);
+                entry = librariesEntries.get(libraryKey);
+                if (entry == null) {                    
+                    entry = new LibraryEntry(libraryKey);
+                    librariesEntries.put(libraryKey, entry);
                     needFire = true;
                 }
             }
@@ -354,7 +343,7 @@ public final class LibraryManager {
                     public void run() {
                         ListenersImpl.getImpl().fireProjectOpened((ProjectBase) passEntry.getLibrary().getObject());
                     }
-                }, "postponed library opened " + includeFolder); // NOI18N
+                }, "postponed library opened " + libraryKey.folder); // NOI18N
             }
         }
         return entry;
@@ -379,7 +368,7 @@ public final class LibraryManager {
         }
         if (toClose.size() > 0) {
             for (LibraryEntry entry : toClose) {
-                librariesEntries.remove(entry.getFolder());
+                librariesEntries.remove(entry.getKey());
             }
         }
         closeLibraries(toClose);
@@ -388,7 +377,7 @@ public final class LibraryManager {
     /*package*/
     final void cleanLibrariesData(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
-            librariesEntries.remove(entry.getPath().toString());
+            librariesEntries.remove(new LibraryKey(entry.getFileSystem(), entry.getPath().toString()));
             entry.dispose(true);
         }
     }
@@ -408,43 +397,77 @@ public final class LibraryManager {
      */
     /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, DataOutput aStream) throws IOException {
         assert aStream != null;
-        Set<CharSequence> res = new HashSet<CharSequence>();
-        for (LibraryEntry entry : librariesEntries.values()) {
-            if (entry.containsProject(project)) {
-                res.add(FilePathCache.getManager().getString(entry.getFolder()));
+        Set<LibraryKey> keys = new HashSet<LibraryKey>();
+        for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
+            if (entry.getValue().containsProject(project)) {
+                keys.add(entry.getKey());
             }
+        }        
+        aStream.writeInt(keys.size());
+        for (LibraryKey libraryKey : keys) {
+            libraryKey.write(aStream);
         }
-        PersistentUtils.writeCollectionStrings(res, aStream);
     }
 
     /**
      * Read artificial libraries for project
      */
-    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput aStream) throws IOException {
-        ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-        assert aStream != null;
-        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream, FilePathCache.getManager());
-        for (CharSequence folder : res) {
-            LibraryEntry entry = getOrCreateLibrary(model, folder.toString());
-            entry.addProject(project);
+    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput input) throws IOException {
+        assert input != null;
+        int len = input.readInt();
+        if (len != AbstractObjectFactory.NULL_POINTER) {
+            for (int i = 0; i < len; i++) {
+                LibraryKey key =  new LibraryKey(input);
+                LibraryEntry entry =  getOrCreateLibrary(key);
+                entry.addProject(project);
+            }
         }
     }
 
-    private static class LibraryEntry {
+    private static final class LibraryKey {
 
-        private String folder;
-        private CsmUID<CsmProject> libraryUID;
-        private ConcurrentMap<CsmUID<CsmProject>, Boolean> dependentProjects;
+        private final FileSystem fileSystem;
+        private final String folder;
 
-        private LibraryEntry(String folder) {
+        public LibraryKey(FileSystem fileSystem, String folder) {
+            this.fileSystem = fileSystem;
             this.folder = folder;
+        }
+
+        private LibraryKey(DataInput input) throws IOException {
+            this.fileSystem = PersistentUtils.readFileSystem(input);
+            this.folder = input.readUTF();
+        }
+        
+        private void write(DataOutput out) throws IOException {
+            PersistentUtils.writeFileSystem(fileSystem, out);
+            out.writeUTF(folder);
+        }
+    }
+
+    private static final class LibraryEntry {
+
+        private final LibraryKey key;
+        private CsmUID<CsmProject> libraryUID;
+        private final ConcurrentMap<CsmUID<CsmProject>, Boolean> dependentProjects;
+
+        private LibraryEntry(LibraryKey folder) {
+            this.key = folder;
             dependentProjects = new ConcurrentHashMap<CsmUID<CsmProject>, Boolean>();
         }
 
         private String getFolder() {
-            return folder;
+            return key.folder;
         }
 
+        private FileSystem getFileSystem() {
+            return key.fileSystem;
+        }
+
+        public LibraryKey getKey() {
+            return key;
+        }
+        
         private CsmUID<CsmProject> getLibrary() {
             if (libraryUID == null) {
                 createUID();
@@ -455,7 +478,7 @@ public final class LibraryManager {
         private synchronized void createUID() {
             if (libraryUID == null) {
                 ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-                LibProjectImpl library = LibProjectImpl.createInstance(model, folder);
+                LibProjectImpl library = LibProjectImpl.createInstance(model, getFileSystem(), getFolder());
                 libraryUID = library.getUID();
             }
         }
@@ -479,7 +502,7 @@ public final class LibraryManager {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append("folder=").append(folder).append(",\nlibraryUID=").append(libraryUID);// NOI18N
+            sb.append("folder=").append(key).append(",\nlibraryUID=").append(libraryUID);// NOI18N
             if (dependentProjects.isEmpty()) {
                 sb.append(" NO DEPENDENT PROJECTS!");// NOI18N
             } else {
@@ -496,7 +519,7 @@ public final class LibraryManager {
     public void dumpInfo(PrintWriter printOut,boolean withContainers) {
         printOut.printf("LibraryManager: libs=%d\n", librariesEntries.size());// NOI18N
         int ind = 1;
-        for (Map.Entry<String, LibraryEntry> entry : librariesEntries.entrySet()) {
+        for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
             printOut.printf("Lib[%d] %s with LibEntry %s\n", ind++, entry.getKey(), entry.getValue());// NOI18N
             if (withContainers) {
                 CsmProject library = UIDCsmConverter.UIDtoProject(entry.getValue().libraryUID);

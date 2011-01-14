@@ -141,7 +141,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
 
         // test property support
-        String oldRevision = revInfo.getRevision();
+        GitBranch oldBranch = info.getActiveBranch();
         RepositoryInfoListener list = new RepositoryInfoListener();
         info.addPropertyChangeListener(list);
         write(f, "huhu 2");
@@ -149,7 +149,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
-        list.assertPropertyEvent(RepositoryInfo.PROPERTY_HEAD, oldRevision, revInfo.getRevision());
+        list.assertPropertyEvent(RepositoryInfo.PROPERTY_HEAD, oldBranch, info.getActiveBranch());
     }
 
     public void testChangeBranch () throws Exception {

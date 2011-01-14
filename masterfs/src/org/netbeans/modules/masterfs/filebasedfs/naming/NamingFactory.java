@@ -185,7 +185,7 @@ public final class NamingFactory {
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
         if (ignoreCache && cachedElement != null && (
-            cachedElement.isDirectory() != file.isDirectory() || !cachedElement.getName().equals(file.getName())
+            cachedElement.isDirectory() != file.isDirectory()
         )) {
             cachedElement = null;
         }

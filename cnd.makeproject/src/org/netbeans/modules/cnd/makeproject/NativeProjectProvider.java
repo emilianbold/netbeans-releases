@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -378,15 +377,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
         if (descr != null) {
             return (NativeFileItem) descr.findItemByFileObject(fileObject);
-        }
-        return null;
-    }
-
-    @Override
-    public NativeFileItem findFileItem(File file) {
-        MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
-        if (descr != null) {
-            return (NativeFileItem) descr.findItemByFile(file);
         }
         return null;
     }

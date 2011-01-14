@@ -64,6 +64,7 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.actions.ConnectAction;
 import org.netbeans.modules.git.ui.actions.DisconnectAction;
+import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
@@ -144,6 +145,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 }
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
                 actions.add(null);
+                actions.add(SystemAction.get(CreateBranchAction.class));
+                actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
                 ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
                 if (a.isEnabled()) {
@@ -172,6 +175,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(null);
                     actions.add(a);
                 }
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
                 DisconnectAction da = SystemAction.get(DisconnectAction.class);
                 if (da.isEnabled()) {
                     actions.add(null);

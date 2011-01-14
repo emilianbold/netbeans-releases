@@ -1393,8 +1393,8 @@ public class BaseKit extends DefaultEditorKit {
             try {
                 String selectedText = target.getSelectedText();
                 int origDot = target.getCaretPosition();
-                target.replaceSelection(""); // NOI18N
                 Caret caret = target.getCaret();
+                doc.remove(computeInsertionOffset(caret), computeInsertionLength(caret));
                 Object cookie = beforeBreak(target, doc, caret);
 
                 // insert new line, caret moves to the new line
@@ -1434,6 +1434,11 @@ public class BaseKit extends DefaultEditorKit {
             return Math.min(caret.getMark(), caret.getDot());
         }
         
+        private int computeInsertionLength(Caret caret) {
+            return 
+                    Math.max(caret.getMark(), caret.getDot()) -
+                    Math.min(caret.getMark(), caret.getDot());
+        }
     } // End of InsertBreakAction class
 
     @EditorActionRegistration(name = splitLineAction)    
@@ -1473,6 +1478,8 @@ public class BaseKit extends DefaultEditorKit {
 
                                 // make sure the caret stays on its original position
                                 caret.setDot(dotPos);
+                            } catch (GuardedException e) {
+                                target.getToolkit().beep();
                             } catch (BadLocationException ble) {
                                 LOG.log(Level.WARNING, null, ble);
                             } finally {
@@ -1554,6 +1561,9 @@ public class BaseKit extends DefaultEditorKit {
                                         } else { // already chars on the line
                                             insertTabString(doc, dotPos);
                                         }
+                                    } catch (GuardedException ge) {
+                                        LOG.log(Level.FINE, null, ge);
+                                        target.getToolkit().beep();
                                     } catch (BadLocationException e) {
                                         // use the same pos
                                         LOG.log(Level.WARNING, null, e);

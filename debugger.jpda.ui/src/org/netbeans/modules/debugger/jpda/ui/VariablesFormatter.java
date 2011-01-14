@@ -320,7 +320,7 @@ public class VariablesFormatter implements Cloneable {
         VariablesFormatter charSequence = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CharSequenceFormatter"));
         charSequence.setClassTypes("java.lang.CharSequence");
         charSequence.setIncludeSubTypes(true);
-        charSequence.setChildrenFormatCode(null);
+        charSequence.setChildrenFormatCode("");
         charSequence.setChildrenExpandTestCode("false");
         charSequence.setValueFormatCode("toString()");
         charSequence.isDefault = true;

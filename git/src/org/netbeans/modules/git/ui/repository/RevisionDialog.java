@@ -58,9 +58,10 @@ public class RevisionDialog extends javax.swing.JPanel {
     private final RevisionInfoPanel panel;
 
     /** Creates new form RevisionPicker */
-    public RevisionDialog (RevisionInfoPanel panel) {
+    public RevisionDialog (RevisionInfoPanel panel, String initialRevision) {
         this.panel = panel;
         initComponents();
+        revisionField.setText(initialRevision);
     }
 
     public RevisionDialog () {
@@ -83,8 +84,6 @@ public class RevisionDialog extends javax.swing.JPanel {
         jLabel1.setLabelFor(revisionField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.jLabel1.text")); // NOI18N
 
-        revisionField.setText(GitUtils.HEAD);
-
         org.openide.awt.Mnemonics.setLocalizedText(btnSelectRevision, org.openide.util.NbBundle.getMessage(RevisionDialog.class, "RevisionDialog.btnSelectRevision.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -98,7 +97,7 @@ public class RevisionDialog extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(revisionField, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
+                        .addComponent(revisionField, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnSelectRevision)))
                 .addContainerGap())

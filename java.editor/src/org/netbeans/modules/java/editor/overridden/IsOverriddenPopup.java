@@ -81,7 +81,15 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
 
         Collections.sort(declarations, new Comparator<ElementDescription>() {
             public int compare(ElementDescription o1, ElementDescription o2) {
-                return o1.getDisplayName().compareTo(o2.getDisplayName());
+                if (o1.isOverridden() == o2.isOverridden()) {
+                    return o1.getDisplayName().compareTo(o2.getDisplayName());
+                }
+                
+                if (o1.isOverridden()) {
+                    return 1;
+                }
+                
+                return -1;
             }
         });
         

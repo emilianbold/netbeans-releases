@@ -51,6 +51,7 @@ import java.io.File;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.git.utils.GitUtils;
 
 /**
  *
@@ -66,16 +67,21 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private final Timer t;
     private boolean internally;
     private final File[] roots;
+    private String revision;
 
     public RevisionDialogController (File repository, File[] roots) {
+        this(repository, roots, GitUtils.HEAD);
+    }
+    
+    public RevisionDialogController (File repository, File[] roots, String initialRevision) {
         infoPanelController = new RevisionInfoPanelController(repository);
-        panel = new RevisionDialog(infoPanelController.getPanel());
+        panel = new RevisionDialog(infoPanelController.getPanel(), initialRevision);
         this.repository = repository;
         this.roots = roots;
         this.support = new PropertyChangeSupport(this);
         this.t = new Timer(500, this);
         t.stop();
-        infoPanelController.loadInfo(panel.revisionField.getText());
+        infoPanelController.loadInfo(revision = panel.revisionField.getText());
         attachListeners();
     }
 
@@ -89,7 +95,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     }
 
     public String getRevision () {
-        return panel.revisionField.getText();
+        return revision;
     }
     
     public void addPropertyChangeListener (PropertyChangeListener list) {
@@ -112,34 +118,36 @@ public class RevisionDialogController implements ActionListener, DocumentListene
             openRevisionPicker();
         } else if (e.getSource() == t) {
             t.stop();
-            infoPanelController.loadInfo(panel.revisionField.getText());
+            infoPanelController.loadInfo(revision);
         }
     }
 
     private void openRevisionPicker () {
         RevisionPicker picker = new RevisionPicker(repository, roots);
         if (picker.open()) {
-            Revision revision = picker.getRevision();
-            if (!revision.getRevision().equals(panel.revisionField.getText())) {
-                internally = true;
-                try {
-                    panel.revisionField.setText(revision.toString());
-                    panel.revisionField.setCaretPosition(0);
-                } finally {
-                    internally = false;
-                }
+            Revision selectedRevision = picker.getRevision();
+            internally = true;
+            try {
+                panel.revisionField.setText(selectedRevision.toString());
+                panel.revisionField.setCaretPosition(0);
+            } finally {
+                internally = false;
+            }
+            if (!selectedRevision.getName().equals(revision)) {
+                revision = selectedRevision.getName();
+                updateRevision();
             }
         }
     }
 
     @Override
     public void insertUpdate (DocumentEvent e) {
-        updateRevision();
+        revisionChanged();
     }
 
     @Override
     public void removeUpdate (DocumentEvent e) {
-        updateRevision();
+        revisionChanged();
     }
 
     @Override
@@ -154,11 +162,16 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         }
     }
 
-    private void updateRevision () {
+    private void revisionChanged () {
         if (!internally) {
-            setValid(false);
-            t.restart();
+            revision = panel.revisionField.getText();
+            updateRevision();
         }
+    }
+    
+    private void updateRevision () {
+        setValid(false);
+        t.restart();
     }
 
     @Override

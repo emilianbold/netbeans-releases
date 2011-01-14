@@ -78,11 +78,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Parameters;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -108,11 +108,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         @Override
         public void putFile(FileImpl impl, State state) {
-            // do nothing
-        }
-
-        @Override
-        public void putPreprocState(File file, State state) {
             // do nothing
         }
     };
@@ -151,8 +146,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     public void putFile(FileImpl impl, APTPreprocHandler.State state) {
         File file = impl.getFile();
-        CndUtils.assertFileMode(file);
-        CharSequence path = getFileKey(file, true);
+        //CndUtils.assertFileMode(file);
+        CharSequence path = getFileKey(impl.getAbsolutePath(), true);
         CharSequence canonicalPath = getCanonicalKey(file, path);
         FileEntry newEntry;
         CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
@@ -185,9 +180,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 	put();
     }
-    
-    public FileImpl getFile(File file, boolean treatSymlinkAsSeparateFile) {
-        FileEntry f = getFileEntry(file, treatSymlinkAsSeparateFile, false);
+
+    public FileImpl getFile(CharSequence absPath, boolean treatSymlinkAsSeparateFile) {
+        FileEntry f = getFileEntry(absPath, treatSymlinkAsSeparateFile, false);
+        return getFile(f);
+    }
+
+    private FileImpl getFile(FileEntry f) {
         if (f == null) {
             return null;
         }
@@ -198,28 +197,17 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
         return impl;
     }
-
-    public CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
-        FileEntry f = getFileEntry(file, treatSymlinkAsSeparateFile, false);
+    
+    public CsmUID<CsmFile> getFileUID(CharSequence absPath, boolean treatSymlinkAsSeparateFile) {
+        FileEntry f = getFileEntry(absPath, treatSymlinkAsSeparateFile, false);
         if (f == null) {
             return null;
         }
         return f.fileNew;
     }
 
-    /** 
-     * This should only be called if we are sure this is the only correct state:
-     * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
-     */
-    public void putPreprocState(File file, APTPreprocHandler.State state) {
-        assert state != null : "state can not be null state for file " + file;
-        FileEntry f = getFileEntry(file, false, true);
-        f.setState(state, FilePreprocessorConditionState.PARSING);
-        put();
-    }
-
-    public void invalidatePreprocState(File file) {
-        FileEntry f = getFileEntry(file, false, false);
+    public void invalidatePreprocState(CharSequence absPath) {
+        FileEntry f = getFileEntry(absPath, false, false);
         if (f == null){
             return;
         }
@@ -227,13 +215,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             f.invalidateStates();
         }
         if (TRACE_PP_STATE_OUT) {
-            CharSequence path = getFileKey(file, false);
+            CharSequence path = getFileKey(absPath, false);
             System.err.println("\nInvalidated state for file" + path + "\n");
         }
     }
     
-    public void markAsParsingPreprocStates(File file) {
-        FileEntry f = getFileEntry(file, false, false);
+    public void markAsParsingPreprocStates(CharSequence absPath) {
+        FileEntry f = getFileEntry(absPath, false, false);
         if (f == null) {
             return;
         }
@@ -241,33 +229,34 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             f.markAsParsingPreprocStates();
         }
         if (TRACE_PP_STATE_OUT) {
-            CharSequence path = getFileKey(file, false);
+            CharSequence path = getFileKey(absPath, false);
             System.err.println("\nmarkAsParsingPreprocStates for file" + path + "\n");
         }
     }
     
-    public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
-        FileEntry f = getFileEntry(file, false, false);
+    public Collection<APTPreprocHandler.State> getPreprocStates(CharSequence absPath) {
+        FileEntry f = getFileEntry(absPath, false, false);
         if (f == null){
             return Collections.<APTPreprocHandler.State>emptyList();
         }
         return f.getPrerocStates();
     }
 
-    public Collection<PreprocessorStatePair> getStatePairs(File file) {
-        FileEntry f = getFileEntry(file, false, false);
+    public Collection<PreprocessorStatePair> getStatePairs(CharSequence absPath) {
+        FileEntry f = getFileEntry(absPath, false, false);
         if (f == null) {
             return Collections.<PreprocessorStatePair>emptyList();
         }
         return f.getStatePairs();
     }
 
-    public FileEntry getEntry(File file) {
-        return getFileEntry(file, false, false);
+    public FileEntry getEntry(CharSequence absPath) {
+        CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: " + absPath); //NOI18N
+        return getFileEntry(absPath, false, false);
     }
 
-    public Object getLock(File file) {
-        FileEntry f = getFileEntry(file, false, false);
+    public Object getLock(CharSequence absPath) {
+        FileEntry f = getFileEntry(absPath, false, false);
         return f == null ? lock : f.getLock();
     }
     
@@ -327,37 +316,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	//trace(canonicFiles, "Wrote in write()");
     }
 
-    public static CharSequence getFileKey(File file, boolean sharedText) {
-        Parameters.notNull("null file", file); //NOI18N
-        CndUtils.assertNormalized(file);
-        String key = null;
-        if (TraceFlags.USE_CANONICAL_PATH) {
-            try {
-                key = file.getCanonicalPath();
-            } catch (IOException ex) {
-                key = file.getAbsolutePath();
-            }
-        } else {
-            key = file.getAbsolutePath();
-        }
-        return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
-    }
-    
-    public static CharSequence getFileKey(FileObject fileObject, boolean sharedText) {
-        Parameters.notNull("null file", fileObject); //NOI18N
-        String key = null;
-        if (TraceFlags.USE_CANONICAL_PATH) {
-            try {
-                key = CndFileUtils.getCanonicalPath(fileObject);
-            } catch (IOException ex) {
-                key = fileObject.getPath();
-            }
-        } else {
-            key = fileObject.getPath();
-        }
-        return sharedText ? FilePathCache.getManager().getString(key) : DefaultCache.getManager().getString(key);
-    }
-    
     public static CharSequence getFileKey(CharSequence file, boolean sharedText) {
         return sharedText ? FilePathCache.getManager().getString(file) : DefaultCache.getManager().getString(file);
     }
@@ -373,8 +331,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return null;
     }
     
-    private FileEntry getFileEntry(File file, boolean treatSymlinkAsSeparateFile, boolean sharedText) {
-        CharSequence path = getFileKey(file, sharedText);
+    private FileEntry getFileEntry(CharSequence absPath, boolean treatSymlinkAsSeparateFile, boolean sharedText) {
+        return getFileEntryImpl(getFileKey(absPath, sharedText), treatSymlinkAsSeparateFile);
+    }
+
+    /**
+     * NB: path should be got via getFileKey!
+     * to be called only from within getFileEntry 
+     */
+    private FileEntry getFileEntryImpl(CharSequence path, boolean treatSymlinkAsSeparateFile) {
         FileEntry f = myFiles.get(path);
         if (f == null && (!treatSymlinkAsSeparateFile || !TraceFlags.SYMLINK_AS_OWN_FILE)) {
             // check alternative expecting that 'path' is canonical path

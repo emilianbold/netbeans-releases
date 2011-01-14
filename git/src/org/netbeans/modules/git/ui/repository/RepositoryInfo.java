@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,13 +74,17 @@ public class RepositoryInfo {
      */
     public static final String PROPERTY_ACTIVE_BRANCH = "prop.activeBranch"; //NOI18N
     /**
-     * fired when the HEAD changes, old and new values are instances of {@link java.lang.String}.
+     * fired when the HEAD changes, old and new values are instances of {@link GitBranch}.
      */
     public static final String PROPERTY_HEAD = "prop.head"; //NOI18N
     /**
-     * fired when repository state changes, old and new values are instances of {@link GitReposi}.
+     * fired when repository state changes, old and new values are instances of {@link GitRepositoryState}.
      */
     public static final String PROPERTY_STATE = "prop.state"; //NOI18N
+    /**
+     * fired when a set of known branches changes (a branch is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitBranch&gt;.
+     */
+    public static final String PROPERTY_BRANCHES = "prop.branches"; //NOI18N
 
     private final Reference<File> rootRef;
     private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
@@ -88,6 +93,7 @@ public class RepositoryInfo {
     private static final RequestProcessor.Task refreshTask = rp.create(new RepositoryRefreshTask());
     private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
     private final PropertyChangeSupport propertyChangeSupport;
+    private final Map<String, GitBranch> branches;
 
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
@@ -96,6 +102,7 @@ public class RepositoryInfo {
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
+        this.branches = new HashMap<String, GitBranch>();
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -136,6 +143,7 @@ public class RepositoryInfo {
                 GitClient client = Git.getInstance().getClient(root);
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                setBranches(newBranches);
                 GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
                 setActiveBranch(newBranches);
@@ -157,7 +165,7 @@ public class RepositoryInfo {
                 }
                 if (oldActiveBranch == null || !oldActiveBranch.getId().equals(activeBranch.getId())) {
                     LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
-                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch == null ? null : oldActiveBranch.getId(), activeBranch.getId());
+                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch, activeBranch);
                 }
             }
         }
@@ -169,6 +177,22 @@ public class RepositoryInfo {
         if (!repositoryState.equals(oldState)) {
             LOG.log(Level.FINE, "repository state changed: {0} --- {1}", new Object[] { oldState, repositoryState }); //NOI18N
             propertyChangeSupport.firePropertyChange(PROPERTY_STATE, oldState, repositoryState);
+        }
+    }
+
+    private void setBranches (Map<String, GitBranch> newBranches) {
+        Map<String, GitBranch> oldBranches;
+        boolean changed = false;
+        synchronized (branches) {
+            oldBranches = new HashMap<String, GitBranch>(branches);
+            if (oldBranches.size() != newBranches.size() || !branches.keySet().equals(newBranches.keySet())) {
+                branches.clear();
+                branches.putAll(newBranches);
+                changed = true;
+            }
+        }
+        if (changed) {
+            propertyChangeSupport.firePropertyChange(PROPERTY_BRANCHES, oldBranches, new HashMap<String, GitBranch>(newBranches));
         }
     }
 

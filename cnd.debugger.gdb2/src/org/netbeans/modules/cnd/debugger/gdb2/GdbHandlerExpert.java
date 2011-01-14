@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 public class GdbHandlerExpert implements HandlerExpert {
     private static final boolean sendShortPaths = Boolean.getBoolean("gdb.breakpoints.shortpaths"); // NOI18N
@@ -197,12 +198,14 @@ public class GdbHandlerExpert implements HandlerExpert {
             // unify separators
             file = file.replace("\\","/"); //NOI18N
 
-	    // gdb break command seems to not like full pathnames.
-            if (sendShortPaths) {
-                int pos = file.lastIndexOf('/');
-		if (pos >= 0) {
-		    file = file.substring(pos + 1);
-		}
+	    // switch to short paths if spaces detected
+            if (sendShortPaths || file.indexOf(' ') != -1) {
+                String baseDir = debugger.getNDI().getConfiguration().getBaseDir().replace("\\", "/"); //NOI18N
+                if (file.startsWith(baseDir + '/')) {
+                    file = file.substring(baseDir.length() + 1);
+                } else {
+                    file = CndPathUtilitities.getBaseName(file);
+                }
             }
 
 	    String fileLine = null;

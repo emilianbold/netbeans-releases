@@ -62,6 +62,12 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
     
     /** Gets an object, which represents correspondent IDE project */
     Object getPlatformProject();
+    
+    /** Gets this project display name */
+    String getDisplayName();
+
+    /** Gets this project display name in HTML form */
+    String getHtmlDisplayName();
 
     /**
      * Finds namespace by its qualified name

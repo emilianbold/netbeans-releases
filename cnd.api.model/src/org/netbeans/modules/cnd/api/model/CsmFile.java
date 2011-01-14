@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.api.model;
 import java.util.Collection;
+import org.openide.filesystems.FileObject;
 
 /**
  * Represents a source file
@@ -53,6 +54,9 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable {
 
     /** Gets this file absolute path */
     CharSequence getAbsolutePath();
+    
+    /** Gets file object */
+    FileObject getFileObject();
 
     /** Gets the project, to which the file belongs*/
     CsmProject getProject();
