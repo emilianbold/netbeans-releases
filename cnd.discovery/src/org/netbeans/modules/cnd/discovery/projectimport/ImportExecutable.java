@@ -566,6 +566,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                     logger.log(Level.FINE, "#fix excluded header for file {0}", impl.getAbsolutePath()); // NOI18N
                                 }
                                 ProjectBridge.setExclude((Item) item, false);
+                                ProjectBridge.setHeaderTool((Item) item);
                                 if (file.isHeaderFile()) {
                                     needCheck.add(item.getAbsolutePath());
                                 }
