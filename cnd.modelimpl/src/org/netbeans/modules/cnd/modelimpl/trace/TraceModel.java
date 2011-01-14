@@ -159,7 +159,6 @@ public class TraceModel extends TraceModelBase {
         APTFileCacheManager.close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
-    private Cache cache;
     private static CsmTracer tracer = new CsmTracer(false);
     private boolean showAstWindow = false;
     private boolean dumpAst = false;
@@ -168,9 +167,6 @@ public class TraceModel extends TraceModelBase {
     private boolean dumpFileOnly = false;
     private boolean showTime = false;
     //private boolean showErrorCount = false;
-    private boolean writeAst = false;
-    private boolean readAst = false;
-    private boolean useZip = false;
     private boolean testLibProject = false;
     private boolean deep = true;
     private boolean showMemoryUsage = false;
@@ -196,10 +192,6 @@ public class TraceModel extends TraceModelBase {
     private String dumpFile = null;
     private String dumpDir = null;
     private static final String statPostfix = ".stat"; // NOI18N
-
-    // Cache options
-    private boolean enableCache = false;
-    private boolean testCache = false;
 
     // Callback options
     private boolean dumpPPState = false;
@@ -283,23 +275,8 @@ public class TraceModel extends TraceModelBase {
                 break;
             //            case 'L':   testLexer = true; break;
             //case 'c':   showErrorCount = true; break;
-            case 'W':
-                writeAst = true;
-                break;
-            case 'R':
-                readAst = true;
-                break;
-            case 'Z':
-                useZip = true;
-                break;
-            case 'C':
-                enableCache = true;
-                break;
             case 'l':
                 testLibProject = true;
-                break;
-            case 'c':
-                testCache = true;
                 break;
             case 'p':
                 dumpPPState = true;
@@ -473,28 +450,7 @@ public class TraceModel extends TraceModelBase {
         if (stopBeforeAll) {
             waitAnyKey();
         }
-        if (writeAst || readAst) {
-            try {
-                cache = new Cache(useZip);
-            } catch (Exception e) {
-                DiagnosticExceptoins.register(e);
-                return;
-            }
-        }
-
-        if (writeAst && readAst) {
-            print("Impossible options combination: both writing and reading AST\n"); // NOI18N
-            return;
-        }
-        if (useZip && !(writeAst || readAst)) {
-            print("Impossible options combination: using ZIP format, but neither writing nor reading AST. Ignoring ZIP format.\n"); // NOI18N
-            useZip = false;
-        }
-
-        if (testCache) {
-            //print("Test cache mode ON." + '\n');
-            enableCache = true;
-        } else if (dumpStatistics) {
+        if (dumpStatistics) {
             if (dumpFile == null && dumpDir == null) {
                 print("Turning OFF statistics as neither global file nor directory is specified"); // NOI18N
                 dumpStatistics = false;
@@ -1174,19 +1130,12 @@ public class TraceModel extends TraceModelBase {
 
         long time = System.currentTimeMillis();
 
-        if (readAst) {
-            long t2 = System.currentTimeMillis();
-            ast = cache.readAst(item.getFile());
-            t2 = System.currentTimeMillis() - t2;
-            print("AST read; time: " + t2 + " ms"); // NOI18N
-        }
-
         AST tree = null;
         int errCount = 0;
 
         FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
         waitProjectParsed(getProject(), false);
-        if (dumpAst || writeAst || showAstWindow) {
+        if (dumpAst || showAstWindow) {
             tree = fileImpl.debugParse();
         }
         errCount = fileImpl.getErrorCount();
@@ -1223,19 +1172,9 @@ public class TraceModel extends TraceModelBase {
             }
         }
 
-        if (testCache) {
-            cacheTimes.put(item.getName(), Long.valueOf(time));
-        }
         if (dumpAst) {
             System.out.println("AST DUMP for file " + item.getName()); // NOI18N
             dumpAst(tree);
-        }
-
-        if (writeAst && tree != null) {
-            long t2 = System.currentTimeMillis();
-            t2 = System.currentTimeMillis() - t2;
-            cache.writeAst(tree, item.getFile());
-            print("AST stored; time: " + t2 + " ms"); // NOI18N
         }
 
         if (doCleanRepository) {
