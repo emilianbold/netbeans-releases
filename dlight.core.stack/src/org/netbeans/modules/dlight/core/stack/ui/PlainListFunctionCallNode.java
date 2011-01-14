@@ -132,7 +132,7 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
         int idx1 = name.indexOf(funcName);
         if (idx1 < 0){//something bad happend, print to log
             DLightLogger.getLogger(PlainListFunctionCallNode.class).log(Level.FINE, "Attention::::StringIndexOutOfBoundsException will "
-                    + " occurr as idx1=-1" + "name=" + "{0} funcName={1}", new Object[]{name, funcName});
+                    + " occurr as idx1=-1" + "name=" + "{0} funcName={1}", new Object[]{name, funcName}); // NOI18N
         }
         int idx2 = funcName.lastIndexOf(':');
         if (idx2 > 0) {
