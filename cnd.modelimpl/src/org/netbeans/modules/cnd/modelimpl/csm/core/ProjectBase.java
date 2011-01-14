@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -1039,7 +1038,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Set<FileImpl> candidates = new HashSet<FileImpl>();
         Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
         for (FileImpl file : getAllFileImpls()) {
-            if (!file.getFile().exists()) {
+            FileObject fo = file.getFileObject();
+            if (fo == null || !fo.isValid()) {
                 removedPhysically.add(file);
             } else if (projectFiles != null) { // they might be null for library
                 if (!projectFiles.contains(file.getAbsolutePath().toString())) {
@@ -2622,7 +2622,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public File getFile() {            
+        public java.io.File getFile() {            
             return CndFileUtils.toFile(getFileObject());
         }
 
