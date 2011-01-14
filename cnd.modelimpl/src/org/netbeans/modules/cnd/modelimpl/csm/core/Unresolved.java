@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -174,7 +173,7 @@ public final class Unresolved implements Disposable {
 	}
     }
 
-    private static final String UNRESOLVED_FILE_FAKE_PATH = new File((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$").getAbsolutePath(); // NOI18N
+    private static final String UNRESOLVED_FILE_FAKE_PATH = CndFileUtils.createLocalFile((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$").getAbsolutePath(); // NOI18N
     public final class UnresolvedFile implements CsmFile, CsmIdentifiable, Disposable {
 
         private UnresolvedFile() {

@@ -50,7 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -66,7 +66,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
     private FileLock lock;
     private final char fileTypeChar;
-    private WeakReference<CachedRemoteInputStream> fileContentCache = new WeakReference<CachedRemoteInputStream>(null);
+    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
 
     public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
@@ -109,10 +109,16 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 if (reuse != null) {
                     return reuse;
                 }
+                fileContentCache.clear();
             }
             InputStream newStream = getParent()._getInputStream(this);
             if (newStream instanceof CachedRemoteInputStream) {
-                fileContentCache = new WeakReference<CachedRemoteInputStream>((CachedRemoteInputStream) newStream);
+                fileContentCache = new SoftReference<CachedRemoteInputStream>((CachedRemoteInputStream) newStream);
+            } else {
+                if (stream != null) {
+                    fileContentCache.clear();
+                }
+
             }
             return newStream;
             //getParent().ensureChildSync(this);

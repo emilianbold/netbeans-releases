@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
@@ -113,7 +112,7 @@ public final class ProjectImpl extends ProjectBase {
             return;
         }
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); //NOI18N
+            Diagnostic.trace("------------------------- onFileEditSTART " + buf.getUrl()); //NOI18N
         }
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
@@ -152,7 +151,7 @@ public final class ProjectImpl extends ProjectBase {
             return;
         }
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); //NOI18N
+            Diagnostic.trace("------------------------- onFileEditEND " + buf.getUrl()); //NOI18N
         }
         FileImpl file = getFile(buf.getAbsolutePath(), false);
         if (file != null) {
@@ -356,7 +355,7 @@ public final class ProjectImpl extends ProjectBase {
         
         public void setTask(Task task) {
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
-                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getFile());
+                System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getUrl());
             }
             this.task = task;
         }

@@ -43,11 +43,13 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
 import java.io.File;
+import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
@@ -128,7 +130,10 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
         String name = FunctionNameUtils.getFunctionName(functionCall.getFunction().getName());
         String funcName = functionCall.getFunction().getQuilifiedName();
         int idx1 = name.indexOf(funcName);
-
+        if (idx1 < 0){//something bad happend, print to log
+            DLightLogger.getLogger(PlainListFunctionCallNode.class).log(Level.FINE, "Attention::::StringIndexOutOfBoundsException will "
+                    + " occurr as idx1=-1" + "name=" + "{0} funcName={1}", new Object[]{name, funcName}); // NOI18N
+        }
         int idx2 = funcName.lastIndexOf(':');
         if (idx2 > 0) {
             idx1 += idx2 + 1;

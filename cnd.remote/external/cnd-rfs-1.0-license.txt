@@ -1,0 +1,13 @@
+Name: cnd-rfs
+Version: 1.0
+Description: binaries that provide sources synchronization when building on a remote host
+License: TBD
+OSR: -
+Origin: -
+Files: cnd-rfs-1.0.zip
+Source: -
+Comment: needed for cnd.remote module to provide synchronization when building on a remote host
+
+Use of cnd-rfs version 1.0 is governed by the terms of the license below:
+
+TBD
