@@ -102,14 +102,10 @@ public final class NbProxySelector extends ProxySelector {
                     res = original.select (uri);                   
                 }
             } else if (usePAC()) {
-                String init = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-                String pacURL = init.substring(4).trim();
-                System.out.println("###: Special? uri: " + uri + ", pac: " + pacURL);
-                if (uri.toASCIIString().equals(pacURL)) {
-                    System.out.println("###: Download direct!");
+                if (ProxyAutoConfig.getInstance().getPacURI().getHost().equals(uri.getHost())) {
                     return Collections.singletonList(Proxy.NO_PROXY);
                 } else {
-                    res = ProxyAutoConfig.get().findProxyForURL(uri); // NOI18N
+                    res = ProxyAutoConfig.getInstance().findProxyForURL(uri); // NOI18N
                 }
             } else {
                 String protocol = uri.getScheme ();
