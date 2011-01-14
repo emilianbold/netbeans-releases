@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -211,7 +210,7 @@ public class TraceXRef extends TraceModel {
     }
 
     private CsmFile getCsmFile(String path) {
-        return super.getProject().findFile(new File(path).getAbsolutePath(), false);
+        return super.getProject().findFile(new java.io.File(path).getAbsolutePath(), false);
     }
 
     @Override
