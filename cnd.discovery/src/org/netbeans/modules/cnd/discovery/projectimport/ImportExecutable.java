@@ -299,7 +299,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     }
                                 } catch (IOException ex) {
-                                    ex.printStackTrace();
+                                    ex.printStackTrace(System.err);
                                 }
                             }
                         }
@@ -547,7 +547,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         FileImpl impl = (FileImpl) file;
                         NativeFileItem item = impl.getNativeFileItem();
                         if (item == null) {
-                            String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
+                            String path = impl.getAbsolutePath().toString();
                             item = normalizedItems.get(path);
                         }
                         boolean isLineDirective = false;
@@ -580,7 +580,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         } else if (item == null) {
                             // It should be in project?
                             if (file.isHeaderFile()) {
-                                String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
+                                String path = impl.getAbsolutePath().toString();
                                 needAdd.add(path);
                             }
                         }

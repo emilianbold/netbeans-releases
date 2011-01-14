@@ -68,4 +68,5 @@ public interface FileSystemProviderImplementation {
     void removeDownloadListener(FileSystemProvider.DownloadListener listener);
     FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;
     String getCanonicalPath(FileObject fileObject) throws IOException;
+    String getCanonicalPath(String absPath) throws IOException;
 }
