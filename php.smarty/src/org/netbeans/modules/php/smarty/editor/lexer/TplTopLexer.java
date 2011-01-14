@@ -41,6 +41,7 @@ package org.netbeans.modules.php.smarty.editor.lexer;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
@@ -397,11 +398,11 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         }
 
         private boolean isSmartyOpenDelimiter(CharSequence text) {
-            return (text.toString().endsWith(metadata.getOpenDelimiter()));
+            return CharSequenceUtilities.endsWith(text, metadata.getOpenDelimiter());
         }
 
         private boolean isSmartyCloseDelimiter(CharSequence text) {
-            return (text.toString().endsWith(metadata.getCloseDelimiter()));
+            return CharSequenceUtilities.endsWith(text, metadata.getCloseDelimiter());
         }
         
         private int getOpenDelimiterLength() {
