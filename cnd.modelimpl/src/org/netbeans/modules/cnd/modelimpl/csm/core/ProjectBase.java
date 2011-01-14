@@ -850,7 +850,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private FileAndHandler preCreateIfNeed(NativeFileItem nativeFile, boolean isSourceFile){
-        assert (nativeFile != null && nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid());
+        // file object can be invalid for not existing file (#194357)
+        assert (nativeFile != null && nativeFile.getFileObject() != null);
         if (!Utils.acceptNativeItem(nativeFile)) {
             return null;
         }

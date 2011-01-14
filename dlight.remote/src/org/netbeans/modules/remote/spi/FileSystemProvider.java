@@ -222,15 +222,14 @@ public final class FileSystemProvider {
         }
     }
 
-    private static void noProvidersWarning(FileObject fileObject) {
-        RemoteLogger.getInstance().log(Level.INFO, "No file system providers for {0}", fileObject); //NOI18N
-    }
-
-    private static void noProvidersWarning(ExecutionEnvironment env) {
-        RemoteLogger.getInstance().log(Level.INFO, "No file system providers for {0}", env); //NOI18N
-    }
-
-    private static void noProvidersWarning(String path) {
-        RemoteLogger.getInstance().log(Level.INFO, "No file system providers for {0}", path); //NOI18N
+    private static void noProvidersWarning(Object object) {
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
+            if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                String message = "No file system providers for " + object;
+                RemoteLogger.getInstance().log( Level.FINE, message, new Exception(message)); //NOI18N
+            } else {
+                RemoteLogger.getInstance().log(Level.FINEST, "No file system providers for {0}", object); //NOI18N
+            }
+        }
     }
 }
