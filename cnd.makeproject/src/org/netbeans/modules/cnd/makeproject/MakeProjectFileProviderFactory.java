@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,15 +77,12 @@ import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -414,21 +410,22 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         public final void open() {
             DataObject od = getDataObject();
             if (od != null) {
-                // use trick due to CR7002932
-                EditorCookie erc = od.getCookie(EditorCookie.class);
-                if (erc != null) {
-                    try {
-                        try {
-                            erc.openDocument();
-                        } catch (UserQuestionException e) {
-                            e.confirmed();
-                            erc.openDocument();
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    erc.open();
-                } else {
+                // comment out trick
+//                // use trick due to CR7002932
+//                EditorCookie erc = od.getCookie(EditorCookie.class);
+//                if (erc != null) {
+//                    try {
+//                        try {
+//                            erc.openDocument();
+//                        } catch (UserQuestionException e) {
+//                            e.confirmed();
+//                            erc.openDocument();
+//                        }
+//                    } catch (IOException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                    erc.open();
+//                } else {
                     Editable ec = od.getLookup().lookup(Editable.class);
                     if (ec != null) {
                         ec.edit();
@@ -438,7 +435,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             oc.open();
                         }
                     }
-                }
+//                }
             }
         }
         
