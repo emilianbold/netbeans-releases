@@ -353,9 +353,22 @@ public class GdbHandlerExpert implements HandlerExpert {
 	String filename = null;
 	// 'fullname' (try it first but it's not always available)
 	MIValue fullnameValue = props.valueOf("fullname"); // NOI18N
-	if (fullnameValue != null) {
-	    String fullnameString = fullnameValue.asConst().value();
-
+        String fullnameString = null;
+        if (fullnameValue == null) {
+            // try pending
+            fullnameValue = props.valueOf("pending"); // NOI18N
+            if (fullnameValue != null) {
+                fullnameString = fullnameValue.asConst().value();
+                // remove line number
+                int pos = fullnameString.lastIndexOf(":"); //NOI18N
+                if (pos != -1) {
+                    fullnameString = fullnameString.substring(0, pos);
+                }
+            }
+        } else {
+            fullnameString = fullnameValue.asConst().value();
+        }
+	if (fullnameString != null) {
 	    fullnameString = debugger.remoteToLocal("getFileName", fullnameString); // NOI18N
 
             // convert to world
@@ -364,9 +377,10 @@ public class GdbHandlerExpert implements HandlerExpert {
 	} else {
 	    // 'file'
 	    MIValue fileValue = props.valueOf("file"); // NOI18N
-	    if (fileValue == null)
+	    if (fileValue == null) {
 		return null;
-	    String fileString = fileValue.asConst().value();
+            }
+//	    String fileString = fileValue.asConst().value();
 
 	    // 'file' property is just a basename and rather useless ...
 	    // Extract original full filename from command:
@@ -380,20 +394,40 @@ public class GdbHandlerExpert implements HandlerExpert {
 
     private static int getLine(MITList props) {
 	MIValue lineValue = props.valueOf("line"); // NOI18N
-	if (lineValue == null)
-	    return 0;
-	String lineString = lineValue.asConst().value();
+        String lineString;
+	if (lineValue == null) {
+            // try pending
+            MIValue fullnameValue = props.valueOf("pending"); // NOI18N
+            if (fullnameValue == null) {
+                return 0;
+            }
+            String lineStr = fullnameValue.asConst().value();
+            // remove line number
+            int pos = lineStr.lastIndexOf(":"); //NOI18N
+            if (pos != -1) {
+                lineString = lineStr.substring(pos+1);
+            } else {
+                return 0;
+            }
+        } else {
+            lineString = lineValue.asConst().value();
+        }
 	int line = Integer.parseInt(lineString);
 	return line;
     }
 
     private static long getAddr(MITList props) {
 	MIValue addrValue = props.valueOf("addr"); // NOI18N
-	if (addrValue == null)
+	if (addrValue == null) {
 	    return 0;
+        }
 	String addrString = addrValue.asConst().value();
-	long addr = Address.parseAddr(addrString);
-	return addr;
+        try {
+            return Address.parseAddr(addrString);
+        } catch (Exception e) {
+            // can happen if addr=<PENDING> for example
+            return 0;
+        }
     }
 
     private void setSpecificProperties(NativeBreakpoint template,
