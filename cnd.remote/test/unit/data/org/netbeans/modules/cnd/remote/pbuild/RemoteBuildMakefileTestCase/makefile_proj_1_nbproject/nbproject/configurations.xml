@@ -25,8 +25,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>../makefile_proj_1_external</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f makefile</buildCommand>
-          <cleanCommand>${MAKE} -f makefile clean</cleanCommand>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
             <incDir>
