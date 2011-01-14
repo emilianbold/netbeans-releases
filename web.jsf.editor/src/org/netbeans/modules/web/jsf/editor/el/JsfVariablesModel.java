@@ -84,7 +84,7 @@ public class JsfVariablesModel {
     }
 
     private HtmlParserResult result;
-    private SortedSet<JsfVariableContext> contextsList;
+    private SortedSet<JsfVariableContext> contextsList = new TreeSet<JsfVariableContext>();
     private Snapshot topLevelSnapshot;
 
     private JsfVariablesModel(HtmlParserResult result, Snapshot topLevelSnapshot) {
@@ -104,10 +104,11 @@ public class JsfVariablesModel {
         // The access is slower however
 
         JsfSupportImpl sup = JsfSupportImpl.findFor(result.getSnapshot().getSource());
+        if(sup == null) {
+            return ;
+        }
         Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getLibraries().keySet();
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-
-        contextsList = new TreeSet<JsfVariableContext>();
 
         for (String namespace : declaredNamespaces) {
             if (inTest || faceletsLibsNamespaces.contains(namespace)) {

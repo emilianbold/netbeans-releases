@@ -54,7 +54,6 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,7 +62,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -569,7 +567,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return storage;
     }
 
-    InputStream _getInputStream(RemotePlainFile child) throws
+    synchronized InputStream _getInputStream(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (child.cache.exists()) {

@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
                                          ruby(ruby),                                       
 					 groovy(groovy),
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), groovy(javaee),
+                                         enterprise(javaee),
                                          mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
