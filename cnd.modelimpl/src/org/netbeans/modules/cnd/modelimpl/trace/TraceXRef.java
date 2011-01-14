@@ -269,6 +269,7 @@ public class TraceXRef extends TraceModel {
         long time = System.nanoTime();
         for (final CsmFile file : allFiles) {
             Runnable task = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (canceled.get()) {
@@ -320,7 +321,7 @@ public class TraceXRef extends TraceModel {
     }
 
     public static void traceRefs(Collection<CsmReference> out, CsmObject targetDecl, CsmObject targetDef, PrintStream streamOut) {
-        if (out.size() == 0) {
+        if (out.isEmpty()) {
             streamOut.println("REFERENCES ARE NOT FOUND"); // NOI18N
         } else {
             streamOut.println("REFERENCES ARE:"); // NOI18N
@@ -351,6 +352,7 @@ public class TraceXRef extends TraceModel {
     }
     public static final Comparator<CsmOffsetable> FILE_NAME_START_OFFSET_COMPARATOR = new Comparator<CsmOffsetable>() {
 
+        @Override
         public int compare(CsmOffsetable i1, CsmOffsetable i2) {
             if (i1 == i2) {
                 return 0;
@@ -422,6 +424,7 @@ public class TraceXRef extends TraceModel {
             this.reportUnresolved = reportUnresolved;
         }
 
+        @Override
         public void visit(CsmReferenceContext context) {
             CsmReference ref = context.getReference();
             if (canceled.get()) {
@@ -455,6 +458,7 @@ public class TraceXRef extends TraceModel {
                     scope,
                     new CsmFileReferences.Visitor() {
 
+                @Override
                         public void visit(CsmReferenceContext context) {
                             CsmReference ref = context.getReference();
                             XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, params, ref, funContext, printOut, printErr);
@@ -852,6 +856,7 @@ public class TraceXRef extends TraceModel {
             if (allUnresolvedPoints > 0) {
                 Collection<UnresolvedEntry> unresolvedEntries = bag.getUnresolvedEntries(new Comparator<UnresolvedEntry>() {
 
+                    @Override
                     public int compare(UnresolvedEntry o1, UnresolvedEntry o2) {
                         return o2.getNrUnnamed() - o1.getNrUnnamed();
                     }
@@ -1185,9 +1190,11 @@ public class TraceXRef extends TraceModel {
             this.offset = ref.getStartOffset();
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
 
+        @Override
         public void outputLineAction(OutputEvent ev) {
             CsmFile file = fileUID.getObject();
             if (file != null) {
@@ -1195,6 +1202,7 @@ public class TraceXRef extends TraceModel {
             }
         }
 
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
     }

@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
