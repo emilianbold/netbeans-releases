@@ -171,8 +171,13 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return getFile(EjbJarProjectProperties.META_INF);
     }
 
+    @Override
     public File getResourceDirectory() {
-        return getFile(EjbJarProjectProperties.RESOURCE_DIR);
+        File f = getFile(EjbJarProjectProperties.RESOURCE_DIR);
+        if (f == null) {
+            f = new File(FileUtil.toFile(project.getProjectDirectory()), "setup"); // NOI18N
+        }
+        return f;
     }
     
     public File getDeploymentConfigurationFile(String name) {
