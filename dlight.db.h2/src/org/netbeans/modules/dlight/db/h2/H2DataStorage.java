@@ -199,8 +199,8 @@ public final class H2DataStorage extends SQLDataStorage {
 
     @Override
     public String createForeignKeyConstraint(ForeignKeyConstraint fKey) {
-        return " FOREIGN KEY (" + fKey.getColumn().getColumnName() + ") REFERENCES " +
-                fKey.getReferenceTable().getName()  + "(" + fKey.getReferenceColumn().getColumnName() +  ") ";
+        return " FOREIGN KEY (" + fKey.getColumn().getColumnName() + ") REFERENCES " + // NOI18N
+                fKey.getReferenceTable().getName()  + "(" + fKey.getReferenceColumn().getColumnName() +  ") "; // NOI18N
     }
 
     @Override
