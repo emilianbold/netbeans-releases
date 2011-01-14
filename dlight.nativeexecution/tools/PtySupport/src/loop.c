@@ -14,7 +14,7 @@ static ssize_t writen(int filedes, const void *buf, size_t nbytes);
 
 #ifdef __APPLE__
 
-void loop(int master_fd) {
+int loop(int master_fd) {
     ssize_t n;
     char buf[BUFSIZ];
     int select_result;
@@ -63,11 +63,13 @@ void loop(int master_fd) {
             }
         }
     }
+    
+    return 0;
 }
 
 #else
 
-void loop(int master_fd) {
+int loop(int master_fd) {
     ssize_t n;
     char buf[BUFSIZ];
     struct pollfd fds[2];
@@ -96,6 +98,13 @@ void loop(int master_fd) {
             }
 
             if (n == 0) {
+#ifdef __CYGWIN__
+                // On Windows when calling process is killed,
+                // POLLIN flag is set, not POLLHUP.
+                // So behave as if we have received POLLHUP in this case...
+                close(master_fd);
+                return 1;
+#endif
                 break;
             }
 
@@ -125,7 +134,19 @@ void loop(int master_fd) {
             break;
         }
 
+        if (fds[0].revents & POLLHUP) {
+            // STDIN END is broken... 
+            // Cannot just break at this point as 'child' process still alive.
+            // [will hung on waitpid later.. ]
+            // So will close the MASTER END => this causes a hangup to occur on 
+            // the other end of the pipe.
+            // no data is drained in this case...
+            close(master_fd);
+            return 1;
+        }
     }
+    
+    return 0;
 }
 #endif
 

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -62,6 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -135,7 +137,7 @@ public class LuceneIndex implements Index {
         Parameters.notNull("result", result);       //NOI18N        
         final IndexReader in = dirCache.getReader();
         if (in == null) {
-            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
+            LOGGER.log(Level.FINE, "{0} is invalid!", this);
             return;
         }
         if (selector == null) {
@@ -242,6 +244,7 @@ public class LuceneIndex implements Index {
             searcher.close();
         }
         
+        boolean logged = false;
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
             if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
@@ -250,7 +253,20 @@ public class LuceneIndex implements Index {
             final T value = convertor.convert(doc);
             if (value != null) {
                 final Set<Term> terms = termCollector.get(docNum);
-                result.put (value, convertTerms(termConvertor, terms));
+                if (terms != null) {
+                    result.put (value, convertTerms(termConvertor, terms));
+                } else {
+                    if (!logged) {
+                        LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
+                                new Object[] {
+                                    in.maxDoc(),
+                                    in.numDocs(),
+                                    termCollector.docs()
+                                });
+                        logged = true;
+                    }
+                    LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                }
             }
         }
     }
@@ -297,8 +313,45 @@ public class LuceneIndex implements Index {
                 for (S td : toDelete) {
                     out.deleteDocuments(queryConvertor.convert(td));
                 }
+            }            
+            if (debugIndexMerging) {
+                out.setInfoStream (System.err);
+            }                
+            final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
+            Directory memDir = null;
+            IndexWriter activeOut = null;
+            if (lmListener.isLowMemory()) {
+                activeOut = out;
             }
-            storeData(out, data, docConvertor, optimize);
+            else {
+                memDir = new RAMDirectory ();
+                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+            }
+            for (Iterator<T> it = data.iterator(); it.hasNext();) {
+                T entry = it.next();
+                it.remove();
+                final Document doc = docConvertor.convert(entry);
+                activeOut.addDocument(doc);
+                if (memDir != null && lmListener.isLowMemory()) {
+                    activeOut.close();
+                    out.addIndexesNoOptimize(new Directory[] {memDir});
+                    memDir = new RAMDirectory ();
+                    activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+                }
+            }
+            if (memDir != null) {
+                activeOut.close();
+                out.addIndexesNoOptimize(new Directory[] {memDir});
+                activeOut = null;
+                memDir = null;
+            }
+            if (optimize) {
+                out.optimize(false);
+            }
+        } catch (RuntimeException e) {
+            throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
+        } catch (IOException e) {
+            throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
         } finally {
             try {
                 out.close();
@@ -308,47 +361,6 @@ public class LuceneIndex implements Index {
         }
     }
         
-    private <T> void storeData (
-            final IndexWriter out,
-            final @NonNull Collection<T> data,
-            final @NonNull Convertor<? super T, ? extends Document> convertor,
-            final boolean optimize) throws IOException {
-        if (debugIndexMerging) {
-            out.setInfoStream (System.err);
-        }                
-        final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
-        Directory memDir = null;
-        IndexWriter activeOut = null;
-        if (lmListener.isLowMemory()) {
-            activeOut = out;
-        }
-        else {
-            memDir = new RAMDirectory ();
-            activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
-        }
-        for (Iterator<T> it = data.iterator(); it.hasNext();) {
-            T entry = it.next();
-            it.remove();
-            final Document doc = convertor.convert(entry);
-            activeOut.addDocument(doc);
-            if (memDir != null && lmListener.isLowMemory()) {
-                activeOut.close();
-                out.addIndexesNoOptimize(new Directory[] {memDir});
-                memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
-            }
-        }
-        if (memDir != null) {
-            activeOut.close();
-            out.addIndexesNoOptimize(new Directory[] {memDir});
-            activeOut = null;
-            memDir = null;
-        }
-        if (optimize) {
-            out.optimize(false);
-        }
-    }
-
     @Override
     public boolean isValid (boolean force) throws IOException {
         return dirCache.isValid(force);
@@ -787,21 +799,24 @@ public class LuceneIndex implements Index {
         }
         
         private IOException annotateException (final IOException ioe) {
-            String message;
+            final StringBuilder message = new StringBuilder();            
             File[] children = folder.listFiles();
             if (children == null) {
-                message = "Non existing index folder";
+                message.append("Non existing index folder");    //NOI18N
             }
             else {
-                StringBuilder b = new StringBuilder();
+                message.append("Current Lucene version: ").     //NOI18N
+                        append(LucenePackage.get().getSpecificationVersion()).
+                        append('(').    //NOI18N
+                        append(LucenePackage.get().getImplementationVersion()).
+                        append(")\n");    //NOI18N
                 for (File c : children) {
-                    b.append(c.getName()).append(" f: ").append(c.isFile()).
+                    message.append(c.getName()).append(" f: ").append(c.isFile()).
                     append(" r: ").append(c.canRead()).
                     append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
                 }
-                message = b.toString();
             }
-            return Exceptions.attachMessage(ioe, message);
+            return Exceptions.attachMessage(ioe, message.toString());
         }
         
         private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {

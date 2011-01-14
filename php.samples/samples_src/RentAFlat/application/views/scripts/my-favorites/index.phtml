@@ -1,0 +1,54 @@
+<div id="conbox">
+    <div id="skip" class="none"><a name="skip"></a></div>
+    <div id="con">
+        <h1>My Favorites</h1>
+
+        <div id ="list">
+            <?php echo $this->noResultsMessage ?>
+
+            <?php foreach ($this->properties as $property): ?>
+                <div class="result" id="p<?= $property->getId() ?>">
+                    <div class="text">
+                        <h2>
+                            <?php echo $property->getTitle_en() ?>
+                            <?php foreach ($property->getLocation() as $location): ?>
+                                , <?php echo $location->getCity(); ?>
+                            <?php endforeach; ?>
+                            , <?php echo $property->getArea() ?> m&sup2;
+                        </h2>
+                        <p><?php echo substr($property->getText_en(), 0, 200) ?> ...</p>
+                        <p class="price"><?php echo $property->getFormattedPrice() ?><span> EUR</span></p>
+                    </div> 
+                    <br />
+                        <p>
+                            <a  class="fav-del" href="
+                                <?php 
+                                echo $this->url(array(
+                                    "controller" => "my-favorites",
+                                    "action" => "index",
+                                    "removeFromFavorites" => $property->getId()
+                                ));
+                                ?>
+                                " 
+                                onclick="removeFromFavoritesInFavorites(<?= $property->getId() ?>)" 
+                                title="Remove from favorites">Remove from favorites
+                            </a>
+                            &nbsp;&nbsp;
+                            <a href="<?php echo $this->url(array("controller" => "property", "action" => "detail", "property" => $property->getId()), null, true); ?>">More</a>
+                        </p>
+                        
+                    
+                </div>
+                <?php
+                if ($res == 1) {
+                    echo '<div class="cleaner hr"></div>';
+                    $res = 0;
+                } else {
+                    $res++;
+                }
+                ?>
+            <?php endforeach; ?>
+        </div>
+        <div class="cleaner hr"></div>
+    </div>
+</div>

@@ -60,6 +60,10 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -85,6 +89,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
+import org.openide.awt.ActionID;
 import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
@@ -92,6 +97,7 @@ import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -422,6 +428,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     }
 
     /**
+     * Rather than overriding this method, consider using {@link Description}.
      * Overwrite when you want to change default persistence type. Default
      * persistence type is PERSISTENCE_ALWAYS.
      * Return value should be constant over a given TC's lifetime.
@@ -429,6 +436,11 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @since 4.20
      */
     public int getPersistenceType() {
+        Description info = getClass().getAnnotation(Description.class); 
+        if (info != null) {
+            return info.persistenceType();
+        }
+        
         //First check for 'PersistenceType' client property for compatibility.
         if (warnedClasses.add(getClass()) && !TopComponent.class.equals(getClass())) {
             Logger.getAnonymousLogger().warning(
@@ -652,13 +664,21 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourComponent.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="preferredID" stringvalue="id.of.your.tc"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
+     * The <code>preferredID</code> attribute is supported since version
+     * 6.37. If specified the action first seeks for existing <code>preferredID</code>
+     * component and if found, it opens and activates it.
+     * <p>
+     * Rather than doing all this in XML, consider using {@link OpenActionRegistration}.
+     * 
      * 
      * @param component the component to open
      * @param displayName the display name of the action
      * @param image the image to associated with the action
      * @param noIconInMenu true if this icon shall not have an item in menu
+     * @see OpenActionRegistration
      * 
      * @since 6.24
      */
@@ -704,6 +724,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     }
 
     /**
+     * Rather than overriding this method, consider using {@link Description}.
      * Subclasses are encouraged to override this method to provide preferred value
      * for unique TopComponent ID returned by {@link org.openide.windows.WindowManager#findTopComponentID}.
      *
@@ -716,7 +737,11 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @since 4.13
      */
     protected String preferredID() {
-        Class clazz = getClass();
+        Class<?> clazz = getClass();
+        Description id = clazz.getAnnotation(Description.class);
+        if (id != null) {
+            return id.preferredID();
+        }
 
         if (getPersistenceType() != PERSISTENCE_NEVER && warnedTCPIClasses.add(clazz)) {
             Logger.getAnonymousLogger().warning(
@@ -1027,8 +1052,15 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         firePropertyChange("icon", old, icon); // NOI18N
     }
 
-    /** @return The icon of the top component */
+    /** 
+     * Rather than overriding this method, consider using {@link Description}.
+     * @return The icon of the top component 
+     */
     public Image getIcon() {
+        Description id;
+        if (icon == null && (id = getClass().getAnnotation(Description.class)) != null) {
+            icon = ImageUtilities.loadImage(id.iconBase(), true);
+        }
         return icon;
     }
 
@@ -1083,7 +1115,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             if (action instanceof ContextAwareAction) {
                 Action delegate = ((ContextAwareAction) action).createContextAwareInstance(getLookup());
                 assert delegate != null : "ContextAwareAction cannot return null: " + action;
-                if( delegate.isEnabled() || getActivatedNodes() != null )
+                if( delegate.isEnabled() && getActivatedNodes() != null )
                     action = delegate;
                 //else 
                 //  use the global instance which might be enabled if it can survive focus changes
@@ -1356,6 +1388,68 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         * @return cloned component.
         */
         public TopComponent cloneComponent();
+    }
+    
+    /** Provides basic information about the persistence of a {@link TopComponent}.
+     * Using this annotation is preferred to overriding {@link #preferredID},
+     * {@link #getPersistenceType}, or {@link #getIcon}, or calling {@link #setIcon}.
+     * @since 6.37
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public static @interface Description {
+        /** The default value for {@link TopComponent#preferredID()}.
+         */
+        public String preferredID();
+        /** The icon to load for {@link TopComponent#getIcon()}.
+         */
+        public String iconBase() default "";
+        /** Default value for {@link TopComponent#getPersistenceType()}. 
+         * 
+         * @return one of {@link TopComponent#PERSISTENCE_ALWAYS}, 
+         * {@link TopComponent#PERSISTENCE_NEVER}, 
+         * {@link TopComponent#PERSISTENCE_ONLY_OPENED}
+         * 
+         */
+        public int persistenceType() default PERSISTENCE_ALWAYS;
+    }
+    
+    /** Registers {@link TopComponent} into specified location among
+     * existing {@link Mode window system modes}. The mode itself needs 
+     * to be created by other means, this just adds reference to the
+     * component to it.
+     * 
+     * @since 6.37
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ ElementType.TYPE, ElementType.METHOD })
+    public static @interface Registration {
+        /** Name of the mode the component shall be opened in */
+        String mode();
+        /** Position of the component within its mode. */
+        int position() default Integer.MAX_VALUE;
+        /** Shall the component be opened at start */
+        boolean openAtStartup();
+    }
+    
+    /** Creates an action that can open the component.
+     * The action is generated only
+     * if {@link ActionID} annotation is used on the same element, otherwise
+     * a compilation error is raised. Also the {@link Description} shall be
+     * present.
+     * @since 6.37
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ ElementType.TYPE, ElementType.METHOD })
+    public static @interface OpenActionRegistration {
+        /** Display name of the action, usually can refer to value from a
+         * <code>Bundle.properties</code> using <code>#KEY</code>.
+         */
+        String displayName();
+        
+        /** The identification of an existing component to seek for.
+         */
+        String preferredID() default "";
     }
 
     /** Registry of all top components.

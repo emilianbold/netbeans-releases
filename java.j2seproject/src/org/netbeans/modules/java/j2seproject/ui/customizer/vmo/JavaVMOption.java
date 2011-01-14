@@ -61,22 +61,23 @@ public class JavaVMOption<V extends OptionValue<?>> extends CommonTree implement
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JavaVMOption)) return false;
-
-        JavaVMOption that = (JavaVMOption) o;
-
-        if (!name.equals(that.name)) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final JavaVMOption<V> other = (JavaVMOption<V>) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
         return true;
     }
-
+        
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
 

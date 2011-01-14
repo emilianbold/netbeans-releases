@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
@@ -108,6 +110,26 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }
 
+            ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
+            TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
+                    @Override
+                    public Boolean visitVariable(VariableTree vt, String p) {
+                         super.visitVariable(vt, p);
+                         return vt.getName().contentEquals(p);
+                    }
+
+                    @Override
+                    public Boolean reduce(Boolean left, Boolean right) {
+                        return (left == null ? false : left) || (right == null ? false : right);
+                    }
+
+            };
+
+            if (scanner.scan(javac.getTrees().getTree(method), s)) {
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s));
+            }
+
+
             // check parameter type
             String t = paramTable[i].getType();
             if (t == null)
@@ -117,7 +139,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             s = paramTable[i].getDefaultValue();
             if ((s == null || s.length() < 1))
                 p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
-
+ 
             }
             ParameterInfo in = paramTable[i];
 
@@ -158,8 +180,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     final ElementUtilities elmUtils = info.getElementUtilities();
 
                     //add all references of overriding methods
-                        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-                        Element el = treePathHandle.resolveElement(info);
+                    Element el = treePathHandle.resolveElement(info);
                     ElementHandle<TypeElement>  enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                         allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                         allMethods.add(ElementHandle.create((ExecutableElement)el));
@@ -200,62 +221,6 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         fireProgressListenerStop();
         return null;
-//        JavaMetamodel.getManager().getProgressSupport().addProgressListener(this);
-//        Problem problem = null;
-//        try {
-//            // get the original access modifier and check, if the original
-//            // modifier is weaker than the new modifier. If so, set checkMod
-//            // to true and in following code check, if all usages will have 
-//            // sufficient access privileges.
-//            int origAccessMods = method.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE);
-//            boolean checkMod = compareModifiers(origAccessMods, modifier) == -1;
-//            // get all the callers and usages of the callable and add them
-//            // the the collection of refactored elements
-//            referencesIterator = ((CallableFeatureImpl) method).findDependencies(true, true, true).iterator();
-//            elements.add(refactoring, new SignatureElement(method, paramTable, modifier));
-//            int parNum = ((CallableFeature) refactoring.getRefactoredObject()).getParameters().size();
-//            while (referencesIterator.hasNext()) {
-//                if (cancelRequest) {
-//                    return null;
-//                }
-//                Object ref = referencesIterator.next();
-//                if (ref instanceof Invocation) {
-//                    // Callers. Refactored method has to have the same number
-//                    // of parameters as its caller. (see issue #53041 for details)
-//                    if (((Invocation) ref).getParameters().size() == parNum) {
-//                        if (problem == null && checkMod) {
-//                            // check the access to refactored method
-//                            Feature f = JavaModelUtil.getDeclaringFeature((Invocation)ref);
-//                            if (Modifier.isPrivate(modifier)) { // changing to private
-//                                if (!Utilities.compareObjects(getOutermostClass(f), getOutermostClass(method))) {
-//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
-//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "private" })); // NOI18N
-//                                }
-//                            } else if (Modifier.isProtected(modifier)) { // changing to protected
-//                                if (!method.getResource().getPackageName().equals(f.getResource().getPackageName())) {
-//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
-//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "protected" })); // NOI18N
-//                                }
-//                            } else if (modifier == 0) { // default modifier check
-//                                if (!f.getResource().getPackageName().equals(method.getResource().getPackageName())) {
-//                                    String msg = getString("ERR_StrongAccMod"); // NOI18N
-//                                    problem = new Problem(false, new MessageFormat(msg).format(new Object[] { "default" })); // NOI18N
-//                                }
-//                            }
-//                        }
-//                        elements.add(refactoring, new CallerElement((Invocation) ref, paramTable));
-//                    }
-//                } else {
-//                    // declaration/declarations (in case of overriden or overrides)
-//                    elements.add(refactoring, new SignatureElement((CallableFeature) ref, paramTable, modifier));
-//                }
-//            }
-//            return problem;
-//        } 
-//        finally {
-//            referencesIterator = null;
-//            JavaMetamodel.getManager().getProgressSupport().removeProgressListener(this);
-//        }
     }
     
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {

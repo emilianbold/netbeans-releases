@@ -380,7 +380,7 @@ public class ActionsTest extends NbTestCase {
         action.putValue("menuText", "&Ble");
         action.putValue(action.NAME, "&Mle");
         
-        Actions.connect(item, action, true);
+        Actions.connect(item, action, false);
         
         assertEquals(Utilities.isMac() ? 0 : 'B', item.getMnemonic());
         assertEquals("Ble", item.getText());
@@ -399,12 +399,34 @@ public class ActionsTest extends NbTestCase {
         //action.putValue("menuText", "&Ble");
         action.putValue(action.NAME, "&Mle");
         
-        Actions.connect(item, action, true);
+        Actions.connect(item, action, false);
         
         assertEquals(Utilities.isMac() ? 0 : 'M', item.getMnemonic());
         assertEquals("Mle", item.getText());
     }
-    
+
+    public void testPopupMnemonics() throws Exception { // #83952
+        Action a = new ActionsTest.TestAction();
+        a.putValue(Action.NAME, "&Ahoj");
+        JMenuItem i = new JMenuItem();
+        Actions.connect(i, a, false);
+        assertEquals("use defined mnemonic when a menu item", Utilities.isMac() ? 0 : 'A', i.getMnemonic());
+        assertEquals("Ahoj", i.getText());
+        a.putValue("menuText", "&Boj");
+        i = new JMenuItem();
+        Actions.connect(i, a, false);
+        assertEquals("use menuText when appropriate", Utilities.isMac() ? 0 : 'B', i.getMnemonic());
+        assertEquals("Boj", i.getText());
+        i = new JMenuItem();
+        Actions.connect(i, a, true);
+        assertEquals("popups normally do not use mnemonics", 0, i.getMnemonic());
+        assertEquals("Boj", i.getText());
+        a.putValue("popupText", "&Ciao");
+        i = new JMenuItem();
+        Actions.connect(i, a, true);
+        assertEquals("but this can be overridden using popupText", Utilities.isMac() ? 0 : 'C', i.getMnemonic());
+        assertEquals("Ciao", i.getText());
+    }
     
     @Override
     protected boolean runInEQ() {

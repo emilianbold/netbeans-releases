@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.cnd.modelui.trace;
 
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelui.actions.ProjectActionBase;
 
 /**
@@ -54,5 +59,17 @@ public abstract class TestProjectActionBase extends ProjectActionBase {
 
     public TestProjectActionBase() {
         super(TEST_XREF);
+    }
+    
+    protected final Preferences getProjectPrefs(CsmProject p) {
+        Preferences out = null;
+        Object project = p.getPlatformProject();
+        if (project instanceof NativeProject) {
+            Object prj = ((NativeProject) project).getProject();
+            if (prj instanceof Project) {
+                out = ProjectUtils.getPreferences((Project) prj, TestProjectActionBase.class, false);
+            }
+        }
+        return out;
     }
 }

@@ -1393,8 +1393,8 @@ public class BaseKit extends DefaultEditorKit {
             try {
                 String selectedText = target.getSelectedText();
                 int origDot = target.getCaretPosition();
-                target.replaceSelection(""); // NOI18N
                 Caret caret = target.getCaret();
+                doc.remove(computeInsertionOffset(caret), computeInsertionLength(caret));
                 Object cookie = beforeBreak(target, doc, caret);
 
                 // insert new line, caret moves to the new line
@@ -1434,6 +1434,11 @@ public class BaseKit extends DefaultEditorKit {
             return Math.min(caret.getMark(), caret.getDot());
         }
         
+        private int computeInsertionLength(Caret caret) {
+            return 
+                    Math.max(caret.getMark(), caret.getDot()) -
+                    Math.min(caret.getMark(), caret.getDot());
+        }
     } // End of InsertBreakAction class
 
     @EditorActionRegistration(name = splitLineAction)    
@@ -1473,6 +1478,8 @@ public class BaseKit extends DefaultEditorKit {
 
                                 // make sure the caret stays on its original position
                                 caret.setDot(dotPos);
+                            } catch (GuardedException e) {
+                                target.getToolkit().beep();
                             } catch (BadLocationException ble) {
                                 LOG.log(Level.WARNING, null, ble);
                             } finally {
@@ -1515,7 +1522,14 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 if (Utilities.isSelectionShowing(caret)) { // block selected
                                     try {
+                                        boolean selectionAtLineStart = Utilities.getRowStart(doc, target.getSelectionStart()) == target.getSelectionStart();
                                         changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                        if (selectionAtLineStart) {
+                                            int newSelectionStartOffset = target.getSelectionStart();
+                                            int lineStartOffset = Utilities.getRowStart(doc, newSelectionStartOffset);
+                                            if (lineStartOffset != newSelectionStartOffset)
+                                            target.select(lineStartOffset, target.getSelectionEnd());
+                                        }
                                     } catch (GuardedException e) {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
@@ -1547,6 +1561,9 @@ public class BaseKit extends DefaultEditorKit {
                                         } else { // already chars on the line
                                             insertTabString(doc, dotPos);
                                         }
+                                    } catch (GuardedException ge) {
+                                        LOG.log(Level.FINE, null, ge);
+                                        target.getToolkit().beep();
                                     } catch (BadLocationException e) {
                                         // use the same pos
                                         LOG.log(Level.WARNING, null, e);
@@ -3182,22 +3199,38 @@ public class BaseKit extends DefaultEditorKit {
                     int removeLen = firstNW - replacePos;
                     CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
                     String newIndentText = IndentUtils.createIndentString(doc, indent);
-                    if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
-                        // Skip removeLen chars at start
-                        newIndentText = newIndentText.substring(removeLen);
-                        replacePos += removeLen;
-                        removeLen = 0;
-                    } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
-                        // Skip removeLen chars at the end
-                        newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
-                        removeLen = 0;
+                    int newIndentTextLength = newIndentText.length();
+                    if (indent >= removeLen) {
+                        if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
+                            // Skip removeLen chars at start
+                            newIndentText = newIndentText.substring(removeLen);
+                            replacePos += removeLen;
+                            removeLen = 0;
+                        } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
+                            // Skip removeLen chars at the end
+                            newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
+                            removeLen = 0;
+                        }
+                    } else {
+                        if (CharSequenceUtilities.startsWith(removeText, newIndentText)) {
+                            // Skip newIndentText chars at start
+                            replacePos += newIndentTextLength;
+                            removeLen -= newIndentTextLength;
+                            newIndentText = null;
+                        } else if (CharSequenceUtilities.endsWith(removeText, newIndentText)) {
+                            // Skip  newIndentText chars at the end
+                            removeLen -= newIndentTextLength;
+                            newIndentText = null;
+                        }
                     }
 
                     if (removeLen != 0) {
                         doc.remove(replacePos, removeLen);
                     }
 
-                    doc.insertString(replacePos, newIndentText, null);
+                    if (newIndentText != null) {
+                        doc.insertString(replacePos, newIndentText, null);
+                    }
                 } catch (BadLocationException ex) {
                     badLocationExceptions [0] = ex;
                 }

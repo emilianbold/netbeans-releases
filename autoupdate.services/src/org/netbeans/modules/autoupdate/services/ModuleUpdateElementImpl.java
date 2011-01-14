@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 
 /**
  *

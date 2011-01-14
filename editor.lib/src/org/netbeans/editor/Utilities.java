@@ -691,7 +691,7 @@ public class Utilities {
     public static int getLineOffset(BaseDocument doc, int offset)
     throws BadLocationException {
         
-        checkOffsetValid(offset, doc.getLength() + 1);
+        checkOffsetValid(doc, offset);
 
         Element lineRoot = doc.getParagraphElement(0).getParentElement();
         return lineRoot.getElementIndex(offset);
@@ -1447,7 +1447,7 @@ public class Utilities {
     }
 
     private static void checkOffsetValid(Document doc, int offset) throws BadLocationException {
-        checkOffsetValid(offset, doc.getLength());
+        checkOffsetValid(offset, doc.getLength() + 1);
     }
 
     private static void checkOffsetValid(int offset, int limitOffset) throws BadLocationException {

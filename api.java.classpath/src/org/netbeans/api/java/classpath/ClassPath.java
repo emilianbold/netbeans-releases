@@ -694,11 +694,12 @@ public final class ClassPath {
      * may be propagated between ClassPaths.
      */
     public final class Entry {
-
+                        
         private final URL url;
-        private FileObject root;
+        private volatile FileObject root;
         private IOException lastError;
         private FilteringPathResourceImplementation filter;
+        /*unit test*/ Boolean isDataResult;
 
         /**
          * Returns the ClassPath instance, which defines/introduces the Entry.
@@ -717,27 +718,49 @@ public final class ClassPath {
          * @return classpath entry root folder
          */
         public  FileObject  getRoot() {
-            synchronized (this) {
-                if (root != null && root.isValid()) {
+            FileObject _root = root;
+            if (_root != null && _root.isValid()) {
+                return _root;
+            }
+
+            for (int retryCount = 0; retryCount<=1; retryCount++) { //Bug 193086 : try to do refresh
+                _root = URLMapper.findFileObject(this.url);            
+                synchronized (this) {
+                    if (root == null || !root.isValid()) {
+                        if (_root == null) {
+                            this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
+                                new Object[] {this.url}));
+                            return null;
+                        } else if (isData(_root)) {
+                            if (retryCount == 0) {
+                                _root.refresh();
+                                continue;
+                            } else {
+                                String fileState = null;
+                                try {
+                                    final File file = new File(this.url.toURI());
+                                    fileState = "(exists: " + file.exists() +           //NOI18N
+                                                " file: " + file.isFile() +             //NOI18N
+                                                " directory: "+ file.isDirectory() +    //NOI18N
+                                                " read: "+ file.canRead() +             //NOI18N
+                                                " write: "+ file.canWrite()+")";        //NOI18N
+                                } catch (IllegalArgumentException e) {
+                                    //Non local file - keep file null (not log file state)
+                                } catch (URISyntaxException e) {
+                                    //keep file null (not log file state)
+                                }
+                                throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder." + //NOI18N
+                                        (fileState != null ? fileState : ""));
+                            }
+                        } else {
+                            root = _root;                            
+                        }
+                    }
                     return root;
                 }
             }
-            FileObject _root = URLMapper.findFileObject(this.url);            
-            synchronized (this) {
-                if (root == null || !root.isValid()) {
-                    if (_root == null) {
-                        this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
-                            new Object[] {this.url}));
-                        return null;
-                    }
-                    else if (_root.isData()) {
-                        throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder.");
-                    }
-                    root = _root;
-                }
-                return root;
-            }
-        }
+            return null;            
+        }        
 
         /**
          * @return true, iff the Entry refers to an existing and readable
@@ -858,6 +881,16 @@ public final class ClassPath {
         @Override
         public int hashCode () {
             return this.url == null ? 0 : this.url.hashCode();
+        }
+        
+        private synchronized boolean isData(final FileObject fo) {
+            if (isDataResult != null) {
+                boolean res = isDataResult;
+                isDataResult = null;
+                return res;
+            } else {
+                return fo.isData();
+            }
         }
     }
 

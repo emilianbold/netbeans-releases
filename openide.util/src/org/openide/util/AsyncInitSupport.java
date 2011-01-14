@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -65,6 +67,7 @@ import javax.swing.Timer;
 final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListener {
     /** lock for access to wasCancelled flag */
     private static final Object CANCELLED_LOCK = new Object();
+    private static final Logger LOG = Logger.getLogger(AsyncInitSupport.class.getName()); 
 
     /** task in which post init code from AsyncJob is executed */
     private Task initTask;
@@ -94,6 +97,7 @@ final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListe
         }
 
         comp4Init.addHierarchyListener(this);
+        LOG.log(Level.FINE, "addHierarchyListener for {0}", comp4Init);
     }
     
     /** Impl of HierarchyListener, starts init job with delay when component shown,
@@ -101,15 +105,20 @@ final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListe
      * calls cancel if desirable.
      * @param evt hierarchy event
      */
+    @Override
     public void hierarchyChanged(HierarchyEvent evt) {
-        if (((evt.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0)) {
+        final boolean hierachyChanged = (evt.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0;
+        LOG.log(Level.FINE, "Hierarchy Changed {0}", hierachyChanged);
+        if (hierachyChanged) {
             boolean isShowing = comp4Init.isShowing();
             if (timer == null && isShowing) {
                 timer = new Timer(20, this);
                 timer.setRepeats(false);
                 timer.start();
+                LOG.log(Level.FINE, "Timer started for {0}", comp4Init);
             } else if (!isShowing) {
                 comp4Init.removeHierarchyListener(this);
+                LOG.log(Level.FINE, "Not showing, cancling for {0}", comp4Init);
                 cancel();
             }
         }
@@ -117,15 +126,18 @@ final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListe
 
     /** Impl of ActionListener, called from hierarchyChanged through a Timer,
      * starts the job */
+    @Override
     public void actionPerformed(ActionEvent ae) {
         if (wasCancelled || (initTask != null)) {
             //If cancelled or already started, our job is done, go away.
+            LOG.log(Level.FINE, "Detaching {0}", comp4Init);
             detach();
             return;
         }
 
         if ((comp4Init != null) && comp4Init.isDisplayable()) {
             //If the component has a parent onscreen, we're ready to run.
+            LOG.log(Level.FINE, "Starting {0}", comp4Init);
             start();
         }
     }
@@ -148,11 +160,14 @@ final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListe
      * method and after its completion posts AsyncJob's UI update method
      * to AWT thread.
      */
+    @Override
     public void run() {
         if (!SwingUtilities.isEventDispatchThread()) {
+            LOG.log(Level.FINE, "Prepare outside AWT for {0}", comp4Init);
             // first pass, executed in some of RP threads
             initJob.construct();
             comp4Init.removeHierarchyListener(this);
+            LOG.log(Level.FINE, "No hierarchy listener for {0}", comp4Init); 
 
             // continue to invoke finished method only if hasn't been cancelled 
             boolean localCancel;
@@ -161,12 +176,14 @@ final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListe
                 localCancel = wasCancelled;
             }
 
+            LOG.log(Level.FINE, "wasCancelled {0}", localCancel);
             if (!localCancel) {
                 SwingUtilities.invokeLater(this);
             }
         } else {
             // second pass, executed in event dispatch thread
             initJob.finished();
+            LOG.fine("Second pass finished");
         }
     }
 
@@ -175,9 +192,11 @@ final class AsyncInitSupport implements HierarchyListener, Runnable, ActionListe
     private void cancel() {
         if ((initTask != null) && !initTask.isFinished() && (initJob instanceof Cancellable)) {
             synchronized (CANCELLED_LOCK) {
+                LOG.log(Level.FINE, "Cancelling for {0}", comp4Init);
                 wasCancelled = true;
             }
             ((Cancellable) initJob).cancel();
+            LOG.fine("Cancelling done");
         }
     }
     

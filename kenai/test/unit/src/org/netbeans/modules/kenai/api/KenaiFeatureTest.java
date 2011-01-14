@@ -78,6 +78,10 @@ public class KenaiFeatureTest extends NbTestCase {
         assert Type.forId("issues").equals(Type.ISSUES);
         assert Type.forId("wiki").equals(Type.WIKI);
         assert Type.forId("chat").equals(Type.CHAT);
+        assert Type.forId("hudson").equals(Type.HUDSON);
+        assert Type.forId("lists").equals(Type.LISTS);
+        assert Type.forId("scm").equals(Type.SOURCE);
+        assert Type.forId("projects").equals(Type.PROJECTS);
     }
 }
 

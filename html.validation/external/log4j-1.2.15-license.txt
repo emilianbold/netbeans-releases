@@ -1,6 +1,6 @@
 Name: Log4j
 Version: 1.2.15
-License: Apache
+License: Apache-2.0
 OSR: -
 Files: log4j-1.2.15.jar
 Description: Logging support library

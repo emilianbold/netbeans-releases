@@ -52,9 +52,7 @@ import javax.swing.border.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
-import org.openide.awt.Actions;
 import org.openide.*;
-import org.openide.util.HelpCtx;
 
 /**
  * Let's you select items from a dialog.
@@ -121,6 +119,13 @@ public final class ItemSelectorDialog extends JPanel implements ActionListener {
 					 "ACSN_OverloadList");	// NOI18N
 	Catalog.setAccessibleDescription(list,
 					 "ACSD_OverloadList");	// NOI18N
+	list.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                doubleClicked(evt);
+            }
+        });
 
 	JScrollPane scroll_pane = new JScrollPane(list);
 	add(scroll_pane, BorderLayout.CENTER);
@@ -231,6 +236,27 @@ public final class ItemSelectorDialog extends JPanel implements ActionListener {
 	    selected_indices = null;
 	    cancelled = true;
 	    // OLD selected_item = -1;
+	}
+    }
+
+    private void doubleClicked(MouseEvent evt) {
+	if (evt.getClickCount() == 2) {
+	    selected_indices = list.getSelectedIndices();
+	    okPressed = true;
+	    cancelled = false;
+	    Component c = this;
+	    // First dismiss the overload dialog. We have no
+	    // direct access to it, but can find it by walking
+	    // through component parents until found.
+	    while (c != null) {
+		if (c instanceof JDialog) {
+		    JDialog d = (JDialog) c;
+		    d.setVisible(false);
+		    d.dispose();
+		    break;
+		}
+		c = c.getParent();
+	    }
 	}
     }
 

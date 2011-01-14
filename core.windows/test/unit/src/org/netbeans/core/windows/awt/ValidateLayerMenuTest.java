@@ -44,6 +44,7 @@
 
 package org.netbeans.core.windows.awt;
 
+import javax.swing.Box;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.cookies.InstanceCookie;
@@ -101,6 +102,9 @@ public class ValidateLayerMenuTest extends NbTestCase {
             return true;
         }
         if (obj instanceof javax.swing.JMenuItem) {
+            return true;
+        }
+        if (obj instanceof Box.Filler) {
             return true;
         }
         

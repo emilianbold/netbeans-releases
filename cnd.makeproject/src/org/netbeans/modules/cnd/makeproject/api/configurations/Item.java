@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -90,7 +91,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         this.fileObject = fileObject;
 
         String p = ProjectSupport.toProperPath(baseDirFO, fileObject, pathMode);
-        p = CndPathUtilitities.normalize(p);
+        p = CndPathUtilitities.normalizeSlashes(p);
 
         path = p;
     }
@@ -171,10 +172,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return path;
     }
 
+    @Override
     public String getAbsolutePath() {
         synchronized (this) {
             if (fileObject != null) {
-                return fileObject.getPath();
+                return CndFileUtils.getNormalizedPath(fileObject);
             }
         }
         return getNormalizedFile().getAbsolutePath();
@@ -185,6 +187,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return getName();
     }
 
+    @Override
     public String getName() {
         return CndPathUtilitities.getBaseName(path);
     }
@@ -262,7 +265,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (!CndPathUtilitities.isPathAbsolute(getPath())) {
                     newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }
-                newPath = CndPathUtilitities.normalize(newPath);
+                newPath = CndPathUtilitities.normalizeSlashes(newPath);
                 renameTo(newPath);
             }
         }
@@ -273,7 +276,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public String getNormalizedPath() {
-        return getNormalizedFile().getPath();
+        if (fileObject == null) {
+            return getNormalizedFile().getPath();
+        } else {
+            return CndFileUtils.getNormalizedPath(fileObject);
+        }
     }
     
     public File getNormalizedFile() {
@@ -403,7 +410,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         DataObject dataObject = null;
         FileObject fo = getFileObjectImpl(true);
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
@@ -428,6 +435,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return dataObject;
     }
 
+    public final void onClose() {
+        DataObject dao = getDataObject();
+        if (dao != null) {
+            dao.removePropertyChangeListener(this);
+            NativeFileItemSet set = dao.getCookie(NativeFileItemSet.class);
+            if (set != null) {
+                set.remove(this);
+            }
+        }
+    }
+    
     public final String getMIMEType() {
         DataObject dataObject = getDataObject();
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();

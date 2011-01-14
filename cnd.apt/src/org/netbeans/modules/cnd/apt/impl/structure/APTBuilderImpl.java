@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.filesystems.FileSystem;
 
 /**
  * implementation of APTBuilder
@@ -66,11 +67,11 @@ public final class APTBuilderImpl {
     public APTBuilderImpl() {
     }
 
-    public APTFile buildAPT(CharSequence path, TokenStream ts) {
+    public APTFile buildAPT(FileSystem fileSystem, CharSequence path, TokenStream ts) {
         if (ts == null) {
             return null;
         }
-        APTFileNode aptFile = new APTFileNode(path);
+        APTFileNode aptFile = new APTFileNode(fileSystem, path);
         try {
             buildFileAPT(aptFile, ts);
         } catch (TokenStreamRecognitionException ex) {

@@ -112,17 +112,20 @@ public class TestReparseAction extends TestProjectActionBase {
         
         InputOutput io = IOProvider.getDefault().getIO(task, false);
         io.select();
+        OutputWriter out = io.getOut();
         
         for( CsmFile file : project.getSourceFiles() ) {
             handle.progress("Parsing " + file.getName(), handled++); // NOI18N
-            testReparse((FileImpl) file, io.getOut());
+            testReparse((FileImpl) file, out);
         }
         for( CsmFile file : project.getHeaderFiles() ) {
             handle.progress("Parsing " + file.getName(), handled++); // NOI18N
-            testReparse((FileImpl) file, io.getOut());
+            testReparse((FileImpl) file, out);
         }
         
         handle.finish();
+        out.flush();
+        out.close();
     }
     
     private void testReparse(final FileImpl fileImpl, final OutputWriter out) {

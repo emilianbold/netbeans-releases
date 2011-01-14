@@ -66,9 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
@@ -76,6 +74,8 @@ import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Parameters;
@@ -252,11 +252,11 @@ public final class QuerySupport {
 
                 @Override
                 public Collection<? extends IndexResult> call() throws Exception {
-                    Iterable<? extends Pair<URL, IndexImpl>> indices = indexerQuery.getIndices(roots);
+                    Iterable<? extends Pair<URL, DocumentIndex>> indices = indexerQuery.getIndices(roots);
                     // check if there are stale indices
-                    for (Pair<URL, IndexImpl> pair : indices) {
-                        final IndexImpl index = pair.second;
-                        final Collection<? extends String> staleFiles = index.getStaleFiles();
+                    for (Pair<URL, DocumentIndex> pair : indices) {
+                        final DocumentIndex index = pair.second;
+                        final Collection<? extends String> staleFiles = index.getDirtyKeys();
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
                         }
@@ -274,18 +274,22 @@ public final class QuerySupport {
                         }
                     }
                     final List<IndexResult> result = new LinkedList<IndexResult>();
-                    for (Pair<URL, IndexImpl> pair : indices) {
-                        final IndexImpl index = pair.second;
+                    for (Pair<URL, DocumentIndex> pair : indices) {
+                        final DocumentIndex index = pair.second;
                         final URL root = pair.first;
-                        final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
+                        final Collection<? extends org.netbeans.modules.parsing.lucene.support.IndexDocument> pr = index.query(
+                                fieldName,
+                                fieldValue,
+                                translateQueryKind(kind),
+                                fieldsToLoad);
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", " + printFiledToLoad(fieldsToLoad) + ") invoked at " + getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
-                            for (IndexDocumentImpl idi : pr) {
+                            for (org.netbeans.modules.parsing.lucene.support.IndexDocument idi : pr) {
                                 LOG.fine(" " + idi); //NOI18N
                             }
                             LOG.fine("----"); //NOI18N
                         }
-                        for (IndexDocumentImpl di : pr) {
+                        for (org.netbeans.modules.parsing.lucene.support.IndexDocument di : pr) {
                             result.add(new IndexResult(di, root));
                         }
                     }
@@ -354,7 +358,7 @@ public final class QuerySupport {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                     + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
-            for(Pair<URL, IndexImpl> pair : indexerQuery.getIndices(this.roots)) {
+            for(Pair<URL, DocumentIndex> pair : indexerQuery.getIndices(this.roots)) {
                 LOG.fine(" " + pair.first + " -> index: " + pair.second); //NOI18N
             }
             LOG.fine("----"); //NOI18N
@@ -430,6 +434,19 @@ public final class QuerySupport {
             return sb.toString();
         }
     }
+    
+    private static Queries.QueryKind translateQueryKind(final QuerySupport.Kind kind) {
+        switch (kind) {
+            case EXACT: return Queries.QueryKind.EXACT;
+            case PREFIX: return Queries.QueryKind.PREFIX;                
+            case CASE_INSENSITIVE_PREFIX: return Queries.QueryKind.CASE_INSENSITIVE_PREFIX;
+            case CAMEL_CASE: return Queries.QueryKind.CAMEL_CASE;
+            case CASE_INSENSITIVE_REGEXP: return Queries.QueryKind.CASE_INSENSITIVE_REGEXP;                
+            case REGEXP: return Queries.QueryKind.REGEXP;
+            case CASE_INSENSITIVE_CAMEL_CASE: return Queries.QueryKind.CASE_INSENSITIVE_CAMEL_CASE;
+            default: throw new UnsupportedOperationException (kind.toString());
+        }
+    } 
 
     /* test */ static final class IndexerQuery {
 
@@ -443,17 +460,17 @@ public final class QuerySupport {
             return q;
         }
 
-        public Iterable<? extends Pair<URL, IndexImpl>> getIndices(List<? extends URL> roots) {
+        public Iterable<? extends Pair<URL, DocumentIndex>> getIndices(List<? extends URL> roots) {
             synchronized (root2index) {
-                List<Pair<URL, IndexImpl>> indices = new LinkedList<Pair<URL, IndexImpl>>();
+                List<Pair<URL, DocumentIndex>> indices = new LinkedList<Pair<URL, DocumentIndex>>();
 
                 for(URL r : roots) {
-                    Reference<IndexImpl> indexRef = root2index.get(r);
-                    IndexImpl index = indexRef != null ? indexRef.get() : null;
+                    Reference<DocumentIndex> indexRef = root2index.get(r);
+                    DocumentIndex index = indexRef != null ? indexRef.get() : null;
                     if (index == null) {
                         index = findIndex(r);
                         if (index != null) {
-                            root2index.put(r, new SoftReference<IndexImpl>(index));
+                            root2index.put(r, new SoftReference<DocumentIndex>(index));
                         } else {
                             root2index.remove(r);
                         }
@@ -479,13 +496,13 @@ public final class QuerySupport {
         /* test */ static /* final, but tests need to change it */ IndexFactoryImpl indexFactory = new LuceneIndexFactory();
 
         private final String indexerId;
-        private final Map<URL, Reference<IndexImpl>> root2index = new HashMap<URL, Reference<IndexImpl>>();
+        private final Map<URL, Reference<DocumentIndex>> root2index = new HashMap<URL, Reference<DocumentIndex>>();
 
         private IndexerQuery(String indexerId) {
             this.indexerId = indexerId;
         }
 
-        private IndexImpl findIndex(URL root) {
+        private DocumentIndex findIndex(URL root) {
             try {
                 FileObject cacheFolder = CacheFolder.getDataFolder(root);
                 assert cacheFolder != null;
@@ -497,6 +514,6 @@ public final class QuerySupport {
                 LOG.log(Level.INFO, "Can't create index for " + indexerId + " and " + root, ioe); //NOI18N
             }
             return null;
-        }
+        }        
     } // End of IndexerQuery class
 }

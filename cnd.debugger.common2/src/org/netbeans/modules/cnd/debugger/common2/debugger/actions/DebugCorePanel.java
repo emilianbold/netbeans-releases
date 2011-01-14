@@ -50,6 +50,7 @@ import java.util.ResourceBundle;
 import java.awt.event.ActionListener;
 import java.util.concurrent.CancellationException;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -63,8 +64,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
@@ -85,11 +84,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.awt.event.ItemEvent;
 import java.util.Collection;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
@@ -104,12 +104,10 @@ import org.openide.util.RequestProcessor;
 final class DebugCorePanel extends javax.swing.JPanel {
     private DocumentListener corefileValidateListener = null;
     private DocumentListener executableValidateListener = null;
-    private Project[] projectChoices = null;
     private JButton actionButton = null;
     private String autoString = null;
     private boolean readonly;
     private boolean noproject;
-    private String[] projectNames = null;
 
     private static Project lastSelectedProject = null;
 
@@ -149,11 +147,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	lastHostChoice = hostChoices[0];
 	adjustAutoCore();
 
-        clearError();
-	if (validateCorefilePath()) {
-	    if (!validateExecutablePath())
-	       setProject();
-	}
+        validateAll();
 
         projectComboBox.addItemListener(new java.awt.event.ItemListener() {
             @Override
@@ -170,7 +164,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         validateAll();
     }
 
-    private boolean validateProject() {
+    private void validateProject() {
         // Validate that project toolchain family is the same as debugger type
         Project selectedProject = getSelectedProject();
         if (selectedProject != null) {
@@ -181,12 +175,10 @@ final class DebugCorePanel extends javax.swing.JPanel {
                     EngineType projectDebuggerType = DebuggerManager.debuggerType(configurationDescriptor.getActiveConfiguration());
                     if (getEngine() != projectDebuggerType) {
                         setError("ERROR_WRONG_FAMILY", false); // NOI18N
-                        return false;
                     }
                 }
             }
         }
-        return true;
     }
 
     public EngineType getEngine() {
@@ -311,14 +303,19 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	validateAll();
     }
 
-    private boolean validateAll() {
-        clearError();
-	if (validateCorefilePath()) {
-            if (validateExecutablePath()) {
-                return validateProject();
+    private void validateAll() {
+        final String corePath = getCorefilePath();
+        final String execPath = getExecutablePath();
+        RP.post(new Runnable() {
+            public void run() {
+                clearError();
+                if (validateCorefilePath(corePath)) {
+                    if (validateExecutablePath(execPath)) {
+                        validateProject();
+                    }
+                }
             }
-        }
-        return false;
+        });
     }
 
 
@@ -637,7 +634,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     // </editor-fold>//GEN-END:initComponents
 
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
-        Host host = AttachPanel.getHost((String)hostComboBox.getSelectedItem());
+        final String hostname = (String)hostComboBox.getSelectedItem();
         String startFolder = getExecutablePath();
         if (startFolder.isEmpty()) {
             startFolder = System.getProperty("user.home");
@@ -646,10 +643,11 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	    startFolder = getCorefilePath();
         }
         final String startF = startFolder;
-        final ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
         RP.post(new Runnable() {
             public void run() {
                 try {
+                    Host host = AttachPanel.getHost(hostname);
+                    final ExecutionEnvironment exEnv = host.executionEnvironment();
                     ConnectionManager.getInstance().connectTo(exEnv);
 
                     FileChooserBuilder fcb = new FileChooserBuilder(exEnv);
@@ -684,16 +682,17 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
 
     private void corefileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_corefileBrowseButtonActionPerformed
-        Host host = AttachPanel.getHost((String)hostComboBox.getSelectedItem());
+        final String hostname = (String)hostComboBox.getSelectedItem();
         String startFolder = getCorefilePath();
         if (startFolder.isEmpty()) {
             startFolder = System.getProperty("user.home");
         }
         final String startF = startFolder;
-        final ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
         RP.post(new Runnable() {
             public void run() {
                 try {
+                    Host host = AttachPanel.getHost(hostname);
+                    final ExecutionEnvironment exEnv = host.executionEnvironment();
                     ConnectionManager.getInstance().connectTo(exEnv);
 
                     FileChooserBuilder fcb = new FileChooserBuilder(exEnv);
@@ -747,39 +746,23 @@ final class DebugCorePanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void initGui() {
-	projectChoices = OpenProjects.getDefault().getOpenProjects();
 	projectComboBox.removeAllItems();
+        // fake items
 	projectComboBox.addItem(getString("NO_PROJECT")); // always first
 	projectComboBox.addItem(getString("NEW_PROJECT")); // always first
-	projectNames = new String[projectChoices.length];
-	for (int i = 0; i < projectChoices.length; i++) {
-	    String projectName = ProjectUtils.getInformation(projectChoices[i]).getName();
-	    projectComboBox.addItem(projectName);
-	    projectNames[i] = projectName;
-	}
-
-	int index = 0;
-	// preselect project ???
-	if (lastSelectedProject != null) {
-	    for (int i = 0; i < projectChoices.length; i++) {
-		if (projectChoices[i] == lastSelectedProject) {
-		    index = i+2;
-		    break;
-		}
-	    }
-	}
-	projectComboBox.setSelectedIndex(index);
+        
+        ExecutableProjectPanel.fillProjectsCombo(projectComboBox, lastSelectedProject);
     }
 
-    private boolean validateCorefilePath() {
-	final String corePath = getCorefilePath().trim();
+    private boolean validateCorefilePath(String corePath) {
+	corePath = corePath.trim();
 	if (corePath.length() == 0) {
 	    setError("ERROR_CORE_NOT_SPECIFIED", true); // NOI18N
 	    return false;
 	}
 
         Host host = AttachPanel.getHost((String)hostComboBox.getSelectedItem());
-        final ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+        final ExecutionEnvironment exEnv = host.executionEnvironment();
 
         try {
             if (!HostInfoUtils.fileExists(exEnv, corePath)) {
@@ -835,9 +818,8 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	return true;
     }
 
-    private boolean validateExecutablePath() {
-	String exePath = getExecutablePath().trim();
-	String pName = IpeUtils.getBaseName(getExecutablePath());
+    private boolean validateExecutablePath(String exePath) {
+	exePath = exePath.trim();
 	if (exePath.equals(autoString)) {
             /* 6966340
 	    if (!matchProject(pName)) 
@@ -848,7 +830,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	}
 
         Host host = AttachPanel.getHost((String)hostComboBox.getSelectedItem());
-        final ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+        final ExecutionEnvironment exEnv = host.executionEnvironment();
 
         try {
             if (!HostInfoUtils.fileExists(exEnv, exePath)) {
@@ -903,106 +885,65 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	}
         projectComboBox.setEnabled(true);
 	// match opened Project first
-	for (int i = 0; i < projectChoices.length; i++) {
-	    if (executable.equals(projectNames[i])) {
-	        projectComboBox.setSelectedIndex(i+2);
+	for (int i = 0; i < projectComboBox.getItemCount(); i++) {
+	    if (executable.toLowerCase().equals(
+                projectComboBox.getItemAt(i).toString().toLowerCase())) {
+	        projectComboBox.setSelectedIndex(i);
 		return true;
 	    }
 	}
 	return false;
     }
 
-    private void setProject() {
-        int index = projectComboBox.getSelectedIndex();
-
-	//int index = 0; // default is < no project>
-	if (lastSelectedProject != null) {
-	    for (int i = 0; i < projectChoices.length; i++) {
-		if (projectChoices[i] == lastSelectedProject) {
-		    index = i+2;
-		    break;
-		}
-	    }
-            projectComboBox.setSelectedIndex(index);
-	} 
-    }
-
-    private void setError(String errorMsg, boolean disable) {
-	errorLabel.setText(getString(errorMsg));
-	if (disable) {
-	    projectComboBox.setEnabled(false);
-	}
-	actionButton.setEnabled(false);
+    private void setError(final String errorMsg, final boolean disable) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                errorLabel.setText(getString(errorMsg));
+                if (disable) {
+                    projectComboBox.setEnabled(false);
+                }
+                actionButton.setEnabled(false);
+            }
+        });
     }
 
     private void clearError() {
-	errorLabel.setText(" "); // NOI18N
-        projectComboBox.setEnabled(true);
-	actionButton.setEnabled(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                errorLabel.setText(" "); // NOI18N
+                projectComboBox.setEnabled(true);
+                actionButton.setEnabled(true);
+            }
+        });
     }
 
     // ModifiedDocumentListener
-    public class CorefileValidateListener implements DocumentListener {
-	public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
-	}    
-    
-	public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
-	    clearError();
-	    if (validateCorefilePath()) {
-		validateExecutablePath();
-		String pName = IpeUtils.getBaseName(getExecutablePath());
-		if (!matchProject(pName))
-		    setProject();
-	    }
-	}
-    
-	public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
-	    clearError();
-	    if (validateCorefilePath()) {
-		validateExecutablePath();
-		String pName = IpeUtils.getBaseName(getExecutablePath());
-		if (!matchProject(pName))
-		    setProject();
-	    }
-	}
-    }
-
-    // ModifiedDocumentListener
-    public class ExecutableValidateListener implements DocumentListener {
-	public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
-	}    
-    
-	public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
-            String pName = IpeUtils.getBaseName(getExecutablePath());
-            matchProject(pName);
+    public class CorefileValidateListener extends AttachPanel.AnyChangeDocumentListener {
+        @Override
+        protected void documentChanged(DocumentEvent e) {
             validateAll();
 	}
-    
-	public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
-            String pName = IpeUtils.getBaseName(getExecutablePath());
+    }
+
+    // ModifiedDocumentListener
+    public class ExecutableValidateListener extends AttachPanel.AnyChangeDocumentListener {
+        @Override
+        protected void documentChanged(DocumentEvent e) {
+            String pName = CndPathUtilitities.getBaseName(getExecutablePath());
             matchProject(pName);
             validateAll();
 	}
     }
 
     public Project getSelectedProject() {
-	int index = projectComboBox.getSelectedIndex();
-	if (index == 0) {
-	    // no_project was selected
-	    noproject = true;
-	    return null;
-	}
-	noproject = false;
-
-	Project project;
-	if (projectComboBox.getSelectedIndex() > 1) {
-	    lastSelectedProject = projectChoices[index-2];
-	    project = lastSelectedProject;
-	}
-	else {
-	    project = null; 
-	}
-	return project;
+        Object selectedItem = projectComboBox.getSelectedItem();
+        if (selectedItem instanceof ProjectCBItem) {
+            noproject = false;
+            return ((ProjectCBItem)selectedItem).getProject();
+        }
+        // set noproject if NO_PROJECT is selected
+        noproject = (projectComboBox.getSelectedIndex() == 0);
+        return null;
     }
 
     /** Look up i18n strings here */

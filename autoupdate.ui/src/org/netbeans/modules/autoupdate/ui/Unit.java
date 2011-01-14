@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Image;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -61,7 +62,6 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -76,7 +76,7 @@ public abstract class Unit {
     private boolean isVisible;
     private String filter;
     private String categoryName;
-    private static Logger log = Logger.getLogger (Unit.class.getName ());
+    static final Logger log = Logger.getLogger (Unit.class.getName ());
     private String displayDate = null;
     
     protected abstract UpdateElement getRelevantElement ();
@@ -522,8 +522,11 @@ public abstract class Unit {
             return container.contains (updateEl);
         }
         
+        @Override
         public void setMarked (boolean marked) {
-            assert marked != isMarked ();
+            if (marked == isMarked()) {
+                return;
+            }
             OperationContainer container = null;
             if (isNbms) {
                 container = Containers.forUpdateNbms ();
@@ -533,7 +536,11 @@ public abstract class Unit {
                 container = Containers.forUpdate ();
             }
             if (marked) {
-                container.add (updateUnit, updateEl);
+                try {
+                    container.add (updateUnit, updateEl);
+                } catch (IllegalArgumentException ex) {
+                    log.log(Level.WARNING, ex.getMessage());
+                }
             } else {
                 container.remove (updateEl);
             }
@@ -651,7 +658,7 @@ public abstract class Unit {
             if (u1 instanceof Unit.Available && u2 instanceof Unit.Available) {
                 Unit.Available unit1 = (Unit.Available)u1;
                 Unit.Available unit2 = (Unit.Available)u2;
-                return Collator.getInstance().compare(unit1.getSourceCategory().name(), unit2.getSourceCategory().name());
+                return Collator.getInstance().compare(unit1.getSourceDescription(), unit2.getSourceDescription());
             }
             
             throw new IllegalStateException();
@@ -692,13 +699,20 @@ public abstract class Unit {
             return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.AVAILABLE;
         }        
         
-        public CATEGORY getSourceCategory() {
-            return updateEl.getSourceCategory();
+        public Image getSourceIcon() {
+            return updateEl.getSourceIcon();
+        }
+        public String getSourceDescription() {
+            return updateEl.getSourceDescription();
         }
     }
 
     private static String getBundle (String key) {
         return NbBundle.getMessage (Unit.class, key);
     }
-    
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + getDisplayName() + "]";
+    }
 }

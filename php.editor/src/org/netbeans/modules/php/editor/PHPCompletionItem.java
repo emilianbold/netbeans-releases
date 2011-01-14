@@ -331,8 +331,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class NewClassItem extends MethodElementItem {
-        public static NewClassItem getItem(final MethodElement methodElement, CompletionRequest request) {
-            return new NewClassItem(new FunctionElementItem(methodElement, request, methodElement.getParameters()));
+        
+        /**
+         * @return more than one instance in case if optional parameters exists
+         */
+        static List<NewClassItem> getNewClassItems(final MethodElement methodElement, CompletionRequest request) {
+            final List<NewClassItem> retval = new ArrayList<NewClassItem>();
+            List<FunctionElementItem> items = FunctionElementItem.getItems(methodElement, request);
+            for (FunctionElementItem functionElementItem : items) {
+                retval.add(new NewClassItem(functionElementItem));
+            }
+            return retval;
         }
 
         private NewClassItem(FunctionElementItem function) {

@@ -274,7 +274,7 @@ class VersioningPanel extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         btnGroupModes = new javax.swing.ButtonGroup();
-        jSeparator1 = new javax.swing.JSeparator();
+        jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -301,9 +301,8 @@ class VersioningPanel extends JPanel {
         jPanel2.add(tgbIndexVsWorking);
         tgbIndexVsWorking.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_IndexVsWorking_Text")); // NOI18N
 
-        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
-        jSeparator1.setPreferredSize(new java.awt.Dimension(2, 20));
-        jPanel2.add(jSeparator1);
+        jPanel4.setOpaque(false);
+        jPanel2.add(jPanel4);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
@@ -356,7 +355,7 @@ class VersioningPanel extends JPanel {
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
     final javax.swing.JToolBar jPanel2 = new javax.swing.JToolBar();
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel jPanel4;
     final javax.swing.JToggleButton tgbHeadVsIndex = new javax.swing.JToggleButton();
     final javax.swing.JToggleButton tgbHeadVsWorking = new javax.swing.JToggleButton();
     final javax.swing.JToggleButton tgbIndexVsWorking = new javax.swing.JToggleButton();

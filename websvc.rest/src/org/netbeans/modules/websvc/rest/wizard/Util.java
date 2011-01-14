@@ -45,11 +45,15 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+
+import javax.lang.model.element.TypeElement;
 import javax.swing.JLabel;
 import java.awt.Container;
 import javax.swing.JComponent;
 
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -58,22 +62,49 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
+import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
+import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
@@ -459,4 +490,136 @@ public class Util {
         }
         return true;
     }
+    
+    public static boolean isCDIEnabled(FileObject fileObject) {
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if ( project != null ){
+            return isCDIEnabled( project );
+        }
+        return false;
+    }
+    
+    public static boolean isCDIEnabled(Project project) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            Profile profile = wm.getJ2eeProfile();
+            if (  !profile.equals(Profile.JAVA_EE_6_FULL) && 
+                !profile.equals(Profile.JAVA_EE_6_WEB) )
+            {
+                return false;
+            }
+            FileObject confRoot = wm.getWebInf();
+            if (confRoot!=null && confRoot.getFileObject("beans.xml")!=null) {  //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static void generateRESTFacades(Project project, Set<Entity> entities,
+            EntityResourceBeanModel model, FileObject targetFolder, 
+            String resourcePackage ) throws IOException
+    {
+        Collection<EntityResourceBean> beans = model.getResourceBeans();
+        Map<String,String> beanMap = new HashMap<String,String>();
+        for (EntityResourceBean bean : beans) {
+            if (bean.isItem()) {
+                EntityClassInfo classInfo = bean.getEntityClassInfo();
+                EntityClassInfo.FieldInfo fieldInfo = classInfo.getIdFieldInfo();
+                if (fieldInfo != null) {
+                    beanMap.put(classInfo.getType(), fieldInfo.getType());
+                }
+            }
+        }
+
+        Map<String, String> selectedEntityNames = new HashMap<String, String>();
+        Iterator<Entity> it = entities.iterator();
+        while (it.hasNext()) {
+            Entity entity = it.next();
+            String primaryKeyType = beanMap.get(entity.getClass2());
+            selectedEntityNames.put(
+                    entity.getClass2(),
+                    (primaryKeyType == null ? String.class.getName() : primaryKeyType)); 
+        }
+        
+        Map<String, String> entityNames = initEntityNames(project);
+        FacadeGenerator facadeGenerator = FACADE_GENERATOR.createGenerator();
+
+        for (Entry<String, String> entry : selectedEntityNames.entrySet()) {
+            facadeGenerator.generate(project, entityNames, targetFolder, 
+                    entry.getKey(), entry.getValue(), resourcePackage, false, 
+                    false, true);
+        }
+    }
+    
+    public static Set<Entity> getEntities(Project project, Set<FileObject> files) 
+        throws IOException 
+    {
+        final Set<Entity> entities = new HashSet<Entity>();
+        for (FileObject file : files) {
+            JavaSource source = JavaSource.forFileObject(file);
+            source.runUserActionTask(new Task<CompilationController>() {
+
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    TypeElement classElement = SourceUtils.
+                        getPublicTopLevelElement(controller);
+                    if (classElement != null) {
+                        String entityName = null;
+                        TypeElement annotationElement = controller.getElements().
+                            getTypeElement(Constants.PERSISTENCE_TABLE);
+                        if (annotationElement != null) {
+                            entityName = TypeUtil.getAnnotationValueName(controller, 
+                                    classElement, annotationElement);
+                            if (entityName == null) {
+                                annotationElement =  controller.getElements().
+                                    getTypeElement(Constants.PERSISTENCE_ENTITY);
+                                if (annotationElement != null) {
+                                    entityName = TypeUtil.getAnnotationValueName(
+                                            controller, classElement, annotationElement);
+                                }
+                            }
+                        }
+                        if (entityName != null) {
+                            entities.add(new RuntimeJpaEntity(classElement, entityName));
+                        }
+                    }
+                }
+            }, true);
+        }
+        return entities;
+    }
+
+    
+    private static Map<String, String> initEntityNames(Project project) throws IOException {
+        final Map<String, String> entityNames = new HashMap<String, String>();
+        
+        //XXX should probably be using MetadataModelReadHelper. needs a progress indicator as well (#113874).
+        try {
+            EntityClassScope entityClassScope = EntityClassScope.
+                getEntityClassScope(project.getProjectDirectory());
+            MetadataModel<EntityMappingsMetadata> entityMappingsModel = 
+                entityClassScope.getEntityMappingsModel(true);
+            Future<Void> result = entityMappingsModel.runReadActionWhenReady(
+                    new MetadataModelAction<EntityMappingsMetadata, Void>() {
+
+                @Override
+                public Void run(EntityMappingsMetadata metadata) throws Exception {
+                    for (Entity entity : metadata.getRoot().getEntity()) {
+                        entityNames.put(entity.getClass2(), entity.getName());
+                    }
+                    return null;
+                }
+            });
+            result.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return entityNames;
+    }
+    
+    private static final FacadeGeneratorProvider FACADE_GENERATOR =
+        Lookup.getDefault().lookup(FacadeGeneratorProvider.class);
 }

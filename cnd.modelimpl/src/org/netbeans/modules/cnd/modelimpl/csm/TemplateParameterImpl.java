@@ -131,6 +131,11 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
@@ -183,6 +188,6 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public String toString() {
-        return getQualifiedName().toString();
+        return getQualifiedName().toString() + getPositionString();
     }
 }

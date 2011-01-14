@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -328,6 +328,9 @@ public final class DBMetaDataFactory {
             String fromsql = sql.substring(sql.length() - splitByFrom[1].length());
             if (fromsql.toUpperCase().contains("WHERE")) { // NOI18N
                 splitByFrom = fromsql.toUpperCase().split("WHERE"); // NOI18N
+                fromsql = fromsql.substring(0, splitByFrom[0].length());
+            } else if (fromsql.toUpperCase().contains("ORDER BY")) { // NOI18N
+                splitByFrom = fromsql.toUpperCase().split("ORDER BY"); // NOI18N
                 fromsql = fromsql.substring(0, splitByFrom[0].length());
             }
             if (!sql.toUpperCase().contains("JOIN")) { // NOI18N

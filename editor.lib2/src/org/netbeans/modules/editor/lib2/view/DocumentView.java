@@ -61,6 +61,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,9 +117,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     // -J-Dorg.netbeans.modules.editor.lib2.view.DocumentView.level=FINE
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
+    // -J-Dorg.netbeans.modules.editor.lib2.view.DebugRepaintManager.level=FINE
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
-
-    static final boolean REQUIRE_EDT = Boolean.getBoolean("org.netbeans.editor.linewrap.edt");
 
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
@@ -248,6 +248,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private Font defaultFont;
 
+    /**
+     * Whether the textComponent's font was explicitly set from outside
+     * or whether it was only updated internally by settings.
+     */
     private boolean customFont;
 
     /**
@@ -257,13 +261,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private float defaultAscent;
 
-    private float defaultUnderlineOffset;
-
-    private float defaultUnderlineThickness;
-
-    private float defaultStrikethroughOffset;
-
-    private float defaultStrikethroughThickness;
+    private float defaultDescent;
+    
+    private float defaultLeading;
 
     private float defaultCharWidth;
 
@@ -300,10 +300,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     private PreferenceChangeListener prefsListener;
 
     private Map<?, ?> renderingHints;
-
+    
     private int lengthyAtomicEdit; // Long atomic edit being performed
 
     ViewHierarchy viewHierarchy; // Assigned upon setParent()
+    
+    private Map<Font,FontInfo> fontInfos = new HashMap<Font, FontInfo>(4);
+    
 
     public DocumentView(Element elem) {
         super(elem);
@@ -469,32 +472,43 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     void checkViewsInited() { // Must be called under mutex
         if (!childrenValid && textComponent != null) {
-            // Check whether Graphics can be constructed (only if component is part of hierarchy)
-            Graphics graphics = textComponent.getGraphics();
-            if (graphics != null) {
-                assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-                updateVisibleDimension();
-                checkSettingsInfo();
-                // Use rendering hints (antialiasing etc.)
-                if (renderingHints != null) {
-                    ((Graphics2D) graphics).setRenderingHints(renderingHints);
-                }
-                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
-                updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
-
-                ((EditorTabExpander) tabExpander).updateTabSize();
-                if (isBuildable()) {
-                    LOG.fine("viewUpdates.reinitViews()\n");
-                    // Signal early that the views will be valid - otherwise preferenceChange()
-                    // that calls getPreferredSpan() would attempt to reinit the views again
-                    // (failing in HighlightsViewFactory on usageCount).
+            updateVisibleDimension();
+            checkSettingsInfo();
+            checkFontRenderContext();
+            ((EditorTabExpander) tabExpander).updateTabSize();
+            if (isBuildable()) {
+                LOG.fine("viewUpdates.reinitViews()\n");
+                // Signal early that the views will be valid - otherwise preferenceChange()
+                // that calls getPreferredSpan() would attempt to reinit the views again
+                // (failing in HighlightsViewFactory on usageCount).
+                childrenValid = true;
+                viewUpdates.reinitViews();
+                // Re-check since addFont(font) caused by views creation might make childrenValid = false.
+                if (!childrenValid) {
                     childrenValid = true;
                     viewUpdates.reinitViews();
                 }
             }
         }
     }
-
+    
+    private void checkFontRenderContext() { // check various things related to rendering
+        if (fontRenderContext == null) {
+            Graphics graphics = textComponent.getGraphics();
+            if (graphics != null) {
+                assert (graphics instanceof Graphics2D) : "Not Graphics2D";
+                // Use rendering hints (antialiasing etc.)
+                if (renderingHints != null) {
+                    ((Graphics2D) graphics).setRenderingHints(renderingHints);
+                }
+                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
+                if (fontRenderContext != null) {
+                    updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
+                }
+            }
+        }
+    }
+    
     @Override
     protected void releaseChildren() { // It should be called with acquired mutex
         // Do not set children == null like in super.releaseChildren()
@@ -502,7 +516,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         childrenValid = false;
     }
     
-    public void releaseChildrenLocked() { // It acquires document readlock and VH mutex first
+    public void releaseChildrenLocked(final boolean updateFonts) { // It acquires document readlock and VH mutex first
         getDocument().render(new Runnable() {
             @Override
             public void run() {
@@ -511,7 +525,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     mutex.lock();
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
-                        releaseChildren();
+                        if (updateFonts) {
+                            updateDefaultFontAndColors(null); // Includes releaseChildren()
+                        } else {
+                            releaseChildren();
+                        }
                     } finally {
                         mutex.unlock();
                     }
@@ -676,7 +694,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 public void preferenceChange(PreferenceChangeEvent evt) {
                     String key = evt.getKey();
                     if (key ==  null || key.equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
-                        releaseChildrenLocked();
+                        releaseChildrenLocked(false);
                     }
                 }
             };
@@ -765,47 +783,59 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
-                    ", bg=" + ViewUtils.toString(defaultBackground)); // NOI18N
+                    ", bg=" + ViewUtils.toString(defaultBackground) + '\n'); // NOI18N
         }
     }
 
-    private void updateCharMetrics() {
+    private void updateCharMetrics() { // Update default line height and other params
         FontRenderContext frc = getFontRenderContext();
         assert (defaultFont != null) : "Null defaultFont"; // NOI18N
         if (frc != null) {
-            char defaultChar = 'A';
-            String defaultCharText = String.valueOf(defaultChar);
-            TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, defaultFont, frc); // NOI18N
-            TextLayout lineHeightTextLayout = new TextLayout("A_|B", defaultFont, frc);
-            defaultLineHeight = lineHeightTextLayout.getAscent() + lineHeightTextLayout.getDescent() +
-                    lineHeightTextLayout.getLeading(); // Leading: end of descent till next line's start distance
-            // Round up line height to one decimal place which is reasonable for layout
-            // but it also has an important effect that it allows eliminate problems
-            // caused by using a [float,float] point that does not fit into views boundaries
-            // maintained as doubles.
-            defaultLineHeight = ViewUtils.ceilFractions(defaultLineHeight);
-            defaultAscent = ViewUtils.floorFractions(lineHeightTextLayout.getAscent());
-            LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultCharText, frc);
-            defaultUnderlineOffset = ViewUtils.floorFractions(lineMetrics.getUnderlineOffset());
-            defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
-            defaultStrikethroughOffset = ViewUtils.floorFractions(lineMetrics.getStrikethroughOffset());
-            defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
-            defaultCharWidth = ViewUtils.ceilFractions(defaultCharTextLayout.getAdvance());
+            // Reset all the measurements to adhere just to default font.
+            // Possible other fonts in fontInfos get eliminated.
+            fontInfos.clear();
+            FontInfo defaultFontInfo = new FontInfo(defaultFont, this, frc);
+            fontInfos.put(defaultFont, defaultFontInfo);
+            defaultAscent = defaultFontInfo.ascent;
+            defaultDescent = defaultFontInfo.descent;
+            defaultLeading = defaultFontInfo.leading;
+            updateLineHeight();
+            defaultCharWidth = defaultFontInfo.charWidth;
+            
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
-            if (LOG.isLoggable(Level.FINE)) {
-                FontMetrics fm = textComponent.getFontMetrics(defaultFont);
-                LOG.fine("Font: " + defaultFont + "\nSize2D: " + defaultFont.getSize2D() + // NOI18N
-                        ", Line-height=" + defaultLineHeight + // NOI18N
-                        ", ascent=" + defaultAscent + ", descent=" + lineHeightTextLayout.getDescent() + // NOI18N
-                        ", leading=" + lineHeightTextLayout.getLeading() + "\nChar-width=" + defaultCharWidth + // NOI18N
-                        ", underlineOffset=" + defaultUnderlineOffset + // NOI18N
-                        "\nFontMetrics (for comparison): fm-line-height=" + // NOI18N
-                        fm.getHeight() + ", fm-ascent=" + fm.getAscent() + // NOI18N
-                        ", fm-descent=" + fm.getDescent() + "\n"
-                );
-            }
+
+            LOG.fine("updateCharMetrics() called\n"); // NOI18N
+        }
+    }
+    
+    private void updateLineHeight() {
+        defaultLineHeight = (float) Math.ceil(defaultAscent + defaultDescent + defaultLeading);
+    }
+    
+    void notifyFontUse(Font font) {
+        if (font == defaultFont || fontInfos.containsKey(font)) { // quick check for ==
+            return;
+        }
+        FontInfo fontInfo = new FontInfo(font, this, getFontRenderContext());
+        fontInfos.put(font, fontInfo);
+        boolean change = false;
+        if (fontInfo.ascent > defaultAscent) {
+            defaultAscent = fontInfo.ascent;
+            change = true;
+        }
+        if (fontInfo.descent > defaultDescent) {
+            defaultDescent = fontInfo.descent;
+            change = true;
+        }
+        if (fontInfo.leading > defaultLeading) {
+            defaultLeading = fontInfo.leading;
+            change = true;
+        }
+        if (change) {
+            updateLineHeight();
+            releaseChildren();
         }
     }
 
@@ -855,7 +885,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 checkViewsInited();
                 if (isActive()) {
                     // Use rendering hints (antialiasing etc.)
-                    if (g != null) {
+                    if (g != null && renderingHints != null) {
                         g.setRenderingHints(renderingHints);
                     }
                     super.paint(g, alloc, clipBounds);
@@ -1070,7 +1100,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             LOG.log(Level.INFO, "updateLengthyAtomicEdit() stack", new Exception("updateLengthyAtomicEdit()")); // NOI18N
         }
         if (lengthyAtomicEdit == 0) {
-            releaseChildrenLocked();
+            releaseChildrenLocked(false);
         }
     }
 
@@ -1116,24 +1146,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return defaultAscent;
     }
 
-    public float getDefaultUnderlineOffset() {
+    /**
+     * Return array of default:
+     * <ol>
+     *     <li>Underline offset.</li>
+     *     <li>Underline thickness.</li>
+     *     <li>Strike-through offset.</li>
+     *     <li>Strike-through thickness.</li>
+     * </ol>
+     */
+    public float[] getUnderlineAndStrike(Font font) {
         checkSettingsInfo();
-        return defaultUnderlineOffset;
-    }
-
-    public float getDefaultUnderlineThickness() {
-        checkSettingsInfo();
-        return defaultUnderlineThickness;
-    }
-
-    public float getDefaultStrikethroughOffset() {
-        checkSettingsInfo();
-        return defaultStrikethroughOffset;
-    }
-
-    public float getDefaultStrikethroughThickness() {
-        checkSettingsInfo();
-        return defaultStrikethroughThickness;
+        FontInfo fontInfo = fontInfos.get(font);
+        if (fontInfo == null) { // Should not normally happen
+            fontInfo = fontInfos.get(defaultFont);
+        }
+        return fontInfo.underlineAndStrike;
     }
 
     public float getDefaultCharWidth() {
@@ -1233,14 +1261,12 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
             }
         }
-        if (REQUIRE_EDT && !SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Not in Event Dispatch Thread"); // NOI18N
-        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         boolean releaseChildren = false;
+        boolean updateFonts = false;
         if (evt.getSource() instanceof Document) {
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
@@ -1265,25 +1291,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         } else { // an event from JTextComponent
             String propName = evt.getPropertyName();
             if ("ancestor".equals(propName)) { // NOI18N
-                getDocument().render(new Runnable() {
-                    @Override
-                    public void run() {
-                        PriorityMutex mutex = getMutex();
-                        if (mutex != null) {
-                            mutex.lock();
-                            // checkDocumentLocked() - unnecessary - doc.render() called
-                            try {
-//                                checkViewsInited();
-                            } finally {
-                                mutex.unlock();
-                            }
-                        }
-                    }
-                });
 
             } else if ("font".equals(propName)) {
                 if (!customFont && defaultFont != null) {
                     customFont = !defaultFont.equals(textComponent.getFont());
+                }
+                if (customFont) {
+                    updateFonts = true;
                 }
                 releaseChildren = true;
             } else if ("foreground".equals(propName)) { //NOI18N
@@ -1304,7 +1318,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             }
         }
         if (releaseChildren) {
-            releaseChildrenLocked();
+            releaseChildrenLocked(updateFonts);
         }
     }
 
@@ -1387,4 +1401,57 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return sb;
     }
 
+    private static class FontInfo {
+        
+        final float ascent;
+        
+        final float descent;
+        
+        final float leading;
+        
+        final float charWidth;
+
+        /**
+         * Array of
+         * <ol>
+         *     <li>Underline offset.</li>
+         *     <li>Underline thickness.</li>
+         *     <li>Strike-through offset.</li>
+         *     <li>Strike-through thickness.</li>
+         * </ol>
+         */
+        final float[] underlineAndStrike = new float[4];
+        
+        FontInfo(Font font, DocumentView docView, FontRenderContext frc) {
+            char defaultChar = 'A';
+            String defaultCharText = String.valueOf(defaultChar);
+            TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, font, frc); // NOI18N
+            TextLayout lineHeightTextLayout = new TextLayout("A_|B", font, frc);
+            // Round the ascent to eliminate long mantissa without any visible effect on rendering.
+            ascent = lineHeightTextLayout.getAscent();
+            descent = lineHeightTextLayout.getDescent();
+            leading = lineHeightTextLayout.getLeading();
+            // Ceil fractions to whole numbers since this measure may be used for background rendering
+            charWidth = (float) Math.ceil(defaultCharTextLayout.getAdvance());
+
+            LineMetrics lineMetrics = font.getLineMetrics(defaultCharText, frc);
+            underlineAndStrike[0] = ViewUtils.floorFractions(lineMetrics.getUnderlineOffset());
+            underlineAndStrike[1] = lineMetrics.getUnderlineThickness();
+            underlineAndStrike[2] = ViewUtils.floorFractions(lineMetrics.getStrikethroughOffset());
+            underlineAndStrike[3] = lineMetrics.getStrikethroughThickness();
+
+            if (LOG.isLoggable(Level.FINE)) {
+                FontMetrics fm = docView.getTextComponent().getFontMetrics(font);
+                LOG.fine("Font: " + font + "\nSize2D: " + font.getSize2D() + // NOI18N
+                        ", ascent=" + ascent + ", descent=" + descent + // NOI18N
+                        ", leading=" + leading + "\nChar-width=" + charWidth + // NOI18N
+                        ", underlineO/T=" + underlineAndStrike[0] + "/" + underlineAndStrike[1] + // NOI18N
+                        ", strikethroughO/T=" + underlineAndStrike[2] + "/" + underlineAndStrike[3] + // NOI18N
+                        "\nFontMetrics (for comparison): fm-line-height=" + // NOI18N
+                        fm.getHeight() + ", fm-ascent=" + fm.getAscent() + // NOI18N
+                        ", fm-descent=" + fm.getDescent() + "\n");
+            }
+        }
+        
+    }
 }

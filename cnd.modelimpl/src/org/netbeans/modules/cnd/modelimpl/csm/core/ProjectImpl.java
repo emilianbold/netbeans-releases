@@ -61,7 +61,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -71,34 +73,31 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class ProjectImpl extends ProjectBase {
 
-    private ProjectImpl(ModelImpl model, Object platformProject, String name) {
-        super(model, platformProject, name);
+    private ProjectImpl(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+        super(model, fs, platformProject, name);
     // RepositoryUtils.put(this);
     }
 
-    public static ProjectImpl createInstance(ModelImpl model, String platformProject, String name) {
-        return createInstance(model, (Object) platformProject, name);
-    }
-
     public static ProjectImpl createInstance(ModelImpl model, NativeProject platformProject, String name) {
-        return createInstance(model, (Object) platformProject, name);
+        return createInstance(model, platformProject.getFileSystem(), platformProject, name);
     }
 
-    private static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
+    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, Object platformProject, String name) {
         ProjectBase instance = null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, platformProject, name);
+                instance = readInstance(model, fs, platformProject, name);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(platformProject, false);
+                cleanRepository(fs, platformProject, false);
                 DiagnosticExceptoins.register(e);
             }
         }
         if (instance == null) {
-            instance = new ProjectImpl(model, platformProject, name);
+            instance = new ProjectImpl(model, fs, platformProject, name);
         }
+        CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (ProjectImpl) instance;
     }
 
@@ -118,8 +117,8 @@ public final class ProjectImpl extends ProjectBase {
         }
         final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
-            APTDriver.getInstance().invalidateAPT(buf);
-            APTFileCacheManager.invalidate(buf);
+            APTDriver.invalidateAPT(buf);
+            APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
             // listener will be triggered immediately, because editor based buffer
             // will be notifies about editing event exactly after onFileEditStart
             final ChangeListener changeListener = new ChangeListener() {
@@ -155,7 +154,7 @@ public final class ProjectImpl extends ProjectBase {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); //NOI18N
         }
-        FileImpl file = getFile(buf.getFile(), false);
+        FileImpl file = getFile(buf.getAbsolutePath(), false);
         if (file != null) {
             synchronized (editedFiles) {
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
@@ -186,7 +185,7 @@ public final class ProjectImpl extends ProjectBase {
     @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
         if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); //NOI18N
+            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getName()); //NOI18N
         }
         DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this);
     }
@@ -209,17 +208,24 @@ public final class ProjectImpl extends ProjectBase {
                     }
                 }
             }
+            LinkedList<FileImpl> toReparse = new LinkedList<FileImpl>();
             for (FileImpl impl : files) {
                 if (impl != null) {
-                    removeNativeFileItem(impl.getUID());
-                    impl.dispose();
-                    removeFile(impl.getAbsolutePath());
-                    APTDriver.getInstance().invalidateAPT(impl.getBuffer());
-                    APTFileCacheManager.invalidate(impl.getBuffer());
-                    ParserQueue.instance().remove(impl);
+                    NativeFileItem removedNativeFileItem = removeNativeFileItem(impl.getUID());
+                    // this is analogue of synchronization if method was called from different threads,
+                    // because removeNativeFileItem is thread safe and removes only once
+                    if (removedNativeFileItem != null) {
+                        toReparse.addLast(impl);
+                        impl.dispose();
+                        removeFile(impl.getAbsolutePath());
+                        final FileBuffer buf = impl.getBuffer();
+                        APTDriver.invalidateAPT(buf);
+                        APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
+                        ParserQueue.instance().remove(impl);
+                    }
                 }
             }
-            DeepReparsingUtils.reparseOnRemoved(files, this);
+            DeepReparsingUtils.reparseOnRemoved(toReparse, this);
         } finally {
             Notificator.instance().flush();
         }
@@ -231,8 +237,7 @@ public final class ProjectImpl extends ProjectBase {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             List<FileImpl> toReparse = new ArrayList<FileImpl>();
             for (NativeFileItem item : items) {
-                File file = item.getFile();
-                FileImpl impl = getFile(file, false);
+                FileImpl impl = getFile(item.getAbsolutePath(), false);
                 if (impl != null) {
                     toReparse.add(impl);
                 }
@@ -259,7 +264,7 @@ public final class ProjectImpl extends ProjectBase {
                 //Notificator.instance().endTransaction();
                 Notificator.instance().flush();
                 if (deepReparse) {
-                    DeepReparsingUtils.reparseOnAdded(nativeFile, this);
+                    DeepReparsingUtils.reparseOnAdded(Collections.singletonList(nativeFile), this);
                 }
             }
         }
@@ -291,7 +296,7 @@ public final class ProjectImpl extends ProjectBase {
             for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandler(file.getBuffer().getFile()).getState(), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(file, getPreprocHandler(file.getAbsolutePath()).getState(), ParserQueue.Position.TAIL);
                 }
             }
         }
@@ -409,8 +414,8 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    protected void removeNativeFileItem(CsmUID<CsmFile> file) {
-        nativeFiles.removeNativeFileItem(file);
+    protected NativeFileItem removeNativeFileItem(CsmUID<CsmFile> file) {
+        return nativeFiles.removeNativeFileItem(file);
     }
 
     @Override
@@ -418,6 +423,12 @@ public final class ProjectImpl extends ProjectBase {
         nativeFiles.clear();
     }
     private final NativeFileContainer nativeFiles = new NativeFileContainer();
+
+    private final SourceRootContainer projectRoots = new SourceRootContainer(false);
+    @Override
+    protected SourceRootContainer getProjectRoots() {
+        return projectRoots;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent

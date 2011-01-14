@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 /**
  * Class for MacroExpansionDocProviderImpl tests for finding next and previous macro
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionNextPrevMacroTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 

@@ -79,7 +79,7 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
-    List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
+    final List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
 
     private Collection<TypeScope> getMergedTypes() {
         Collection<TypeScope> types = new HashSet<TypeScope>();
@@ -453,7 +453,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             for (LazyFieldAssignment fieldAssignmentData : assignmentDatas) {
                 fieldAssignmentData.process();
             }
-            assignmentDatas = Collections.emptyList();
+            assignmentDatas.clear();
         }
     }
 

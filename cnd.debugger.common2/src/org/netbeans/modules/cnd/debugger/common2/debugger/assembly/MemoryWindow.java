@@ -45,21 +45,16 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.List;
-import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -74,7 +69,6 @@ import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
 
 import org.netbeans.spi.viewmodel.Models;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.HelpCtx;
@@ -256,12 +250,10 @@ public final class MemoryWindow extends TopComponent
 	return -1; // not found
     }
 
-    public void updateData(String mem) {
-        int i, j, k, l, memaddrlen;
-        String s, memaddr, memvalue;
-        
-        if ((mem == null) || (mem.length() == 0)) 
+    public void updateData(List<String> memLines) {
+        if ((memLines == null) || (memLines.isEmpty())) {
 	    return;
+        }
 
 	// Add new address to addressList
 	int index = addrMap(memory_start);
@@ -272,38 +264,12 @@ public final class MemoryWindow extends TopComponent
 	}
 
         current_addrs.clear();
-        l = 1;
-       	for (i = 0; i < mem.length(); i++, l++) {
-       	    k = mem.indexOf('\n', i);
-       	    if (k < i) break;
-       	    s = mem.substring(i, k + 1);
-            i = k;
-            memaddr = null;
-            memvalue = null;
-            memaddrlen = 0;
-       	    for (j=0, k=0; j < s.length(); j++) {
-       	        if (s.charAt(j) != ' ') {
-       	            if (k == 0) {
-       	                k = s.indexOf(' ', j);
-       	                if (k < j) break;
-       	                memaddrlen = k - j;
-       	                memaddr = s.substring(j, k);
-       	                j = k;
-                    } else {
-       	                k = s.indexOf('\n', j);
-       	                if (k < j) break;
-       	                memvalue = s.substring(j, k);
-       	                memvalue = align_memvalue(memvalue);
-       	                break;
-                    }
-       	        }
-            }
-            current_addrs.add("   " + memaddr + "  " + memvalue + "\n"); // NOI18N
-        }
+        current_addrs.addAll(memLines);
+        
         updateWindow();
     }
     
-    private String align_memvalue(String memvalue) {
+    public String align_memvalue(String memvalue) {
         int i, j, k, valuelen, maxvaluelen, total_len;
         String value, new_memvalue;
         char c;
@@ -512,9 +478,8 @@ public final class MemoryWindow extends TopComponent
         carpos = ta.getCaretPosition();
         ta.setText(null);
         ta.setCaretPosition(0);
-       	k = current_addrs.size();
-       	for (i = 0; i < k; i++) {
-            ta.append(current_addrs.get(i));
+       	for (String line : current_addrs) {
+            ta.append(line);
         }
         try {
             ta.setCaretPosition(carpos);

@@ -109,6 +109,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
@@ -152,10 +153,7 @@ public final class ReferencesSupport {
         return Utilities.getRowStartFromLineOffset(doc, lineIndex - 1) + (colIndex - 1);
     }
 
-    public static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
-        File file = new File(absPath);
-        // convert file into file object
-        FileObject fileObject = CndFileUtils.toFileObject(file);
+    private static BaseDocument getBaseDocument(FileObject fileObject) throws DataObjectNotFoundException, IOException {
         if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
@@ -345,8 +343,13 @@ public final class ReferencesSupport {
                 csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY, fileReferencesContext);
             }
         }
-        // then full check if needed
-        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
+        if (csmItem == null || !CsmIncludeResolver.getDefault().isObjectVisible(csmFile, csmItem)) {
+            // then full check 
+            CsmObject other = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
+            if (other != null) {
+                csmItem = other;
+            }
+        }
         return csmItem;
     }
 
@@ -549,7 +552,7 @@ public final class ReferencesSupport {
                     return pair.doc;
                 }
             }
-            doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath().toString());
+            doc = ReferencesSupport.getBaseDocument(file.getFileObject());
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace(System.err);
         } catch (IOException ex) {

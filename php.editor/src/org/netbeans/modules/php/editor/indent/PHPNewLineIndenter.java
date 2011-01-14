@@ -259,7 +259,8 @@ public class PHPNewLineIndenter {
                                     break;
                                 }
                             }
-                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                            else if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
+                                    || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
                                 int startExpression = findStartTokenOfExpression(ts);
                                 if (startExpression != -1) {
                                     newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;

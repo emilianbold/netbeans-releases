@@ -418,6 +418,11 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         options.put(FmtOptions.spacesPerTab, 4);
         reformatFileContents("testfiles/formatting/templates/issue191565_01.php", options, true);
     }
+    
+    public void testIssue192220() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue192220.php", options, true);
+    }
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);

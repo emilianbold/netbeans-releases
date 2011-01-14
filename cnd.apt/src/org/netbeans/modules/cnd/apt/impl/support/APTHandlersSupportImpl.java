@@ -91,7 +91,7 @@ public class APTHandlersSupportImpl {
         for (IncludeDirEntry includeDirEntry : userIncludePaths) {
             if (!accessor.isExistingDirectory(includeDirEntry)) {
                 // check if this is file
-                if (CndFileUtils.isExistingFile(includeDirEntry.getAsSharedCharSequence().toString())) {
+                if (CndFileUtils.isExistingFile(includeDirEntry.getFileSystem(), includeDirEntry.getAsSharedCharSequence().toString())) {
                     fileEntries.add(includeDirEntry);
                 }
             }
@@ -173,12 +173,11 @@ public class APTHandlersSupportImpl {
         return incl == null ? 0 : incl.getIncludeStackDepth();
     }
 
-    private static final LinkedList<APTIncludeHandler.IncludeInfo> EMPLY_LINKED_LIST = new LinkedList<APTIncludeHandler.IncludeInfo>();
-
     public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         assert state != null;
         List<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
-        return inclStack == null ? EMPLY_LINKED_LIST : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
+        // return copy to prevent modification of frozen state objects
+        return inclStack == null ? new LinkedList<APTIncludeHandler.IncludeInfo>() : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
 
     public static StartEntry extractStartEntry(APTPreprocHandler.State state) {

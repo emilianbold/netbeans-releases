@@ -8,10 +8,15 @@
       <itemPath>jvmlauncher.h</itemPath>
       <itemPath>platformlauncher.h</itemPath>
       <itemPath>utilsfuncs.h</itemPath>
+      <itemPath>version.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <itemPath>nbexec.exe.manifest</itemPath>
+      <itemPath>nbexec.rc</itemPath>
+      <itemPath>nbexec_exe.rc</itemPath>
+      <itemPath>version.rc</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -49,18 +54,33 @@
           <architecture>1</architecture>
           <incDir>
             <pElem>c:/cygwin/usr/include/mingw</pElem>
-            <pElem>C:/Program Files/Java/jdk1.6.0_18/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.6.0_18/include/win32</pElem>
+            <pElem>D:/Program Files/Java/jdk1.6.0_22/include/win32</pElem>
+            <pElem>D:/Program Files/Java/jdk1.6.0_22/include</pElem>
           </incDir>
           <commandLine>-s -mno-cygwin</commandLine>
           <warningLevel>2</warningLevel>
         </ccTool>
         <linkerTool>
           <output>nbexec.dll</output>
+          <additionalDep>${OBJECTDIR}/nbexec.res</additionalDep>
           <linkerLibItems>
+            <linkerOptionItem>${OBJECTDIR}/nbexec.res</linkerOptionItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="nbexec.rc" ex="false" tool="3">
+        <customTool>
+          <customToolCommandline>windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec.res</customToolCommandline>
+          <customToolDescription>Compiling Resource files...</customToolDescription>
+          <customToolOutputs>${OBJECTDIR}/nbexec.res</customToolOutputs>
+          <customToolAdditionalDep>version.h</customToolAdditionalDep>
+        </customTool>
+      </item>
+      <item path="nbexec_exe.rc" ex="false" tool="3">
+        <customTool>
+          <customToolDescription></customToolDescription>
+        </customTool>
+      </item>
     </conf>
   </confs>
 </configurationDescriptor>

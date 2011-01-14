@@ -294,11 +294,11 @@ public class TreeFactory {
         return make.at(NOPOS).Continue(n);
     }
     
-    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
+    public DisjunctiveTypeTree DisjunctiveType(List<? extends Tree> typeComponents) {
         ListBuffer<JCExpression> components = new ListBuffer<JCExpression>();
         for (Tree t : typeComponents)
             components.append((JCExpression)t);
-        return make.at(NOPOS).TypeDisjoint(components.toList());
+        return make.at(NOPOS).TypeDisjunction(components.toList());
     }
 
     public DoWhileLoopTree DoWhileLoop(ExpressionTree condition, StatementTree statement) {
@@ -538,19 +538,6 @@ public class TreeFactory {
         return make.at(NOPOS).TypeApply((JCExpression)type, typeargs.toList());
     }
     
-    public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
-                                           ExpressionTree type) {
-        ListBuffer<JCTypeAnnotation> anns = new ListBuffer<JCTypeAnnotation>();
-        for (AnnotationTree t : annotations)
-            anns.append((JCTypeAnnotation)t);
-        return make.at(NOPOS).AnnotatedType(anns.toList(), (JCExpression) type);
-    }
-
-    public AnnotationTree TypeAnnotation(AnnotationTree t) {
-        JCAnnotation ann = (JCAnnotation) t;
-        return make.at(NOPOS).TypeAnnotation(ann.getAnnotationType(), ann.getArguments());
-    }
-
     public ParenthesizedTree Parenthesized(ExpressionTree expression) {
         return make.at(NOPOS).Parens((JCExpression)expression);
     }

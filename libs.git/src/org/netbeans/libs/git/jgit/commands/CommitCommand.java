@@ -76,6 +76,7 @@ import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.JGitRevisionInfo;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -106,8 +107,9 @@ public class CommitCommand extends GitCommand {
         if (retval) {
             RepositoryState state = getRepository().getRepositoryState();
             if (RepositoryState.MERGING.equals(state)) {
-                monitor.preparationsFailed("Index contains files in conflict, please resolve them before commit");
-                throw new GitException("Index contains files in conflict, please resolve them before commit");
+                String errorMessage = NbBundle.getMessage(CommitCommand.class, "MSG_Error_Commit_ConflictsInIndex"); //NOI18N
+                monitor.preparationsFailed(errorMessage);
+                throw new GitException(errorMessage);
             } else if (RepositoryState.MERGING_RESOLVED.equals(state) && roots.length > 0) {
                 boolean fullWorkingTree = false;
                 File repositoryRoot = getRepository().getWorkTree();
@@ -118,12 +120,14 @@ public class CommitCommand extends GitCommand {
                     }
                 }
                 if (!fullWorkingTree) {
-                    monitor.preparationsFailed("Cannot do a partial commit during a merge.");
-                    throw new GitException("Cannot do a partial commit during a merge.");
+                    String errorMessage = NbBundle.getMessage(CommitCommand.class, "MSG_Error_Commit_PartialCommitAfterMerge"); //NOI18N
+                    monitor.preparationsFailed(errorMessage);
+                    throw new GitException(errorMessage);
                 }
             } else if (!state.canCommit()) {
-                monitor.preparationsFailed("Cannot commit in current state: " + state.getDescription());
-                throw new GitException("Cannot commit in current state: " + state.getDescription());
+                String errorMessage = NbBundle.getMessage(CommitCommand.class, "MSG_Error_Commit_NotAllowedInCurrentState"); //NOI18N
+                monitor.preparationsFailed(errorMessage);
+                throw new GitException(errorMessage);
             }
         }
         return retval;

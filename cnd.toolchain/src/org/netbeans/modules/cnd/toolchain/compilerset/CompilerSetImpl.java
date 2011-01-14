@@ -122,7 +122,7 @@ public final class CompilerSetImpl extends CompilerSet {
 
         compilerProvider = CompilerProvider.getInstance();
 
-        if (name != null) {
+        if (name != null && !name.isEmpty()) {
             this.name = name;
         } else {
             this.name = flavor.toString();

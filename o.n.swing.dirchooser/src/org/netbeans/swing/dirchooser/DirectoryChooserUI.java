@@ -73,7 +73,7 @@ import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -206,6 +206,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private JComponent topCombo, topComboWrapper, topToolbar;
     private JPanel slownessPanel;
 
+    private final ListFilesWorker listFilesWorker = new ListFilesWorker();
+    private final RequestProcessor.Task listFilesTask = RP.create(listFilesWorker);
+
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
     }
@@ -214,15 +217,18 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         super(filechooser);
     }
     
+    @Override
     public void installUI(JComponent c) {
         super.installUI(c);
     }
     
+    @Override
     public void uninstallComponents(JFileChooser fc) {
         fc.removeAll();
         super.uninstallComponents(fc);
     }
     
+    @Override
     public void installComponents(JFileChooser fc) {
         fileChooser = fc;
         
@@ -393,18 +399,22 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         fileAndFilterPanel.setLayout(new BoxLayout(fileAndFilterPanel, BoxLayout.Y_AXIS));
         
         filenameTextField = new JTextField(24) {
+            @Override
             public Dimension getMaximumSize() {
                 return new Dimension(Short.MAX_VALUE, super.getPreferredSize().height);
             }
         };
         
         filenameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateCompletions();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateCompletions();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {}
         });
         
@@ -413,6 +423,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         fnl.setLabelFor(filenameTextField);
         filenameTextField.addFocusListener(
                 new FocusAdapter() {
+            @Override
             public void focusGained(FocusEvent e) {
                 if (!getFileChooser().isMultiSelectionEnabled()) {
                     tree.clearSelection();
@@ -448,6 +459,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         
         approveButton = new JButton(getApproveButtonText(fc)) {
+            @Override
             public Dimension getMaximumSize() {
                 return approveButton.getPreferredSize().width > cancelButton.getPreferredSize().width ?
                     approveButton.getPreferredSize() : cancelButton.getPreferredSize();
@@ -464,6 +476,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         buttonPanel.add(Box.createRigidArea(verticalStrut2));
         
         cancelButton = new JButton(cancelButtonText) {
+            @Override
             public Dimension getMaximumSize() {
                 return approveButton.getPreferredSize().width > cancelButton.getPreferredSize().width ?
                     approveButton.getPreferredSize() : cancelButton.getPreferredSize();
@@ -500,6 +513,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             private Dimension prefSize = new Dimension(ACCESSORY_WIDTH, 0);
             private Dimension minSize = new Dimension(ACCESSORY_WIDTH, 0);
             
+            @Override
             public Dimension getMinimumSize () {
                 if (fc.getAccessory() != null) {
                     minSize.height = getAccessoryPanel().getMinimumSize().height;
@@ -507,6 +521,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
                 return super.getMinimumSize();
             }
+            @Override
             public Dimension getPreferredSize () {
                 if (fc.getAccessory() != null) {
                     Dimension origPref = getAccessoryPanel().getPreferredSize();
@@ -562,12 +577,14 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         // fixed #97525, made the height of the
         // combo box bigger.
         directoryComboBox = new JComboBox() {
+            @Override
             public Dimension getMinimumSize() {
                 Dimension d = super.getMinimumSize();
                 d.width = 60;
                 return d;
             }
             
+            @Override
             public Dimension getPreferredSize() {
                 Dimension d = super.getPreferredSize();
                 // Must be small enough to not affect total width and height.
@@ -791,6 +808,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         java.util.List<TreePath> paths;
                 
+        @Override
         public void keyPressed(KeyEvent evt) {
             if(evt.getKeyCode() == KeyEvent.VK_DELETE) {
                 deleteAction();
@@ -846,10 +864,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
+        @Override
         public void focusGained(FocusEvent e) {
             resetBuffer();
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
             resetBuffer();
         }
@@ -892,6 +912,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         JMenuItem item2 = new JMenuItem(getBundle().getString("LBL_Rename"));
         item2.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 DirectoryNode node = (DirectoryNode)tree.getLastSelectedPathComponent();
                 applyEdit(node);
@@ -900,6 +921,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         JMenuItem item3 = new JMenuItem(getBundle().getString("LBL_Delete"));
         item3.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 deleteAction();
             }
@@ -942,6 +964,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 int cannotDelete;
                 ArrayList<DirectoryNode> nodes2Remove = new ArrayList<DirectoryNode>(nodePath.length);
 
+                @Override
                 public void run() {
                     if (!EventQueue.isDispatchThread()) {
                         // first pass, out of EQ thread, deletes files
@@ -991,26 +1014,40 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             });
         }
     }
-    
+
+    private File lastDir;
+    private File[] lastChildren;
     private void updateCompletions() {
-        String name = normalizeFile(getFileName());
-        int slash = name.lastIndexOf(File.separatorChar);
-        if (slash != -1) {
-            String prefix = name.substring(0, slash + 1);
-            File d = new File(prefix);
-            if (d.isDirectory()) {
-                File[] children = d.listFiles();
-                if(children != null) {
-                    Vector list = buildList(name, children, 20);
-                    
+        if (showPopupCompletion) {
+            final String name = normalizeFile(getFileName());
+            int slash = name.lastIndexOf(File.separatorChar);
+            if (slash != -1) {
+                String prefix = name.substring(0, slash + 1);
+                File dir = new File(prefix);
+                File[] children;
+                synchronized (listFilesWorker) {
+                    if (!dir.equals(lastDir)) {
+                        if (completionPopup != null) {
+                            completionPopup.setDataList(new Vector<File>(0));
+                            completionPopup.detach();
+                            completionPopup = null;
+                        }
+                        listFilesWorker.d = dir;
+                        listFilesTask.schedule(0);
+                        return;
+                    } else {
+                        children = lastChildren;
+                    }
+                }
+                if (children != null) {
+                    Vector<File> list = buildList(name, children, 20);
                     if(completionPopup == null) {
                         completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
-                    } else if (completionPopup.isShowing() || 
+                    } else if (completionPopup.isShowing() ||
                             (showPopupCompletion && fileChooser.isShowing())) {
                         completionPopup.setDataList(list);
                     }
-                    
-                    if(showPopupCompletion && fileChooser.isShowing() && !completionPopup.isShowing()) {
+                    if (fileChooser.isShowing() && !completionPopup.isShowing()) {
                         java.awt.Point los = filenameTextField.getLocation();
                         int popX = los.x;
                         int popY = los.y + filenameTextField.getHeight() - 6;
@@ -1018,6 +1055,28 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     }
                 }
             }
+        }
+    }
+
+    private class ListFilesWorker implements Runnable {
+        private File d;
+        @Override
+        public void run() {
+            File dir;
+            synchronized (this) {
+                dir = d;
+            }
+            File[] children = dir.listFiles();
+            synchronized (this) {
+                lastDir = dir;
+                lastChildren = children;
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateCompletions();
+                }
+            });
         }
     }
     
@@ -1139,6 +1198,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 JButton notShow = new JButton(
                         NbBundle.getMessage(DirectoryChooserUI.class, "BTN_NotShow"));
                 notShow.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         NbPreferences.forModule(DirectoryChooserUI.class).putLong(TIMEOUT_KEY, 0);
                         centerPanel.remove(slownessPanel);
@@ -1168,6 +1228,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         return themeActive;
     }
     
+    @Override
     protected void installStrings(JFileChooser fc) {
         super.installStrings(fc);
         
@@ -1202,6 +1263,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
     }
     
+    @Override
     protected void installListeners(JFileChooser fc) {
         super.installListeners(fc);
         ActionMap actionMap = getActionMap();
@@ -1214,9 +1276,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     protected ActionMap createActionMap() {
         AbstractAction escAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 getFileChooser().cancelSelection();
             }
+            @Override
             public boolean isEnabled(){
                 return getFileChooser().isEnabled();
             }
@@ -1228,10 +1292,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         return map;
     }
     
+    @Override
     public Action getNewFolderAction() {
         return newFolderAction;
     }
     
+    @Override
     public void uninstallUI(JComponent c) {
         c.removePropertyChangeListener(filterTypeComboBoxModel);
         cancelButton.removeActionListener(getCancelSelectionAction());
@@ -1252,6 +1318,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
      * @return   a <code>Dimension</code> specifying the preferred
      *           width and height of the file chooser
      */
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         int prefWidth = PREF_SIZE.width;
         Dimension d = c.getLayout().preferredLayoutSize(c);
@@ -1270,6 +1337,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
      * @return   a <code>Dimension</code> specifying the minimum
      *           width and height of the file chooser
      */
+    @Override
     public Dimension getMinimumSize(JComponent c) {
         return MIN_SIZE;
     }
@@ -1281,6 +1349,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
      * @return   a <code>Dimension</code> specifying the maximum
      *           width and height of the file chooser
      */
+    @Override
     public Dimension getMaximumSize(JComponent c) {
         return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
     }
@@ -1303,7 +1372,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private String getStringOfFileNames(File[] files) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; files != null && i < files.length; i++) {
             if (i > 0) {
                 buf.append(" ");
@@ -1465,8 +1534,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
      * Listen for filechooser property changes, such as
      * the selected file changing, or the type of the dialog changing.
      */
+    @Override
     public PropertyChangeListener createPropertyChangeListener(JFileChooser fc) {
         return new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 String s = e.getPropertyName();
                 if(s.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
@@ -1519,6 +1590,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         bottomPanel.add(buttonPanel);
     }
     
+    @Override
     public String getFileName() {
         if(filenameTextField != null) {
             return filenameTextField.getText();
@@ -1527,6 +1599,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
+    @Override
     public void setFileName(String filename) {
         if(filenameTextField != null) {
             filenameTextField.setText(filename);
@@ -1537,11 +1610,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         return new DirectoryComboBoxRenderer();
     }
     
-    protected DirectoryComboBoxModel createDirectoryComboBoxModel(JFileChooser fc) {
+    private DirectoryComboBoxModel createDirectoryComboBoxModel(JFileChooser fc) {
         return new DirectoryComboBoxModel();
     }
     
-    protected FilterComboBoxRenderer createFilterComboBoxRenderer() {
+    private FilterComboBoxRenderer createFilterComboBoxRenderer() {
         return new FilterComboBoxRenderer();
     }
     
@@ -1549,10 +1622,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         return new FilterTypeComboBoxModel();
     }
     
+    @Override
     protected JButton getApproveButton(JFileChooser fc) {
         return approveButton;
     }
     
+    @Override
     public FileView getFileView(JFileChooser fc) {
         
         // fix bug #96957, should use DirectoryChooserFileView
@@ -1579,8 +1654,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void addNewDirectory(final TreePath path) {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         DirectoryNode selectedNode = (DirectoryNode)path.getLastPathComponent();
                         
@@ -1593,7 +1670,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                             model.insertNodeInto(newFolderNode, selectedNode, selectedNode.getChildCount());
                             applyEdit(newFolderNode);
                         } catch (IOException ex) {
-                            ex.printStackTrace();
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 });
@@ -1635,6 +1712,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         RequestProcessor.getDefault().post(new Runnable() {
             DirectoryNode node;
             
+            @Override
             public void run() {
                 if (!EventQueue.isDispatchThread()) {
                     // first pass, out of EQ thread, loads data
@@ -1699,6 +1777,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         Icon icon = null;
         int depth = 0;
         
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             if (icon == null) {
                 return;
@@ -1710,10 +1789,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
+        @Override
         public int getIconWidth() {
             return icon != null ? icon.getIconWidth() + depth*space : 0;
         }
         
+        @Override
         public int getIconHeight() {
             return icon != null ? icon.getIconHeight() : 0;
         }
@@ -1727,6 +1808,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             setOpaque(true);
         }
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected,
                 boolean cellHasFocus) {
@@ -1866,19 +1948,23 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             return (depths != null && i >= 0 && i < depths.length) ? depths[i] : 0;
         }
         
+        @Override
         public void setSelectedItem(Object selectedDirectory) {
             this.selectedDirectory = (File)selectedDirectory;
             fireContentsChanged(this, -1, -1);
         }
         
+        @Override
         public Object getSelectedItem() {
             return selectedDirectory;
         }
         
+        @Override
         public int getSize() {
             return directories.size();
         }
         
+        @Override
         public Object getElementAt(int index) {
             return directories.elementAt(index);
         }
@@ -1893,6 +1979,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             setOpaque(true);
         }
         
+        @Override
         public Component getListCellRendererComponent(JList list,
                 Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
@@ -1916,6 +2003,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         // #89393: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
@@ -1933,6 +2021,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             filters = getFileChooser().getChoosableFileFilters();
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             String prop = e.getPropertyName();
             if(prop == JFileChooser.CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY) {
@@ -1943,6 +2032,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
+        @Override
         public void setSelectedItem(Object filter) {
             if(filter != null) {
                 getFileChooser().setFileFilter((FileFilter) filter);
@@ -1951,6 +2041,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
+        @Override
         public Object getSelectedItem() {
             // Ensure that the current filter is in the list.
             // NOTE: we shouldnt' have to do this, since JFileChooser adds
@@ -1972,6 +2063,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             return getFileChooser().getFileFilter();
         }
         
+        @Override
         public int getSize() {
             if(filters != null) {
                 return filters.length;
@@ -1980,6 +2072,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
+        @Override
         public Object getElementAt(int index) {
             if(index > getSize() - 1) {
                 // This shouldn't happen. Try to recover gracefully.
@@ -1997,6 +2090,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
      * Gets calls when the ComboBox has changed the selected item.
      */
     private class DirectoryComboBoxAction implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             File f = (File)directoryComboBox.getSelectedItem();
             getFileChooser().setCurrentDirectory(f);
@@ -2005,6 +2099,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private class DirectoryChooserFileView extends BasicFileView {
         
+        @Override
         public Icon getIcon(File f) {
             
             Icon icon = getCachedIcon(f);
@@ -2031,6 +2126,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private class TextFieldKeyListener extends KeyAdapter {
+        @Override
         public void keyPressed(KeyEvent evt) {
             showPopupCompletion = true;
             int keyCode = evt.getKeyCode();
@@ -2079,6 +2175,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         /************ imple of TreeSelectionListener *******/
         
+        @Override
         public void valueChanged(TreeSelectionEvent e) {
             showPopupCompletion = false;
             FileSystemView fsv = fileChooser.getFileSystemView();
@@ -2104,7 +2201,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         private File[] getSelectedNodes(TreePath[] paths) {
-            Vector<File> files = new Vector<File>();
+            List<File> files = new LinkedList<File>();
             for(int i = 0; i < paths.length; i++) {
                 File file = ((DirectoryNode)paths[i].getLastPathComponent()).getFile();
                 if(file.isDirectory()
@@ -2119,6 +2216,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         /********* impl of MouseListener ***********/
         
+        @Override
         public void mouseClicked(MouseEvent e) {
             final JTree tree = (JTree) e.getSource();
             Point p = e.getPoint();
@@ -2228,6 +2326,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         /********** implementation of CellEditorListener ****************/
 
         /** Refresh filename text field after rename */
+        @Override
         public void editingStopped(ChangeEvent e) {
             DirectoryNode node = (DirectoryNode) tree.getLastSelectedPathComponent();
             if (node != null) {
@@ -2235,12 +2334,14 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
 
+        @Override
         public void editingCanceled(ChangeEvent e) {
             // no operation
         }
 
         /********** ActionListener impl, slow-double-click rename ******/ 
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (tree.isFocusOwner() && isSelectionKept(pathToRename)) {
                 if (e.getSource() == renameTimer) {
@@ -2295,6 +2396,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         /******** implementation of focus listener, for slow click rename cancelling ******/ 
 
+        @Override
         public void focusGained(FocusEvent e) {
             // don't allow to invoke click to rename immediatelly after focus gain
             // what may happen is that tree gains focus by mouse
@@ -2306,10 +2408,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             SwingUtilities.invokeLater(this);
         }
 
+        @Override
         public void run() {
             cancelRename();
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
             cancelRename();
         }
@@ -2317,6 +2421,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private class TreeExpansionHandler implements  TreeExpansionListener  {
+        @Override
         public void treeExpanded(TreeExpansionEvent evt) {
             TreePath path = evt.getPath();
             DirectoryNode node = (DirectoryNode) path
@@ -2334,6 +2439,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 refreshNode( path , node );
             }
         }
+        @Override
         public void treeCollapsed(TreeExpansionEvent event) {
         }
         
@@ -2361,6 +2467,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
         RequestProcessor.getDefault().post(new Runnable() {
             private Set<String> realDirs;
+            @Override
             public void run() {
                 if (!EventQueue.isDispatchThread()) {
                     // first phase
@@ -2411,6 +2518,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
     
     private class NewDirectoryAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             final TreePath path = tree.getSelectionPath();
             
@@ -2435,6 +2543,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private class DirectoryTreeRenderer implements TreeCellRenderer {
         HtmlRenderer.Renderer renderer = HtmlRenderer.createRenderer();
 
+        @Override
         public Component getTreeCellRendererComponent(
                 JTree tree,
                 Object value,
@@ -2492,6 +2601,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             super(root);
         }
         
+        @Override
         public void valueForPathChanged(TreePath path, Object newValue) {
             boolean refreshTree = false;
             DirectoryNode node = (DirectoryNode)path.getLastPathComponent();

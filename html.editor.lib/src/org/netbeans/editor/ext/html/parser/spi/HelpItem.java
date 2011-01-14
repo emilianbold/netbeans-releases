@@ -52,6 +52,12 @@ public interface HelpItem {
 
     public String getHelpHeader();
 
+    /** if a non-null value is returned, then the HelpResolver is not used and
+     * the returned value is used as the help content.
+     * The help header is added in both cases.
+     */
+    public String getHelpContent();
+
     public URL getHelpURL();
 
     public HelpResolver getHelpResolver();

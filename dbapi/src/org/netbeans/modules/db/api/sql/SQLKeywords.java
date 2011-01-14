@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -402,7 +402,7 @@ public final class SQLKeywords {
         "BITVAR", //NOI18N
         "BIT_LENGTH", //NOI18N
         "BLOCKED", //NOI18N
-        "C", //NOI18N
+        // removed due to 191983 - "C", //NOI18N
         "CARDINALITY", //NOI18N
         "CATALOG_NAME", //NOI18N
         "CHAIN", //NOI18N
@@ -469,6 +469,7 @@ public final class SQLKeywords {
         "LINK", //NOI18N
         "LOWER", //NOI18N
         "MAX", //NOI18N
+        "MEDIUMINT", // MySQL data type (#152751) //NOI18N
         "MESSAGE_LENGTH", //NOI18N
         "MESSAGE_OCTET_LENGTH", //NOI18N
         "MESSAGE_TEXT", //NOI18N
@@ -594,5 +595,26 @@ public final class SQLKeywords {
      */
     public static boolean isSQL99Keyword(String identifier) {
         return isSQL99ReservedKeyword(identifier) || isSQL99NonReservedKeyword(identifier);
+    }
+
+    /**
+     * Returns true if the given identifier is a SQL-99 keyword (reserved or
+     * non-reserved).
+     *
+     * @param  identifier the identifier to test; use upper case only; cannot be null.
+     * @param upperOnly only upper case allowed
+     * @return true if <code>identifier</code> is a SQL-99 non-reserved keyword,
+     *         false otherwise.
+     * @throws NullPointerException if <code>identifier</code> is null.
+     */
+    public static boolean isSQL99Keyword(String identifier, boolean upperOnly) {
+        if (identifier == null) {
+            throw new NullPointerException("The identifier cannot be null"); // NOI18N
+        }
+        if (upperOnly) {
+            return Arrays.binarySearch(SQL99_RESERVED, identifier) >= 0 || Arrays.binarySearch(SQL99_NON_RESERVED, identifier) >= 0;
+        } else {
+            return isSQL99ReservedKeyword(identifier) || isSQL99NonReservedKeyword(identifier);
+        }
     }
 }

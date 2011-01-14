@@ -102,6 +102,24 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
 
     @Override
     public CsmScope getScope() {
+        return _getScope();
+    }
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        onDispose();
+    }
+    
+    private synchronized void onDispose() {
+        if (this.scopeRef == null) {
+            // restore container from it's UID if not directly initialized
+            this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
+        }
+    }
+    
+    private synchronized CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
@@ -109,7 +127,7 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
         }
         return scope;
     }
-    
+
     protected void setScope(CsmScope scope) {
 	// within bodies scope is a statement - it is not Identifiable
         if (scope instanceof CsmIdentifiable) {
@@ -125,7 +143,7 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
         if( operands == null ) {
             operands = new ArrayList<CsmExpression>(0);
         }
-        return operands;
+        return Collections.unmodifiableList(operands);
     }
     
     @Override

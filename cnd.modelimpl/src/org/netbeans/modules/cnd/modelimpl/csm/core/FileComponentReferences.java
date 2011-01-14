@@ -415,14 +415,16 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
         @Override
         public int compareTo(ReferenceImpl o) {
-            int res = start - o.start;
-            if (res != 0) {
+            int res = start - o.end;
+            if (res > 0) {
                 return res;
             }
-            res = end - o.end;
-            if (res != 0) {
+            res = end - o.start;
+            if (res < 0) {
                 return res;
             }
+            // we are equal now
+            res = 0;
             if (identifier != null && o.identifier != null) {
                 res = identifier.hashCode() - o.identifier.hashCode();
             }

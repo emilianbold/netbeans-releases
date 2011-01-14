@@ -145,6 +145,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private Version serverVersion;
 
     /* GuardedBy("this") */
+    private Version domainVersion;
+    
+    /* GuardedBy("this") */
     private boolean webProfile;
 
     /* GuardedBy("this") */
@@ -185,6 +188,12 @@ public class WLDeploymentManager implements DeploymentManager2 {
         init();
         return serverVersion;
     }
+    
+    @CheckForNull
+    public synchronized Version getDomainVersion() {
+        init();
+        return domainVersion;
+    }    
 
     public synchronized boolean isWebProfile() {
         init();
@@ -234,6 +243,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return;
         }
         serverVersion = WLPluginProperties.getServerVersion(WLPluginProperties.getServerRoot(this, true));
+        domainVersion = WLPluginProperties.getDomainVersion(instanceProperties);
         webProfile = WLPluginProperties.isWebProfile(WLPluginProperties.getServerRoot(this, true));
     }
 

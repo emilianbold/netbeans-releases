@@ -82,8 +82,10 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -153,7 +155,7 @@ public class TraceModel extends TraceModelBase {
 
     public static void main(String[] args) {
         new TraceModel(true).test(args);
-        APTDriver.getInstance().close();
+        APTDriver.close();
         APTFileCacheManager.close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
@@ -518,7 +520,7 @@ public class TraceModel extends TraceModelBase {
         if (printUserFileList) {
             print("Processing files:\n"); // NOI18N
             for (NativeFileItem file : getFileItems()) {
-                print(file.getFile().getAbsolutePath() + ' ', false);
+                print(file.getAbsolutePath() + ' ', false);
             }
             print("");
         }
@@ -787,8 +789,8 @@ public class TraceModel extends TraceModelBase {
             //ex.printStackTrace();
         }
     }
-    private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
-    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
+    private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance(CndFileUtils.getLocalFileSystem());
+    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage(CndFileUtils.getLocalFileSystem());
     
     private APTIncludeHandler getIncludeHandler(File file) {
         List<String> systemIncludes = getSystemIncludes();
@@ -806,7 +808,7 @@ public class TraceModel extends TraceModelBase {
                 qInc.add(path);
             }
         }
-        StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+        StartEntry startEntry = new StartEntry(CndFileUtils.getLocalFileSystem(), file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
         List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
@@ -883,7 +885,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPTLight(buffer);
+            apt = APTDriver.findAPTLight(buffer);
         }
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), true);
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
@@ -918,7 +920,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
+            apt = APTDriver.findAPT(buffer, getFileLanguage(file));
         }
         APTMacroMap macroMap = getMacroMap(file);
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
@@ -950,9 +952,8 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
-        FileBuffer buffer = new FileBufferFile(item.getFile().getAbsolutePath());
+        FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT Parser"); // NOI18N
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
         File file = buffer.getFile();
         long time = System.currentTimeMillis();
         if (cleanAPT) {
@@ -972,7 +973,7 @@ public class TraceModel extends TraceModelBase {
 
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         File file = item.getFile();
-        FileBuffer buffer = new FileBufferFile(file.getAbsolutePath());
+        FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT: " + file.getName()); // NOI18N
         long minLexer = Long.MAX_VALUE;
         long maxLexer = Long.MIN_VALUE;
@@ -1090,12 +1091,12 @@ public class TraceModel extends TraceModelBase {
         File file = buffer.getFile();
         if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
             firstFile = file.getAbsolutePath();
-            APTDriver.getInstance().invalidateAll();
+            APTDriver.invalidateAll();
             APTFileCacheManager.invalidateAll();
             getProject().debugInvalidateFiles();
         } else {
-            APTDriver.getInstance().invalidateAPT(buffer);
-            APTFileCacheManager.invalidate(buffer);
+            APTDriver.invalidateAPT(buffer);
+            APTFileCacheManager.getInstance(buffer.getFileSystem()).invalidate(buffer.getAbsolutePath());
         }
     }
     long minDriver = Long.MAX_VALUE;
@@ -1105,7 +1106,7 @@ public class TraceModel extends TraceModelBase {
         File file = buffer.getFile();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
+        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(file));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {
@@ -1168,7 +1169,7 @@ public class TraceModel extends TraceModelBase {
         AST ast = null;
 
         if (dumpStatistics) {
-            Diagnostic.initFileStatistics(item.getFile().getAbsolutePath());
+            Diagnostic.initFileStatistics(item.getAbsolutePath());
         }
 
         long time = System.currentTimeMillis();
@@ -1203,7 +1204,7 @@ public class TraceModel extends TraceModelBase {
             result.setTime(time);
             result.setLineCount(countLines(fileImpl));
             if (!quiet) {
-                print("Processing " + item.getFile().getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
+                print("Processing " + item.getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
             }
         }
 
@@ -1213,7 +1214,7 @@ public class TraceModel extends TraceModelBase {
                 if (Diagnostic.getStatisticsLevel() > 1) {
                     postfix += "." + Diagnostic.getStatisticsLevel(); // NOI18N
                 }
-                String name = item.getFile().getName() + postfix;
+                String name = item.getName() + postfix;
                 String theDumpFile = new File(this.dumpDir, name).getAbsolutePath();
                 Diagnostic.dumpFileStatistics(theDumpFile);
             }
@@ -1223,10 +1224,10 @@ public class TraceModel extends TraceModelBase {
         }
 
         if (testCache) {
-            cacheTimes.put(item.getFile().getName(), Long.valueOf(time));
+            cacheTimes.put(item.getName(), Long.valueOf(time));
         }
         if (dumpAst) {
-            System.out.println("AST DUMP for file " + item.getFile().getName()); // NOI18N
+            System.out.println("AST DUMP for file " + item.getName()); // NOI18N
             dumpAst(tree);
         }
 
@@ -1262,7 +1263,7 @@ public class TraceModel extends TraceModelBase {
         }
 
         if (showAstWindow) {
-            test(tree, item.getFile().getName());
+            test(tree, item.getName());
         }
 
         return result;
@@ -1340,7 +1341,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testLibProject() {
-        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), "/usr/include"); // NOI18N
+        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include"); // NOI18N
         getModel().addProject(libProject);
         tracer.dumpModel(libProject);
     }

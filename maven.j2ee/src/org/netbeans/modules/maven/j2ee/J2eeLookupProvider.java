@@ -48,7 +48,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -61,6 +60,7 @@ import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
 import org.netbeans.modules.maven.j2ee.web.WebEjbJarImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
@@ -111,6 +111,7 @@ public class J2eeLookupProvider implements LookupProvider {
         private EjbJarProvider webEjbJarProvider;
         private EjbJarsInProject ejbJarsInProject;
         private MavenWebProjectWebRootProvider webRootProvider;
+        private JsfSupportHandle jsfSupportHandle;
 
         public Provider(Project proj, InstanceContent cont) {
             super(cont);
@@ -123,6 +124,7 @@ public class J2eeLookupProvider implements LookupProvider {
             resolver = new EMGSResolverImpl();
             supplier = new MavenPersistenceProviderSupplier(proj);
             webRootProvider = new MavenWebProjectWebRootProvider(project);
+            jsfSupportHandle = new JsfSupportHandle();
 
             checkJ2ee();
             NbMavenProject.addPropertyChangeListener(project, this);
@@ -170,6 +172,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(resolver);
                 content.add(supplier);
                 content.add(webRootProvider);
+                content.add(jsfSupportHandle);
                 //j2ee 6 stuff..
                 Profile prf = prov.getWebModuleImplementation().getJ2eeProfile();
                 if (Profile.JAVA_EE_6_WEB.equals(prf) || Profile.JAVA_EE_6_FULL.equals(prf)) {
@@ -194,12 +197,20 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.add(((EarModuleProviderImpl)lastInstance).getEarImplementation());
             } else if (NbMavenProject.TYPE_EJB.equals(packaging) && !lastType.equals(packaging)) {
                 removeInstances();
-                lastInstance = new EjbModuleProviderImpl(project);
+                EjbModuleProviderImpl prov = new EjbModuleProviderImpl(project);
+                lastInstance = prov;
                 content.add(lastInstance);
                 content.add(jpa);
                 content.add(ejbEnt);
                 content.add(resolver);
                 content.add(supplier);
+                copyOnSave = prov.getCopyOnSaveSupport();
+                try {
+                    copyOnSave.initialize();
+                } catch (FileStateInvalidException ex) {
+                    ex.printStackTrace();
+                }
+                content.add(copyOnSave);
             } else if (lastInstance != null && !(
                     NbMavenProject.TYPE_WAR.equals(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 
@@ -226,6 +237,7 @@ public class J2eeLookupProvider implements LookupProvider {
             content.remove(resolver);
             content.remove(supplier);
             content.remove(webRootProvider);
+            content.remove(jsfSupportHandle);
             if (webEjbJarProvider != null) {
                 content.remove(webEjbJarProvider);
                 webEjbJarProvider = null;

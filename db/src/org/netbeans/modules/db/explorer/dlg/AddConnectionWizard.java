@@ -98,8 +98,10 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private WizardDescriptor wd;
 
     private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
-        assert driverName != null || (driverClass == null && databaseUrl == null && user== null && password == null)
-                : "Inconsistent state when driverName is null but other parameters are not";
+        assert driverName != null || (driverClass == null && databaseUrl == null && user== null)
+                : "Inconsistent state when driverName is null but other parameters "
+                + "(url?" + databaseUrl + ", class?" + driverClass
+                + ", user? " + (user == null) + " are not";
         updateState(driverName, driverClass, databaseUrl, user, password);
     }
 
@@ -339,14 +341,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 if (driverName.contains(DatabaseModule.IDENTIFIER_ORACLE_OCI_DRIVER)) {
                     this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName"); // NOI18N
                     this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass"); // NOI18N
-                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
+                    this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
                 } else {
                     this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName"); // NOI18N
                     this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass"); // NOI18N
-                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl"); // NOI18N
+                    this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl"); // NOI18N
                 }
-                this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
-                this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
+                this.user = user != null ? user : NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
+                this.pwd = password != null ? password : NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from"); // NOI18N
                 this.allPrivilegedFileNames.clear();
                 this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N

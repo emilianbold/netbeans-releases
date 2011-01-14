@@ -46,7 +46,9 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -63,12 +65,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -91,6 +95,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 
@@ -172,7 +177,13 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             
             return CreatorBasedLazyFixList.CANCELLED;
         }
-        
+
+        TreePath imp = path;
+
+        while (imp != null && imp.getLeaf().getKind() != Kind.IMPORT) {
+            imp = imp.getParentPath();
+        }
+
         List<String> filtered = candidates.getA();
         List<String> unfiltered = candidates.getB();
         List<Fix> fixes = new ArrayList<Fix>();
@@ -198,7 +209,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 sort.append('#');
                 sort.append(fqn);
                 
-                fixes.add(new FixImport(file, fqn, sort.toString(), prefered));
+                fixes.add(new FixImport(file, fqn, sort.toString(), prefered, info, imp));
             }
         }
         
@@ -318,24 +329,40 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
     }
     
     static final class FixImport implements EnhancedFix {
+
+        private final FileObject file;
+        private final String fqn;
+        private final String sortText;
+        private final boolean isValid;
+        private final @NullAllowed TreePathHandle importHandle;
+        private final @NullAllowed String suffix;
+        private final boolean statik;
         
-        private FileObject file;
-        private String fqn;
-        private String sortText;
-        private boolean isValid;
-        
-        public FixImport(FileObject file, String fqn, String sortText, boolean isValid) {
+        public FixImport(FileObject file, String fqn, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath imp) {
             this.file = file;
             this.fqn = fqn;
             this.sortText = sortText;
             this.isValid = isValid;
+            if (imp != null) {
+                this.importHandle = TreePathHandle.create(imp, info);
+                String suffixLoc = ((ImportTree) imp.getLeaf()).getQualifiedIdentifier().toString();
+                int dot = suffixLoc.indexOf('.');
+                this.suffix = dot > (-1) ? suffixLoc.substring(dot) : suffixLoc;
+                this.statik = ((ImportTree) imp.getLeaf()).isStatic();
+            } else {
+                this.importHandle = null;
+                this.suffix = null;
+                this.statik = false;
+            }
         }
-        
+
+        @Messages("Change_to_import_X=Change to import {1}{0}")
         public String getText() {
+            String displayName = importHandle == null ? NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn}) : Bundle.Change_to_import_X(fqn + suffix, statik ? "static " : "");
             if (isValid)
-                return NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn});
+                return displayName;
             else
-                return JavaFixAllImports.NOT_VALID_IMPORT_HTML + NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn});
+                return JavaFixAllImports.NOT_VALID_IMPORT_HTML + displayName;
         }
 
         public ChangeInfo implement() throws IOException {
@@ -345,6 +372,30 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                     public void run(WorkingCopy copy) throws Exception {
                         if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                            return;
+
+                        if (importHandle != null) {
+                            TreePath imp = importHandle.resolve(copy);
+
+                            if (imp == null) {
+                                Logger.getAnonymousLogger().warning(String.format("Attempt to change import for FQN: %s, but the import cannot be resolved in the current context", fqn));
+                                return;
+                            }
+
+                            Tree mst = ((ImportTree) imp.getLeaf()).getQualifiedIdentifier();
+
+                            while (mst != null && mst.getKind() == Kind.MEMBER_SELECT) {
+                                mst = ((MemberSelectTree) mst).getExpression();
+                            }
+
+                            if (mst == null) {
+                                copy.rewrite(imp.getLeaf(), copy.getTreeMaker().Identifier(fqn + suffix));
+                                return;
+                            }
+
+                            copy.rewrite(mst, copy.getTreeMaker().Identifier(fqn));
+
+                            return;
+                        }
                   
                         TypeElement te = copy.getElements().getTypeElement(fqn);
                         

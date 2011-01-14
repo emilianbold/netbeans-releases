@@ -90,7 +90,7 @@ public class ErrorPanel extends javax.swing.JPanel {
             
             problem = problem.getNext();
             
-            if (i%2 == 0) 
+            if (i%2 == 1)
                 c.setLightBackground();
             else 
                 c.setDarkBackground();

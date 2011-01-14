@@ -210,11 +210,11 @@ final class OutputUtils {
                                 ? line
                                 : line.substring(0, bracketIndex)
                                   .trim();
-        String inBrackets = (bracketIndex == -1)
+        int endBracketIndex = line.lastIndexOf(')');
+        String inBrackets = bracketIndex == -1 || endBracketIndex < bracketIndex
                             ? (String) null
                             : line.substring(
-                                    bracketIndex + 1,
-                                    line.lastIndexOf(')'));
+                                    bracketIndex + 1, endBracketIndex);
 
         /* Get the method name and the class name: */
         String clsName, methodName;

@@ -68,10 +68,14 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         super(listener, Utilities.activeReferenceQueue());
         this.path = path;
         this.stop = stop;
-        relisten();
         keep.add(this);
     }
+    
+    final void init() {
+        relisten();
+    }
 
+    @Override
     public void run() {
         FileObject fo = FileUtil.toFileObject(path);
         if (fo != null) {
@@ -96,6 +100,7 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         }
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         fileRenamed(fe, false);
     }
@@ -108,6 +113,7 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         listener.fileRenamed(fe);
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         relisten();
         fileFolderCreated(fe, false);
@@ -121,6 +127,7 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         listener.fileFolderCreated(fe);
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         fileDeleted(fe, false);
     }
@@ -133,6 +140,7 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         listener.fileDeleted(fe);
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         fileDataCreated(fe, false);
     }
@@ -145,6 +153,7 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         listener.fileDataCreated(fe);
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
         fileChanged(fe, false);
     }
@@ -156,6 +165,7 @@ implements FileChangeListener, Runnable, Callable<Boolean> {
         listener.fileChanged(fe);
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         FileChangeListener listener = get(fe, false);
         if (listener == null) {

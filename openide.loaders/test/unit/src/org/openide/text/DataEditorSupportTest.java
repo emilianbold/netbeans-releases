@@ -251,31 +251,6 @@ public class DataEditorSupportTest extends NbTestCase {
 
     }
 
-    /** Tests that name is changed if read-only state of FileObject is externally changed (#129178). */
-    public void testReadOnly() throws Exception {
-        obj = DataObject.find(fileObject);
-        DES sup = support();
-        assertNotNull("DataObject not found.", obj);
-        {
-            Document doc = sup.openDocument();
-            sup.open();
-            waitEQ();
-            assertTrue("Not open.", sup.isDocumentLoaded());
-            CloneableEditor ed = (CloneableEditor) support().getRef().getAnyComponent();
-            assertFalse("Display name should not contain r/o.", ed.getDisplayName().contains("r/o"));
-            // simulate external change
-            fileObject.setReadOnly(true);
-            // simulate event normally fired from FileObj.refreshImpl()
-            fileObject.setAttribute("DataEditorSupport.read-only.refresh", Boolean.TRUE);
-            waitEQ();
-            assertTrue("Display name should contain r/o.", ed.getDisplayName().contains("r/o"));
-            fileObject.setReadOnly(false);
-            fileObject.setAttribute("DataEditorSupport.read-only.refresh", Boolean.FALSE);
-            waitEQ();
-            assertFalse("Display name should not contain r/o.", ed.getDisplayName().contains("r/o"));
-        }
-    }
-
     /** holds the instance of the object so insane is able to find the reference */
     private DataObject obj;
     public void testItCanBeGCedIssue57565 () throws Exception {

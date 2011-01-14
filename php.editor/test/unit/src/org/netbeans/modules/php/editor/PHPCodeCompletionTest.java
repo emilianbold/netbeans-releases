@@ -738,6 +738,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue144840_01.php", "$retval->^", false);
     }
 
+    public void testClassConstructorOptionalParam_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/classConstructorOptionalParam.php", "$var = new A^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

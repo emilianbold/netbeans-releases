@@ -92,6 +92,7 @@ import java.nio.charset.CharsetDecoder;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -276,6 +277,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             tc.requestActive();
             // cannot set the difference index immediately, diff is computed asynchronously, we have to wait for an event
             PropertyChangeListener list = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
                         // no need to listen any more, removing listener to enable GC
@@ -411,18 +413,22 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return "text/plain"; // NOI18N
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         // should not happen
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         // should not happen
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
         // not interested
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         if (fileObject != null) {
             // needed since we are changing the fileObject instance
@@ -436,14 +442,17 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         fileRenamed(null);
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 refresh();
             }
         });
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         // not interested
     }
@@ -596,6 +605,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     public void paintComponent(final Graphics g) {
         super.paintComponent(g);
         document.render(new Runnable() {
+            @Override
             public void run() {
                 paintComponentUnderLock(g);
             }
@@ -729,33 +739,51 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return Color.WHITE;
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         refreshDiff();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         refreshDiff();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         refreshDiff();
     }
 
+    @Override
     public void componentResized(ComponentEvent e) {
-        revalidate();
+        Mutex.EVENT.readAccess(new Runnable () {
+            @Override
+            public void run() {
+                revalidate();
+            }
+        });
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
     }
 
+    @Override
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        repaint();
+        Mutex.EVENT.readAccess(new Runnable () {
+            @Override
+            public void run() {
+                repaint();
+            }
+        });
     }
 
     /**
@@ -769,6 +797,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             marks = getMarksForDifferences();
         }
 
+        @Override
         public List getMarks() {
             return marks;
         }
@@ -798,6 +827,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
      */
     public class RefreshDiffTask implements Runnable {
 
+        @Override
         public void run() {
             computeDiff();
             EventQueue.invokeLater(new Runnable() {
@@ -1192,10 +1222,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return Lookups.fixed(document);
         }
 
+        @Override
         public String getName() {
             return fileObject.getNameExt();
         }
 
+        @Override
         public String getTitle() {
             if (isFirst) {
                 return NbBundle.getMessage(DiffSidebar.class, "LBL_DiffPane_Original"); // NOI18N
@@ -1204,14 +1236,17 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             }
         }
 
+        @Override
         public String getMIMEType() {
             return getMimeType();
         }
 
+        @Override
         public Reader createReader() throws IOException {
             return isFirst ? new StringReader(originalContentBuffer) : getDocumentReader();
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }

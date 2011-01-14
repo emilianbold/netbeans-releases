@@ -93,7 +93,7 @@ public abstract class VCSCommitParameters {
     
     public abstract JPanel getPanel();
     public abstract boolean isCommitable();
-    public abstract String getWarning();
+    public abstract String getErrorMessage();
 
     protected Preferences getPreferences() {
         return preferences;
@@ -233,7 +233,7 @@ public abstract class VCSCommitParameters {
         }
 
         @Override
-        public String getWarning() {
+        public String getErrorMessage() {
             return "";                                                          // NOI18N
         }
         

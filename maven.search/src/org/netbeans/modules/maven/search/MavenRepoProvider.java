@@ -146,7 +146,7 @@ public class MavenRepoProvider implements SearchProvider {
         Set<Entry<String, List<NBVersionInfo>>> entrySet = map.entrySet();
         for (Entry<String, List<NBVersionInfo>> entry : entrySet) {
             NBArtifactInfo nbai = new NBArtifactInfo(entry.getKey());
-            nbai.addAlVersionInfos(entry.getValue());
+            nbai.addAllVersionInfos(entry.getValue());
             if (!response.addResult(new OpenArtifactInfo(nbai), nbai.getName())) {
                 return;
             }

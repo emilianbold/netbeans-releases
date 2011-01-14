@@ -76,7 +76,9 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -204,7 +206,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
     
     private void storeChangedAsync(final File file, final long ts) {
-        final File backup = fastCopy(file);
+        final File backup = fastCopyIfPosible(file);
         if(backup != null && backup.exists()) {
             Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(new Runnable() {
                 @Override
@@ -1149,8 +1151,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
      * @param source the file to be copied
      * @return the newly created copy
      */
-    private File fastCopy(final File source) {
+    private File fastCopyIfPosible(final File source) {
         LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source});
+        if(!Utilities.isWindows() && source.canExecute()) {
+            // some special access setting perhaps? looks like this is not typical 
+            // rw file, so skip this as we aren't able to properly set *nix like file modes
+            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because executable", new Object[]{source});
+            return null;
+        }
         int i = 0;        
         while(true) {
             File target = new File(source.getParentFile(), source.getName() + "." + i++ + ".nblh~");
@@ -1158,7 +1166,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 long ts = source.lastModified();
                 if(source.renameTo(target)) {                                
                     try {
-                        source.createNewFile();
+                        source.createNewFile();                        
                     } catch (IOException ex) {
                         LocalHistory.LOG.log(Level.WARNING, null, ex);
                     }

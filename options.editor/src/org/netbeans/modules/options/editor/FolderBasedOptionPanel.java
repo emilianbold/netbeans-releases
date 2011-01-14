@@ -185,11 +185,18 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
                 optionsPanel.add(component, BorderLayout.CENTER);
                 optionsPanel.setVisible(true);
             }
-            filter.setEnabled(controller.supportsFilter(mimeType));
         }
+
+        searchEnableDisable();
     }
 
     void setCurrentMimeType(String key) {
         languageCombo.setSelectedItem(key);
+    }
+
+    void searchEnableDisable() {
+        String mimeType = (String)languageCombo.getSelectedItem();
+        
+        filter.setEnabled(mimeType != null ? controller.supportsFilter(mimeType) : false);
     }
 }

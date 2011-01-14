@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.impl;
@@ -54,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -105,6 +106,7 @@ public final class StartManager {
         this.server = server;
 
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     startRequested.set(true);
@@ -130,6 +132,7 @@ public final class StartManager {
 
     private void waitForStartAndConnect() {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(
                         NbBundle.getMessage(StartManager.class, "MSG_WaitingForServerToStart"));
@@ -140,11 +143,21 @@ public final class StartManager {
 
                 try {
                     for ( ; ; ) {
-                        if (waitForStart()) {
-                            startRequested.set(false);
-                            return;
-                        } else {
-                            if (stopWaiting) {
+                        try {
+                            if (waitForStart()) {
+                                startRequested.set(false);
+                                return;
+                            } else {
+                                if (stopWaiting) {
+                                    break;
+                                }
+                            }
+                        } catch (DatabaseException dbe) {
+                            // probably invalid/missing password
+                            assert ! DatabaseUtils.isCommunicationsException(dbe) : "Only other than an CommunicationsException excepted, was: " + dbe;
+                            if (displayAdminProperties(server, dbe)) {
+                                continue;
+                            } else {
                                 break;
                             }
                         }
@@ -153,11 +166,7 @@ public final class StartManager {
                             displayServerNotRunning();
                         }
                     }
-                } catch (DatabaseException dbe) {
-                    LOGGER.log(Level.INFO, null, dbe);
-                    Utils.displayErrorMessage(NbBundle.getMessage(StartManager.class, "MSG_ConnectFailedAfterStart", dbe.getMessage()));
-                }
-                finally {
+                } finally {
                     handle.finish();
                     startRequested.set(false);
                 }
@@ -169,6 +178,7 @@ public final class StartManager {
     private void displayServerNotRunning() {
         waitOnUsersInput = true;
         Mutex.EVENT.postReadRequest(new Runnable() {
+            @Override
             public void run() {
                 JButton cancelButton = new JButton();
                 Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(StartManager.class, "StartManager.CancelButton")); // NOI18N
@@ -191,6 +201,7 @@ public final class StartManager {
                         NotifyDescriptor.CANCEL_OPTION); //NOI18N
 
                 Object ret = Mutex.EVENT.readAccess(new Action<Object>() {
+                    @Override
                     public Object run() {
                         return DialogDisplayer.getDefault().notify(ndesc);
                     }
@@ -203,21 +214,43 @@ public final class StartManager {
                 } else if (keepWaitingButton.equals(ret)) {
                     stopWaiting = false;
                 } else {
-                    stopWaiting = ! displayAdminProperties(server);
+                    stopWaiting = ! displayAdminProperties(server, null);
                 }
                 waitOnUsersInput = false;
             }
         });
     }
 
-    private boolean displayAdminProperties(final DatabaseServer server)  {
-        return new PropertiesDialog(server).displayDialog();
+    private boolean displayAdminProperties(final DatabaseServer server, Throwable th)  {
+        PropertiesDialog pd = new PropertiesDialog(server);
+        if (th != null) {
+            while (th.getCause() != null) {
+                th = th.getCause();
+            }
+            pd.setErrorMessage(th.getLocalizedMessage());
+        }
+        return pd.displayDialog();
     }
 
+    @SuppressWarnings("SleepWhileHoldingLock")
     private boolean waitForStart() throws DatabaseException {
         int tries = 0;
         while (tries <= 5 && !stopWaiting) {
             tries++;
+
+            try {
+                server.reconnect();
+                return true;
+            } catch (DatabaseException dbe) {
+                errorMessage = dbe.getMessage();
+                LOGGER.log(Level.INFO, null, dbe);
+                if (! DatabaseUtils.isCommunicationsException(dbe)) {
+                    throw dbe;
+                }
+            } catch (TimeoutException te) {
+                errorMessage = te.getMessage();
+                LOGGER.log(Level.INFO, null, te);
+            }
 
             try {
                 Thread.sleep(2000);
@@ -227,24 +260,13 @@ public final class StartManager {
                 return false;
             }
 
-            try {
-                server.reconnect();
-                return true;
-            } catch (DatabaseException dbe) {
-                errorMessage = dbe.getMessage();
-                LOGGER.log(Level.INFO, null, dbe);
-            } catch (TimeoutException te) {
-                errorMessage = te.getMessage();
-                LOGGER.log(Level.INFO, null, te);
-                continue;
-            }
-
         }
 
         return false;
     }
 
     private class StartPropertyChangeListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final DatabaseServer server = (DatabaseServer)evt.getSource();
             if ((MySQLOptions.PROP_START_ARGS.equals(evt.getPropertyName()) ||

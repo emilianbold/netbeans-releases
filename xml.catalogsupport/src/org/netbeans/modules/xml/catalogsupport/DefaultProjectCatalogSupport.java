@@ -149,6 +149,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
                     AntProjectHelper.PROJECT_PROPERTIES_PATH).
                     getProperty("project.".concat(ssp));
             if(targetPrjRelativeRoot!=null){
+				targetPrjRelativeRoot = targetPrjRelativeRoot.replaceAll(" ", "%20");
                 File myPrjRoot = FileUtil.toFile(project.getProjectDirectory());
                 File tgtPrjRoot = new File(myPrjRoot.toURI().resolve(targetPrjRelativeRoot));
                 FileObject tgtPrjFobj = FileUtil.toFileObject(FileUtil.normalizeFile(tgtPrjRoot));

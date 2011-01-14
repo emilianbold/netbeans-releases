@@ -178,7 +178,7 @@ final class CreateFilesWorker {
             if (removedFiles.contains(nativeFileItem)) {
                 return true;
             }
-            assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
+            assert (nativeFileItem.getFileObject() != null) : "native file item must have valid File object";
             if (TraceFlags.DEBUG) {
                 ModelSupport.trace(nativeFileItem);
             }

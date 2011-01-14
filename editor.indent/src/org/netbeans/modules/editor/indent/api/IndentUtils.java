@@ -205,6 +205,24 @@ public final class IndentUtils {
         return cachedOrCreatedIndentString(indent, isExpandTabs(doc), tabSize(doc));
     }
     
+    /**
+     * Create (or get from cache) indentation string for the given indent while knowing
+     * whether tabs are exapnded and tabSize value.
+     * 
+     * @param indent &gt;=0 indentation in number of spaces.
+     * @param expandTabs true if no tab characters '\t' should be used for indentation string
+     * (only spaces will be used).
+     * @param tabSize number of spaces equal to each '\t' character used in indentation string.
+     *  <br/>This only applies if expandTabs == false.
+     *  <br/>For example if indent == 20 and tabSize == 8 then indent string
+     *  would contain two tabs followed by four spaces.
+     * @return indentation string containing tabs and spaces according to the given parameters
+     * @since 1.22
+     */
+    public static String createIndentString(int indent, boolean expandTabs, int tabSize) {
+        return cachedOrCreatedIndentString(indent, expandTabs, tabSize);
+    }
+
     static String cachedOrCreatedIndentString(int indent, boolean expandTabs, int tabSize) {
         String indentString;
         if (expandTabs || (indent < tabSize)) {

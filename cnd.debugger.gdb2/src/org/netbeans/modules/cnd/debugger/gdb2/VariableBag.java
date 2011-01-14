@@ -111,7 +111,7 @@ class VariableBag {
 	    localvariables.add(newVar);
     }
 
-    public Variable byAddr(String exp, String addr, int from) {
+    public GdbVariable byAddr(String exp, String addr, int from) {
         Variable[] iter = getVars();
 	if (from == FROM_LOCALS)
 	    iter = getLocalVars();
@@ -122,13 +122,13 @@ class VariableBag {
             if (v instanceof GdbVariable) {
                 GdbVariable gv = (GdbVariable)v;
                 if (exp.equals(gv.getVariableName()) && addr.equals(gv.getValue()))
-                    return v;
+                    return (GdbVariable)v;
             }
         }
         return null;
     }
 
-    public Variable get(String exp, boolean with_MIname, int from) {
+    public GdbVariable get(String exp, boolean with_MIname, int from) {
 	/* OLD
 	Iterator iter = variables.iterator();
 	while (iter.hasNext()) {
@@ -159,10 +159,10 @@ class VariableBag {
 		GdbVariable gv = (GdbVariable)v;
 		if (with_MIname) {
 	            if (exp.equals(gv.getMIName()))
-		        return v;
+		        return (GdbVariable)v;
 	        } else {
 		    if (exp.equals(gv.getVariableName()))
-		        return v;
+		        return (GdbVariable)v;
 	        }
 	    }
 	}

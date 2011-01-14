@@ -475,6 +475,7 @@ public final class J2SEProject implements Project {
                             //Refresh build-impl.xml only for j2seproject/2
                             final int state = genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl"));   //NOI18N
                             final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
+                            boolean forceRewriteBuildImpl = false;
                             if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
                                 state == (FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
                                 //When the project.xml was changed from the customizer and the build-impl.xml was modified
@@ -490,18 +491,20 @@ public final class J2SEProject implements Project {
                                     if (oldBackup != null) {
                                         oldBackup.delete();
                                     }
-                                    FileLock lock = buildImpl.lock();
-                                    try {
-                                        buildImpl.rename(lock, name, backupext);
-                                    } finally {
-                                        lock.releaseLock();
-                                    }
+                                    FileUtil.copyFile(buildImpl, buildImpl.getParent(), name, backupext);
+                                    forceRewriteBuildImpl = true;
                                 }
                             }
-                            genFilesHelper.refreshBuildScript(
-                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                J2SEProject.class.getResource("resources/build-impl.xsl"),
-                                false);
+                            if (forceRewriteBuildImpl) {
+                                genFilesHelper.generateBuildScriptFromStylesheet(                                        
+                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                    J2SEProject.class.getResource("resources/build-impl.xsl"));
+                            } else {
+                                genFilesHelper.refreshBuildScript(
+                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                    J2SEProject.class.getResource("resources/build-impl.xsl"),
+                                    false);
+                            }
                             genFilesHelper.refreshBuildScript(
                                 J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                                 J2SEProject.class.getResource("resources/build.xsl"),

@@ -45,9 +45,10 @@ package org.netbeans.modules.j2ee.common.project.ui;
 import java.awt.Image;
 import java.net.URL;
 import java.text.MessageFormat;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -186,4 +187,20 @@ public final class DeployOnSaveUtils {
     public interface CustomizerPresenter {
         void showCustomizer(String category);
     }
+
+    /**
+     * 
+     * @since org.netbeans.modules.j2ee.common/1 1.58
+     */
+    public static String isDeployOnSaveSupported(String serverInstanceID) {
+        boolean deployOnSaveEnabled = false;
+        try {
+            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
+                    .isDeployOnSaveSupported();
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        return Boolean.toString(deployOnSaveEnabled);
+    }
+    
 }

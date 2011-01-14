@@ -100,7 +100,8 @@ final class CompletionImplProfile {
         long delta = now - time;
         LOG.log(Level.FINE, "Profiling stopped at {0}", now);
         ActionListener ss = (ActionListener) profiler;
-        if (delta < 2000) {
+        int report = Integer.getInteger("org.netbeans.modules.editor.completion.slowness.report", 2000); // NOI18N
+        if (delta < report) {
             LOG.log(Level.FINE, "Cancel profiling of {0}. Profiling {1}. Time {2} ms.", new Object[] { ss, profiling, delta });
             if (ss != null) {
                 ss.actionPerformed(new ActionEvent(this, 0, "cancel"));

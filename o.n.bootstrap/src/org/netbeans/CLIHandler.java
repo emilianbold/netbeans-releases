@@ -44,22 +44,25 @@
 
 package org.netbeans;
 
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -129,7 +132,7 @@ public abstract class CLIHandler extends Object {
     /** Testing output of the threads.
      */
     private static final Logger OUTPUT = Logger.getLogger(CLIHandler.class.getName());
-    
+
     private int when;
     
     /**
@@ -328,6 +331,17 @@ public abstract class CLIHandler extends Object {
         }
     }
     
+    private static FileLock tryLock(RandomAccessFile raf) throws IOException {
+        try {
+            return raf.getChannel().tryLock();
+        } catch (OverlappingFileLockException ex) {
+            OUTPUT.log(Level.INFO, "tryLock fails in the same VM", ex);
+            // happens in CLIHandlerTest as it simulates running multiple
+            // instances of the application in the same VM
+            return null;
+        }
+    }
+    
     
     /** Initializes the system by creating lock file.
      *
@@ -505,10 +519,23 @@ public abstract class CLIHandler extends Object {
         
         for (int i = 0; i < 5; i++) {
             // try few times to succeed
+            RandomAccessFile raf = null;
+            FileLock lock = null;
             try {
-                if (lockFile.isFile()) {
+                NO_LOCK: if (lockFile.isFile()) {
                     if (!cleanLockFile && !lockFile.canWrite()) {
                         return new Status(Status.CANNOT_WRITE);
+                    }
+                    raf = new RandomAccessFile(lockFile, "rw");
+                    enterState(2, block);
+                    lock = tryLock(raf);
+                    if (OUTPUT.isLoggable(Level.FINER)) {
+                        OUTPUT.log(Level.FINER, "tryLock on {0} result: {1}", new Object[] { lockFile, lock });
+                    }
+                    if (lock != null && lock.isValid()) {
+                        // not locked by anyone,
+                        enterState(4, block);
+                        break NO_LOCK;
                     }
                     enterState(5, block);
                     if (runWhenHome != null) {
@@ -528,18 +555,20 @@ public abstract class CLIHandler extends Object {
                     return new Status(2);
                 }
                 
-                lockFile.getParentFile().mkdirs();
-                try {
-                    if (!lockFile.createNewFile()) {
+                if (lock == null) {
+                    lockFile.getParentFile().mkdirs();
+                    try {
+                        raf = new RandomAccessFile(lockFile, "rw");
+                        lock = tryLock(raf);
                         if (!cleanLockFile && !lockFile.canWrite()) {
                             return new Status(Status.CANNOT_WRITE);
                         }
+                    } catch (IOException ex) {
+                        if (!cleanLockFile && !lockFile.getParentFile().canWrite()) {
+                            return new Status(Status.CANNOT_WRITE);
+                        }
+                        throw ex;
                     }
-                } catch (IOException ex) {
-                    if (!cleanLockFile && !lockFile.getParentFile().canWrite()) {
-                        return new Status(Status.CANNOT_WRITE);
-                    }
-                    throw ex;
                 }
                 lockFile.deleteOnExit();
 
@@ -555,13 +584,14 @@ public abstract class CLIHandler extends Object {
                 
                 final byte[] arr = new byte[KEY_LENGTH];
                 new Random().nextBytes(arr);
+
                 
-                server = new Server(arr, block, handlers, failOnUnknownOptions);
-                
-                final DataOutputStream os = new DataOutputStream(new FileOutputStream(lockFile));
+                final RandomAccessFile os = raf;
+                raf.seek(0L);
+                server = new Server(os, arr, block, handlers, failOnUnknownOptions);
                 int p = server.getLocalPort();
                 os.writeInt(p);
-                os.flush();
+                os.getChannel().force(true);
                 
                 enterState(20, block);
                 
@@ -591,7 +621,7 @@ public abstract class CLIHandler extends Object {
 
                         try {
                             os.write(arr);
-                            os.flush();
+                            os.getChannel().force(true);
 
                             enterState(27,block);
                             // if this turns to be slow due to lookup of getLocalHost
@@ -614,7 +644,7 @@ public abstract class CLIHandler extends Object {
                             ex.printStackTrace();
                         }
                         try {
-                            os.close();
+                            os.getChannel().force(true);
                         } catch (IOException ex) {
                             // ignore
                         }
@@ -842,6 +872,11 @@ public abstract class CLIHandler extends Object {
                         }
                     }
                     
+                    if (lock == null) {
+                        // process exists (we cannot lock the file), but does not respond
+                        return new Status (Status.CANNOT_CONNECT);
+                    }
+                    
                     if (cleanLockFile || isSameHost) {
                         // remove the file and try once more
                         lockFile.delete();
@@ -969,6 +1004,7 @@ public abstract class CLIHandler extends Object {
     /** Server that creates local socket and communicates with it.
      */
     private static final class Server extends Thread {
+        private Closeable unlock;
         private byte[] key;
         private ServerSocket socket;
         private Integer block;
@@ -981,8 +1017,9 @@ public abstract class CLIHandler extends Object {
         /** by default wait 100ms before sending a REPLY_FAIL message */
         private static long failDelay = 100;
         
-        public Server(byte[] key, Integer block, Collection<? extends CLIHandler> handlers, boolean failOnUnknownOptions) throws IOException {
+        public Server(Closeable lock, byte[] key, Integer block, Collection<? extends CLIHandler> handlers, boolean failOnUnknownOptions) throws IOException {
             super("CLI Requests Server"); // NOI18N
+            this.unlock = lock;
             this.key = key;
             this.setDaemon(true);
             this.block = block;
@@ -1062,6 +1099,13 @@ public abstract class CLIHandler extends Object {
         }
 
         final void stopServer () {
+            if (unlock != null) {
+                try {
+                    unlock.close();
+                } catch (IOException ex) {
+                    OUTPUT.log(Level.WARNING, "Cannot unlock {0}", ex.getMessage());
+                }
+            }
             socket = null;
             // interrupts the listening server
             interrupt();

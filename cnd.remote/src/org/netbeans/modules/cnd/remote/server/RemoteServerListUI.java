@@ -53,7 +53,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -107,7 +106,16 @@ public class RemoteServerListUI extends ServerListUIEx {
         dd.addPropertyChangeListener(dlg);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setMinimumSize(dialog.getPreferredSize());
-        dialog.setVisible(true);
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dialog.dispose();
+        }
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             cacheManager.setHosts(dlg.getHosts());
             cacheManager.setDefaultRecord(dlg.getDefaultRecord());
@@ -134,15 +142,6 @@ public class RemoteServerListUI extends ServerListUIEx {
         } catch (InvocationTargetException ex) {
         }
         return res.get();
-    }
-
-    public static void revalidate(ExecutionEnvironment env) {
-        ServerRecord record = ServerList.get(env);
-        if (record.isDeleted()) {
-            ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
-        } else if (!record.isOnline()) {
-            record.validate(true);
-        }
     }
 
     @Override

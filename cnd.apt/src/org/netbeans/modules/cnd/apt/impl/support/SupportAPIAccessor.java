@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.openide.filesystems.FileSystem;
 
 /**
  *

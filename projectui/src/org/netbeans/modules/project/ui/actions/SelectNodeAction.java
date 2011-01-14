@@ -47,6 +47,10 @@ package org.netbeans.modules.project.ui.actions;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
@@ -63,7 +67,14 @@ public class SelectNodeAction extends LookupSensitiveAction {
     
     private String findIn;
     
-    public static Action inProjects() {
+    @ActionID(id = "org.netbeans.modules.project.ui.SelectInProjects", category = "Window/SelectDocumentNode")
+    @ActionRegistration(displayName = "#LBL_SelectInProjectsAction_MainMenuName")
+    @ActionReferences({
+        @ActionReference(path = "Shortcuts", name = "DS-1"),
+        @ActionReference(path = "Menu/GoTo", position = 2600, separatorBefore = 2500),
+        @ActionReference(path = "Editors/TabActions", position = 100)
+    })
+    public static SelectNodeAction inProjects() {
         SelectNodeAction a = new SelectNodeAction( SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME );
         a.findIn = ProjectTab.ID_LOGICAL;
         return a;
@@ -75,7 +86,13 @@ public class SelectNodeAction extends LookupSensitiveAction {
         return a;
     }
     
-    public static Action inFiles() {
+    @ActionID(id = "org.netbeans.modules.project.ui.SelectInFiles", category = "Window/SelectDocumentNode")
+    @ActionRegistration(displayName = "#LBL_SelectInFilesAction_MainMenuName")
+    @ActionReferences({
+        @ActionReference(path = "Shortcuts", name = "DS-2"),
+        @ActionReference(path = "Menu/GoTo", position = 2700)
+    })
+    public static SelectNodeAction inFiles() {
         SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME );
         a.findIn = ProjectTab.ID_PHYSICAL;
         return a;
@@ -85,11 +102,11 @@ public class SelectNodeAction extends LookupSensitiveAction {
         this(icon, name, null);
     }
     private SelectNodeAction(Icon icon, String name, Lookup lookup) {
-        super( icon, lookup, new Class[] { DataObject.class, FileObject.class } );
+        super( icon, lookup, new Class<?>[] { DataObject.class, FileObject.class } );
         this.setDisplayName( name );
     }
        
-    protected void actionPerformed( Lookup context ) {
+    protected @Override void actionPerformed( Lookup context ) {
         FileObject fo = getFileFromLookup( context );
         if ( fo != null ) {
             ProjectTab pt  = ProjectTab.findDefault( findIn );      

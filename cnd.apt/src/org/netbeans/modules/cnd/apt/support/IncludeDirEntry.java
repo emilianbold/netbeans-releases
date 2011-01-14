@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -50,6 +51,10 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -77,14 +82,16 @@ public final class IncludeDirEntry {
     private volatile Boolean exists;
     private final boolean isFramework;
     private final CharSequence asCharSeq;
+    private final FileSystem fileSystem;
 
-    private IncludeDirEntry(boolean exists, boolean framework, CharSequence asCharSeq) {
+    private IncludeDirEntry(boolean exists, boolean framework, FileSystem fileSystem, CharSequence asCharSeq) {
         this.exists = exists;
         this.isFramework = framework;
+        this.fileSystem = fileSystem;
         this.asCharSeq = asCharSeq;
     }
 
-    public static IncludeDirEntry get(String dir) {
+    public static IncludeDirEntry get(FileSystem fs, String dir) {
         CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(dir);
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
@@ -92,9 +99,24 @@ public final class IncludeDirEntry {
             IncludeDirEntry out = delegate.get(key);
             if (out == null) {
                 boolean framework = dir.endsWith("/Frameworks"); // NOI18N
+                // FIXME XXX:FullRemote 
+                if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
+                    fs = CndFileUtils.getLocalFileSystem();
+                }
+                boolean exists = CndFileUtils.isExistingDirectory(fs, dir);
+                FileSystem entryFS = fs;
+                if (exists) {
+                    FileObject fo = CndFileUtils.toFileObject(fs, dir);
+                    try {
+                        entryFS = fo.getFileSystem();
+                        // FIXME XXX:FullRemote 
+                        dir = CndFileUtils.getNormalizedPath(fo);
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
                 CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
-                boolean exists = CndFileUtils.isExistingDirectory(dir);
-                out = new IncludeDirEntry(exists, framework, asCharSeq);
+                out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq);
                 delegate.put(key, out);
             }
             return out;
@@ -105,13 +127,17 @@ public final class IncludeDirEntry {
         return asCharSeq;
     }
 
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+    
     public boolean isFramework() {
         return isFramework;
     }
 
     /*package*/ boolean isExistingDirectory() {
         if (exists == null) {
-            exists = CndFileUtils.isExistingDirectory(getPath());
+            exists = CndFileUtils.isExistingDirectory(fileSystem, getPath());
         }
         return exists;
     }

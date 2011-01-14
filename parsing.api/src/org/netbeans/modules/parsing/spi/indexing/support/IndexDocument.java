@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.spi.indexing.support;
 
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.openide.util.Parameters;
 
 /**
@@ -55,9 +54,9 @@ import org.openide.util.Parameters;
 //@ThreadSafe
 public final class IndexDocument {
 
-    final IndexDocumentImpl spi;
+    final org.netbeans.modules.parsing.lucene.support.IndexDocument spi;
 
-    IndexDocument (final IndexDocumentImpl spi) {
+    IndexDocument (final org.netbeans.modules.parsing.lucene.support.IndexDocument spi) {
         Parameters.notNull("spi", spi);
         this.spi = spi;
     }

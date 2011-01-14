@@ -206,14 +206,10 @@ public final class TermExecutor {
         env.put("TERM", term.getEmulation());
 	PtyProcess ptyProcess = delegate.start(program, pty);
 
-        /* OLD
-        if (pty == null) {
-            term.connect(ptyProcess.getOutputStream(), ptyProcess.getInputStream(), null);
-        } else {
-            term.connect(pty.getOutputStream(), pty.getInputStream(), null);
-        }
-        */
-        term.connect(ptyProcess.getOutputStream(), ptyProcess.getInputStream(), null);
+        String charSet;
+        charSet = "ISO-8859-1";
+        // charSet = "UTF-8";           won't render graphics chars correctly.
+        term.connect(ptyProcess.getOutputStream(), ptyProcess.getInputStream(), null, charSet);
 
         // TMP reaper = ptyProcess.getReaper();
         return ptyProcess;

@@ -124,7 +124,8 @@ public final class EventSupport {
         final Parser parser = SourceAccessor.getINSTANCE ().getCache (source).getParser ();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (!initialized) {
-                final FileObject fo = source.getFileObject();
+                Document doc;
+                final FileObject fo = source.getFileObject();                
                 if (fo != null) {
                     try {
                         fileChangeListener = new FileChangeListenerImpl();
@@ -138,6 +139,12 @@ public final class EventSupport {
                         }
                     } catch (DataObjectNotFoundException e) {
                         LOGGER.log(Level.WARNING, "Ignoring events non existent file: {0}", FileUtil.getFileDisplayName(fo));     //NOI18N
+                    }
+                } else if ((doc=source.getDocument(false)) != null) {
+                    docListener = new DocListener (doc);
+                    parserListener = new ParserListener();                        
+                    if (parser != null) {
+                        parser.addChangeListener(parserListener);
                     }
                 }
                 initialized = true;
@@ -227,12 +234,17 @@ public final class EventSupport {
             assert ec != null;
             this.ec = ec;
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
-            Document doc = source.getDocument(false);
+            final Document doc = source.getDocument(false);
             if (doc != null) {
-                TokenHierarchy th = TokenHierarchy.get(doc);
-                th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+                assignTokenHierarchyListener(doc);
             }
         }
+        
+        public DocListener(final Document doc) {
+            assert doc != null;
+            this.ec = null;
+            assignTokenHierarchyListener(doc);
+        }                
 
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
@@ -255,6 +267,11 @@ public final class EventSupport {
         @Override
         public void tokenHierarchyChanged(final TokenHierarchyEvent evt) {
             resetState (true, evt.affectedStartOffset (), evt.affectedEndOffset ());
+        }
+        
+        private void assignTokenHierarchyListener(final Document doc) {            
+            final TokenHierarchy th = TokenHierarchy.get(doc);
+            th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
         }
     }
     

@@ -66,13 +66,16 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public final class ProcessUtils {
 
+    private static final RequestProcessor RP = new RequestProcessor("ProcessUtils", 1); // NOI18N
+
     private ProcessUtils() {
     }
-
     private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
+
     public static String getRemoteCharSet() {
         return remoteCharSet;
     }
@@ -151,7 +154,7 @@ public final class ProcessUtils {
 
     private static boolean isRemote(Process process) {
         if (process instanceof NativeProcess) {
-            return ((NativeProcess)process).getExecutionEnvironment().isRemote();
+            return ((NativeProcess) process).getExecutionEnvironment().isRemote();
         }
         return false;
     }
@@ -162,7 +165,7 @@ public final class ProcessUtils {
         }
         List<String> err = readProcessError(p);
         for (String line : err) {
-            log.log(logLevel, "ERROR: " + line); // NOI18N
+            log.log(logLevel, "ERROR: {0}", line); // NOI18N
         }
     }
 
@@ -287,11 +290,49 @@ public final class ProcessUtils {
         return pid;
     }
 
+    /**
+     * Starts executable and returns immediately. 
+     * @param execEnv - target execution environment
+     * @param rp - RequestProcessor that is used for running the task. 
+     * Could be NULL. In this case default (private) processor is used.
+     * Note that default (private) processor has throughput == 1
+     * @param postExecutor - once process is done, passed postExecutor will be 
+     * notified. Call of postExecutor's method is performed in the same thread 
+     * as invocation of the executable (i.e. in rp (see above)).
+     * @param executable - full path to executable to run.
+     * @param args - list of arguments to pass to executable
+     * @return Future ExitStatus
+     */
+    public static Future<ExitStatus> execute(final ExecutionEnvironment execEnv, final RequestProcessor rp, final PostExecutor postExecutor, final String executable, final String... args) {
+        final RequestProcessor processor = (rp == null) ? RP : rp;
+        return processor.submit(new Callable<ExitStatus>() {
+
+            @Override
+            public ExitStatus call() throws Exception {
+
+                ExitStatus status = null;
+                String error = null;
+
+                try {
+                    status = execute(execEnv, executable, args);
+                } catch (Throwable t) {
+                    error = t.getMessage();
+                } finally {
+                    if (postExecutor != null) {
+                        postExecutor.processFinished(error == null ? status : new ExitStatus(1, "", error)); // NOI18N
+                    }
+                }
+
+                return status;
+            }
+        });
+    }
+
     public static ExitStatus execute(final ExecutionEnvironment execEnv, final String executable, final String... args) {
         return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args));
     }
 
-    public static ExitStatus executeInDir(final String workingDir, final ExecutionEnvironment execEnv,  final String executable, final String... args) {
+    public static ExitStatus executeInDir(final String workingDir, final ExecutionEnvironment execEnv, final String executable, final String... args) {
         return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir));
     }
 
@@ -345,12 +386,14 @@ public final class ProcessUtils {
             final Process process = processBuilder.call();
             error = NativeTaskExecutorService.submit(new Callable<String>() {
 
+                @Override
                 public String call() throws Exception {
                     return readProcessErrorLine(process);
                 }
             }, "e"); // NOI18N
             output = NativeTaskExecutorService.submit(new Callable<String>() {
 
+                @Override
                 public String call() throws Exception {
                     return readProcessOutputLine(process);
                 }
@@ -382,5 +425,10 @@ public final class ProcessUtils {
         public boolean isOK() {
             return exitCode == 0;
         }
+    }
+
+    public static interface PostExecutor {
+
+        public void processFinished(ExitStatus status);
     }
 }

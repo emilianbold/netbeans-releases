@@ -74,13 +74,15 @@ public class MakefileUtils {
 
     public static boolean hasTestTargets(Project project) {
         FileObject makefile = getMakefile(project);
-        try {
-            DataObject dataObject = DataObject.find(makefile);
-            MakefileTargetProvider targetProvider = dataObject.getLookup().lookup(MakefileTargetProvider.class);
-            Set<String> targets = targetProvider.getRunnableTargets();
-            return targets.contains("test") || targets.contains("build-tests"); // NOI18N
-        } catch (DataObjectNotFoundException ex) {
-        } catch (IOException ex) {}
+        if(makefile != null) {
+            try {
+                DataObject dataObject = DataObject.find(makefile);
+                MakefileTargetProvider targetProvider = dataObject.getLookup().lookup(MakefileTargetProvider.class);
+                Set<String> targets = targetProvider.getRunnableTargets();
+                return targets.contains("test") || targets.contains("build-tests"); // NOI18N
+            } catch (DataObjectNotFoundException ex) {
+            } catch (IOException ex) {}        
+        }
         return false;
     }
 

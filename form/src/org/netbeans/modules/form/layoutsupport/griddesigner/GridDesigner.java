@@ -87,6 +87,7 @@ import org.netbeans.modules.form.VisualReplicator;
 import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DesignContainerAction;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -471,8 +472,16 @@ public class GridDesigner extends JPanel {
         if ((cont1 == null) || (cont2 == null)) {
             return false;
         }
-        String delegate1 = cont1.getLayoutSupport().getLayoutDelegate().getClass().getName();
-        String delegate2 = cont2.getLayoutSupport().getLayoutDelegate().getClass().getName();
+        LayoutSupportManager support1 = cont1.getLayoutSupport();
+        if (support1 == null) {
+            return false;
+        }
+        String delegate1 = support1.getLayoutDelegate().getClass().getName();
+        LayoutSupportManager support2 = cont2.getLayoutSupport();
+        if (support2 == null) {
+            return false;
+        }
+        String delegate2 = support2.getLayoutDelegate().getClass().getName();
         return delegate1.equals(delegate2);
     }
 

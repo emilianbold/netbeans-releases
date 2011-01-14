@@ -70,7 +70,11 @@ public class StatusAction extends GitAction {
 
     @Override
     protected final void performContextAction (Node[] nodes) {
-        final VCSContext context = getCurrentContext(nodes);
+        VCSContext context = getCurrentContext(nodes);
+        performContextAction(context);
+    }
+
+    public void performContextAction (VCSContext context) {
         GitVersioningTopComponent stc = GitVersioningTopComponent.findInstance();
         stc.setContentTitle(Utils.getContextDisplayName(context));
         stc.setContext(context);

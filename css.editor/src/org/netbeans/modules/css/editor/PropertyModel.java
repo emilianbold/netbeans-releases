@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
@@ -110,7 +111,7 @@ public class PropertyModel {
             }
 
             if (st.hasMoreTokens()) {
-                Logger.global.warning("Error in source for css properties model for property: " + name); //NOI18N
+                Logger.getAnonymousLogger().log(Level.WARNING, "Error in source for css properties model for property: {0}", name); //NOI18N
             }
 
             //parse bundle key - there might be more properties separated by semicolons
@@ -180,7 +181,7 @@ public class PropertyModel {
 
                 case '\'':
                     //reference
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     for (;;) {
                         c = input.read();
                         if (c == '\'') {
@@ -213,7 +214,7 @@ public class PropertyModel {
 
                 case '!':
                     //unit value
-                    buf = new StringBuffer();
+                    buf = new StringBuilder();
                     for (;;) {
                         c = input.read();
                         if (c == Character.MAX_VALUE) {
@@ -235,7 +236,7 @@ public class PropertyModel {
 
                 case '{':
                     //multiplicity range {min,max}
-                    StringBuffer text = new StringBuffer();
+                    StringBuilder text = new StringBuilder();
                     for (;;) {
                         c = input.read();
                         if (c == '}') {
@@ -273,7 +274,7 @@ public class PropertyModel {
 
                 default:
                     //values
-                    buf = new StringBuffer();
+                    buf = new StringBuilder();
                     for (;;) {
                         if (c == Character.MAX_VALUE) {
                             break;
@@ -331,9 +332,11 @@ public class PropertyModel {
         }
     }
 
+    /** the object is in fact immutable since the setMinimum/MaximumOccurrences is called only just after its creation. */
     public static abstract class Element {
 
         private GroupElement parent;
+        private String path;
 
         public Element(GroupElement parent) {
             this.parent = parent;
@@ -361,12 +364,18 @@ public class PropertyModel {
             return parent;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof Element)) {
                 return false;
             }
             Element e = (Element) o;
             return path().equalsIgnoreCase(e.path());
+        }
+
+        @Override
+        public int hashCode() {
+            return path().hashCode();
         }
 
         /** returns a name of the property from which this element comes from */
@@ -399,14 +408,17 @@ public class PropertyModel {
             return origin;
         }
 
-        public String path() {
-            StringBuffer sb = new StringBuffer();
-            if (parent() != null) {
-                sb.append(parent().path());
-                sb.append('/');
+        public synchronized String path() {
+            if(path == null) {
+                StringBuilder sb = new StringBuilder();
+                if (parent() != null) {
+                    sb.append(parent().path());
+                    sb.append('/');
+                }
+                sb.append(toString());
+                path = sb.toString();
             }
-            sb.append(toString());
-            return sb.toString();
+            return path;
         }
 
         @Override
@@ -423,7 +435,7 @@ public class PropertyModel {
         }
 
         protected String indentString(int level) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < level; i++) {
                 sb.append('\t');
             }
@@ -507,35 +519,36 @@ public class PropertyModel {
         }
 
         public List<Element> getAllPossibleValues() {
-            List<Element> list = new ArrayList<Element>(10);
+            List<Element> all = new ArrayList<Element>(10);
 
             if (isSequence()) {
                 //sequence
                 Element e = elements.get(0); //first element
                 if (e instanceof GroupElement) {
-                    list.addAll(((GroupElement) e).getAllPossibleValues());
+                    all.addAll(((GroupElement) e).getAllPossibleValues());
                 } else {
-                    list.add(e);
+                    all.add(e);
                 }
 
             } else {
                 //list or set
                 for (Element e : elements()) {
                     if (e instanceof GroupElement) {
-                        list.addAll(((GroupElement) e).getAllPossibleValues());
+                        all.addAll(((GroupElement) e).getAllPossibleValues());
                     } else {
-                        list.add(e);
+                        all.add(e);
                     }
                 }
             }
-            return list;
+            return all;
         }
 
+        @Override
         public String toString2(int level) {
             StringBuilder sb = new StringBuilder();
-            sb.append(indentString(level) + "[G" + index + " "); //NOI18N
+            sb.append(indentString(level)).append("[G").append(index).append(" "); //NOI18N
             if (referenceName != null) {
-                sb.append("(" + referenceName + ") "); //NOI18N
+                sb.append("(").append(referenceName).append(") "); //NOI18N
             }
             if (sequence) {
                 sb.append("SEQUENCE"); //NOI18N

@@ -61,6 +61,8 @@ import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -168,13 +170,6 @@ public final class NativeProjectProvider {
 
         private static final class Lock {}
         private final Object listenersLock = new Lock();
-
-	public NativeProjectImpl(String projectRoot,
-		List<String> sysIncludes, List<String> usrIncludes, 
-		List<String> sysMacros, List<String> usrMacros) {
-	    
-	    this(projectRoot, sysIncludes, usrIncludes, sysMacros, usrMacros, false);
-	}
 	
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 
@@ -206,7 +201,7 @@ public final class NativeProjectProvider {
 	
 	private void addFiles(List<File> files) {
 	    for( File file : files ) {
-		addFile(file.getAbsoluteFile());
+		addFile(FileUtil.toFileObject(FileUtil.normalizeFile(file.getAbsoluteFile())));
 	    }
 	}
 	
@@ -215,6 +210,11 @@ public final class NativeProjectProvider {
             return null;
         }
 
+        @Override
+        public FileSystem getFileSystem() {
+            return CndFileUtils.getLocalFileSystem();
+        }
+        
         @Override
         public List<String> getSourceRoots() {
             return Collections.<String>emptyList();
@@ -259,8 +259,8 @@ public final class NativeProjectProvider {
 	    }
         }
 
-	public void fireFileChanged(File file) {
-            NativeFileItem item = findFileItem(file);
+	public void fireFileChanged(FileObject fo) {
+            NativeFileItem item = findFileItem(fo);
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
 		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
@@ -270,10 +270,10 @@ public final class NativeProjectProvider {
 	    }
         }
 
-        public void fireFileAdded(File file) {
-            NativeFileItem item = findFileItem(file);
+        public void fireFileAdded(FileObject fo) {
+            NativeFileItem item = findFileItem(fo);
             if (item == null) {
-                item = addFile(file);
+                item = addFile(fo);
             }
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
@@ -297,17 +297,12 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem findFileItem(FileObject fileObject) {
-            return findFileItem(fileObject.getPath());
-        }
-
-        @Override
-        public NativeFileItem findFileItem(File file) {
-            return findFileItem(file.getAbsolutePath());
+            return findFileItem(CndFileUtils.getNormalizedPath(fileObject));
         }
 
         private NativeFileItem findFileItem(String path) {
             for (NativeFileItem item : files) {
-                if (item.getFile().getAbsolutePath().equalsIgnoreCase(path)) {
+                if (item.getAbsolutePath().equalsIgnoreCase(path)) {
                     return item;
                 }
             }
@@ -334,10 +329,10 @@ public final class NativeProjectProvider {
             return this.usrMacros;
         }
         
-	private NativeFileItem addFile(File file) {
-            file = CndFileUtils.normalizeFile(file);
-            DataObject dobj = getDataObject(file);
-	    NativeFileItem.Language lang = getLanguage(file, dobj);
+	private NativeFileItem addFile(FileObject fo) {
+            File file = FileUtil.toFile(fo);
+            DataObject dobj = getDataObject(fo);
+	    NativeFileItem.Language lang = getLanguage(fo, dobj);
 	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
 	    //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
@@ -401,6 +396,16 @@ public final class NativeProjectProvider {
         @Override
         public FileObject getFileObject() {
             return CndFileUtils.toFileObject(file); // XXX:FileObject conversion
+        }
+        
+        @Override
+        public String getAbsolutePath() {
+            return file.getAbsolutePath();
+        }
+
+        @Override
+        public String getName() {
+            return file.getName();
         }
 
         @Override

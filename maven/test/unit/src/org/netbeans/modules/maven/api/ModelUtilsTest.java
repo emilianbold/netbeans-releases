@@ -44,8 +44,6 @@ package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import junit.framework.TestCase;
 
 /**
@@ -59,13 +57,8 @@ public class ModelUtilsTest extends TestCase {
     }
 
     public void testCheckLibrary() throws MalformedURLException {
-        System.out.println("checkLibrary");
-        Set<String> repos = new HashSet<String>();
-        repos.add("http://repo1.maven.org/maven2/");
-        repos.add("http://download.java.net/maven/1/");
-
         URL pom = new URL("http://repo1.maven.org/maven2/junit/junit/3.8.2/junit-3.8.2.pom");
-        ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom, repos);
+        ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
         assertEquals("http://repo1.maven.org/maven2/", result.getRepoRoot());
@@ -73,7 +66,7 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("junit", result.getArtifactId());
         assertEquals("3.8.2", result.getVersion());
         pom = new URL("http://download.java.net/maven/1/toplink.essentials/poms/toplink-essentials-agent-2.0-36.pom");
-        result = ModelUtils.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("legacy", result.getRepoType());
         assertEquals("http://download.java.net/maven/1/", result.getRepoRoot());
@@ -82,7 +75,7 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("2.0-36", result.getVersion());
 
         pom = new URL("http://download.java.net/maven/1/javax.jws/poms/jsr181-api-1.0-MR1.pom");
-        result = ModelUtils.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("legacy", result.getRepoType());
         assertEquals("http://download.java.net/maven/1/", result.getRepoRoot());
@@ -92,7 +85,7 @@ public class ModelUtilsTest extends TestCase {
 
 
         pom = new URL("http://repo1.maven.org/maven2/org/codehaus/mevenide/netbeans-deploy-plugin/1.2.3/netbeans-deploy-plugin-1.2.3.pom");
-        result = ModelUtils.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
         assertEquals("http://repo1.maven.org/maven2/", result.getRepoRoot());
@@ -101,7 +94,7 @@ public class ModelUtilsTest extends TestCase {
         assertEquals("1.2.3", result.getVersion());
         
         pom = new URL("http://repository.jboss.org/maven2/junit/junit/3.8.2/junit-3.8.2.pom");
-        result = ModelUtils.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
         assertEquals("http://repository.jboss.org/maven2", result.getRepoRoot());
@@ -111,7 +104,7 @@ public class ModelUtilsTest extends TestCase {
 
 
         pom = new URL("http://repo1.maven.org/maven2/org/testng/testng/5.8/testng-5.8.pom#jdk15");
-        result = ModelUtils.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
         assertEquals("http://repo1.maven.org/maven2/", result.getRepoRoot());
@@ -123,13 +116,23 @@ public class ModelUtilsTest extends TestCase {
 
 
         pom = new URL("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/javax.persistence/2.0.0-M12/javax.persistence-2.0.0-M12.pom");
-        result = ModelUtils.checkLibrary(pom, repos);
+        result = ModelUtils.checkLibrary(pom);
         assertNotNull(result);
         assertEquals("default", result.getRepoType());
         assertEquals("http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", result.getRepoRoot());
         assertEquals("org.eclipse.persistence", result.getGroupId());
         assertEquals("javax.persistence", result.getArtifactId());
         assertEquals("2.0.0-M12", result.getVersion());
+
+        pom = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.pom");
+        result = ModelUtils.checkLibrary(pom);
+        assertNotNull(result);
+        assertEquals("default", result.getRepoType());
+        assertEquals("http://download.java.net/maven/glassfish/", result.getRepoRoot());
+        assertEquals("org.glassfish.extras", result.getGroupId());
+        assertEquals("glassfish-embedded-all", result.getArtifactId());
+        assertEquals("3.0", result.getVersion());
+        
     }
     
 }
