@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,57 +41,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.jellytools.modules.j2ee.nodes;
 
-package org.netbeans.jellytools.modules.web;
-import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.junit.NbTestSuite;
-
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
+import org.netbeans.jellytools.modules.web.Util;
 
 /**
- * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
- * @author Martin.Schovanek@sun.com
+ * Test of org.netbeans.jellytools.nodes.J2eeServerNode
  */
-public class NewJspFileNameStepOperatorTest extends JellyTestCase {
-
-    /** Constructor required by JUnit.
+public class J2eeServerNodeTest extends JellyTestCase {
+    
+    /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public NewJspFileNameStepOperatorTest(String testName) {
+    public J2eeServerNodeTest(String testName) {
         super(testName);
     }
     
-    /** Method used for explicit testsuite definition
-     * @return  created suite
-     */
+    /** method used for explicit testsuite definition */
     public static Test suite() {
         /*
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewWebProjectTest("createSampleWebProject"));
-        suite.addTest(new NewJspFileNameStepOperatorTest("testVerify"));
+        suite.addTest(new J2eeServerNodeTest("testVerifyPopup"));
+        suite.addTest(new J2eeServerNodeTest("testProperties"));
         return suite;
          */
-        return createModuleTest(NewJspFileNameStepOperatorTest.class, "testVerify");
+        return createModuleTest(J2eeServerNodeTest.class, 
+                "testVerifyPopup", "testProperties");
     }
-    
-    public void setUp() throws IOException, Exception {
-        System.out.println("### "+getName()+" ###");
-        Util.addSjsasInstance();
-        new NewWebProjectTest("").createSampleWebProject();
-    }
-    
-    /** Invokes and verifies the dialog. */
-    public void testVerify() {
-        ProjectsTabOperator.invoke().getProjectRootNode("SampleWebApplication").select();
-        NewJspFileNameStepOperator nameStep = NewJspFileNameStepOperator.invoke();
-        nameStep.verify();
-        nameStep.close();
-    }
-    
     
     /** Use for internal test execution inside IDE
      * @param args command line arguments
@@ -100,4 +83,30 @@ public class NewJspFileNameStepOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    private static GlassFishV2ServerNode serverNode;
+    
+    protected void setUp() throws Exception {
+        System.out.println("### "+getName()+" ###");        
+
+        if(serverNode == null) {
+            Util.addSjsasInstance();
+            RuntimeTabOperator.invoke();
+            serverNode = new GlassFishV2ServerNode();
+            
+        }
+    }
+    
+    /** Test verifyPopup */
+    public void testVerifyPopup() {
+        serverNode.verifyPopup();
+    }
+    
+    /** Test properties */
+    public void testProperties() {
+        serverNode.properties();
+        final String SERVER_MANAGER = Bundle.getString(
+                "org.netbeans.modules.j2ee.deployment.devmodules.api.Bundle",
+                "TXT_ServerManager");
+        new NbDialogOperator(SERVER_MANAGER).close();
+    }
 }

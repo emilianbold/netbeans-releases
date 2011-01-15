@@ -41,15 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.identity.server.manager.ui;
+package org.netbeans.modules.j2ee.sun.ide.runtime.nodes;
 
-import org.netbeans.modules.identity.profile.api.configurator.ConfiguratorException;
-import org.netbeans.modules.identity.server.manager.api.ServerInstance;
-import org.netbeans.modules.identity.server.manager.api.ServerManager;
 import org.netbeans.modules.j2ee.sun.bridge.apis.NodeExtension;
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtController;
 import org.openide.nodes.Node;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.openide.util.Lookup;
 
 
 /**
@@ -66,11 +64,13 @@ public class NodeExtensionImpl extends NodeExtension {
             String host = deployMgr.getHost();
             int port = deployMgr.getPort();
             String url = "[" + root + "]deployer:Sun:AppServer::" + host + ":" + port;      //NOI18N
-            
-            ServerInstance instance = ServerManager.getDefault().getServerInstance(url);
-            
-            return new ServerInstanceNode(instance);
-        } catch (ConfiguratorException ex) {
+
+            // XXX using reflection to avoid introducing dep on identity.server.manager & identity.profile.api
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            Class<?> ServerManager = l.loadClass("org.netbeans.modules.identity.server.manager.api.ServerManager");
+            Object instance = ServerManager.getMethod("getServerInstance", String.class).invoke(ServerManager.getMethod("getDefault").invoke(null), url);
+            return (Node) l.loadClass("org.netbeans.modules.identity.server.manager.ui.ServerInstanceNode").getConstructor(l.loadClass("org.netbeans.modules.identity.server.manager.api.ServerInstance")).newInstance(instance);
+        } catch (Exception ex) {
             return null;
         }
     }
