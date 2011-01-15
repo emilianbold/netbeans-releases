@@ -525,19 +525,19 @@ public class LogViewMgr {
                     }
                 }
             } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "I/O exception reading server log", ex); // NOI18N
+                LOGGER.log(Level.INFO, "I/O exception reading server log", ex); // NOI18N
             } finally {
                 try {
                     inputStream.close();
                 } catch (IOException ex) {
-                    LOGGER.log(Level.SEVERE, "I/O exception closing server log", ex); // NOI18N
+                    LOGGER.log(Level.INFO, "I/O exception closing server log", ex); // NOI18N
                 }
                 
                 if(reader != null) {
                     try {
                         reader.close();
                     } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "I/O exception closing stream buffer", ex); // NOI18N
+                        LOGGER.log(Level.INFO, "I/O exception closing stream buffer", ex); // NOI18N
                     }
                 }
                 

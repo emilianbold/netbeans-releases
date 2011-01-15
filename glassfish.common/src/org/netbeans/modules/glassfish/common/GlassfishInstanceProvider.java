@@ -234,7 +234,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         catalog.refreshRunTimeDDCatalog(this, si.getGlassfishRoot());
                     }
                 }
-                writeInstanceToFile(si);
+                writeInstanceToFile(si,true);
             } catch(IOException ex) {
                 getLogger().log(Level.INFO, null, ex);
             }
@@ -387,6 +387,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // Persistence for server instances.
     // ------------------------------------------------------------------------
     private void loadServerInstances() {
+        GlassfishInstance installedInstance = null;
         for (int j = 0; j < instancesDirNames.length ; j++ ) {
             FileObject dir = getRepositoryDir(instancesDirNames[j], false);
             if(dir != null) {
@@ -395,6 +396,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     for(int i = 0; i < instanceFOs.length; i++) {
                         try {
                             GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
+                            if ("glassfish_autoregistered_instance".equals(instanceFOs[i].getName())) {
+                                installedInstance = si;
+                                continue;
+                            }
                             if(si != null) {
                                 instanceMap.put(si.getDeployerUri(), si);
                                 activeDisplayNames.add(si.getDisplayName());
@@ -404,6 +409,17 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             }
                         } catch(IOException ex) {
                             getLogger().log(Level.INFO, null, ex);
+                        }
+                    }
+                    if (null != installedInstance) {
+                        GlassfishInstance si = instanceMap.get(installedInstance.getDeployerUri());
+                        if (null == si) {
+                            try {
+                                writeInstanceToFile(installedInstance,false);
+                            } catch (IOException ioe) {
+                            }
+                            instanceMap.put(installedInstance.getDeployerUri(), installedInstance);
+                            activeDisplayNames.add(installedInstance.getDisplayName());
                         }
                     }
                 }
@@ -445,7 +461,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return instance;
     }
 
-    private void writeInstanceToFile(GlassfishInstance instance) throws IOException {
+    private void writeInstanceToFile(GlassfishInstance instance,boolean search) throws IOException {
         String glassfishRoot = instance.getGlassfishRoot();
         if(glassfishRoot == null) {
             getLogger().log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder")); // NOI18N
@@ -460,7 +476,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             FileObject[] instanceFOs = dir.getChildren();
             FileObject instanceFO = null;
 
-            for(int i = 0; i < instanceFOs.length; i++) {
+            for(int i = 0; search && i < instanceFOs.length; i++) {
                 if(url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))) {
                     instanceFO = instanceFOs[i];
                 }

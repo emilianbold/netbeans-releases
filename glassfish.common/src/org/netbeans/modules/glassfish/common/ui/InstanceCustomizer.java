@@ -43,6 +43,7 @@
 package org.netbeans.modules.glassfish.common.ui;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.EnableComet;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
@@ -125,6 +126,13 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         if (startDerbyChanged) {
             String derbyEnabled = Boolean.toString(startDerby.isSelected());
             commonSupport.setEnvironmentProperty(GlassfishModule.START_DERBY_FLAG, derbyEnabled, true);
+        }
+        if ((cometEnabledChanged || monitorEnabledChanged  || jdbcDriverDeployEnabledChanged ||
+                sessionEnabledChanged || startDerbyChanged) && !commonSupport.isWritable()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(getClass(), "WRN_CouldNotWrite"),
+                    NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            Logger.getLogger("glassfish").warning("Could not write changed property");
         }
     }
     
