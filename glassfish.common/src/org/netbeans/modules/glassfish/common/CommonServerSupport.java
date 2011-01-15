@@ -552,19 +552,25 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         properties.get(key);
     }
     
-    void setInstanceAttr(String name, String value) {
+    boolean setInstanceAttr(String name, String value) {
+        boolean retVal = false;
         if(instanceFO == null || !instanceFO.isValid()) {
             instanceFO = getInstanceFileObject();
         }
-        if(instanceFO != null) {
+        if(instanceFO != null && instanceFO.canWrite()) {
             try {
                 instanceFO.setAttribute(name, value);
+                retVal = true;
             } catch(IOException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, "Unable to save attribute " + name + " for " + getDeployerUri(), ex); // NOI18N
+                Logger.getLogger("glassfish").log(Level.WARNING, 
+                        "Unable to save attribute " + name + " in " + instanceFO.getPath() + " for " + getDeployerUri(), ex); // NOI18N
             }
         } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, "Unable to save attribute {0} for {1}", new Object[]{name, getDeployerUri()}); // NOI18N
+            Logger.getLogger("glassfish").log(Level.WARNING, 
+                    "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
+                    new Object[]{name, getDeployerUri(), instanceFO.canWrite(), instanceFO.getPath()}); // NOI18N
         }
+        return retVal;
     }
     
     void setFileObject(FileObject fo) {
@@ -724,6 +730,11 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     @Override
     public boolean isRestfulLogAccessSupported() {
         return getDeployerUri().contains(GlassfishInstanceProvider.EE6WC_DEPLOYER_FRAGMENT);
+    }
+
+    @Override
+    public boolean isWritable() {
+        return (null == instanceFO) ? false : instanceFO.canWrite();
     }
 
     class StartOperationStateListener implements OperationStateListener {
