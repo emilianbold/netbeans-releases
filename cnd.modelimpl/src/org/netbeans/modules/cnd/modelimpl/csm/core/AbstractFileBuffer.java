@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -115,11 +114,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public FileSystem getFileSystem() {
         return fileSystem;
     }    
-
-    @Override
-    public File getFile() {
-        return new File(absPath.toString());
-    }
 
     @Override
     public FileObject getFileObject() {

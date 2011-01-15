@@ -152,6 +152,10 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return getCanonicalFileObject(fileObject).getPath();
     }
 
+    public String getCanonicalPath(String absPath) throws IOException {
+        return new File(absPath).getCanonicalPath();
+    }
+    
     @Override
     public boolean isMine(ExecutionEnvironment env) {
         return env.isLocal();

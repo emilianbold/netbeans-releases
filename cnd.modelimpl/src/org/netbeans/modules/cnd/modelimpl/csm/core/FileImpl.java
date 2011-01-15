@@ -1431,10 +1431,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileBuffer.getFileObject();
     }
         
-    public File getFile() {
-        return fileBuffer.getFile();
-    }
-
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();

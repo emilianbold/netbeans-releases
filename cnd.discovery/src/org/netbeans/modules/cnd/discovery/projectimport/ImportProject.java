@@ -674,9 +674,9 @@ public class ImportProject implements PropertyChangeListener {
                     int i = line.indexOf(configureCteatePattern);
                     if (i > 0) {
                         String f = line.substring(i+configureCteatePattern.length()).trim();
-                        if (f.endsWith(".h")) { // NOI18N
+                        //if (f.endsWith(".h")) { // NOI18N
                             downloadRemoteFile(CndFileUtils.createLocalFile(projectFolder, f)); // NOI18N
-                        }
+                        //}
                     }
                 }
             } catch (IOException ex) {
