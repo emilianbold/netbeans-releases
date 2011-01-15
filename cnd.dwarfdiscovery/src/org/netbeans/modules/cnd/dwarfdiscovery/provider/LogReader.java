@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -109,9 +110,11 @@ public class LogReader {
 
     private String convertPath(String path){
         if(pathMapper != null) {
-            String local = pathMapper.getLocalPath(path);
-            if (local != null) {
-                return local;
+            if (CndPathUtilitities.isPathAbsolute(path)) {
+                String local = pathMapper.getLocalPath(path);
+                if (local != null) {
+                    return local;
+                }
             }
         }
         return path;

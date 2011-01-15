@@ -91,10 +91,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                         <compile-dependency/>
                     </test-dependency>

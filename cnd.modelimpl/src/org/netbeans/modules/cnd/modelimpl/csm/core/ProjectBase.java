@@ -2623,11 +2623,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public java.io.File getFile() {            
-            return CndFileUtils.toFile(getFileObject());
-        }
-
-        @Override
         public FileObject getFileObject() {
             return CndFileUtils.toFileObject(project.getFileSystem(), normalizedAbsPath);
         }

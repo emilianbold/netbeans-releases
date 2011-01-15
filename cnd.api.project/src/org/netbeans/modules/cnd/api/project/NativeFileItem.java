@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.api.project;
 
 import java.util.List;
-import java.io.File;
 import org.openide.filesystems.FileObject;
 
 public interface NativeFileItem {
@@ -65,14 +64,7 @@ public interface NativeFileItem {
      * @return the native project
      */
     public NativeProject getNativeProject();
-
-    /**
-     * Returns the file associated with this file item.
-     * @return the file associated with this file item. There is no guarantee that the file actually exists.
-     */
-    // XXX:FileObject conversion: remove
-    public File getFile();
-    
+   
     /**
      * The absolute file path
      * @return absolute path
