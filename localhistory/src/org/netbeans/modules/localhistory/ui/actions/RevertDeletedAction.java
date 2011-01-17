@@ -97,10 +97,14 @@ public class RevertDeletedAction extends NodeAction {
     private void revertRecursively(File file) {
         revert(file);
         File[] files = file.listFiles();
-        for(File f : files) {
-            if(f.isDirectory()) {
-                revertRecursively(f);   
-            }            
+        if(files != null) {
+            for(File f : files) {
+                if(f.isDirectory()) {
+                    revertRecursively(f);   
+                }            
+            }
+        } else {
+            LocalHistory.LOG.log(Level.WARNING, "listFiles() for directory {0}returned null", file);
         }
     }
     
