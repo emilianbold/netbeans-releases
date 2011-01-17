@@ -54,6 +54,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -149,6 +150,9 @@ public class ProxyAutoConfig {
                 }
             }
         }
+        if (inv == null) {
+            return Collections.singletonList(Proxy.NO_PROXY);
+        }
         Object proxies = null;
         try {
             proxies = inv.invokeFunction("FindProxyForURL", u.toString(), u.getHost()); // NOI18N
@@ -183,7 +187,8 @@ public class ProxyAutoConfig {
         ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine engine = factory.getEngineByName("JavaScript");
         Reader pacReader = new InputStreamReader(is);
-        Reader utilsReader = new InputStreamReader(ProxyAutoConfig.class.getResourceAsStream("/org/netbeans/core/resources/utils.js"));
+        //Reader utilsReader = new InputStreamReader(ProxyAutoConfig.class.getResourceAsStream("/org/netbeans/core/resources/utils.js"));
+        Reader utilsReader = new InputStreamReader(ProxyAutoConfig.class.getResourceAsStream("/org/netbeans/core/resources/nsProxyAutoConfig.js"));
         engine.eval(pacReader);
         engine.eval(utilsReader);
         return engine;
