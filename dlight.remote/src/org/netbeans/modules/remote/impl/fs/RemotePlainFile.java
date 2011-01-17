@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -125,22 +124,21 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         } catch (ConnectException ex) {
             return new ByteArrayInputStream(new byte[] {});
         } catch (IOException ex) {             
-            throwFileNotFoundException(ex);
+            throw newFileNotFoundException(ex);
         } catch (InterruptedException ex) {
-            throwFileNotFoundException(ex);
+            throw newFileNotFoundException(ex);
         } catch (ExecutionException ex) {
-            throwFileNotFoundException(ex);
+            throw newFileNotFoundException(ex);
         } catch (CancellationException ex) {
             // TODO: do we need this? unfortunately CancellationException is RuntimeException, so I'm not sure
             return new ByteArrayInputStream(new byte[] {});
         }
-        return new FileInputStream(cache);
     }
 
-    private void throwFileNotFoundException(Exception cause) throws FileNotFoundException {
-        FileNotFoundException ex = new FileNotFoundException(cache.getAbsolutePath());
+    private FileNotFoundException newFileNotFoundException(Exception cause) {
+        FileNotFoundException ex = new FileNotFoundException("" + execEnv + ':' + remotePath); //NOI18N
         ex.initCause(cause);
-        throw ex;
+        return ex;
     }
 
     @Override

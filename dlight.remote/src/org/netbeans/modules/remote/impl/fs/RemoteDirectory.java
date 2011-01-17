@@ -117,7 +117,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return entry != null && entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
+        } catch (InterruptedIOException ex) {
+            RemoteLogger.finest(ex);
+            return false; // don't report
         } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex);
             return false; // don't report
         } catch (CancellationException ex) {
             return false; // don't report
@@ -131,7 +135,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return entry != null && entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
+        } catch (InterruptedIOException ex) {
+            RemoteLogger.finest(ex);
+            return false; // don't report
         } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex);
             return false; // don't report
         } catch (CancellationException ex) {
             return false; // don't report
@@ -175,7 +183,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 return fo;
             } catch (ConnectException ex) {
-                throw new IOException("Can not create " + path, ex); // NOI18N
+                throw new IOException("Can not create " + path + ": not connected", ex); // NOI18N
             } catch (InterruptedIOException ex) {
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (IOException ex) {
@@ -596,17 +604,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
             }
         } catch (InterruptedException ex) {
-            truncate(child.cache);
+            child.cache.delete();
             throw ex;
         } catch (ExecutionException ex) {
-            truncate(child.cache);
+            child.cache.delete();
             throw ex;
         }
-    }
-
-    private void truncate(File file) throws IOException {
-        OutputStream os = new FileOutputStream(file);
-        os.close();
     }
 
     private void checkConnection(RemoteFileObjectBase fo, boolean throwConnectException) throws ConnectException {
@@ -702,9 +705,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
         } catch (ConnectException ex) {
+            RemoteLogger.finest(ex);
         } catch (IOException ex) {
+            RemoteLogger.finest(ex);
         } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex);
         } catch (CancellationException ex) {
+            RemoteLogger.finest(ex);
         }
         return null;
     }
