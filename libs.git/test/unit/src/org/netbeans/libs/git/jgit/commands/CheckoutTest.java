@@ -272,6 +272,8 @@ public class CheckoutTest extends AbstractGitTestCase {
         Monitor m = new Monitor();
         client.addNotificationListener(m);
         client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String logFileContent[] = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
+        assertEquals("checkout: moving from master to nova", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("checkout: ")));
         assertTrue(m.notifiedFiles.contains(file));
         assertEquals("initial", read(file));
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
