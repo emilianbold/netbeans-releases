@@ -247,7 +247,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         public File[] getToolClasspathEntries(String toolName) {
             File[] cp = new File[0];
             if (J2eePlatform.TOOL_WSGEN.equals(toolName) || J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
-                cp = new File[] { new File(getPlatformRoot(), "server/lib/weblogic.jar") }; // NOI18N
+                File weblogicJar = WLPluginProperties.getWeblogicJar(dm);
+                if (weblogicJar != null) {
+                    cp = new File[] { weblogicJar };
+                }
             }
             return cp;
         }
@@ -403,7 +406,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // add the required jars to the library
             try {
                 List<URL> list = new ArrayList<URL>();
-                File weblogicFile = new File(getPlatformRoot(), "server/lib/weblogic.jar"); // NOI18N
+                // the WLS jar is intentional
+                File weblogicFile = new File(getPlatformRoot(), WLPluginProperties.WEBLOGIC_JAR);
                 if (weblogicFile.exists()) {
                     list.add(fileToUrl(weblogicFile));
                 }
