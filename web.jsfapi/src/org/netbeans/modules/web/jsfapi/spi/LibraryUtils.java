@@ -157,7 +157,7 @@ public class LibraryUtils {
                     @Override
                     public boolean accepts(AstNode node) {
                         return (node.type() == AstNode.NodeType.OPEN_TAG
-                                || node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
+                                || node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty() && !node.isVirtual();
                     }
                 });
 
