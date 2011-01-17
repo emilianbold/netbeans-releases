@@ -207,8 +207,11 @@ class GdbVariable extends Variable {
 
     // for assign new value from view nodes
     public void setVariableValue(String assigned_v) {
-        // always assign in non-mi form, IZ 193500
-	debugger.assignVar(this, assigned_v, false);
+        // no need to update to the same value
+        if (!assigned_v.equals(value)) {
+            // always assign in non-mi form, IZ 193500
+            debugger.assignVar(this, assigned_v, false);
+        }
     }
 
     public void removeAllDescendantFromOpenList(boolean isLocal) {
