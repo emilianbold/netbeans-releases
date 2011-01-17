@@ -132,10 +132,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
-        return new J2eePlatformImplImpl((WLDeploymentManager)dm);
+        return ((WLDeploymentManager) dm).getJ2eePlatformImpl();
     }
     
-    private static class J2eePlatformImplImpl extends J2eePlatformImpl2 {
+    public static class J2eePlatformImplImpl extends J2eePlatformImpl2 {
 
         /**
          * The platform icon's URL
@@ -523,7 +523,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
         }
         
-        private synchronized boolean isJpa2Available() {
+        public synchronized boolean isJpa2Available() {
             if (libraries != null) {
                 return jpa2Available;
             }
