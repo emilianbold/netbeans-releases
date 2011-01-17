@@ -44,6 +44,7 @@
                           </Group>
                       </Group>
                   </Group>
+                  <Component id="jpa2Button" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -80,7 +81,9 @@
                   <Component id="serverPortLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverPort" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="87" max="32767" attributes="0"/>
+              <EmptySpace pref="44" max="32767" attributes="0"/>
+              <Component id="jpa2Button" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="NoteChangesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -273,6 +276,16 @@
           <Connection code="serverPortLabel.getAccessibleContext().getAccessibleDescription()" type="code"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JButton" name="jpa2Button">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="LBL_EnableJPA2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jpa2ButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
