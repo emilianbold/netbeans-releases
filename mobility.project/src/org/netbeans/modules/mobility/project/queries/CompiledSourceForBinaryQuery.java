@@ -73,6 +73,8 @@ import org.openide.util.RequestProcessor;
 
 public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
     
+    private static final RequestProcessor RP = new RequestProcessor(CompiledSourceForBinaryQuery.class);
+    
     protected J2MEProject project;
     protected final Set<Thread> threads;    
     protected final AntProjectHelper helper;
@@ -159,7 +161,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
             
             private void fireChanged() {
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         synchronized (listeners) {
                             final ChangeEvent event=new ChangeEvent(this);
