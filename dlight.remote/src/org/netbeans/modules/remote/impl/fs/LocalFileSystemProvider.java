@@ -81,7 +81,14 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
-        return baseFileObject.getFileObject(relativeOrAbsolutePath);
+        String absPath;
+        if (FileSystemProvider.isAbsolute(relativeOrAbsolutePath)) {
+            absPath = relativeOrAbsolutePath;
+            
+        } else {
+            absPath = baseFileObject.getPath() + File.separatorChar + relativeOrAbsolutePath.toString();
+        }
+        return FileUtil.toFileObject(new File(FileUtil.normalizePath(absPath)));
     }
 
     private FileSystem getRootFileSystem() {
