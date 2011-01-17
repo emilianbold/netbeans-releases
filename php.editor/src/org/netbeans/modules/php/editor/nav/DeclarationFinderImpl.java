@@ -93,6 +93,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
 
     public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset) {
+        if (ts == null) {
+            return OffsetRange.NONE;
+        }
         ts.move(caretOffset);
         if (ts.moveNext()) {
             Token<PHPTokenId> token = ts.token();
