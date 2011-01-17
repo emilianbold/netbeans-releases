@@ -1328,9 +1328,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
     
     void scanNoLazy(ASTNode node, Scope inScope) {
-        modelBuilder.prepareForLazy(inScope);
+        // Remember the old scope. It can happen that will be needed scanned constructor
+        // in non lazy mode as well. 
+        Scope originalScope = modelBuilder.getCurrentScope();
+        modelBuilder.prepareForScope(inScope);
         lazyScan = false;
         scan(node);
+        // set the original scope back.
+        modelBuilder.prepareForScope(originalScope);
     }
 
 }
