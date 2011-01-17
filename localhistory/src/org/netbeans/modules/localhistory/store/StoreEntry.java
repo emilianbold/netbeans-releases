@@ -214,11 +214,13 @@ public abstract class StoreEntry {
             super(file, null, ts, "");
         } 
         
+        @Override
         OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
             throwNoStoreEntry();
             return null;
         }
 
+        @Override
         public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
             throwNoStoreEntry();
             return null;            
@@ -236,10 +238,12 @@ public abstract class StoreEntry {
             super(file, file, ts, "");
         }  
 
+        @Override
         OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
             throw new FileNotFoundException("There is no OutputStream for this for file " + getFile());
         }
 
+        @Override
         public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
             return new FileInputStream(getFile());            
         }            

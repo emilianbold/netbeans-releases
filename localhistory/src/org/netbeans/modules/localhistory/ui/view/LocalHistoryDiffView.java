@@ -64,7 +64,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.explorer.ExplorerManager;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -198,6 +197,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             }
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {            
                     try {   
                         
