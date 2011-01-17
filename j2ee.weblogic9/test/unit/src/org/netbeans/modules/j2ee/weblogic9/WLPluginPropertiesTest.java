@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 
 
 /**
@@ -61,6 +62,27 @@ public class WLPluginPropertiesTest extends NbTestCase {
     
     public WLPluginPropertiesTest(String testName) {
         super(testName);
+    }
+   
+    public void testGetServerVersion() throws Exception {
+        File baseFolder = getWorkDir();
+        File libFolder = new File(baseFolder, "server/lib");
+        libFolder.mkdirs();
+        
+        File file = new File(libFolder, "weblogic.jar");
+        createJar(file, "Implementation-Version: 10.0.0.1");
+        Version version = WLPluginProperties.getServerVersion(baseFolder);
+        assertEquals("10.0.0.1", version.toString());
+        assertEquals(10, version.getMajor().intValue());
+        assertEquals(1, version.getUpdate().intValue());
+        assertTrue(file.delete());
+        
+        file = new File(libFolder, "weblogic-webprofile-dev.jar");
+        createJar(file, "Implementation-Version: 8.0.0");
+        version = WLPluginProperties.getServerVersion(baseFolder);
+        assertEquals("8.0.0", version.toString());
+        assertEquals(8, version.getMajor().intValue());
+        assertNull(version.getUpdate());        
     }
     
     public void testIsSupportedVersion() throws Exception {
@@ -78,10 +100,65 @@ public class WLPluginPropertiesTest extends NbTestCase {
         assertFalse(WLPluginProperties.isSupportedVersion(WLPluginProperties.getServerVersion(baseFolder)));
     }
     
-    private void createJar(File file, String manifestLine) throws Exception {
+    public void testIsWebProfile() throws Exception {
+        File baseFolder = getWorkDir();
+        File libFolder = new File(baseFolder, "server/lib");
+        libFolder.mkdirs();
+
+        File file = new File(libFolder, "weblogic.jar");
+        createJar(file, "Implementation-Title: Some WebProfile");
+        assertTrue(WLPluginProperties.isWebProfile(baseFolder));
+        createJar(file, "Implementation-Title: Some OtherProfile");
+        assertFalse(WLPluginProperties.isWebProfile(baseFolder));
+        assertTrue(file.delete());
+        
+        file = new File(libFolder, "weblogic-webprofile-dev.jar");
+        createJar(file, "Implementation-Title: Some WebProfile");
+        assertTrue(WLPluginProperties.isWebProfile(baseFolder));
+        createJar(file, "Implementation-Title: Some OtherProfile");
+        assertFalse(WLPluginProperties.isWebProfile(baseFolder));        
+    }
+    
+    public void testGetWeblogicJar() throws Exception {
+        File baseFolder = getWorkDir();
+        File libFolder = new File(baseFolder, "server/lib");
+        libFolder.mkdirs();
+        
+        File file = new File(libFolder, "weblogic.jar");
+        
+        File wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
+        assertNotNull(wlJar);
+        assertEquals(file, wlJar);
+        
+        createJar(file, "Implementation-Version: 9.0.0.0");
+        wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
+        assertNotNull(wlJar);
+        assertEquals(file, wlJar);
+        
+        File webFile = new File(libFolder, "weblogic-webprofile-dev.jar");
+        createJar(webFile, "Implementation-Version: 10.0.0.0"); 
+        wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
+        assertNotNull(wlJar);
+        assertEquals(file, wlJar); 
+        
+        assertTrue(file.delete());
+        wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
+        assertNotNull(wlJar);
+        assertEquals(webFile, wlJar);
+        
+        assertTrue(webFile.delete());
+        wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
+        assertNotNull(wlJar);
+        assertEquals(file, wlJar);        
+    }
+
+    private void createJar(File file, String... manifestLines) throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Manifest-Version: 1.0\n");
-        stringBuilder.append(manifestLine + "\n");
+        for (String line : manifestLines) {
+            stringBuilder.append(line).append("\n");
+        }
+        
         InputStream is = new ByteArrayInputStream(stringBuilder.toString().getBytes("UTF-8"));
         try {
             new JarOutputStream(new FileOutputStream(file), new Manifest(is)).close();

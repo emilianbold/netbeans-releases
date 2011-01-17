@@ -517,12 +517,12 @@ public final class WLStartServer extends StartServer {
         /**
          * Name of the startup script for Unices
          */
-        private static final String STARTUP_SH_11_WEB = "startServer.sh";   // NOI18N
+        private static final String STARTUP_SH_DWP_ALTERNATIVE = "startServer.sh";   // NOI18N
 
         /**
          * Name of the startup script for windows
          */
-        private static final String STARTUP_BAT_11_WEB = "startServer.cmd"; // NOI18N
+        private static final String STARTUP_BAT_DWP_ALTERNATIVE = "startServer.cmd"; // NOI18N
 
         private final String uri;
 
@@ -552,20 +552,24 @@ public final class WLStartServer extends StartServer {
                 long start = System.currentTimeMillis();
 
                 File startup = null;
-                boolean needsJavaHome = false;
                 if (Utilities.isWindows()) {
                     startup = new File(domainHome, STARTUP_BAT);
                     if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT_11_WEB); // NOI18N
-                        needsJavaHome = true;
+                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT); // NOI18N
+                    }
+                    if (!startup.exists()) {
+                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT_DWP_ALTERNATIVE); // NOI18N
                     }
                 } else {
                     startup = new File(domainHome, STARTUP_SH);
                     if (!startup.exists()) {
-                        startup = new File(new File(domainHome, "bin"), STARTUP_SH_11_WEB); // NOI18N
-                        needsJavaHome = true;
+                        startup = new File(new File(domainHome, "bin"), STARTUP_SH); // NOI18N
+                    }                    
+                    if (!startup.exists()) {
+                        startup = new File(new File(domainHome, "bin"), STARTUP_SH_DWP_ALTERNATIVE); // NOI18N
                     }
                 }
+                boolean needsJavaHome = dm.isWebProfile();
 
                 ExternalProcessBuilder builder = new ExternalProcessBuilder(startup.getAbsolutePath());
                 builder = builder.workingDirectory(domainHome)
