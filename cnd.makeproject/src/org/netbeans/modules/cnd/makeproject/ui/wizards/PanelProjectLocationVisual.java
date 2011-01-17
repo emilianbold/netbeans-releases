@@ -78,6 +78,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -636,7 +637,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String folder = createdFolderTextField.getText().trim();
 
         if (CndPathUtilitities.isPathAbsolute(folder)) {
-            d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(folder));
+            File file = CndFileUtils.createLocalFile(folder);
+            file = FileUtil.normalizeFile(file);
+            d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, file);
         }
         d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
         d.putProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME, makefileTextField.getText());
