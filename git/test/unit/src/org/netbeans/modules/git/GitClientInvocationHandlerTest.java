@@ -105,6 +105,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
+                "checkoutBranch",
                 "clean",
                 "commit",
                 "copyAfter",
@@ -124,6 +125,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "reset"));
         Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
+                "checkoutBranch",
                 "remove",
                 "reset",
                 "clean"));
@@ -162,6 +164,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
+                "checkoutBranch",
                 "clean",
                 "commit",
                 "copyAfter",
@@ -226,6 +229,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
+                "checkoutBranch",
                 "clean",
                 "commit",
                 "copyAfter",
@@ -245,6 +249,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "reset"));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
+                "checkoutBranch",
                 "commit",
                 "createBranch",
                 "reset"));
@@ -328,6 +333,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
+                "checkoutBranch",
                 "clean",
                 "commit",
                 "copyAfter",

@@ -67,6 +67,7 @@ public class NewCndFileChooserPanel extends CndPanel {
         this.fileWithoutExtension = "".equals(defaultExt);
     }
 
+    @Override
     public Component getComponent() {
         if (gui == null) {
             gui = new NewCndFileChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
