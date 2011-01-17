@@ -78,7 +78,7 @@ public class ConfigurationDescriptorProvider {
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final static RequestProcessor RP = new RequestProcessor("Configuration Updater", 1); // NOI18N
 
-    private FileObject projectDirectory;
+    private final FileObject projectDirectory;
     private Project project = null;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
@@ -138,7 +138,7 @@ public class ConfigurationDescriptorProvider {
                             } else {
                                 if (first) {
                                     // prevent reading configurations before project cration
-                                    new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(); // NOI18N
+                                    new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(System.err); // NOI18N
                                     return null;
                                 }
                             }
@@ -185,7 +185,7 @@ public class ConfigurationDescriptorProvider {
                             }
                         }
                     } catch (java.io.IOException x) {
-                        x.printStackTrace();
+                        x.printStackTrace(System.err);
                         // most likely open failed
                     }
 
