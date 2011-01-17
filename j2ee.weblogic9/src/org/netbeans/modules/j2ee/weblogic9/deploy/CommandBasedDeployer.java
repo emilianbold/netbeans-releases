@@ -107,8 +107,6 @@ public final class CommandBasedDeployer {
 
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
 
-    private static final String WEBLOGIC_JAR_PATH = "server/lib/weblogic.jar"; // NOI18N
-
     private static final int TIMEOUT = 300000;
 
     private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
@@ -670,13 +668,9 @@ public final class CommandBasedDeployer {
     }
 
     private String getClassPath() {
-        InstanceProperties ip = deploymentManager.getInstanceProperties();
-        String serverRoot = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        if (serverRoot != null) {
-            File file = new File(serverRoot, WEBLOGIC_JAR_PATH);
-            if (file.exists() && file.isFile()) {
-                return file.getAbsolutePath();
-            }
+        File weblogicJar = WLPluginProperties.getWeblogicJar(deploymentManager);
+        if (weblogicJar != null && weblogicJar.isFile() && weblogicJar.exists()) {
+            return weblogicJar.getAbsolutePath();
         }
         return "";
     }

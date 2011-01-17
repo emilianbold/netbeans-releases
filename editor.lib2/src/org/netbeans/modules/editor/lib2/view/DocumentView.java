@@ -320,21 +320,34 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public float getPreferredSpan(int axis) {
-        checkViewsInited();
-        if (!childrenValid) {
-            return 0f; // Return zero until parent and etc. gets initialized
-        }
-        float span = super.getPreferredSpan(axis);
-        if (axis == View.Y_AXIS) {
-            // Add extra span when component in viewport
-            Component parent;
-            if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
-                JViewport viewport = (JViewport) parent;
-                int viewportHeight = viewport.getExtentSize().height;
-                span += viewportHeight / 3;
+        // Since this may be called e.g. from BasicTextUI.getPreferredSize()
+        // this method needs to acquire mutex
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked(); // Should only be called with read-locked document
+                checkViewsInited();
+                if (!childrenValid) {
+                    return 0f; // Return zero until parent and etc. gets initialized
+                }
+                float span = super.getPreferredSpan(axis);
+                if (axis == View.Y_AXIS) {
+                    // Add extra span when component in viewport
+                    Component parent;
+                    if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
+                        JViewport viewport = (JViewport) parent;
+                        int viewportHeight = viewport.getExtentSize().height;
+                        span += viewportHeight / 3;
+                    }
+                }
+                return span;
+            } finally {
+                mutex.unlock();
             }
+        } else {
+            return 1f;
         }
-        return span;
     }
 
     @Override
@@ -413,39 +426,47 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public void setParent(View parent) {
-        // Checking of document lock not enforced at this point since it
-        super.setParent(parent);
         if (parent != null) {
-            Container container = getContainer();
+            Container container = parent.getContainer();
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
-            textComponent = (JTextComponent) container;
-            viewHierarchy = ViewHierarchy.get(textComponent);
-            pMutex = (PriorityMutex) textComponent.getClientProperty(MUTEX_CLIENT_PROPERTY);
+            JTextComponent tc = (JTextComponent) container;
+            pMutex = (PriorityMutex) tc.getClientProperty(MUTEX_CLIENT_PROPERTY);
             if (pMutex == null) {
                 pMutex = new PriorityMutex();
-                textComponent.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
+                tc.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
-            startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
-            endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
-            accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
-
-            viewUpdates = new ViewUpdates(this);
-            textLayoutCache = new TextLayoutCache();
-            textComponent.addPropertyChangeListener(this);
-            if (REPAINT_LOG.isLoggable(Level.FINE)) {
-                DebugRepaintManager.register(textComponent);
+            PriorityMutex mutex = getMutex();
+            if (mutex != null) {
+                mutex.lock();
+                try {
+                    super.setParent(parent);
+                    textComponent = tc;
+                    viewHierarchy = ViewHierarchy.get(textComponent);
+                    startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
+                    endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
+                    accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
+                    viewUpdates = new ViewUpdates(this);
+                    textLayoutCache = new TextLayoutCache();
+                    textComponent.addPropertyChangeListener(this);
+                    if (REPAINT_LOG.isLoggable(Level.FINE)) {
+                        DebugRepaintManager.register(textComponent);
+                    }
+                } finally {
+                    mutex.unlock();
+                }
             }
 
         } else { // Setting null parent
-            textComponent.removePropertyChangeListener(this);
             // Set the textComponent to null under mutex
             // so that children suddenly don't see a null textComponent
             PriorityMutex mutex = getMutex();
             if (mutex != null) {
                 mutex.lock();
                 try {
+                    textComponent.removePropertyChangeListener(this);
                     textComponent = null; // View services stop working and propagating to children
+                    super.setParent(parent);
                 } finally {
                     mutex.unlock();
                 }
@@ -588,6 +609,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     private void updateVisibleDimension() { // Called only with textComponent != null
+        // Must be called under mutex
         Component parent = textComponent.getParent();
         Dimension newSize;
         if (parent instanceof JViewport) {
@@ -714,6 +736,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
     
     private void updateLineWrapType() {
+        // Should be able to run without mutex
         String lwt = null;
         if (textComponent != null) {
             lwt = (String) textComponent.getClientProperty(SimpleValueNames.TEXT_LINE_WRAP);
@@ -1271,7 +1294,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 LineWrapType origLineWrapType = lineWrapType;
-                updateLineWrapType();
+                updateLineWrapType(); // can run without mutex
                 if (origLineWrapType != lineWrapType) {
                     LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { origLineWrapType, lineWrapType }); //NOI18N
                     releaseChildren = true;
@@ -1313,7 +1336,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 // Release children since TextLayoutPart caches foreground and background
                 releaseChildren = true;
             } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
-                updateLineWrapType();
+                updateLineWrapType(); // can run without mutex
                 releaseChildren = true;
             }
         }

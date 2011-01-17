@@ -86,13 +86,16 @@ public class CheckoutBranchCommand extends GitCommand {
             Ref headRef = repository.getRef(Constants.HEAD);
             ObjectId headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
             Ref ref = repository.getRef(branch);
-            String refLogMessage = "checkout: moving from " + headRef.getTarget().getName(); //NOI18N
-            RevCommit newCommit = Utils.findCommit(repository, branch);
+            String fromName = headRef.getTarget().getName();
+            if (fromName.startsWith(Constants.R_HEADS)) {
+                fromName = fromName.substring(Constants.R_HEADS.length());
+            }
+            String refLogMessage = "checkout: moving from " + fromName; //NOI18N
 
             cache = repository.lockDirCache();
             DirCacheCheckout dco = null;
             try {
-                dco = new DirCacheCheckout(repository, headTree, cache, newCommit.getTree());
+                dco = new DirCacheCheckout(repository, headTree, cache, Utils.findCommit(repository, branch).getTree());
                 dco.setFailOnConflict(failOnConflict);
                 dco.checkout();
                 File workDir = repository.getWorkTree();
@@ -109,7 +112,11 @@ public class CheckoutBranchCommand extends GitCommand {
             if (!monitor.isCanceled()) {
                 RefUpdate refUpdate = repository.updateRef(Constants.HEAD);
                 refUpdate.setForceUpdate(false);
-                refUpdate.setRefLogMessage(refLogMessage + " to " + newCommit.getName(), false); //NOI18N
+                String toName = ref.getName();
+                if (toName.startsWith(Constants.R_HEADS)) {
+                    toName = toName.substring(Constants.R_HEADS.length());
+                }
+                refUpdate.setRefLogMessage(refLogMessage + " to " + toName, false); //NOI18N
                 RefUpdate.Result updateResult = refUpdate.link(ref.getName());
 
                 boolean ok = false;

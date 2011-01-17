@@ -51,12 +51,11 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 import java.awt.Font;
 import java.util.Properties;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -110,6 +109,10 @@ class CustomizerGeneral extends javax.swing.JPanel {
         if ( port!= null){
             serverPort.setText( port );
         }
+        WLJpa2SwitchSupport support = manager.getJpa2SwitchSupport();
+        if (support.isEnabledViaSmartUpdate()) {
+            jpa2Button.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -134,6 +137,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
         serverPortLabel = new javax.swing.JLabel();
         NoteChangesLabel = new javax.swing.JLabel();
         serverPort = new javax.swing.JTextField();
+        jpa2Button = new javax.swing.JButton();
 
         domainNameLabel.setLabelFor(domainName);
         org.openide.awt.Mnemonics.setLocalizedText(domainNameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizerDomainName")); // NOI18N
@@ -167,6 +171,14 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
         serverPort.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_EnableJPA2")); // NOI18N
+        jpa2Button.setEnabled(false);
+        jpa2Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jpa2ButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -193,7 +205,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
                                     .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(userName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(showButton)))))
+                                .addComponent(showButton))))
+                    .addComponent(jpa2Button))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -222,7 +235,9 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverPortLabel)
                     .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 87, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
+                .addComponent(jpa2Button)
+                .addGap(18, 18, 18)
                 .addComponent(NoteChangesLabel)
                 .addContainerGap())
         );
@@ -275,6 +290,16 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
         }
     }//GEN-LAST:event_showButtonActionPerformed
+
+    private void jpa2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2ButtonActionPerformed
+        // TODO add your handling code here:
+        WLJpa2SwitchSupport support = manager.getJpa2SwitchSupport();
+        if (support.isEnabled()) {
+            support.disable();
+        } else {
+            support.enable();
+        }
+    }//GEN-LAST:event_jpa2ButtonActionPerformed
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -284,6 +309,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel domainFolderLabel;
     private javax.swing.JTextField domainName;
     private javax.swing.JLabel domainNameLabel;
+    private javax.swing.JButton jpa2Button;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField serverPort;

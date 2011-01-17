@@ -160,7 +160,7 @@ class ModelBuilder {
      * that was not scanned during lazy scanning
      * @param scope
      */
-    void prepareForLazy(Scope scope) {
+    void prepareForScope(Scope scope) {
         currentScope.clear();
         while (scope != null) {
             if (scope instanceof NamespaceScopeImpl) {

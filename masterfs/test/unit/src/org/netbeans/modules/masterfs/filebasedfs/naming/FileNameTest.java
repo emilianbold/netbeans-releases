@@ -282,14 +282,14 @@ public class FileNameTest extends NbTestCase {
         FileNaming fn1 = NamingFactory.fromFile(root, f1, false);
         FileNaming fn2 = NamingFactory.fromFile(root, f2, false);
 
-        boolean equalF = f1.equals(f2);
+        boolean equalF = Utils.equals(f1,f2);
 
         f2.createNewFile();
         NamingFactory.checkCaseSensitivity(fn2, f2);
         assertEquals("Name equals file name f2", f2.getName(), fn2.getName());
 
         if (equalF) {
-            assertEquals("File has code", f1.hashCode(), f2.hashCode());
+            assertEquals("File has code", Utils.hashCode(f1), Utils.hashCode(f2));
             assertEquals("FileNaming hash code", fn1.hashCode(), fn2.hashCode());
             assertSame("namings are equal", fn1, fn2);
         } else {

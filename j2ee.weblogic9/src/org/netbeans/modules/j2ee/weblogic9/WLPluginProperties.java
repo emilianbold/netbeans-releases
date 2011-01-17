@@ -68,6 +68,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -90,13 +91,22 @@ import org.xml.sax.SAXException;
  */
 public final class WLPluginProperties {
 
+    public static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
+    
+    public static final String WEBLOGIC_JAR_DWP_ALTERNATIVE = "server/lib/weblogic-webprofile-dev.jar"; // NOI18N
+    
     private static final Collection EXPECTED_FILES = new ArrayList();
+    
+    private static final Collection EXPECTED_FILES_DWP_ALTERNATIVE = new ArrayList();
 
     static {
         EXPECTED_FILES.add("common"); // NOI18N
         EXPECTED_FILES.add("server/bin"); // NOI18N
-        EXPECTED_FILES.add("server/lib/weblogic.jar"); // NOI18N
-        //EXPECTED_FILES.add(".product.properties"); // NOI18N
+        EXPECTED_FILES.add(WEBLOGIC_JAR);
+        
+        EXPECTED_FILES_DWP_ALTERNATIVE.add("common"); // NOI18N
+        EXPECTED_FILES_DWP_ALTERNATIVE.add("server/bin"); // NOI18N
+        EXPECTED_FILES_DWP_ALTERNATIVE.add(WEBLOGIC_JAR_DWP_ALTERNATIVE);     
     }
     
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
@@ -261,6 +271,28 @@ public final class WLPluginProperties {
         }
         return null;
     }
+    
+    @CheckForNull
+    public static File getWeblogicJar(WLDeploymentManager manager) {
+        String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        if (server != null) {
+            File serverFile = new File(server);
+            return getWeblogicJar(serverFile);
+        }
+        return null;
+    }
+    
+    @NonNull
+    public static File getWeblogicJar(File serverFile) {
+        File weblogicJar = FileUtil.normalizeFile(new File(serverFile, WEBLOGIC_JAR));
+        if (!weblogicJar.exists()) {
+            File weblogicDwpJar = FileUtil.normalizeFile(new File(serverFile, WEBLOGIC_JAR_DWP_ALTERNATIVE));
+            if (weblogicDwpJar.exists()) {
+                return weblogicDwpJar;
+            }
+        }
+        return weblogicJar;
+    }    
     
     /**
      * Gets the list of registered domains according to the given server
@@ -584,7 +616,7 @@ public final class WLPluginProperties {
                 !candidate.exists() ||
                 !candidate.canRead() ||
                 !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, EXPECTED_FILES)) {
+                (!hasRequiredChildren(candidate, EXPECTED_FILES) && !hasRequiredChildren(candidate, EXPECTED_FILES_DWP_ALTERNATIVE))) {
             return false;
         }
         return true;
@@ -600,15 +632,16 @@ public final class WLPluginProperties {
     }
 
     public static File[] getClassPath(WLDeploymentManager manager) {
-        File serverLib = WLPluginProperties.getServerLibDirectory(manager, true);
-        if (serverLib == null) {
-            LOGGER.log(Level.INFO, "The server library directory does not exist for {0}", manager.getUri());
+        File serverRoot = WLPluginProperties.getServerRoot(manager, true);
+        if (serverRoot == null) {
+            LOGGER.log(Level.INFO, "The server root directory does not exist for {0}", manager.getUri());
             return new File[] {};
         }
 
-        File weblogicJar = FileUtil.normalizeFile(new File(serverLib, "weblogic.jar")); // NOI18N
+        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
         if (!weblogicJar.exists()) {
-            LOGGER.log(Level.INFO, "File weblogic.jar does not exist for {0}", manager.getUri());
+            LOGGER.log(Level.INFO, "File {0} does not exist for {1}",
+                    new Object[] {weblogicJar.getAbsolutePath(), manager.getUri()});
             return new File[] {weblogicJar};
         }
 
@@ -628,8 +661,8 @@ public final class WLPluginProperties {
                         if (element.contains("weblogic.server.modules")) { // NOI18N
                             File ref = new File(weblogicJar.getParentFile(), element);
                             if (!ref.exists()) {
-                                LOGGER.log(Level.INFO, "Broken weblogic.jar classpath file {0} for {1}",
-                                        new Object[] {ref.getAbsolutePath(), manager.getUri()});
+                                LOGGER.log(Level.INFO, "Broken {0} classpath file {1} for {2}",
+                                        new Object[] {weblogicJar.getAbsolutePath(), ref.getAbsolutePath(), manager.getUri()});
                             }
                             serverModulesJar = element;
                             // last element of ../../../modules/something
@@ -665,7 +698,7 @@ public final class WLPluginProperties {
     }
 
     public static Version getServerVersion(File serverRoot) {
-        File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
+        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
         if (!weblogicJar.exists()) {
             return null;
         }
@@ -727,7 +760,7 @@ public final class WLPluginProperties {
     }
 
     public static boolean isWebProfile(File serverRoot) {
-        File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
+        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
         if (!weblogicJar.exists()) {
             return false;
         }

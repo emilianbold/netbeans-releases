@@ -372,6 +372,9 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
+        
+        final JSFConfigModel configModel = ConfigurationUtils.getConfigModel(
+                dataObject.getPrimaryFile(), true);
         requestProcessor.post(new Runnable() {
 
             @Override
@@ -379,7 +382,6 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 long time = System.currentTimeMillis();
                 try {
                     // synchronize the model with the document. See issue #116315
-                    JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
                     if (configModel != null) {
                         // the model can be null, if the file wasn't opened.
                         configModel.sync();
