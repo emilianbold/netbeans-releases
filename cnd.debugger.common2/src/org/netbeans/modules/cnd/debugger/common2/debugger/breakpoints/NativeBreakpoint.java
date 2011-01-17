@@ -2175,7 +2175,7 @@ public abstract class NativeBreakpoint
 	    type.append(DebuggerAnnotation.TYPE_BPTX_COMPLEX);
         }
         type.append(DebuggerAnnotation.TYPE_BPT);
-        if (isBroken()) {
+        if (isBroken() && isEnabled()) {
 	    type.append(DebuggerAnnotation.TYPE_BPTX_BROKEN);
         }
         return type.toString();
@@ -2935,7 +2935,7 @@ public abstract class NativeBreakpoint
 	    name.append("Conditional"); //NOI18N
         }
         name.append(DebuggerAnnotation.TYPE_BPT);
-        if (isBroken()) {
+        if (isBroken() && isEnabled()) {
 	    name.append(DebuggerAnnotation.TYPE_BPTX_BROKEN);
         } else if (isFired()) {
             name.append("Hit"); //NOI18N
