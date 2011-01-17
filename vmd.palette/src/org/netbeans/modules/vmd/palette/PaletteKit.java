@@ -76,6 +76,7 @@ public class PaletteKit implements Runnable, LookupListener {
 
     static final String CUSTOM_CATEGORY_NAME = "custom"; // NOI18N
     private static final String PALETTE_FOLDER_NAME = "palette"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PaletteKit.class);
     
     private WeakReference<DesignDocument> activeDocument;
     private PaletteController paletteController;
@@ -330,7 +331,7 @@ public class PaletteKit implements Runnable, LookupListener {
             }
             isValidationRunning = true;
         }
-        RequestProcessor.getDefault().post(this);
+        RP.post(this);
     }
 
     public void run() {
