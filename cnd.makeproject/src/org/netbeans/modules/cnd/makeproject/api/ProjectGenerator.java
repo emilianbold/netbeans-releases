@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileUtil;
 
 public class ProjectGenerator {
 
@@ -100,9 +101,9 @@ public class ProjectGenerator {
          * @param projectName name of the project
          * @param projectFolder project folder (i.e. ~/NetbeansProjects/projectName)
          */
-        public ProjectParameters(String projectName, File projectFolder) {
+        public ProjectParameters(String projectName, File projectFolder) {            
             this.projectName = projectName;
-            this.projectFolder = projectFolder;
+            this.projectFolder = FileUtil.normalizeFile(projectFolder);
             this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             this.configurations = new MakeConfiguration[0];
             this.openFlag = false;

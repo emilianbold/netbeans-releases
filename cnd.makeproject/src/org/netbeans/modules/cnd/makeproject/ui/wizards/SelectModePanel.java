@@ -486,7 +486,9 @@ public class SelectModePanel extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim());
         String folderPath = projectFolder.getText().trim();
         if (CndPathUtilitities.isPathAbsolute(folderPath)) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(folderPath));
+            File file = CndFileUtils.createLocalFile(folderPath);
+            file = FileUtil.normalizeFile(file);
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, file);
         }
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
