@@ -142,7 +142,7 @@ public class RepositoryInfo {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
                 GitClient client = Git.getInstance().getClient(root);
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
-                Map<String, GitBranch> newBranches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                Map<String, GitBranch> newBranches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
                 GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
