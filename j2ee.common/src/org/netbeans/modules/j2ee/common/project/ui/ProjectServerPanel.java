@@ -68,6 +68,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -767,6 +769,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
             if (j2eeAppProvider == null) {
+                continue;
+            }
+            if (AntArtifactQuery.findArtifactsByType(allProjects[i], "ear").length == 0) { // NOI18N
                 continue;
             }
             J2eeApplication j2eeApplication = (J2eeApplication) j2eeAppProvider.getJ2eeModule();

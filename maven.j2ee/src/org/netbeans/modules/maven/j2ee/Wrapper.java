@@ -93,7 +93,7 @@ public class Wrapper {
                 try {
                     dn = si.getDisplayName();
                 } catch (InstanceRemovedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_Invalid_Server");
                 }
                 return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_No_Permanent_Server", dn);
             } else {
