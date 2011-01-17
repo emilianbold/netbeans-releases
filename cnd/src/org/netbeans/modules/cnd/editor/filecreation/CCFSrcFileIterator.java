@@ -44,15 +44,16 @@
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -67,37 +68,47 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
-public class CCFSrcFileIterator implements TemplateWizard.Iterator {
+public class CCFSrcFileIterator implements TemplateWizard.ProgressInstantiatingIterator<WizardDescriptor> {
 
     /** Holds list of event listeners */
-    private static Vector<SrcFileWizardListener> listenerList = null;
+    private static List<SrcFileWizardListener> listenerList = null;
     protected WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;
+    protected TemplateWizard templateWizard;
     // special mime type for C Headers extensions
     private static final String C_HEADER_MIME_TYPE = "text/x-c/text/x-h"; // NOI18N
 
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return targetChooserDescriptorPanel;
     }
 
+    @Override
     public boolean hasNext() {
         return false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return false;
     }
 
+    @Override
     public synchronized void nextPanel() {
     }
 
+    @Override
     public synchronized void previousPanel() {
     }
 
-    public void initialize(TemplateWizard wiz) {
-        targetChooserDescriptorPanel = createPanel(wiz);
+
+    @Override
+    public void initialize(WizardDescriptor wiz) {
+        this.templateWizard = (TemplateWizard) wiz;
+        targetChooserDescriptorPanel = createPanel(templateWizard);
     }
 
-    public void uninitialize(TemplateWizard wiz) {
+    @Override
+    public void uninitialize(WizardDescriptor wiz) {
     }
 
     protected WizardDescriptor.Panel<WizardDescriptor> createPanel(TemplateWizard wiz) {
@@ -136,7 +147,19 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
         }
     }
 
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+    @Override
+    public Set<DataObject> instantiate(ProgressHandle handle) throws IOException {
+        try {
+            handle.start();
+            return instantiate();
+        } finally {
+            handle.finish();
+        }
+    }
+
+    @Override
+    public Set<DataObject> instantiate() throws IOException {
+        TemplateWizard wiz = templateWizard;
         DataFolder targetFolder = wiz.getTargetFolder();
         DataObject template = wiz.getTemplate();
 
@@ -156,12 +179,14 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     }
     private final /*transient*/ Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // Set<ChangeListener>
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -180,6 +205,7 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
         }
     }
 
+    @Override
     public String name() {
         return ""; // NOI18N ?????
     }
@@ -195,7 +221,7 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
 
     private static List<SrcFileWizardListener> getListenerList() {
         if (listenerList == null) {
-            listenerList = new Vector<SrcFileWizardListener>(0);
+            listenerList = Collections.synchronizedList(new ArrayList<SrcFileWizardListener>(0));
         }
         return listenerList;
     }
