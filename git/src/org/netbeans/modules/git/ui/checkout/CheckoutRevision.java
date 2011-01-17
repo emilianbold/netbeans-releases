@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -77,6 +78,7 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
     private String branchName;
     private final Map<String, GitBranch> branches;
     private boolean previouslySelected;
+    private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
 
     public CheckoutRevision (File repository, RepositoryInfo info, String initialRevision) {
         revisionPicker = new RevisionDialogController(repository, new File[] { repository }, initialRevision);
@@ -123,14 +125,23 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
         if (flag) {
             validateBranchCB();
         } else {
+            setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorRevision")); //NOI18N
             validate();
         }
     }
 
     private void validate () {
         boolean flag = revisionValid;
-        if (panel.cbCheckoutAsNewBranch.isSelected() && !nameValid) {
+        if (revisionValid && panel.cbCheckoutAsNewBranch.isSelected() && !nameValid) {
+            if (panel.branchNameField.getText().isEmpty()) {
+                setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchNameEmpty")); //NOI18N
+            } else {
+                setErrorMessage(NbBundle.getMessage(CheckoutRevision.class, "MSG_CheckoutRevision.errorBranchExists")); //NOI18N
+            }
             flag = false;
+        }
+        if (flag) {
+            setErrorMessage(null);
         }
         okButton.setEnabled(flag);
         dd.setValid(flag);
@@ -158,9 +169,11 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
     }
 
     private void validateName () {
-        nameValid = false;
+        nameValid = true;
         branchName = panel.branchNameField.getText();
-        nameValid = !branches.containsKey(branchName);
+        if (branchName.isEmpty() || branches.containsKey(branchName)) {
+            nameValid = false;
+        }
         validate();
     }
 
@@ -170,7 +183,8 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
             rev = rev.substring(GitUtils.PREFIX_R_HEADS.length());
         }
         boolean enabled = panel.cbCheckoutAsNewBranch.isEnabled();
-        panel.cbCheckoutAsNewBranch.setEnabled(branches.containsKey(rev));
+        GitBranch b = branches.get(rev);
+        panel.cbCheckoutAsNewBranch.setEnabled(b != null && !b.isRemote());
         if (panel.cbCheckoutAsNewBranch.isEnabled()) {
             if (!enabled) {
                 panel.cbCheckoutAsNewBranch.setSelected(previouslySelected);
@@ -198,6 +212,15 @@ public class CheckoutRevision implements DocumentListener, ActionListener, Prope
                     validateBranchCB();
                 }
             });
+        }
+    }
+
+    private void setErrorMessage (String message) {
+        panel.lblError.setText(message);
+        if (message == null || message.isEmpty()) {
+            panel.lblError.setIcon(null);
+        } else {
+            panel.lblError.setIcon(ICON_ERROR);
         }
     }
 }

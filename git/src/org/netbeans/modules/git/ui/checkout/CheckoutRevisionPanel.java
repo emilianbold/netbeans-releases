@@ -85,6 +85,9 @@ public class CheckoutRevisionPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutAsNewBranch, org.openide.util.NbBundle.getMessage(CheckoutRevisionPanel.class, "CheckoutRevisionPanel.cbCheckoutAsNewBranch.text")); // NOI18N
 
+        lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(CheckoutRevisionPanel.class, "MSG_CheckoutRevision.errorBranchExists")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -92,12 +95,13 @@ public class CheckoutRevisionPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblError, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(branchNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
-                    .addComponent(revisionPickerDialog, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .addComponent(revisionPickerDialog, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                     .addComponent(cbCheckoutAsNewBranch)
                     .addComponent(jLabel1))
                 .addContainerGap())
@@ -108,13 +112,15 @@ public class CheckoutRevisionPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionPickerDialog, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                .addComponent(revisionPickerDialog, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbCheckoutAsNewBranch)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(branchNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblError)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -125,6 +131,7 @@ public class CheckoutRevisionPanel extends javax.swing.JPanel {
     final javax.swing.JCheckBox cbCheckoutAsNewBranch = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    final javax.swing.JLabel lblError = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
 
 }
