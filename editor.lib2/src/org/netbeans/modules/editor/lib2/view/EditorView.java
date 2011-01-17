@@ -356,7 +356,7 @@ public abstract class EditorView extends View {
 
     @Override
     public String getToolTipText(float x, float y, Shape allocation) {
-        return getToolTipTextChecked(x, y, allocation); // Use coords in doubles
+            return getToolTipTextChecked(x, y, allocation); // Use coords in doubles
     }
 
     public JComponent getToolTip(double x, double y, Shape allocation) {

@@ -320,21 +320,34 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public float getPreferredSpan(int axis) {
-        checkViewsInited();
-        if (!childrenValid) {
-            return 0f; // Return zero until parent and etc. gets initialized
-        }
-        float span = super.getPreferredSpan(axis);
-        if (axis == View.Y_AXIS) {
-            // Add extra span when component in viewport
-            Component parent;
-            if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
-                JViewport viewport = (JViewport) parent;
-                int viewportHeight = viewport.getExtentSize().height;
-                span += viewportHeight / 3;
+        // Since this may be called e.g. from BasicTextUI.getPreferredSize()
+        // this method needs to acquire mutex
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked(); // Should only be called with read-locked document
+                checkViewsInited();
+                if (!childrenValid) {
+                    return 0f; // Return zero until parent and etc. gets initialized
+                }
+                float span = super.getPreferredSpan(axis);
+                if (axis == View.Y_AXIS) {
+                    // Add extra span when component in viewport
+                    Component parent;
+                    if (textComponent != null && ((parent = textComponent.getParent()) instanceof JViewport)) {
+                        JViewport viewport = (JViewport) parent;
+                        int viewportHeight = viewport.getExtentSize().height;
+                        span += viewportHeight / 3;
+                    }
+                }
+                return span;
+            } finally {
+                mutex.unlock();
             }
+        } else {
+            return 1f;
         }
-        return span;
     }
 
     @Override
@@ -428,7 +441,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 mutex.lock();
                 try {
                     super.setParent(parent);
-                    textComponent = (JTextComponent) container;
+                    textComponent = tc;
                     viewHierarchy = ViewHierarchy.get(textComponent);
                     startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
                     endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
@@ -596,6 +609,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     private void updateVisibleDimension() { // Called only with textComponent != null
+        // Must be called under mutex
         Component parent = textComponent.getParent();
         Dimension newSize;
         if (parent instanceof JViewport) {
@@ -722,6 +736,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
     
     private void updateLineWrapType() {
+        // Should be able to run without mutex
         String lwt = null;
         if (textComponent != null) {
             lwt = (String) textComponent.getClientProperty(SimpleValueNames.TEXT_LINE_WRAP);
@@ -1279,7 +1294,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 LineWrapType origLineWrapType = lineWrapType;
-                updateLineWrapType();
+                updateLineWrapType(); // can run without mutex
                 if (origLineWrapType != lineWrapType) {
                     LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { origLineWrapType, lineWrapType }); //NOI18N
                     releaseChildren = true;
@@ -1321,7 +1336,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 // Release children since TextLayoutPart caches foreground and background
                 releaseChildren = true;
             } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
-                updateLineWrapType();
+                updateLineWrapType(); // can run without mutex
                 releaseChildren = true;
             }
         }
