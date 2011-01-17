@@ -76,7 +76,6 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
@@ -133,6 +132,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 20, -1);
     }
 
+    @Override
     public synchronized void fileCreate(File file, long ts) {
         try {
             fileCreateImpl(file, ts, null, file.getAbsolutePath());
@@ -166,6 +166,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(file);
     }
 
+    @Override
     public synchronized void fileChange(final File file, boolean handleAsync, final long ts) {
         long lastModified = lastModified(file);
         if(lastModified == ts) {
@@ -238,6 +239,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
     
+    @Override
     public synchronized void fileDelete(File file, long ts) {
         try {
             fileDeleteImpl(file, null, file.getAbsolutePath(), ts);
@@ -272,6 +274,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
+    @Override
     public synchronized void fileCreateFromMove(File from, File to, long ts) {
         if(lastModified(to) > 0) {
             return;
@@ -284,6 +287,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(to);
     }
 
+    @Override
     public synchronized void fileDeleteFromMove(File from, File to, long ts) {
         try {
             fileDeleteImpl(from, from.getAbsolutePath(), to.getAbsolutePath(), ts);
@@ -303,6 +307,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return data != null && data.getStatus() != DELETED ? data.getLastModified() : -1;
     }
 
+    @Override
     public synchronized StoreEntry[] getStoreEntries(File file) {
         // XXX file.isFile() won't work for deleted files
         return getStoreEntriesImpl(file);
@@ -328,6 +333,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
+    @Override
     public StoreEntry[] getFolderState(File root, File[] files, long ts) {
 
         // check if the root wasn't deleted to that time
@@ -466,6 +472,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return deleted;
     }
 
+    @Override
     public synchronized StoreEntry getStoreEntry(File file, long ts) {
         return getStoreEntryImpl(file, ts, readStoreData(file, true));
     }
@@ -494,6 +501,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return entry;
     }
 
+    @Override
     public synchronized void deleteEntry(File file, long ts) {
         File storeFile = getStoreFile(file, Long.toString(ts), false);
         if(storeFile.exists()) {
@@ -503,6 +511,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireDeleted(file);
     }
 
+    @Override
     public synchronized StoreEntry[] getDeletedFiles(File root) {
         if(root.isFile()) {
             return null;
@@ -581,6 +590,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return files;
     }
 
+    @Override
     public synchronized void setLabel(File file, long ts, String label) {
         File labelsFile = getLabelsFile(file);
         File parent = labelsFile.getParentFile();
@@ -656,10 +666,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return;
     }
 
+    @Override
     public synchronized void addVersioningListener(VersioningListener l) {
         listenersSupport.addListener(l);
     }
 
+    @Override
     public synchronized void removeVersioningListener(VersioningListener l) {
         listenersSupport.removeListener(l);
     }
@@ -667,6 +679,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     public void cleanUp(final long ttl) {
         // XXX run only once a day - use the top folder metadata for version and cleanup flag
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 LocalHistory.log("Cleanup Start");                       // NOI18N
                 cleanUpImpl(ttl);
@@ -911,7 +924,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         digest.update(name.getBytes());
         byte[] hash = digest.digest();
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         for (int i = 0; i < hash.length; i++) {
             String hex = Integer.toHexString(hash[i] & 0x000000FF);
             if(hex.length()==1) {
@@ -1083,7 +1096,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(len == 0) {
             return "";
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while(len-- > 0) {
             char c = dis.readChar();
             sb.append(c);
@@ -1280,14 +1293,17 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
         static final String ATTR_DATA_FILES = "localhistory.ATTR_DATA_FILES";                 // NOI18N
 
+        @Override
         public boolean recognizesAttribute(String name) {
             return ATTR_DATA_FILES.equals(name);
         }
 
+        @Override
         public boolean recognizesEntity(Object key) {
             return key instanceof File;
         }
 
+        @Override
         public synchronized Object readEntry(Object key, String name, MemoryCache memoryCache) {
             assert key instanceof File;
             assert name != null;
@@ -1299,6 +1315,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return StoreDataFile.read(storeFile);
         }
 
+        @Override
         public synchronized boolean writeEntry(Object key, String name, Object value) {
             assert key instanceof File;
             assert value == null || value instanceof StoreDataFile;

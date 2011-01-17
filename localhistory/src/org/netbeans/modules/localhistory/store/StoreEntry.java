@@ -60,8 +60,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -151,7 +151,7 @@ public abstract class StoreEntry {
 
     public String getMIMEType() {
         if(mimeType == null) {
-            FileObject fo = FileUtil.toFileObject(getFile());
+            FileObject fo = FileUtils.toFileObject(file);
             if(fo != null) {
                 mimeType = fo.getMIMEType();   
             } else {
@@ -214,11 +214,13 @@ public abstract class StoreEntry {
             super(file, null, ts, "");
         } 
         
+        @Override
         OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
             throwNoStoreEntry();
             return null;
         }
 
+        @Override
         public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
             throwNoStoreEntry();
             return null;            
@@ -236,10 +238,12 @@ public abstract class StoreEntry {
             super(file, file, ts, "");
         }  
 
+        @Override
         OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
             throw new FileNotFoundException("There is no OutputStream for this for file " + getFile());
         }
 
+        @Override
         public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
             return new FileInputStream(getFile());            
         }            
