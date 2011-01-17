@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!--
+
+ * Copyright 2009 Sun Microsystems, Inc.
+
+ * All rights reserved. Use is subject to license terms.
+
+-->
+<title>glassfish-web.xml Visual Editor: General</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2><tt>glassfish-web.xml</tt> Visual Editor: General</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp; </small></p>
+<p>The <tt>glassfish-web.xml</tt> visual editor lets you edit the platform-specific web deployment descriptor <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/glossary/deploymentdesc.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="deployment descriptor">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object> for the GlassFish application server or Sun Java System Application Server. You open the visual editor
+  by expanding your project's Configuration Files node in the Projects window 
+  and double-clicking the <tt>glassfish-web.xml</tt> file. A Web application only contains 
+  a <tt>glassfish-web.xml</tt> deployment descriptor if its target server is the GlassFish server. </p>
+<p>In the General tab of the wizard, you can set the context root, additional 
+  classpath, the servlet security provider and configure the class loader for the web application.</p>
+  
+  <h3>Module Details</h3>
+  <p>In the Module Details section of the General tab you can specify the following properties:</p>
+  <ul>
+      <li><b>Context Root.</b>
+      The context root is the base directory of the WAR file. The Servlet Context 
+      uses the context root to resolve the path to the WAR file. The URL to a JSP page 
+      or servlet takes this form:<br>
+<pre><i> hostname:port/contextRoot/relative_URLs_in_WAR_file</i></pre>
+     </li>
+     <li><b>Error URL.</b> Optionally specifies a redirect URL in case of an error. </li>
+     <li><b>HTTP Servlet Security Provider.</b> <!-- TODO --></li>
+ </ul>
+     <h3>Class Loader</h3>
+     <p>In the Class Loader section you set the properties for a class loader configuration.
+      Use the class loader settings to specify additional classes that are to be loaded by the Web module.</p>
+      <ul>
+          <li><b>Enable Class Loader Configuration.</b> When selected, the Web 
+          module loads the additional classes in the Extra Class Path field.</li>
+          <li><b>Extra Class Path.</b> Enter the classpath for the additional classes to be loaded by the Web module.</li>
+          <li><b>Dynamic Reload Interval.</b></li>
+          <li><b>Delegate Class Loader.</b> When selected, the Web module follows 
+          the standard classloader delegation model and delegates to its parent classloader 
+          first before looking in the local classloader. If this checkbox is not selected, 
+          the Web module follows the delegation model specified in the Servlet specification 
+          and looks in its classloader before looking in the parent classloader. </li>
+      </ul>
+     
+     
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../../ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/configure/configure_webapp_dd.html">Editing a Web Application's Deployment Descriptors</a></dd>
+    <dd><tt>glassfish-web.xml</tt> Visual Editor:</dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="Servlet.html">Servlets</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SecurityWebRoleMapping.html">Security</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebserviceDescriptor.html">Web Services</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messaging</a></dd> 
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../appclientconfigeditors/sun-applicationclient_env.html">Environment</a></dd>
+</dl>
+    
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
+

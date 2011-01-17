@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+    <!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+    -->
+
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>Add Server Instance Wizard: Server Location</title>
+
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+
+        <h2>Add Server Instance Wizard: Server Location</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the GlassFish Server with the IDE.
+        To register a server instance, you specify the properties of a local or remote domain.</p>
+        <p>Use this page to specify the following information about the location of the GlassFish Server and the type of domain you are registering.</p>
+        <ul>
+            <li><b>Server Location.</b> Supply the path to the local installation of the GlassFish Server.
+            Click Browse to navigate to the location.</li>
+            <li><b>Type of domain.</b> Select the type of domain to register.
+                <ul>
+                    <li><b>Register Local Default Domain.</b> Select this type to register a domain located in the default domain folder of the platform you specify.
+                    <p>Choose a domain from the list of accessible domains found in the default domain folder.</p>
+                    <ul class="note"><li>When you install the server, the default domain folder containing a default domain is created in the local installation folder.</li></ul>
+                    </li>
+                    <li><b>Register Local Domain.</b> Select this type to register a local domain located outside the default domain folder of the platform you specify.
+                    If you select this type, you need to specify the location of the local domain.</li>
+                    <li><b>Register Remote Domain.</b> Select this type to register a remote domain. 
+                    If you select this type, you need to supply the host and communication port for the remote domain.
+                    <ul class="note"><li>You cannot stop or start a remote server from within the IDE.</li></ul></li>
+                    <li><b>Create Personal Domain.</b>
+                    Select this type to create a new domain.
+                    This option is only available if you are registering an instance of the GlassFish Server.
+                    If you select this type, you need to specify where to create the new domain. 
+                    Choosing this type enables you to specify port settings for the new domain.
+                    You can also choose a profile type from the drop-down list.</li>
+                    <li><b>Profile.</b>
+                    If you are registering an instance of the GlassFish Server v2.x,
+                    when you create a personal domain you can choose a Profile type from the drop-down list.
+                    If you are registering an earlier version of the application server, only the Default profile is available. 
+                    <p>You choose a profile type according to how you intend to use the application server software.
+                    The personal domain is created and configured based on the profile that you choose. </p>
+                    <ul>
+                        <li><b>Default.</b> This domain is essentially the same as the Developer profile.</li>
+                        <li><b>Developer.</b> This domain is configured to be run in a development environment. 
+                        This configuration offers the advantage of faster server startup.</li>
+                        <li><b>Cluster.</b> The domain is configured so that it can be used as part of a cluster of application server instances. </li>
+                        <li><b>Enterprise.</b> The domain is configured to be used in a production environment for large-scale deployments. 
+                        This profile offers greater security. This option requires that you have HADB installed.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="note"><li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li></ul>
+        
+        <!--
+        <p>When registering an instance of the Sun Java System Application Server, you need to supply the following information:</p>
+        <ul>
+            <li><b>Location (host:port).</b> (required) This is the host name or IP and the admin port. 
+            You can register your local instance by selecting the instance from the combo box (default host and port is localhost:4848),
+            or a remote instance by entering the
+            IP address and port number. When registering an instance,
+            the port must not be in use by another service or application. </li>
+            <li><b>Domains Folder.</b> This is the location of the local domains directory. 
+                Specify an existing domains directory location or the location for creating a new domain. This field is dimmed if the 
+                IDE has already determined the domains directory of the local domain instance.
+                <ul class="note"><li>If you are registering a remote instance, the domains folder location is not required.</li></ul>
+            </li>            
+            <li><b>Instance Name.</b> (optional) This is the name of the local domain instance. Enter the domain name if you are
+            creating a new domain instance. This field is dimmed if the 
+            IDE has already determined the name of the local domain instance.</li>            
+            <li><b>Username.</b> (optional) This is the admin user name for the server.</li>
+            <li><b>Password.</b> (optional) This is the admin password.
+            <ul class="note">
+                <li>If you do not enter a username and password, you will be prompted for the admin username and password when the server is started.</li>
+            </ul></li>
+        </ul>
+        
+        <p><b>Notes:</b></p>
+        <ul class="note">
+            <li>When creating a new local instance, the IDE automatically assigns a port number to the instance. </li>
+            <li>When registering a local instance of the server, the IDE attempts to determine the domains folder. 
+            When determining the location of the domains directory, one of the following occurs:
+            <ul>
+                <li>The IDE is able to locate accessible server instances in the default Domains folder, 
+                and these instances appear in the Location combo box. In this case the Domains Folder location 
+                and Instance Name are dimmed.</li>
+                <li>The IDE is unable to locate accessible server instances in the default Domains folder. In this case you must 
+                specify an existing, accessible Domains Folder location and Instance Name (if no server instances are available at that location), 
+                or create a new server instance by specifying an accessible Domains Folder and an Instance Name for the new server instance. </li>
+            </ul></li>
+        </ul>
+        
+        -->
+        
+        
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd>    <a href="../general/register_appserver.html">Registering a GlassFish Application Server Instance</a></dd>
+            <dd>    <a href="../general/working_withSJS.html">Working With the GlassFish Application Server</a></dd>
+        </dl>
+        <hr>
+
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+
