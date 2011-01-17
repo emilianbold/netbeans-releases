@@ -77,6 +77,9 @@ import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.CreateBranchAction;
+import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.AbstractNode;
@@ -87,6 +90,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
@@ -706,6 +710,37 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 fireDisplayNameChange(null, null);
             }
         }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                            action.checkoutRevision(currRepository, branchName);
+                        }
+                    }, 0);
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            CreateBranchAction action = SystemAction.get(CreateBranchAction.class);
+                            action.createBranch(currRepository, branchName);
+                        }
+                    }, 0);
+                }
+            });
+            return actions.toArray(new Action[actions.size()]);
+        }
+        
     }
     //</editor-fold>
 

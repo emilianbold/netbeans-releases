@@ -173,6 +173,14 @@ public class FaceletsLibrarySupport {
             hash = 79 * hash + timestamp;
         }
 
+        //Check whether a new composite component library has been created or removed.
+        //The changes within the composite component libraries does not need to be
+        //checked here since the CC libraries are doing index queries whenever a library
+        //metdata are requested.
+        for(String ccLibName : getJsfSupport().getIndex().getAllCompositeLibraryNames()) {
+            hash = 79 * hash + ccLibName.hashCode();
+        }
+
         if(hash != libraries_hash) {
             LOGGER.info("Invalidating facelets libraries due to a library descriptor change."); //NOI18N
             

@@ -75,7 +75,6 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.commit.GitCommitPanel.GitCommitPanelMerged;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
@@ -87,14 +86,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -384,20 +378,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
             Object retval = DialogDisplayer.getDefault().notify(nd);
             if (retval == NotifyDescriptor.YES_OPTION) {
-                List<Node> nodes = new LinkedList<Node>();
-                for (Map.Entry<File, GitStatus> conflict : conflicts.entrySet()) {
-                    Node node = new AbstractNode(Children.LEAF, Lookups.fixed(conflict.getKey()));
-                    nodes.add(node);
-                    // this will refresh seen roots
-                }
-                Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, conflicts.keySet()));
-                final VCSContext context = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        SystemAction.get(StatusAction.class).performContextAction(context);
-                    }
-                });
+                GitUtils.openInVersioningView(conflicts.keySet(), repository, ProgressMonitor.NULL_PROGRESS_MONITOR);
             }
         }
         return commitPermitted;

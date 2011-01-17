@@ -91,6 +91,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private HintsPanelLogic logic;
     private DefaultTreeModel errorTreeModel;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
+    //AWT only:
+    private HintMetadata toSelect = null;
       
     DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
 
@@ -141,6 +143,12 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
 
         initialized.set(true);
         update();
+        
+        if (toSelect != null) {
+            select(toSelect);
+            
+            toSelect = null;
+        }
     }
     
     /** This method is called from within the constructor to
@@ -440,6 +448,12 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
 
     void select(HintMetadata hm) {
+        if (errorTree == null) {
+            //lazy init:
+            toSelect = hm;
+            return;
+        }
+        
 	TreePath path = hint2Path.get(hm);
 	
         errorTree.setSelectionPath(path);
