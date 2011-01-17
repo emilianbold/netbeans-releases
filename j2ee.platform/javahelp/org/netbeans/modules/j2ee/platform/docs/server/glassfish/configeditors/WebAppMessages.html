@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!--
+ * Copyright 2009 Sun Microsystems, Inc.
+ * All rights reserved. Use is subject to license terms.
+-->
+  <title>Deployment Descriptor Visual Editor: Messaging</title>
+  
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Deployment Descriptor Visual Editor: Messaging</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Messaging tab of the deployment descriptor visual editor lets you edit the platform-specific 
+deployment descriptors for GlassFish application server.
+This pane lists the JMS message destinations in the project and enables you to provide a reference to any resource 
+from which the application is going to send or receive messages.</p>
+
+<p>A web or enterprise application will only contain the <tt>glassfish-web.xml</tt>, <tt>glassfish-ejb-jar.xml</tt> or <tt>glassfish-application-client.xml</tt> 
+deployment descriptors if the target server is the GlassFish server.</p>
+
+<p>You get to this pane by expanding your project's Configuration Files node in the Projects window 
+and double-clicking <tt>glassfish-web.xml</tt>, <tt>glassfish-ejb-jar.xml</tt> or <tt>glassfish-application-client.xml</tt> and clicking the Messaging tab.</p>
+
+  
+<p>Click Add Message Destination to add descriptor properties for a message destination.
+Each message destination has the following properties:</p>
+<ul>
+    <li><b>Message Destination Name.</b> Specifies the name of a logical message destination defined within the corresponding deployment descriptor file (<tt>web.xml</tt> or <tt>ejb-jar.xml</tt>).</li>
+    <li><b>JNDI Name.</b> Displays the JNDI name of the message destination.</li>
+</ul>
+<p>Note that the message destination name must match the corresponding message 
+  destination name in the <tt>web.xml</tt> file.</p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../../ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/configure/configure_webapp_dd.html">Editing a Web Application's Deployment Descriptors</a></dd>
+    <dd><tt>glassfish-web.xml</tt> Visual Editor:</dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppGeneral.html">General</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="Servlet.html">Servlets</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SecurityWebRoleMapping.html">Security</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebserviceDescriptor.html">Web Services</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../appclientconfigeditors/sun-applicationclient_env.html">Environment</a></dd>
+</dl>
+    
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
