@@ -180,9 +180,9 @@ public class JBPluginUtils {
     private static List<String> domainRequirements6x;
 
     private static synchronized List<String> getDomainRequirements6x() {
-        if (domainRequirements5x == null) {
-            domainRequirements5x = new ArrayList<String>(11);
-            Collections.addAll(domainRequirements5x,
+        if (domainRequirements6x == null) {
+            domainRequirements6x = new ArrayList<String>(11);
+            Collections.addAll(domainRequirements6x,
                     "conf", // NOI18N
                     "deploy", // NOI18N
                     "deployers", // NOI18N
@@ -192,7 +192,7 @@ public class JBPluginUtils {
                     "deploy/hdscanner-jboss-beans.xml"   // NOI18N
                     );
         }
-        return domainRequirements5x;
+        return domainRequirements6x;
     }
 
     //--------------- checking for possible server directory -------------

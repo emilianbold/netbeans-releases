@@ -738,6 +738,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue144840_01.php", "$retval->^", false);
     }
 
+    public void testIssue194300_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue194300.php", "$aa->^", false);
+    }
+    
     public void testClassConstructorOptionalParam_01() throws Exception {
         checkCompletion("testfiles/completion/lib/classConstructorOptionalParam.php", "$var = new A^", false);
     }
