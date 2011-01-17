@@ -234,7 +234,7 @@ public final class FileSystemProvider {
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
-                String message = "No file system providers for " + object;
+                String message = "No file system providers for " + object; // NOI18N
                 RemoteLogger.getInstance().log( Level.FINE, message, new Exception(message)); //NOI18N
             } else {
                 RemoteLogger.getInstance().log(Level.FINEST, "No file system providers for {0}", object); //NOI18N
