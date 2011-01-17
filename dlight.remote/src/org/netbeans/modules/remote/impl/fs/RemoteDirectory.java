@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -463,7 +462,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         return storage;
                     }
                 }
-                throw ex;
+                throw new ConnectException(ex.getMessage());
             }
             fileSystem.incrementDirSyncCount();
             Map<String, List<DirectoryStorage.Entry>> dupLowerNames = new HashMap<String, List<DirectoryStorage.Entry>>();
