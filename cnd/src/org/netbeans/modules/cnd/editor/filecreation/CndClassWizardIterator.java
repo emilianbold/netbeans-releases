@@ -51,6 +51,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -65,7 +66,8 @@ import org.openide.util.NbBundle;
 public class CndClassWizardIterator extends CCFSrcFileIterator {
 
     @Override
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
+        templateWizard = (TemplateWizard) wiz;
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -73,7 +75,8 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
     }
 
     @Override
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate() throws IOException {
+        TemplateWizard wiz = templateWizard;
         DataFolder targetFolder = wiz.getTargetFolder();
         DataObject template = wiz.getTemplate();
 
