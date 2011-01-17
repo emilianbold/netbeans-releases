@@ -80,4 +80,18 @@ public class GitException extends Exception {
             return objectType;
         }
     }
+    
+    public static class CheckoutConflictException extends GitException {
+        private final String[] conflicts;
+
+        public CheckoutConflictException (String[] conflicts) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"));
+            this.conflicts = conflicts;
+        }
+
+        public String[] getConflicts () {
+            return conflicts;
+        }
+    }
+
 }

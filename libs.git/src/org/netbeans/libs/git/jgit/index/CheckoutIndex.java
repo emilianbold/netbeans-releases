@@ -107,12 +107,12 @@ public class CheckoutIndex {
             if (dit != null && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
                 // update entry
                 listener.notifyFile(path, treeWalk.getPathString());
-                checkoutEntry(repository, path, dit.getDirCacheEntry(), fit);
+                checkoutEntry(repository, path, dit.getDirCacheEntry());
             }
         }
     }
 
-    private void checkoutEntry (Repository repository, File file, DirCacheEntry e, FileTreeIterator fit) throws IOException, GitException {
+    public void checkoutEntry (Repository repository, File file, DirCacheEntry e) throws IOException, GitException {
         // ... create/overwrite this file ...
         if (!ensureParentFolderExists(file.getParentFile())) {
             return;

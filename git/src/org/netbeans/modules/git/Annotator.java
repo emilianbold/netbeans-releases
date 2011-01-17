@@ -66,6 +66,7 @@ import org.netbeans.modules.git.ui.actions.ConnectAction;
 import org.netbeans.modules.git.ui.actions.DisconnectAction;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
@@ -146,6 +147,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(CreateBranchAction.class));
+                actions.add(SystemAction.get(CheckoutRevisionAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
                 ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
@@ -169,7 +171,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
                 SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
                 if (a.isEnabled()) {
                     actions.add(null);
@@ -177,6 +179,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutRevisionAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName"), lkp)); //NOI18N
                 DisconnectAction da = SystemAction.get(DisconnectAction.class);
                 if (da.isEnabled()) {
                     actions.add(null);
