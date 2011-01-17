@@ -109,7 +109,7 @@ public class CheckoutBranchCommand extends GitCommand {
             if (!monitor.isCanceled()) {
                 RefUpdate refUpdate = repository.updateRef(Constants.HEAD);
                 refUpdate.setForceUpdate(false);
-                refUpdate.setRefLogMessage(refLogMessage + "to " + newCommit.getName(), false);
+                refUpdate.setRefLogMessage(refLogMessage + " to " + newCommit.getName(), false); //NOI18N
                 RefUpdate.Result updateResult = refUpdate.link(ref.getName());
 
                 boolean ok = false;

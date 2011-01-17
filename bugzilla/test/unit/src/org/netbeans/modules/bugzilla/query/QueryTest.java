@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -230,6 +231,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
     }
 
+    @RandomlyFails
     public void testSaveAterSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
