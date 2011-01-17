@@ -40,55 +40,64 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git.jgit.commands;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.BranchTest;
-import org.netbeans.libs.git.jgit.commands.CatTest;
-import org.netbeans.libs.git.jgit.commands.CheckoutTest;
-import org.netbeans.libs.git.jgit.commands.CleanTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.CopyTest;
-import org.netbeans.libs.git.jgit.commands.InitTest;
-import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
-import org.netbeans.libs.git.jgit.commands.LogTest;
-import org.netbeans.libs.git.jgit.commands.MergeTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.RenameTest;
-import org.netbeans.libs.git.jgit.commands.ResetTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import java.io.IOException;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.merge.MergeStrategy;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitMergeResult;
+import org.netbeans.libs.git.jgit.JGitMergeResult;
+import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
+public class MergeCommand extends GitCommand {
+    private final String revision;
+    private GitMergeResult result;
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
+    public MergeCommand (Repository repository, String revision, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.revision = revision;
     }
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BranchTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CleanTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(InitTest.class);
-        suite.addTestSuite(ListModifiedIndexEntriesTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(MergeTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ResetTest.class);
-        suite.addTestSuite(StatusTest.class);
-        return suite;
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        org.eclipse.jgit.api.MergeCommand command = new Git(repository).merge();
+        Ref ref = null;
+        try {
+            ref = repository.getRef(revision);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+
+        if (ref == null) {
+            command.include(Utils.findCommit(repository, revision));
+        } else {
+            String mergeRevisionName = Utils.getRefName(ref);
+            command.include(mergeRevisionName, ref.getTarget().getObjectId());
+        }
+        command.setStrategy(MergeStrategy.RESOLVE);
+        try {
+            result = new JGitMergeResult(command.call(), repository.getWorkTree());
+        } catch (GitAPIException ex) {
+            throw new GitException(ex);
+        }
     }
 
+    @Override
+    protected String getCommandDescription () {
+        return new StringBuilder("git merge ").append(revision).toString(); //NOI18N
+    }
+
+    public GitMergeResult getResult () {
+        return result;
+    }
 }

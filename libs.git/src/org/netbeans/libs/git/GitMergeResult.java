@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
+package org.netbeans.libs.git;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.BranchTest;
-import org.netbeans.libs.git.jgit.commands.CatTest;
-import org.netbeans.libs.git.jgit.commands.CheckoutTest;
-import org.netbeans.libs.git.jgit.commands.CleanTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.CopyTest;
-import org.netbeans.libs.git.jgit.commands.InitTest;
-import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
-import org.netbeans.libs.git.jgit.commands.LogTest;
-import org.netbeans.libs.git.jgit.commands.MergeTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.RenameTest;
-import org.netbeans.libs.git.jgit.commands.ResetTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import java.io.File;
+import java.util.Collection;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
+public interface GitMergeResult {
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
+    /**
+     * The status the merge resulted in.
+     */
+    public enum MergeStatus {
+
+        FAST_FORWARD {
+            @Override
+            public String toString() {
+                return "Fast-forward";
+            }
+        },
+        ALREADY_UP_TO_DATE {
+            @Override
+            public String toString() {
+                return "Already up-to-date";
+            }
+        },
+        FAILED {
+            @Override
+            public String toString() {
+                return "Failed";
+            }
+        },
+        MERGED {
+            @Override
+            public String toString() {
+                return "Merged";
+            }
+        },
+        CONFLICTING {
+            @Override
+            public String toString() {
+                return "Conflicting";
+            }
+        },
+        NOT_SUPPORTED {
+            @Override
+            public String toString() {
+                return "Not-yet-supported";
+            }
+        }
     }
-
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BranchTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CleanTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(InitTest.class);
-        suite.addTestSuite(ListModifiedIndexEntriesTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(MergeTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ResetTest.class);
-        suite.addTestSuite(StatusTest.class);
-        return suite;
-    }
-
+    
+    public MergeStatus getMergeStatus ();
+    
+    public String getBase ();
+    
+    public String[] getMergedCommits ();
+    
+    public String getNewHead ();
+    
+    public Collection<File> getConflicts();
 }
