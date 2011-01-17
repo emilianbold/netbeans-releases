@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
-
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Petr Hejl
  */
-@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemCacheProvider.class, position=100)
-public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
+public final class WLJpa2SwitchSupport {
 
-    @Override
-    protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
-        String hostId = EnvUtils.toHostID(executionEnvironment);
-        String userId = executionEnvironment.getUser();
-        String root = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/remote-files/"; //NOI18N;
-        return root + hostId + '_' + userId + '/';
+    private final WLDeploymentManager deploymentManager;
+
+    public WLJpa2SwitchSupport(WLDeploymentManager deploymentManager) {
+        this.deploymentManager = deploymentManager;
     }
+
+    public void enable() {
+        // TODO write/update oepe-contributions.jar with proper relative classpath
+        // as described in email
+        // WLPluginProperties methods may help you
+    }
+
+    public void disable() {
+        // delete referneces to jars in oepe-contributions.jar
+    }
+
+    public boolean isEnabled() {
+        return deploymentManager.getJ2eePlatformImpl().isJpa2Available();
+    }
+
+    public boolean isEnabledViaSmartUpdate() {
+        // TODO check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
+        return false;
+    }
+
 }

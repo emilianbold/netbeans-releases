@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -78,6 +79,7 @@ public class CreateBranch implements DocumentListener {
     private final Task branchCheckTask;
     private String branchName;
     private final File repository;
+    private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
 
     CreateBranch (File repository, String initialRevision) {
         this.repository = repository;
@@ -116,11 +118,24 @@ public class CreateBranch implements DocumentListener {
     
     private void setRevisionValid (boolean flag) {
         this.revisionValid = flag;
+        if (!flag) {
+            setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorRevision")); //NOI18N
+        }
         validate();
     }
 
     private void validate () {
         boolean flag = revisionValid & nameValid;
+        if (revisionValid && !nameValid) {
+            if (panel.branchNameField.getText().isEmpty()) {
+                setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchNameEmpty")); //NOI18N
+            } else {
+                setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchExists")); //NOI18N
+            }
+        }
+        if (flag) {
+            setErrorMessage(null);
+        }
         okButton.setEnabled(flag);
         dd.setValid(flag);
     }
@@ -169,6 +184,15 @@ public class CreateBranch implements DocumentListener {
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
             }
+        }
+    }
+
+    private void setErrorMessage (String message) {
+        panel.lblError.setText(message);
+        if (message == null || message.isEmpty()) {
+            panel.lblError.setIcon(null);
+        } else {
+            panel.lblError.setIcon(ICON_ERROR);
         }
     }
 }

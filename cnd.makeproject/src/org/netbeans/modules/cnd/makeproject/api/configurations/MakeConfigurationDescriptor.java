@@ -222,7 +222,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public Project getProject() {
         if (project == null) {
-            String location = getBaseDir();
             try {
                 // convert base path into file object
                 // we can't use canonical path here, because descriptor created with path like
@@ -236,11 +235,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 // in fact ProjectManager should solve such problems in more general way
                 // because even for java it's possible to open the same project from two different
                 // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
-                FileObject fo = CndFileUtils.toFileObject(location);
-                project = ProjectManager.getDefault().findProject(fo);
+                project = ProjectManager.getDefault().findProject(baseDirFO);
             } catch (Exception e) {
                 // Should not happen
-                System.err.println("Cannot find project in '" + location + "' " + e); // FIXUP // NOI18N
+                System.err.println("Cannot find project in '" + baseDirFO + "' " + e); // FIXUP // NOI18N
             }
         }
         return project;

@@ -413,39 +413,47 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public void setParent(View parent) {
-        // Checking of document lock not enforced at this point since it
-        super.setParent(parent);
         if (parent != null) {
-            Container container = getContainer();
+            Container container = parent.getContainer();
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
-            textComponent = (JTextComponent) container;
-            viewHierarchy = ViewHierarchy.get(textComponent);
-            pMutex = (PriorityMutex) textComponent.getClientProperty(MUTEX_CLIENT_PROPERTY);
+            JTextComponent tc = (JTextComponent) container;
+            pMutex = (PriorityMutex) tc.getClientProperty(MUTEX_CLIENT_PROPERTY);
             if (pMutex == null) {
                 pMutex = new PriorityMutex();
-                textComponent.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
+                tc.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
-            startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
-            endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
-            accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
-
-            viewUpdates = new ViewUpdates(this);
-            textLayoutCache = new TextLayoutCache();
-            textComponent.addPropertyChangeListener(this);
-            if (REPAINT_LOG.isLoggable(Level.FINE)) {
-                DebugRepaintManager.register(textComponent);
+            PriorityMutex mutex = getMutex();
+            if (mutex != null) {
+                mutex.lock();
+                try {
+                    super.setParent(parent);
+                    textComponent = (JTextComponent) container;
+                    viewHierarchy = ViewHierarchy.get(textComponent);
+                    startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
+                    endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
+                    accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
+                    viewUpdates = new ViewUpdates(this);
+                    textLayoutCache = new TextLayoutCache();
+                    textComponent.addPropertyChangeListener(this);
+                    if (REPAINT_LOG.isLoggable(Level.FINE)) {
+                        DebugRepaintManager.register(textComponent);
+                    }
+                } finally {
+                    mutex.unlock();
+                }
             }
 
         } else { // Setting null parent
-            textComponent.removePropertyChangeListener(this);
             // Set the textComponent to null under mutex
             // so that children suddenly don't see a null textComponent
             PriorityMutex mutex = getMutex();
             if (mutex != null) {
                 mutex.lock();
                 try {
+                    textComponent.removePropertyChangeListener(this);
                     textComponent = null; // View services stop working and propagating to children
+                    super.setParent(parent);
                 } finally {
                     mutex.unlock();
                 }

@@ -160,9 +160,9 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
                 int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
                 if (slashPos >= 0) {
-                    String hostID = rest.subSequence(0, slashPos).toString();
+                    String envID = rest.subSequence(0, slashPos).toString();
                     CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
-                    ExecutionEnvironment env = getExecutionEnvironmentByHostID(hostID);
+                    ExecutionEnvironment env = getExecutionEnvironmentByEnvID(envID);
                     if (env != null) {
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
                         return new FileSystemAndString(fs, remotePath);
@@ -196,19 +196,22 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
     }
 
-    private static ExecutionEnvironment getExecutionEnvironmentByHostID(String hostID) {
+    private static ExecutionEnvironment getExecutionEnvironmentByEnvID(String envID) {
+        // envID has form: hostId + '_' + userId
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ServerList.getEnvironments()) {
-            if (hostID.equals(EnvUtils.toHostID(env))) {
-                result = env;
-                if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                    break;
+            String currHostID = EnvUtils.toHostID(env);
+            if (envID.startsWith(currHostID)) {
+                if (envID.length() > currHostID.length() && envID.charAt(currHostID.length()) == '_') {
+                    String user = envID.substring(currHostID.length() + 1);
+                    if (user.equals(env.getUser())) {
+                        return env;
+                    }
                 }
             }
         }
         return result;
     }
-
 
     @Override
     protected String getCaseInsensitivePathImpl(CharSequence path) {

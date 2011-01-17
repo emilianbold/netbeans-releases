@@ -131,7 +131,7 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
                 public void run() {
                     try {
                         /*
-                         *Fix for #131598 - java.io.IOException: Cannot run program
+                         *Fix for #131598 - java.io.IOException: Cannot run program                                   
                          * "C:\Users\tester\.netbeans\dev\config\platform_installers\
                          * Sun-Java-Wireless-Toolkit252-for-CLDC-for-Windows_200710311754.exe":
                          * CreateProcess error=740, The requ
@@ -144,9 +144,10 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
                             args = new String[] {inst.getAbsolutePath()};
                         }
                         final Process p = Runtime.getRuntime().exec(  args);
-                        RequestProcessor.getDefault().post(new StreamPumper(io.getIn(), new OutputStreamWriter(p.getOutputStream())));
-                        RequestProcessor.getDefault().post(new StreamPumper(new InputStreamReader(p.getInputStream()), io.getOut()));
-                        RequestProcessor.getDefault().post(new StreamPumper(new InputStreamReader(p.getErrorStream()), io.getErr()));
+                        RequestProcessor streamPumpsProcessor = new RequestProcessor("Platform Catalog Auto Installer Stream Pumps", 3);//NOI18N
+                        streamPumpsProcessor.post(new StreamPumper(io.getIn(), new OutputStreamWriter(p.getOutputStream())));
+                        streamPumpsProcessor.post(new StreamPumper(new InputStreamReader(p.getInputStream()), io.getOut()));
+                        streamPumpsProcessor.post(new StreamPumper(new InputStreamReader(p.getErrorStream()), io.getErr()));
                         p.waitFor();
                     } catch (Exception e) {
                         ErrorManager.getDefault().notify(e);

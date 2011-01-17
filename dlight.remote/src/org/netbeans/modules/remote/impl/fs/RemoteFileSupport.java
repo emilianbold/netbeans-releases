@@ -87,9 +87,9 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
             RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
             ConnectionNotifier.addTask(execEnv, this);
         } catch (InterruptedException ex) {
-            // don't report interruption
+            RemoteLogger.finest(ex);
         } catch (InterruptedIOException ex) {
-            // don't report interruption
+            RemoteLogger.finest(ex);
         } catch (IOException ex) {
             RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
             ConnectionNotifier.addTask(execEnv, this);

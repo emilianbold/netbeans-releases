@@ -100,7 +100,10 @@ public class HighlightsViewUtils {
         assert (boxView instanceof ParagraphView) : "Not ParagraphView instance"; // NOI18N
         ParagraphView pView = (ParagraphView) boxView;
         DocumentView docView = pView.getDocumentView();
-        boolean inTLCache = docView.getTextLayoutCache().contains(pView);
+        assert (docView != null) : "docView==null for pView=" + pView; // NOI18N
+        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
+        assert (textLayoutCache != null) : "textLayoutCache is null for pView=" + pView; // NOI18N
+        boolean inTLCache = textLayoutCache.contains(pView);
         if (inTLCache) {
             visualUpdate.markInCache();
         } else { // Not in cache => return 0

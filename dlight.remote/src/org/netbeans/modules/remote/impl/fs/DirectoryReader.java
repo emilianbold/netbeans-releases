@@ -231,7 +231,9 @@ public class DirectoryReader {
         int rc = process.waitFor();
         latch.await();
         if (rc != 0) {
-            if (rc == 2) {
+            if (process.getState() == NativeProcess.State.CANCELLED) {
+                throw new InterruptedException("ls has been cancelled"); //NOI18N
+            } else if (rc == 2) {
                 throw new FileNotFoundException(errorOutput.toString());
             } else {
                 throw new IOException(errorOutput.toString());
