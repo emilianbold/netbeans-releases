@@ -604,17 +604,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         " from " + execEnv + ':' + remotePath + ": rc=" + rc); //NOI18N
             }
         } catch (InterruptedException ex) {
-            truncate(child.cache);
+            child.cache.delete();
             throw ex;
         } catch (ExecutionException ex) {
-            truncate(child.cache);
+            child.cache.delete();
             throw ex;
         }
-    }
-
-    private void truncate(File file) throws IOException {
-        OutputStream os = new FileOutputStream(file);
-        os.close();
     }
 
     private void checkConnection(RemoteFileObjectBase fo, boolean throwConnectException) throws ConnectException {
