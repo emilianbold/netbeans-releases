@@ -310,7 +310,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
 
         @Override
         public boolean isEditable() {
-            FileObject fo = FileUtil.toFileObject(file);
+            FileObject fo = FileUtils.toFileObject(file);
             return isPrimary(fo);
         }
         
@@ -328,7 +328,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     
         @Override
         public Lookup getLookup() {
-            FileObject fo = FileUtil.toFileObject(file);
+            FileObject fo = FileUtils.toFileObject(file);
             if (fo != null && isPrimary(fo)) {
                 return Lookups.fixed(fo);                 
             } else {
