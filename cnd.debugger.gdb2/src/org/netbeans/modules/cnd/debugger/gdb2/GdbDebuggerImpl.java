@@ -1810,13 +1810,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         guiStackFrames = new GdbFrame[size];
         for (int vx = 0; vx < size; vx++) {
             MIResult frame = (MIResult) stack_list.get(vx);
-            if (args_list == null) {
-		// gdb problem, can't get args of frame
-                guiStackFrames[vx] = new GdbFrame(this, frame.value(), null);
-            } else {
-                guiStackFrames[vx] = new GdbFrame(this, frame.value(),
-                        (MIResult) args_list.get(vx));
+            
+            // try to find frame arguments
+            MIResult frameArgs = null;
+            if (args_list != null && vx <= args_list.size()) {
+                frameArgs = (MIResult) args_list.get(vx);
             }
+            
+            guiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs);
+            
             if (vx == 0) {
                 guiStackFrames[vx].setCurrent(true); // make top frame current
             }
