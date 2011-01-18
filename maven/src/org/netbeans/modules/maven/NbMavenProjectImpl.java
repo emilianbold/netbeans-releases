@@ -44,7 +44,6 @@ package org.netbeans.modules.maven;
 import java.util.MissingResourceException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeEvent;
@@ -565,12 +564,8 @@ public final class NbMavenProjectImpl implements Project {
         }
     });
 
-    private static Image getIcon(MavenProject mPrj) {
-        String iconPath = pkg2Icon.get(mPrj.getPackaging());
-        if (iconPath == null) {
-            iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
-        }
-        return ImageUtilities.loadImage(iconPath);
+    public static String getIconPath(String packaging) {
+        return pkg2Icon.get(packaging);
     }
 
     public String getName() {
@@ -1006,18 +1001,17 @@ public final class NbMavenProjectImpl implements Project {
                     toReturn = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
                 }
             }
-            String pckg = pr.getPackaging().toLowerCase();
-            if (pkg2Icon.get(pckg) == null) {
-                toReturn = toReturn + " (" + pckg + ")"; // NOI18N
-            }
-
             return toReturn;
         }
 
         @Override
         public Icon getIcon() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
-            return ImageUtilities.image2Icon(NbMavenProjectImpl.getIcon(pr));
+            String iconPath = getIconPath(pr.getPackaging());
+            if (iconPath == null) {
+                iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
+            }
+            return ImageUtilities.loadImageIcon(iconPath, true);
         }
 
         @Override
