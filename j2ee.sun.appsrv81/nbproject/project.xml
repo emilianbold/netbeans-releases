@@ -134,7 +134,7 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.17</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>               
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>
@@ -144,6 +144,12 @@ made subject to such option by the copyright holder.
                         <specification-version>1.9</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.platform</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency> 
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
                     <build-prerequisite/>
