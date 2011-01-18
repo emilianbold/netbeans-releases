@@ -49,8 +49,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -58,7 +62,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
@@ -144,6 +147,14 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         assertEquals("Failed uploading " + file.getAbsolutePath() + " to " + execEnv + ":" + remotePath
                 + ": " + errWriter.toString(),
                 0, task.get().intValue());
+    }
+
+    protected void mkDir(String dir) throws InterruptedException, ExecutionException, TimeoutException {
+        Future<Integer> mkDirTask = CommonTasksSupport.mkDir(execEnv, dir, new PrintWriter(System.err));
+        //System.out.printf("Mkdir %s\n", dir);
+        int rc = mkDirTask.get(30, TimeUnit.SECONDS);
+        //System.out.printf("mkdir %s done, rc=%d\n", dir, rc);
+        assertEquals(0, rc);
     }
 
     protected String mkTemp(boolean directory) throws Exception {
