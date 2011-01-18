@@ -117,7 +117,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         errorKind2Severity = new EnumMap<org.netbeans.modules.csl.api.Severity, Severity>(org.netbeans.modules.csl.api.Severity.class);
         errorKind2Severity.put(org.netbeans.modules.csl.api.Severity.ERROR, Severity.ERROR);
         errorKind2Severity.put(org.netbeans.modules.csl.api.Severity.WARNING, Severity.WARNING);
-//        errorKind2Severity.put(Error/*Diagnostic*/.Kind.WARNING, Severity.WARNING);
+        errorKind2Severity.put(org.netbeans.modules.csl.api.Severity.INFO, Severity.HINT);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.NOTE, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.OTHER, Severity.WARNING);
     }

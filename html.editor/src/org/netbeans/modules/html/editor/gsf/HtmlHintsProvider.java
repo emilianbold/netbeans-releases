@@ -104,7 +104,7 @@ public class HtmlHintsProvider implements HintsProvider {
             if (project == null) {
                 //we cannot set the default anywhere, just show a warning message
 
-                hints.add(new Hint(getRule(Severity.WARNING),
+                hints.add(new Hint(getRule(Severity.INFO),
                         NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION_NO_PROJECT"),
                         file,
                         new OffsetRange(0, 0),
@@ -118,7 +118,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION" : "MSG_CANNOT_DETERMINE_HTML_VERSION") :
                     NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION_DEFAULTED_ALREADY" : "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
 
-                hints.add(new Hint(getRule(Severity.WARNING),
+                hints.add(new Hint(getRule(Severity.INFO),
                         msg,
                         file,
                         new OffsetRange(0, 0),
@@ -226,7 +226,7 @@ public class HtmlHintsProvider implements HintsProvider {
                 fixes.add(new EnableErrorChecksForMimetypeFix(saresult));
             }
 
-            Hint h = new Hint(new HtmlRule(HintSeverity.WARNING, false),
+            Hint h = new Hint(new HtmlRule(HintSeverity.INFO, false),
                     NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
                     fo,
                     new OffsetRange(0, 0),
@@ -348,9 +348,12 @@ public class HtmlHintsProvider implements HintsProvider {
     }
     private static final HtmlRule ERROR_RULE = new HtmlRule(HintSeverity.ERROR, true);
     private static final HtmlRule WARNING_RULE = new HtmlRule(HintSeverity.WARNING, true);
+    private static final HtmlRule INFO_RULE = new HtmlRule(HintSeverity.INFO, true);
 
     private static HtmlRule getRule(Severity s) {
         switch (s) {
+            case INFO:
+                return INFO_RULE;
             case WARNING:
                 return WARNING_RULE;
             case ERROR:
