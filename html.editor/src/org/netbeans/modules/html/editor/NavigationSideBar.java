@@ -146,7 +146,7 @@ public class NavigationSideBar extends JPanel implements Accessible {
             if(leaf != null) {
                 //add all nodes in the leaf's path to the root
                 for(AstNode node : leaf.path().path()) { //really brilliant wording!!!!
-                    if(node.type() == AstNode.NodeType.OPEN_TAG) {
+                    if(node.type() == AstNode.NodeType.OPEN_TAG && !node.isVirtual()) {
                         nodesInPath.add(node);
                     }
                 }
