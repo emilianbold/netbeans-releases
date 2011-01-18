@@ -2624,7 +2624,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "6.10";                    // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.0";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
