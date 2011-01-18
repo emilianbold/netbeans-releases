@@ -41,6 +41,7 @@
  */
 package org.netbeans.core;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,61 +65,66 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
 
 /**
  *
  * @author Jirka Rechtacek
  */
 public class ProxyAutoConfig {
+
     private static ProxyAutoConfig INSTANCE = null;
     private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
+    
+    private static final String NS_PROXU_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
 
     public static synchronized ProxyAutoConfig getInstance() {
         if (INSTANCE == null) {
-            String init = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
+            String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
             LOGGER.fine("Init ProxyAutoConfig for " + init);
             INSTANCE = new ProxyAutoConfig(init.substring(4).trim());
         }
         return INSTANCE;
     }
-
     private static final Logger LOGGER = Logger.getLogger(ProxyAutoConfig.class.getName());
     private Invocable inv = null;
     private final Task initTask;
     private final URI pacURI;
 
     private ProxyAutoConfig(final String pacURL) {
-        assert INSTANCE == null : "INSTANCE must be null, it's singleton!";
+        assert INSTANCE == null : "INSTANCE must be null now, it's singleton!";
         try {
             pacURI = new URI(pacURL);
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(pacURL + " throws " + ex, ex);
         }
-        initTask = RP.post(new Runnable () {
+        initTask = RP.post(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            initEngine(pacURL);
-                        }
-                    });
+            @Override
+            public void run() {
+                initEngine(pacURL);
+            }
+        });
     }
-    
+
     public URI getPacURI() {
         return pacURI;
     }
-    
+
     private void initEngine(String pacURL) {
         InputStream pacIS = downloadPAC(pacURL);
         assert pacIS != null : "No InputStream for " + pacURL;
         if (pacIS == null) {
             throw new IllegalArgumentException("No InputStream for " + pacURL);
         }
+        String utils = downloadUtils();
         ScriptEngine eng;
         try {
-            eng = evalPAC(pacIS);
+            eng = evalPAC(pacIS, utils);
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
             throw new IllegalArgumentException(ex);
@@ -126,27 +132,27 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
             throw new IllegalArgumentException(ex);
         }
-        assert eng != null : "JavaScript engine cannot be null";
+        assert eng != null : "JavaScri5pt engine cannot be null";
         if (eng == null) {
             throw new IllegalArgumentException("JavaScript engine cannot be null");
         }
         inv = (Invocable) eng;
     }
-    
+
+    @SuppressWarnings("unchecked")
     public List<Proxy> findProxyForURL(URI u) {
         assert initTask != null : "initTask has be to posted.";
-        if (! initTask.isFinished()) {
-            while (! initTask.isFinished()) {
-                initTask.addTaskListener(new TaskListener() {
-
-                    @Override
-                    public void taskFinished(org.openide.util.Task task) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                });
+        if (!initTask.isFinished()) {
+            while (!initTask.isFinished()) {
                 try {
-                    Thread.sleep(100);
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                        }
+                    }).waitFinished(100);
                 } catch (InterruptedException ex) {
+                    LOGGER.log(Level.FINEST, ex.getMessage(), ex);
                 }
             }
         }
@@ -165,7 +171,7 @@ public class ProxyAutoConfig {
         LOGGER.fine("findProxyForURL(" + u + ") returns " + (res == null ? "null!" : Arrays.asList(res)));
         return res;
     }
-    
+
     private static InputStream downloadPAC(String pacURL) {
         InputStream is = null;
         try {
@@ -183,14 +189,12 @@ public class ProxyAutoConfig {
         return is;
     }
 
-    private static ScriptEngine evalPAC(InputStream is) throws FileNotFoundException, ScriptException {
+    private static ScriptEngine evalPAC(InputStream is, String utils) throws FileNotFoundException, ScriptException {
         ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine engine = factory.getEngineByName("JavaScript");
         Reader pacReader = new InputStreamReader(is);
-        //Reader utilsReader = new InputStreamReader(ProxyAutoConfig.class.getResourceAsStream("/org/netbeans/core/resources/utils.js"));
-        Reader utilsReader = new InputStreamReader(ProxyAutoConfig.class.getResourceAsStream("/org/netbeans/core/resources/nsProxyAutoConfig.js"));
         engine.eval(pacReader);
-        engine.eval(utilsReader);
+        engine.eval(utils);
         return engine;
     }
 
@@ -207,7 +211,7 @@ public class ProxyAutoConfig {
         } else {
             if ("http".equals(protocol)) { // NOI18N
                 proxyType = Proxy.Type.HTTP;
-            } else  {
+            } else {
                 proxyType = Proxy.Type.SOCKS;
             }
         }
@@ -264,5 +268,36 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
             return null;
         }
+    }
+
+    private static String downloadUtils() {
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = null;
+        FileObject fo = null;
+        try {
+            try {
+                fo = URLMapper.findFileObject(new URL (NS_PROXU_AUTO_CONFIG_URL));
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, ex.getMessage(), ex);
+            }
+            reader = new BufferedReader(new java.io.FileReader(FileUtil.toFile(fo)));
+        } catch (FileNotFoundException ex) {
+            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+        }
+        try {
+            reader.skip(4679);
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.endsWith("+")) { // NOI18N
+                    line = line.substring(0, line.length() - 1);
+                }
+                builder.append(line.replaceAll("\"", "").replaceAll("\\\\n", "").replaceAll("\\\\\\\\", "\\\\")); // NOI18N
+                builder.append(System.getProperty("line.separator")); // NOI18N
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "While downloading nsProxyAutoConfig.js thrown " + ex.getMessage(), ex);
+        }
+        return builder.toString();
     }
 }
