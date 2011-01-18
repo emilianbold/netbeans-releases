@@ -43,6 +43,8 @@ package org.netbeans.modules.maven.j2ee.web;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -301,14 +303,19 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                 synchronized (SERVLET_SEARCH_MODULES) {
                     if (!SERVLET_SEARCH_MODULES.contains(webModule)) {
                         SERVLET_SEARCH_MODULES.add(webModule);
-                        Runnable runnable = new Runnable() {
-
-                            public void run() {
-                                setServletClasses(servletClasses, javaClass,
+                        if ( !initialScan || SwingUtilities.isEventDispatchThread()){
+                            Runnable runnable = new Runnable() {
+                                public void run() {
+                                    setServletClasses(servletClasses, javaClass,
                                         webModule);
-                            }
-                        };
-                        SERVLETS_REQUEST_PROCESSOR.post(runnable);
+                                }
+                            };
+                            SERVLETS_REQUEST_PROCESSOR.post(runnable);
+                        }
+                        else {
+                            setServletClasses(servletClasses, javaClass,
+                                    webModule);
+                        }
                     }
                 }
             }
@@ -347,8 +354,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                  * Double check . It's not good but not fatal. In the worst case
                  * we will start several initial scanning.
                  */
-                RequestProcessor.getDefault().post(runnable);
                 isScanStarted.set(true);
+                RequestProcessor.getDefault().post(runnable);
             }
             return true;
         }

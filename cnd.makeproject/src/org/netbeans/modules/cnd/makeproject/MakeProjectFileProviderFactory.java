@@ -58,6 +58,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -384,13 +385,13 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private static abstract class FDImpl extends FileDescriptor {
         private final String fileName;
-        private final String prjName;
+        private final Project project;
 
-        public FDImpl(String fileName, String prjName) {
+        public FDImpl(String fileName, Project project) {
             this.fileName = fileName;
-            this.prjName = prjName;
+            this.project = project;
         }
-        
+
         @Override
         public final String getFileName() {
             return fileName;
@@ -398,7 +399,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         
         @Override
         public final String getProjectName() {
-            return prjName;
+            MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+            return info.getName();
         }   
         
         @Override
@@ -458,7 +460,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         private final Item item;
 
         public ItemFD(Item item, Project project) {
-            super(item.getName(), ((MakeProject)project).getName());
+            super(item.getName(), project);
             this.item = item;
         }
 
@@ -490,13 +492,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     private static final class OtherFD extends FDImpl {
 
         private final String name;
-        private final Project project;
         private final Folder folder;
         private final String baseDir;
         public OtherFD(String name, Project project, String baseDir, Folder folder) {
-            super(name, ((MakeProject)project).getName());
+            super(name, project);
             this.name = name;
-            this.project = project;
             this.folder = folder;
             this.baseDir = baseDir;
         }

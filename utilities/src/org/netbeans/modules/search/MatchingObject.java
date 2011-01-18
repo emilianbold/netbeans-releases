@@ -174,7 +174,7 @@ final class MatchingObject
      */
     private void setUpDataObjValidityChecking() {
         final DataObject dataObj = (DataObject) getDataObject();
-        if (dataObj.isValid()) {
+        if (dataObj != null && dataObj.isValid()) {
             dataObj.addPropertyChangeListener(this);
         }
     }
@@ -183,7 +183,9 @@ final class MatchingObject
      */
     void cleanup() {
         final DataObject dataObj = (DataObject) getDataObject();
-        dataObj.removePropertyChangeListener(this);
+        if(dataObj != null) {
+            dataObj.removePropertyChangeListener(this);
+        }
     }
     
     @Override

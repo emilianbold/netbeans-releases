@@ -46,10 +46,12 @@ package org.netbeans.modules.csl.api;
 import org.netbeans.spi.editor.hints.Severity;
 
 public enum HintSeverity {
-    ERROR, WARNING, CURRENT_LINE_WARNING;
+    INFO, ERROR, WARNING, CURRENT_LINE_WARNING;
 
     public Severity toEditorSeverity() {
         switch (this) {
+            case INFO:
+                return Severity.HINT;
             case ERROR:
                 return Severity.ERROR;
             case WARNING:
