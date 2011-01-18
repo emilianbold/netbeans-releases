@@ -1294,7 +1294,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
             } else if ("font".equals(propName)) {
                 if (!customFont && defaultFont != null) {
-                    customFont = !defaultFont.equals(textComponent.getFont());
+                    customFont = (textComponent != null) &&
+                            !defaultFont.equals(textComponent.getFont());
                 }
                 if (customFont) {
                     updateFonts = true;
@@ -1302,13 +1303,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 releaseChildren = true;
             } else if ("foreground".equals(propName)) { //NOI18N
                 if (!customForeground && defaultForeground != null) {
-                    customForeground = !defaultForeground.equals(textComponent.getForeground());
+                    customForeground = (textComponent != null) &&
+                            !defaultForeground.equals(textComponent.getForeground());
                 }
                 // Release children since TextLayoutPart caches foreground and background
                 releaseChildren = true;
             } else if ("background".equals(propName)) { //NOI18N
                 if (!customBackground && defaultBackground != null) {
-                    customBackground = !defaultBackground.equals(textComponent.getBackground());
+                    customBackground = (textComponent != null) &&
+                            !defaultBackground.equals(textComponent.getBackground());
                 }
                 // Release children since TextLayoutPart caches foreground and background
                 releaseChildren = true;
