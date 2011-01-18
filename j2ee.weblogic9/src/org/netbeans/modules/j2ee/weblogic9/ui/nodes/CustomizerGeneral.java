@@ -112,6 +112,12 @@ class CustomizerGeneral extends javax.swing.JPanel {
         WLJpa2SwitchSupport support = manager.getJpa2SwitchSupport();
         if (support.isEnabledViaSmartUpdate()) {
             jpa2Button.setEnabled(false);
+        } else {
+            if(support.isEnabled()){
+                org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_DisableJPA2")); // NOI18N
+            } else {
+                org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_EnableJPA2")); // NOI18N
+            }
         }
     }
 
@@ -172,7 +178,6 @@ class CustomizerGeneral extends javax.swing.JPanel {
         serverPort.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_EnableJPA2")); // NOI18N
-        jpa2Button.setEnabled(false);
         jpa2Button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jpa2ButtonActionPerformed(evt);

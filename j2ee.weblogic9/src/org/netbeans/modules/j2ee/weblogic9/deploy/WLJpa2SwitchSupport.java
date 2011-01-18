@@ -39,8 +39,25 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.j2ee.weblogic9.deploy;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.jar.Attributes.Name;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -48,6 +65,11 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
  */
 public final class WLJpa2SwitchSupport {
 
+    private static final String OEPECONTRIBUTIONSJAR = "oepe-contributions.jar";//NO18N
+    private static final String WEBLOGICJAR = "weblogic.jar";//NO18N
+    private static final String JPAJAR1 = "javax.persistence_1.0.0.0_2-0-0.jar";
+    private static final String JPAJAR2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";
+    
     private final WLDeploymentManager deploymentManager;
 
     public WLJpa2SwitchSupport(WLDeploymentManager deploymentManager) {
@@ -55,13 +77,63 @@ public final class WLJpa2SwitchSupport {
     }
 
     public void enable() {
-        // TODO write/update oepe-contributions.jar with proper relative classpath
-        // as described in email
-        // WLPluginProperties methods may help you
+        File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+        File webLogicJarFile = new File(libDir, WEBLOGICJAR);
+        JarFile webLogicJar = null;
+        try {
+            webLogicJar = new JarFile(webLogicJarFile);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        File oepeJarFile = new File(libDir, OEPECONTRIBUTIONSJAR);
+        FileObject oepeFO = FileUtil.toFileObject(oepeJarFile);
+        JarFile oepeJar = null;
+        if (oepeFO != null) {
+            //check if paths are correct
+            try {
+                oepeJar = new JarFile(oepeJarFile);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            Manifest manifest = null;
+            try {
+                manifest = oepeJar.getManifest();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            boolean override = true;
+            if(manifest != null){
+                String cp = manifest.getMainAttributes().getValue(Name.CLASS_PATH);
+                if(cp.indexOf(JPAJAR1)>-1 && cp.indexOf(JPAJAR2)>-1) override = false;//should ful path be checked?
+            }
+            if(override){
+                backupOEPE(libDir, oepeJarFile);
+                oepeFO = null;
+            }
+        }
+        if (oepeFO == null) {
+            //need to create zip file
+            oepeFO = createOEPEJar(oepeJarFile, "../../../modules/" + JPAJAR1 + " ../../../modules/" + JPAJAR2);//NOI18N
+        }
+        Manifest wlManifest = null;
+        try {
+            wlManifest = webLogicJar.getManifest();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
+        if (cp.indexOf(OEPECONTRIBUTIONSJAR) == -1) {
+            wlManifest.getMainAttributes().putValue(Name.CLASS_PATH.toString(), OEPECONTRIBUTIONSJAR + " " + cp);
+            replaceManifest(webLogicJarFile, wlManifest);
+        }
     }
 
     public void disable() {
         // delete referneces to jars in oepe-contributions.jar
+        File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+        File oepeJarFile = new File(libDir, OEPECONTRIBUTIONSJAR);
+        backupOEPE(libDir, oepeJarFile);
+        createOEPEJar(oepeJarFile, "");
     }
 
     public boolean isEnabled() {
@@ -73,4 +145,116 @@ public final class WLJpa2SwitchSupport {
         return false;
     }
 
+    private void backupOEPE(File libDir, File oepeJarFile){
+        FileObject oepeFO = FileUtil.toFileObject(oepeJarFile);
+        String bakName = FileUtil.findFreeFileName(oepeFO.getParent(), OEPECONTRIBUTIONSJAR, "bak");//NOI18N
+        try {
+            FileUtil.copyFile(oepeFO, oepeFO.getParent(), bakName, "bak"); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void replaceManifest(File webLogicJarFile, Manifest wlManifest) {
+        FileObject webLogicJarFO = FileUtil.toFileObject(webLogicJarFile);
+        FileObject bakJar = null;
+        try {
+            String bakName = FileUtil.findFreeFileName(webLogicJarFO.getParent(), WEBLOGICJAR, "bak");//NOI18N
+            bakJar = FileUtil.copyFile(webLogicJarFO, webLogicJarFO.getParent(), bakName, "bak"); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        //need replace
+        FileOutputStream dest = null;
+        try {
+            dest = new FileOutputStream(webLogicJarFile);
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        FileInputStream source = null;
+        try {
+            source = new FileInputStream(FileUtil.toFile(bakJar));
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        JarInputStream in = null;
+        try {
+            in = new JarInputStream(new BufferedInputStream(source));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        JarOutputStream out = null;
+        try {
+            out = new JarOutputStream(new BufferedOutputStream(dest), wlManifest);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        JarEntry entry = null;
+        byte[] temp = new byte[1024];
+        try {
+            while ((entry = in.getNextJarEntry()) != null) {
+                String name = entry.getName();
+                if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) {
+                    continue;
+                }
+                out.putNextEntry(entry);
+                while (in.available() != 0) {
+                    int read = in.read(temp);
+                    if (read != -1) {
+                        out.write(temp, 0, read);
+                    }
+                }
+                out.closeEntry();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        try {
+            if (out != null) {
+                out.close();
+            }
+            if (in != null) {
+                in.close();
+            }
+            if (dest != null) {
+                dest.close();
+            }
+            if (source != null) {
+                source.close();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private FileObject createOEPEJar(File oepeJarFile, String classpath)
+            {
+            //need to create zip file
+            FileOutputStream dest = null;
+            try {
+                dest = new FileOutputStream(oepeJarFile);
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            Manifest manifest = new Manifest();
+            manifest.getMainAttributes().putValue(Name.MANIFEST_VERSION.toString(), "1.0");
+            manifest.getMainAttributes().putValue(Name.CLASS_PATH.toString(), classpath);//NOI18N
+            JarOutputStream out = null;
+            try {
+                out = new JarOutputStream(new BufferedOutputStream(dest), manifest);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            try {
+                if (out != null) {
+                    out.close();
+                }
+                if (dest != null) {
+                    dest.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return FileUtil.toFileObject(oepeJarFile);
+        }
 }
