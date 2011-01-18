@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.nodes;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import javax.swing.Action;
@@ -62,6 +63,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 
 /** A node to represent project root.
@@ -113,6 +115,18 @@ public class MavenProjectNode extends AbstractNode {
     @Override
     public String getDisplayName() {
         return project.getDisplayName();
+    }
+
+    public @Override String getHtmlDisplayName() {
+        String packaging = project.getOriginalMavenProject().getPackaging();
+        if (NbMavenProjectImpl.getIconPath(packaging) != null) {
+            return null;
+        }
+        try {
+            return XMLUtil.toElementContent(getDisplayName()) + " <font color='!controlShadow'>" + packaging + "</font>";
+        } catch (CharConversionException x) {
+            return null;
+        }
     }
 
     @Override
