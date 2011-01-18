@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -150,7 +150,7 @@ public final class DTDRegistry {
     public static final String GLASSFISH_APPLICATION_601_DTD_PUBLIC_ID =
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application 6.0//EN";
     public static final String GLASSFISH_APPLICATION_601_DTD_SYSTEM_ID =
-        "http://glassfish.org/dtds/sun-application_6_0-1.dtd";
+        "http://glassfish.org/dtds/glassfish-application_6_0-1.dtd";
     /**
      * EJB: Sun ONE App Server specific dtd info.
      */
@@ -194,7 +194,7 @@ public final class DTDRegistry {
     public static final String GLASSFISH_EJBJAR_311_DTD_PUBLIC_ID =
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN";
     public static final String GLASSFISH_EJBJAR_311_DTD_SYSTEM_ID =
-        "http://glassfish.org/dtds/sun-ejb-jar_3_1-1.dtd";
+        "http://glassfish.org/dtds/glassfish-ejb-jar_3_1-1.dtd";
     /**
      * Application Client: Sun ONE App Server specific dtd info.
      */
@@ -224,9 +224,9 @@ public final class DTDRegistry {
         "http://www.sun.com/software/appserver/dtds/sun-application-client_6_0-0.dtd";
     
     public static final String GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID =
-        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client 6.0//EN";
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application Client 6.0//EN";
     public static final String GLASSFISH_APPCLIENT_601_DTD_SYSTEM_ID =
-        "http://glassfish.org/dtds/sun-application-client_6_0-1.dtd";
+        "http://glassfish.org/dtds/glassfish-application-client_6_0-1.dtd";
     /**
      * Connectors: Sun ONE App Server specific dtd info.
      */
