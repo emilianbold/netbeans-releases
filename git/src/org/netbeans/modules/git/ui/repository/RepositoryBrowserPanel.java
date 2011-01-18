@@ -79,6 +79,7 @@ import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
+import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -736,6 +737,23 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             action.createBranch(currRepository, branchName);
                         }
                     }, 0);
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    Utils.postParallel(new Runnable () {
+                        @Override
+                        public void run() {
+                            MergeRevisionAction action = SystemAction.get(MergeRevisionAction.class);
+                            action.mergeRevision(currRepository, branchName);
+                        }
+                    }, 0);
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return !active;
                 }
             });
             return actions.toArray(new Action[actions.size()]);

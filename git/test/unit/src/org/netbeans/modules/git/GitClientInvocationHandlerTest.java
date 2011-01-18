@@ -118,6 +118,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "init",
                 "listModifiedIndexEntries",
                 "log",
+                "merge",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -126,6 +127,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
                 "checkoutBranch",
+                "merge",
                 "remove",
                 "reset",
                 "clean"));
@@ -177,6 +179,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "init",
                 "listModifiedIndexEntries",
                 "log",
+                "merge",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -242,6 +245,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "init",
                 "listModifiedIndexEntries",
                 "log",
+                "merge",
                 "remove",
                 "removeNotificationListener",
                 "remove",
@@ -252,6 +256,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "checkoutBranch",
                 "commit",
                 "createBranch",
+                "merge",
                 "reset"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
@@ -346,6 +351,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "init",
                 "listModifiedIndexEntries",
                 "log",
+                "merge",
                 "remove",
                 "removeNotificationListener",
                 "remove",

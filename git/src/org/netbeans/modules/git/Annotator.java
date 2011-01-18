@@ -72,6 +72,7 @@ import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.init.InitAction;
+import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -148,6 +149,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 actions.add(SystemAction.get(CreateBranchAction.class));
                 actions.add(SystemAction.get(CheckoutRevisionAction.class));
+                actions.add(SystemAction.get(MergeRevisionAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
                 ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
@@ -180,6 +182,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutRevisionAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
                 DisconnectAction da = SystemAction.get(DisconnectAction.class);
                 if (da.isEnabled()) {
                     actions.add(null);
