@@ -299,7 +299,7 @@ need not be public (if you do not want other Java code to see it). It
 may take a file object as argument if you wish - this will be the
 instance file; typically you use this to pass extra configuration from
 the layer, useful if you want to create multiple instances with the
-same creation method. So for example you might implement such a method
+same creation method. The argument may also be a map. So for example you might implement such a method
 like this:</p>
 
 <pre>
@@ -311,8 +311,8 @@ like this:</p>
     <span class="comment">// ...
 </span>    <span class="comment">// Called directly from XML layer. Pass URL to
 </span>    <span class="comment">// properties file from attr 'myParam'.
-</span>    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="function-name">configure</span>(<span class="type">FileObject</span> <span class="variable-name">inst</span>) <span class="keyword">throws</span> <span class="type">IOException</span> {
-        <span class="type">URL</span> <span class="variable-name">u</span> = (<span class="type">URL</span>)inst.getAttribute(<span class="string">"myParam"</span>);
+</span>    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="function-name">configure</span>(<span class="type">Map&lt;String,?&gt;</span> <span class="variable-name">inst</span>) <span class="keyword">throws</span> <span class="type">IOException</span> {
+        <span class="type">URL</span> <span class="variable-name">u</span> = (<span class="type">URL</span>)inst.get(<span class="string">"myParam"</span>);
         <span class="type">Properties</span> <span class="variable-name">p</span> = <span class="keyword">new</span> <span class="type">Properties</span>();
         p.load(u.openStream());
         <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">FactoryForEverything</span>(p);
