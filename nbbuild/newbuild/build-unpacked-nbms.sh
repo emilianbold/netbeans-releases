@@ -4,7 +4,17 @@ DIRNAME=`dirname $0`
 cd ${DIRNAME}
 source init.sh
 
+cd  ${DIST}/zip
+
+nbsrc_file=`ls netbeans*platform-src.zip`
+zip_file=`basename $nbsrc_file -platform-src.zip`.zip
+
 cd  $NB_ALL
+
+cd nbbuild
+cp ${DIST}/zip/${zip_file} .
+unzip -oq ${zip_file}
+cd ..
 
 #Build napackaged NBMs for stable UC - IDE + UC-only
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Duse.pack200=false -Dbase.nbm.target.dir=${DIST}/uc-unpackaged -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
@@ -12,7 +22,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build unpackaged all stable UC NBMs"
-#    exit $ERROR_CODE;
+    exit $ERROR_CODE;
 fi
 
 cd nbbuild
