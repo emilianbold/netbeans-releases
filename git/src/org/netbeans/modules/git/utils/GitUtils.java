@@ -44,9 +44,11 @@ package org.netbeans.modules.git.utils;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,12 +58,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -550,6 +554,67 @@ public final class GitUtils {
                     SystemAction.get(StatusAction.class).performContextAction(context);
                 }
             });
+        }
+    }
+
+    public static void printInfo (StringBuilder sb, GitRevisionInfo info) {
+        String lbrevision = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.revision");   // NOI18N
+        String lbauthor = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.author");      // NOI18N
+        String lbcommitter = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.committer");      // NOI18N
+        String lbdate = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.date");        // NOI18N
+        String lbsummary = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.summary");     // NOI18N
+
+        String author = info.getAuthor().toString();
+        String committer = info.getCommitter().toString();
+        sb.append(NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.title")).append("\n"); //NOI18N
+        sb.append(lbrevision);
+        sb.append(info.getRevision());
+        sb.append('\n'); // NOI18N
+        sb.append(lbauthor);
+        sb.append(author);
+        sb.append('\n'); // NOI18N
+        if (!author.equals(committer)) {
+            sb.append(lbcommitter);
+            sb.append(committer);
+            sb.append('\n'); // NOI18N
+        }
+        sb.append(lbdate);
+        sb.append(DateFormat.getDateTimeInstance().format(new Date(info.getCommitTime())));
+        sb.append('\n'); // NOI18N
+        sb.append(lbsummary);
+        int prefixLen = lbsummary.length();
+        sb.append(formatMultiLine(prefixLen, info.getFullMessage()));
+        sb.append('\n'); // NOI18N
+    }
+    
+    private static String formatMultiLine (int prefixLen, String message) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < prefixLen; ++i) {
+            sb.append(" "); //NOI18N
+        }
+        String prefix = sb.toString();
+        String[] lines = message.split("\n"); //NOI18N
+        sb = new StringBuilder(lines.length > 0 ? lines[0] : ""); //NOI18N
+        for (int i = 1; i < lines.length; ++i) {
+            sb.append("\n").append(prefix).append(lines[i]); //NOI18N
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Forces refresh of diff sidebars for open files belonging to the given repository
+     * @param repository 
+     */
+    public static void headChanged (File repository) {
+        Set<File> openFiles = Utils.getOpenFiles();
+        for (Iterator<File> it = openFiles.iterator(); it.hasNext(); ) {
+            File file = it.next();
+            if (!repository.equals(Git.getInstance().getRepositoryRoot(file))) {
+                it.remove();
+            }
+        }
+        if (!openFiles.isEmpty()) {
+            Git.getInstance().headChanged(openFiles);
         }
     }
     
