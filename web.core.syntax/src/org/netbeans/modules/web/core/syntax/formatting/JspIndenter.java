@@ -122,27 +122,27 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     }
 
     @Override
-    protected boolean isClosingTagOptional(String tagName) {
+    protected boolean isClosingTagOptional(CharSequence tagName) {
         return false;
     }
 
     @Override
-    protected boolean isOpeningTagOptional(String tagName) {
+    protected boolean isOpeningTagOptional(CharSequence tagName) {
         return false;
     }
 
     @Override
-    protected Boolean isEmptyTag(String tagName) {
+    protected Boolean isEmptyTag(CharSequence tagName) {
         return null;
     }
 
     @Override
-    protected boolean isTagContentUnformattable(String tagName) {
+    protected boolean isTagContentUnformattable(CharSequence tagName) {
         return false;
     }
 
     @Override
-    protected Set<String> getTagChildren(String tagName) {
+    protected Set<String> getTagChildren(CharSequence tagName) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
