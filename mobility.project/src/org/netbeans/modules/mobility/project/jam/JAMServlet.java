@@ -131,7 +131,12 @@ public class JAMServlet extends HttpServlet {
         } catch (UnsupportedEncodingException e) {
             pathI = URLDecoder.decode(pathI);
         }
-        final File f = new File(pathI);
+        File f = new File(pathI);
+        if (!f.isFile()) try {
+            f = new File(URLDecoder.decode(pathI, "UTF-8")); // NOI18N
+        } catch (UnsupportedEncodingException e) {
+            f = new File(URLDecoder.decode(pathI));
+        }
         if (!f.isFile()) return false;
         final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
         if (fo == null) return false;
