@@ -174,7 +174,7 @@ public final class FileSystemProvider {
     public static String getCanonicalPath(FileSystem fileSystem, String absPath) throws IOException {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
-                return provider.getCanonicalPath(absPath);
+                return provider.getCanonicalPath(fileSystem, absPath);
             }
         }
         return absPath;
