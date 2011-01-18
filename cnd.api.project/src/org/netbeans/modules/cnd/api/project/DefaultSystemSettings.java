@@ -87,10 +87,12 @@ public abstract class DefaultSystemSettings {
 
     private static final class Empty extends DefaultSystemSettings {
 
+        @Override
         public List<String> getSystemIncludes(NativeFileItem.Language language) {
             return Collections.emptyList();
         }
       
+        @Override
         public List<String> getSystemMacros(NativeFileItem.Language language) {
             return Collections.emptyList();
         }
