@@ -94,6 +94,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -142,7 +143,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             updateAnnotationFiles();
         }
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
-        pi.addPropertyChangeListener(MakeLogicalViewRootNode.this);
+        pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
     }
 
     @Override
