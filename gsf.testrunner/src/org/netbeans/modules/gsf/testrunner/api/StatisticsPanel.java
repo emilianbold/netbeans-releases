@@ -174,6 +174,9 @@ final class StatisticsPanel extends JPanel {
 
     void updateButtons(){
         RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
+        if (rerunHandler == null) {
+            return;
+        }
         rerunButton.setEnabled(displayHandler.sessionFinished &&
                                rerunHandler.enabled(RerunType.ALL));
         rerunFailedButton.setEnabled(displayHandler.sessionFinished && 
