@@ -281,21 +281,6 @@ made subject to such option by the copyright holder.
 		</folder>
  
 	</folder>
-
-
-  <folder name="Services">
-
-     <!-- Register the HelpSet in lookup: -->
-     <folder name="JavaHelp">
-        <!-- Merge after Core IDE Help: -->
-        <!-- Merge it after the Server Plugin Integration online help: -->
-        <!-- The following file supplies the IDE with the name of the helpset: -->
-        <file name="com-sun-enterprise-tools-studio-j2ee-helpset.xml" url="com-sun-enterprise-tools-studio-j2ee-helpset.xml">
-                <attr name="position" intvalue="1000"/>
-            </file>
-     </folder>
-     
-  </folder>
     
   <folder name="Databases">
      <!-- Register the Pointbase database runtime -->
@@ -310,9 +295,6 @@ made subject to such option by the copyright holder.
     <!-- actions -->
     <folder name="Actions">
         <folder name="Help">
-            <file name="com-sun-enterprise-tools-studio-j2ee-mainpage.xml" url="com-sun-enterprise-tools-studio-j2ee-mainpage.xml">
-            	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"/> 
-            </file>
             <file name="org-netbeans-modules-j2ee-sun-ide-InfoAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.j2ee.sun.ide.InfoAction"/>
