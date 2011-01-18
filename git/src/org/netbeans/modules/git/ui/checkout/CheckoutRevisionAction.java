@@ -101,7 +101,7 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                 
                 @Override
                 protected void perform () {
-                    final Collection<File> seenRoots = Git.getInstance().getSeenRoots(repository);
+                    Collection<File> seenRoots = Git.getInstance().getSeenRoots(repository);
                     final Set<String> seenPaths = new HashSet<String>(GitUtils.getRelativePaths(repository, seenRoots.toArray(new File[seenRoots.size()])));
                     try {
                         GitClient client = getClient();
@@ -122,7 +122,7 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                             }
 
                             private boolean isUnderRoots (String relativePathToRoot) {
-                                boolean underRoot = seenPaths.contains(relativePathToRoot);
+                                boolean underRoot = seenPaths.isEmpty() || seenPaths.contains(relativePathToRoot);
                                 if (!underRoot) {
                                     for (String path : seenPaths) {
                                         if (relativePathToRoot.startsWith(path + "/")) {
