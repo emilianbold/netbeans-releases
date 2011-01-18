@@ -173,22 +173,27 @@ public abstract class CsmFileInfoQuery {
         Empty() {
         }
 
+        @Override
         public List<String> getSystemIncludePaths(CsmFile file) {
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getUserIncludePaths(CsmFile file) {
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
             return Collections.<CsmOffsetable>emptyList();
         }
 
+        @Override
         public List<CsmReference> getMacroUsages(CsmFile file) {
             return Collections.<CsmReference>emptyList();
         }
 
+        @Override
         public CsmOffsetable getGuardOffset(CsmFile file) {
             return null;
         }
