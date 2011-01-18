@@ -270,6 +270,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     private static Severity forProblemType(int problemtype) {
         switch (problemtype) {
             case ProblemDescription.INFORMATION:
+                return Severity.INFO;
             case ProblemDescription.WARNING:
                 return Severity.WARNING;
             case ProblemDescription.ERROR:
