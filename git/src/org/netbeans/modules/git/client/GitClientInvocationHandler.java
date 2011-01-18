@@ -84,6 +84,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
      */
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", //NOI18N
             "checkoutBranch", //NOI18N
+            "merge", //NOI18N
             "remove", //NOI18N
             "reset", //NOI18N
             "clean")); //NOI18N
@@ -111,6 +112,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "checkoutBranch", //NOI18N // current head changes
             "commit", //NOI18N
             "createBranch", //NOI18N // should refresh set of known branches
+            "merge", //NOI18N // creates a new head
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());

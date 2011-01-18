@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -67,7 +66,6 @@ import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -101,7 +99,7 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                 
                 @Override
                 protected void perform () {
-                    final Collection<File> seenRoots = Git.getInstance().getSeenRoots(repository);
+                    Collection<File> seenRoots = Git.getInstance().getSeenRoots(repository);
                     final Set<String> seenPaths = new HashSet<String>(GitUtils.getRelativePaths(repository, seenRoots.toArray(new File[seenRoots.size()])));
                     try {
                         GitClient client = getClient();
@@ -122,7 +120,7 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                             }
 
                             private boolean isUnderRoots (String relativePathToRoot) {
-                                boolean underRoot = seenPaths.contains(relativePathToRoot);
+                                boolean underRoot = seenPaths.isEmpty() || seenPaths.contains(relativePathToRoot);
                                 if (!underRoot) {
                                     for (String path : seenPaths) {
                                         if (relativePathToRoot.startsWith(path + "/")) {
@@ -151,16 +149,7 @@ public class CheckoutRevisionAction extends SingleRepositoryAction {
                         if (!notifiedFiles.isEmpty()) {
                             setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                             Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, notifiedFiles));
-                            Set<File> openFiles = Utils.getOpenFiles();
-                            for (Iterator<File> it = openFiles.iterator(); it.hasNext(); ) {
-                                File file = it.next();
-                                if (!notifiedFiles.contains(file)) {
-                                    it.remove();
-                                }
-                            }
-                            if (!openFiles.isEmpty()) {
-                                Git.getInstance().headChanged(openFiles);
-                            }
+                            GitUtils.headChanged(repository);
                         }
                     }
                 }

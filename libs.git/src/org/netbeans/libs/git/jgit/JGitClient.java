@@ -63,6 +63,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
@@ -76,6 +77,7 @@ import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
+import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -292,6 +294,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         LogCommand cmd = new LogCommand(repository, searchCriteria, monitor, this);
         cmd.execute();
         return cmd.getRevisions();
+    }
+
+    @Override
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        MergeCommand cmd = new MergeCommand(repository, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     /**
