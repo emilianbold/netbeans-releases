@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -223,5 +225,20 @@ public final class Utils {
             }
         }
         file.delete();
+    }
+    
+    /**
+     * Eliminates part of the ref's name that equals knon prefixes such as refs/heads/, refs/remotes/ etc.
+     * @param ref
+     * @return 
+     */
+    public static String getRefName (Ref ref) {
+        String name = ref.getName();
+        for (String prefix : Arrays.asList(Constants.R_HEADS, Constants.R_REMOTES, Constants.R_TAGS, Constants.R_REFS)) {
+            if (name.startsWith(prefix)) {
+                name = name.substring(prefix.length());
+            }
+        }
+        return name;
     }
 }

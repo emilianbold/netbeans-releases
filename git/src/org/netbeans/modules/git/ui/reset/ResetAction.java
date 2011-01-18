@@ -99,6 +99,7 @@ public class ResetAction extends SingleRepositoryAction {
                     } finally {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                         Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(getRepositoryRoot(), Git.getInstance().getSeenRoots(repository)));
+                        GitUtils.headChanged(repository);
                     }
                 }
             };
