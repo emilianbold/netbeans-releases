@@ -14,6 +14,7 @@
         <mkdir dir="${examples}"/>
         <zip basedir="samples_src/AirAlliance" excludes="${excludes}" destfile="${examples}/AirAlliance.zip"/>
         <zip basedir="samples_src/Jobeet" excludes="${excludes}" destfile="${examples}/Jobeet.zip"/>
+        <zip basedir="samples_src/RentAFlat" excludes="${excludes}" destfile="${examples}/RentAFlat.zip"/>
         <!--
         <zip basedir="samples_src/Book-O-Rama_E-Shop" excludes="${excludes}" destfile="${examples}/BookORama.zip"/>
         <zip basedir="samples_src/Tahuayo.com" excludes="${excludes}" destfile="${examples}/Tahuayo.zip"/>

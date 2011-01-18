@@ -49,11 +49,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,7 +66,8 @@ import org.openide.loaders.TemplateWizard;
 public class CndClassWizardIterator extends CCFSrcFileIterator {
 
     @Override
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
+        templateWizard = (TemplateWizard) wiz;
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -70,21 +75,29 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
     }
 
     @Override
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate() throws IOException {
+        TemplateWizard wiz = templateWizard;
         DataFolder targetFolder = wiz.getTargetFolder();
         DataObject template = wiz.getTemplate();
 
         String sourceFileName = wiz.getTargetName();
-
-        FileObject bro = FileUtil.findBrother(template.files().iterator().next(), "h"); // NOI18N
-        DataObject dobjBro = DataObject.find(bro);
+        FileObject sourceTemplate = template.files().iterator().next();
 
         Set<DataObject> res = new HashSet<DataObject>();
         res.add(template.createFromTemplate(targetFolder, sourceFileName ));
 
-        String headerFileName = (String) wiz.getProperty("headerFileName"); // NOI18N
-        DataFolder headerFolderName = (DataFolder) wiz.getProperty("headerFolder"); // NOI18N
-        res.add(dobjBro.createFromTemplate(headerFolderName, headerFileName));
+        FileObject bro = FileUtil.findBrother(sourceTemplate, "h"); // NOI18N
+        if (bro != null) {
+            DataObject dobjBro = DataObject.find(bro);
+            String headerFileName = (String) wiz.getProperty("headerFileName"); // NOI18N
+            DataFolder headerFolderName = (DataFolder) wiz.getProperty("headerFolder"); // NOI18N
+            res.add(dobjBro.createFromTemplate(headerFolderName, headerFileName));
+        } else {
+            String errmsg = NbBundle.getMessage(CndClassWizardIterator.class, "MSG_missing_class_header_template", sourceTemplate.getName()+".h"); // NOI18N
+            NotifyDescriptor.Message msg = new NotifyDescriptor.
+                Message(errmsg, NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(msg);
+        }
 
         return res;
     }

@@ -57,6 +57,10 @@ import javax.swing.JRadioButtonMenuItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -68,6 +72,12 @@ import org.openide.util.actions.Presenter;
  * Submenu listing available groups and offering some operations on them.
  * @author Jesse Glick
  */
+@ActionID(id = "org.netbeans.modules.project.ui.groups.GroupsMenu", category = "Project")
+@ActionRegistration(displayName = "#GroupsMenu.label")
+@ActionReferences({
+    @ActionReference(path = "Menu/File", position = 1100),
+    @ActionReference(path = "ProjectsTabActions", position = 600, separatorAfter = 700)
+})
 public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
 
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
@@ -191,6 +201,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     private static void newGroup() {
         final NewGroupPanel panel = new NewGroupPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_title"));
+        panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(GroupsMenu.class));

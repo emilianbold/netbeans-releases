@@ -109,8 +109,8 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         builder.append(deploymentManager.getHost());
         builder.append(":"); // NOI18N
         builder.append(deploymentManager.getPort());
-        if (deploymentManager.getServerVersion() != null
-                && deploymentManager.getServerVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_11)
+        if (deploymentManager.getDomainVersion() != null
+                && deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_11)
                 && deploymentManager.isWebProfile()) { // NOI18N
             builder.append(ADMIN_URL_11_WEB);
         } else {

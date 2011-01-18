@@ -557,6 +557,42 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void test192896() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test extends Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Test extends Test {\n" +
+            "    List l;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("java.util.List"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

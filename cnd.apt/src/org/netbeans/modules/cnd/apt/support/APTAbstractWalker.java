@@ -113,7 +113,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     @Override
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath); 
             ResolvedPath resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {

@@ -1,6 +1,6 @@
 Name: libpam4j
 Version: 1.1
-License: MIT License
+License: MIT
 OSR: 12293
 Origin: https://libpam4j.dev.java.net
 Source: https://libpam4j.dev.java.net

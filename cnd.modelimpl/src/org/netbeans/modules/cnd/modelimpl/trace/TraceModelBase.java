@@ -105,6 +105,7 @@ public class TraceModelBase {
     private void waitModelTasks() {
         Cancellable task = model.enqueueModelTask(new Runnable() {
 
+            @Override
             public void run() {
             }
         }, "wait finished other tasks"); //NOI18N

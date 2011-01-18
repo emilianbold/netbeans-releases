@@ -44,14 +44,13 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -75,7 +74,7 @@ public class CndFileUtilTestCase extends RemoteTestBase {
     @ForAllEnvironments
     public void testExists() {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String baseDir = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv));
+        String baseDir = RemoteFileUtil.getIncludeFilePrefix(execEnv);
         String stdio_h = baseDir + "usr/include/stdio.h";
         boolean exists = CndFileUtils.exists(new File(stdio_h));
         assertTrue(exists);

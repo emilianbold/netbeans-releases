@@ -75,6 +75,7 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -110,6 +111,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
@@ -137,13 +139,17 @@ public class JavaCustomIndexer extends CustomIndexer {
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
-            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
             if (sourcePath == null || bootPath == null || compilePath == null) {
                 JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
-            }
+            }            
             if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
                 JavaIndex.LOG.log(Level.WARNING, "Source root: {0} is not on its sourcepath", FileUtil.getFileDisplayName(root)); // NOI18N
+                return;
+            }
+            if (isAptBuildGeneratedFolder(context.getRootURI(),sourcePath)) {
+                JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
@@ -313,17 +319,15 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
-            if (context.getRoot() == null) {
-                JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
-                return;
-            }
             ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
-                        final JavaParsingContext javaContext = new JavaParsingContext(context);
+                        final JavaParsingContext javaContext = new JavaParsingContext(context, true);
                         if (javaContext.uq == null)
                             return null; //IDE is exiting, indeces are already closed.
+                        if (javaContext.uq.isEmpty())
+                            return null; //No java no need to continue
                         final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                         final Set<File> removedFiles = new HashSet<File> ();
                         for (Indexable i : files) {
@@ -449,7 +453,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void markDirtyFiles(final Context context, final Iterable<? extends Indexable> files) {
-        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI());
+        ClassIndexImpl indexImpl = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
         if (indexImpl != null) {
             for (Indexable i : files) {
                 indexImpl.setDirty(i.getURL());
@@ -582,7 +586,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {                
         //get dependencies
         Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
-
+        Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();
         //create inverse dependencies
         final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
@@ -597,13 +601,14 @@ public class JavaCustomIndexer extends CustomIndexer {
                 l2.add (u1);
             }
         }
-        return findDependent(root, deps, inverseDeps, classes, includeFilesInError, true);
+        return findDependent(root, deps, inverseDeps, peers, classes, includeFilesInError, true);
     }
 
 
     public static Map<URL, Set<URL>> findDependent(final URL root,
             final Map<URL, List<URL>> sourceDeps,
             final Map<URL, List<URL>> inverseDeps,
+            final Map<URL, List<URL>> peers,
             final Collection<ElementHandle<TypeElement>> classes,
             boolean includeFilesInError,
             boolean includeCurrentSourceRoot) throws IOException {
@@ -642,10 +647,17 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     break;
                 case ENABLED_WITHIN_PROJECT:
+                    final Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
                     if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
-                    } else {
-                        Project rootPrj = FileOwnerQuery.getOwner(root.toURI());
+                        if (rootPrj == null) {
+                            depRoots = Collections.singletonList(root);
+                        } else {
+                            depRoots = new ArrayList<URL>();
+                            depRoots.add(root);
+                            int index = depRoots.indexOf(root);
+                            depRoots.addAll(index+1, getSrcRootPeers(peers, root));
+                        }
+                    } else {                        
                         if (rootPrj == null) {
                             for (URL url : depRoots) {
                                 JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
@@ -661,18 +673,23 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }
                             }
                             l.add(root);
-                            depRoots = Utilities.topologicalSort(l, inverseDeps);
+                            depRoots = Utilities.topologicalSort(l, inverseDeps);                            
+                            int index = depRoots.indexOf(root);
+                            depRoots.addAll(index+1, getSrcRootPeers(peers, root));
                         }
                     }
                     break;
                 case ENABLED:
                     if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
+                        depRoots = new ArrayList<URL>();
+                        depRoots.add(root);
                     } else {
                         List<URL> l = new ArrayList<URL>(depRoots);
                         l.add(root);
                         depRoots = Utilities.topologicalSort(l, inverseDeps);
                     }
+                    int index = depRoots.indexOf(root);
+                    depRoots.addAll(index+1, getSrcRootPeers(peers, root));
                     break;
             }
         } catch (TopologicalSortException ex) {
@@ -690,16 +707,22 @@ public class JavaCustomIndexer extends CustomIndexer {
         for (URL depRoot : depRoots) {            
             if (!ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).isEmpty()) {
                 final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
-
-                final List<URL> dep = sourceDeps != null ? sourceDeps.get(depRoot) : null;
-                if (dep != null) {
-                    for (URL url : dep) {
-                        final Set<ElementHandle<TypeElement>> b = bases.get(url);
-                        if (b != null)
-                            queue.addAll(b);
-                    }
+                final Collection<Map<URL,List<URL>>> depMaps = new ArrayList<Map<URL,List<URL>>>(2);
+                if (sourceDeps != null) {
+                    depMaps.add(sourceDeps);
                 }
-
+                depMaps.add(peers);
+                for (Map<URL,List<URL>> depMap : depMaps) {
+                    final List<URL> dep =  depMap.get(depRoot);
+                    if (dep != null) {
+                        for (URL url : dep) {
+                            final Set<ElementHandle<TypeElement>> b = bases.get(url);
+                            if (b != null)
+                                queue.addAll(b);
+                        }
+                    }                    
+                }
+                
                 final Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
                 while (!queue.isEmpty()) {
                     final ElementHandle<TypeElement> e = queue.poll();
@@ -750,6 +773,19 @@ public class JavaCustomIndexer extends CustomIndexer {
             //Nothing to delete - pass
         }
     }
+    
+    private static boolean isAptBuildGeneratedFolder(
+            @NonNull final URL root,
+            @NonNull final ClassPath srcPath) {
+        Parameters.notNull("root", root);       //NOI18N
+        Parameters.notNull("srcPath", srcPath); //NOI18N
+        for (FileObject srcRoot : srcPath.getRoots()) {
+            if (root.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(srcRoot).sourceOutputDirectory())) {
+               return true;
+            }
+        }
+        return false;
+    }
 
     public static class Factory extends CustomIndexerFactory {
 
@@ -779,11 +815,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     //Already checked
                                     return true;
                                 }
-                                try {
-                                    return uq.isValid();
-                                } finally {
-                                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                                }
+                                return uq.isValid();
                             }
                         });
                     }
@@ -824,11 +856,21 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return false;
             }
 
-        }
+        }        
 
         @Override
         public void scanFinished(final Context context) {
-            //Not needed now
+            try {
+                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
+                if (uq == null) {
+                    //Closing
+                    return;
+                }
+                uq.setState(ClassIndexImpl.State.INITIALIZED);            
+                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         @Override
@@ -937,4 +979,17 @@ public class JavaCustomIndexer extends CustomIndexer {
             return t.getMessage(null);
         }
     };
+    
+    private static List<? extends URL> getSrcRootPeers(final Map<URL,List<URL>> root2Peers, final URL rootURL) {        
+        List<URL> result = root2Peers.get(rootURL);
+        if (result == null) {
+            result = Collections.<URL>emptyList();
+        }
+        JavaIndex.LOG.log(Level.FINE,"Peer source roots for root {0} -> {1}",
+            new Object[] {
+                rootURL,
+                result
+            });
+        return result;
+    }
 }

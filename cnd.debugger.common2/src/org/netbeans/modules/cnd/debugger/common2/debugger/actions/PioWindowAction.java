@@ -47,10 +47,11 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.State;
+import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 
-public final class PioWindowAction extends CallableSystemAction {
+public final class PioWindowAction extends CallableSystemAction implements StateListener {
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -6814567172958445516L;    
@@ -66,12 +67,28 @@ public final class PioWindowAction extends CallableSystemAction {
     }
 
     // interface SystemAction
-    public boolean isEnabled() {
-        NativeDebugger debugger = DebuggerManager.get().currentDebugger();
-        return debugger != null;
+    @Override
+    protected void initialize() {
+        super.initialize();
+        setEnabled(false);
     }
 
+    // interface StateListener
+    public void update(State state) {
+        boolean enable;
+        if (!state.isLoaded) {
+            enable = false;
+        } else {
+            if (!state.isProcess && !state.capabAutoRun) {
+                enable = false;
+            } else {
+                enable = state.isListening();
+            }
+        }
 
+        setEnabled(enable);
+    }
+    
     // interface SystemAction
     public HelpCtx getHelpCtx() {
         return new HelpCtx("CTL_Pio"); // NOI18N

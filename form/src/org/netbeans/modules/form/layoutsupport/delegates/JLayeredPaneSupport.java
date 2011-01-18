@@ -209,6 +209,22 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
         return new LayeredConstraints(0, 0, 0, -1, -1);
     }
 
+    @Override
+    public CodeGroup getComponentCode(int index) {
+        // hack: be sure that the constraints object is associated with the
+        // primary component (to be able to get its preferred size)
+        LayoutConstraints constr = getConstraints(index);
+        if (constr instanceof AbsoluteLayoutConstraints) {
+            AbsoluteLayoutConstraints absConstr =
+                (AbsoluteLayoutConstraints) constr;
+            if (absConstr.refComponent == null)
+                absConstr.refComponent =
+                    getLayoutContext().getPrimaryComponent(index);
+        }
+
+        return super.getComponentCode(index);
+    }
+
     // ----------
 
     // overriding AbsoluteLayoutSupport

@@ -321,6 +321,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 setDiffIndex(currentIndex, false);
             } else {
                 currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+                parent.updateActions();
             }
         } else {
             if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
@@ -335,6 +336,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 setDiffIndex(currentIndex, true);
             } else if (currentDifferenceIndex < currentDiff.getDifferenceCount()) {
                 currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+                parent.updateActions();
             }
         } else {
             if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
@@ -429,6 +431,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                                     public void propertyChange(PropertyChangeEvent evt) {
                                         view.removePropertyChangeListener(this);
                                         setLocation(view);
+                                        parent.updateActions();
                                     }
                                 });
                             }

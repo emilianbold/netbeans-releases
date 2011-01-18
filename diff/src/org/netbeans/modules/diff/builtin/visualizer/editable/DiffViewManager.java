@@ -564,21 +564,22 @@ class DiffViewManager implements ChangeListener {
         }
     }
 
-    private int getHeight (DecoratedEditorPane editorPane) {
-        int height = 0;
-        try {
-            View rootView = Utilities.getDocumentView(editorPane);
-            int lineNumber = Utilities.getLineOffset((BaseDocument) editorPane.getDocument(), editorPane.getDocument().getLength());
-            if (lineNumber > 0) --lineNumber;
-            View view = rootView.getView(lineNumber);
-            Rectangle rec;
-            if (view != null && (rec = editorPane.modelToView(view.getEndOffset() - 1)) != null) {
-                height = (int) (rec.getY() + rec.getHeight());
+    private int getHeight (final DecoratedEditorPane editorPane) {
+        final int height[] = new int[1];
+        editorPane.getDocument().render(new Runnable () {
+            @Override
+            public void run() {
+                try {
+                    Rectangle rec = editorPane.modelToView(editorPane.getDocument().getLength());
+                    if (rec != null) {
+                        height[0] = (int) (rec.getY() + rec.getHeight());
+                    }
+                } catch (BadLocationException ex) {
+                    //
+                }
             }
-        } catch (BadLocationException ex) {
-            //
-        }
-        return height;
+        });
+        return height[0];
     }
     
     public static class DifferencePosition {

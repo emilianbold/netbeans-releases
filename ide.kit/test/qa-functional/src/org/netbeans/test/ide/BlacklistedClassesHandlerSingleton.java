@@ -59,6 +59,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -629,43 +630,25 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     }
 
     private void loadBlackList(String blacklistFileName) {
-        BufferedReader reader = null;
         try {
             if (blacklistFileName != null) {
-                reader = new BufferedReader(new FileReader(new File(blacklistFileName)));
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    line = line.trim();
-                    if (line.length() > 0 && Character.isJavaIdentifierStart(line.charAt(0))) {
-                        blacklist.put(line, new ArrayList());
-                    }
+                Set<String> ts = new TreeSet<String>();
+                readFile(new File(blacklistFileName), ts);
+                for (String s : ts) {
+                    blacklist.put(s, new ArrayList());                    
                 }
             }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }
 
     private void loadWhiteList(String whitelistFileName, Set list) {
-        BufferedReader reader = null;
         try {
             if (whitelistFileName != null) {
-                reader = new BufferedReader(new FileReader(new File(whitelistFileName)));
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    line = line.trim();
-                    if (line.length() > 0 && Character.isJavaIdentifierStart(line.charAt(0))) {
-                        list.add(line);
-                    }
-                }
+                readFile(new File(whitelistFileName), list);
                 if (!generatingWhitelist) {
                     whitelistEnabled = true;
                 }
@@ -674,14 +657,35 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
             Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
+        }
+    }
+
+    private static void readFile(
+        File fn, Collection<String> res
+    ) throws FileNotFoundException, IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(fn));
+        final String INCLUDE = "#include ";
+        try {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+                if (line.length() == 0) {
+                    continue;
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
+                if (line.startsWith(INCLUDE)) {
+                    File include = new File(fn.getParentFile(), line.substring(INCLUDE.length()));
+                    if (!include.isFile()) {
+                        throw new IOException("Cannot process " + line + "\nFile does not exist: " + include);
+                    }
+                    readFile(include, res);
+                    continue;
+                }
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                res.add(line);
             }
+        } finally {
+            reader.close();
         }
     }
 

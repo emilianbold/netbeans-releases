@@ -43,6 +43,7 @@
 package org.netbeans.modules.glassfish.common.ui;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.EnableComet;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
@@ -126,6 +127,13 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             String derbyEnabled = Boolean.toString(startDerby.isSelected());
             commonSupport.setEnvironmentProperty(GlassfishModule.START_DERBY_FLAG, derbyEnabled, true);
         }
+        if ((cometEnabledChanged || monitorEnabledChanged  || jdbcDriverDeployEnabledChanged ||
+                sessionEnabledChanged || startDerbyChanged) && !commonSupport.isWritable()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(getClass(), "WRN_CouldNotWrite"),
+                    NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            Logger.getLogger("glassfish").warning("Could not write changed property");
+        }
     }
     
     @Override
@@ -163,14 +171,17 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
 
+        labelLocation.setLabelFor(textLocation);
         org.openide.awt.Mnemonics.setLocalizedText(labelLocation, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Location")); // NOI18N
 
         textLocation.setEditable(false);
 
+        labelDomainsFolder.setLabelFor(textDomainsFolder);
         org.openide.awt.Mnemonics.setLocalizedText(labelDomainsFolder, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_DomainsFolder")); // NOI18N
 
         textDomainsFolder.setEditable(false);
 
+        labelDomainName.setLabelFor(textDomainName);
         org.openide.awt.Mnemonics.setLocalizedText(labelDomainName, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_DomainName")); // NOI18N
 
         textDomainName.setEditable(false);
@@ -228,9 +239,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                             .addComponent(labelDomainName))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                            .addComponent(textDomainsFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                            .addComponent(textDomainName, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)))
+                            .addComponent(textLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                            .addComponent(textDomainsFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                            .addComponent(textDomainName, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)))
                     .addComponent(enableSessionsCheckBox))
                 .addContainerGap())
         );

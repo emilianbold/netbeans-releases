@@ -46,3 +46,15 @@ CND_ARTIFACT_PATH_Test_filedata_32=build/SunOS-x86/test_rfs_filedata
 CND_PACKAGE_DIR_Test_filedata_32=dist/Test_filedata_32/GNU-Solaris-x86/package
 CND_PACKAGE_NAME_Test_filedata_32=tools.tar
 CND_PACKAGE_PATH_Test_filedata_32=dist/Test_filedata_32/GNU-Solaris-x86/package/tools.tar
+#
+# include compiler specific variables
+#
+# dmake command
+ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \
+	mkdir -p nbproject/private && \
+	touch nbproject/private/Makefile-variables.mk
+#
+# gmake command
+.PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)
+#
+include nbproject/private/Makefile-variables.mk

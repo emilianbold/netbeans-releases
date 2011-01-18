@@ -59,7 +59,7 @@ import org.openide.util.actions.CookieAction;
 /**
  * Context menu action that opens Macro Expansion View panel
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ShowMacroExpansionAction extends CookieAction {
 

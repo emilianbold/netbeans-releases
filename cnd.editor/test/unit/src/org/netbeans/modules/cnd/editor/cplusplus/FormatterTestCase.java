@@ -5135,4 +5135,65 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                     );
     }
+
+    //  Bug 188117 - "alt+shift+f" and "\"
+    public void testIZ188117() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "printf(\"example of %s issue\", \\\n" +
+                "    \"this\");\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect \\ formatting",
+                "printf(\"example of %s issue\", \\\n" +
+                "    \"this\");\n"
+                    );
+    }
+    public void testIZ188117_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "printf(\"example of %s issue\",\\\n" +
+                "    \"this\");\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect \\ formatting",
+                "printf(\"example of %s issue\",\\\n" +
+                "    \"this\");\n"
+                    );
+    }
+    public void testIZ188117_3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if ((data[readBytes - 2] == 05) && \\\n" +
+                "    (data[readBytes - 1] == 04)) {\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect \\ formatting",
+                "if ((data[readBytes - 2] == 05) && \\\n" +
+                "    (data[readBytes - 1] == 04)) {\n" +
+                "}\n"
+                );
+    }
+
+    public void test194239() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class Foo\n" +
+                "{\n" +
+                "    Foo& operator=(const Foo& other);\n" +
+                "    Foo* operator ==(const Foo& other);\n" +
+                "    Foo& xxx(const Foo& other);\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect \\ formatting",
+                "class Foo\n" +
+                "{\n" +
+                "    Foo& operator=(const Foo& other);\n" +
+                "    Foo* operator ==(const Foo& other);\n" +
+                "    Foo& xxx(const Foo& other);\n" +
+                "};\n"
+                );
+    }
 }

@@ -43,8 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
- *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranFileModelTest extends TraceModelTestBase {
 

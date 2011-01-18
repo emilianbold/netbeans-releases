@@ -54,6 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -67,6 +70,9 @@ import org.openide.util.Utilities;
  * Open the selected file(s) with the system default tool.
  * @author Jesse Glick
  */
+@ActionID(id = "org.netbeans.core.ui.sysopen.SystemOpenAction", category = "Edit")
+@ActionRegistration(displayName = "#CTL_SystemOpenAction")
+@ActionReference(path = "Loaders/content/unknown/Actions", position = 200)
 public final class SystemOpenAction extends AbstractAction implements ContextAwareAction {
     
     public SystemOpenAction() {

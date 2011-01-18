@@ -152,9 +152,8 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         }
 
         public void initTmpDirs() throws IOException {
-            File _tmpDirFile = null;
-            String _tmpDir = null;
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
+            final File ioTmpDirFile = new File(ioTmpDir);
 
             if (checkForNonLatin(ioTmpDir) == false) {
                 log.log(Level.WARNING, "Default tmp dir [{0}] has spaces/non-latin chars in the path. " + // NOI18N
@@ -169,28 +168,51 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
              * plain name as in case of MinGW (without cygwin) execution may (will)
              * fail...
              */
-
             String username = environment.get("USERNAME"); // NOI18N
-            
+
             if (checkForNonLatin(username) == false) {
                 username = "" + username.hashCode(); // NOI18N
             }
 
-            _tmpDirFile = new File(ioTmpDir, "dlight_" + username); // NOI18N
-            _tmpDirFile = new File(_tmpDirFile, HostInfoFactory.getNBKey());
-            _tmpDir = _tmpDirFile.getAbsolutePath();
+            int suffix = 0;
 
-            if (shell != null) {
-                _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
+            File tmpDirBase = new File(ioTmpDir, "dlight_" + username); // NOI18N
+            tmpDirBase.mkdirs();
+
+            while (!tmpDirBase.canWrite() && suffix < 5) {
+                log.log(Level.WARNING, "WindowsHostInfoProvider: {0} is not writable", tmpDirBase.getPath()); // NOI18N
+                suffix++;
+                tmpDirBase = new File(ioTmpDir, "dlight_" + username + "_" + suffix); // NOI18N
+                tmpDirBase.mkdirs();
             }
 
-            // create the directory if absent (IZ#174327)
-            if (!_tmpDirFile.exists() && !_tmpDirFile.mkdirs()) {
-                throw new IOException("Unable to create tmpdir " + _tmpDirFile); // NOI18N
+            if (tmpDirBase.canWrite()) {
+                ioTmpDir = tmpDirBase.getPath();
+                String nbKey = HostInfoFactory.getNBKey();
+                suffix = 0;
+                tmpDirBase = new File(ioTmpDir, nbKey);
+                tmpDirBase.mkdirs();
+
+                while (!tmpDirBase.canWrite() && suffix < 5) {
+                    log.log(Level.WARNING, "WindowsHostInfoProvider: {0} is not writable", tmpDirBase.getPath()); // NOI18N
+                    suffix++;
+                    tmpDirBase = new File(ioTmpDir, nbKey + "_" + suffix); // NOI18N
+                    tmpDirBase.mkdirs();
+                }
             }
 
-            tmpDirFile = _tmpDirFile;
-            tmpDir = _tmpDir;
+            if (!tmpDirBase.canWrite()) {
+                tmpDirBase = ioTmpDirFile;
+            }
+            
+            if (!tmpDirBase.canWrite()) {
+                log.log(Level.WARNING, "WindowsHostInfoProvider: {0} is not writable", tmpDirBase.getPath()); // NOI18N
+            }
+
+            tmpDir = (shell == null) ? tmpDirBase.getPath()
+                    : WindowsSupport.getInstance().convertToShellPath(tmpDirBase.getPath());
+
+            tmpDirFile = tmpDirBase;
         }
 
         public void initUserDirs() throws IOException {
@@ -311,7 +333,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             }
 
             String okChars = "~-_/\\:"; // NOI18N
-            
+
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
 

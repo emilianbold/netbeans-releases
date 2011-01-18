@@ -62,7 +62,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Code completion test result analyzer
  * 
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MyHandler extends DefaultHandler {
 

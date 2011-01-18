@@ -50,6 +50,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.loaders.JavaDataSupport;
@@ -223,6 +224,10 @@ public final class JavaDataLoader extends UniFileLoader {
             String resourcePath = "";
             if (cp != null) {
                 resourcePath = cp.getResourceName(target);
+                if (resourcePath == null) {
+                    Logger.getLogger(JavaDataLoader.class.getName()).log(Level.WARNING, "{0} is not on its own source path", FileUtil.getFileDisplayName(target));
+                    resourcePath = "";
+                }
             } else {
                 Logger.getLogger(JavaDataLoader.class.getName()).warning("No classpath was found for folder: "+target);
             }
@@ -293,6 +298,10 @@ public final class JavaDataLoader extends UniFileLoader {
             String pkgName;
             if (cp != null) {
                 pkgName = cp.getResourceName(f, '.', false);
+                if (pkgName == null) {
+                    Logger.getLogger(JavaDataLoader.class.getName()).log(Level.WARNING, "{0} is not on its own source path", FileUtil.getFileDisplayName(fo));
+                    pkgName = "";
+                }
             } else {
                 pkgName = "";   //NOI18N
             }

@@ -58,7 +58,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
-import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.editor.hyperlink.PopupUtil;
@@ -79,7 +78,15 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
 
         Collections.sort(declarations, new Comparator<OverrideDescription>() {
             public int compare(OverrideDescription o1, OverrideDescription o2) {
-                return o1.location.getDisplayHtml(new GsfHtmlFormatter()).compareTo(o2.location.getDisplayHtml(new GsfHtmlFormatter()));
+                if (o1.isOverridden() == o2.isOverridden()) {
+                    return o1.location.getDisplayHtml(new GsfHtmlFormatter()).compareTo(o2.location.getDisplayHtml(new GsfHtmlFormatter()));
+                }
+                
+                if (o1.isOverridden()) {
+                    return 1;
+                }
+                
+                return -1;
             }
         });
         

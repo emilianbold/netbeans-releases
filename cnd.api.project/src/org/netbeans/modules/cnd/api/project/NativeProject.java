@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 public interface NativeProject {
     /**
@@ -57,6 +57,11 @@ public interface NativeProject {
      */
     public Object getProject();
 
+    /**
+     * File system project sources reside in
+     */
+    public FileSystem getFileSystem();
+    
      /**
      * Returns file path to project root
      * @return file path to project root
@@ -108,14 +113,6 @@ public interface NativeProject {
       */
      public void removeProjectItemsListener(NativeProjectItemsListener listener);
      
-     /**
-      * Finds a file item in the project.
-      * @param file the file item to find
-      * @return the file item if found. Otherwise it returns null.
-      */
-     // XXX:FileObject conversion: remove
-     public NativeFileItem findFileItem(File file);
-
      /**
       * Finds a file item in the project.
       * @param fileObject  a file object to find item for

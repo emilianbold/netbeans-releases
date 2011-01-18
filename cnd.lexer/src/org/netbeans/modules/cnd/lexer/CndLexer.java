@@ -389,31 +389,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                         break;
                                     case 'l':
                                     case 'L': // 0x1234l or 0x1234L
-                                        c = read(true);
-                                        if (c == 'l' || c == 'L') {
-                                            return token(CppTokenId.LONG_LONG_LITERAL);
-                                        } else {
-                                            backup(1);
-                                            return token(CppTokenId.LONG_LITERAL);
-                                        }
+                                        return finishLongLiteral(read(true));
                                     case 'p':
                                     case 'P': // binary exponent
                                         return finishFloatExponent();
                                     case 'u':
                                     case 'U':
-                                        c = read(true);
-                                        if (c == 'l' || c == 'L') {
-                                            c = read(true);
-                                            if (c=='l' || c == 'L') {
-                                                return token(CppTokenId.UNSIGNED_LONG_LONG_LITERAL);
-                                            } else {
-                                                backup(1);
-                                                return token(CppTokenId.UNSIGNED_LONG_LITERAL);
-                                            }
-                                        } else {
-                                            backup(1);
-                                            return token(CppTokenId.UNSIGNED_LITERAL);
-                                        }
+                                        return finishUnsignedLiteral(read(true));
                                     default:
                                         backup(1);
                                         // if float then before mandatory binary exponent => invalid
@@ -629,31 +611,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     break;
                 case 'l':
                 case 'L': // 0l or 0L
-                    c = read(true);
-                    if (c == 'l' || c == 'L') {
-                        return token(CppTokenId.LONG_LONG_LITERAL);
-                    } else {
-                        backup(1);
-                        return token(CppTokenId.LONG_LITERAL);
-                    }
+                    return finishLongLiteral(read(true));
                 case 'f':
                 case 'F':
                     return token(CppTokenId.FLOAT_LITERAL);
                 case 'u':
                 case 'U':
-                    c = read(true);
-                    if (c == 'l' || c == 'L') {
-                        c = read(true);
-                        if (c=='l' || c == 'L') {
-                            return token(CppTokenId.UNSIGNED_LONG_LONG_LITERAL);
-                        } else {
-                            backup(1);
-                            return token(CppTokenId.UNSIGNED_LONG_LITERAL);
-                        }
-                    } else {
-                        backup(1);
-                        return token(CppTokenId.UNSIGNED_LITERAL);
-                    }
+                    return finishUnsignedLiteral(read(true));
                 case '0':
                 case '1':
                 case '2':
@@ -833,14 +797,47 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
     }
 
+    private Token<CppTokenId> finishLongLiteral(int c) {
+        if (c == 'l' || c == 'L') {// 0ll or 0LL
+            c = read(true);
+            if (c == 'u' || c == 'U') {// 0llu or 0LLU
+                return token(CppTokenId.UNSIGNED_LONG_LONG_LITERAL);
+            } else {
+                backup(1);
+                return token(CppTokenId.LONG_LONG_LITERAL);
+            }
+        } else if (c == 'u' || c == 'U') {// 0lu or 0LU
+            return token(CppTokenId.UNSIGNED_LONG_LITERAL);
+        } else {
+            backup(1);
+            return token(CppTokenId.LONG_LITERAL);
+        }
+    }
+
+    private Token<CppTokenId> finishUnsignedLiteral(int c) {
+        if (c == 'l' || c == 'L') {// 0ul or 0UL
+            c = read(true);
+            if (c == 'l' || c == 'L') {// 0ull or 0ULL
+                return token(CppTokenId.UNSIGNED_LONG_LONG_LITERAL);
+            } else {
+                backup(1);
+                return token(CppTokenId.UNSIGNED_LONG_LITERAL);
+            }
+        } else {
+            backup(1);
+            return token(CppTokenId.UNSIGNED_LITERAL);
+        }
+    }
+    
     protected void postTokenCreate(CppTokenId id) {
 
     }
 
+    @Override
     public void release() {
     }
 
-    private final boolean isTokenSplittedByEscapedLine() {
+    private boolean isTokenSplittedByEscapedLine() {
         return tokenSplittedByEscapedLine > 0;
     }
 }

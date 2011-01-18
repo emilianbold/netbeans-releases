@@ -240,6 +240,7 @@ public final class JavaDataObject extends MultiDataObject {
                 CompilationUnitTree compilationUnitTree = workingCopy.getCompilationUnit();
                 // change the package when file was move to different dir.
                 CompilationUnitTree cutCopy = make.CompilationUnit(
+                        compilationUnitTree.getPackageAnnotations(),
                         "".equals(packageName) ? null : make.Identifier(packageName),
                         compilationUnitTree.getImports(),
                         compilationUnitTree.getTypeDecls(),

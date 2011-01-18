@@ -344,8 +344,45 @@ public class WSUtils {
         }
         return false;
     }
+    
+    public static void updateClients(final Project prj, final JAXWSLightSupport jaxWsSupport) {
+        Runnable runnable = new Runnable() {
+            
+            @Override
+            public void run() {
+                doUpdateClients(prj, jaxWsSupport);
+            }
+        };
+        jaxWsSupport.runAtomic(runnable);
+    }
 
-    public static void updateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
+    public static void detectWsdlClients(final Project prj, final JAXWSLightSupport jaxWsSupport)  {
+        final List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
+        if (candidates.size() > 0) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    for (WsimportPomInfo candidate : candidates) {             
+                        if (isClient(prj, candidate)) {
+                            String wsdlPath = candidate.getWsdlPath();
+                            JaxWsService client = new JaxWsService(wsdlPath, false);
+                            if (candidate.getHandlerFile() != null) {
+                                client.setHandlerBindingFile(candidate.getHandlerFile());
+                            }
+                            client.setId(candidate.getId());
+                            client.setWsdlUrl(getOriginalWsdlUrl(prj, client.getId(), false));
+                            jaxWsSupport.addService(client);
+                        }
+                    }                    
+                }
+            };
+            jaxWsSupport.runAtomic(runnable);
+        } else {
+            // look for wsdl in wsdl folder
+        }
+    }
+    
+    private static void doUpdateClients(Project prj, JAXWSLightSupport jaxWsSupport) {
         // get old clients
         List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
         Set<String> oldNames = new HashSet<String>();
@@ -385,26 +422,6 @@ public class WSUtils {
             }
         }
         
-    }
-
-    public static void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport)  {
-        List<WsimportPomInfo> candidates = MavenModelUtils.getWsdlFiles(prj);
-        if (candidates.size() > 0) {
-            for (WsimportPomInfo candidate : candidates) {             
-                if (isClient(prj, candidate)) {
-                    String wsdlPath = candidate.getWsdlPath();
-                    JaxWsService client = new JaxWsService(wsdlPath, false);
-                    if (candidate.getHandlerFile() != null) {
-                        client.setHandlerBindingFile(candidate.getHandlerFile());
-                    }
-                    client.setId(candidate.getId());
-                    client.setWsdlUrl(getOriginalWsdlUrl(prj, client.getId(), false));
-                    jaxWsSupport.addService(client);
-                }
-            }
-        } else {
-            // look for wsdl in wsdl folder
-        }
     }
 
     private static List<JaxWsService> getJaxWsClients(Project prj) {

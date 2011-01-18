@@ -120,10 +120,12 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
         setSheet(sheet);        
     }   
     
+    @Override
     public String getDisplayName() {
         return getName();
     }
 
+    @Override
     public String getName() {                
         return getFormatedDate(entries.get(0));
     }    
@@ -132,6 +134,7 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
         return defaultFormat.format(se.getDate());
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(RevertFileAction.class),
@@ -139,6 +142,7 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
         };            
     }
 
+    @Override
     public int compareTo(Object obj) {
         if( !(obj instanceof StoreEntryNode) || obj == null) {
             return 1;
@@ -158,9 +162,11 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
         public LabelProperty() {
             super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(StoreEntryNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(StoreEntryNode.class, "LBL_LabelProperty_Desc"));
         }
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return entries.get(0).getLabel();
         }    
+        @Override
         public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
         {        
             value = value.trim();
@@ -171,6 +177,7 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
             }            
             entries = newEntries;
         }        
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport();
         }                             
@@ -185,6 +192,7 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
             this.entry = entry;
         }
     
+        @Override
         public Action[] getActions(boolean context) {
             List<StoreEntry> entries = new ArrayList<StoreEntry>(1);
             entries.add(entry);
@@ -194,10 +202,12 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
             };            
         }
 
+        @Override
         public String getName() {
             return entry.getFile().getName();
         }  
         
+        @Override
         public int compareTo(Object obj) {
             if( !(obj instanceof FileNode) || obj == null) {
                 return -1;

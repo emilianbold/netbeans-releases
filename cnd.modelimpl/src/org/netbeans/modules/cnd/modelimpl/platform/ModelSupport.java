@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import java.io.File;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -79,6 +79,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -86,6 +88,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -239,7 +242,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     public static void trace(NativeFileItem nativeFile) {
         try {
-            Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
+            Diagnostic.trace("  native file item" + nativeFile.getAbsolutePath()); // NOI18N
             Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths()); // NOI18N
             Diagnostic.trace("    user macros: " + nativeFile.getUserMacroDefinitions()); // NOI18N
             Diagnostic.trace("    system includes: " + nativeFile.getSystemIncludePaths()); // NOI18N
@@ -287,11 +290,11 @@ public class ModelSupport implements PropertyChangeListener {
         }
         System.err.println("\nSources: (" + sources.size() + " files )");
         for (NativeFileItem elem : sources) {
-            System.err.println(elem.getFile().getAbsolutePath());
+            System.err.println(elem.getAbsolutePath());
         }
         System.err.println("\nHeaders: (" + headers.size() + " files )");
         for (NativeFileItem elem : headers) {
-            System.err.println(elem.getFile().getAbsolutePath());
+            System.err.println(elem.getAbsolutePath());
         }
 
         System.err.println("End of project dump\n\n\n");
@@ -398,10 +401,25 @@ public class ModelSupport implements PropertyChangeListener {
         openedProjects.remove(project);
     }
 
-    public static FileBuffer getFileBuffer(File file) {
-        File normalizeFile = CndFileUtils.normalizeFile(file);
-        FileObject fo = CndFileUtils.toFileObject(normalizeFile);
-        if (fo != null && fo.isValid()) {
+    private static FileBuffer createFileBuffer(DataObject dao) {
+        FileObject fo = dao.getPrimaryFile();
+        if (fo.isValid()) {
+            if (dao.isModified()) {
+                EditorCookie editor = dao.getCookie(EditorCookie.class);
+                if (editor != null) {
+                    Document doc = editor.getDocument();
+                    if (doc != null) {
+                        return new FileBufferDoc(fo, doc);
+                    }
+                }
+            }
+        }
+        return new FileBufferFile(fo);
+    }
+
+    public static FileBuffer createFileBuffer(FileObject fo) {
+        Parameters.notNull("null file object", fo); // NOI18N
+        if (fo.isValid()) {
             try {
                 DataObject dao = DataObject.find(fo);
                 if (dao.isModified()) {
@@ -409,15 +427,24 @@ public class ModelSupport implements PropertyChangeListener {
                     if (editor != null) {
                         Document doc = editor.getDocument();
                         if (doc != null) {
-                            return new FileBufferDoc(normalizeFile.getAbsolutePath(), doc);
+                            return new FileBufferDoc(fo, doc);
                         }
                     }
                 }
             } catch (DataObjectNotFoundException e) {
                 // nothing
             }
+            return new FileBufferFile(fo);
+        } else {
+            FileSystem fs;
+            try {
+                fs = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                fs = InvalidFileObjectSupport.getDummyFileSystem();
+            }
+            return new FileBufferFile(InvalidFileObjectSupport.getInvalidFileObject(fs, fo.getPath()));
         }
-        return new FileBufferFile(normalizeFile.getAbsolutePath());
     }
 
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
@@ -497,10 +524,8 @@ public class ModelSupport implements PropertyChangeListener {
                 Document doc = editor != null ? editor.getDocument() : null;
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
-                    File file = FileUtil.toFile(primaryFile);
-                    long lastModified = file.lastModified();
-                    CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
-                    final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
+                    long lastModified = primaryFile.lastModified().getTime();
+                    final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
 
                     for (NativeFileItem nativeFile : set.getItems()) {
                         ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
@@ -561,7 +586,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (!contains(objs, dao)) {
                         for (BufAndProj bufNP : getBufNP(dao)) {
                             if (bufNP != null) {
-                                final FileBuffer fileBuffer = getFileBuffer(bufNP.buffer.getFile());
+                                final FileBuffer fileBuffer = createFileBuffer(dao);
                                 long lastModified = fileBuffer.lastModified();
                                 // removing old doc buffer and creating new one
                                 bufNP.project.onFileEditEnd(fileBuffer, bufNP.nativeFile, bufNP.lastModified == lastModified);

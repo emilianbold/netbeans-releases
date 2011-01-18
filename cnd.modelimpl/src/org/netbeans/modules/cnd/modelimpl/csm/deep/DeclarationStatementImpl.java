@@ -79,11 +79,11 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
 
     @Override
     public final List<CsmDeclaration> getDeclarators() {
-        if (declarators == null || this.declarators == EMPTY) {
+        if (declarators == null) {
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
         }
-        return declarators;
+        return Collections.unmodifiableList(declarators);
     }
 
     @Override
@@ -211,7 +211,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassForwardDeclarationImpl cfdi = ClassForwardDeclarationImpl.create(ast, file, !isRenderingLocalContext());
-            ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, scope, !isRenderingLocalContext());
+            ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
             if(fc != null) {
                 declarators.add(fc);
             }

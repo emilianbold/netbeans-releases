@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.28</specification-version>
+                        <specification-version>1.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,7 +29,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -39,6 +39,23 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.34</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.42</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -66,9 +83,18 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
@@ -88,10 +114,6 @@
             <class-path-extension>
                 <runtime-relative-path>ext/commons-logging-1.1.1.jar</runtime-relative-path>
                 <binary-origin>external/commons-logging-1.1.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/hs-aelfred2.jar</runtime-relative-path>
-                <binary-origin>external/hs-aelfred2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/commons-logging-api-1.1.1.jar</runtime-relative-path>
@@ -124,6 +146,10 @@
             <class-path-extension>
                 <runtime-relative-path>ext/saxon9B.jar</runtime-relative-path>
                 <binary-origin>external/saxon9B.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/isorelax20041111.jar</runtime-relative-path>
+                <binary-origin>external/isorelax20041111.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

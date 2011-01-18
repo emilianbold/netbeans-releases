@@ -320,9 +320,9 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         private FileObject movedFile = null;
         public ManifestMoveRefactoringElement(String clazz, FileObject parentFile,
                 String attributeValue, String attributeName) {
+            super(parentFile);
             this.name = attributeValue;
             this.clazz = clazz;
-            this.parentFile = parentFile;
             attrName = attributeName;
         }
         public ManifestMoveRefactoringElement(String clazz, FileObject parentFile,
@@ -334,8 +334,8 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         //for data objects that are not classes
         public ManifestMoveRefactoringElement(FileObject parentFile,
                 String attributeValue, String attributeName, FileObject movedFile) {
+            super(parentFile);
             this.name = attributeValue;
-            this.parentFile = parentFile;
             attrName = attributeName;
             this.movedFile = movedFile;
         }

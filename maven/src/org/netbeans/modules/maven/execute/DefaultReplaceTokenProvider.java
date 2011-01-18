@@ -269,7 +269,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                         String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                         if (relPath != null) {
                             if (!SourceUtils.isScanInProgress()) {
-                                if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo))) {
+                                if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo), true)) {
                                     return action + ".main";//NOI18N
                                 }
                             }

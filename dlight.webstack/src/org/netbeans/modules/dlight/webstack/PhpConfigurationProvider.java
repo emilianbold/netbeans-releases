@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.webstack;
 
-
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +54,7 @@ import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,79 +63,81 @@ import org.openide.util.NbBundle;
  */
 public final class PhpConfigurationProvider implements DLightToolConfigurationProvider {
 
-  public PhpConfigurationProvider() {
-  }
+    public PhpConfigurationProvider() {
+    }
 
-  public DLightToolConfiguration create() {
-    final String toolName = getMessage("PhpTool.Name"); // NOI18N
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("php.id", toolName); // NOI18N
-    List<Column> indicatorColumns = Arrays.asList(
-            new Column("utime", Double.class, getMessage("Column.UserTime"), null), // NOI18N
-            new Column("stime", Double.class, getMessage("Column.SystemTime"), null), // NOI18N
-            new Column("wtime", Double.class, getMessage("Column.WaitTime"), null)); // NOI18N
+    @Override
+    public DLightToolConfiguration create() {
+        final String toolName = getMessage("PhpTool.Name"); // NOI18N
+        final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("php.id", toolName); // NOI18N
+        List<Column> indicatorColumns = Arrays.asList(
+                new Column("utime", Double.class, getMessage("Column.UserTime"), null), // NOI18N
+                new Column("stime", Double.class, getMessage("Column.SystemTime"), null), // NOI18N
+                new Column("wtime", Double.class, getMessage("Column.WaitTime"), null)); // NOI18N
 
-    final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns, null); // NOI18N
-    CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata)); // NOI18N
-    toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
+        final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns, null); // NOI18N
+        CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata)); // NOI18N
+        toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
 
 
-    IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
-    BarIndicatorConfiguration cpuIndicator = new BarIndicatorConfiguration(indicatorMetadata);
-    toolConfiguration.addIndicatorConfiguration(cpuIndicator);
+        IndicatorMetadata indicatorMetadata = new IndicatorMetadata(indicatorColumns);
+        BarIndicatorConfiguration cpuIndicator = new BarIndicatorConfiguration(indicatorMetadata);
+        toolConfiguration.addIndicatorConfiguration(cpuIndicator);
 
-    List<Column> phpColumns = Arrays.asList(
-            new Column("kind", Integer.class, getMessage("Column.Kind"), null), // NOI18N
-            new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
-            new Column("function_name", String.class, getMessage("Column.FunctionName"), null), // NOI18N
-            new Column("source_file", String.class, getMessage("Column.SourceFile"), null), // NOI18N
-            new Column("line_number", Integer.class, getMessage("Column.LineNumber"), null), // NOI18N
-            new Column("class_name", String.class, getMessage("Column.ClassName"), null)); // NOI18N
+        List<Column> phpColumns = Arrays.asList(
+                new Column("kind", Integer.class, getMessage("Column.Kind"), null), // NOI18N
+                new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
+                new Column("function_name", String.class, getMessage("Column.FunctionName"), null), // NOI18N
+                new Column("source_file", String.class, getMessage("Column.SourceFile"), null), // NOI18N
+                new Column("line_number", Integer.class, getMessage("Column.LineNumber"), null), // NOI18N
+                new Column("class_name", String.class, getMessage("Column.ClassName"), null)); // NOI18N
 
 /// "`pgrep -x mysqld`"
-    final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns, null); // NOI18N
-    final URL scriptUrl = getClass().getResource("resources/script.d"); // NOI18N
-    DTDCConfiguration dcConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(phpDatatableMetadata)); // NOI18N
-    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
-    toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
-    cpuIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
+        final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns, null); // NOI18N
+        final URL scriptUrl = getClass().getResource("resources/script.d"); // NOI18N
+        DTDCConfiguration dcConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(phpDatatableMetadata)); // NOI18N
+        dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
+        toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
+        cpuIndicator.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(phpDatatableMetadata, "function_name", "function_name")); // NOI18N
 
-    return toolConfiguration;
-  }
-
-  class MyCLIOParser implements CLIOParser {
-
-    private final List<String> colnames = Arrays.asList(new String[]{
-              "utime", // NOI18N
-              "stime", // NOI18N
-              "wtime" // NOI18N
-            });
-    Double utime, stime, wtime;
-
-    public DataRow process(String line) {
-      if (line == null) {
-        return null;
-      }
-      String l = line.trim();
-      l = l.replaceAll(",", "."); // NOI18N
-      String[] tokens = l.split("[ \t]+"); // NOI18N
-
-      if (tokens.length != 15) {
-        return null;
-      }
-
-      try {
-        utime = Double.valueOf(tokens[2]);
-        stime = Double.valueOf(tokens[3]);
-        wtime = Double.valueOf(tokens[8]);
-      } catch (NumberFormatException ex) {
-        return null;
-      }
-
-      return new DataRow(colnames, Arrays.asList(utime, stime, wtime));
+        return toolConfiguration;
     }
-  }
 
-  private static String getMessage(String name) {
-      return NbBundle.getMessage(PhpConfigurationProvider.class, name);
-  }
+    class MyCLIOParser implements CLIOParser {
+
+        private final List<String> colnames = Arrays.asList(new String[]{
+                    "utime", // NOI18N
+                    "stime", // NOI18N
+                    "wtime" // NOI18N
+                });
+        Double utime, stime, wtime;
+
+        @Override
+        public DataRow process(String line) {
+            if (line == null) {
+                return null;
+            }
+            String l = line.trim();
+            l = l.replaceAll(",", "."); // NOI18N
+            String[] tokens = l.split("[ \t]+"); // NOI18N
+
+            if (tokens.length != 15) {
+                return null;
+            }
+
+            try {
+                utime = Double.valueOf(tokens[2]);
+                stime = Double.valueOf(tokens[3]);
+                wtime = Double.valueOf(tokens[8]);
+            } catch (NumberFormatException ex) {
+                return null;
+            }
+
+            return new DataRow(colnames, Arrays.asList(utime, stime, wtime));
+        }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(PhpConfigurationProvider.class, name);
+    }
 }

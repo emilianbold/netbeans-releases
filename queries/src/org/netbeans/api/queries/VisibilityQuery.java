@@ -59,6 +59,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Parameters;
 
 /**
  * Determine whether files should be hidden in views presented to the user.
@@ -98,6 +99,7 @@ public final class VisibilityQuery {
      * @return true if it is recommended to show this file
      */
     public boolean isVisible(FileObject file) {
+        Parameters.notNull("file", file);
         for (VisibilityQueryImplementation vqi : getVqiInstances()) {
             if (!vqi.isVisible(file)) {
                 return false;
@@ -115,6 +117,7 @@ public final class VisibilityQuery {
      * @since org.netbeans.modules.queries/1 1.12
      */
     public boolean isVisible(File file) {
+        Parameters.notNull("file", file);
         for (VisibilityQueryImplementation vqi : getVqiInstances()) {
             if (vqi instanceof VisibilityQueryImplementation2) {
                 if (!((VisibilityQueryImplementation2)vqi).isVisible(file)) {

@@ -100,7 +100,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         
         Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
                 unitImpls,
-                InstalledModuleProvider.getDefault ());
+                InstalledModuleProvider.getDefault());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
@@ -168,7 +168,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
                 unitImpls,
-                InstalledModuleProvider.getDefault ());
+                InstalledModuleProvider.getDefault());
         Map<String, UpdateUnit> updatedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
                 installedImpls, p);
         boolean isInstalledAndHasUpdates = false;

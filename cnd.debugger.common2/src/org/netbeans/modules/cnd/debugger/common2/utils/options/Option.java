@@ -130,7 +130,8 @@ public abstract class Option {
 	label = catalog.get("LABEL_"+name); // NOI18N
 
 	if (hasTooltip) {
-	    tooltip = catalog.get("HINT_"+name); // NOI18N
+	    // CR 6995039 tooltip = catalog.get("HINT_"+name); // NOI18N
+	    tooltip = name; // NOI18N
 	} else {
 	    tooltip = null;
 	}

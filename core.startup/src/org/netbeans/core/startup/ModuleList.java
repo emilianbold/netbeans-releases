@@ -846,7 +846,7 @@ final class ModuleList implements Stamps.Updater {
      * May be called within read or write mutex; since it
      * could be in the read mutex, synchronize (on statuses).
      */
-    private void moduleListChanged() {
+    final void moduleListChanged() {
         synchronized (statuses) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("ModuleList: moduleListChanged; statuses=" + statuses);
@@ -1294,7 +1294,20 @@ final class ModuleList implements Stamps.Updater {
                     try {
                         jarFile = findJarByName(jar, cnb);
                     } catch (FileNotFoundException fnfe) {
-                        ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()), true);
+                        final File file = new File(fnfe.getMessage());
+                        ev.log(Events.MISSING_JAR_FILE, file, true);
+                        final File p = file.getParentFile();
+                        File[] arr = p.listFiles();
+                        LOG.log(Level.FINE, "Content of {0} is:", p); // NOI18N
+                        int cnt = 0;
+                        if (arr != null) {
+                            for (File f : arr) {
+                                LOG.log(Level.FINE, "{0}. = {1}", new Object[] { ++cnt, f }); // NOI18N
+                            }
+                            LOG.log(Level.FINE, "There was {0} files", cnt); // NOI18N
+                        } else {
+                            LOG.fine("Directory does not exist"); // NOI18N
+                        }
                         dirtyprops.remove(cnb); // #159001
                         continue;
                     }

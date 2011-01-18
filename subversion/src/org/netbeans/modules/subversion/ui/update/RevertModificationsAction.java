@@ -88,6 +88,11 @@ public class RevertModificationsAction extends ContextAction {
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/subversion/resources/icons/get_clean.png"; // NOI18N
+    }
     
     protected void performContextAction(final Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {

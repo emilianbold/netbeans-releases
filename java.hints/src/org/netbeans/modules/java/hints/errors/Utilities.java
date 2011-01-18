@@ -43,10 +43,18 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.logging.Level;
+import java.io.CharConversionException;
+import org.openide.xml.XMLUtil;
+import java.util.logging.Logger;
+import javax.lang.model.element.Name;
+import com.sun.source.tree.ThrowTree;
+import java.util.Stack;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePathScanner;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +65,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -137,6 +146,10 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
+        if (tp.getLeaf().getKind() == Kind.VARIABLE) {
+            return ((VariableTree) tp.getLeaf()).getName().toString();
+        }
+        
         ExpressionTree et = (ExpressionTree) tp.getLeaf();
         String name = getName(et);
         
@@ -556,7 +569,7 @@ public class Utilities {
         List<TreePath> currentCluster = new LinkedList<TreePath>();
 
         for (TreePath t : trees) {
-            if (isConstantString(info, t)) {
+            if (isConstantString(info, t, true)) {
                 currentCluster.add(t);
             } else {
                 if (!currentCluster.isEmpty()) {
@@ -575,7 +588,12 @@ public class Utilities {
     }
 
     public static boolean isConstantString(CompilationInfo info, TreePath tp) {
+        return isConstantString(info, tp, false);
+    }
+
+    public static boolean isConstantString(CompilationInfo info, TreePath tp, boolean acceptsChars) {
         if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
+        if (acceptsChars && tp.getLeaf().getKind() == Kind.CHAR_LITERAL) return true;
 
         Element el = info.getTrees().getElement(tp);
 
@@ -595,11 +613,16 @@ public class Utilities {
 
         List<TreePath> part = sorted.get(0);
 
-        if (!part.isEmpty() && isConstantString(info, part.get(0))) {
-            return true;
+        for (TreePath c : part) {
+            if (isConstantString(info, c, acceptsChars))
+                return true;
         }
 
         return false;
+    }
+
+    public static boolean isStringOrCharLiteral(Tree t) {
+        return t != null && (t.getKind() == Kind.STRING_LITERAL || t.getKind() == Kind.CHAR_LITERAL);
     }
 
     public static @NonNull Collection<? extends TreePath> resolveFieldGroup(@NonNull CompilationInfo info, @NonNull TreePath variable) {
@@ -878,7 +901,8 @@ public class Utilities {
     private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
 
         private CompilationInfo info;
-        private Set<Tree> seenTrees = new HashSet<Tree>();
+        private final Set<Tree> seenTrees = new HashSet<Tree>();
+        private final Stack<Set<TypeMirror>> caughtExceptions = new Stack<Set<TypeMirror>>();
 
         public ExitsFromAllBranches(CompilationInfo info) {
             this.info = info;
@@ -914,6 +938,45 @@ public class Utilities {
         public Boolean visitClass(ClassTree node, Void p) {
             return false;
         }
+
+        @Override
+        public Boolean visitTry(TryTree node, Void p) {
+            Set<TypeMirror> caught = new HashSet<TypeMirror>();
+
+            for (CatchTree ct : node.getCatches()) {
+                TypeMirror t = info.getTrees().getTypeMirror(new TreePath(new TreePath(getCurrentPath(), ct), ct.getParameter()));
+
+                if (t != null) {
+                    caught.add(t);
+                }
+            }
+
+            caughtExceptions.push(caught);
+            
+            try {
+                return scan(node.getBlock(), p) == Boolean.TRUE || scan(node.getFinallyBlock(), p) == Boolean.TRUE;
+            } finally {
+                caughtExceptions.pop();
+            }
+        }
+
+        @Override
+        public Boolean visitThrow(ThrowTree node, Void p) {
+            TypeMirror type = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
+            boolean isCaught = false;
+
+            OUTER: for (Set<TypeMirror> caught : caughtExceptions) {
+                for (TypeMirror c : caught) {
+                    if (info.getTypes().isSubtype(type, c)) {
+                        isCaught = true;
+                        break OUTER;
+                    }
+                }
+            }
+
+            return super.visitThrow(node, p) == Boolean.TRUE || !isCaught;
+        }
+
     }
 
     public static @NonNull Collection<TypeVariable> containedTypevarsRecursively(@NullAllowed TypeMirror tm) {
@@ -993,4 +1056,25 @@ public class Utilities {
         return targetTypeVars.containsAll(typeVars);
     }
 
+    public static String target2String(TypeElement target) {
+        final Name qualifiedName = target.getQualifiedName(); //#130759
+        if (qualifiedName == null) {
+            Logger.getLogger(Utilities.class.getName()).warning("Target qualified name could not be resolved."); //NOI18N
+            return ""; //NOI18N
+        } else {
+            String qnString = qualifiedName.toString();
+            if (qnString.length() == 0) {
+                //probably an anonymous class
+                qnString = target.asType().toString();
+            }
+
+            try {
+                qnString = XMLUtil.toElementContent(qnString);
+            } catch (CharConversionException ex) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
+            }
+
+            return qnString;
+        }
+    }
 }

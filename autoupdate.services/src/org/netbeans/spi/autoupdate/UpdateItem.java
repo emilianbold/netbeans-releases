@@ -178,7 +178,7 @@ public final class UpdateItem {
     
     /** Creates <code>UpdateItem</code> which represents Native Component with own installer. This component
      * can be visualized in UI as common item, when an user wants to install this component then
-     * own <code>CustomInstaller</code> is call back.
+     * own <code>CustomInstaller</code> is called back.
      * 
      * @param codeName code name of the native component
      * @param specificationVersion specification version of component

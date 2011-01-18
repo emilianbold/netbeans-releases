@@ -82,7 +82,7 @@ import org.openide.util.Exceptions;
     }
 
     public void runScript() {
-        if (!isFailedOrCancelled()) {
+        if (isConnected() && !isFailedOrCancelled()) {
             nextSet = 0;
             compilerSets.clear();
             try {

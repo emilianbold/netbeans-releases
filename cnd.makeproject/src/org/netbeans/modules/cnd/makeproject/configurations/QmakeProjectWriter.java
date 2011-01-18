@@ -336,8 +336,11 @@ public class QmakeProjectWriter {
                 }
 
                 buf.append(searchOption);
-                buf.append(CndPathUtilitities.quoteIfNecessary(CndPathUtilitities.getDirName(path)));
-                buf.append(' '); // NOI18N
+                String dirName = CndPathUtilitities.getDirName(path);
+                if (dirName != null && dirName.length() > 0) {
+                    buf.append(CndPathUtilitities.quoteIfNecessary(dirName));
+                    buf.append(' '); // NOI18N
+                }
             }
             buf.append(CndPathUtilitities.quoteIfNecessary(path));
             return buf.toString();

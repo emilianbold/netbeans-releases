@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.git.utils;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,11 +56,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.status.GitStatusNode;
+import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
@@ -67,9 +72,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
@@ -84,6 +93,8 @@ public final class GitUtils {
     public static final String HEAD = "HEAD"; //NOI18N
     public static final String INDEX = "INDEX"; //NOI18N
     public static final String CURRENT = "CURRENT"; //NOI18N
+    public static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
+    public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -318,7 +329,7 @@ public final class GitUtils {
      * @param ctx
      * @return
      */
-    public static File[] getActionRoots(VCSContext ctx) {
+    public static HashMap.SimpleImmutableEntry<File, File[]> getActionRoots(VCSContext ctx) {
         Set<File> rootsSet = ctx.getRootFiles();
         Map<File, List<File>> map = new HashMap<File, List<File>>();
 
@@ -348,13 +359,16 @@ public final class GitUtils {
             if(fs.show(repoRoots.toArray(new File[repoRoots.size()]))) {
                 File selection = fs.getSelectedFile();
                 List<File> l = map.get(selection);
-                return l.toArray(new File[l.size()]);
+                return new HashMap.SimpleImmutableEntry<File, File[]>(selection, l.toArray(new File[l.size()]));
             } else {
                 return null;
             }
+        } else if (map.isEmpty()) {
+            return null;
         } else {
-            List<File> l = map.get(map.keySet().iterator().next());
-            return l.toArray(new File[l.size()]);
+            File root = map.keySet().iterator().next();
+            List<File> l = map.get(root);
+            return new HashMap.SimpleImmutableEntry<File, File[]>(root, l.toArray(new File[l.size()]));
         }
     }
 
@@ -480,6 +494,63 @@ public final class GitUtils {
             // not found, continue
         }
         return false;
+    }
+
+    /**
+     * Determines if the context has been created in a git view, i.e. it consists of instances of {@link GitStatusNode}
+     * @param context
+     * @return true if the context contains instances of {@link GitStatusNode}
+     */
+    public static boolean isFromInternalView (VCSContext context) {
+        return context.getElements().lookup(GitStatusNode.class) != null;
+    }
+    
+    public static List<String> getRelativePaths(File workDir, File[] roots) {
+        List<String> paths = new ArrayList<String>(roots.length);
+        for (File root : roots) {
+            if (workDir.equals(root)) {
+                paths.clear();
+                break;
+            } else {
+                paths.add(getRelativePath(workDir, root));
+            }
+        }
+        return paths;
+    }
+
+    public static String getRelativePath (File repo, final File file) {
+        StringBuilder relativePath = new StringBuilder(""); //NOI18N
+        File parent = file;
+        if (!parent.equals(repo)) {
+            while (parent != null && !parent.equals(repo)) {
+                relativePath.insert(0, "/").insert(0, parent.getName()); //NOI18N
+                parent = parent.getParentFile();
+            }
+            if (parent == null) {
+                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
+            }
+            relativePath.deleteCharAt(relativePath.length() - 1);
+        }
+        return relativePath.toString();
+    }
+
+    public static void openInVersioningView (Collection<File> files, File repository, ProgressMonitor pm) {
+        List<Node> nodes = new LinkedList<Node>();
+        for (File file : files) {
+            Node node = new AbstractNode(Children.LEAF, Lookups.fixed(file));
+            nodes.add(node);
+            // this will refresh seen roots
+        }
+        Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, files), pm);
+        if (!pm.isCanceled()) {
+            final VCSContext context = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    SystemAction.get(StatusAction.class).performContextAction(context);
+                }
+            });
+        }
     }
     
     private GitUtils() {

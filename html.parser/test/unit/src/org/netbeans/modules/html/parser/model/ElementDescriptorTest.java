@@ -49,7 +49,7 @@ import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.html.parser.Documentation;
+import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.html.parser.HtmlTagProvider;
 
 /**
@@ -65,7 +65,7 @@ public class ElementDescriptorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Documentation.setupDocumentationForUnitTests();
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
 
@@ -217,6 +217,21 @@ public class ElementDescriptorTest extends NbTestCase {
             assertNotNull(String.format("No help content for tag %s, help url is %s ", d.getName(), helpUrl.toExternalForm()), helpContent);
 
         }
+    }
+
+
+    public void testElementsWithEmptyContent() {
+        assertFalse(ElementDescriptor.A.isEmpty());
+        assertFalse(ElementDescriptor.COLGROUP.isEmpty());
+
+        assertTrue(ElementDescriptor.COL.isEmpty());
+    }
+
+    public void testElementsOptionalEndTag() {
+        assertFalse(ElementDescriptor.A.hasOptionalEndTag());
+
+        assertTrue(ElementDescriptor.COLGROUP.hasOptionalEndTag());
+        assertTrue(ElementDescriptor.COL.hasOptionalEndTag());
     }
 
 }

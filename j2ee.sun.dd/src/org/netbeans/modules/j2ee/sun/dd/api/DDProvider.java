@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -1124,7 +1124,7 @@ public final class DDProvider {
         publicIdToInfoMap.put(DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunApplicationClient.VERSION_6_0_1, SunApplicationClientProxy.class, SunApplicationClient.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient.class,
-                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application-client_6_0-0.dtd")); // NOI18N
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/glassfish-application-client_6_0-1.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunApplicationClient.VERSION_6_0_0, SunApplicationClientProxy.class, SunApplicationClient.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.class,

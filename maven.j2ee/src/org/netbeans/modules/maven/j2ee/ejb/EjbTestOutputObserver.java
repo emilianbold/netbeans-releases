@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -57,7 +56,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.output.TestOutputObserver;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -128,8 +126,7 @@ public class EjbTestOutputObserver implements TestOutputObserver {
         }
 
         private boolean checkAndAddPom(URL pom, POMModel model, String scope, String repoId, String repoName) {
-            Set<String> repos = RepositoryPreferences.getInstance().getKnownRepositoryUrls();
-            ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom, repos);
+            ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
             if (result != null) {
                 //set dependency
                 Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);

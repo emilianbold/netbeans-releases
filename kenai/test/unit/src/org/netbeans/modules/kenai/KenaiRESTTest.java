@@ -94,10 +94,10 @@ public class KenaiRESTTest {
         System.out.println("testGetProject");
 
         //Golden data - project properties
-        String href = "http://testkenai.com/api/projects/alice";
+        String href = "http://testjava.net/api/projects/alice";
         String name = "alice";
         String display_name = "Alice";
-        String image = "http://testkenai.com/images/defaultProjectImage.jpg";
+        String image = "http://testjava.net/images/defaultProjectImage.jpg";
         String owner = "denniscosgrove";
         String description = "Alice is a teaching tool that uses drag-and-drop style interaction to construct programs without syntax errors.  Students create movies and games as a motivating context.  3D animation provides program visualization which aids students in understanding the execution and catching bugs.\r\n\r\nThe third version of the system is under development which includes a smoother transition to programming in Java.";
         String created_at = "2008-08-15T10:47:27Z";
@@ -105,7 +105,7 @@ public class KenaiRESTTest {
         int member_count = 45;
 
         //Goldem data - project license properties
-        String lcHref = "http://testkenai.com/api/licenses/1";
+        String lcHref = "http://testjava.net/api/licenses/1";
         String lcName = "Apache-2.0";
         String lcDisplayName = "Apache License 2.0";
         String lcURI = "http://www.opensource.org/licenses/apache2.0.php";

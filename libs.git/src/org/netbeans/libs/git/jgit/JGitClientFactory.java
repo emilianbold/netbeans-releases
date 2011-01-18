@@ -73,6 +73,12 @@ public final class JGitClientFactory extends GitClientFactory {
         return instance;
     }
 
+    void clearRepositoryPool() {
+        synchronized(repositoryPool) {
+            repositoryPool.clear();
+        }
+    }
+    
     @Override
     public GitClient getClient (File repositoryLocation) throws GitException {
         synchronized (repositoryPool) {

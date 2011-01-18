@@ -57,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -121,7 +122,7 @@ public final class FileChooserBuilder {
     }
 
     private static String decorateTitle(String title, ExecutionEnvironment env) {
-        return title + " @ " + env.getDisplayName(); // NOI18N
+        return NbBundle.getMessage(FileChooserBuilder.class, "REMOTE_CHOOSER_TITLE", title, env.getDisplayName()); // NOI18N
     }
 
     private static class LocalFileChooserImpl extends JFileChooserEx {

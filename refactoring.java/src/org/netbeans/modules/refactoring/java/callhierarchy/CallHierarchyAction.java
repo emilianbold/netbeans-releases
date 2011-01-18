@@ -43,7 +43,6 @@ package org.netbeans.modules.refactoring.java.callhierarchy;
 
 import java.util.Collection;
 import java.util.HashSet;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
@@ -53,7 +52,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Action which shows CallHierarchy component.
@@ -66,12 +64,19 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
         super(NbBundle.getMessage(CallHierarchyAction.class, "CTL_CallHierarchyAction"),ImageUtilities.loadImageIcon(CallHierarchyTopComponent.ICON_PATH, true));
     }
 
-    public void performAction(Lookup context) {
-        CallHierarchyTopComponent win = CallHierarchyTopComponent.findInstance();
-        win.open();
-        win.requestActive();
-        win.reset();
-        win.setModel(CallHierarchyModel.create(context, win.getScopes(), win.getHierarchyType()));
+    @Override
+    public void performAction(final Lookup context) {
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                CallHierarchyTopComponent win = CallHierarchyTopComponent.findInstance();
+                win.open();
+                win.requestActive();
+                win.reset();
+                win.setModel(CallHierarchyModel.create(context, win.getScopes(), win.getHierarchyType()));
+            }
+        };
+        RetoucheUtils.invokeAfterScanFinished(task, getName());
     }
 
     protected boolean enable(Lookup context) {

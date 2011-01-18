@@ -55,6 +55,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
 import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
@@ -121,7 +122,7 @@ public class Dwarf {
 	return dwarfReader.getSection(sectionName);
     }
 
-    public List<String> readPubNames() throws IOException {
+    public SharedLibraries readPubNames() throws IOException {
 	return dwarfReader.readPubNames();
     }
     

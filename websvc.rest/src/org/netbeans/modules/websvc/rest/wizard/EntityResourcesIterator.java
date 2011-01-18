@@ -81,6 +81,17 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         final Project project = Templates.getProject(wizard);
         RestUtils.ensureRestDevelopmentReady(project);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
+        FileObject wizardSrcRoot = (FileObject)wizard.getProperty(
+                WizardProperties.TARGET_SRC_ROOT);
+        /*
+         *  In JEE6 case last wizard panel doesn't set TargetFolder via Templates
+         *  method. There is special property WizardProperties.TARGET_SRC_ROOT
+         *  which is set up by wizard panel. This property should be used
+         *  as target source root folder. 
+         */
+        if ( wizardSrcRoot != null ){
+            targetFolder  = wizardSrcRoot;
+        }
         String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
@@ -125,16 +136,29 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard wizard) {
         index = 0;
         WizardDescriptor.Panel secondPanel = new EntitySelectionPanel(
-                NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"), wizard);
-        WizardDescriptor.Panel thirdPanel = new EntityResourcesSetupPanel(
-                NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses"), wizard);
+                NbBundle.getMessage(EntityResourcesIterator.class, 
+                        "LBL_EntityClasses"), wizard);      // NOI18N
+        WizardDescriptor.Panel thirdPanel = null ;
+        if ( RestUtils.isJavaEE6(Templates.getProject(wizard)) ){
+            thirdPanel =new org.netbeans.modules.websvc.rest.wizard.fromdb.
+                EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
+                "LBL_RestResourcesAndClasses"), wizard, true);// NOI18N
+        }
+        else {
+            thirdPanel = new EntityResourcesSetupPanel(
+                NbBundle.getMessage(EntityResourcesIterator.class, 
+                        "LBL_RestResourcesAndClasses"), wizard);// NOI18N
+        }
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {
-            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"),
-            NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses")    
+            NbBundle.getMessage(EntityResourcesIterator.class, 
+                    "LBL_EntityClasses"),                       // NOI18N
+            NbBundle.getMessage(EntityResourcesIterator.class, 
+                    "LBL_RestResourcesAndClasses")              // NOI18N    
         };
         wizard.putProperty("NewFileWizard_Title",
-                NbBundle.getMessage(EntityResourcesIterator.class, "Templates/WebServices/RestServicesFromEntities"));
+                NbBundle.getMessage(EntityResourcesIterator.class, 
+                        "Templates/WebServices/RestServicesFromEntities"));// NOI18N
         Util.mergeSteps(wizard, panels, names);
     }
     
@@ -147,7 +171,8 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
     }
     
     public String name() {
-        return NbBundle.getMessage(EntityResourcesIterator.class, "LBL_WizardTitle_FromEntity");
+        return NbBundle.getMessage(EntityResourcesIterator.class, 
+                "LBL_WizardTitle_FromEntity");          // NOI18N
     }
     
     public boolean hasNext() {

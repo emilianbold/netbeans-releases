@@ -384,22 +384,7 @@ public class ProviderControl {
         FileFilter[] filters = null;
         if (chooserMode == JFileChooser.FILES_ONLY){
             if (isBinary) {
-                if (Utilities.isWindows()) {
-                    filters = new FileFilter[]{FileFilterFactory.getPeExecutableFileFilter(),
-                        FileFilterFactory.getElfStaticLibraryFileFilter(),
-                        FileFilterFactory.getPeDynamicLibraryFileFilter()
-                    };
-                } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                    filters = new FileFilter[]{FileFilterFactory.getMacOSXExecutableFileFilter(),
-                        FileFilterFactory.getElfStaticLibraryFileFilter(),
-                        FileFilterFactory.getMacOSXDynamicLibraryFileFilter()
-                    };
-                } else {
-                    filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter(),
-                        FileFilterFactory.getElfStaticLibraryFileFilter(),
-                        FileFilterFactory.getElfDynamicLibraryFileFilter()
-                    };
-                }
+                filters = FileFilterFactory.getBinaryFilters();
             } else {
                 filters = new FileFilter[]{new LogFileFilter()};
             }

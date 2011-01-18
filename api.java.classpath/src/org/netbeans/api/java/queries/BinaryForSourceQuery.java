@@ -51,6 +51,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -74,7 +75,10 @@ public final class BinaryForSourceQuery {
     
     /**
      * Returns the binary root for given source root.
-     * @param sourceRoot the source path root.
+     * @param sourceRoot the source path root. The URL must refer to folder. 
+     * In the case of archive file the jar protocol URL must be used.
+     * The folder URL has to end with '/' The {@link FileUtil#urlForArchiveOrDir}
+     * can be used to create folder URLs.
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findBinaryRoots (final URL sourceRoot) {

@@ -65,7 +65,7 @@ public class HtmlTagProviderTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Documentation.setupDocumentationForUnitTests();
+        HtmlDocumentation.setupDocumentationForUnitTests();
     }
 
 

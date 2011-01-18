@@ -83,7 +83,16 @@ public class ShowToolchainsAction extends AbstractAction {
         dd.setModal(true);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.pack();
-        dlg.setVisible(true);
+        try {
+            dlg.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CANCEL_OPTION);
+        } finally {
+            dlg.dispose();
+        }
         if (dd.getValue() == NotifyDescriptor.OK_OPTION) {
             VetoableChangeListener okL = (VetoableChangeListener) tpc.getClientProperty(ToolsPanelSupport.OK_LISTENER_KEY);
             CndUtils.assertNotNull(okL, "VetoableChangeListener shouldn't be null"); //NOI18N

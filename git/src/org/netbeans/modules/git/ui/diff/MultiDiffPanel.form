@@ -210,6 +210,9 @@
         </Component>
         <Container class="javax.swing.JPanel" name="jPanel3">
           <Properties>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[20, 32767]"/>
+            </Property>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
 

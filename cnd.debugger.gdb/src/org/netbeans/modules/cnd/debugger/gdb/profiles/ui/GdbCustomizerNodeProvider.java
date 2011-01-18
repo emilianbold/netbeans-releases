@@ -44,9 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 
-import org.openide.util.NbBundle;
 import org.openide.nodes.Sheet;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
@@ -54,7 +52,6 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
@@ -108,6 +105,11 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
             } else {
                 return false;
             }
+        }
+
+        @Override
+        public boolean canHandle(ProjectActionEvent pae) {
+            return canHandle(pae.getType(), pae.getConfiguration());
         }
 
         @Override

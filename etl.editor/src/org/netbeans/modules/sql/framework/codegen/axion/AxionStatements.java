@@ -305,7 +305,7 @@ public class AxionStatements extends BaseStatements {
             
             vContext.put("linkName", this.db.getUnescapedName(linkName));
             vContext.put("remoteName", tableName);
-            vContext.put("ifNotExists", Boolean.FALSE);
+            vContext.put("ifNotExists", Boolean.TRUE);
             vContext.put("orderBy", "");
             vContext.put("where", "");
             vContext.put("schemaName", schemaName);

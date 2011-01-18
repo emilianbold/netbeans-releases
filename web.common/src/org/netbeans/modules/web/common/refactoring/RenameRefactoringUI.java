@@ -68,6 +68,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     public RenameRefactoringUI(FileObject file) {
 	this.file = file;
+        this.newName = file.getName();
 	this.refactoring = new RenameRefactoring(Lookups.fixed(file));
     }
 

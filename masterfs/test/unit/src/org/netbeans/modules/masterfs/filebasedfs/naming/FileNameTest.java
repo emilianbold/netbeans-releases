@@ -44,12 +44,14 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 
 /**
  *
@@ -91,24 +93,66 @@ public class FileNameTest extends NbTestCase {
     }
 
     public void testCollision() throws Exception {
+        File root = new File(getWorkDir(), "root");
+        root.mkdirs();
+        
         // File hash code is based on path. There are many known String collisions
         // though we need the colliding Strings to be:
         //   1. of the same length, so the collision is not broken by random prefix
         //   2. lower case, to not be affected by lower-casing the path on Win
         // For simplicity, I have chosen "y6" and "wt". They collide with xU too,
         // but that doesn't pass our 2. test on Windows
-        File f1 = new File (getWorkDir(), "y6");
-        File f2 = new File (getWorkDir(), "wt");
+        File file1 = new File (root, "y6");
+        File file2 = new File (root, "wt");
         
         // verify that the test itself is effective
-        assertEquals("There should be a hash collision, nothing is tested otherwise", f1.hashCode(), f2.hashCode());
+        assertEquals("There should be a hash collision, nothing is tested otherwise", file1.hashCode(), file2.hashCode());
 
-        n1 = NamingFactory.fromFile(f1);
-        n2 = NamingFactory.fromFile(f2);
-        n3 = NamingFactory.fromFile(f1);
+        n1 = NamingFactory.fromFile(file1);
+        n2 = NamingFactory.fromFile(file2);
+        n3 = NamingFactory.fromFile(file1);
         
         assertNotSame("Different files, different names", n1, n2);
         assertSame("Same file, same name", n1, n3);        
+        
+        Reference<?> ref = new WeakReference<Object>(n1);
+        n1 = n3 = null;
+        assertGC("Can GC", ref);
+        
+        FileNaming n4 = NamingFactory.fromFile(file2);
+        assertSame("This has to remain same as before", n2, n4);
+    }
+    
+    public void testFolderAndName() throws IOException {
+        FileNaming parent = NamingFactory.fromFile(getWorkDir());
+        
+        File f = new File(getWorkDir(), "test");
+        f.createNewFile();
+        assertTrue("Is file", f.isFile());
+        FileNaming first = NamingFactory.fromFile(parent, f, true);
+        assertEquals("First it is file", FileName.class, first.getClass());
+        f.delete();
+        
+        f.mkdirs();
+        assertTrue("Is dir", f.isDirectory());
+        
+        FileNaming dir = NamingFactory.fromFile(parent, f, true);
+        assertEquals("Is folder name", FolderName.class, dir.getClass());
+        
+        f.delete();
+        f.createNewFile();
+        assertTrue("Is file", f.isFile());
+        
+        FileNaming file = NamingFactory.fromFile(parent, f, true);
+        assertEquals("Is file name", FileName.class, file.getClass());
+        
+        FileNaming cache = NamingFactory.fromFile(f);
+        assertEquals("Is file name too", FileName.class, cache.getClass());
+        
+        String dump = NamingFactory.dump(f.hashCode(), f);
+        if (!dump.contains("References: 1")) {
+            fail("We expect just one reference:\n" + dump);
+        }
     }
     
     protected File getTestFile() throws Exception {
@@ -135,7 +179,7 @@ public class FileNameTest extends NbTestCase {
         if (!fa.exists()) {
             assertTrue(fa.createNewFile());
         }        
-        boolean isCaseSensitive = !fa.equals(fA);                
+        boolean isCaseSensitive = !Utils.equals(fa, fA);                
         FileNaming na = NamingFactory.fromFile(fa);        
         assertEquals(fa.getName(),NamingFactory.fromFile(fa).getName());        
         if (isCaseSensitive) {
@@ -238,14 +282,14 @@ public class FileNameTest extends NbTestCase {
         FileNaming fn1 = NamingFactory.fromFile(root, f1, false);
         FileNaming fn2 = NamingFactory.fromFile(root, f2, false);
 
-        boolean equalF = f1.equals(f2);
+        boolean equalF = Utils.equals(f1,f2);
 
         f2.createNewFile();
         NamingFactory.checkCaseSensitivity(fn2, f2);
         assertEquals("Name equals file name f2", f2.getName(), fn2.getName());
 
         if (equalF) {
-            assertEquals("File has code", f1.hashCode(), f2.hashCode());
+            assertEquals("File has code", Utils.hashCode(f1), Utils.hashCode(f2));
             assertEquals("FileNaming hash code", fn1.hashCode(), fn2.hashCode());
             assertSame("namings are equal", fn1, fn2);
         } else {

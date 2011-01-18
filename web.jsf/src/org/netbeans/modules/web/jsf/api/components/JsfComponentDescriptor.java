@@ -59,8 +59,13 @@ final public class JsfComponentDescriptor {
     private final String welcomeBody;
     private final String namespace;
     private final String nsPrefix;
+    private final String defaultRenderKitId;
 
     public JsfComponentDescriptor(String libraryName, String name, JSFVersion jsfVersion, String description, String welcomeBody, String namespace, String nsPrefix) {
+        this (libraryName, name, jsfVersion, description, welcomeBody, namespace, nsPrefix, null);
+    }
+    public JsfComponentDescriptor(String libraryName, String name, JSFVersion jsfVersion, 
+            String description, String welcomeBody, String namespace, String nsPrefix, String defaultRenderKitId) {
         Parameters.notNull("name", name); // NOI18N
         Parameters.notNull("libraryName", libraryName); // NOI18N
         this.libraryName = libraryName;
@@ -70,6 +75,7 @@ final public class JsfComponentDescriptor {
         this.welcomeBody = welcomeBody;
         this.namespace = namespace;
         this.nsPrefix = nsPrefix;
+        this.defaultRenderKitId = defaultRenderKitId;
     }
 
     public JSFVersion getJsfVersion() {
@@ -126,5 +132,13 @@ final public class JsfComponentDescriptor {
 
     public String getNsPrefix() {
         return nsPrefix;
+    }
+    
+    /** Returns the value of default-render-kit-id element that should be placed 
+     * in the application element in faces-config.xml. If <code>null</code> is 
+     * returned, no default-render-kit-id element is written.
+     */
+    public String getDefaultRenderKitId() {
+        return defaultRenderKitId;
     }
 }

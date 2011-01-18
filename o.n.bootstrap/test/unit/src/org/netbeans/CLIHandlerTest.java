@@ -46,10 +46,10 @@ package org.netbeans;
 
 import java.io.*;
 import java.util.logging.Level;
-import org.netbeans.CLIHandler.Status;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Logger;
+import org.netbeans.CLIHandler.Status;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -66,7 +66,7 @@ public class CLIHandlerTest extends NbTestCase {
     public CLIHandlerTest(String name) {
         super(name);
     }
-    
+
     protected @Override void setUp() throws Exception {
         LOG = Logger.getLogger("TEST-" + getName());
         
@@ -93,6 +93,10 @@ public class CLIHandlerTest extends NbTestCase {
     
     protected @Override Level logLevel() {
         return Level.FINEST;
+    }
+
+    protected @Override int timeOut() {
+        return 500000;
     }
     
     public void testFileExistsButItCannotBeRead() throws Exception {
@@ -126,11 +130,8 @@ public class CLIHandlerTest extends NbTestCase {
         
         // blocks when operation fails
         InitializeRunner second = new InitializeRunner(85);
-        // second try should be ok
-        second.next();
-        
-        assertNotNull("Previous file deleted and new one created", second.resultFile());
-        assertTrue("Another port allocated", second.resultPort() != runner.resultPort());
+        assertTrue("Fails quickly", second.hasResult());
+        assertEquals("Already running, but not replying", Status.CANNOT_CONNECT, second.getExitCode());
     }
     
     public void testFileExistsHasPortButNotTheKey() throws Exception {
@@ -163,7 +164,7 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("Another port allocated", second.resultPort(), runner.resultPort());
     }
 
-    public void testFileExistsHasPortButPortIsNotActive() throws Exception {
+    public void testFileExistsHasPortButAppIsNotActive() throws Exception {
         String tmp = System.getProperty("netbeans.user");
 
         File f = new File(tmp, "lock");
@@ -181,13 +182,9 @@ public class CLIHandlerTest extends NbTestCase {
         os.close();
 
         // blocks after read the keys from the file
-        InitializeRunner second = new InitializeRunner(94);
-
-        // let the second finish
-        second.next();
-
+        InitializeRunner second = new InitializeRunner(-1);
+        assertTrue("Detects stalled file and initializes the port", second.waitResult());
         assertEquals("Still the same file", f, second.resultFile());
-        assertTrue("finished", second.waitResult());
     }
     
     public void testHelpIsPrinted() throws Exception {
@@ -282,22 +279,6 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
     
-    public void testFileExistsButTheServerCannotBeContactedAndWeDoNotWantToCleanTheFileOnSameHost() throws Exception {
-        // start the server and block
-        InitializeRunner runner = new InitializeRunner(65);
-        
-        assertNotNull("File created", runner.resultFile());
-        assertTrue("Port allocated", runner.resultPort() != 0);
-        
-        CLIHandler.Status res = CLIHandler.initialize(
-            new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, ""), 
-            null, Collections.<CLIHandler>emptyList(), false, false, null
-        );
-        
-        assertNotNull("Previous file deleted and new one created", res.getLockFile());
-        assertTrue("Another port allocated", res.getServerPort() != runner.resultPort());
-    }
-    
     public void testFileExistsButTheServerCannotBeContactedAndWeDoNotWantToCleanTheFileOnOtherHost() throws Exception {
         // start the server and block
         InitializeRunner runner = new InitializeRunner(65);
@@ -361,8 +342,8 @@ public class CLIHandlerTest extends NbTestCase {
         // read the reply and allocate new port
         second.next();
         
-        assertNotNull("Previous file deleted and new one created", second.resultFile());
-        assertTrue("Another port allocated", second.resultPort() != runner.resultPort());
+        assertTrue("Execution finished", second.waitResult());
+        assertEquals("Cannot connect to server", Status.CANNOT_CONNECT, second.getExitCode());
     }
     
     public void testCLIHandlersCanChangeLocationOfLockFile() throws Exception {
@@ -490,6 +471,7 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
 
+    @RandomlyFails
     public void testServerWaitsBeforeFinishInitializationIsCalledOn () throws Exception {
         // this tests will not execute handlers immediatelly
         CLIHandler.finishInitialization (true);
@@ -927,6 +909,13 @@ public class CLIHandlerTest extends NbTestCase {
          */
         public boolean hasResult() {
             return result != null;
+        }
+        
+        public int getExitCode() {
+            if (result == null) {
+                fail("No result produced");
+            }
+            return result.getExitCode();
         }
         
         public boolean waitResult() throws InterruptedException {

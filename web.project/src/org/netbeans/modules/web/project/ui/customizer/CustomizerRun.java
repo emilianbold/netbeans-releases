@@ -62,8 +62,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Exceptions;

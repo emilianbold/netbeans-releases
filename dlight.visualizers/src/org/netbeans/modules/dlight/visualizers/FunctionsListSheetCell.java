@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Rojcek
  */
-abstract class FunctionsListSheetCell extends AbstractCellEditor implements TableModelListener, PropertyChangeListener, TableCellEditor, TableCellRenderer {
+public abstract class FunctionsListSheetCell extends AbstractCellEditor implements TableModelListener, PropertyChangeListener, TableCellEditor, TableCellRenderer {
 
     /* Determines how to paint renderer */
     private Boolean flat;

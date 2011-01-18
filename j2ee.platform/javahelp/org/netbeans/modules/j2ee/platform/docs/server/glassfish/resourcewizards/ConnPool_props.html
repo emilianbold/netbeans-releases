@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+        The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+        -->
+
+        <title>New JDBC Connection Pool: Add Connection Pool Properties</title>
+
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+    </head>
+
+    <body>
+        <h2>New JDBC Connection Pool: Add Connection Pool Properties</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You see this page of the New File wizard when you are
+        defining a connection pool and you
+        have already named the connection pool and selected the database connection.</p>        
+        <p>On this (and the <a href="ConnPool_poolSettings.html"> Connection Pool Optional Settings</a> page) 
+        you specify the properties of the connection pool. After
+        entering the property values, you can do one of the following:</p>
+        <ul>
+            <li>Click Next if you want to further customize the optional pool properties such as pool size and connection validation.</li>
+            <li>Click Finish to create the connection pool, leaving the optional settings at their default values.</li>
+        </ul>
+        <p>The connection pool properties are added to <tt>sun-resources.xml</tt>.
+        If you want to modify connection pool properties you can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+        Server Resources node of your project in the Projects window and double-clicking the file. </p>
+       
+        <h3>Datasource classname</h3>
+        <p>The datasource class name is the JDBC driver that implements the APIs
+        for the datasource. This name is provided according to the database connection selected in the previous screen.
+        If you selected Other as the connection in the previous screen, you may need to add the datasource classname manually.</p>
+        
+        <h3>Resource type</h3>
+        <p>The resource type reflects whether the connection pool enables XA
+        global transactions or is restricted to local transactions.
+        Return to the previous screen to change the resource type.</p>
+            
+        <h3>Description</h3>
+        <p>You can enter a description of this connection pool.</p>
+        
+        <h3>Properties</h3>
+        <p>Connection pool properties may vary according to the database vendor.
+        Common properties include the datasource URL, user name, and password, but other
+        properties may be suggested or required depending on the database connection.
+        If you selected an existing source in the previous screen, some of the property values may already
+        be provided.</p>
+
+        <p>Properties may be changed or removed and additional
+        properties may be added, but each property in the Properties area must have a value
+        entered before you can proceed to the next screen or finish
+        the connection pool configuration.</p>
+
+        <ul class="note">
+            <li>To complete the wizard you may need to supply the password for your database if the property field is empty. Use the character sequence open-parenthesis close-parenthesis, "()", to denote an empty string or blank password. </li>
+        </ul>
+        <p><b>To change a property:</b></p>
+        <ol>
+            <li>Click a box in the Properties Name column and select a new property from the dropdown list.</li>
+            <li>Add a value for that property.</li>
+        </ol>        
+        <p><b>To add a new property:</b></p>
+        <ol>
+            <li>Click the Add button. A new row appears in the properties box.</li>            
+            <li>In the new row, click the box in the Properties Name column and select a property from the dropdown list.</li>
+            <li>Add a value for that property.</li>
+        </ol>
+
+        <p><b>To remove a property:</b></p>
+        <ol>
+            <li>Click the row containing the property to delete.</li>
+            <li>Click the Remove button.</li>
+        </ol>
+        
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_aboutdbconnect.html">About Connection Pools</a></dd>
+            <dd>    <a href="../general/def_connpool.html">Defining a Connection Pool</a><br>
+        </dl>
+        <hr>
+
+        <small><a href="../../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

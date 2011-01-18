@@ -1,6 +1,6 @@
 Name: Saxon
-Version: 9B
-License: MPL
+Version: Saxon-B, version 9.1.0.2
+License: MPL-1.1
 OSR: -
 Files: saxon9B.jar
 Description: Complete and conformant implementation of the XSLT 2.0, XQuery 1.0, and XPath 2.0 Recommendations published on 23 January 2007 by W3C.

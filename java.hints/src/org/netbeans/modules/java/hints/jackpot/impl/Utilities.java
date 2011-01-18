@@ -79,6 +79,7 @@ import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.Scanner;
+import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.parser.Token;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -468,9 +469,9 @@ public class Utilities {
         try {
             CharBuffer buf = CharBuffer.wrap((stmt+"\u0000").toCharArray(), 0, stmt.length());
             ParserFactory factory = ParserFactory.instance(context);
-            Scanner.Factory scannerFactory = Scanner.Factory.instance(context);
+            ScannerFactory scannerFactory = ScannerFactory.instance(context);
             Names names = Names.instance(context);
-            Parser parser = new JackpotJavacParser(context, factory, scannerFactory.newScanner(buf), false, false, CancelService.instance(context), names);
+            Parser parser = new JackpotJavacParser(context, factory, scannerFactory.newScanner(buf, false), false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
 //                if (pos != null)
 //                    pos[0] = new ParserSourcePositions((JavacParser)parser);
@@ -490,9 +491,9 @@ public class Utilities {
         try {
             CharBuffer buf = CharBuffer.wrap((expr+"\u0000").toCharArray(), 0, expr.length());
             ParserFactory factory = ParserFactory.instance(context);
-            Scanner.Factory scannerFactory = Scanner.Factory.instance(context);
+            ScannerFactory scannerFactory = ScannerFactory.instance(context);
             Names names = Names.instance(context);
-            Scanner scanner = scannerFactory.newScanner(buf);
+            Scanner scanner = scannerFactory.newScanner(buf, false);
             Parser parser = new JackpotJavacParser(context, factory, scanner, false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
 //                if (pos != null)

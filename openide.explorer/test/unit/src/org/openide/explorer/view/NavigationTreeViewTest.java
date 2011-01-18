@@ -45,15 +45,14 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
@@ -78,9 +77,16 @@ public class NavigationTreeViewTest extends NbTestCase {
     private ExplorerWindow testWindow;
     private CharSequence log;
     private Object enter;
+    private Logger LOG;
     
     public NavigationTreeViewTest(String testName) {
         super(testName);
+        LOG = Logger.getLogger(NavigationTreeViewTest.class.getName() + "." + getName());
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected boolean lazy() {
@@ -105,6 +111,7 @@ public class NavigationTreeViewTest extends NbTestCase {
         testWindow.setVisible(true);
 
         for (int i = 0; i < 10; i++) {
+            LOG.log(Level.INFO, "Is showing {0}", i);
             if (testWindow.isShowing()) {
                 break;
             }
@@ -114,6 +121,7 @@ public class NavigationTreeViewTest extends NbTestCase {
         assertTrue("Tree is visible", testWindow.isShowing());
         enter = treeView.tree.getInputMap().get(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         assertNotNull("Enter has assigned key", enter);
+        LOG.info("Setup is over");
     }
 
     @Override
@@ -133,14 +141,19 @@ public class NavigationTreeViewTest extends NbTestCase {
 
         final Node first = ch.getNodes()[0];
 
-        ExplorerManager em = testWindow.getExplorerManager();
+        LOG.log(Level.INFO, "Nodes are ready: {0}", root);
+        final ExplorerManager em = testWindow.getExplorerManager();
         em.setRootContext(root);
+        LOG.info("setRootContext done");
         em.setSelectedNodes(new Node[] { first });
+        LOG.log(Level.INFO, "setSelectedNodes to {0}", first);
 
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
                 TreePath path = treeView.tree.getSelectionPath();
+                LOG.log(Level.INFO, "getSelectionPath {0}", path);
+                LOG.log(Level.INFO, "getSelectedNodes {0}", Arrays.toString(em.getSelectedNodes()));
                 assertNotNull("Something is selected", path);
                 Node node = Visualizer.findNode(path.getLastPathComponent());
                 assertEquals("It is the first node", first, node);
@@ -164,6 +177,7 @@ public class NavigationTreeViewTest extends NbTestCase {
 
     private void sendAction(final Object key) throws Exception {
         class Process implements Runnable {
+            @Override
             public void run() {
                 final ActionMap map = treeView.tree.getActionMap();
                 Action a = map.get(key);
@@ -174,7 +188,9 @@ public class NavigationTreeViewTest extends NbTestCase {
             }
         }
         Process processEvent = new Process();
+        LOG.log(Level.INFO, "Sending action {0}", key);
         SwingUtilities.invokeAndWait(processEvent);
+        LOG.log(Level.INFO, "Action {0} send", key);
     }
     
     private int cnt;
@@ -212,6 +228,7 @@ public class NavigationTreeViewTest extends NbTestCase {
          * @return child nodes for this key or null if there should be no
          *   nodes for this key
          */
+        @Override
         protected Node[] createNodes(String key) {
             if (key.startsWith("-")) {
                 return null;
@@ -227,18 +244,22 @@ public class NavigationTreeViewTest extends NbTestCase {
                     return this;
                 }
 
+                @Override
                 public void putValue(String key, Object value) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
 
+                @Override
                 public void setEnabled(boolean b) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
 
+                @Override
                 public boolean isEnabled() {
                     return true;
                 }
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     actionPerformed++;
                     readAccess = Children.MUTEX.isReadAccess();
@@ -262,6 +283,7 @@ public class NavigationTreeViewTest extends NbTestCase {
             getContentPane().add(content, BorderLayout.CENTER);
         }
         
+        @Override
         public ExplorerManager getExplorerManager() {
             return explManager;
         }

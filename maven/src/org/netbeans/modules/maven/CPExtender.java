@@ -43,24 +43,18 @@
 package org.netbeans.modules.maven;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -164,7 +158,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
             assert model != null;
             for (URL url : urls) {
                 FileObject fo = URLMapper.findFileObject(FileUtil.getArchiveFile(url));
-                assert fo != null;
+                if (fo == null) {
+                    throw new IOException("Could find no file corresponding to " + url);
+                }
                 if (fo.isFolder()) {
                     throw new IOException("Cannot add folders to Maven projects as dependencies: " + fo.getURL()); //NOI18N
                 }
@@ -220,8 +216,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         boolean added = false;
         if (poms != null && poms.size() > 0) {
             for (URL pom : poms) {
-                Set<String> repos = RepositoryPreferences.getInstance().getKnownRepositoryUrls();
-                ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom, repos);
+                ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
                 if (result != null) {
                     added = true;
                     //set dependency
@@ -246,17 +241,6 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         }
         return added;
     }
-    
-    static Pattern DEFAULT = Pattern.compile("(.+)[/]{1}(.+)[/]{1}(.+)[/]{1}(.+)\\.pom"); //NOI18N
-    static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z0-9_]+[a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
-    /**
-     * @returns [0] type - default/legacy
-     *          [1] repo root
-     *          [2] groupId
-     *          [3] artifactId
-     *          [4] version
-     *          [5] classifier (optional, not part of path, but url's ref)
-     */ 
         
     public boolean addAntArtifact(AntArtifact arg0, URI arg1) throws IOException {
         throw new IOException("Cannot add Ant based projects as subprojecs to Maven projects."); //NOI18N

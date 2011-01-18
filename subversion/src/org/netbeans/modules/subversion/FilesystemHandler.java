@@ -61,7 +61,6 @@ import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -79,10 +78,10 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Stores all moved files for a later cache refresh in afterMove
      */
-    private Set<File> movedFiles = new HashSet<File>();
-    private Set<File> copiedFiles = new HashSet<File>();
+    private final Set<File> movedFiles = new HashSet<File>();
+    private final Set<File> copiedFiles = new HashSet<File>();
 
-    private Set<File> internalyDeletedFiles = new HashSet<File>();
+    private final Set<File> internalyDeletedFiles = new HashSet<File>();
 
     /**
      * Stores .svn folders that should be deleted ASAP.
@@ -127,7 +126,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
-                if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                     SvnClientExceptionHandler.notifyException(e, false, false); // log this
                 }
                 IOException ex = new IOException(); // NOI18N
@@ -459,7 +458,7 @@ class FilesystemHandler extends VCSInterceptor {
                         retryCounter--;
                         continue;
                     }
-                    if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                    if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                         SvnClientExceptionHandler.notifyException(e, false, false); // log this
                     }
                     IOException ex = new IOException(); // NOI18N
@@ -469,7 +468,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         } catch (SVNClientException e) {
-            if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
             IOException ex = new IOException(); // NOI18N
@@ -504,7 +503,7 @@ class FilesystemHandler extends VCSInterceptor {
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true);
                 } catch (SVNClientException ex) {
-                    if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                    if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
                 }
@@ -672,7 +671,7 @@ class FilesystemHandler extends VCSInterceptor {
             ISVNStatus status = getStatus(client, file);
             revertDeleted(client, status, file, checkParents);
         } catch (SVNClientException ex) {
-            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }
         }
@@ -699,7 +698,7 @@ class FilesystemHandler extends VCSInterceptor {
                 file.delete();
             }
         } catch (SVNClientException ex) {
-            if (!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }
         }
@@ -809,7 +808,7 @@ class FilesystemHandler extends VCSInterceptor {
                         retryCounter--;
                         continue;
                     }
-                    if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+                    if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                         SvnClientExceptionHandler.notifyException(e, false, false); // log this
                     }
                     IOException ex = new IOException(); // NOI18N
@@ -819,7 +818,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         } catch (SVNClientException e) {
-            if (!SvnClientExceptionHandler.isTooOldClientForWC(e.getMessage())) {
+            if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
             IOException ex = new IOException(); // NOI18N

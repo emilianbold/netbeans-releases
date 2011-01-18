@@ -244,12 +244,16 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
         mconf.setDevelopmentHost(dhc);
         CompilerSet2Configuration oldCS = mconf.getCompilerSet();
-        String oldCSName = oldCS.getName();
-        CompilerSetManager csm = CompilerSetManager.get(dhc.getExecutionEnvironment());
+        if (oldCS.isDefaultCompilerSet()) {
+            mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+        } else {
+            String oldCSName = oldCS.getName();
+            CompilerSetManager csm = CompilerSetManager.get(dhc.getExecutionEnvironment());
             CompilerSet newCS = csm.getCompilerSet(oldCSName);
             // if not found => use default from new host
             newCS = (newCS == null) ? csm.getDefaultCompilerSet() : newCS;
             mconf.setCompilerSet(new CompilerSet2Configuration(dhc, newCS));
+        }
 //                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
 //                    platformConfiguration.propertyChange(new PropertyChangeEvent(
 //                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));

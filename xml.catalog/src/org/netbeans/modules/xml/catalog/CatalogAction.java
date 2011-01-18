@@ -55,34 +55,31 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JButton;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.ViewCookie;
 import org.openide.explorer.ExplorerManager;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /** 
  *
  * @author Pavel Buzek
  */
-public class CatalogAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.xml.catalog.CatalogAction", category = "System")
+@ActionRegistration(displayName = "#LBL_CatalogAction_Name", iconInMenu=false, asynchronous=true)
+@ActionReference(path = "Menu/Tools", position = 1100)
+public class CatalogAction implements ActionListener {
 
     /** Weak reference to the dialog showing singleton Template Manager. */
     private Reference<Dialog> dialogWRef = new WeakReference<Dialog> (null);
     
-    public CatalogAction() {
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-    }    
-    
-    public void performAction () {
+    public @Override void actionPerformed(ActionEvent e) {
         
         Dialog dialog = dialogWRef.get ();
 
@@ -116,30 +113,6 @@ public class CatalogAction extends CallableSystemAction {
             dialog.toFront ();
         }
         
-    }
-    
-    protected boolean asynchronous() {
-        return true;
-    }
-
-    public String getName () {
-        return NbBundle.getMessage (CatalogAction.class, "LBL_CatalogAction_Name"); // NOI18N
-    }
-
-    protected String iconResource () {
-        return null;
-    }
-
-    public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    /**
-     * Adding hint.
-     */
-    protected void initialize () {
-	super.initialize ();
-        putProperty (CatalogAction.SHORT_DESCRIPTION,org.openide.util.NbBundle.getMessage(CatalogAction.class, "HINT_CatalogAction")); // NOI18N
     }
     
     // helper classes

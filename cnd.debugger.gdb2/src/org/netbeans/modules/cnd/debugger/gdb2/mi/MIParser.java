@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
+import org.netbeans.modules.cnd.debugger.gdb2.GdbUtils;
 
 
 /**
@@ -53,28 +54,29 @@ import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
 
 public class MIParser {
 
-    private static class Exception extends java.lang.Exception {
-	public Exception(String msg) {
+    private static class MIParserException extends java.lang.Exception {
+	public MIParserException(String msg) {
 	    super(msg);
 	} 
     }
 
     private static void error(String parsing, String expected, Token got)
-	throws Exception {
+	throws MIParserException {
 
 	String msg = "MI parse error while parsing '" + parsing + "': " + // NOI18N
 	    "Expected " + expected + " but got " + got.toString(); // NOI18N
-	throw new Exception(msg);
+	throw new MIParserException(msg);
     } 
 
     private char[] str;	// Copy of input string for efficient access.
     private int x;      // index into 'str' for next char to be parsed
     private int bx;     // index into 'str' for begin of current token
+    
+    private final String encoding;
 
-
-    public MIParser() {
+    public MIParser(String encoding) {
+        this.encoding = encoding;
     } 
-
 
     /**
      * Prepare for parsing.
@@ -105,9 +107,9 @@ public class MIParser {
 	MIRecord record = new MIRecord();
 	try {
 	    parseWork(record);
-	} catch (Exception x) {
+	} catch (MIParserException e) {
 	    record.isError = true;
-	    record.error = x.getMessage();
+	    record.error = e.getMessage();
 	}
 	sw.stop();
 	if (Log.MI.time) {
@@ -207,7 +209,7 @@ public class MIParser {
 
         @Override
 	public String toString() {
-	    return type.toString();
+	    return type.toString() + " (" + value + ')'; //NOI18N
 	} 
     } 
 
@@ -290,36 +292,18 @@ public class MIParser {
 		case '"': {
 		    // x is already past the '"'
 		    StringBuilder string = new StringBuilder();
+                    boolean escape = false;
 		    while (str[x] != 0) {
 			if (str[x] == '\\') {
-			    x++;
-			    switch (str[x]) {
-				case '\\':
-				case '"':
-				case '\'':
-				    string.append(str[x]);
-				    break;
-				case 'n':
-				    string.append('\n');
-				    break;
-				case 'r':
-				    string.append('\r');
-				    break;
-				case 't':
-				    string.append('\t');
-				    break;
-				default:
-				    string.append(str[x]);
-				    break;
-			    }
-			    x++;
-			} else if (str[x] == '"') {
-			    x++;	// skip over trailing '"'
-			    return new Token(TokenType.STR, string.toString());
+			    escape = !escape;
 			} else {
-			    string.append(str[x]);
-			    x++;
-			} 
+                            if (str[x] == '"' && !escape) {
+                                x++;	// skip over trailing '"'
+                                return new Token(TokenType.STR, string.toString());
+                            }
+                            escape = false;
+			}
+                        string.append(str[x++]);
 		    }
 		    }
 		    break;
@@ -338,11 +322,11 @@ public class MIParser {
 
 
     private MITList parseValueList(TokenType endToken, boolean topLevel)
-	throws Exception {
+	throws MIParserException {
 
 	MITList list = new MITList(endToken == TokenType.RB, topLevel);
 	while (true) {
-	    MIValue value = parseValue();
+	    MIValue value = parseValue(false);
 	    list.add(value);
 	    Token t = getToken();
 	    if (t.type == endToken)
@@ -357,7 +341,7 @@ public class MIParser {
 
 
     private MITList parseResultList(TokenType endToken, boolean topLevel)
-	throws Exception {
+	throws MIParserException {
 
 	MITList list = new MITList(endToken == TokenType.RB, topLevel);
 	while (true) {
@@ -375,12 +359,15 @@ public class MIParser {
     }
 
 
-    private MIValue parseValue() throws Exception {
+    private MIValue parseValue(boolean decode) throws MIParserException {
 	Token t = getToken();
 
 	if (t.type == TokenType.STR) {
-	    return new MIConst(t.value);
-
+            String value = t.value;
+            if (decode) {
+                value = GdbUtils.gdbToUserEncoding(value, encoding);
+            }
+	    return new MIConst(value);
 	} else if (t.type == TokenType.LC) {
 	    return parseTList(TokenType.RC);
 
@@ -393,7 +380,7 @@ public class MIParser {
     }
 
 
-    private MIResult parseResult() throws Exception {
+    private MIResult parseResult() throws MIParserException {
 	Token tsym = getToken();
 	if (tsym.type != TokenType.SYM)
 	    error("result", "variable", tsym); // NOI18N
@@ -402,13 +389,13 @@ public class MIParser {
 	if (teq.type != TokenType.EQ)
 	    error("result", "=", teq); // NOI18N
 
-	MIValue value = parseValue();
+	MIValue value = parseValue("file".equals(tsym.value) || "fullname".equals(tsym.value)); //NOI18N
 
 	return new MIResult(tsym.value, value);
     }
 
 
-    private MITList parseTList(TokenType endToken) throws Exception {
+    private MITList parseTList(TokenType endToken) throws MIParserException {
 	boolean topLevel = (endToken == TokenType.EOL);
 	Token t = getToken();
 
@@ -438,11 +425,15 @@ public class MIParser {
 	return null;
     }
 
-    private MIRecord parseWork(MIRecord record) throws Exception {
+    private MIRecord parseWork(MIRecord record) throws MIParserException {
 
 	Token t = getToken();
 	if (t.type == TokenType.NUM) {
-	    record.token = java.lang.Integer.parseInt(t.value);
+            try {
+                record.token = java.lang.Integer.parseInt(t.value);
+            } catch (NumberFormatException nfe) {
+                throw new MIParserException("Unable to parse token: " + t.value); //NOI18N
+            }
 	    t = getToken();
 	}
 

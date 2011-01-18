@@ -67,6 +67,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -354,6 +356,24 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         toRemove.delete();
         toRemove = dictionaryFile(remove.toString(), true);
         toRemove.delete();
+
+        if (InstalledFileLocator.getDefault().locate("modules/dict/dictionary_" + remove.toString() + ".description", null, false) != null) {
+            String filename = userdir;
+
+            filename += File.separator + "modules" + File.separator + "dict"; // NOI18N
+            filename += File.separator + "dictionary";
+            filename += "_" + remove.toString();
+
+            File hiddenDictionaryFile = new File(filename + ".description_hidden");
+
+            hiddenDictionaryFile.getParentFile().mkdirs();
+
+            try {
+                new FileOutputStream(hiddenDictionaryFile).close(); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     public static class DictionaryDescription {

@@ -70,6 +70,7 @@ import org.openide.util.RequestProcessor;
     private final CreateHostData data;
     private final ConfigPanelListener cfgListener = new ConfigPanelListener();
     private final ValidateablePanel configurationPanel;
+    private static final RequestProcessor RP = new RequestProcessor(CreateHostVisualPanel2.class.getName(), 1);
 
     public CreateHostVisualPanel2(CreateHostData data, ChangeListener listener) {
         this.data = data;
@@ -280,7 +281,7 @@ import org.openide.util.RequestProcessor;
             }
         });
 
-        RequestProcessor.getDefault().post(validationTask);
+        RP.post(validationTask);
 
         return validationTask;
     }

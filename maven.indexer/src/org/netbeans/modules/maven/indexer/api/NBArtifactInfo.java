@@ -61,7 +61,7 @@ public class NBArtifactInfo {
         return versionInfos.remove(o);
     }
 
-    public boolean addAlVersionInfos(Collection<? extends NBVersionInfo> c) {
+    public boolean addAllVersionInfos(Collection<? extends NBVersionInfo> c) {
         return versionInfos.addAll(c);
     }
 

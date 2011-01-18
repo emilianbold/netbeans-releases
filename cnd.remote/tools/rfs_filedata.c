@@ -71,18 +71,6 @@ adding_file_data_state = FILE_DATA_INITIAL;
 
 // --- end of adding file data stuff
 
-void wait_on_file_data(file_data *fd) {
-    pthread_mutex_lock(&fd->cond_mutex);
-    pthread_cond_wait(&fd->cond, &fd->cond_mutex);
-    pthread_mutex_unlock(&fd->cond_mutex);
-}
-
-void signal_on_file_data(file_data *fd) {
-    pthread_mutex_lock(&fd->cond_mutex);
-    pthread_cond_signal(&fd->cond);
-    pthread_mutex_unlock(&fd->cond_mutex);
-}
-
 void visit_file_data(int (*visitor) (file_data*, void*), void *data) {
     //visit_file_data_impl...
 }
@@ -146,8 +134,7 @@ file_data *add_file_data(const char* filename, enum file_state state) {
     struct adding_file_data_node *node = malloc(sizeof(struct adding_file_data_node));
 
     node->fd = (file_data*) malloc(sizeof(file_data) + strlen(filename) + 1);
-    pthread_mutex_init(&node->fd->cond_mutex, NULL);
-    pthread_cond_init(&node->fd->cond, NULL);
+    pthread_mutex_init(&node->fd->mutex, NULL);
     strcpy(node->fd->filename, filename);
     node->fd->state = state;
     node->next = adding_file_data_root;

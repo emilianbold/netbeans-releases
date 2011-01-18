@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2010 Oracle, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Code Template Abbreviations: Quick Reference (PHP Projects)</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
+               rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Code Template Abbreviations: Quick Reference (PHP Projects)</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>You can reduce the number of keystrokes when you are typing PHP code by 
+            typing abbreviations to generate code from templates. The abbreviation 
+            is expanded into the template after you press the Tab key. Code templates 
+            also appear when you use code completion while editing PHP files.</p>
+        
+        
+        <p>The IDE comes with a set of code templates. You can also create your own 
+        code templates.</p>
+        
+        <p>Below is the list of code templates that the IDE provides by default.</p>
+        
+        <ul>
+            <li><a href="#PHP">PHP Files</a></li>
+        </ul>
+        
+        <a name="PHP"></a><h3>PHP Files</h3>
+        
+        <table border="1" cellpadding="5">
+            <tr valign="top"> 
+                <th scope="col" align="left">Abbreviation</th>
+                <th scope="col" align="left">Code Template</th>
+                <th scope="col" align="left">Expanded Text </th>
+            </tr>
+            
+            <tr valign="top"> 
+                <td><tt>cln</tt></td>
+                <td>Clone</td>
+                <td><tt>$$${NEW_VAR newVarName default="newObj"} = clone ${VARIABLE variableFromPreviousAssignment default="$variable"};
+${cursor}</tt></td>
+            </tr>                
+            <tr valign="top"> 
+                <td><tt>cls </tt></td>
+                <td>Class</td>
+                <td><pre>class ${ClassName} {
+    function ${__construct}() {
+        ${selection}${cursor}
+    }
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>do </tt></td>
+                <td>'do' block</td>
+                <td><pre>do {
+    ${selection}${cursor}
+} 
+while (${CONDITION variableFromPreviousAssignment 
+         instanceof="boolean" default="true"});</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>eco </tt></td>
+                <td>echo</td>
+                <td><tt>echo "${cursor}";</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>elseif </tt></td>
+                <td>else-if block</td>
+                <td><pre>elseif (${CONDITION variableFromPreviousAssignment 
+                     instanceof="boolean" default="true"}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>els </tt></td>
+                <td><tt>else</tt> block</td>
+                <td><pre>else {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fcom </tt></td>
+                <td>Folded comment</td>
+                <td><pre>// &lt;editor-fold defaultstate="collapsed" desc="${comment}"&gt;
+${selection}${cursor}// &lt;/editor-fold&gt;
+</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fnc </tt></td>
+                <td><tt>function</tt></td>
+                <td><pre>function ${functionName}($$${param}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>fore </tt></td>
+                <td><tt>foreach</tt> block</td>
+                <td><pre>foreach (${ARRAY variableFromPreviousAssignment 
+                  instanceof="array" default="$array"} as $$${value}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>forek </tt></td>
+                <td><tt>foreach</tt> block with key</td>
+                <td><pre>foreach (${ARRAY variableFromPreviousAssignment 
+                   instanceof="array" default="$array"}
+                   as $$${key} => $$${value}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>if </tt></td>
+                <td><tt>if</tt> block</td>
+                <td><pre>if (${CONDITION variableFromPreviousAssignment 
+             instanceof="boolean" default="true"}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>iface </tt></td>
+                <td><tt>interface</tt></td>
+                <td><pre>interface ${InterfaceName} {
+    ${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>inst </tt></td>
+                <td><tt>if...instanceof</tt> block</td>
+                <td><pre>if (${VARIABLE variableFromPreviousAssignment default="$variable"} instanceof ${ClassName}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>itdir </tt></td>
+                <td>dir element iteration</td>
+                <td><pre>$$${DIRH newVarName default="dirh"} = opendir(${$dirname});
+if ($$${DIRH editable=false}) {
+    while (($$${DIR_ELEM newVarName default="dirElement"} = readdir(${DIRH editable=false})) !== false) {
+        ${selection}${cursor}
+    }
+    closedir($$${DIRH editable=false});
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>iter </tt></td>
+                <td>iteration</td>
+                <td><pre>for ($$${IDX newVarName default="index"} = 0; 
+      $$${IDX editable=false} &lt; count(${ARRAY variableFromPreviousAssignment 
+      instanceof="array" default="$array"}); 
+      $$${IDX editable=false}++) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>my_fa </tt></td>
+                <td><tt>mysql_fetch_array</tt></td>
+                <td><pre>while ($$${NEW_VAR newVarName default="row"} = 
+           mysql_fetch_array(${$query})) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>            
+            <tr valign="top"> 
+                <td><tt>my_fo</tt></td>
+                <td><tt>mysql_fetch_object</tt></td>
+                <td><pre>while ($$${NEW_VAR newVarName default="row"} = 
+          mysql_fetch_object(${$query})) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>my_fr </tt></td>
+                <td><tt>mysql_fetch_row</tt></td>
+                <td><pre>while ($$${NEW_VAR newVarName default="row"} = 
+          mysql_fetch_row(${$query})) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>my_gc </tt></td>
+                <td><tt>ob_get_contents</tt></td>
+                <td><pre>ob_start();
+	
+${selection}${cursor}
+
+$$${contents} = ob_get_contents();
+ob_end_clean();</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pclon </tt></td>
+                <td>parent-clone</td>
+                <td><tt>parent::__clone();</tt></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pcon </tt></td>
+                <td>parent-construct</td>
+                <td><pre>parent::__construct();
+${cursor}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>pr</tt></td>
+                <td><tt>print</tt> variable</td>
+                <td><pre>print ${VARIABLE variableFromPreviousAssignment 
+                 default="$variable"};
+${cursor}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>prln</tt></td>
+                <td>print line</td>
+                <td><pre>print ${VARIABLE variableFromPreviousAssignment 
+                 default="$variable"}."\n";
+${cursor}</pre></td>
+            </tr>            
+            <tr valign="top">
+                <td><tt>prs</tt></td>
+                <td><tt>print</tt></td>
+                <td><tt>print "${cursor}";</tt></td>
+                
+            </tr>
+            <tr valign="top"> 
+                <td><tt>prv </tt></td>
+                <td>print uneditable variable</td>
+                <td><pre>print "\${VARIABLE variableFromPreviousAssignment 
+                 default="$variable"} = ".${VARIABLE editable=false}."\n";
+${cursor}</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>swi </tt></td>
+                <td><tt>switch</tt></td>
+                <td><pre>switch (${VARIABLE variableFromPreviousAssignment 
+                 default="$variable"}) {
+    case ${$value}:
+        ${selection}${cursor}
+        break;
+
+    default:
+        break;
+}</pre></td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td><tt>thr </tt></td>
+                <td><tt>throw new</tt></td>
+                <td><tt>throw new ${Exception};</tt></td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td><tt>tryc</tt></td>
+                <td><tt>try...catch</tt></td>
+                <td><pre>try {
+    ${selection}${cursor}
+} catch (${Exception} $$${exc}) {
+    echo $$${exc editable=false}->getTraceAsString();
+}
+</pre></td>
+            </tr>          
+            <tr valign="top"> 
+                <td><tt>vdoc </tt></td>
+                <td>variable from comment</td>
+                <td><pre>/* @var $$${VARIABLE variableFromNextAssignmentName 
+             default="variable"} 
+             ${VAR_TYPE variableFromNextAssignmentType default="ClassName"} */</pre></td>
+            </tr>
+            <tr valign="top"> 
+                <td><tt>while </tt></td>
+                <td><tt>while</tt> block</td>
+                <td><pre>while (${CONDITION variableFromPreviousAssignment 
+                   instanceof="boolean" default="true"}) {
+    ${selection}${cursor}
+}</pre></td>
+            </tr>
+
+        </table>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

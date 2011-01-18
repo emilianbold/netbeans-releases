@@ -357,12 +357,6 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         }
     }
     
-    private static Lookup createLookup( Project project ) {
-        DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        // XXX Remove root folder after FindAction rewrite
-        return Lookups.fixed( new Object[] { project, rootFolder } );
-    }
-
     public boolean hasBrokenLinks() {
         return BrokenReferencesSupport.isBroken(helper.getAntProjectHelper(), resolver, getBreakableProperties(),
             new String[] {"platform.active"});
@@ -467,7 +461,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         @SuppressWarnings("LeakingThisInConstructor")
         public LogicalViewRootNode(String childrenFolderLayer, String actionsFolderLayer,
                 String iconBase, String shortDesc, Class helpContext) {
-            super(NodeFactorySupport.createCompositeChildren(project, childrenFolderLayer), createLookup(project));
+            super(NodeFactorySupport.createCompositeChildren(project, childrenFolderLayer), Lookups.singleton(project));
             this.shortDesc = shortDesc;
             this.actionsFolderLayer = actionsFolderLayer;
             this.helpContext = helpContext;

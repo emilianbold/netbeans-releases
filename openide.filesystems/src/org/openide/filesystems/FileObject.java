@@ -375,7 +375,23 @@ public abstract class FileObject extends Object implements Serializable {
     */
     abstract public Object getAttribute(String attrName);
 
-    /** Set the file attribute with the specified name.
+    /** Set the file attribute with the specified name. The actual meaning of 
+     * this method is implementation dependent. It is generally expected that
+     * the attribute will later be available from {@link #getAttribute(java.lang.String)}
+     * method.
+     * <p>
+     * <div class="nonnormative">
+     *   Many <a href="@TOP@/org/openide/filesystems/FileSystem.html">FileSystem</a>
+     *   implementations (since version 7.43) 
+     *   support special form of arguments for their
+     *   <code>setAttribute</code> method. One can use 
+     *   prefix <code>methodvalue:</code> or <code>newvalue</code>
+     *   to store references to 
+     *   <a href="@JDK@/java/lang/reflect/Method.html">Method</a> or
+     *   <a href="@JDK@/java/lang/Class.html">Class</a> respectively. 
+     *   The meaning is then similar to {@link XMLFileSystem} attributes
+     *  <code>methodvalue</code> and <code>newvalue</code>.
+     * </div>
     * @param attrName name of the attribute
     * @param value new value or <code>null</code> to clear the attribute. Must be serializable, although particular filesystems may or may not use serialization to store attribute values.
     * @exception IOException if the attribute cannot be set. If serialization is used to store it, this may in fact be a subclass such as {@link java.io.NotSerializableException}.

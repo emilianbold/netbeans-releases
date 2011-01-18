@@ -81,7 +81,7 @@ public final class SunDDVisualPanel extends JPanel {
         Lookup lookup = project.getLookup();
         J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
-        sunDDFileName = getConfigFileName(j2eeModule,provider.getServerID());
+        sunDDFileName = getConfigFileName(j2eeModule,provider.getServerInstanceID());
 
         // Calculate location:
         sunDDFile = (sunDDFileName != null) ? j2eeModule.getDeploymentConfigurationFile(sunDDFileName) : null;
@@ -226,17 +226,21 @@ public final class SunDDVisualPanel extends JPanel {
     // TODO avoid the hard coding that is done in here
 
     private static String EE6WC = "gfv3ee6wc"; // NOI18N
-    private String getConfigFileName(J2eeModule j2eeModule,String serverTypeID) {
+    private String getConfigFileName(J2eeModule j2eeModule,String serverInstanceID) {
         String result = null;
         Object moduleType = j2eeModule.getType();
         if(J2eeModule.Type.WAR.equals(moduleType)) {
-            result = EE6WC.equals(serverTypeID) ? "glassfish-web.xml" : "sun-web.xml"; // NOI18N;
+            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+                    "glassfish-web.xml" : "sun-web.xml"; // NOI18N;
         } else if(J2eeModule.Type.EJB.equals(moduleType)) {
-            result = EE6WC.equals(serverTypeID) ? "glassfish-ejb-jar.xml" : "sun-ejb-jar.xml"; // NOI18N
+            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+                    "glassfish-ejb-jar.xml" : "sun-ejb-jar.xml"; // NOI18N
         } else if(J2eeModule.Type.EAR.equals(moduleType)) {
-            result = EE6WC.equals(serverTypeID) ? "glassfish-application.xml" : "sun-application.xml"; // NOI18N
+            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+                    "glassfish-application.xml" : "sun-application.xml"; // NOI18N
         } else if(J2eeModule.Type.CAR.equals(moduleType)) {
-            result = EE6WC.equals(serverTypeID) ? "glassfish-application-client.xml" : "sun-application-client.xml"; // NOI18N
+            result = null != serverInstanceID && serverInstanceID.contains(EE6WC) ?
+                    "glassfish-application-client.xml" : "sun-application-client.xml"; // NOI18N
         }
         return result;
     }

@@ -576,7 +576,7 @@ public final class CsmProjectContentResolver {
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, true);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(file, filter);
-        fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
+        fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, true, out);
     }
 
     @SuppressWarnings("unchecked")
@@ -605,18 +605,19 @@ public final class CsmProjectContentResolver {
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
                 strPrefix, match, caseSensitive, true);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(ns, filter);
-        fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
+        fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, false, out);
     }
 
     @SuppressWarnings("unchecked")
     private void fillFileLocalVariables(String strPrefix, boolean match,
             Iterator<CsmOffsetableDeclaration> it, boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace,
+            boolean anyVariable,
             Collection<CsmVariable> out) {
         while (it.hasNext()) {
             CsmOffsetableDeclaration decl = it.next();
             if (CsmKindUtilities.isVariable(decl)) {
                 CharSequence varName = decl.getName();
-                if (fromUnnamedNamespace || CsmKindUtilities.isFileLocalVariable(decl)) {
+                if (fromUnnamedNamespace || (anyVariable || CsmKindUtilities.isFileLocalVariable(decl))) {
                     if (varName.length() != 0) {
                         if (matchName(varName, strPrefix, match)) {
                             out.add((CsmVariable) decl);
@@ -993,6 +994,10 @@ public final class CsmProjectContentResolver {
         } else {
             res = new ArrayList<CsmClass>();
         }
+        if (CsmSortUtilities.matchName(clazz.getName(), strPrefix, true, true)) {
+            // add current class as well
+            res.add(0, clazz);
+        }        
         return res;
     }
 

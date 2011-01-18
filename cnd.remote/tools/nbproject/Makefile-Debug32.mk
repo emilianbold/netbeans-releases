@@ -17,19 +17,21 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=
+FC=gfortran
 AS=gas
+PROC=proc
 
 # Macros
 CND_PLATFORM=GNU-Solaris-x86
 CND_CONF=Debug32
 CND_DISTDIR=dist
+CND_BUILDDIR=build
 
 # Include project Makefile
 include Makefile-tools.mk
 
 # Object Directory
-OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
+OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES=
@@ -53,7 +55,7 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	cd . && ${MAKE} TRACE=1 DEBUG=-g all
+	cd . && sh build.sh
 
 # Subprojects
 .build-subprojects:

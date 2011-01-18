@@ -42,11 +42,15 @@
 
 package org.netbeans.modules.html.validation;
 
+import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
@@ -54,6 +58,8 @@ import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.ValidationResult;
 import org.netbeans.html.api.validation.Validator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
@@ -81,7 +87,18 @@ public class ValidatorImpl implements Validator {
 //            }
 
             String source = maskTemplatingMarks(context.getSource());
-            validatorTransaction.validateCode(source);
+            FileObject file = context.getFile();
+            URL sourceFileURL = file != null ? URLMapper.findURL(file, URLMapper.EXTERNAL) : null;
+
+            Set<String> filteredNamespaces = Collections.emptySet();
+            if(context.isFeatureEnabled("filter.foreign.namespaces")) { //NOI18N
+                filteredNamespaces = context.getSyntaxAnalyzerResult().getAllDeclaredNamespaces().keySet();
+                filteredNamespaces.remove("http://www.w3.org/1999/xhtml"); //NOI18N
+            }
+
+            String encoding = file != null ? FileEncodingQuery.getEncoding(file).name() : "UTF-8"; //NOI18N
+
+            validatorTransaction.validateCode(source, sourceFileURL != null ? sourceFileURL.toExternalForm() : null, filteredNamespaces, encoding);
 
             Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
             

@@ -74,7 +74,7 @@ public class Utils {
         InputStream is = null;
         OutputStream os = null;
         try {
-            FileObject fo = FileUtil.toFileObject(se.getFile());
+            FileObject fo = FileUtils.toFileObject(se.getFile());
             if(se.getStoreFile() != null) { // XXX change this semantic to isDeleted() or something similar
                 if(fo == null) {
                     fo = FileUtil.createData(se.getFile());

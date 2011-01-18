@@ -63,7 +63,8 @@ import org.openide.loaders.TemplateWizard;
 public class QtFormFileIterator extends CCFSrcFileIterator {
 
     @Override
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate() throws IOException {
+        TemplateWizard wiz = templateWizard;
         DataFolder targetFolder = wiz.getTargetFolder();
 
         Set<DataObject> dataObjects = new HashSet<DataObject>();

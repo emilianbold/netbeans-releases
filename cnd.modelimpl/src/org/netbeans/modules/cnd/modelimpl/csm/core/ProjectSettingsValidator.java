@@ -134,7 +134,7 @@ public class ProjectSettingsValidator {
     private void updateMap(List<NativeFileItem> items) {
 	for( NativeFileItem item : items ) {
 	    long crc = calculateCrc(item);
-	    data.setCrc(item.getFile().getAbsolutePath(), crc);
+	    data.setCrc(item.getAbsolutePath(), crc);
 	}
     }
     
@@ -159,17 +159,17 @@ public class ProjectSettingsValidator {
 	    return false;
 	}
 	assert data != null;
-	long savedCrc = data.getCrc(item.getFile().getAbsolutePath());
+	long savedCrc = data.getCrc(item.getAbsolutePath());
 	long currentCrc = calculateCrc(item);
 	if( TRACE ) {
-            System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getFile().getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
+            System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
         }
 	return savedCrc != currentCrc;
     }
     
     private long calculateCrc(NativeFileItem item) {
 	if( TRACE ) {
-            System.err.printf(">>> CRC %s\n", item.getFile().getName());
+            System.err.printf(">>> CRC %s\n", item.getName());
         }
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, item.getLanguage().toString());
@@ -179,7 +179,7 @@ public class ProjectSettingsValidator {
 	updateCrc(checksum, item.getSystemMacroDefinitions());
 	updateCrc(checksum, item.getUserMacroDefinitions());
 	if( TRACE ) {
-            System.err.printf("<<< CRC %s %d\n", item.getFile().getName(), checksum.getValue());
+            System.err.printf("<<< CRC %s %d\n", item.getName(), checksum.getValue());
         }
 	return checksum.getValue();
     }

@@ -42,42 +42,203 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * A temporary solution until we have an official file system provider in thus module
  * @author Andrew Krasny
  * @author Vladimir Kvashin
  */
-public abstract class FileSystemProvider {
+public final class FileSystemProvider {
 
-    private static final FileSystemProvider DEFAULT = new FileSystemProviderImpl();
-
-    protected FileSystemProvider() {
+    public interface DownloadListener {
+        void postConnectDownloadFinished(ExecutionEnvironment env);
     }
 
-    protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
+    private static final  Collection<? extends FileSystemProviderImplementation> ALL_PROVIDERS =
+            Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class);
+
+    private FileSystemProvider() {
+    }
+
+    public static FileSystem getFileSystem(ExecutionEnvironment env) {
+        return getFileSystem(env, "/"); //NOI18N
+    }
+
+    public static ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.getExecutionEnvironment(fileSystem);
+            }
+        }
+        return ExecutionEnvironmentFactory.getLocal();
+    }
+
+    public static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject) {
+        try {
+            return getExecutionEnvironment(fileObject.getFileSystem());
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);            
+        }
+        return ExecutionEnvironmentFactory.getLocal();
+    }
 
     public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
-        return DEFAULT.getFileSystemImpl(env, root);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.getFileSystem(env, root);
+            }
+        }
+        noProvidersWarning(env);
+        return null;
     }
 
-    private static class FileSystemProviderImpl extends FileSystemProvider {
-
-        public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
-            FileSystem result = null;
-
-            for (FileSystemProvider provider : allProviders) {
-                if ((result = provider.getFileSystemImpl(env, root)) != null) {
-                    break;
-                }
+    public static boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.waitWrites(env, failedFiles);
             }
+        }
+        noProvidersWarning(env);
+        return true;
+    }
 
-            return result;
+    public static String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.normalizeAbsolutePath(absPath, env);
+            }
+        }
+        noProvidersWarning(env);
+        return FileUtil.normalizePath(absPath); // or should it return just absPath?
+    }
+
+    /**
+     * In many places, standard sequence is as follows:
+     *  - convert path to absolute if need
+     *  - normalize it
+     *  - find file object
+     * In the case of non-local file systems we should delegate it to correspondent file systems.
+     */
+    public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(baseFileObject)) {
+                return provider.getFileObject(baseFileObject, relativeOrAbsolutePath);
+            }
+        }
+        noProvidersWarning(baseFileObject);
+        if (isAbsolute(relativeOrAbsolutePath)) {
+            try {
+                return baseFileObject.getFileSystem().findResource(relativeOrAbsolutePath);
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
+        } else {
+            return baseFileObject.getFileObject(relativeOrAbsolutePath);
+        }
+    }
+
+    public static FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.getCanonicalFileObject(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        return fileObject;
+    }
+    
+    public static String getCanonicalPath(FileObject fileObject) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.getCanonicalPath(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        return fileObject.getPath();
+    }
+
+    public static String getCanonicalPath(FileSystem fileSystem, String absPath) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.getCanonicalPath(fileSystem, absPath);
+            }
+        }
+        return absPath;
+    }
+
+    public static boolean isAbsolute(String path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        } else if (path.charAt(0) == '/') {
+            return true;
+        } else if (path.charAt(0) == '\\') {
+            return true;
+        } else if (path.indexOf(':') == 1 && Utilities.isWindows()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static FileObject urlToFileObject(String url) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(url)) {
+                return provider.urlToFileObject(url);
+            }
+        }
+        noProvidersWarning(url);
+        return null;
+    }
+
+    public static String fileObjectToUrl(FileObject fileObject) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.toURL(fileObject);
+            }
+        }
+        noProvidersWarning(fileObject);
+        try {
+            return fileObject.getURL().toExternalForm();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    public static void addDownloadListener(DownloadListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.addDownloadListener(listener);
+        }
+    }
+
+    public static void removeDownloadListener(DownloadListener listener) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            provider.addDownloadListener(listener);
+        }
+    }
+
+    private static void noProvidersWarning(Object object) {
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
+            if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                String message = "No file system providers for " + object; // NOI18N
+                RemoteLogger.getInstance().log( Level.FINEST, message, new Exception(message)); //NOI18N
+            } else {
+                RemoteLogger.getInstance().log(Level.FINE, "No file system providers for {0}", object); //NOI18N
+            }
         }
     }
 }

@@ -179,7 +179,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
 
                             CompilationUnitTree cut = parameter.getCompilationUnit();
 
-                            parameter.rewrite(cut, parameter.getTreeMaker().CompilationUnit(cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+                            parameter.rewrite(cut, parameter.getTreeMaker().CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
                         }
                     }).commit();
                 } catch (IOException ex) {

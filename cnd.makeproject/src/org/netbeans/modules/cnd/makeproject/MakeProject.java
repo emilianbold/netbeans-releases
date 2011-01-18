@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -121,9 +122,11 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -149,6 +152,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
     public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
+    public static final String REMOTE_FILESYSTEM_BASE_DIR = "remote-filesystem-base-dir"; // NOI18N
 
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
@@ -178,6 +182,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
     private /*final*/ RemoteProject.Mode remoteMode;
+    private final String remoteBaseDir;
     private ExecutionEnvironment remoteFileSystemHost;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
@@ -229,6 +234,15 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
 
+        NodeList remoteFSMountPoint = data.getElementsByTagName(REMOTE_FILESYSTEM_BASE_DIR);
+        if (remoteFSMountPoint.getLength() > 0) {
+            remoteBaseDir = remoteFSMountPoint.item(0).getTextContent();
+            CndUtils.assertTrueInConsole(remoteFSMountPoint.getLength() == 1, 
+                    "Wrong project.xml structure: too many remote base dirs " + remoteFSMountPoint); //NOI18N
+        } else {            
+            remoteBaseDir = null;
+        }
+
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
@@ -261,6 +275,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     public ExecutionEnvironment getRemoteFileSystemHost() {
         return remoteFileSystemHost;
+    }
+    
+    private FileSystem getSourceFileSystem() {
+        if (remoteFileSystemHost == null || remoteFileSystemHost.isLocal()) {
+            return CndFileUtils.getLocalFileSystem();
+        } else {
+            return FileSystemProvider.getFileSystem(remoteFileSystemHost);
+        }
     }
 
     /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
@@ -322,7 +344,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
                     kind,
-                    new MakeProjectEncodingQueryImpl(this),
+                    new MakeProjectEncodingQueryImpl(this), 
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
@@ -1025,21 +1047,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Configuration[] confs = projectDescriptor.getConfs().toArray();
-
-//            String projectLocation = null;
-//            int configurationType = 0;
-//            String configurationName = null;
-//            boolean active = false;
-//            String workingDirectory = null;
-//            String buildCommand = null;
-//            String cleanCommand = null;
-//            String output = null;
-
-//            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
+            if (projectDescriptor != null) {
+                Configuration[] confs = projectDescriptor.getConfs().toArray();
+                for (int i = 0; i < confs.length; i++) {
+                    MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                    artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
+                }
             }
             return artifacts.toArray(new MakeArtifact[artifacts.size()]);
         }
@@ -1062,7 +1075,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public Iterator<DataObject> objectsToSearch() {
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
-            return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
+            Set<DataObject> res = rootFolder.getAllItemsAsDataObjectSet(false, "text/"); // NOI18N
+            FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
+            addFolder(res, baseDirFileObject.getFileObject("nbproject")); // NOI18N
+            addFolder(res, baseDirFileObject.getFileObject("nbproject/private")); // NOI18N
+            return res.iterator();
+
+        }
+
+        private void addFolder(Set<DataObject> res, FileObject fo) {
+            if (fo != null && fo.isFolder() && fo.isValid()) {
+                for(FileObject f : fo.getChildren()) {
+                    DataObject dataObject;
+                    try {
+                        dataObject = DataObject.find(f);
+                        if (dataObject != null) {
+                            res.add(dataObject);
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                    }
+                }
+            }
         }
     }
 
@@ -1116,6 +1149,26 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     CndUtils.assertTrue(false, "Unexpected remote mode " + remoteMode); //NOI18N
                     return getActiveConfiguration().getRemoteSyncFactory();
             }
+        }
+
+        @Override
+        public String getBaseDir() {
+            return (remoteBaseDir == null) ? helper.getProjectDirectory().getPath() : remoteBaseDir;
+        }
+        
+        @Override
+        public String resolveRelativeRemotePath(String path) {
+            if (!CndPathUtilitities.isPathAbsolute(path)) {
+                if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES && remoteBaseDir != null && !remoteBaseDir.isEmpty()) {
+                    String resolved = remoteBaseDir;
+                    if (!resolved.endsWith("/")) { //NOI18N
+                        resolved += "/"; //NOI18N
+                    }
+                    resolved = resolved+path;
+                    return CndFileUtils.normalizeAbsolutePath(getSourceFileSystem(), resolved);
+                }
+            }
+            return path;
         }
     }
     

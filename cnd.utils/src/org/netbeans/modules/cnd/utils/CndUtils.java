@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -144,19 +145,6 @@ public class CndUtils {
         return getNumberCndWorkerThreads();
     }
 
-    private static final class FileNamePrefixAccessor {
-        // use always Unix path, because java.io.File on windows understands it well
-        private static final String path = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
-    }
-
-    public static String getIncludeFileBase() {
-        return FileNamePrefixAccessor.path;
-    }
-
-    public static String getIncludeFilePrefix(String hostid) {
-        return getIncludeFileBase() + hostid + "/"; //NOI18N
-    }
-    
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
            assertTrue(!value, "Assertion error"); //NOI18N
@@ -228,6 +216,15 @@ public class CndUtils {
         }
     }
 
+    public static void assertNormalized(FileSystem fs, CharSequence absPath) {
+        if (isDebugMode()) {
+            String normFile = CndFileUtils.normalizeAbsolutePath(fs, absPath.toString());
+            if (!normFile.contentEquals(absPath)) {
+                assertTrueInConsole(false, "Parameter file was not normalized. Was " + absPath + " instead of " + normFile); // NOI18N
+            }
+        }
+    }
+    
     public static Logger getLogger() {
         return LOG;
     }

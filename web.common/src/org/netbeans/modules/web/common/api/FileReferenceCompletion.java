@@ -87,7 +87,7 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
             fileNamePart = (lastSlash == valuePart.length()) ? "" : valuePart.substring(lastSlash + 1);    // NOI18N
         }
 
-        int anchor = offset - valuePart.length() + lastSlash + 1;  // works even with -1
+        int anchor = offset + lastSlash + 1;  // works even with -1
 
         try {
             FileObject documentBase = ProjectWebRootQuery.getWebRoot(orig);

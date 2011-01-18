@@ -104,6 +104,12 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     @Override
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {        
         Kenai kenai = getKenai(url);
+        if(kenai == null) {
+            // this should not happen
+            LOG.log(Level.WARNING, "no kenai instance available for url {0}", url); // NOI18N
+            return null;
+        }
+        
         PasswordAuthentication a = kenai != null ? kenai.getPasswordAuthentication() : null;
         if(a != null) {
             return a;

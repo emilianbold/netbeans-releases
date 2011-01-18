@@ -406,12 +406,13 @@ public class BasicBrandingModel {
     
     private String getSimpleName() {
         if( null == suiteProps ) {
+            if (mainWindowTitle == null) {
+                return getProjectDirectoryFile().getName();
+            }
             String res = mainWindowTitle.getValue();
-            if( null != res && res.endsWith(" {0}") ) { //NOI18N
+            if (res.endsWith(" {0}")) { //NOI18N
                 res = res.substring(0, res.lastIndexOf(" {0}")); //NOI18N
             }
-            if( null == res )
-                res = getProjectDirectoryFile().getName();
             return res;
         }
         Element nameEl = XMLUtil.findElement(suiteProps.getProject().getHelper().getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N

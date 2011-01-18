@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -58,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileSnapshot;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -146,9 +145,26 @@ public final class CodeModelDiagnostic {
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
             printOut.printf("====ModelImpl:\n");// NOI18N
-            ModelImpl.instance().dumpInfo(printOut);
+            ModelImpl.instance().dumpInfo(printOut, false);
             printOut.printf("====Libraries:\n"); //NOI18N
-            LibraryManager.getInstance().dumpInfo(printOut);
+            LibraryManager.getInstance().dumpInfo(printOut, false);
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1350)
+    public final static class ModelProjectsContainers implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Model Projects File Containers";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====ModelImpl:\n");// NOI18N
+            ModelImpl.instance().dumpInfo(printOut, true);
+            printOut.printf("====Libraries:\n"); //NOI18N
+            LibraryManager.getInstance().dumpInfo(printOut, true);
         }
     }
     
@@ -168,20 +184,110 @@ public final class CodeModelDiagnostic {
             }            
         }
     }    
-    
-    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
-    public final static class ModelTrace implements CndDiagnosticProvider {
+
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
+    public final static class FileImplASTTrace implements CndDiagnosticProvider {
 
         @Override
         public String getDisplayName() {
-            return "Project Code Model";// NOI18N 
+            return "File AST";// NOI18N
         }
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<? extends CsmProject> allFiles = context.lookupAll(CsmProject.class);
-            for (CsmProject prj : allFiles) {
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if(csmFile instanceof FileImpl) {
+                    ASTFrameEx frame = new ASTFrameEx(csmFile.getName().toString(), ((FileImpl) csmFile).debugParse());
+                    frame.setVisible(true);
+                }
+            }
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
+    public final static class ProjectDeclarationsTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Project Declaration Containers (Huge size)";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            if (projects.isEmpty()) {
+                CsmFile file = context.lookup(CsmFile.class);
+                if (file != null) {
+                    CsmProject project = file.getProject();
+                    if (project instanceof ProjectBase) {
+                        projects.add(project);
+                    }
+                }
+            }
+            PrintStream ps = CsmTracer.toPrintStream(printOut);
+            for (CsmProject prj : projects) {
+                if (prj instanceof ProjectBase) {
+                    ((ProjectBase)prj).traceProjectContainers(ps);
+                }
+            }
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
+    public final static class ModelTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Project Code Model (Huge size)";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            if (projects.isEmpty()) {
+                CsmFile file = context.lookup(CsmFile.class);
+                if (file != null) {
+                    CsmProject project = file.getProject();
+                    if (project != null) {
+                        projects.add(project);
+                    }
+                }
+            }
+            for (CsmProject prj : projects) {
                 new CsmTracer(printOut).dumpModel(prj);
+            }
+        }
+    }    
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
+    public final static class ProjectReferencesTrace implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Project References";// NOI18N
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
+            if (projects.isEmpty()) {
+                CsmFile file = context.lookup(CsmFile.class);
+                if (file != null) {
+                    CsmProject project = file.getProject();
+                    if (project != null) {
+                        projects.add(project);
+                    }
+                }
+            }
+            printOut.println("References:"); // NOI18N
+            for (CsmProject prj : projects) {
+                printOut.print(prj.getName() + " : "); // NOI18N
+                int refsNumber = 0;
+                for (CsmFile file : prj.getAllFiles()) {
+                    refsNumber += ((FileImpl)file).getReferences().size();
+                }
+                printOut.println(refsNumber);
             }
         }
     }    

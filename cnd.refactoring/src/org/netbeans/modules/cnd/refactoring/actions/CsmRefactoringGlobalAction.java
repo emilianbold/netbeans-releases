@@ -131,7 +131,11 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
 
     public abstract void performAction(Lookup context);
 
-    protected abstract boolean enable(Lookup context);
+    protected boolean enable(Lookup context) {
+        return true;
+    }
+    
+    protected abstract boolean applicable(Lookup context);
 
     public final void performAction(final Node[] activatedNodes) {
         performAction(getLookup(activatedNodes));
@@ -146,7 +150,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         return new ContextAction(actionContext);
     }
 
-    public class ContextAction implements Action, Presenter.Menu, Presenter.Popup {
+    private class ContextAction implements Action, Presenter.Menu, Presenter.Popup {
 
         Lookup context;
 
@@ -155,6 +159,9 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         }
 
         public Object getValue(String arg0) {
+            if ("applicable".equals(arg0)) { //NOI18N
+                return CsmRefactoringGlobalAction.this.applicable(context);
+            }
             return CsmRefactoringGlobalAction.this.getValue(arg0);
         }
 

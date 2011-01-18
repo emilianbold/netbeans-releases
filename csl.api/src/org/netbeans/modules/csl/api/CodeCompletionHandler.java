@@ -45,6 +45,7 @@ package org.netbeans.modules.csl.api;
 
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -162,7 +163,7 @@ public interface CodeCompletionHandler {
      * Compute the set of applicable templates for a given text selection
      */
     @NonNull
-    Set<String> getApplicableTemplates(@NonNull ParserResult info, int selectionBegin, int selectionEnd);
+    Set<String> getApplicableTemplates(@NonNull Document doc, int selectionBegin, int selectionEnd);
     
     /**
      * Compute parameter info for the given offset - parameters surrounding the given

@@ -161,6 +161,11 @@ public final class RefactoringUtil {
             return accessor;
         }
 
+        //check the second char, if its also uppercase, the property name must be preserved
+        if(withoutPrefix.length() > 1 && Character.isUpperCase(withoutPrefix.charAt(1))) {
+            return withoutPrefix;
+        }
+
         return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
     }
     

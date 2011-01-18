@@ -408,6 +408,9 @@ public class RemoteServerRecord implements ServerRecord {
             // 2) user@host:port|DisplayName
             // 3) user@host:port|DisplayName|syncID
             // 4) user@host:port|DisplayName|syncID|x11possible|x11
+            if (serverString.trim().isEmpty()) {
+                continue;
+            }
             String displayName = null;
             RemoteSyncFactory syncFactory = RemoteSyncFactory.getDefault();
             final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR); // NOI18N

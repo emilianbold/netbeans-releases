@@ -47,6 +47,7 @@ import java.awt.Rectangle;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JButton;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -102,6 +103,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
             }
         };
         nameTextField.getDocument().addDocumentListener(documentListener);
+        ((JTextField) typeComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(documentListener);
         initializerTextField.getDocument().addDocumentListener(documentListener);
 
         propNameTextFieldDocumentListener = new DocumentListener() {
@@ -194,7 +196,15 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         if (nameTextField.getText().length() == 0) {
             return NbBundle.getMessage(AddPropertyPanel.class, "ERR_FieldIsEmpty");
         }
+
+        if (((JTextField) typeComboBox.getEditor().getEditorComponent()).getText().length() == 0) {
+            return NbBundle.getMessage(AddPropertyPanel.class, "ERR_TypeIsEmpty");
+        }
         
+        if (boundCheckBox.isSelected() && propNameTextField.getText().length() == 0) {
+            return NbBundle.getMessage(AddPropertyPanel.class, "ERR_BoundIsEmpty");
+        }
+
         if (existingFields.contains(nameTextField.getText())) {
             return NbBundle.getMessage(AddPropertyPanel.class, "ERR_FieldAlreadyExists", new Object[]{String.valueOf(nameTextField.getText())});
         }

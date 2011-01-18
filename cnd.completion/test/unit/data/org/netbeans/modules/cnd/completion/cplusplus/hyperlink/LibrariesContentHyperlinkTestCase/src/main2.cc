@@ -1,6 +1,6 @@
 #include "include.h"
 
-#include <iostream>
+#include <iostream_ours>
 using namespace std2;
 
 int main(int argc, char** argv) {

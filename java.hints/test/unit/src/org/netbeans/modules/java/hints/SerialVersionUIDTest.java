@@ -28,11 +28,11 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.errors.SuppressWarningsFixer;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 import static org.junit.Assert.*;
@@ -42,9 +42,8 @@ import static org.junit.Assert.*;
  * <code>cat test/unit/data/test/Test.java | tr '\n' ' ' | tr '\t' ' ' | sed -E 's| +| |g' | sed 's|"|\\"|g'</code>
  * @author Samuel Halliday
  */
-public class SerialVersionUIDTest extends TreeRuleTestBase {
+public class SerialVersionUIDTest extends ErrorHintsTestBase {
 
-    private final SerialVersionUID computer = new SerialVersionUID();
     private static final String HINT_SUPPRESS = NbBundle.getMessage(FixFactory.class, "LBL_FIX_Suppress_Waning", "serial");
     private static final String HINT_DEFAULT = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID");
     private static final String HINT_GENERATED = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID_Generated");
@@ -53,8 +52,17 @@ public class SerialVersionUIDTest extends TreeRuleTestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        Preferences p = CompilerSettings.getNode();
+
+        p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, true);
+    }
+
     public void testSerialVersionUID1() throws Exception {
-        String test = "package test; import java.io.Serializable; public interface T|est implements Serializable { }";
+        String test = "package test; import java.io.Serializable; public interface T|est extends Serializable { }";
         performAnalysisTest(test);
     }
 
@@ -108,59 +116,32 @@ public class SerialVersionUIDTest extends TreeRuleTestBase {
     }
 
     public void testAnonymous() throws Exception {
-        String test = "package test; public class Test {private Serializable ser = new Serializable() {|public String toString() {return \"Hello from serializable\";}};}";
+        String test = "package test; public class Test {private Serializable ser = new Serializable() {| public String toString() {return \"Hello from serializable\";}};}";
         String golden = "package test; public class Test {private Serializable ser = new Serializable() {private static final long serialVersionUID = 1L; public String toString() {return \"Hello from serializable\";}};}";
-        performFixTest("test/Test.java", test, "0:64-0:76:verifier:serialVersionUID not defined", HINT_DEFAULT, golden);
+        performFixTest(test, golden, HINT_DEFAULT);
     }
 
     // test is single line source code for test.Test, | in the CLASS, space before, space after
     // golden is the output to test against
     private void performFixTest(String test, String golden, String hint) throws Exception {
-        int offset = test.indexOf("|");
-        assertTrue(offset != -1);
-        int end = test.indexOf(" ", offset) - 1;
-        assertTrue(end > 0);
-        int start = test.lastIndexOf(" ", offset) + 1;
-        assertTrue(start > 0);
-        performFixTest("test/Test.java",
-                test.replace("|", ""),
-                offset,
-                "0:" + start + "-0:" + end + ":verifier:" + NbBundle.getMessage(SerialVersionUID.class, "DSC_SerialVersionUID"),
-                hint,
-                golden);
+        performFixTest("test/Test.java", test, hint, golden);
     }
 
     // test is single line source code for test.Test, | in the CLASS, space before, space after
     // completes successfully if there are no hints presented
     private void performAnalysisTest(String test) throws Exception {
-        int offset = test.indexOf("|");
-        assertTrue(offset != -1);
-        performAnalysisTest("test/Test.java", test.replace("|", ""), offset);
-    }
+        prepareTest("test/Test.java", test.replace("|", ""));
 
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return computer.run(info, path);
+        assertTrue(info.getDiagnostics().toString(), info.getDiagnostics().isEmpty());
     }
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();
     }
-//    // uncomment to speed up development cycle
-    @Override
-    public void testIssue105979() throws Exception {
-    }
 
     @Override
-    public void testIssue108246() throws Exception {
-    }
-
-    @Override
-    public void testIssue113933() throws Exception {
-    }
-
-    @Override
-    public void testNoHintsForSimpleInitialize() throws Exception {
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new SerialVersionUID().run(info, null, pos, path, null);
     }
 }

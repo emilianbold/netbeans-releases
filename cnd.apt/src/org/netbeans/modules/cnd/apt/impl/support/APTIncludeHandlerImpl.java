@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -94,7 +95,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
                                     List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
-        this.startFile =startFile;
+        this.startFile = startFile;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.userIncludeFilePaths = userIncludeFilePaths;
@@ -113,7 +114,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     
     @Override
     public APTIncludeResolver getResolver(CharSequence path) {
-        return new APTIncludeResolverImpl(path, getCurDirIndex(),
+        return new APTIncludeResolverImpl(startFile.getFileSystem(), path, getCurDirIndex(),
                 systemIncludePaths, userIncludePaths, fileSearch);
     }
     
@@ -153,7 +154,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
     }
     
-    protected StateImpl createStateImpl() {
+    private StateImpl createStateImpl() {
         return new StateImpl(this);
     }
 
@@ -314,30 +315,30 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }
         
-        public StateImpl(final DataInput input) throws IOException {
+        public StateImpl(FileSystem fs, final DataInput input) throws IOException {
             assert input != null;
             final APTStringManager pathManager = FilePathCache.getManager();
             
-            startFile = new StartEntry(input);
+            startFile = new StartEntry(fs, input);
 
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
                 systemIncludePaths.add(i, path);
             }
             
             size = input.readInt();
             userIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
                 userIncludePaths.add(i, path);                
             }
 
             size = input.readInt();
             userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
                 userIncludeFilePaths.add(i, path);
             }
 

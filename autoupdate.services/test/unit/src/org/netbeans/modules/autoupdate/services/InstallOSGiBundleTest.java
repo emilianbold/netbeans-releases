@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -65,7 +66,6 @@ import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -80,6 +80,13 @@ public class InstallOSGiBundleTest extends NbTestCase {
     public InstallOSGiBundleTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    
 
     public static class MyProvider extends AutoupdateCatalogProvider {
 

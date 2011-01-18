@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -107,14 +108,13 @@ public class ComputeAnnotations {
     }
 
     private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
+        Collection<? extends CsmMethod> baseMethods = Collections.<CsmMethod>emptyList();
+        Collection<? extends CsmMethod> overriddenMethods = Collections.<CsmMethod>emptyList();
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
-            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-            Collection<? extends CsmMethod> overriddenMethods;
+            baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
             if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
                 overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverriddenMethods(meth, false);
-            } else {
-                overriddenMethods = Collections.<CsmMethod>emptyList();
             }
             if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                 BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
@@ -123,16 +123,20 @@ public class ComputeAnnotations {
                 }
             }
             baseMethods.remove(meth);
-            if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
-                toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods));
-            }
+        }
+        Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(func);
+        Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(func);
+        if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
+            toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
         }
     }
 
     private void computeAnnotation(CsmClass cls, Collection<BaseAnnotation> toAdd) {
         Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
+        Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
+        Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+        Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmInstantiationProvider.getDefault().getSpecializations(cls);
         if (!subRefs.isEmpty()) {
-            Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
             for (CsmReference ref : subRefs) {
                 CsmObject obj = ref.getReferencedObject();
                 CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
@@ -140,9 +144,9 @@ public class ComputeAnnotations {
                     subClasses.add((CsmClass) obj);
                 }
             }
-            if (!subClasses.isEmpty()) {
-                toAdd.add(new InheritAnnotation(doc, cls, subClasses));
-            }
+        }
+        if (!subClasses.isEmpty() || !baseTemplateClasses.isEmpty() || !templateSpecializationClasses.isEmpty()) {
+            toAdd.add(new InheritAnnotation(doc, cls, subClasses, baseTemplateClasses, templateSpecializationClasses));
         }
     }
 

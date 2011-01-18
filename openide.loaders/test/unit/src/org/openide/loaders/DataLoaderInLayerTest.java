@@ -175,13 +175,16 @@ public class DataLoaderInLayerTest extends NbTestCase {
             DataObject copied = dob.copy(df);
             assertEquals(SimpleDataObject.class, copied.getClass());
 
+            LOG.info("Before createFromTemplate");
             DataObject templ = dob.createFromTemplate(df, "ahoj");
             assertEquals(SimpleDataObject.class, templ.getClass());
             assertEquals("ahoj", templ.getName());
 
+            LOG.info("before copyRename");
             DataObject ren = dob.copyRename(df, "kuk", "simple");
             assertEquals(SimpleDataObject.class, ren.getClass());
             assertEquals("kuk", ren.getName());
+            LOG.info("OK");
         } finally {
             addRemoveLoader(l, false);
         }

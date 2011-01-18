@@ -42,19 +42,34 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
+import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.WindowCache;
+import org.eclipse.jgit.storage.file.WindowCacheConfig;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -65,7 +80,8 @@ public class CheckoutTest extends AbstractGitTestCase {
 
     private File workDir;
     private Repository repository;
-
+    private static final String BRANCH = "nova";
+    
     public CheckoutTest (String testName) throws IOException {
         super(testName);
     }
@@ -80,7 +96,6 @@ public class CheckoutTest extends AbstractGitTestCase {
     public void testJGitCheckout () throws Exception {
         File file1 = new File(workDir, "file1");
         write(file1, "blablablabla");
-        File file2 = new File(workDir, "file2");
         Git git = new Git(repository);
         org.eclipse.jgit.api.AddCommand cmd = git.add();
         cmd.addFilepattern("file1");
@@ -96,19 +111,6 @@ public class CheckoutTest extends AbstractGitTestCase {
         try {
             DirCacheCheckout checkout = new DirCacheCheckout(repository, null, cache, new RevWalk(repository).parseCommit(repository.resolve(commitId)).getTree());
             checkout.checkout();
-        } finally {
-            cache.unlock();
-        }
-        cache = repository.lockDirCache();
-        try {
-            write(file2, "blablablabla in file2");
-            DirCacheCheckout checkout = new DirCacheCheckout(repository, null, cache, new RevWalk(repository).parseCommit(repository.resolve(commitId)).getTree());
-            try {
-                checkout.checkout();
-                fail("If stops failing, implement checkout with DirCacheCheckout");
-            } catch (NullPointerException ex) {
-                // sadly fails
-            }
         } finally {
             cache.unlock();
         }
@@ -237,5 +239,187 @@ public class CheckoutTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertEquals("file 1 content", read(file1));
         assertEquals(currentRevision, new Git(repository).log().call().iterator().next().getId().getName());
+    }
+
+    public void testLargeFile () throws Exception {
+        unpack("large.dat.zip");
+        File large = new File(workDir, "large.dat");
+        assertTrue(large.exists());
+        assertEquals(2158310, large.length());
+        add();
+        DirCache cache = repository.readDirCache();
+        DirCacheEntry e = cache.getEntry("large.dat");
+        WindowCacheConfig cfg = new WindowCacheConfig();
+        cfg.setStreamFileThreshold((int) large.length() - 1);
+        WindowCache.reconfigure(cfg);
+        DirCacheCheckout.checkoutEntry(repository, large, e);
+    }
+    
+    public void testCheckoutRevision () throws Exception {
+        File file = new File(workDir, "file");
+        write(file, "initial");
+        File[] files = new File[] { file };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo info = client.commit(files, "initial", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH, info.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(file, Constants.MASTER);
+        add(file);
+        GitRevisionInfo masterInfo = client.commit(files, Constants.MASTER, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        // test checkout
+        Monitor m = new Monitor();
+        client.addNotificationListener(m);
+        client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String logFileContent[] = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
+        assertEquals("checkout: moving from master to nova", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("checkout: ")));
+        assertTrue(m.notifiedFiles.contains(file));
+        assertEquals("initial", read(file));
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(branches.get(BRANCH).isActive());
+        
+        write(file, BRANCH);
+        add();
+        GitRevisionInfo novaInfo = client.commit(files, BRANCH, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        m = new Monitor();
+        client.addNotificationListener(m);
+        client.checkoutBranch(Constants.MASTER, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(m.notifiedFiles.contains(file));
+        assertEquals(Constants.MASTER, read(file));
+        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(branches.get(Constants.MASTER).isActive());
+        
+        m = new Monitor();
+        client.addNotificationListener(m);
+        client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(m.notifiedFiles.contains(file));
+        assertEquals(BRANCH, read(file));
+        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(branches.get(BRANCH).isActive());
+    }
+    
+    public void testCheckoutRevisionKeepLocalChanges () throws Exception {
+        File file = new File(workDir, "file");
+        write(file, "initial");
+        File[] files = new File[] { file };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo info = client.commit(files, "initial", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH, info.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(file, Constants.MASTER);
+        
+        // test checkout
+        // the file remains modified in WT
+        client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(Constants.MASTER, read(file));
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(branches.get(BRANCH).isActive());
+        
+        add(file);
+        // the file remains modified in index
+        client.checkoutBranch(Constants.MASTER, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(Constants.MASTER, read(file));
+        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(branches.get(Constants.MASTER).isActive());
+    }
+    
+    public void testCheckoutRevisionAddRemoveFile () throws Exception {
+        File file = new File(workDir, "file");
+        write(file, "initial");
+        File[] files = new File[] { file };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo info = client.commit(files, "initial", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH, info.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        remove(false, file);
+        commit(files);
+        
+        // test checkout
+        // the file is added to WT
+        client.checkoutBranch(Constants.MASTER, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(file.exists());
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        // the file is removed from WT
+        client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertFalse(file.exists());
+        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertNull(statuses.get(file));
+    }
+    
+    public void testCheckoutRevisionMergeLocalChanges () throws Exception {
+        File file = new File(workDir, "file");
+        write(file, "initial");
+        File[] files = new File[] { file };
+        add(files);
+        GitClient client = getClient(workDir);
+        GitRevisionInfo info = client.commit(files, "initial", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH, info.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutBranch(BRANCH, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        write(file, BRANCH);
+        add(file);
+        client.commit(files, BRANCH, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(file, "initial");
+        try {
+            client.checkoutBranch(Constants.MASTER, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Should fail, there are conflicts");
+        } catch (GitException.CheckoutConflictException ex) {
+            assertEquals(1, ex.getConflicts().length);
+            assertEquals(file.getName(), ex.getConflicts()[0]);
+            Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            assertTrue(branches.get(BRANCH).isActive());
+        }
+        CheckoutBranchCommand cmd = new CheckoutBranchCommand(repository, Constants.MASTER, false, ProgressMonitor.NULL_PROGRESS_MONITOR, new FileListener() {
+            @Override
+            public void notifyFile (File file, String relativePathToRoot) { }
+        });
+        try {
+            cmd.execute();
+            // and if somehow works...
+            client.checkoutBranch(Constants.MASTER, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            // and do not forget to fix this code when JGit is fixed.
+            fail("Hey, JGit is fixed, why don't you fix me as well?");
+        } catch (IllegalStateException ex) {
+            assertEquals("Mixed stages not allowed: 2 file", ex.getMessage());
+        }
+    }
+
+    private void unpack (String filename) throws IOException {
+        File zipLarge = new File(getDataDir(), filename);
+        ZipInputStream is = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipLarge)));
+        ZipEntry entry;
+        while ((entry = is.getNextEntry()) != null) {
+            File unpacked = new File(workDir, entry.getName());
+            FileChannel channel = new FileOutputStream(unpacked).getChannel();
+            byte[] bytes = new byte[2048];
+            try {
+                int len;
+                long size = entry.getSize();
+                while (size > 0 && (len = is.read(bytes, 0, 2048)) > 0) {
+                    ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, len);
+                    int j = channel.write(buffer);
+                    size -= len;
+                }
+            } finally {
+                channel.close();
+            }
+        }
+        ZipEntry e = is.getNextEntry();
     }
 }
