@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.test;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
 import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
@@ -74,6 +75,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            DirectoryStorageTestCase.class,
            DirectoryReaderTestCase.class,
            RefreshTestCase.class,
+           CanonicalTestCase.class,
            RemoteFileSystemOffilneTestCase.class);
     }
 
