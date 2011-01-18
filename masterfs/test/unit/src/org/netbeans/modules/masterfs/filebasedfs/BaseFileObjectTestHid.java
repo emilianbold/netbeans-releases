@@ -834,7 +834,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         // #176032
         testdir = root.getFileObject(".");
         assertNotNull(testdir);
-        testdir = root.getFileObject("..");
+        testdir = root.getParent();
         assertNotNull(testdir);
     }
     

@@ -163,7 +163,8 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //      fixDistJarProperty (nueName);
 //      project.getReferenceHelper().fixReferences(originalPath);
 
-        project.setName(nueName);
+        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        info.setName(nueName);
 
         MakeSharabilityQuery makeSharabilityQuery = original.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(false);
@@ -194,7 +195,8 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
-        project.setName(nueName);
+        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        info.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         ConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
@@ -212,8 +214,8 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
     @Override
     public void notifyRenamed(String nueName) throws IOException {
-        project.setName(nueName);
         MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        info.setName(nueName);
         info.firePropertyChange(ProjectInformation.PROP_NAME);
         info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
     }
