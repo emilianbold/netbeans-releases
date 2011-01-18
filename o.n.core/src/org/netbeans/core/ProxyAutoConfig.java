@@ -56,8 +56,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,18 +79,17 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class ProxyAutoConfig {
 
-    private static ProxyAutoConfig INSTANCE = null;
+    private static final Map<String, ProxyAutoConfig> file2pac = new HashMap<String, ProxyAutoConfig>(2);
     private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
     
     private static final String NS_PROXU_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
 
-    public static synchronized ProxyAutoConfig getInstance() {
-        if (INSTANCE == null) {
-            String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
-            LOGGER.fine("Init ProxyAutoConfig for " + init);
-            INSTANCE = new ProxyAutoConfig(init.substring(4).trim());
+    public static synchronized ProxyAutoConfig get(String pacFile) {
+        if (file2pac.get(pacFile) == null) {
+            LOGGER.fine("Init ProxyAutoConfig for " + pacFile);
+            file2pac.put(pacFile, new ProxyAutoConfig(pacFile));
         }
-        return INSTANCE;
+        return file2pac.get(pacFile);
     }
     private static final Logger LOGGER = Logger.getLogger(ProxyAutoConfig.class.getName());
     private Invocable inv = null;
@@ -96,7 +97,7 @@ public class ProxyAutoConfig {
     private final URI pacURI;
 
     private ProxyAutoConfig(final String pacURL) {
-        assert INSTANCE == null : "INSTANCE must be null now, it's singleton!";
+        assert file2pac.get(pacURL) == null : "Only once object for " + pacURL + " must exist.";
         try {
             pacURI = new URI(pacURL);
         } catch (URISyntaxException ex) {
@@ -131,6 +132,14 @@ public class ProxyAutoConfig {
         } catch (ScriptException ex) {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
             throw new IllegalArgumentException(ex);
+        } finally {
+            if (pacIS != null) {
+                try {
+                    pacIS.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, "While closing PAC input stream thrown " + ex, ex);
+                }
+            }
         }
         assert eng != null : "JavaScri5pt engine cannot be null";
         if (eng == null) {
@@ -297,6 +306,14 @@ public class ProxyAutoConfig {
             }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "While downloading nsProxyAutoConfig.js thrown " + ex.getMessage(), ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, ex.getMessage(), ex);
+                }
+            }
         }
         return builder.toString();
     }

@@ -94,85 +94,111 @@ public final class NbProxySelector extends ProxySelector {
     public List<Proxy> select(URI uri) {
         List<Proxy> res = new ArrayList<Proxy> ();
         int proxyType = ProxySettings.getProxyType ();
-        if (ProxySettings.DIRECT_CONNECTION == proxyType) {
-            res = Collections.singletonList (Proxy.NO_PROXY);
-        } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
-            if (useSystemProxies ()) {
-                if (original != null) {
-                    res = original.select (uri);                   
-                }
-            } else if (usePAC()) {
-                if (ProxyAutoConfig.getInstance().getPacURI().getHost().equals(uri.getHost())) {
-                    return Collections.singletonList(Proxy.NO_PROXY);
+        switch (proxyType) {
+            case ProxySettings.DIRECT_CONNECTION:
+                res = Collections.singletonList (Proxy.NO_PROXY);
+                break;
+            case ProxySettings.AUTO_DETECT_PROXY:
+                if (useSystemProxies ()) {
+                    if (original != null) {
+                        res = original.select (uri);                   
+                    }
                 } else {
-                    res = ProxyAutoConfig.getInstance().findProxyForURL(uri); // NOI18N
+                    String protocol = uri.getScheme ();
+                    assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
+                    if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
+                        res.add (Proxy.NO_PROXY);
+                    }
+                    if (protocol.toLowerCase (Locale.US).startsWith("http")) {
+                        String ports = ProxySettings.SystemProxySettings.getHttpPort ();
+                        if (ports != null && ports.length () > 0 && ProxySettings.SystemProxySettings.getHttpHost ().length () > 0) {
+                            int porti = Integer.parseInt(ports);
+                            Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (ProxySettings.SystemProxySettings.getHttpHost (), porti));
+                            res.add (p);
+                        }
+                    } else { // supposed SOCKS
+                        String ports = ProxySettings.SystemProxySettings.getSocksPort ();
+                        String hosts = ProxySettings.SystemProxySettings.getSocksHost ();
+                        if (ports != null && ports.length () > 0 && hosts.length () > 0) {
+                            int porti = Integer.parseInt(ports);
+                            Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
+                            res.add (p);
+                        }
+                    }
+                    if (original != null) {
+                        res.addAll (original.select (uri));
+                    }
                 }
-            } else {
+                break;
+            case ProxySettings.MANUAL_SET_PROXY:
                 String protocol = uri.getScheme ();
                 assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
-                if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
+
+                // handling nonProxyHosts first
+                if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
                 }
                 if (protocol.toLowerCase (Locale.US).startsWith("http")) {
-                    String ports = ProxySettings.SystemProxySettings.getHttpPort ();
-                    if (ports != null && ports.length () > 0 && ProxySettings.SystemProxySettings.getHttpHost ().length () > 0) {
+                    String hosts = ProxySettings.getHttpHost ();
+                    String ports = ProxySettings.getHttpPort ();
+                    if (ports != null && ports.length () > 0 && hosts.length () > 0) {
                         int porti = Integer.parseInt(ports);
-                        Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (ProxySettings.SystemProxySettings.getHttpHost (), porti));
+                        Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (hosts, porti));
                         res.add (p);
+                    } else {
+                        LOG.info ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        if (original != null) {
+                            LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
+                            res.addAll (original.select (uri));
+                        }
                     }
                 } else { // supposed SOCKS
-                    String ports = ProxySettings.SystemProxySettings.getSocksPort ();
-                    String hosts = ProxySettings.SystemProxySettings.getSocksHost ();
+                    String ports = ProxySettings.getSocksPort ();
+                    String hosts = ProxySettings.getSocksHost ();
                     if (ports != null && ports.length () > 0 && hosts.length () > 0) {
                         int porti = Integer.parseInt(ports);
                         Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
                         res.add (p);
+                    } else {
+                        LOG.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        if (original != null) {
+                            LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
+                            res.addAll (original.select (uri));
+                        }
                     }
                 }
-                if (original != null) {
-                    res.addAll (original.select (uri));
-                }
-            }
-        } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
-            String protocol = uri.getScheme ();
-            assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
-            
-            // handling nonProxyHosts first
-            if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                 res.add (Proxy.NO_PROXY);
-            }
-            if (protocol.toLowerCase (Locale.US).startsWith("http")) {
-                String hosts = ProxySettings.getHttpHost ();
-                String ports = ProxySettings.getHttpPort ();
-                if (ports != null && ports.length () > 0 && hosts.length () > 0) {
-                    int porti = Integer.parseInt(ports);
-                    Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (hosts, porti));
-                    res.add (p);
-                } else {
-                    LOG.info ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                break;
+            case ProxySettings.AUTO_DETECT_PAC:
+                if (useSystemProxies ()) {
                     if (original != null) {
-                        LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
-                        res.addAll (original.select (uri));
+                        res = original.select (uri);                   
+                    }
+                } else {
+                    // handling nonProxyHosts first
+                    if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
+                        res.add (Proxy.NO_PROXY);
+                    }
+                    if (ProxyAutoConfig.get(getPacFile()).getPacURI().getHost().equals(uri.getHost())) {
+                        return Collections.singletonList(Proxy.NO_PROXY);
+                    } else {
+                        res = ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri); // NOI18N
                     }
                 }
-            } else { // supposed SOCKS
-                String ports = ProxySettings.getSocksPort ();
-                String hosts = ProxySettings.getSocksHost ();
-                if (ports != null && ports.length () > 0 && hosts.length () > 0) {
-                    int porti = Integer.parseInt(ports);
-                    Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
-                    res.add (p);
-                } else {
-                    LOG.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
-                    if (original != null) {
-                        LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
-                        res.addAll (original.select (uri));
-                    }
+                break;
+            case ProxySettings.MANUAL_SET_PAC:
+                // handling nonProxyHosts first
+                if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
+                    res.add (Proxy.NO_PROXY);
                 }
-            }
-            res.add (Proxy.NO_PROXY);
-        } else {
-            assert false : "Invalid proxy type: " + ProxySettings.getProxyType ();
+                if (ProxyAutoConfig.get(getPacFile()).getPacURI().getHost().equals(uri.getHost())) {
+                    return Collections.singletonList(Proxy.NO_PROXY);
+                } else {
+                    res = ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri); // NOI18N
+                }
+                break;
+            default:
+                assert false : "Invalid proxy type: " + proxyType;
         }
         LOG.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () +
                 ", Use HTTP for all protocols: " + ProxySettings.useProxyAllProtocols ()+
@@ -200,32 +226,54 @@ public final class NbProxySelector extends ProxySelector {
         String sHost = null, sPort = null;
         String httpsHost = null, httpsPort = null;
         int proxyType = ProxySettings.getProxyType ();
-        if (ProxySettings.DIRECT_CONNECTION == proxyType) {
-            host = null;
-            port = null;
-            httpsHost = null;
-            httpsPort = null;
-            nonProxyHosts = null;
-            sHost = null;
-            sPort = null;
-        } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
-            host = ProxySettings.SystemProxySettings.getHttpHost ();
-            port = ProxySettings.SystemProxySettings.getHttpPort ();
-            httpsHost = ProxySettings.SystemProxySettings.getHttpsHost ();
-            httpsPort = ProxySettings.SystemProxySettings.getHttpsPort ();
-            nonProxyHosts = ProxySettings.SystemProxySettings.getNonProxyHosts ();
-            sHost = ProxySettings.SystemProxySettings.getSocksHost ();
-            sPort = ProxySettings.SystemProxySettings.getSocksPort ();
-        } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
-            host = ProxySettings.getHttpHost ();
-            port = ProxySettings.getHttpPort ();
-            httpsHost = ProxySettings.getHttpsHost ();
-            httpsPort = ProxySettings.getHttpsPort ();
-            nonProxyHosts = ProxySettings.getNonProxyHosts ();
-            sHost = ProxySettings.getSocksHost ();
-            sPort = ProxySettings.getSocksPort ();
-        } else {
-            assert false : "Invalid proxy type: " + proxyType;
+        switch (proxyType) {
+            case ProxySettings.DIRECT_CONNECTION:
+                host = null;
+                port = null;
+                httpsHost = null;
+                httpsPort = null;
+                nonProxyHosts = null;
+                sHost = null;
+                sPort = null;
+                break;
+            case ProxySettings.AUTO_DETECT_PROXY:
+                host = ProxySettings.SystemProxySettings.getHttpHost ();
+                port = ProxySettings.SystemProxySettings.getHttpPort ();
+                httpsHost = ProxySettings.SystemProxySettings.getHttpsHost ();
+                httpsPort = ProxySettings.SystemProxySettings.getHttpsPort ();
+                sHost = ProxySettings.SystemProxySettings.getSocksHost ();
+                sPort = ProxySettings.SystemProxySettings.getSocksPort ();
+                ProxySettings.SystemProxySettings.getNonProxyHosts ();
+                break;
+            case ProxySettings.MANUAL_SET_PROXY:
+                host = ProxySettings.getHttpHost ();
+                port = ProxySettings.getHttpPort ();
+                httpsHost = ProxySettings.getHttpsHost ();
+                httpsPort = ProxySettings.getHttpsPort ();
+                nonProxyHosts = ProxySettings.getNonProxyHosts ();
+                sHost = ProxySettings.getSocksHost ();
+                sPort = ProxySettings.getSocksPort ();
+                break;
+            case ProxySettings.AUTO_DETECT_PAC:
+                host = null;
+                port = null;
+                httpsHost = null;
+                httpsPort = null;
+                ProxySettings.SystemProxySettings.getNonProxyHosts ();
+                sHost = null;
+                sPort = null;
+                break;
+            case ProxySettings.MANUAL_SET_PAC:
+                host = null;
+                port = null;
+                httpsHost = null;
+                httpsPort = null;
+                ProxySettings.getNonProxyHosts ();
+                sHost = null;
+                sPort = null;
+                break;
+            default:
+                assert false : "Invalid proxy type: " + proxyType;
         }
         setOrClearProperty ("http.proxyHost", host, false);
         setOrClearProperty ("http.proxyPort", port, true);
@@ -353,10 +401,15 @@ public final class NbProxySelector extends ProxySelector {
         return useSystemProxies != null && "true".equalsIgnoreCase (useSystemProxies.toString ());
     }
     
-    boolean usePAC() {
+    static boolean usePAC() {
         String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
         boolean usePAC = s != null && s.startsWith(ProxySettings.PAC);
         return usePAC;
+    }
+    
+    private static String getPacFile() {
+        String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
+        return init.substring(4).trim();
     }
     
 }

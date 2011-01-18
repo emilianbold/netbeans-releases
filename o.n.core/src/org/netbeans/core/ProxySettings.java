@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -83,11 +83,17 @@ public class ProxySettings {
     /** No proxy is used to connect. */
     public static final int DIRECT_CONNECTION = 0;
     
-    /** Proxy setting is automaticaly detect in OS. */
+    /** Proxy setting is automatically detect in OS. */
     public static final int AUTO_DETECT_PROXY = 1; // as default
     
-    /** Manualy set proxy host and port. */
+    /** Manually set proxy host and port. */
     public static final int MANUAL_SET_PROXY = 2;
+    
+    /** Proxy PAC file automatically detect in OS. */
+    public static final int AUTO_DETECT_PAC = 3;
+    
+    /** Proxy PAC file manually set. */
+    public static final int MANUAL_SET_PAC = 4;
     
     private static Preferences getPreferences() {
         return NbPreferences.forModule (ProxySettings.class);
@@ -138,7 +144,11 @@ public class ProxySettings {
     }
     
     public static int getProxyType () {
-        return getPreferences ().getInt (PROXY_TYPE, AUTO_DETECT_PROXY);
+        int type = getPreferences ().getInt (PROXY_TYPE, AUTO_DETECT_PROXY);
+        if (AUTO_DETECT_PROXY == type) {
+            type = NbProxySelector.usePAC() ? AUTO_DETECT_PAC : AUTO_DETECT_PROXY;
+        }
+        return type;
     }
     
     public static boolean useAuthentication () {
