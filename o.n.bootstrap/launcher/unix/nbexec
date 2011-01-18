@@ -422,6 +422,12 @@ close
 EOF
 
     if /usr/bin/grep "ProxyAuto.*: *1" ${scutil_out} >/dev/null 2>&1; then
+        if  /usr/bin/grep "ProxyAutoConfigEnable.*: *1" ${scutil_out} >/dev/null 2>&1; then
+            http_proxy_tmp="PAC `/usr/bin/grep ProxyAutoConfigURLString ${scutil_out} | /usr/bin/awk '{print $3}'`"
+            rm ${scutil_out}
+            return 0
+        fi
+
         rm ${scutil_out}
         return 1
     fi
@@ -459,7 +465,7 @@ if [ -z "$http_proxy_tmp" ]; then
 fi
 
 if [ ! -z "$http_proxy_tmp" ] ; then
-        echo http_proxy_tmp: $http_proxy_tmp
+        echo Found Proxy: $http_proxy_tmp
 	jargs="-Dnetbeans.system_http_proxy=\"$http_proxy_tmp\" -Dnetbeans.system_http_non_proxy_hosts=\"$http_non_proxy_hosts\" $jargs"
 fi
 
