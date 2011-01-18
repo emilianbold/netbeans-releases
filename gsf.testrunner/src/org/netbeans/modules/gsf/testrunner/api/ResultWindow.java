@@ -372,6 +372,9 @@ final class ResultWindow extends TopComponent {
         
         if (view == null) {
             view = (JSplitPane) tabPane.getSelectedComponent();
+            if (view == null) {
+                return;
+            }
         }
         tabPane.remove(view);
         viewMap.remove(view.getToolTipText());
