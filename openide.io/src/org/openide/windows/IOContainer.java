@@ -408,6 +408,9 @@ public final class IOContainer {
         }
 
         public boolean isActivated() {
+            if (frame == null) {
+                return false;
+            }
             return frame.isActive();
         }
 

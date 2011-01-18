@@ -106,6 +106,11 @@ public final class FolderObj extends BaseFileObj {
             // #47885 - relative path must not contain back slashes
             return null;
         }
+        if (relativePath.contains("..")) {
+            if (("/" + relativePath + "/").contains("/../")) {
+                return null;
+            }
+        }
         if (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }

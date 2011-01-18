@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import java.io.File;
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -74,7 +75,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarge
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -106,6 +108,7 @@ public class DebugCoreAction extends SystemAction {
 
         DataNode corefileNode = null;
         String corefilePath = null;
+        String host = null;
 
         //
         // If activeNodes[0] is a corefile set 'corefileNode'
@@ -125,7 +128,10 @@ public class DebugCoreAction extends SystemAction {
         // Convert corefileNode to corefilePath or reuse last corefilePath.
         //
         if (corefileNode != null && corefileNode.getDataObject() != null) {
-            corefilePath = corefileNode.getDataObject().getPrimaryFile().getPath();
+            FileObject coreFile = corefileNode.getDataObject().getPrimaryFile();
+            ExecutionEnvironment exEnv = FileSystemProvider.getExecutionEnvironment(coreFile);
+            host = ExecutionEnvironmentFactory.toUniqueID(exEnv);
+            corefilePath = coreFile.getPath();
         } else {
             corefilePath = lastCorefilePath;
         }
@@ -143,7 +149,7 @@ public class DebugCoreAction extends SystemAction {
                     debugButton,
                     DialogDescriptor.CANCEL_OPTION,};
 
-        coreDialogPanel = new DebugCorePanel(corefilePath, executablePickList.getElementsDisplayName(), debugButton, ro);
+        coreDialogPanel = new DebugCorePanel(corefilePath, executablePickList.getElementsDisplayName(), debugButton, ro, host);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 coreDialogPanel,
                 Catalog.get("LBL_DebugCorefile"), // NOI18N
