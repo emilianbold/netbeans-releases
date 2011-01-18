@@ -44,8 +44,8 @@
 package org.netbeans.modules.cnd.api.toolchain;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
@@ -161,11 +161,11 @@ public abstract class AbstractCompiler extends Tool {
     }
     
     public List<String> getSystemPreprocessorSymbols() {
-        return new Vector<String>();
+        return Collections.<String>emptyList();
     }
 
     public List<String> getSystemIncludeDirectories() {
-        return new Vector<String>();
+        return Collections.<String>emptyList();
     }
 
     /**
