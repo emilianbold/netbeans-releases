@@ -310,12 +310,12 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                                         webModule);
                                 }
                             };
+                            SERVLETS_REQUEST_PROCESSOR.post(runnable);
                         }
                         else {
                             setServletClasses(servletClasses, javaClass,
                                     webModule);
                         }
-                        SERVLETS_REQUEST_PROCESSOR.post(runnable);
                     }
                 }
             }
