@@ -47,4 +47,4 @@ made subject to such option by the copyright holder.
 "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
 "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
 <!-- By default it is set to merge. nbdocs: looks in the module JAR(s) and docs/ folder. -->
-<helpsetref url="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/sunappserver.hs"/>
+<helpsetref url="nbdocs:/org/netbeans/modules/j2ee/platform/docs/j2ee.hs"/>
