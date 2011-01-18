@@ -349,8 +349,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         File baseFolder = null;
         File libFolder = null;
         if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
-            baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
-            libFolder = new File(baseFolder, impl.getName());
+            baseFolder = FileUtil.normalizeFile(new File(URI.create(area.getLocation().toExternalForm())).getParentFile());
+            libFolder = FileUtil.normalizeFile(new File(baseFolder, impl.getName()));
         }
         FileChooser chooser = new FileChooser(baseFolder, libFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
