@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -100,7 +100,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (ee6Instance == null) {
             ServerUtilities tmp = ServerUtilities.getEe6Utilities();
             ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:", "deployer:gfv3ee6wc:", "deployer:gfv3"}, "0.2", // NOI18N
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));  // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_FactoryDisplayName"));  // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
             ee6Instance.setServerUtilities(tmp);
         }

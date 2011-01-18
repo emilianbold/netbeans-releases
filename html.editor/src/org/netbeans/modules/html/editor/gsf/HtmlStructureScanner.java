@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,6 +111,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
+            @Override
             public void visit(AstNode node) {
                 if (node.type() == AstNode.NodeType.OPEN_TAG
                         || node.type() == AstNode.NodeType.COMMENT) {
@@ -166,7 +168,7 @@ public class HtmlStructureScanner implements StructureScanner {
         return folds;
     }
 
-    public static int documentPosition(int astOffset, Snapshot snapshot) {
+    private static int documentPosition(int astOffset, Snapshot snapshot) {
         return snapshot.getOriginalOffset(astOffset);
     }
     
@@ -279,6 +281,7 @@ public class HtmlStructureScanner implements StructureScanner {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean isLeaf() {
             //The child if empty if it hasn't any nested items. If it has only text it's empty.
             return getNestedItems().isEmpty();
@@ -287,8 +290,10 @@ public class HtmlStructureScanner implements StructureScanner {
         @Override
         public synchronized List<? extends StructureItem> getNestedItems() {
             if(items == null) {
-                items = new  ArrayList<StructureItem>(handle.node().children().size());
-                for(AstNode child : handle.node().children()) {
+                AstNode node = handle.node();
+                items = new  ArrayList<StructureItem>(node.children().size());
+                List<AstNode> nonVirtualChildren = gatherNonVirtualChildren(node);
+                for(AstNode child : nonVirtualChildren) {
                     if(child.type() == AstNode.NodeType.OPEN_TAG) {
                         HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
                         items.add(new HtmlStructureItem(childHandle, snapshot));
@@ -298,10 +303,12 @@ public class HtmlStructureScanner implements StructureScanner {
             return items;
         }
 
+        @Override
         public long getPosition() {
             return HtmlStructureScanner.documentPosition(handle.from(), snapshot);
         }
 
+        @Override
         public long getEndPosition() {
             return HtmlStructureScanner.documentPosition(handle.to(), snapshot);
         }
@@ -311,5 +318,19 @@ public class HtmlStructureScanner implements StructureScanner {
             return null;
         }
 
+    }
+
+    private static List<AstNode> gatherNonVirtualChildren(AstNode node) {
+        List<AstNode> items = new LinkedList<AstNode>();
+        for (AstNode child : node.children()) {
+            if (child.type() == AstNode.NodeType.OPEN_TAG) {
+                if(!child.isVirtual()) {
+                    items.add(child);
+                } else {
+                    items.addAll(gatherNonVirtualChildren(child));
+                }
+            }
+        }
+        return items;
     }
 }
