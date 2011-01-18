@@ -632,52 +632,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
-    /** Return configured project name. */
-    public String getName() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-
-            @Override
-            public String run() {
-                Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
-                    }
-                }
-                return "???"; // NOI18N
-            }
-        });
-    }
-
-    public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-
-            @Override
-            public Void run() {
-                Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                Element nameEl;
-                if (nl.getLength() == 1) {
-                    nameEl = (Element) nl.item(0);
-                    NodeList deadKids = nameEl.getChildNodes();
-                    while (deadKids.getLength() > 0) {
-                        nameEl.removeChild(deadKids.item(0));
-                    }
-                } else {
-                    nameEl = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    data.insertBefore(nameEl, data.getChildNodes().item(0));
-                }
-                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                helper.putPrimaryConfigurationData(data, true);
-                return null;
-            }
-        });
-    }
-
     /*
      * Return source encoding if in project.xml (only project version >= 50)
      */
@@ -814,29 +768,94 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     interface InfoInterface extends ProjectInformation {
         public void firePropertyChange(String prop);
+        public void setName(String name);
     }
     
     private final class Info implements InfoInterface {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private String name;
 
         Info() {
         }
 
         @Override
         public void firePropertyChange(String prop) {
+            if (ProjectInformation.PROP_NAME.equals(prop)) {
+                name = null;
+            }
             pcs.firePropertyChange(prop, null, null);
         }
 
         @Override
         public String getName() {
-            String name = PropertyUtils.getUsablePropertyName(MakeProject.this.getName());
+            return PropertyUtils.getUsablePropertyName(_getName());
+        }
+
+        /** Return configured project name. */
+        private String _getName() {
+            if (name == null) {
+                name = getNameImpl();
+            }
             return name;
+        }
+
+        /** Return configured project name. */
+        private String getNameImpl() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+
+                @Override
+                public String run() {
+                    Element data = helper.getPrimaryConfigurationData(true);
+                    // XXX replace by XMLUtil when that has findElement, findText, etc.
+                    NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    if (nl.getLength() == 1) {
+                        nl = nl.item(0).getChildNodes();
+                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                            return ((Text) nl.item(0)).getNodeValue();
+                        }
+                    }
+                    FileObject fo = MakeProject.this.getProjectDirectory();
+                    if (fo != null && fo.isValid()) {
+                        return fo.getNameExt();
+                    }
+                    return "???"; // NOI18N
+                }
+            });
+        }
+
+        @Override
+        public void setName(final String name) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+
+                @Override
+                public Void run() {
+                    Element data = helper.getPrimaryConfigurationData(true);
+                    // XXX replace by XMLUtil when that has findElement, findText, etc.
+                    NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    Element nameEl;
+                    if (nl.getLength() == 1) {
+                        nameEl = (Element) nl.item(0);
+                        NodeList deadKids = nameEl.getChildNodes();
+                        while (deadKids.getLength() > 0) {
+                            nameEl.removeChild(deadKids.item(0));
+                        }
+                    } else {
+                        nameEl = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                        data.insertBefore(nameEl, data.getChildNodes().item(0));
+                    }
+                    nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                    helper.putPrimaryConfigurationData(data, true);
+                    return null;
+                }
+            });
+            // reinit cache
+            _getName();
         }
 
         @Override
         public String getDisplayName() {
-            String name = MakeProject.this.getName();
+            String aName = _getName();
 
             if (PROJECT_NAME_WITH_HIDDEN_PATHS != null) {
                 FileObject fo = MakeProject.this.getProjectDirectory();
@@ -871,7 +890,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                         if (prjDirDispName.endsWith("/") || prjDirDispName.endsWith("\\")) { // NOI18N
                             prjDirDispName = prjDirDispName.substring(0, prjDirDispName.length() - 1);
                         }
-                        name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME_WITH_FOLDER", name, prjDirDispName); // NOI18N
+                        aName = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME_WITH_FOLDER", aName, prjDirDispName); // NOI18N
                     }
                 }
             }
@@ -882,7 +901,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 //                            name, devHost.getHostDisplayName(false));
 //                }
 //            }
-            return name;
+            return aName;
         }
 
         @Override

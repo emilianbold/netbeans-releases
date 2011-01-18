@@ -113,13 +113,13 @@ final class DebugCorePanel extends javax.swing.JPanel {
 
     private final RequestProcessor RP = new RequestProcessor();
 
-    public DebugCorePanel(String corePath, String[] exePaths, JButton actionButton, boolean readonly) {
+    public DebugCorePanel(String corePath, String[] exePaths, JButton actionButton, boolean readonly, String host) {
 	this.actionButton = actionButton;
 	this.readonly = readonly;
-	initialize(corePath, exePaths);
+	initialize(corePath, exePaths, host);
     }
 
-    protected void initialize(String corePath, String[] exePaths) {
+    private void initialize(String corePath, String[] exePaths, String host) {
         initComponents();
 	if (readonly) {
 	    corefileTextField.setEditable(false);
@@ -143,6 +143,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	((JTextField)executableComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(executableValidateListener);
 
 	initRemoteHost();
+        setHostChoice(host);
 	initEngine();
 	lastHostChoice = hostChoices[0];
 	adjustAutoCore();
@@ -352,14 +353,15 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
 
     private void setHostChoice(String hostname) {
-        if (hostList() == null)
-            return;
-
-        int hx = hostList().getHostIndexByName(hostname);
-        if (hx != -1)
-            hostComboBox.setSelectedIndex(hx);
-        else
-            hostComboBox.setSelectedIndex(0);
+        int res = 0;
+        for (String item : hostChoices) {
+            if (item.equals(hostname)) {
+                hostComboBox.setSelectedIndex(res);
+                return;
+            }
+            res++;
+        }
+        hostComboBox.setSelectedIndex(0);
     }
 
     public String getCorefilePath() {

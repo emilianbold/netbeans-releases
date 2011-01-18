@@ -218,6 +218,15 @@ public interface GitClient {
      * @return revisions that fall between the given boundaries
      */
     public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Merges a given revision with the current head
+     * @param revision
+     * @param monitor
+     * @return result of the merge
+     * @throws GitException an error occurs
+     */
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree
