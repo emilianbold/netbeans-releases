@@ -109,7 +109,7 @@ a few extensions to the Java I/O system.
 general XML parsing, entity registration, and so on.
 -->
 
-</a><h2>Services Registration and Lookup API</h2>
+<h2>Services Registration and Lookup API</h2>
 
 
 <p>For lookup, this centers around
@@ -245,9 +245,9 @@ a string-valued attribute on the instance named
 could be registered as follows in an XML layer:</p>
 
 <pre>
-&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="constant">"C-F6.instance"</font>&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceClass"</font> <font class="variable-name">stringvalue</font>=<font class="constant">"com.mycom.mymodule.MyAction"</font>/&gt;
-&lt;/<font class="function-name">file</font>&gt;
+&lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="constant">"C-F6.instance"</span>&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="constant">"com.mycom.mymodule.MyAction"</span>/&gt;
+&lt;/<span class="function-name">file</span>&gt;
 </pre>
 
 <p>In addition to <code>instanceClass</code> you may specify an
@@ -263,11 +263,11 @@ instance is for before your instance class is even loaded into the VM.
 For example:</p>
 
 <pre>
-&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="constant">"com-me-some-service.instance"</font>&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceClass"</font> <font class="variable-name">stringvalue</font>=<font class="constant">"com.me.FactoryForEverything"</font>/&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceOf"</font>
-     <font class="variable-name">stringvalue</font>=<font class="constant">"org.xml.sax.EntityResolver,org.openide.cookies.ExecCookie"</font>/&gt;
-&lt;/<font class="function-name">file</font>&gt;
+&lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="constant">"com-me-some-service.instance"</span>&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="constant">"com.me.FactoryForEverything"</span>/&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"instanceOf"</span>
+     <span class="variable-name">stringvalue</span>=<span class="constant">"org.xml.sax.EntityResolver,org.openide.cookies.ExecCookie"</span>/&gt;
+&lt;/<span class="function-name">file</span>&gt;
 </pre>
 
 <dt><a name="ido-methodvalue"></a><em>Non-default instance - <code>InstanceDataObject</code></em>
@@ -280,13 +280,13 @@ would be specified using the <code>methodvalue</code> syntax of
 layers. For example:</p>
 
 <pre>
-&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="constant">"com-me-some-service.instance"</font>&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceClass"</font> <font class="variable-name">stringvalue</font>=<font class="constant">"com.me.FactoryForEverything"</font>/&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceCreate"</font> <font class="variable-name">methodvalue</font>=<font class="constant">"com.me.FactoryForEverything.configure"</font>/&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"myParam"</font> <font class="variable-name">urlvalue</font>=<font class="constant">"nbres:/com/me/config-1.properties"</font>/&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="constant">"instanceOf"</font>
-     <font class="variable-name">stringvalue</font>=<font class="constant">"org.xml.sax.EntityResolver,org.openide.cookies.ExecCookie"</font>/&gt;
-&lt;/<font class="function-name">file</font>&gt;
+&lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="constant">"com-me-some-service.instance"</span>&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="constant">"com.me.FactoryForEverything"</span>/&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"instanceCreate"</span> <span class="variable-name">methodvalue</span>=<span class="constant">"com.me.FactoryForEverything.configure"</span>/&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"myParam"</span> <span class="variable-name">urlvalue</span>=<span class="constant">"nbres:/com/me/config-1.properties"</span>/&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="constant">"instanceOf"</span>
+     <span class="variable-name">stringvalue</span>=<span class="constant">"org.xml.sax.EntityResolver,org.openide.cookies.ExecCookie"</span>/&gt;
+&lt;/<span class="function-name">file</span>&gt;
 </pre>
 
 <p>According to the general system for
@@ -303,19 +303,19 @@ same creation method. So for example you might implement such a method
 like this:</p>
 
 <pre>
-<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">FactoryForEverything</font> <font class="keyword">extends</font> <font class="type">SomeBaseFactory</font>
-        <font class="keyword">implements</font> <font class="type">EntityResolver</font>, <font class="type">ExecCookie</font> {
-    <font class="keyword">public</font> <font class="type">FactoryForEverything</font>(<font class="type">Map</font> <font class="variable-name">props</font>) {
-        <font class="comment">// ...
-</font>    }
-    <font class="comment">// ...
-</font>    <font class="comment">// Called directly from XML layer. Pass URL to
-</font>    <font class="comment">// properties file from attr 'myParam'.
-</font>    <font class="keyword">private</font> <font class="keyword">static</font> <font class="type">Object</font> <font class="function-name">configure</font>(<font class="type">FileObject</font> <font class="variable-name">inst</font>) <font class="keyword">throws</font> <font class="type">IOException</font> {
-        <font class="type">URL</font> <font class="variable-name">u</font> = (<font class="type">URL</font>)inst.getAttribute(<font class="string">"myParam"</font>);
-        <font class="type">Properties</font> <font class="variable-name">p</font> = <font class="keyword">new</font> <font class="type">Properties</font>();
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">FactoryForEverything</span> <span class="keyword">extends</span> <span class="type">SomeBaseFactory</span>
+        <span class="keyword">implements</span> <span class="type">EntityResolver</span>, <span class="type">ExecCookie</span> {
+    <span class="keyword">public</span> <span class="type">FactoryForEverything</span>(<span class="type">Map</span> <span class="variable-name">props</span>) {
+        <span class="comment">// ...
+</span>    }
+    <span class="comment">// ...
+</span>    <span class="comment">// Called directly from XML layer. Pass URL to
+</span>    <span class="comment">// properties file from attr 'myParam'.
+</span>    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="function-name">configure</span>(<span class="type">FileObject</span> <span class="variable-name">inst</span>) <span class="keyword">throws</span> <span class="type">IOException</span> {
+        <span class="type">URL</span> <span class="variable-name">u</span> = (<span class="type">URL</span>)inst.getAttribute(<span class="string">"myParam"</span>);
+        <span class="type">Properties</span> <span class="variable-name">p</span> = <span class="keyword">new</span> <span class="type">Properties</span>();
         p.load(u.openStream());
-        <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">FactoryForEverything</font>(p);
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">FactoryForEverything</span>(p);
     }
 }
 </pre>
@@ -329,8 +329,8 @@ binary data into a layer, but may be useful in some circumstances.</p>
 
 <dt><a name="xml-instances"><em>XML-based instances</em></a></dt>
 
-
-<a href="../../xml/EntityCatalog.html"><code>EntityCatalog</code></a>
+<dd><p><a href="../../xml/EntityCatalog.html"><code>EntityCatalog</code></a></p></dd>
+</dl>
 
 
 <div class="nonnormative">
@@ -379,14 +379,14 @@ reasons) to load these implementations unless and until they are
 really needed. If you write the layers simply like this:
 
 <pre>
-&lt;<font class="function-name">filesystem</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Hidden"</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyAction.instance"</font>/&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyResolver.instance"</font>/&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">filesystem</font>&gt;
+&lt;<span class="function-name">filesystem</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Hidden"</span>&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"com-me-MyAction.instance"</span>/&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"com-me-MyResolver.instance"</span>/&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">filesystem</span>&gt;
 </pre>
 
 everything will work, <em>but</em> this is inefficient. Consider some
@@ -409,18 +409,18 @@ thus performance).
 interfaces it is intended to provide in its instance:
 
 <pre>
-&lt;<font class="function-name">filesystem</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Hidden"</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyAction.instance"</font>&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"instanceOf"</font> <font class="variable-name">stringvalue</font>=<font class="string">"javax.swing.Action"</font>/&gt;
-            &lt;/<font class="function-name">file</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"com-me-MyResolver.instance"</font>&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"instanceOf"</font> <font class="variable-name">stringvalue</font>=<font class="string">"org.xml.sax.EntityResolver"</font>/&gt;
-            &lt;/<font class="function-name">file</font>&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">filesystem</font>&gt;
+&lt;<span class="function-name">filesystem</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Hidden"</span>&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"com-me-MyAction.instance"</span>&gt;
+                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceOf"</span> <span class="variable-name">stringvalue</span>=<span class="string">"javax.swing.Action"</span>/&gt;
+            &lt;/<span class="function-name">file</span>&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"com-me-MyResolver.instance"</span>&gt;
+                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceOf"</span> <span class="variable-name">stringvalue</span>=<span class="string">"org.xml.sax.EntityResolver"</span>/&gt;
+            &lt;/<span class="function-name">file</span>&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">filesystem</span>&gt;
 </pre>
 
 <p>
@@ -456,8 +456,8 @@ wish to find the implementation of it, you
 may simply use:
 
 <pre>
-<font class="type">MyService</font> <font class="variable-name">impl</font> = (<font class="type">MyService</font>)Lookup.getDefault().<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup</a>(MyService.<font class="keyword">class</font>);
-<font class="keyword">if</font> (impl == <font class="constant">null</font>) <font class="comment">/* nothing registered */</font> ...
+<span class="type">MyService</span> <span class="variable-name">impl</span> = (<span class="type">MyService</span>)Lookup.getDefault().<a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#lookup(java.lang.Class)">lookup</a>(MyService.<span class="keyword">class</span>);
+<span class="keyword">if</span> (impl == <span class="constant">null</span>) <span class="comment">/* nothing registered */</span> ...
 impl.useIt();
 </pre>
 
@@ -465,10 +465,10 @@ Such implementation has to be registered by some module to the system.
 Either via layer as described above or as a JDK's
 <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">
 service provider</a>. If some module wants to register for example 
-<font class="type">org.me.MyService</font> it shall provide file name 
-<font class="function-name">META-INF/services/org.me.MyService</FONT> in its own JAR 
+<span class="type">org.me.MyService</span> it shall provide file name
+<span class="function-name">META-INF/services/org.me.MyService</span> in its own JAR
 with single line containing name of the implementation class (for example
-<font class="type">org.you.MyServiceImpl</FONT>).
+<span class="type">org.you.MyServiceImpl</span>).
 This is normally done more easily by using the <code>@ServiceProvider</code> annotation in <code>MyService.java</code>.
 The lookup infrastructure
 will then load the implementation class and call its default constructor 
@@ -480,12 +480,12 @@ to answer the query in the above example.
     <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">JDK's
     standard</a>. It allows a module to remove class registered by
     another one. That is why it is possible to write a module that
-    disables the <font class="type">org.you.MyServiceImpl</font> implementation
+    disables the <span class="type">org.you.MyServiceImpl</span> implementation
     and provides its own. This the expected content of its 
-    <font class="function-name">META-INF/services/org.me.MyService</FONT> file:
+    <span class="function-name">META-INF/services/org.me.MyService</span> file:
     <PRE>
   # remove the other implementation (by prefixing the line with <em>#-</EM>)
-  #-<font class="type">org.you.MyServiceImpl</FONT>
+  #-<span class="type">org.you.MyServiceImpl</span>
 
   # provide my own
   org.alien.MyServiceAlienImpl
@@ -502,21 +502,21 @@ to answer the query in the above example.
     on an interface, items with a smaller position are guaranteed 
     to be returned before items with a larger position. Items with no defined 
     position are returned last. Example of content of 
-    <font class="function-name">META-INF/services/org.me.MyService</font>
+    <span class="function-name">META-INF/services/org.me.MyService</span>
     file could be:
     <pre>
-  <font class="type">org.you.MyServiceImpl</font>
+  <span class="type">org.you.MyServiceImpl</span>
   #position=20
-  <font class="type">org.you.MyMoreImportantServiceImpl</font>
+  <span class="type">org.you.MyMoreImportantServiceImpl</span>
   #position=10
     </pre>
-    The <font class="function-name">MyMoreImportantServiceImpl</font>
+    The <span class="function-name">MyMoreImportantServiceImpl</span>
     will be returned in lookup before the 
-    <font class="function-name">MyServiceImpl</font>.
+    <span class="function-name">MyServiceImpl</span>.
     It is recommended to pick up larger numbers so that there is
     gap for other modules if they need to get in front of your item. And, 
     again, to keep compatibility the position attribute must starts with
-    comment delimiter.</p>
+    comment delimiter.
 <p>Both extensions are supported by <code>@ServiceProvider</code>.</p>
 </DIV>
 
@@ -558,17 +558,17 @@ registered implementation of a service. In such a case you use a more
 general method:
 
 <pre>
-<font class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html">Lookup.Template</a></font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(MyService.<font class="keyword">class</font>);
-<font class="keyword">final</font> <font class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Result.html">Lookup.Result</a></font> <font class="variable-name">result</font> = Lookup.getDefault().lookup(templ);
-<font class="type">Collection</font> <font class="variable-name">impls</font> = result.allInstances(); <font class="comment">// Collection&lt;MyService&gt;
+<span class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html">Lookup.Template</a></span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type">Lookup.Template</span>(MyService.<span class="keyword">class</span>);
+<span class="keyword">final</span> <span class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Result.html">Lookup.Result</a></span> <span class="variable-name">result</span> = Lookup.getDefault().lookup(templ);
+<span class="type">Collection</span> <span class="variable-name">impls</span> = result.allInstances(); <span class="comment">// Collection&lt;MyService&gt;
 // use Java Collections API to get iterator, ...
 // Pay attention to subsequent changes in the result.
-</font>result.addLookupListener(<font class="keyword">new</font> <font class="type"><a href="@org-openide-util-lookup@/org/openide/util/LookupListener.html">LookupListener</a></font>() {
-    <font class="keyword">public</font> <font class="type">void</font> <font class="function-name">resultChanged</font>(<font class="type">LookupEvent</font> <font class="variable-name">ev</font>) {
-        <font class="comment">// Now it is different.
-</font>        <font class="type">Collection</font> <font class="variable-name">impls2</font> = result.allInstances();
-        <font class="comment">// use the new list of instances...
-</font>    }
+</span>result.addLookupListener(<span class="keyword">new</span> <span class="type"><a href="@org-openide-util-lookup@/org/openide/util/LookupListener.html">LookupListener</a></span>() {
+    <span class="keyword">public</span> <span class="type">void</span> <span class="function-name">resultChanged</span>(<span class="type">LookupEvent</span> <span class="variable-name">ev</span>) {
+        <span class="comment">// Now it is different.
+</span>        <span class="type">Collection</span> <span class="variable-name">impls2</span> = result.allInstances();
+        <span class="comment">// use the new list of instances...
+</span>    }
 });
 </pre>
 
@@ -607,28 +607,28 @@ full state of the instance itself, which must be stored.
 <p>In such cases it is possible to use code like this:
 
 <pre>
-<font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(MyService.<font class="keyword">class</font>);
-<font class="type">Lookup.Result</font> <font class="variable-name">result</font> = Lookup.getDefault().lookup(templ);
-<font class="type">Iterator</font> <font class="variable-name">it</font> = result.allItems().iterator();
-<font class="keyword">while</font> (it.hasNext()) {
-    <font class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Item.html">Lookup.Item</a></font> <font class="variable-name">item</font> = (<font class="type">Lookup.Item</font>)it.next();
-    <font class="type">String</font> <font class="variable-name">displayName</font> = item.getDisplayName();
-    <font class="keyword">if</font> (<font class="comment">/* user accepts displayName as the right one */</font>) {
-        <font class="type">MyService</font> <font class="variable-name">instance</font> = (<font class="type">MyService</font>)item.getInstance();
-        <font class="comment">// use instance for now, and ...
-</font>        <font class="type">String</font> <font class="variable-name">id</font> = item.getId();
+<span class="type">Lookup.Template</span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type">Lookup.Template</span>(MyService.<span class="keyword">class</span>);
+<span class="type">Lookup.Result</span> <span class="variable-name">result</span> = Lookup.getDefault().lookup(templ);
+<span class="type">Iterator</span> <span class="variable-name">it</span> = result.allItems().iterator();
+<span class="keyword">while</span> (it.hasNext()) {
+    <span class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Item.html">Lookup.Item</a></span> <span class="variable-name">item</span> = (<span class="type">Lookup.Item</span>)it.next();
+    <span class="type">String</span> <span class="variable-name">displayName</span> = item.getDisplayName();
+    <span class="keyword">if</span> (<span class="comment">/* user accepts displayName as the right one */</span>) {
+        <span class="type">MyService</span> <span class="variable-name">instance</span> = (<span class="type">MyService</span>)item.getInstance();
+        <span class="comment">// use instance for now, and ...
+</span>        <span class="type">String</span> <span class="variable-name">id</span> = item.getId();
         someSettings.setChosenService(id);
-        <font class="keyword">break</font>;
+        <span class="keyword">break</span>;
     }
 }
-<font class="comment">// later...
-</font><font class="type">String</font> <font class="variable-name">storedID</font> = someSettings.getChosenService();
-<font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html#Lookup.Template(java.lang.Class,java.lang.String,java.lang.Object)">Lookup.Template</a></font>(MyService.<font class="keyword">class</font>, storedID, <font class="constant">null</font>);
-<font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allInstances().iterator();
-<font class="keyword">if</font> (! it.hasNext()) <font class="comment">/* failed to find it... */</font>
-<font class="type">MyService</font> <font class="variable-name">instance</font> = (<font class="type">MyService</font>)it.next();
-<font class="comment">// use instance again
-</font></pre>
+<span class="comment">// later...
+</span><span class="type">String</span> <span class="variable-name">storedID</span> = someSettings.getChosenService();
+<span class="type">Lookup.Template</span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type"><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html#Lookup.Template(java.lang.Class,java.lang.String,java.lang.Object)">Lookup.Template</a></span>(MyService.<span class="keyword">class</span>, storedID, <span class="constant">null</span>);
+<span class="type">Iterator</span> <span class="variable-name">it</span> = Lookup.getDefault().lookup(templ).allInstances().iterator();
+<span class="keyword">if</span> (! it.hasNext()) <span class="comment">/* failed to find it... */</span>
+<span class="type">MyService</span> <span class="variable-name">instance</span> = (<span class="type">MyService</span>)it.next();
+<span class="comment">// use instance again
+</span></pre>
 
 The ID permits you to track which instance from all those available in
 the lookup result was last selected by the user, and find the "same"
@@ -788,14 +788,14 @@ instructs lookup to create a <em>default instance</em> of the settings
 class. This might look like the following:
 
 <pre>
-&lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font>?&gt;
-&lt;!<font class="keyword">DOCTYPE</font> <font class="type">settings</font> <font class="keyword">PUBLIC</font> <font class="string">"-//NetBeans//DTD Session settings 1.0//EN"</font> <font class="string">"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"</font>&gt;
-&lt;<font class="function-name">settings</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font>&gt;
-    &lt;<font class="function-name">module</font> <font class="variable-name">name</font>=<font class="string">"com.foo/1"</font> <font class="variable-name">spec</font>=<font class="string">"1.0"</font>/&gt;
-    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"org.openide.options.SystemOption"</font>/&gt;
-    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"com.foo.MyOption"</font>/&gt;
-    &lt;<font class="function-name">instance</font> <font class="variable-name">class</font>=<font class="string">"com.foo.MyOption"</font>/&gt;
-&lt;/<font class="function-name">settings</font>&gt;
+&lt;?<span class="keyword">xml</span> <span class="variable-name">version</span>=<span class="string">"1.0"</span>?&gt;
+&lt;!<span class="keyword">DOCTYPE</span> <span class="type">settings</span> <span class="keyword">PUBLIC</span> <span class="string">"-//NetBeans//DTD Session settings 1.0//EN"</span> <span class="string">"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"</span>&gt;
+&lt;<span class="function-name">settings</span> <span class="variable-name">version</span>=<span class="string">"1.0"</span>&gt;
+    &lt;<span class="function-name">module</span> <span class="variable-name">name</span>=<span class="string">"com.foo/1"</span> <span class="variable-name">spec</span>=<span class="string">"1.0"</span>/&gt;
+    &lt;<span class="function-name">instanceof</span> <span class="variable-name">class</span>=<span class="string">"org.openide.options.SystemOption"</span>/&gt;
+    &lt;<span class="function-name">instanceof</span> <span class="variable-name">class</span>=<span class="string">"com.foo.MyOption"</span>/&gt;
+    &lt;<span class="function-name">instance</span> <span class="variable-name">class</span>=<span class="string">"com.foo.MyOption"</span>/&gt;
+&lt;/<span class="function-name">settings</span>&gt;
 </pre>
 
 Such a file might be placed in
@@ -864,29 +864,29 @@ settings file itself. This is analogous to the mechanism used for
 creating complex <samp>*.instance</samp> files. For example:</p>
 
 <pre>
-&lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"some-difficult-to-make-instance.settings"</font>&gt;
-    &lt;![<font class="keyword">CDATA</font>[&lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font> <font class="variable-name">encoding</font>=<font class="string">"UTF-8"</font>?&gt;
-&lt;!<font class="keyword">DOCTYPE</font> <font class="type">settings</font> <font class="keyword">PUBLIC</font>
-          <font class="string">"-//NetBeans//DTD Session settings 1.0//EN"</font>
-          <font class="string">"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"</font>&gt;
-&lt;<font class="function-name">settings</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font>&gt;
-    &lt;<font class="function-name">module</font> <font class="variable-name">name</font>=<font class="string">"my.module/1"</font> <font class="variable-name">spec</font>=<font class="string">"1.0"</font>/&gt;
-    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"javax.swing.Action"</font>/&gt;
-    &lt;<font class="function-name">instanceof</font> <font class="variable-name">class</font>=<font class="string">"my.module.MyAction"</font>/&gt;
-    &lt;<font class="function-name">instance</font> <font class="variable-name">class</font>=<font class="string">"my.module.MyAction"</font> <font class="variable-name">method</font>=<font class="string">"createAction"</font>/&gt;
-&lt;/<font class="function-name">settings</font>&gt;
+&lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"some-difficult-to-make-instance.settings"</span>&gt;
+    &lt;![<span class="keyword">CDATA</span>[&lt;?<span class="keyword">xml</span> <span class="variable-name">version</span>=<span class="string">"1.0"</span> <span class="variable-name">encoding</span>=<span class="string">"UTF-8"</span>?&gt;
+&lt;!<span class="keyword">DOCTYPE</span> <span class="type">settings</span> <span class="keyword">PUBLIC</span>
+          <span class="string">"-//NetBeans//DTD Session settings 1.0//EN"</span>
+          <span class="string">"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"</span>&gt;
+&lt;<span class="function-name">settings</span> <span class="variable-name">version</span>=<span class="string">"1.0"</span>&gt;
+    &lt;<span class="function-name">module</span> <span class="variable-name">name</span>=<span class="string">"my.module/1"</span> <span class="variable-name">spec</span>=<span class="string">"1.0"</span>/&gt;
+    &lt;<span class="function-name">instanceof</span> <span class="variable-name">class</span>=<span class="string">"javax.swing.Action"</span>/&gt;
+    &lt;<span class="function-name">instanceof</span> <span class="variable-name">class</span>=<span class="string">"my.module.MyAction"</span>/&gt;
+    &lt;<span class="function-name">instance</span> <span class="variable-name">class</span>=<span class="string">"my.module.MyAction"</span> <span class="variable-name">method</span>=<span class="string">"createAction"</span>/&gt;
+&lt;/<span class="function-name">settings</span>&gt;
 ]]&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"param"</font> <font class="variable-name">stringvalue</font>=<font class="string">"someval"</font>/&gt;
-&lt;/<font class="function-name">file</font>&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"param"</span> <span class="variable-name">stringvalue</span>=<span class="string">"someval"</span>/&gt;
+&lt;/<span class="function-name">file</span>&gt;
 </pre>
 
 <pre>
-<font class="keyword">package</font> <font class="constant">my</font>.<font class="constant">module</font>;
-<font class="keyword">public</font> <font class="keyword">class</font> <font class="type">MyAction</font> <font class="keyword">extends</font> <font class="type">javax.swing.AbstractAction</font> {
-    <font class="keyword">public</font> <font class="type">MyAction</font>(<font class="type">String</font> <font class="variable-name">name</font>) {<font class="comment">/* ... */</font>}
-    <font class="comment">// ...
-</font>    <font class="keyword">public</font> <font class="keyword">static</font> <font class="type">MyAction</font> <font class="function-name">createAction</font>(<font class="type">FileObject</font> <font class="variable-name">fo</font>) {
-        <font class="keyword">return</font> <font class="keyword">new</font> <font class="type">MyAction</font>((<font class="type">String</font>)fo.getAttribute(<font class="string">"param"</font>));
+<span class="keyword">package</span> <span class="constant">my</span>.<span class="constant">module</span>;
+<span class="keyword">public</span> <span class="keyword">class</span> <span class="type">MyAction</span> <span class="keyword">extends</span> <span class="type">javax.swing.AbstractAction</span> {
+    <span class="keyword">public</span> <span class="type">MyAction</span>(<span class="type">String</span> <span class="variable-name">name</span>) {<span class="comment">/* ... */</span>}
+    <span class="comment">// ...
+</span>    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">MyAction</span> <span class="function-name">createAction</span>(<span class="type">FileObject</span> <span class="variable-name">fo</span>) {
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="type">MyAction</span>((<span class="type">String</span>)fo.getAttribute(<span class="string">"param"</span>));
     }
 }
 </pre>
@@ -990,16 +990,16 @@ file giving the initial structure of the service (typically a
 <code>templateWizardURL</code>. For example:</p>
 
 <pre>
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Templates"</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Executor"</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-executor.settings"</font> <font class="variable-name">url</font>=<font class="string">"executor.settings"</font>&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"template"</font> <font class="variable-name">boolvalue</font>=<font class="string">"true"</font>/&gt;
-                <font class="comment">&lt;!-- SystemFileSystem.localizedName and SystemFileSystem.icon as usual --&gt;</font>
-            &lt;/<font class="function-name">file</font>&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">folder</font>&gt;
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Templates"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Executor"</span>&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"my-module-executor.settings"</span> <span class="variable-name">url</span>=<span class="string">"executor.settings"</span>&gt;
+                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"template"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
+                <span class="comment">&lt;!-- SystemFileSystem.localizedName and SystemFileSystem.icon as usual --&gt;</span>
+            &lt;/<span class="function-name">file</span>&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
 <p>If the user selects <b>New&nbsp;From&nbsp;Template</b> on the
@@ -1040,16 +1040,16 @@ folder, in practice a few types of things are used:</p>
 NetBeans' old-style options, these will appear as the real setting. For example:</p>
 
 <pre>
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Editing"</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-config.shadow"</font>&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"originalFile"</font> <font class="variable-name">stringvalue</font>=<font class="string">"Services/my-module-Config.settings"</font>/&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"originalFileSystem"</font> <font class="variable-name">stringvalue</font>=<font class="string">"SystemFileSystem"</font>/&gt;               
-            &lt;/<font class="function-name">file</font>&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">folder</font>&gt;
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"UI"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Editing"</span>&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"my-module-config.shadow"</span>&gt;
+                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"originalFile"</span> <span class="variable-name">stringvalue</span>=<span class="string">"Services/my-module-Config.settings"</span>/&gt;
+                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"originalFileSystem"</span> <span class="variable-name">stringvalue</span>=<span class="string">"SystemFileSystem"</span>/&gt;
+            &lt;/<span class="function-name">file</span>&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
 <!-- XXX this info should be in a normative section -->
@@ -1063,17 +1063,17 @@ picked up automatically by the shadow.</p>
 The older style of linking using the CDATA section is still supported:
 
 <pre>
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Editing"</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-config.shadow"</font>&gt;                
-                &lt;![<font class="keyword">CDATA</font>[Services/my-module-Config.settings
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"UI"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Editing"</span>&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"my-module-config.shadow"</span>&gt;
+                &lt;![<span class="keyword">CDATA</span>[Services/my-module-Config.settings
 SystemFileSystem
 ]]&gt;
-            &lt;/<font class="function-name">file</font>&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">folder</font>&gt;
+            &lt;/<span class="function-name">file</span>&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
 <p>Here the shadow file consists of two lines, the first being the
@@ -1084,22 +1084,22 @@ path to the real settings, the second always being
 the services lookup area or not. For example:</p>
 
 <pre>
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"IDEConfiguration"</font>&gt;
-            &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"LookAndFeel"</font>&gt;
-                &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-stuff.shadow"</font>&gt;
-                    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"originalFile"</font> <font class="variable-name">stringvalue</font>=<font class="string">"Stuff"</font>/&gt;
-                &lt;/<font class="function-name">file</font>&gt;
-            &lt;/<font class="function-name">folder</font>&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">folder</font>&gt;
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Stuff"</font>&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.localizingBundle"</font> <font class="variable-name">stringvalue</font>=<font class="string">"my.module.Bundle"</font>/&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.icon"</font> <font class="variable-name">urlvalue</font>=<font class="string">"nbresloc:/my/module/stuff.gif"</font>/&gt;
-    <font class="comment">&lt;!-- perhaps some files to display here, perhaps not --&gt;</font>
-&lt;/<font class="function-name">folder</font>&gt;
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"UI"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"IDEConfiguration"</span>&gt;
+            &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"LookAndFeel"</span>&gt;
+                &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"my-module-stuff.shadow"</span>&gt;
+                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"originalFile"</span> <span class="variable-name">stringvalue</span>=<span class="string">"Stuff"</span>/&gt;
+                &lt;/<span class="function-name">file</span>&gt;
+            &lt;/<span class="function-name">folder</span>&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">folder</span>&gt;
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Stuff"</span>&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.localizingBundle"</span> <span class="variable-name">stringvalue</span>=<span class="string">"my.module.Bundle"</span>/&gt;
+    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"SystemFileSystem.icon"</span> <span class="variable-name">urlvalue</span>=<span class="string">"nbresloc:/my/module/stuff.gif"</span>/&gt;
+    <span class="comment">&lt;!-- perhaps some files to display here, perhaps not --&gt;</span>
+&lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
 <p>This defines a folder <samp>Stuff</samp> in the system filesystem
@@ -1114,14 +1114,14 @@ handle, if you prefer), as the node delegate of this object will be (a
 clone of) the node you provide. For example:</p>
 
 <pre>
-&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"UI"</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Building"</font>&gt;
-            <font class="comment">&lt;!-- Some subclass of org.openide.nodes.Node: --&gt;</font>
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"my-module-ConfigurationNode.instance"</font>/&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">folder</font>&gt;
+&lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"UI"</span>&gt;
+    &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Services"</span>&gt;
+        &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Building"</span>&gt;
+            <span class="comment">&lt;!-- Some subclass of org.openide.nodes.Node: --&gt;</span>
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"my-module-ConfigurationNode.instance"</span>/&gt;
+        &lt;/<span class="function-name">folder</span>&gt;
+    &lt;/<span class="function-name">folder</span>&gt;
+&lt;/<span class="function-name">folder</span>&gt;
 </pre>
 
 </ul>
@@ -1161,59 +1161,59 @@ registered to lookup, conventionally in the
 <samp>Services/Things/</samp> folder which the module has provided:</p>
 
 <pre>
-<font class="keyword">public</font> <font class="keyword">abstract</font> <font class="keyword">class</font> <font class="type">ThingProperty</font> <font class="keyword">extends</font> <font class="type">PropertySupport.ReadWrite</font> {
-    <font class="keyword">protected</font> <font class="type">ThingProperty</font>(<font class="type">String</font> <font class="variable-name">name</font>, <font class="type">String</font> <font class="variable-name">displayName</font>, <font class="type">String</font> <font class="variable-name">shortDescription</font>) <font class="keyword">throws</font> <font class="type">IOException</font> {
-        <font class="keyword">super</font>(name, Object.<font class="keyword">class</font>, displayName, shortDescription);
-        setValue(<font class="string">"superClass"</font>, Thing.<font class="keyword">class</font>); <font class="comment">// NOI18N
-</font>        setValue(<font class="string">"nullValue"</font>, NbBundle.getMessage(ThingProperty.<font class="keyword">class</font>, <font class="string">"LBL_no_thing"</font>)); <font class="comment">// NOI18N
-</font>        <font class="type">DataFolder</font> <font class="variable-name">thingsFolder</font> = DataFolder.create(
+<span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="type">ThingProperty</span> <span class="keyword">extends</span> <span class="type">PropertySupport.ReadWrite</span> {
+    <span class="keyword">protected</span> <span class="type">ThingProperty</span>(<span class="type">String</span> <span class="variable-name">name</span>, <span class="type">String</span> <span class="variable-name">displayName</span>, <span class="type">String</span> <span class="variable-name">shortDescription</span>) <span class="keyword">throws</span> <span class="type">IOException</span> {
+        <span class="keyword">super</span>(name, Object.<span class="keyword">class</span>, displayName, shortDescription);
+        setValue(<span class="string">"superClass"</span>, Thing.<span class="keyword">class</span>); <span class="comment">// NOI18N
+</span>        setValue(<span class="string">"nullValue"</span>, NbBundle.getMessage(ThingProperty.<span class="keyword">class</span>, <span class="string">"LBL_no_thing"</span>)); <span class="comment">// NOI18N
+</span>        <span class="type">DataFolder</span> <span class="variable-name">thingsFolder</span> = DataFolder.create(
             DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()),
-            <font class="string">"Services/Things"</font> <font class="comment">// NOI18N
-</font>        );
-        setValue(<font class="string">"node"</font>, thingsFolder.getNodeDelegate()); <font class="comment">// NOI18N
-</font>    }
-    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">Object</font> <font class="function-name">getValue</font>() {
-        <font class="keyword">return</font> getThing();
+            <span class="string">"Services/Things"</span> <span class="comment">// NOI18N
+</span>        );
+        setValue(<span class="string">"node"</span>, thingsFolder.getNodeDelegate()); <span class="comment">// NOI18N
+</span>    }
+    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="function-name">getValue</span>() {
+        <span class="keyword">return</span> getThing();
     }
-    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">void</font> <font class="function-name">setValue</font>(<font class="type">Object</font> <font class="variable-name">o</font>) {
-        <font class="keyword">if</font> (o != <font class="constant">null</font>) {
-            <font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(Thing.<font class="keyword">class</font>, o, <font class="constant">null</font>);
-            <font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allItems().iterator();
-            <font class="keyword">if</font> (it.hasNext()) {
-                setThingID(((<font class="type">Lookup.Item</font>)it.next()).getId());
-            } <font class="keyword">else</font> {
-                <font class="comment">// Thing was registered but is not persistable.
-</font>                setThingID(<font class="constant">null</font>);
+    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">void</span> <span class="function-name">setValue</span>(<span class="type">Object</span> <span class="variable-name">o</span>) {
+        <span class="keyword">if</span> (o != <span class="constant">null</span>) {
+            <span class="type">Lookup.Template</span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type">Lookup.Template</span>(Thing.<span class="keyword">class</span>, o, <span class="constant">null</span>);
+            <span class="type">Iterator</span> <span class="variable-name">it</span> = Lookup.getDefault().lookup(templ).allItems().iterator();
+            <span class="keyword">if</span> (it.hasNext()) {
+                setThingID(((<span class="type">Lookup.Item</span>)it.next()).getId());
+            } <span class="keyword">else</span> {
+                <span class="comment">// Thing was registered but is not persistable.
+</span>                setThingID(<span class="constant">null</span>);
             }
-        } <font class="keyword">else</font> {
-            setThingID(<font class="constant">null</font>);
+        } <span class="keyword">else</span> {
+            setThingID(<span class="constant">null</span>);
         }
     }
-    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">boolean</font> <font class="function-name">supportsDefaultValue</font>() {
-        <font class="keyword">return</font> <font class="constant">true</font>;
+    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="function-name">supportsDefaultValue</span>() {
+        <span class="keyword">return</span> <span class="constant">true</span>;
     }
-    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">void</font> <font class="function-name">restoreDefaultValue</font>() {
-        setValue(<font class="constant">null</font>);
+    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">void</span> <span class="function-name">restoreDefaultValue</span>() {
+        setValue(<span class="constant">null</span>);
     }
-    <font class="comment">// May be used by code wishing to get the actual Thing (or null):
-</font>    <font class="keyword">public</font> <font class="keyword">final</font> <font class="type">Thing</font> <font class="function-name">getThing</font>() {
-        <font class="type">String</font> <font class="variable-name">id</font> = getThingID();
-        <font class="keyword">if</font> (id != <font class="constant">null</font>) {
-            <font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type">Lookup.Template</font>(Thing.<font class="keyword">class</font>, <font class="constant">null</font>, id);
-            <font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allInstances().iterator();
-            <font class="keyword">if</font> (it.hasNext()) {
-                <font class="keyword">return</font> (<font class="type">Thing</font>)it.next();
-            } <font class="keyword">else</font> {
-                <font class="comment">// Invalid ID.
-</font>                <font class="keyword">return</font> <font class="constant">null</font>;
+    <span class="comment">// May be used by code wishing to get the actual Thing (or null):
+</span>    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">Thing</span> <span class="function-name">getThing</span>() {
+        <span class="type">String</span> <span class="variable-name">id</span> = getThingID();
+        <span class="keyword">if</span> (id != <span class="constant">null</span>) {
+            <span class="type">Lookup.Template</span> <span class="variable-name">templ</span> = <span class="keyword">new</span> <span class="type">Lookup.Template</span>(Thing.<span class="keyword">class</span>, <span class="constant">null</span>, id);
+            <span class="type">Iterator</span> <span class="variable-name">it</span> = Lookup.getDefault().lookup(templ).allInstances().iterator();
+            <span class="keyword">if</span> (it.hasNext()) {
+                <span class="keyword">return</span> (<span class="type">Thing</span>)it.next();
+            } <span class="keyword">else</span> {
+                <span class="comment">// Invalid ID.
+</span>                <span class="keyword">return</span> <span class="constant">null</span>;
             }
-        } <font class="keyword">else</font> {
-            <font class="keyword">return</font> <font class="constant">null</font>;
+        } <span class="keyword">else</span> {
+            <span class="keyword">return</span> <span class="constant">null</span>;
         }
     }
-    <font class="comment">// Subclasses implement to actually read/write Thing persistent IDs (or null):
-</font>    <font class="keyword">protected</font> <font class="keyword">abstract</font> <font class="type">String</font> <font class="function-name">getThingID</font>();
-    <font class="keyword">protected</font> <font class="keyword">abstract</font> <font class="type">void</font> <font class="function-name">setThingID</font>(<font class="type">String</font> <font class="variable-name">id</font>);
+    <span class="comment">// Subclasses implement to actually read/write Thing persistent IDs (or null):
+</span>    <span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="type">String</span> <span class="function-name">getThingID</span>();
+    <span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="type">void</span> <span class="function-name">setThingID</span>(<span class="type">String</span> <span class="variable-name">id</span>);
 }
 </pre>
 
