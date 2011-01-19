@@ -2140,8 +2140,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u23"/>
-	    <param name="jdk.full.version"            value="1.6.0.23.4"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-6u24"/>
+	    <param name="jdk.full.version"            value="1.6.0.24.3"/>
             <param name="bundled.jvm.file.prefix"     value="jre-6u20"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
