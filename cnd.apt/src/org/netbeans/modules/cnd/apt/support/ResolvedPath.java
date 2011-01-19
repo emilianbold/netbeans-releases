@@ -108,6 +108,6 @@ public final class ResolvedPath {
     
     @Override
     public String toString(){
-        return path+" in "+folder; // NOI18N
+        return path + " in " + folder + " at " + fileSystem; // NOI18N
     }
 }

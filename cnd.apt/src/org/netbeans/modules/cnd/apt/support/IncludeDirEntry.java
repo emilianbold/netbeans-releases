@@ -149,7 +149,7 @@ public final class IncludeDirEntry {
     @Override
     public String toString() {
         Boolean val = exists;
-        return (val == null ? "Not Initialized exist flag" : (val.booleanValue() ? "" : "NOT EXISTING ")) + asCharSeq; // NOI18N
+        return (val == null ? "Not Initialized exist flag" : (val.booleanValue() ? "" : "NOT EXISTING ")) + asCharSeq + " at " + fileSystem; // NOI18N
     }
 
     private void invalidateDirExistence() {
