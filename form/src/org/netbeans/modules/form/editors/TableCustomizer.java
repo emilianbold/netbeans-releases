@@ -1697,7 +1697,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             try {
                 Object value = titleProp.getRealValue();
                 if (value != null) {
-                    title = value.toString();
+                    title = value instanceof String ? (String)value : "";
                 }
             } catch (Exception ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
