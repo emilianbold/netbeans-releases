@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.gsf.CssGSFParser;
@@ -84,7 +85,6 @@ public class CssFileModel {
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
-
     private Collection<Entry> classes, ids, htmlElements, imports, colors;
     private final Snapshot snapshot;
     private final Snapshot topLevelSnapshot;
@@ -121,7 +121,7 @@ public class CssFileModel {
         parseTreeRoot = parserResult.root();
         this.topLevelSnapshot = topLevelSnapshot;
 
-        if(parseTreeRoot != null) {
+        if (parseTreeRoot != null) {
             SimpleNodeUtil.visitChildren(parseTreeRoot, new AstVisitor());
         } //else broken source, no parse tree
 
@@ -140,7 +140,7 @@ public class CssFileModel {
     }
 
     public Collection<Entry> get(RefactoringElementType type) {
-        switch(type) {
+        switch (type) {
             case CLASS:
                 return getClasses();
             case ID:
@@ -265,22 +265,22 @@ public class CssFileModel {
                 //find the selector body range if possible
                 SimpleNode styleRuleNode = SimpleNodeUtil.getAncestorByType(node, CssParserTreeConstants.JJTSTYLERULE);
                 OffsetRange body = null;
-                if(styleRuleNode != null) {
+                if (styleRuleNode != null) {
                     //find the opening left curly bracket {
                     Token first = styleRuleNode.jjtGetFirstToken();
                     Token last = styleRuleNode.jjtGetLastToken();
                     int from = -1;
                     do {
-                        if(first.kind == CssParserConstants.LBRACE) {
+                        if (first.kind == CssParserConstants.LBRACE) {
                             from = first.offset + 1;
                             break;
                         }
-                    } while((first = first.next) != last);
+                    } while ((first = first.next) != last);
 
                     //get the closing right curly bracket }
                     int to = last.kind == CssParserConstants.RBRACE ? last.offset : -1;
 
-                    if(from != -1 && to != -1) {
+                    if (from != -1 && to != -1) {
                         body = new OffsetRange(from, to);
                     }
                 }
@@ -310,17 +310,17 @@ public class CssFileModel {
                 boolean isVirtual = getSnapshot().getOriginalOffset(node.startOffset()) == -1;
 
                 Entry e = createEntry(image, range, body, isVirtual);
-                if(e != null) {
+                if (e != null) {
                     collection.add(e);
                 }
 
-            } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
+            } else if (node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
                 String image = SimpleNodeUtil.getNodeImage(node);
                 int[] wsLens = getTextWSPreAndPostLens(image);
                 image = image.substring(wsLens[0], image.length() - wsLens[1]);
                 OffsetRange range = new OffsetRange(node.startOffset() + wsLens[0], node.endOffset() - wsLens[1]);
                 Entry e = createEntry(image, range, false);
-                if(e != null) {
+                if (e != null) {
                     getColorsCollectionInstance().add(e);
                 }
             }
@@ -364,71 +364,29 @@ public class CssFileModel {
 
     private Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
         //do not create entries for virtual generated code
-        if(CssGSFParser.containsGeneratedCode(name)) {
+        if (CssGSFParser.containsGeneratedCode(name)) {
             return null;
         }
 
-        int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
-        int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
-
-        OffsetRange documentRange = null;
-        OffsetRange documentBodyRange = null;
-        CharSequence elementLineText = null;
-        CharSequence elementText = null;
-        int lineOffset = -1;
-        if (documentFrom == -1 || documentTo == -1) {
-            if(LOG) {
-                LOGGER.log(Level.FINER,"Ast offset range {0}, text='{1}', cannot be properly mapped to source offset range: ["
-                        + "{2},{3}] in file {4}", new Object[]{range.toString(), getSnapshot().getText().subSequence(range.getStart(), range.getEnd()), documentFrom, documentTo, getFileObject().getPath()}); //NOI18N
-            }
-        } else {
-            documentRange = new OffsetRange(documentFrom, documentTo);
-            try {
-                //extract element text
-                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd());
-
-                //extract element line text
-                int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
-                int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
-                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd);
-                if(topLevelSnapshot != null) {
-                    //compute the line offset of the element in the source snapshot (document)
-                    lineOffset = LexerUtils.getLineOffset(topLevelSnapshot.getText(), documentFrom); //ast offsets
-                }
-
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            if(bodyRange != null) {
-                int bodyDocFrom = getSnapshot().getOriginalOffset(bodyRange.getStart());
-                int bodyDocTo = getSnapshot().getOriginalOffset(bodyRange.getEnd());
-                if(bodyDocFrom != -1 && bodyDocTo != -1) {
-                    documentBodyRange = new OffsetRange(bodyDocFrom, bodyDocTo);
-                }
-            }
-        }
-
-        return new Entry(name, range, documentRange, bodyRange, documentBodyRange,
-                lineOffset, elementText, elementLineText, isVirtual);
+        return new LazyEntry(name, range, bodyRange, isVirtual);
     }
 
     private static int[] getTextWSPreAndPostLens(String text) {
         int preWSlen = 0;
         int postWSlen = 0;
 
-        for(int i = 0; i < text.length(); i++) {
+        for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if(Character.isWhitespace(c)) {
+            if (Character.isWhitespace(c)) {
                 preWSlen++;
             } else {
                 break;
             }
         }
 
-        for(int i = text.length() - 1; i >= 0; i--) {
+        for (int i = text.length() - 1; i >= 0; i--) {
             char c = text.charAt(i);
-            if(Character.isWhitespace(c)) {
+            if (Character.isWhitespace(c)) {
                 postWSlen++;
             } else {
                 break;
@@ -437,4 +395,125 @@ public class CssFileModel {
 
         return new int[]{preWSlen, postWSlen};
     }
+
+    public class LazyEntry implements Entry {
+
+        private final String name;
+        private final OffsetRange range, bodyRange;
+        private final boolean isVirtual;
+
+        //computed lazily
+        private OffsetRange documentRange, documentBodyRange;
+        private CharSequence elementText, elementLineText;
+        private int lineOffset;
+
+        public LazyEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+            this.name = name;
+            this.range = range;
+            this.bodyRange = bodyRange;
+            this.isVirtual = isVirtual;
+        }
+
+        @Override
+        public boolean isVirtual() {
+            return isVirtual;
+        }
+
+        @Override
+        public boolean isValidInSourceDocument() {
+            return getDocumentRange() != OffsetRange.NONE;
+        }
+
+        @Override
+        public synchronized int getLineOffset() {
+            if(lineOffset == -1) {
+                if (topLevelSnapshot != null && isValidInSourceDocument()) {
+                    try {
+                        lineOffset = LexerUtils.getLineOffset(topLevelSnapshot.getText(), getDocumentRange().getStart());
+                    } catch (BadLocationException ex) {
+                        //no-op
+                    }
+                }
+            }
+            return lineOffset;
+        }
+
+        @Override
+        public synchronized CharSequence getText() {
+            if(elementText == null) {
+                //delegate to the underlying source charsequence, do not duplicate any chars!
+                elementText = new CharSubSequence(getSnapshot().getText(),  range.getStart(), range.getEnd());
+            }
+            return elementText;
+        }
+
+        @Override
+        public synchronized CharSequence getLineText() {
+            if(elementLineText == null) {
+                try {
+                    int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
+                    int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
+
+                    elementLineText = astLineStart != -1 && astLineEnd != -1
+                            ? getSnapshot().getText().subSequence(astLineStart, astLineEnd)
+                            : null;
+
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            return elementLineText;
+
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public synchronized OffsetRange getDocumentRange() {
+            if(documentRange == null) {
+                int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
+                int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
+
+                documentRange = documentFrom != -1 && documentTo != -1 ? new OffsetRange(documentFrom, documentTo) : OffsetRange.NONE;
+            }
+            return documentRange;
+        }
+
+        @Override
+        public OffsetRange getRange() {
+            return range;
+        }
+
+        @Override
+        public OffsetRange getBodyRange() {
+            return bodyRange;
+        }
+
+        @Override
+        public synchronized OffsetRange getDocumentBodyRange() {
+            if (documentBodyRange == null) {
+                if (bodyRange != null) {
+                    int bodyDocFrom = getSnapshot().getOriginalOffset(bodyRange.getStart());
+                    int bodyDocTo = getSnapshot().getOriginalOffset(bodyRange.getEnd());
+
+                    documentBodyRange = bodyDocFrom != -1 && bodyDocTo != -1
+                            ? new OffsetRange(bodyDocFrom, bodyDocTo)
+                            : OffsetRange.NONE;
+                }
+            }
+
+            return documentBodyRange;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry[" + (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]"; //NOI18N
+        }
+
+    }
+
 }
