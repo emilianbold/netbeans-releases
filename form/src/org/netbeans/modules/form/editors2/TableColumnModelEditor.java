@@ -474,7 +474,10 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                 FormProperty prop = formColumn.getTitle();
                 try {
                     if (prop.isChanged()) {
-                        column.setHeaderValue(prop.getRealValue());
+                        Object h = prop.getRealValue();
+                        if (h instanceof String) {
+                            column.setHeaderValue(h);
+                        }
                     }
                 } catch (Exception ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
