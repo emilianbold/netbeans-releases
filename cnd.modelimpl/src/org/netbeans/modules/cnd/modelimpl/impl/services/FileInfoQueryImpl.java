@@ -75,27 +75,28 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
- * implementaion of CsmFileInfoQuery
+ * CsmFileInfoQuery implementation
  * @author Vladimir Voskresenskky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
 public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
-    public List<String> getSystemIncludePaths(CsmFile file) {
+    public List<FSPath> getSystemIncludePaths(CsmFile file) {
         return getIncludePaths(file, true);
     }
 
     @Override
-    public List<String> getUserIncludePaths(CsmFile file) {
+    public List<FSPath> getUserIncludePaths(CsmFile file) {
         return getIncludePaths(file, false);
     }
 
-    private List<String> getIncludePaths(CsmFile file, boolean system) {
-        List<String> out = Collections.<String>emptyList();
+    private List<FSPath> getIncludePaths(CsmFile file, boolean system) {
+        List<FSPath> out = Collections.<FSPath>emptyList();
         if (file instanceof FileImpl) {
             NativeFileItem item = Utils.getCompiledFileItem((FileImpl) file);
             if (item != null) {

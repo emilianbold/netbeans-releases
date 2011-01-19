@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -150,8 +151,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.name = ProjectNameCache.getManager().getString(name);
         this.fileSystem = fs;
         init(model, platformProject);
-        sysAPTData = APTSystemStorage.getInstance(fileSystem);
-        userPathStorage = new APTIncludePathStorage(fileSystem);
+        sysAPTData = APTSystemStorage.getInstance();
+        userPathStorage = new APTIncludePathStorage();
         declarationsSorageKey = new ProjectDeclarationContainerKey(getUniqueName());
         weakDeclarationContainer = new WeakContainer<DeclarationContainerProject>(this, declarationsSorageKey);
         classifierStorageKey = new ClassifierContainerKey(getUniqueName());
@@ -1091,8 +1092,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (!isSourceFile(nativeFile)) {
             nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
-        List<String> origUserIncludePaths = nativeFile.getUserIncludePaths();
-        List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
+        List<FSPath> origUserIncludePaths = nativeFile.getUserIncludePaths();
+        List<FSPath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
@@ -2594,11 +2595,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public List<String> getUserIncludePaths() {
+        public List<FSPath> getUserIncludePaths() {
             if (project != null) {
                 return project.getUserIncludePaths();
             }
-            return Collections.<String>emptyList();
+            return Collections.<FSPath>emptyList();
         }
 
         @Override
@@ -2610,11 +2611,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public List<String> getSystemIncludePaths() {
+        public List<FSPath> getSystemIncludePaths() { 
             if (project != null) {
                 return project.getSystemIncludePaths();
             }
-            return Collections.<String>emptyList();
+            return Collections.<FSPath>emptyList();
         }
 
         @Override
@@ -2782,8 +2783,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected ProjectBase(DataInput aStream) throws IOException {
 
         fileSystem = PersistentUtils.readFileSystem(aStream);
-        sysAPTData = APTSystemStorage.getInstance(fileSystem);
-        userPathStorage = new APTIncludePathStorage(fileSystem);
+        sysAPTData = APTSystemStorage.getInstance();
+        userPathStorage = new APTIncludePathStorage();
 
         setStatus(Status.Restored);
 

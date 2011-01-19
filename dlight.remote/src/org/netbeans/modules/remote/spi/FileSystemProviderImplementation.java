@@ -58,6 +58,7 @@ public interface FileSystemProviderImplementation {
     FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
     FileObject urlToFileObject(String absoluteURL);
     String toURL(FileObject fileObject);
+    String toURL(FileSystem fileSystem, String absPath);
     boolean isMine(ExecutionEnvironment env);
     boolean isMine(FileObject fileObject);
     boolean isMine(String absoluteURL);

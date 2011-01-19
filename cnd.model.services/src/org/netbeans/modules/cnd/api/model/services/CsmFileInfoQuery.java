@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 
@@ -87,12 +88,12 @@ public abstract class CsmFileInfoQuery {
     /**
      * @return list of system include paths used to parse file
      */
-    public abstract List<String> getSystemIncludePaths(CsmFile file);
+    public abstract List<FSPath> getSystemIncludePaths(CsmFile file);
     
     /**
      * @return list of user include paths used to parse file
      */
-    public abstract List<String> getUserIncludePaths(CsmFile file);
+    public abstract List<FSPath> getUserIncludePaths(CsmFile file);
     
     /**
      *
@@ -174,13 +175,13 @@ public abstract class CsmFileInfoQuery {
         }
 
         @Override
-        public List<String> getSystemIncludePaths(CsmFile file) {
-            return Collections.<String>emptyList();
+        public List<FSPath> getSystemIncludePaths(CsmFile file) {
+            return Collections.<FSPath>emptyList();
         }
 
         @Override
-        public List<String> getUserIncludePaths(CsmFile file) {
-            return Collections.<String>emptyList();
+        public List<FSPath> getUserIncludePaths(CsmFile file) {
+            return Collections.<FSPath>emptyList();
         }
 
         @Override

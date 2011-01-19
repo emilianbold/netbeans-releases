@@ -56,14 +56,12 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -89,10 +87,9 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(includes);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
-            String prefix = getPrefix(makeConfiguration);
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 for (String path : pc.getIncludePaths()) {
-                    res.add(prefix+path);
+                    res.add(path);
                     
                 }
             }
@@ -202,7 +199,6 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         MakeConfiguration conf = make.getActiveConfiguration();
         if (conf != null){
             final PkgConfig pkg = getPkgConfig(conf);
-            final String prefix = getPrefix(conf);
             return new NativeFileSearch() {
                 @Override
                 public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
@@ -210,7 +206,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                     ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
                     if (resolvedPath != null) {
                         for(ResolvedPath path : resolvedPath) {
-                            res.add(CharSequences.create(prefix+path.getIncludePath()+File.separator+fileName));
+                            res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
                         }
                     }
                     return res;
@@ -218,20 +214,6 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             };
         }
         return null;
-    }
-
-    private String getPrefix(MakeConfiguration makeConfiguration){
-        DevelopmentHostConfiguration developmentHost = makeConfiguration.getDevelopmentHost();
-        String prefix;
-        if (developmentHost.getExecutionEnvironment().isRemote()){
-            prefix = RemoteFileUtil.getIncludeFilePrefix(developmentHost.getExecutionEnvironment());
-            if (prefix.endsWith("/")) { // NOI18N
-                prefix = prefix.substring(0, prefix.length()-1);
-            }
-        } else {
-            prefix = ""; // NOI18N
-        }
-        return prefix;
     }
 
     private PackageConfiguration getPkgConfigOutput(MakeConfiguration conf, String executable){
