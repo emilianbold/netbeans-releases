@@ -186,7 +186,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
         textDomainName.setEditable(false);
 
-        cometCheckBox.setText(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_EnableCometSupport")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cometCheckBox, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_EnableCometSupport")); // NOI18N
         cometCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cometCheckBoxActionPerformed(evt);
@@ -207,14 +207,14 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             }
         });
 
-        enableSessionsCheckBox.setText(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_PreserverSessions")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(enableSessionsCheckBox, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_PreserverSessions")); // NOI18N
         enableSessionsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 enableSessionsCheckBoxActionPerformed(evt);
             }
         });
 
-        startDerby.setText(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_START_DERBY")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(startDerby, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_START_DERBY")); // NOI18N
         startDerby.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 startDerby(evt);
