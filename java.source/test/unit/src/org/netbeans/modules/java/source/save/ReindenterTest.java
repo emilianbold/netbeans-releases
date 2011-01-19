@@ -460,6 +460,102 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        System.out.println();\n    }\n}\n");
     }
 
+    public void testNewLineIndentationBeforeStaticBlock() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    static| {\n    }\n}\n",
+                "package t;\npublic class T {\n    static\n    {\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeStaticBlock() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    static\n| {\n    }\n}\n",
+                "package t;\npublic class T {\n    static\n    {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    static| {\n    }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationBeforeHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    static\n|{\n    }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testNewLineIndentationInsideEmptyStaticBlock() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    static {|\n    }\n}\n",
+                "package t;\npublic class T {\n    static {\n        \n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyStaticBlock() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    static {\n|\n    }\n}\n",
+                "package t;\npublic class T {\n    static {\n        \n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    static\n      {|\n      }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n        \n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationInsideEmptyHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    static\n      {\n|\n      }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n        \n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testNewLineIndentationInsideEmptyStaticBlockBeforeEnd() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    static {|}\n}\n",
+                "package t;\npublic class T {\n    static {\n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyStaticBlockBeforeEnd() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    static {\n|        }\n}\n",
+                "package t;\npublic class T {\n    static {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyHalfIndentedStaticBlockBeforeEnd() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    static\n      {|}\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationIndideEmptyHalfIndentedStaticBlockBeforeEnd() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    static\n      {\n|}\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
     public void testNewLineIndentationInsideBlockStatement() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        System.out.|println();\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        System.out.\n                println();\n    }\n}\n");
