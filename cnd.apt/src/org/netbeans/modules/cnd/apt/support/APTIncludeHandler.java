@@ -80,7 +80,7 @@ public interface APTIncludeHandler {
     /**
      * get resolver for path
      */
-    public APTIncludeResolver getResolver(CharSequence path);
+    public APTIncludeResolver getResolver(FileSystem fs, CharSequence path);
 
     /**
      * returns the first file where include stack started

@@ -68,6 +68,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
     private final FileSystem fileSystem;
+    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
     
     public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
@@ -78,17 +79,31 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
+        if (TRACE) { 
+            System.out.printf("APTIncludeResolverImpl.ctor %s %s\n", fileSystem, path);
+        }
     }       
 
 
     @Override
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
-        return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+        ResolvedPath result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+        if (TRACE) {
+            System.err.printf("APTIncludeResolverImpl.resolveInclude %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
+            if (result == null) {
+                result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+            }
+        }
+        return result;
     }
 
     @Override
     public ResolvedPath resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
-        return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
+        ResolvedPath result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
+        if (TRACE) {
+            System.err.printf("APTIncludeResolverImpl.resolveIncludeNext %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
+        }
+        return result;
     }
 
     public CharSequence getBasePath() {
