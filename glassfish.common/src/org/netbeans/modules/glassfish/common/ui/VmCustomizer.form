@@ -157,7 +157,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleAddressUsage"/>
           </Events>
           <AuxValues>
-            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JTextField" name="addressValue">
@@ -189,6 +189,9 @@
               <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="A11Y_DESC_AddressLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -287,6 +290,9 @@
           <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="A11Y_DESC_UseIdeProxySettings" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

@@ -171,7 +171,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         buttonGroup1.add(useSharedMemRB);
         org.openide.awt.Mnemonics.setLocalizedText(useSharedMemRB, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useSharedMemRB.text")); // NOI18N
 
-        useUserDefinedAddress.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useUserDefinedAddress.text", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useUserDefinedAddress, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useUserDefinedAddress.text", new Object[] {})); // NOI18N
         useUserDefinedAddress.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleAddressUsage(evt);
@@ -181,7 +181,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         addressValue.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue.text", new Object[] {})); // NOI18N
 
         jLabel1.setLabelFor(addressValue);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout debugSettingsPanelLayout = new javax.swing.GroupLayout(debugSettingsPanel);
         debugSettingsPanel.setLayout(debugSettingsPanelLayout);
@@ -262,7 +262,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         javaExecutableField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.javaExecutableField.accessiblename")); // NOI18N
         javaExecutableField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_JavaField")); // NOI18N
 
-        useIDEProxyInfo.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useIDEProxyInfo.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useIDEProxyInfo, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useIDEProxyInfo.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
