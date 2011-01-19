@@ -55,6 +55,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -204,7 +205,19 @@ public final class FileSystemProvider {
         return null;
     }
 
+    public static String toUrl(FileSystem fileSystem, String absPath) {
+        Parameters.notNull("fileSystem", fileSystem); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.toURL(fileSystem, absPath);
+            }
+        }
+        noProvidersWarning(fileSystem);
+        return absPath;        
+    }
+
     public static String fileObjectToUrl(FileObject fileObject) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileObject)) {
                 return provider.toURL(fileObject);

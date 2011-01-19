@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
@@ -174,10 +175,10 @@ public class ProjectSettingsValidator {
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, item.getLanguage().toString());
 	updateCrc(checksum, item.getLanguageFlavor().toString());
-	updateCrc(checksum, item.getSystemIncludePaths());
-	updateCrc(checksum, item.getUserIncludePaths());
-	updateCrc(checksum, item.getSystemMacroDefinitions());
-	updateCrc(checksum, item.getUserMacroDefinitions());
+	updateCrcByFSPaths(checksum, item.getSystemIncludePaths());
+	updateCrcByFSPaths(checksum, item.getUserIncludePaths());
+	updateCrcByStrings(checksum, item.getSystemMacroDefinitions());
+	updateCrcByStrings(checksum, item.getUserMacroDefinitions());
 	if( TRACE ) {
             System.err.printf("<<< CRC %s %d\n", item.getName(), checksum.getValue());
         }
@@ -191,7 +192,13 @@ public class ProjectSettingsValidator {
         }
     }
     
-    private void updateCrc(Checksum checksum, List<String> strings) {
+    private void updateCrcByFSPaths(Checksum checksum, List<FSPath> fsPaths) {
+	for( FSPath fsp : fsPaths ) {
+	    updateCrc(checksum, fsp.getURL().toString());
+	}
+    }
+
+    private void updateCrcByStrings(Checksum checksum, List<String> strings) {
 	for( String s : strings ) {
 	    updateCrc(checksum, s);
 	}
