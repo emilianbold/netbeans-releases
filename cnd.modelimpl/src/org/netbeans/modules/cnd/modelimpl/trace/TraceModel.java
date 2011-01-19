@@ -85,9 +85,11 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -747,11 +749,12 @@ public class TraceModel extends TraceModelBase {
             //ex.printStackTrace();
         }
     }
-    private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance(CndFileUtils.getLocalFileSystem());
-    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage(CndFileUtils.getLocalFileSystem());
+    private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance();
+    private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
     
     private APTIncludeHandler getIncludeHandler(FileObject fo) {
-        List<String> systemIncludes = getSystemIncludes();
+        FileSystem localFS = CndFileUtils.getLocalFileSystem();
+        List<FSPath> systemIncludes = CndFileUtils.toFSPathList(localFS, getSystemIncludes());
         List<IncludeDirEntry> sysIncludes = sysAPTData.getIncludes(systemIncludes.toString(), systemIncludes); // NOI18N
         List<String> qInc = getQuoteIncludePaths();
         if (isPathsRelCurFile()) {
@@ -770,8 +773,8 @@ public class TraceModel extends TraceModelBase {
                 }                
             }
         }
-        StartEntry startEntry = new StartEntry(CndFileUtils.getLocalFileSystem(), fo.getPath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
-        List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
+        StartEntry startEntry = new StartEntry(localFS, fo.getPath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+        List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), CndFileUtils.toFSPathList(localFS, qInc));
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
 

@@ -47,11 +47,11 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -88,6 +88,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     @Override
     protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
         return FileSystemProvider.fileObjectToUrl(fileObject);
+    }
+
+    @Override
+    protected CharSequence toUrlImpl(FSPath fsPath) {
+        return FileSystemProvider.toUrl(fsPath.getFileSystem(), fsPath.getPath());
     }
 
     @Override

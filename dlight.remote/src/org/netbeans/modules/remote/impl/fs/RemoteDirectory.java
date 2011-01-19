@@ -88,6 +88,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
 
     private Reference<DirectoryStorage> storageRef;
+    private static final class RefLock {}
+    private final Object refLock = new RefLock();
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -339,7 +341,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         File storageFile = new File(cache, FLAG_FILE_NAME);
 
         // check whether it is cached in memory
-        synchronized (this) {
+        synchronized (refLock) {
             if (storageRef != null) {
                 storage = storageRef.get();
             }
@@ -370,7 +372,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             loaded = false;
             storage = new DirectoryStorage(storageFile);
             if (storageFile.exists()) {
-                Lock lock = RemoteFileSystem.getLock(storageFile).readLock();
+                Lock lock = RemoteFileSystem.getLock(cache).readLock();
                 try {
                     lock.lock();
                     try {
@@ -408,7 +410,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 fileSystem.getRemoteFileSupport().addPendingFile(this);
             }
             if (ok) {
-                synchronized (this) {
+                synchronized (refLock) {
                     if (storageRef != null) {
                         DirectoryStorage s = storageRef.get();
                         if (s != null) {
@@ -431,7 +433,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         lock.lock();
         try {
             // in case another thread synchronized content while we were waiting for lock
-            synchronized (this) {
+            synchronized (refLock) {
                 if (trace) { trace("checking storageRef and timestamp: ref={0} file={1} fs: {2}", storageRef, storageFile.lastModified(), fileSystem.getDirtyTimestamp()); } // NOI18N
                 if (storageRef != null && storageFile.lastModified() >= fileSystem.getDirtyTimestamp()) {
                     DirectoryStorage stor = storageRef.get();
@@ -563,7 +565,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 storage.setEntries(entries.values());
                 storage.store();
             }
-            synchronized (this) {
+            synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
             }
             storageFile.setLastModified(System.currentTimeMillis());
@@ -574,27 +576,43 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return storage;
     }
 
-    synchronized InputStream _getInputStream(RemotePlainFile child) throws
+    InputStream _getInputStream(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-
-        if (child.cache.exists()) {
-            return new FileInputStream(child.cache);
+        Lock lock = RemoteFileSystem.getLock(child.cache).readLock();
+        lock.lock();
+        try {
+            if (child.cache.exists()) {
+                return new FileInputStream(child.cache);
+            }
+        } finally {
+            lock.unlock();
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(true);
+        DirectoryStorage storage = getDirectoryStorage(true); // do we need this?
         return new CachedRemoteInputStream(child, execEnv);
     }
-
-    synchronized void ensureChildSync(RemotePlainFile child) throws
+    
+    void ensureChildSync(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
-        if (child.cache.exists()) {
-            return;
+        Lock lock = RemoteFileSystem.getLock(child.cache).readLock();
+        lock.lock();
+        try {
+            if (child.cache.exists()) {
+                return;
+            }
+        } finally {
+            lock.unlock();
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(true);
-        Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
+        DirectoryStorage storage = getDirectoryStorage(true); // do we need this?
+        lock = RemoteFileSystem.getLock(child.cache).writeLock();
+        lock.lock();
         try {
+            if (child.cache.exists()) {
+                return;
+            }
+            Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
             int rc = task.get().intValue();
             if (rc == 0) {
                 fileSystem.incrementFileCopyCount();
@@ -608,6 +626,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (ExecutionException ex) {
             child.cache.delete();
             throw ex;
+        } finally {
+            lock.unlock();
         }
     }
 

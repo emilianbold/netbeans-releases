@@ -47,7 +47,10 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +62,7 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -487,6 +491,28 @@ public final class CndFileUtils {
         }
     }
 
+    public static List<String> toPathList(Collection<FSPath> paths) {
+        if (paths != null && paths.size() > 0) {
+            List<String> result =  new ArrayList<String>(paths.size());
+            for (FSPath fSPath : paths) {
+                result.add(fSPath.getPath());
+            }
+            return result;
+        }
+        return Collections.<String>emptyList();
+    }
+
+    public static List<FSPath> toFSPathList(FileSystem fileSystem, Collection<String> paths) {
+        if (paths != null && paths.size() > 0) {
+            List<FSPath> result = new ArrayList<FSPath>(paths.size());
+            for (String path : paths) {
+                result.add(new FSPath(fileSystem, path));
+            }
+            return result;
+        }
+        return Collections.<FSPath>emptyList();
+    }
+    
     private static final Lock maRefLock = new ReentrantLock();
     private static FileSystem fileFileSystem;
     

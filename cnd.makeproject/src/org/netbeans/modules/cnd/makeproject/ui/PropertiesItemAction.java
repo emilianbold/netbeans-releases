@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -83,8 +84,8 @@ public class PropertiesItemAction extends NodeAction {
 
     private void dumpNativeFileInfo(Item item) {
         System.out.println("---------------------------------------------------------- " + item.getPath()); // NOI18N
-        dumpList("SystemIncludePaths", item.getSystemIncludePaths()); // NOI18N
-        dumpList("UserIncludePaths", item.getUserIncludePaths()); // NOI18N
+        dumpPathsList("SystemIncludePaths", item.getSystemIncludePaths()); // NOI18N
+        dumpPathsList("UserIncludePaths", item.getUserIncludePaths()); // NOI18N
         dumpList("SystemMacroDefinitions", item.getSystemMacroDefinitions()); // NOI18N
         dumpList("UserMacroDefinitions", item.getUserMacroDefinitions()); // NOI18N
     }
@@ -92,6 +93,12 @@ public class PropertiesItemAction extends NodeAction {
     public void dumpList(String txt, List<String> list) {
         for (String s : list) {
             System.out.println(txt + ":" + s); // NOI18N
+        }
+    }
+    
+    private void dumpPathsList(String txt, List<FSPath> list) {
+        for (FSPath s : list) {
+            System.out.println(txt + ":" + s.getURL()); // NOI18N
         }
     }
 

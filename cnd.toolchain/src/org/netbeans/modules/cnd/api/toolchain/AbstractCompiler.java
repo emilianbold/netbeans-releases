@@ -44,10 +44,9 @@
 package org.netbeans.modules.cnd.api.toolchain;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -57,11 +56,7 @@ public abstract class AbstractCompiler extends Tool {
     /** Creates a new instance of GenericCompiler */
     protected AbstractCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
-        if (!env.isLocal()) {
-            includeFilePrefix = RemoteFileUtil.getIncludeFilePrefix(env);
-        } else {
-            includeFilePrefix = null;
-        }
+        includeFilePrefix = null;
     }
     private String includeFilePrefix;
 
@@ -161,11 +156,11 @@ public abstract class AbstractCompiler extends Tool {
     }
     
     public List<String> getSystemPreprocessorSymbols() {
-        return new Vector<String>();
+        return Collections.<String>emptyList();
     }
 
     public List<String> getSystemIncludeDirectories() {
-        return new Vector<String>();
+        return Collections.<String>emptyList();
     }
 
     /**

@@ -220,6 +220,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     public String toURL(FileObject fileObject) {
         return fileObject.getPath();
     }
+    
+    @Override
+    public String toURL(FileSystem fileSystem, String absPath) {
+        return absPath;
+    }
 
     @Override
     public void addDownloadListener(FileSystemProvider.DownloadListener listener) {

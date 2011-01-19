@@ -238,7 +238,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             String linkRelativePath = WebUtils.getRelativePath(context.getFile(), refactoring.getExternalSheet());
             String linkText = new StringBuilder().append('\n').
                     append(baseIndentString).
-                    append("<link href=\"").
+                    append("<link rel=\"stylesheet\" href=\"").
                     append(linkRelativePath).
                     append("\" type=\"text/css\"").
                     append(isLinkTagEmpty.get() ? "" : "/").
