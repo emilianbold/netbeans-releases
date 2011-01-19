@@ -441,6 +441,8 @@ public class Reindenter implements IndentTask {
                                 break;
                         }
                     }
+                } else if (!isLeftBraceOnNewLine(lastPos, startOffset)) {
+                    currentIndent = getCurrentIndent(path.get(1));
                 }
                 break;
             case SWITCH:

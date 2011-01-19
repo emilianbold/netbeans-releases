@@ -346,6 +346,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        \n    }\n}\n");
     }
 
+    public void testNewLineIndentationInsideEmptyMethodBodyBeforeEnd() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {|}\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyMethodBodyBeforeEnd() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n|        }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideEmptyMethodBodyWithMultilineMethodHeader() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {|\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op(\n            int i) {\n        \n    }\n}\n");
@@ -354,6 +364,16 @@ public class ReindenterTest extends NbTestCase {
     public void testLineIndentationIndideEmptyMethodBodyWithMultilineMethodHeader() throws Exception {
         performLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {\n|\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op(\n            int i) {\n        \n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyMethodBodyWithMultilineMethodHeaderBeforeEnd() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {|}\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyMethodBodyWithMultilineMethodHeaderBeforeEnd() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {\n|        }\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n    }\n}\n");
     }
 
     public void testNewLineIndentationInsideEmptyHalfIndentedMethodBody() throws Exception {
