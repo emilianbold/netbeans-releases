@@ -154,6 +154,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         useSharedMemRB = new javax.swing.JRadioButton();
         useUserDefinedAddress = new javax.swing.JCheckBox();
         addressValue = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
         pickerPanel = new javax.swing.JPanel();
         javaInstallLabel = new javax.swing.JLabel();
         openDirectoryBrowser = new javax.swing.JButton();
@@ -179,6 +180,9 @@ public class VmCustomizer extends javax.swing.JPanel  {
 
         addressValue.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue.text", new Object[] {})); // NOI18N
 
+        jLabel1.setLabelFor(addressValue);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.jLabel1.text")); // NOI18N
+
         javax.swing.GroupLayout debugSettingsPanelLayout = new javax.swing.GroupLayout(debugSettingsPanel);
         debugSettingsPanel.setLayout(debugSettingsPanelLayout);
         debugSettingsPanelLayout.setHorizontalGroup(
@@ -191,7 +195,9 @@ public class VmCustomizer extends javax.swing.JPanel  {
                     .addGroup(debugSettingsPanelLayout.createSequentialGroup()
                         .addComponent(useUserDefinedAddress)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addressValue, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)))
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addressValue, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         debugSettingsPanelLayout.setVerticalGroup(
@@ -203,7 +209,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addGap(8, 8, 8)
                 .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(useUserDefinedAddress)
-                    .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addContainerGap())
         );
 
@@ -211,6 +218,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
         useSharedMemRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_SharedMem")); // NOI18N
         useUserDefinedAddress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseSelectedAddress")); // NOI18N
         addressValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue")); // NOI18N
+        addressValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_DebugerAddress")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_AddressLabel")); // NOI18N
 
         javaInstallLabel.setLabelFor(javaExecutableField);
         org.openide.awt.Mnemonics.setLocalizedText(javaInstallLabel, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.javaInstallLabel.text")); // NOI18N
@@ -344,6 +353,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
     private javax.swing.JTextField addressValue;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel debugSettingsPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField javaExecutableField;
     private javax.swing.JLabel javaInstallLabel;
     private javax.swing.JButton openDirectoryBrowser;
