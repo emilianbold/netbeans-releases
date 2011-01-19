@@ -113,8 +113,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
     
     @Override
-    public APTIncludeResolver getResolver(CharSequence path) {
-        return new APTIncludeResolverImpl(startFile.getFileSystem(), path, getCurDirIndex(),
+    public APTIncludeResolver getResolver(FileSystem fs, CharSequence path) {
+        return new APTIncludeResolverImpl(fs, path, getCurDirIndex(),
                 systemIncludePaths, userIncludePaths, fileSearch);
     }
     
