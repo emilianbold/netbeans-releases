@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
@@ -310,13 +311,13 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public List<String> getSystemIncludePaths() {
-            return this.sysIncludes;
+        public List<FSPath> getSystemIncludePaths() {
+            return CndFileUtils.toFSPathList(CndFileUtils.getLocalFileSystem(), this.sysIncludes);
         }
 
         @Override
-        public List<String> getUserIncludePaths() {
-            return this.usrIncludes;
+        public List<FSPath> getUserIncludePaths() {
+            return CndFileUtils.toFSPathList(CndFileUtils.getLocalFileSystem(), this.usrIncludes);
         }
 
         @Override
@@ -404,28 +405,28 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public List<String> getSystemIncludePaths() {
-	    List<String> result = project.getSystemIncludePaths();
+        public List<FSPath> getSystemIncludePaths() {
+	    List<FSPath> result = project.getSystemIncludePaths();
 	    return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 
         @Override
-        public List<String> getUserIncludePaths() {
-	    List<String> result = project.getUserIncludePaths();
+        public List<FSPath> getUserIncludePaths() {
+	    List<FSPath> result = project.getUserIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 	
-	private List<String> toAbsolute(List<String> orig) {
+	private List<FSPath> toAbsolute(List<FSPath> orig) {
 	    File base = file.getParentFile();
-	    List<String> result = new ArrayList<String>(orig.size());
-	    for( String path : orig ) {
-		File pathFile = new File(path);
+	    List<FSPath> result = new ArrayList<FSPath>(orig.size());
+	    for( FSPath path : orig ) {
+		File pathFile = new File(path.getPath());
 		if( pathFile.isAbsolute() ) {
 		    result.add(path);
 		}
 		else {
-		    pathFile = new File(base, path);
-		    result.add(pathFile.getAbsolutePath());
+		    pathFile = new File(base, path.getPath());
+		    result.add(new FSPath(CndFileUtils.getLocalFileSystem(), pathFile.getAbsolutePath()));
 		}
 	    }
 	    return result;

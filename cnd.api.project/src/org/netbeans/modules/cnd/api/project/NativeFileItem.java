@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.api.project;
 
+import org.netbeans.modules.cnd.utils.FSPath;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 
@@ -84,20 +85,19 @@ public interface NativeFileItem {
     public FileObject getFileObject();
 
     /**
-     * Returns a list <String> of compiler defined include paths used when compiling this file item.
-     * @return a list <String> of compiler defined include paths.
+     * Returns a list <IncludeSearchPath> of compiler defined include paths used when parsing 'orpan' source files.
+     * @return a list <IncludeSearchPath> of compiler defined include paths.
      * A path is always an absolute path.
-     * Include paths are not prefixed with the compiler include path option (usually -I).
      */
-    public List<String> getSystemIncludePaths();
+    public List<FSPath> getSystemIncludePaths();
     
     /**
-     * Returns a list <String> of user defined include paths used when compiling this file item.
-     * @return a list <String> of user defined include paths.
+     * Returns a list <IncludeSearchPath> of user defined include paths used when parsing 'orpan' source files.
+     * @return a list <IncludeSearchPath> of user defined include paths.
      * A path is always an absolute path.
      * Include paths are not prefixed with the compiler include path option (usually -I).
      */
-    public List<String> getUserIncludePaths();
+    public List<FSPath> getUserIncludePaths();
     
     /**
      * Returns a list <String> of compiler defined macro definitions used when compiling this file item.

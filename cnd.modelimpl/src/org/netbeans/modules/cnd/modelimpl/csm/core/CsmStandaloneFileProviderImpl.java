@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.EditorCookie;
@@ -301,13 +303,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final class NativeProjectImpl implements NativeProject {
 
-        private final List<String> sysIncludes;
-        private final List<String> usrIncludes;
+        private final List<FSPath> sysIncludes;
+        private final List<FSPath> usrIncludes;
         private final List<String> sysMacros;
         private final List<String> usrMacros;
         private final List<NativeFileItemImpl> files = new ArrayList<NativeFileItemImpl>();
         private final FileObject projectRoot;
-        private boolean pathsRelCurFile;
+        private final FileSystem fileSystem;
         private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
         private static final class Lock {}
         private final Object listenersLock = new Lock();
@@ -323,12 +325,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 return null;
             }
             CsmModel model = ModelImpl.instance();
-            List<String> sysIncludes = new ArrayList<String>();
-            List<String> usrIncludes = new ArrayList<String>();
+            List<FSPath> sysIncludes = new ArrayList<FSPath>();
+            List<FSPath> usrIncludes = new ArrayList<FSPath>();
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
             NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dao);
-            NativeProject prototype = null;
+            NativeProject prototype = null;            
             for (CsmProject csmProject : model.projects()) {
                 Object p = csmProject.getPlatformProject();
                 if (p instanceof NativeProject) {
@@ -348,10 +350,17 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     }
                 }
             }
-
+            FileSystem fs;
+            try {
+                fs = file.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                fs = CndFileUtils.getLocalFileSystem();
+            }
+                    
             if (prototype == null) {
                 // Some default implementation should be provided.
-                sysIncludes.addAll(DefaultSystemSettings.getDefault().getSystemIncludes(lang));
+                sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang)));
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang));
             } else {
                 if (ModelImpl.instance().isProjectDiabled(prototype)){
@@ -362,37 +371,43 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, false);
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
             impl.addFile(file);
             set.add(impl.findFileItem(file));
             return impl;
         }
 
         private NativeProjectImpl(FileObject projectRoot,
-                List<String> sysIncludes, List<String> usrIncludes,
-                List<String> sysMacros, List<String> usrMacros,
-                boolean pathsRelCurFile) {
+                List<FSPath> sysIncludes, List<FSPath> usrIncludes,
+                List<String> sysMacros, List<String> usrMacros) {
 
             this.projectRoot = projectRoot;
-            this.pathsRelCurFile = pathsRelCurFile;
-
+            this.fileSystem = getFileSystem(projectRoot);
             this.sysIncludes = createIncludes(sysIncludes);
             this.usrIncludes = createIncludes(usrIncludes);
             this.sysMacros = new ArrayList<String>(sysMacros);
             this.usrMacros = new ArrayList<String>(usrMacros);
         }
-
-        private List<String> createIncludes(List<String> src) {
-            if (pathsRelCurFile) {
-                return new ArrayList<String>(src);
-            } else {
-                List<String> result = new ArrayList<String>(src.size());
-                for (String path : src) {
-                    File file = new File(path);
-                    result.add(file.getAbsolutePath());
-                }
-                return result;
+        
+        private static FileSystem getFileSystem(FileObject fo) {
+            try {
+                return fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return CndFileUtils.getLocalFileSystem();
             }
+        }
+
+        private List<FSPath> createIncludes(List<FSPath> src) {
+            List<FSPath> result = new ArrayList<FSPath>(src.size());
+            for (FSPath path : src) {
+                if (CndPathUtilitities.isPathAbsolute(path.getPath())) {
+                    result.add(path);
+                } else {
+                    CndUtils.assertTrueInConsole(false, "Can not maconvert "); //NOI18N
+                }
+            }
+            return result;
         }
 
         private void addFile(FileObject file) {
@@ -474,12 +489,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public List<String> getSystemIncludePaths() {
+        public List<FSPath> getSystemIncludePaths() {
             return this.sysIncludes;
         }
 
         @Override
-        public List<String> getUserIncludePaths() {
+        public List<FSPath> getUserIncludePaths() {
             return this.usrIncludes;
         }
 
@@ -545,7 +560,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public String getAbsolutePath() {
             return CndFileUtils.getNormalizedPath(fileObject);
-        }
+            }
 
         @Override
         public String getName() {
@@ -553,29 +568,24 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }       
 
         @Override
-        public List<String> getSystemIncludePaths() {
-            List<String> result = project.getSystemIncludePaths();
-            return project.pathsRelCurFile ? toAbsolute(result) : result;
+        public List<FSPath> getSystemIncludePaths() {
+            List<FSPath> result = project.getSystemIncludePaths();
+            checkAbsolute(result);
+            return result;
         }
 
         @Override
-        public List<String> getUserIncludePaths() {
-            List<String> result = project.getUserIncludePaths();
-            return project.pathsRelCurFile ? toAbsolute(result) : result;
+        public List<FSPath> getUserIncludePaths() {
+            List<FSPath> result = project.getUserIncludePaths();
+            checkAbsolute(result);
+            return result;
         }
 
-        private List<String> toAbsolute(List<String> orig) {
-            FileObject base = fileObject.getParent();
-            List<String> result = new ArrayList<String>(orig.size());
-            for (String path : orig) {
-                if (CndPathUtilitities.isPathAbsolute(path)) {
-                    result.add(path);
-                } else {
-                    String absPath = CndPathUtilitities.toAbsolutePath(base, path);
-                    result.add(absPath);
-                }
+        private void checkAbsolute(List<FSPath> orig) {
+            List<FSPath> result = new ArrayList<FSPath>(orig.size());
+            for (FSPath path : orig) {
+                CndUtils.assertAbsolutePathInConsole(path.getPath());
             }
-            return result;
         }
 
         @Override

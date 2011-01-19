@@ -230,9 +230,4 @@ public class RemoteFileUtil {
         }
         return fileChooser;
     }
-
-    /** A temporary stuff to replace CndUtils.getIncludeFilePrefix */
-    public static String getIncludeFilePrefix(ExecutionEnvironment executionEnvironment) {
-        return FileSystemCacheProvider.getCacheRoot(executionEnvironment);
-    }
 }

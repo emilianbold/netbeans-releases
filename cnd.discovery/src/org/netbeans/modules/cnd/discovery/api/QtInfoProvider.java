@@ -172,13 +172,9 @@ public abstract class QtInfoProvider {
                     String qmakePath = getQmakePath(conf);
                     if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                         baseDir = queryBaseQtIncludeDir(execEnv, qmakePath);
-                        if (baseDir != null && execEnv.isRemote()) {
-                            baseDir = RemoteFileUtil.getIncludeFilePrefix(execEnv) + baseDir;
-                        }
                         cache.put(cacheKey, baseDir);
                     } else {
-                        baseDir = RemoteFileUtil.getIncludeFilePrefix(execEnv)
-                                + guessBaseQtIncludeDir(qmakePath);
+                        baseDir = guessBaseQtIncludeDir(qmakePath);
                         // do not cache this result, so that we can
                         // really query qmake once connection is up
                     }

@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -763,8 +764,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      * Return C++ settings
      **/
     @Override
-    public List<String> getSystemIncludePaths() {
-        ArrayList<String> vec = new ArrayList<String>();
+    public List<FSPath> getSystemIncludePaths() {
+        ArrayList<FSPath> vec = new ArrayList<FSPath>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -773,7 +774,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
             AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
-                vec.addAll(compiler.getSystemIncludeDirectories());
+                FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+                vec.addAll(CndFileUtils.toFSPathList(compilerFS, compiler.getSystemIncludeDirectories()));
             }
         }
         return vec;
@@ -789,8 +791,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      * Return C++ settings
      **/
     @Override
-    public List<String> getUserIncludePaths() {
-        ArrayList<String> vec = new ArrayList<String>();
+    public List<FSPath> getUserIncludePaths() {
+        ArrayList<FSPath> vec = new ArrayList<FSPath>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
@@ -798,8 +800,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
             Iterator<String> iter = vec2.iterator();
+            FileSystem fs = getFileSystem();
             while (iter.hasNext()) {
-                vec.add(CndPathUtilitities.toAbsolutePath(makeConfiguration.getBaseDir(), iter.next()));
+                String path = iter.next();
+                if (CndPathUtilitities.isPathAbsolute(path)) {
+                    vec.add(new FSPath(fs, path));                    
+                } else {
+                    path = CndPathUtilitities.toAbsolutePath(getProjectRoot(), path);
+                    vec.add(new FSPath(fs, path));
+                }
             }
         }
         return vec;
