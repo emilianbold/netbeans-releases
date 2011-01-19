@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.cnd.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.openide.util.CharSequences;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * A FileSystem / path pair
+ * @author Vladimir Kvashin
  */
-public final class APTIncludePathStorage {
-    private final ConcurrentMap<CharSequence, List<IncludeDirEntry>> allIncludes = new ConcurrentHashMap<CharSequence, List<IncludeDirEntry>>();
+public class FSPath {
     
-    public APTIncludePathStorage() {
+    private final FileSystem fileSystem;
+    private final String path;
+
+    public FSPath(FileSystem fileSystem, String path) {
+        this.fileSystem = fileSystem;
+        this.path = path;
     }
 
-    public List<IncludeDirEntry> get(CharSequence configID,  List<FSPath> sysIncludes) {
-        CharSequence key = CharSequences.create(configID);
-        List<IncludeDirEntry> list = allIncludes.get(key);
-        if (list == null) {
-            // create new one with light char sequences and put in map
-            list = new ArrayList<IncludeDirEntry>(sysIncludes.size());
-            for (FSPath cs : sysIncludes) {
-                IncludeDirEntry inclEntry = IncludeDirEntry.get(cs.getFileSystem(), cs.getPath());
-                list.add(inclEntry);
-            }
-            List<IncludeDirEntry> old = allIncludes.putIfAbsent(key, list);
-            if (old != null) {
-                list = old;
-            }
-        }
-        return list;
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    public String getPath() {
+        return path;
     }
     
-    public void dispose() {
-        allIncludes.clear();
+    public FileObject getFileObject() {
+        return fileSystem.findResource(path);
     }
+    
+    public CharSequence getURL() {
+        return CndFileSystemProvider.toUrl(this);
+    }
+
+    @Override
+    public String toString() {
+        return "" + fileSystem + ';' + path;
+    }    
 }

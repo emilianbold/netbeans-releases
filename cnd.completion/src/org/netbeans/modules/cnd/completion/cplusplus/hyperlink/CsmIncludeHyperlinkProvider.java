@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -66,7 +65,9 @@ import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -301,16 +302,16 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
     }
 
-    private void appendPaths(StringBuilder buf, String title, List<String> includePaths) {
+    private void appendPaths(StringBuilder buf, String title, List<FSPath> includePaths) {
         if (!includePaths.isEmpty()) {
             buf.append("<i>").append(title).append("</i>\n");  // NOI18N
-            for (String path : includePaths) {
-                File f = new File(path);
-                if (f.exists() && f.isDirectory()) {
-                    buf.append(path);
+            for (FSPath path : includePaths) {
+                FileObject fo = path.getFileObject();
+                if (fo.isValid() && fo.isFolder()) {
+                    buf.append(path.getPath());
                 } else {
                     buf.append("<font color='red'>");  // NOI18N
-                    buf.append(path);
+                    buf.append(path.getPath());
                     buf.append("</font>");  // NOI18N
                 }
                 buf.append('\n');

@@ -32,18 +32,22 @@ package org.netbeans.modules.cnd.completion.includes;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
 
@@ -153,12 +157,9 @@ public class CsmIncludeCompletionQuery {
         }
     }
 
-    private Collection<String> getFileIncludes(CsmFile file, boolean system) {
-        if (system) {
-            return CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
-        } else {
-            return CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
-        }
+    private Collection<String> getFileIncludes(CsmFile file, boolean system) {        
+        CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
+        return CndFileUtils.toPathList(system ? query.getSystemIncludePaths(file) : query.getUserIncludePaths(file));
     }
 
     private static final class DefFileFilter implements FileFilter {

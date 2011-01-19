@@ -57,7 +57,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
@@ -156,7 +155,7 @@ public class ModelSource implements SourceFileProperties {
     @Override
     public List<String> getUserInludePaths() {
         if (userIncludePaths == null) {
-            List<String> includePaths = item.getUserIncludePaths();
+            List<String> includePaths = CndFileUtils.toPathList(item.getUserIncludePaths());
             Set<String> res = new LinkedHashSet<String>();
             for(String path : includePaths){
                 path = getRelativepath(path);
@@ -325,7 +324,7 @@ public class ModelSource implements SourceFileProperties {
     
     @Override
     public List<String> getSystemInludePaths() {
-        return item.getSystemIncludePaths();
+        return CndFileUtils.toPathList(item.getSystemIncludePaths());
     }
     
     @Override

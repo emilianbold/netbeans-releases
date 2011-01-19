@@ -48,6 +48,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -110,6 +111,10 @@ public abstract class CndFileSystemProvider {
         return getDefault().urlToFileObjectImpl(url);
     }
 
+    public static CharSequence toUrl(FSPath fsPath) {
+        return getDefault().toUrlImpl(fsPath);
+    }
+
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
         CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
@@ -136,6 +141,7 @@ public abstract class CndFileSystemProvider {
     protected abstract FileObject toFileObjectImpl(CharSequence absPath);
 
     protected abstract CharSequence fileObjectToUrlImpl(FileObject fileObject);
+    protected abstract CharSequence toUrlImpl(FSPath fSPath);
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
 
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
@@ -244,6 +250,17 @@ public abstract class CndFileSystemProvider {
                 }
             }
             return fileObject.getPath();
+        }
+
+        @Override
+        protected CharSequence toUrlImpl(FSPath fSPath) {
+            for (CndFileSystemProvider provider : cache) {
+                CharSequence url = provider.toUrlImpl(fSPath);
+                if (url != null) {
+                    return url;
+                }
+            }
+            return fSPath.getPath();
         }
 
         @Override

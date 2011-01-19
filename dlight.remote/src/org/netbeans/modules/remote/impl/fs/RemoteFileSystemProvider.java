@@ -217,11 +217,26 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public String toURL(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment env =((RemoteFileObjectBase) fileObject).getExecutionEnvironment();
-            return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + fileObject.getPath();
+            return getUrlPrefix(env) + fileObject.getPath();
         }
         return null;
     }
+    
+    private String getUrlPrefix(ExecutionEnvironment env) {
+        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort();
+    }
 
+    @Override
+    public String toURL(FileSystem fileSystem, String absPath) {
+        RemoteLogger.assertTrue(absPath.startsWith("/"), "Path should be absolute: " + absPath); //NOPI18N
+        if (fileSystem instanceof RemoteFileSystem) {
+            ExecutionEnvironment env =((RemoteFileSystem) fileSystem).getExecutionEnvironment();
+            return getUrlPrefix(env) + absPath;
+        } else {
+            throw new IllegalArgumentException("File system should be an istance of " + RemoteFileSystem.class.getName()); //NOI18N
+        }
+    }
+    
     @Override
     public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
         RemoteFileSystemManager.getInstance().addDownloadListener(listener);
