@@ -61,6 +61,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
@@ -261,7 +262,7 @@ public final class TaskListProvider extends PushTaskScanner {
         // open action: a default action for the first action added by tasklist and for a dbl-click on a task
         ActionListener openIssueAL = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                     public void run() {
                         Issue issue = lazyIssue.getIssue();
                         if (issue != null) {
