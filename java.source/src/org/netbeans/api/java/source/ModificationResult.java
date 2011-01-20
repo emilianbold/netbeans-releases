@@ -61,7 +61,6 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
-import org.netbeans.api.java.source.ModificationResult.Difference.Kind;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -171,11 +170,7 @@ public final class ModificationResult {
     }
     
     public @NonNull Set<? extends FileObject> getModifiedFileObjects() {
-        Set<FileObject> result = new HashSet<FileObject>(diffs.keySet());
-        
-        result.remove(null);
-        
-        return result;
+        return diffs.keySet();
     }
     
     public List<? extends Difference> getDifferences(@NonNull FileObject fo) {
@@ -207,15 +202,7 @@ public final class ModificationResult {
             try {
 //                RepositoryUpdater.getDefault().lockRU();
                 for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
-                    if (me.getKey() != null) {
-                        commit(me.getKey(), me.getValue(), null);
-                    } else {
-                        for (Difference diff : me.getValue()) {
-                            assert diff.kind == Kind.CREATE;
-
-                            createUnit(diff);
-                        }
-                    }
+                    commit(me.getKey(), me.getValue(), null);
                 }
             } finally {
 //                RepositoryUpdater.getDefault().unlockRU();
@@ -242,8 +229,7 @@ public final class ModificationResult {
         }
     }
             
-    static void commit (@NonNull final FileObject fo, final List<Difference> differences, final Writer out) throws IOException {
-        assert fo != null;
+    static void commit (final FileObject fo, final List<Difference> differences, final Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
@@ -256,7 +242,7 @@ public final class ModificationResult {
                 NbDocument.runAtomic(doc, new Runnable () {
                     public void run () {
                         try {
-                            commit2 (doc, differences);
+                            commit2 (doc, differences, out);
                         } catch (IOException ex) {
                             exceptions [0] = ex;
                         }
@@ -305,6 +291,7 @@ public final class ModificationResult {
                     continue;
                 if (Difference.Kind.CREATE == diff.getKind()) {
                     if (!ownOutput) {
+                        createUnit(diff, null);
                     }
                     continue;
                 }
@@ -333,8 +320,6 @@ public final class ModificationResult {
                         offset += len;
                         out2.write(diff.getNewText());
                         break;
-                    default:
-                        assert false;
                 }
             }                    
             char[] buff = new char[1024];
@@ -353,7 +338,7 @@ public final class ModificationResult {
         }            
     }
 
-    private static void commit2 (final StyledDocument doc, final List<Difference> differences) throws IOException {
+    private static void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
         for (Difference diff : differences) {
             if (diff.isExcluded())
                 continue;
@@ -363,8 +348,8 @@ public final class ModificationResult {
                 case CHANGE:
                     processDocument(doc, diff);
                     break;
-                default:
-                    assert false;
+                case CREATE:
+                    createUnit(diff, out);
                     break;
             }
         }
@@ -440,11 +425,14 @@ public final class ModificationResult {
         }
     }
 
-    private static void createUnit(Difference diff) {
+    private static void createUnit(Difference diff, Writer out) {
         CreateChange change = (CreateChange) diff;
-        Writer w = null;
+        Writer w = out;
         try {
-            w = change.getFileObject().openWriter();
+            if (w == null) {
+                change.getFileObject().openOutputStream();
+                w = change.getFileObject().openWriter();
+            }
             w.append(change.getNewText());
         } catch (IOException e) {
             Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
@@ -500,27 +488,6 @@ public final class ModificationResult {
      */
     public @NullUnknown int[] getSpan(@NonNull Object tag) {
         return tag2Span.get(tag);
-    }
-
-    void addDiffs(FileObject fileObject, List<Difference> diffs) {
-        for (Difference d : diffs) {
-            FileObject f;
-            
-            if (d.kind == Kind.CREATE) {
-                f = null;
-            } else {
-                assert fileObject != null;
-                f = fileObject;
-            }
-            
-            List<Difference> list = this.diffs.get(f);
-            
-            if (list == null) {
-                this.diffs.put(f, list = new LinkedList<Difference>());
-            }
-            
-            list.add(d);
-        }
     }
     
     public static class Difference {
