@@ -130,6 +130,12 @@ public class FileObjectCrawlerTest extends NbTestCase {
                 "p1/a/Included3.java",
                 "p1/a/Included4.java"
         );
+        assertCollectedFiles("Wrong files collected", crawler.getResources(),
+                "p1/Included1.java",
+                "p1/Included2.java",
+                "p1/a/Included3.java",
+                "p1/a/Included4.java"
+        );
     }
 
     public void testRelativePaths() throws IOException {
@@ -143,14 +149,16 @@ public class FileObjectCrawlerTest extends NbTestCase {
         populateFolderStructure(root, paths);
 
         FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("Wrong files collected", crawler1.getResources(), paths);
         assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
         
         FileObject folder = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
         FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { folder }, false, null, CR);
-        assertCollectedFiles("Wrong files collected from " + folder, crawler2.getAllResources(),
+        assertCollectedFiles("Wrong files collected from " + folder, crawler2.getResources(),
             "org/pckg1/pckg2/file1.txt",
             "org/pckg1/pckg2/file2.txt"
         );
+        assertNull("All resources should not be computed for subtree", crawler2.getAllResources());
     }
 
     public void testDeletedFiles() throws IOException {
@@ -164,6 +172,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         populateFolderStructure(root, paths);
 
         FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("Wrong files collected", crawler1.getResources(), paths);
         assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
 
         FileObject pckg2 = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
@@ -171,9 +180,11 @@ public class FileObjectCrawlerTest extends NbTestCase {
         org.delete();
 
         FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { pckg2 }, false, null, CR);
-        assertCollectedFiles("There should be no files in " + root, crawler2.getAllResources());
+        assertCollectedFiles("There should be no files in " + root, crawler2.getResources());
+        assertNull("All resources should not be computed for subtree", crawler2.getAllResources());
 
         FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("There should be no files in " + root, crawler3.getResources());
         assertCollectedFiles("There should be no files in " + root, crawler3.getAllResources());
         assertCollectedFiles("All files in " + root + " should be deleted", crawler3.getDeletedResources());
     }
