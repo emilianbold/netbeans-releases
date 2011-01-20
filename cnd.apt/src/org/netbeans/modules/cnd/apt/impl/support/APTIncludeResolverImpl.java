@@ -68,7 +68,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
     private final FileSystem fileSystem;
-    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
+//    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
     
     public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
@@ -79,30 +79,30 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
-        if (TRACE) { 
-            System.out.printf("APTIncludeResolverImpl.ctor %s %s\n", fileSystem, path); // NOI18N
-        }
+//        if (TRACE) { 
+//            System.err.printf("APTIncludeResolverImpl.ctor %s %s systemIncludePaths: %s\n", fileSystem, path, systemIncludePaths); // NOI18N
+//        }
     }       
 
 
     @Override
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
         ResolvedPath result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
-        if (TRACE) {
-            System.err.printf("APTIncludeResolverImpl.resolveInclude %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
-            if (result == null) {
-                result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
-            }
-        }
+//        if (TRACE) {
+//            System.err.printf("APTIncludeResolverImpl.resolveInclude %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
+//            if (result == null) {
+//                result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+//            }
+//        }
         return result;
     }
 
     @Override
     public ResolvedPath resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
         ResolvedPath result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
-        if (TRACE) {
-            System.err.printf("APTIncludeResolverImpl.resolveIncludeNext %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
-        }
+//        if (TRACE) {
+//            System.err.printf("APTIncludeResolverImpl.resolveIncludeNext %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
+//        }
         return result;
     }
 
@@ -127,7 +127,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                 PathsCollectionIterator paths = 
                         new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
                 result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
-            }
+                }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
                 result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
