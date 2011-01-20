@@ -507,8 +507,8 @@ public class WorkingCopy extends CompilationController {
             }
         });
 
-        Rewriter r = new Rewriter(getFileObject(), getPositionConverter(), userInfo);
-        commit(getCompilationUnit(), diffs, r);
+        Rewriter r = new Rewriter(diffContext.file, diffContext.positionConverter, userInfo);
+        commit(diffContext.origUnit, diffs, r);
 
         return r.diffs;
     }
@@ -529,7 +529,7 @@ public class WorkingCopy extends CompilationController {
 
                 StringWriter target = new StringWriter();
 
-                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, targetFile.asText()), tag2Span), target);
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, targetFile.asText(), new PositionConverter(), targetFile), tag2Span), target);
                 result.add(new CreateChange(t.getSourceFile(), target.toString()));
                 target.close();
             } catch (BadLocationException ex) {
@@ -619,7 +619,10 @@ public class WorkingCopy extends CompilationController {
         }
         List<Difference> result = new LinkedList<Difference>();
         
-        result.addAll(processCurrentCompilationUnit(new DiffContext(this), tag2Span));
+        if (this.impl.getFileObject() != null) {
+            result.addAll(processCurrentCompilationUnit(new DiffContext(this), tag2Span));
+        }
+        
         result.addAll(processExternalCUs(tag2Span));
 
         overlay.clearElementsCache();

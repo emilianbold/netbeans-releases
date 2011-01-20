@@ -1146,6 +1146,43 @@ public class EnumTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void test122461() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    A, B, C;\n" +
+            "    int var;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    D, B, C;\n" +
+            "    int var;\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree en = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree c = (VariableTree) en.getMembers().get(1);
+                VariableTree nue = make.Variable(c.getModifiers(), "D", c.getType(), c.getInitializer());
+                
+                workingCopy.rewrite(c, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     //duplicates "testAddMethodAfterConstants":
 //    public void testAddFirstMemberWithSemicolon() throws Exception {
