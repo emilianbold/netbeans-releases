@@ -648,67 +648,37 @@ public final class JavaSource {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
-        if (sources.isEmpty()) {
-            throw new IllegalStateException ("Cannot run modification task without  file.");    //NOI18N
-        }        
-        else {
-            final ModificationResult result = new ModificationResult(this);
-            final ElementOverlay overlay = new ElementOverlay();
-            long start = System.currentTimeMillis();
-            try {
-                final JavacParser[] theParser = new JavacParser[1];
-                final UserTask _task = new ClasspathInfoTask(this.classpathInfo) {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        final Snapshot snapshot = resultIterator.getSnapshot();
-                        if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
-                            Parser.Result parserResult = resultIterator.getParserResult();
-                            final CompilationController cc = CompilationController.get(parserResult);
-                            assert cc != null;
-                            final WorkingCopy copy = new WorkingCopy (cc.impl, overlay);
-                            copy.setJavaSource(JavaSource.this);
-                            task.run (copy);
-                            final JavacTaskImpl jt = copy.impl.getJavacTask();
-                            Log.instance(jt.getContext()).nerrors = 0;
-                            theParser[0] = copy.impl.getParser();
-                            final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
-                            if (diffs != null && diffs.size() > 0) {
-                                result.diffs.put(copy.getFileObject(), diffs);
-                            }
-                        }
-                    }
-                    
-                    @Override 
-                    public String toString () {
-                        return this.getClass().getName()+"["+task.getClass().getName()+"]";     //NOI18N
-                    }
-                };                
-                ParserManager.parse(sources, _task);
-                if (theParser[0] != null) {
-                    theParser[0].invalidate();
+        final ModificationResult result = new ModificationResult(this);
+        final ElementOverlay overlay = new ElementOverlay();
+        long start = System.currentTimeMillis();
+        final JavacParser[] theParser = new JavacParser[1];
+
+        Task<CompilationController> inner = new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController cc) throws Exception {
+                final WorkingCopy copy = new WorkingCopy(cc.impl, overlay);
+                copy.setJavaSource(JavaSource.this);
+                task.run(copy);
+                final JavacTaskImpl jt = copy.impl.getJavacTask();
+                Log.instance(jt.getContext()).nerrors = 0;
+                theParser[0] = copy.impl.getParser();
+                final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
+                if (diffs != null && diffs.size() > 0) {
+                    result.addDiffs(copy.getFileObject(), diffs);
                 }
-            } catch (final ParseException pe) {
-                final Throwable rootCase = pe.getCause();
-                if (rootCase instanceof CompletionFailure) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(rootCase);
-                    throw ioe;
-                }
-                else if (rootCase instanceof RuntimeException) {
-                    throw (RuntimeException) rootCase;
-                }
-                else {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(rootCase);
-                    throw ioe;
-                }                
             }
-            if (sources.size() == 1) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
-                    new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
-            }            
-            return result;
-        }        
+        };
+        
+        runUserActionTask(inner, true);
+        
+        if (theParser[0] != null) {
+            theParser[0].invalidate();
+        }
+        if (sources.size() == 1) {
+            Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
+                new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
+        }            
+        return result;
     }
 
     /**

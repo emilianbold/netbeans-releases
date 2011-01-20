@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -108,6 +109,7 @@ import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -123,6 +125,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String DIRTY_ROOT = "dirty"; //NOI18N
+    private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
@@ -799,6 +802,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
+            boolean vote = true;
             try {
                 boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
                     @Override
@@ -821,33 +825,42 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                 });
 
-                if (!classIndexConsistent) return false;
+                if (!classIndexConsistent) {
+                    vote = false;
+                }
 
                 FileObject root = context.getRoot();
 
                 if (root == null) {
-                    return true;
+                    return vote;
                 }
                 
                 APTUtils aptUtils = APTUtils.get(root);
 
-                if (aptUtils != null && aptUtils.verifyAttributes(context.getRoot(), false)) return false;
+                if (aptUtils != null && aptUtils.verifyAttributes(context.getRoot(), false)) {
+                    vote = false;
+                }
+                                
+                if (ensureSourcePath(root)) {
+                    JavaIndex.LOG.fine("forcing reindex due to source path change"); //NOI18N
+                    vote = false;
+                }
 
                 String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
                 if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
                     JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-                    return false;
+                    vote = false;
                 }
                 if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
                     JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
-                    return false;
+                    vote = false;
                 }
 
                 if (!JavaFileFilterListener.getDefault().startListeningOn(context.getRoot())) {
                     JavaIndex.LOG.fine("Forcing reindex due to changed JavaFileFilter"); // NOI18N
-                    return false;
+                    vote = false;
                 }
-                return true;
+                return vote;
             } catch (IOException ioe) {
                 JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
                 return false;
@@ -895,9 +908,33 @@ public class JavaCustomIndexer extends CustomIndexer {
                 cim.prepareWriteLock(new IndexManager.Action<Void>() {
                     @Override
                     public Void run() throws IOException, InterruptedException {
+                        final Set<URL> toRefresh = new HashSet<URL>();
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
                             ffl.stopListeningOn(removedRoot);
+                            final FileObject root = URLMapper.findFileObject(removedRoot);
+                            if (root == null) {
+                                JavaIndex.setAttribute(removedRoot, DIRTY_ROOT, Boolean.TRUE.toString());
+                                final String srcPathStr = JavaIndex.getAttribute(removedRoot, SOURCE_PATH, "");
+                                for (String pathElement : srcPathStr.split(" ")) {
+                                    try {
+                                        toRefresh.add(new URL(pathElement));
+                                    } catch (MalformedURLException mue) {
+                                        JavaIndex.LOG.log(Level.INFO, "Malformed URL in sourcePath attribute", pathElement);
+                                    }
+                                }                                
+                            } else if (ensureSourcePath(root)){
+                                final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+                                for (final FileObject srcRoot : srcPath.getRoots()) {
+                                    toRefresh.add(srcRoot.getURL());
+                                }
+                            }
+                        }
+                        for (URL removedRoot : removedRoots) {
+                            toRefresh.remove(removedRoot);
+                        }
+                        for (URL url : toRefresh) {
+                            IndexingManager.getDefault().refreshIndex(url, null, true);
                         }
                         return null;
                     }
@@ -929,6 +966,21 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public int getIndexVersion() {
             return JavaIndex.VERSION;
+        }
+        
+        private static boolean ensureSourcePath(final @NonNull FileObject root) throws IOException {
+            final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            String srcPathStr;
+            if (srcPath != null) {
+                final StringBuilder sb = new StringBuilder();
+                for (ClassPath.Entry entry : srcPath.entries()) {
+                    sb.append(entry.getURL()).append(' ');  //NOI18N
+                }
+                srcPathStr = sb.toString();
+            } else {
+                srcPathStr = "";    //NOI18N
+            }
+            return JavaIndex.ensureAttributeValue(root.getURL(), SOURCE_PATH, srcPathStr);
         }
     }
 

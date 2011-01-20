@@ -337,7 +337,8 @@ final class ViewBuilder {
         }
 
         if (pReplace != null && pReplace != fReplace) { // Unfinished pReplace
-            throw new IllegalStateException("Unfinished non-first replace pReplace=" + pReplace);
+            throw new IllegalStateException("Unfinished non-first replace - error during view replacement: view:\n" + // NOI18N
+                    dReplace.view + "\n\npReplace:\n" + pReplace + "\nfReplace:\n" + fReplace); // NOI18N
         }
 
         if (LOG.isLoggable(Level.FINE)) {
