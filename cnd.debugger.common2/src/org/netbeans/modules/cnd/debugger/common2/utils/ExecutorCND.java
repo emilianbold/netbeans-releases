@@ -50,7 +50,6 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingUtilities;
 
@@ -64,9 +63,7 @@ import org.openide.ErrorManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -310,16 +307,5 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
     public OutputStream getOutputStream() {
 	return engineProc.getOutputStream();
-    }
-
-    @Override
-    public boolean svc_is64() {
-        try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
-            return hostInfo.getOS().getBitness() == HostInfo.Bitness._64;
-        } catch (CancellationException ex) {
-        } catch (IOException ex) {
-        }
-        return false;
     }
 }

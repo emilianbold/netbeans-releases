@@ -174,7 +174,6 @@ public class Reformatter implements ReformatTask {
         boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
         int startOffset = region.getStartOffset();
         int endOffset = region.getEndOffset();
-        int originalEndOffset = endOffset;
         startOffset = controller.getSnapshot().getEmbeddedOffset(startOffset);
         if (startOffset < 0)
             return;

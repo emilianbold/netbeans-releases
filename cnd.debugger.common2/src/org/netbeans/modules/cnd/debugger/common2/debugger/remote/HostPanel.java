@@ -55,10 +55,10 @@ import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.DummyPropert
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 
 
-public class HostPanel extends DetailView<Host> {
+public class HostPanel extends DetailView<CustomizableHost> {
 
-    private Host original;
-    private Host editable;
+    private CustomizableHost original;
+    private CustomizableHost editable;
 
     /* OLD
     private DocumentListener modifiedValidateDocumentListener = null;
@@ -90,7 +90,7 @@ public class HostPanel extends DetailView<Host> {
     
     private boolean updating;
     
-    public HostPanel (Host host) {
+    public HostPanel(CustomizableHost host) {
 	if (host != null) {
 	    original = host;
 
@@ -98,7 +98,7 @@ public class HostPanel extends DetailView<Host> {
 	    PasswordManager pm = PasswordManager.getInstance();
 	    original.setRememberPassword(pm.isRememberPassword(original.executionEnvironment()));
 	} else {
-	    original = new Host();
+	    original = new CustomizableHost();
 	}
 
 	editable = original.cloneRecord();
@@ -130,7 +130,7 @@ public class HostPanel extends DetailView<Host> {
     }
 
     // implement DetailView
-    public void setRecord(Host newhost) {
+    public void setRecord(CustomizableHost newhost) {
         original = newhost;	// switch to new original
 
 
@@ -143,7 +143,7 @@ public class HostPanel extends DetailView<Host> {
 
 	    editable = original.cloneRecord();
 	} else {
-	    editable = new Host();       // "empty" model
+	    editable = new CustomizableHost();       // "empty" model
 	}
 	updateView();
 	setDirty(false);

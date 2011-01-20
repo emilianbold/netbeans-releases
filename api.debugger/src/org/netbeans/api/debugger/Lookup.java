@@ -229,6 +229,7 @@ abstract class Lookup implements ContextProvider {
         private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
         private final HashMap<String, Object> instanceCache = new HashMap<String, Object>();
         private final HashMap<String, Object> origInstanceCache = new HashMap<String, Object>();
+        private final HashMap<String, Item> lookupItemsCache = new HashMap<String, Item>();
         private Lookup context;
         private org.openide.util.Lookup.Result<ModuleInfo> moduleLookupResult;
         private ModuleChangeListener modulesChangeListener;
@@ -396,11 +397,13 @@ abstract class Lookup implements ContextProvider {
                         if (instance.getClass().getClassLoader() == cl) {
                             instanceCache.remove(clazz);
                             origInstanceCache.remove(clazz);
+                            lookupItemsCache.remove(clazz);
                         } else {
                             instance = origInstanceCache.get(clazz);
                             if (instance != null && instance.getClass().getClassLoader() == cl) {
                                 instanceCache.remove(clazz);
                                 origInstanceCache.remove(clazz);
+                                lookupItemsCache.remove(clazz);
                             }
                         }
                     }
@@ -605,16 +608,23 @@ abstract class Lookup implements ContextProvider {
                 synchronized(instanceCache) {
                     instance = instanceCache.get (className);
                     Object origInstance = origInstanceCache.get(className);
-                    if (origInstance != null && li instanceof AbstractLookup.Pair) {
+                    Item lastItem = lookupItemsCache.get(className);
+                    if (origInstance != null && li instanceof AbstractLookup.Pair &&
+                        lastItem != null && lastItem.getId().equals(li.getId())) {
                         // Check whether the cached original instance was created by this lookup item.
                         // If yes, we can use it, if not, we should create a new instance.
+                        // Verify whether the item is from the same registry file,
+                        // since there can be several registrations for one class instance.
                         try {
                             java.lang.reflect.Method creatorOfMethod = AbstractLookup.Pair.class.getDeclaredMethod("creatorOf", Object.class);
                             creatorOfMethod.setAccessible(true);
                             Object isCreator = creatorOfMethod.invoke(li, origInstance);
                             if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("fillServiceInstance("+li+"):");
-                                logger.fine("  className = \""+className+"\", orig instance = "+origInstance+", instance = "+instance+", is creator or = "+isCreator);
+                                logger.fine("fillServiceInstance("+li+" [HASH = "+System.identityHashCode(li)+"]):");
+                                logger.fine("  className = \""+className+"\", orig instance = "+origInstance+", instance = "+instance+", is creator of = "+isCreator);
+                                if (lastItem != null) {
+                                    logger.fine("  last item was "+lastItem+" [HASH = "+System.identityHashCode(lastItem)+"])");
+                                }
                                 if (!Boolean.TRUE.equals(isCreator)) {
                                     logger.fine("\n!!!\n"+li+" is not a creator of "+origInstance+" !\nCreating a new instance...");
                                 }
@@ -623,6 +633,7 @@ abstract class Lookup implements ContextProvider {
                                 instance = null;
                                 instanceCache.remove(className);
                                 origInstanceCache.remove(className);
+                                lookupItemsCache.remove(className);
                             }
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
@@ -758,6 +769,7 @@ abstract class Lookup implements ContextProvider {
                                 instance = lookupItem.getInstance();
                                 Object origInstance = instance;
                                 //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
+                                Item lookupItemToCache = lookupItem;
                                 if (instance instanceof ContextAwareService) {
                                     ContextAwareService cas = (ContextAwareService) instance;
                                     instance = cas.forContext(Lookup.MetaInf.this.context);
@@ -767,6 +779,11 @@ abstract class Lookup implements ContextProvider {
                                 synchronized (instanceCache) {
                                     instanceCache.put (cn, instance);
                                     origInstanceCache.put(cn, origInstance);
+                                    // Hold the lookup item.
+                                    // This is holding the underlying instance data object,
+                                    // and prevents from it's GC and therefore from creating
+                                    // a new instance later on (the new Item.creatorOf() would return false)
+                                    lookupItemsCache.put(cn, lookupItemToCache);
                                 }
                             }
                         }

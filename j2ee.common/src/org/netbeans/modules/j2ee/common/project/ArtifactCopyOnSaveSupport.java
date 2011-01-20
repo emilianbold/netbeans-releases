@@ -58,6 +58,7 @@ import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -82,7 +83,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
 
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
 
-    private final Map<File, String> listeningTo = new HashMap<File, String>();
+    private final Map<File, ItemDescription> listeningTo = new HashMap<File, ItemDescription>();
 
     private final String destDirProperty;
 
@@ -141,16 +142,17 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         antHelper.addAntProjectListener(this);
     }
 
-    protected abstract Map<ClassPathSupport.Item, String> getArtifacts();
+    protected abstract List<Item> getArtifacts();
 
-    protected ArtifactListener.Artifact filterArtifact(ArtifactListener.Artifact artifact) {
+    protected ArtifactListener.Artifact filterArtifact(ArtifactListener.Artifact artifact,
+            RelocationType type) {
         return artifact;
     }
 
     public final synchronized void reload() {
-        Map<File, String> toRemove  = new HashMap<File, String>(listeningTo);
-        for (Map.Entry<ClassPathSupport.Item, String> entry : getArtifacts().entrySet()) {
-            ClassPathSupport.Item item = entry.getKey();
+        Map<File, ItemDescription> toRemove  = new HashMap<File, ItemDescription>(listeningTo);
+        for (Item artifactItem : getArtifacts()) {
+            ClassPathSupport.Item item = artifactItem.getItem();
             if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
                 // FIXME more precise check when we should ignore it
                 if (item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
@@ -161,7 +163,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
                     scriptLocation = scriptLocation.getParentFile();
                 }
 
-                String path = entry.getValue();
+                String path = artifactItem.getDescription().getPathInDeployment();
                 if (path != null) {
                     for (URI artifactURI : item.getArtifact().getArtifactLocations()) {
                         File file = null;
@@ -174,10 +176,12 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
 
                         if (!listeningTo.containsKey(file)) {
                             FileChangeSupport.DEFAULT.addListener(this, file);
-                            listeningTo.put(file, path);
+                            listeningTo.put(file, artifactItem.getDescription());
                             if (synchronize) {
                                 try {
-                                    updateFile(file, path);
+                                    updateFile(file,
+                                            artifactItem.getDescription().getPathInDeployment(),
+                                            artifactItem.getDescription().getRelocationType());
                                 } catch (IOException ex) {
                                     LOGGER.log(Level.FINE, "Initial copy failed", ex);
                                 }
@@ -189,18 +193,20 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
             }
         }
 
-        for (Map.Entry<File, String> removeEntry : toRemove.entrySet()) {
+        for (Map.Entry<File, ItemDescription> removeEntry : toRemove.entrySet()) {
             FileChangeSupport.DEFAULT.removeListener(this, removeEntry.getKey());
             listeningTo.remove(removeEntry.getKey());
             if (synchronize) {
-                deleteFile(removeEntry.getKey(), removeEntry.getValue());
+                deleteFile(removeEntry.getKey(),
+                        removeEntry.getValue().getPathInDeployment(),
+                        removeEntry.getValue().getRelocationType());
             }
         }
     }
 
     public final void close() {
         synchronized (this) {
-            for (Map.Entry<File, String> entry : listeningTo.entrySet()) {
+            for (Map.Entry<File, ItemDescription> entry : listeningTo.entrySet()) {
                 FileChangeSupport.DEFAULT.removeListener(this, entry.getKey());
             }
             listeningTo.clear();
@@ -242,14 +248,14 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         // noop - this usually means clean
     }
 
-    private void fireArtifactChange(File file) {
+    private void fireArtifactChange(File file, RelocationType type) {
         List<ArtifactListener> toFire = null;
         synchronized (this) {
             toFire = new ArrayList<ArtifactListener>(listeners);
         }
 
         Iterable<ArtifactListener.Artifact> iterable = Collections.singleton(
-                filterArtifact(ArtifactListener.Artifact.forFile(file).referencedLibrary()));
+                filterArtifact(ArtifactListener.Artifact.forFile(file).referencedLibrary(), type));
         for (ArtifactListener listener : toFire) {
             listener.artifactsUpdated(iterable);
         }
@@ -257,23 +263,23 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
 
     private void updateFile(FileChangeSupportEvent event) {
         File sourceFile = null;
-        String path = null;
+        ItemDescription desc = null;
 
         synchronized (this) {
             sourceFile = FileUtil.normalizeFile(event.getPath());
-            path = listeningTo.get(event.getPath());
-            if (path == null) {
+            desc = listeningTo.get(event.getPath());
+            if (desc.getPathInDeployment() == null) {
                 return;
             }
         }
         try {
-            updateFile(sourceFile, path);
+            updateFile(sourceFile, desc.getPathInDeployment(), desc.getRelocationType());
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
     }
 
-    private void updateFile(File sourceFile, String destPath) throws IOException {
+    private void updateFile(File sourceFile, String destPath, RelocationType type) throws IOException {
         assert sourceFile != null;
         assert destPath != null;
 
@@ -295,13 +301,13 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         // fire event
         File dest = FileUtil.toFile(destFile);
         if (dest != null) {
-            fireArtifactChange(dest);
+            fireArtifactChange(dest, type);
         }
         LOGGER.log(Level.FINE, "Artifact jar successfully copied " + sourceFile.getAbsolutePath()
                 + " " + sourceFile.length());
     }
 
-    private void deleteFile(File sourceFile, String destPath) {
+    private void deleteFile(File sourceFile, String destPath, RelocationType type) {
         assert sourceFile != null;
         assert destPath != null;
 
@@ -338,7 +344,7 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
         if (destFile != null) {
             File dest = FileUtil.toFile(destFile);
             if (dest != null) {
-                fireArtifactChange(dest);
+                fireArtifactChange(dest, type);
             }
         }
     }
@@ -378,6 +384,66 @@ public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportList
             }
         } finally {
             fileToOverwrite.close();
+        }
+    }
+    
+    public static final class Item {
+        
+        private final ClassPathSupport.Item item;
+        
+        private final ItemDescription description;
+
+        public Item(ClassPathSupport.Item item, ItemDescription description) {
+            this.item = item;
+            this.description = description;
+        }
+
+        public ClassPathSupport.Item getItem() {
+            return item;
+        }
+
+        public ItemDescription getDescription() {
+            return description;
+        }
+    }
+    
+    public enum RelocationType {
+        NONE,
+        LIB,
+        ROOT;
+        
+        public static RelocationType fromString(String type) {
+            if (type == null) {
+                // todo is this correct ?
+                return ROOT;
+            }
+            if (Util.DESTINATION_DIRECTORY_LIB.equals(type)) {
+                return LIB;
+            } else if (Util.DESTINATION_DIRECTORY_ROOT.equals(type)) {
+                return ROOT;
+            } else {
+                return NONE;
+            }
+        }
+    }
+    
+    public static final class ItemDescription {
+        
+        private final String pathInDeployment;
+        
+        private final RelocationType type;
+
+        public ItemDescription(String pathInDeployment, RelocationType type) {
+            this.pathInDeployment = pathInDeployment;
+            this.type = type;
+        }
+
+        public String getPathInDeployment() {
+            return pathInDeployment;
+        }
+
+        public RelocationType getRelocationType() {
+            return type;
         }
     }
 }

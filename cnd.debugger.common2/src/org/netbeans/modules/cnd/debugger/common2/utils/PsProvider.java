@@ -449,7 +449,7 @@ public abstract class PsProvider {
         PsProvider psProvider = host.getResource(PsProvider.class);
         if (psProvider == null) {
             try {
-                ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+                ExecutionEnvironment exEnv = host.executionEnvironment();
                 if (!ConnectionManager.getInstance().isConnectedTo(exEnv)) {
                     ConnectionManager.getInstance().connectTo(exEnv);
                 }
@@ -493,7 +493,7 @@ public abstract class PsProvider {
     protected final ExecutionEnvironment exEnv;
 
     private PsProvider(Host host) {
-        exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+        exEnv = host.executionEnvironment();
     }
 
     // "host" for getUid is usually "localhost"

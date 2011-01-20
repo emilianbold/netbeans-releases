@@ -57,8 +57,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -88,7 +89,8 @@ public final class ExternalStartManager {
         if (Utilities.isWindows()) {
             return;
         }
-	Host host = HostList.getInstance().getHostByName("localhost"); // NOI18N
+        
+        Host host = Host.getLocal();
 	ExternalStart xstart = ExternalStartManager.getXstart(host);
 	if (xstart == null) {
 	    xstart = ExternalStartManager.createExternalStart(host);
@@ -103,11 +105,12 @@ public final class ExternalStartManager {
 	if (DebuggerManager.isStandalone()) {
 	    return hostXstartMap.get(host.getHostName());
 	} else {
-	    if (host.getHostName().equals("localhost")) // NOI18N
+	    if (host.getHostName().equals(Host.localhost)) {
 		return hostXstartMap.get(host.getHostName());
-	    else
-		return hostXstartMap.get(host.getHostLogin() + "@" + // NOI18N
+            } else {
+		return hostXstartMap.get(host.getHostLogin() + '@' +
 			host.getHostName());
+            }
 	}
     }
 
@@ -124,11 +127,12 @@ public final class ExternalStartManager {
 	if (DebuggerManager.isStandalone()) {
 	    hostXstartMap.put(host.getHostName(), x);
 	} else {
-	    if (host.getHostName().equals("localhost")) // NOI18N
+	    if (host.getHostName().equals(Host.localhost)) {
 		hostXstartMap.put(host.getHostName(), x);
-	    else
-		hostXstartMap.put(host.getHostLogin() + "@" + // NOI18N
+            } else {
+		hostXstartMap.put(host.getHostLogin() + '@' +
 			host.getHostName(), x);
+            }
 	}
     }
 

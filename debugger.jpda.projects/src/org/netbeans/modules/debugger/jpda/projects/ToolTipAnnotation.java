@@ -166,8 +166,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } catch (IOException ex) {
             return ;
         }
-        final JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
-        if (ep == null) return ;
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor ();
+        if (ep == null || ep.getDocument() != doc) return ;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return;

@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.MRUComboBoxModel;
 import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostListEditor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
@@ -183,7 +183,7 @@ public final class AttachPanel extends TopComponent {
 
     private void initializeNew() {
         initRemoteHost();
-        lastHostChoice = hostChoices[0];
+        lastHostChoice = null;
         lastFilter = (String) filterCombo.getSelectedItem();
     }
 
@@ -191,7 +191,7 @@ public final class AttachPanel extends TopComponent {
         this.dialogManager = dialogManager;
         this.okButton = okButton;
 
-        lastHostChoice = hostChoices[0]; // always localhost when dialog first shown
+        lastHostChoice = null;
         hostCombo.setSelectedIndex(0);   // always localhost when dialog first shown
         filterCombo.setSelectedItem(lastFilter);
         executableProjectPanel.initGui();
@@ -207,7 +207,7 @@ public final class AttachPanel extends TopComponent {
         updateRemoteHostList();
 
         if (DebuggerManager.isStandalone()) {
-            HostList hostlist = hostList();
+            CustomizableHostList hostlist = DebuggerManager.get().getHostList();
 
             // listen to host list model
             if (hostlist != null) {
@@ -219,7 +219,7 @@ public final class AttachPanel extends TopComponent {
                         if (hostName != null)
                         {
                             hostCombo.setSelectedItem(hostName);
-			    setHostChoice(hostName);
+			    setHostChoice(hostName, hostCombo);
                         }
                         return;
                     // setDirty(true);
@@ -228,33 +228,17 @@ public final class AttachPanel extends TopComponent {
             }
         } else {
         }
-        hostCombo.setSelectedIndex(0);
     }
 
     /**
      * Refresh hostCombo with new remote host list.
      */
     private void updateRemoteHostList() {
-        if (DebuggerManager.isStandalone()) {
-            HostList hostlist = hostList();
-            if (hostlist != null) {
-                hostChoices = hostlist.getRecordsDisplayName();
-            }
-        } else {
-            hostChoices = CndRemote.getServerListIDs();
-        }
-
-        hostCombo.removeAllItems();
-        if (hostChoices != null) {
-            for (int i = 0; i < hostChoices.length; i++) {
-                hostCombo.addItem(hostChoices[i]);
-            }
-        }
-
+        fillHostsCombo(hostCombo);
         // current value
-        setHostChoice(lastHostChoice);
+        setHostChoice(lastHostChoice, hostCombo);
     }
-
+    
     /**
      * Override the regular cell renderer so we can add margins to the
      * text in the cells.
@@ -381,8 +365,8 @@ public final class AttachPanel extends TopComponent {
                 String ac = evt.getActionCommand();
                 if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
                     JComboBox cb = (JComboBox) evt.getSource();
-                    if (cb != null) {
-                        String hostName = (String) cb.getSelectedItem();
+                    if (cb != null && cb.getItemCount() > 0) {
+                        String hostName = getHostName();
                         if (hostName != null && !hostName.equals(lastHostChoice)) {
                             refreshProcesses(hostName, true);
                             lastHostChoice = hostName;
@@ -704,20 +688,7 @@ public final class AttachPanel extends TopComponent {
      * May return null if the current selectionis not in the remote host DB.
      */
     private String getHostName() {
-        // 6939252
-        int selectedIndex = hostCombo.getSelectedIndex();
-        return CndRemote.hostNameFromIndex(selectedIndex);
-    }
-
-    static Host getHost(String hostName) {
-        if (hostName == null) {
-            hostName = "localhost"; // NOI18N
-        }
-        if (hostName.indexOf("(") != -1) { // NOI18N
-            return CndRemote.hostFromDispName(null, hostName);
-        } else {
-            return CndRemote.hostFromName(null, hostName);
-        }
+        return hostCombo.getSelectedItem().toString();
     }
 
     //
@@ -849,7 +820,7 @@ public final class AttachPanel extends TopComponent {
     private void requestProcesses(final Pattern re, final String hostname, final boolean getAll) {
         Runnable asycData = new Runnable() {
 	    public void run() {
-                final Host selectedHost = getHost(hostname);
+                final Host selectedHost = Host.byName(hostname);
                 PsProvider psProvider = PsProvider.getDefault(selectedHost);
                 if (psProvider == null) {
                     // "clear" the table
@@ -981,7 +952,6 @@ public final class AttachPanel extends TopComponent {
     private javax.swing.JLabel tableLabel;
     private javax.swing.JCheckBox allProcessesCheckBox;
     private javax.swing.JPanel buttonRowPanel;
-    private String[] hostChoices = null;
     private static String lastHostChoice;
     private static String lastFilter;
     private javax.swing.JComboBox hostCombo;
@@ -1173,22 +1143,39 @@ public final class AttachPanel extends TopComponent {
 	    */
         }
     }
+    
+    public static void fillHostsCombo(JComboBox combo) {
+        String[] hostChoices = null;
+        if (DebuggerManager.isStandalone()) {
+            CustomizableHostList hostlist = DebuggerManager.get().getHostList();
+            if (hostlist != null) {
+                hostChoices = hostlist.getRecordsDisplayName();
+            }
+        } else {
+            hostChoices = CndRemote.getServerListIDs();
+        }
 
-    private HostList hostList() {
-        return DebuggerManager.get().getHostList();
+        combo.removeAllItems();
+        if (hostChoices != null) {
+            for (String item : hostChoices) {
+                combo.addItem(item);
+            }
+        }
     }
 
-    private void setHostChoice(String hostname) {
-        if (hostList() == null) {
+    public static void setHostChoice(String hostname, JComboBox combo) {
+        if (hostname == null) {
+            combo.setSelectedIndex(0);
             return;
         }
-
-        int hx = hostList().getHostIndexByName(hostname);
-        if (hx != -1) {
-            hostCombo.setSelectedIndex(hx);
-        } else {
-            hostCombo.setSelectedIndex(0);
+        for(int i=0; i < combo.getModel().getSize(); i++) {
+            Object item = combo.getModel().getElementAt(i);
+            if (item.toString().startsWith(hostname)) {
+                combo.setSelectedIndex(i);
+                return;
+            }
         }
+        combo.setSelectedIndex(0);
     }
 
     @Override

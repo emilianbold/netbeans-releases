@@ -222,6 +222,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
     
     private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
+
     private static final class NamedLock {
         private final String name;
 
@@ -477,12 +478,11 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return 0;
     }
 
-    @Override
+   @Override
     public long getOffset(CsmFile file, int line, int column) {
         if (file instanceof FileImpl) {
             return ((FileImpl) file).getOffset(line, column);
         }
         return 0;
     }
-
 }

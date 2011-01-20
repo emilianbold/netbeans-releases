@@ -90,7 +90,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
-import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
@@ -107,6 +106,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 
 /**
  * CsmFile implementations
@@ -1816,29 +1816,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return false;
     }
 
+    // for testing only
     public int getOffset(int line, int column) {
         if (line <= 0 || column <= 0) {
             throw new IllegalArgumentException("line and column are 1-based"); // NOI18N
         }
-        int offset = 0;
-        int curLine = 1;
-        String text = getText();
-        // find line
-        for (; offset < text.length() && curLine < line; offset++) {
-            if (text.charAt(offset) == '\n') {
-                curLine++;
-            }
+        try {
+            return fileBuffer.getOffsetByLineColumn(line, column);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return -1;
         }
-        // check line
-        if (curLine < line) {
-            throw new IllegalStateException("no line with index " + line + " in file " + getAbsolutePath()); // NOI18N
-        }
-        int outOffset = offset + (column - 1);
-        // check that column is valid: not on the next line
-        if (text.length() < outOffset || (text.substring(offset, outOffset).indexOf('\n') >= 0)) { // NOI18N
-            throw new IllegalStateException("no column with index " + column + " in file " + getAbsolutePath()); // NOI18N
-        }
-        return outOffset;
     }
 
     /**
@@ -1847,49 +1835,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * @return returns pair {line, column}
      */
     public int[] getLineColumn(int offset) {
-        int[] lineCol = new int[]{1, 1};
-        String text = getText();
         if (offset == Integer.MAX_VALUE) {
-            offset = text.length();
+            offset = getText().length();
         }
-        if (text.length() < offset) {
-            throw new IllegalArgumentException("offset is out of file length; " + // NOI18N
-                    (getBuffer().isFileBased() ? "file based" : "document based") + // NOI18N
-                    " file=" + this.getAbsolutePath() + // NOI18N
-                    ";length=" + text.length() + "; offset=" + offset); // NOI18N
+        try {
+            return fileBuffer.getLineColumnByOffset(offset);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+            return new int[]{0, 0};
         }
-        final int TABSIZE = ModelSupport.getTabSize();
-        int line = 0;
-        int start = 0;
-        if (true) {
-            try {
-                line = fileBuffer.getLineByOffset(offset);
-                start = fileBuffer.getStartLineOffset(line);
-            } catch (IOException ex) {
-                return lineCol;
-            }
-            lineCol[0] = line;
-        }
-        // find line and column
-        for (int curOffset = start; curOffset < offset; curOffset++) {
-            char curChar = text.charAt(curOffset);
-            switch (curChar) {
-                case '\n':
-                    // just increase line number
-                    lineCol[0] = lineCol[0] + 1;
-                    lineCol[1] = 1;
-                    break;
-                case '\t':
-                    int col = lineCol[1];
-                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
-                    lineCol[1] = newCol;
-                    break;
-                default:
-                    lineCol[1]++;
-                    break;
-            }
-        }
-        return lineCol;
     }
 
     private final FileStateCache stateCache = new FileStateCache(this);

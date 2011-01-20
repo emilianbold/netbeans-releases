@@ -76,7 +76,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
-            ifaces.put(CodeUtils.extractUnqualifiedName(identifier), null);
+            ifaces.put(CodeUtils.extractQualifiedName(identifier), null);
         }
     }
 
@@ -84,7 +84,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
-            ifaces.put(CodeUtils.extractUnqualifiedName(identifier), null);
+            ifaces.put(CodeUtils.extractQualifiedName(identifier), null);
         }
     }
 

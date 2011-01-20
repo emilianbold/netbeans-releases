@@ -58,7 +58,7 @@ class HostListXMLReader extends XMLDocReader implements UserdirFile.Reader {
 
     private UserdirFile userdirFile;
 
-    HostListXMLReader(UserdirFile userdirFile, RecordList<Host> model) {
+    HostListXMLReader(UserdirFile userdirFile, RecordList<CustomizableHost> model) {
 
 	this.userdirFile = userdirFile;
 
