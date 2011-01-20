@@ -101,7 +101,9 @@ public class SSHKeyFileFilter implements FileFilter {
             return false;
         } finally {
             try {
-                fis.close();
+                if (fis != null) {
+                    fis.close();
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
