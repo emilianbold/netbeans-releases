@@ -139,9 +139,11 @@ public class EjbJarImpl implements EjbJarImplementation2, J2eeModuleImplementati
         if (srcs != null) {
             SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
             for (int i = 0; i < grp.length; i++) {
-                FileObject fo = grp[i].getRootFolder().getFileObject("META-INF"); //NOI18N
-                if (fo != null) {
-                    return fo;
+                if (grp[i] != null && grp[i].getRootFolder() != null) {
+                    FileObject fo = grp[i].getRootFolder().getFileObject("META-INF"); //NOI18N
+                    if (fo != null) {
+                        return fo;
+                    }
                 }
             }
         }

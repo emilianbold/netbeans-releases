@@ -161,8 +161,13 @@ public final class ProjectEar extends J2eeApplicationProvider
         return project.getOrCreateMetaInfDir();
     }
     
+    @Override
     public File getResourceDirectory() {
-        return project.getFile(EarProjectProperties.RESOURCE_DIR);
+        File f = project.getFile(EarProjectProperties.RESOURCE_DIR);
+        if (f == null) {
+            f = new File(FileUtil.toFile(project.getProjectDirectory()), "setup"); // NOI18N
+        }
+        return f;
     }
 
     public ClassPathProvider getClassPathProvider () {
@@ -547,6 +552,12 @@ public final class ProjectEar extends J2eeApplicationProvider
     @Override
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return deployOnSaveSupport;
+    }
+    
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE)) &&
+            !Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
     }
     
     public File getDeploymentConfigurationFile(String name) {

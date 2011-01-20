@@ -27,13 +27,17 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="datasourceRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="datasourceLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="datasourceRadioButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="dbschemaRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dbschemaComboBox" alignment="0" pref="423" max="32767" attributes="0"/>
-                  <Component id="datasourceComboBox" alignment="0" pref="423" max="32767" attributes="0"/>
+                  <Component id="dbschemaComboBox" alignment="0" pref="378" max="32767" attributes="0"/>
+                  <Component id="datasourceComboBox" alignment="0" pref="378" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Component id="tablesPanel" alignment="1" pref="536" max="32767" attributes="0"/>
@@ -46,6 +50,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="datasourceRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="datasourceComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="datasourceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -73,6 +78,21 @@
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="datasourceRadioButtonItemStateChanged"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="datasourceLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="datasourceComboBox"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="LBL_Datasource" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="4" left="0" right="4" top="4"/>
+          </Border>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="datasourceComboBox">
       <Properties>

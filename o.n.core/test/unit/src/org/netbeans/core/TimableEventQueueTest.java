@@ -43,17 +43,10 @@
 package org.netbeans.core;
 
 import java.awt.EventQueue;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 
 /**
@@ -65,7 +58,7 @@ public class TimableEventQueueTest extends NbTestCase {
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "300");
         System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "3000");
         System.setProperty("org.netbeans.core.TimeableEventQueue.report", "600");
-        TimableEventQueue.initialize();
+        TimableEventQueue.initialize(null, false);
     }
     private CharSequence log;
     
@@ -96,7 +89,8 @@ public class TimableEventQueueTest extends NbTestCase {
         
         EventQueue.invokeAndWait(slow);
         EventQueue.invokeAndWait(slow);
-        TimableEventQueue.RP.awaitTermination(1, TimeUnit.SECONDS);
+        TimableEventQueue.RP.shutdown();
+        TimableEventQueue.RP.awaitTermination(3, TimeUnit.SECONDS);
         
         assertEquals("called", 2, slow.ok);
 

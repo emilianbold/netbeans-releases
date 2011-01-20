@@ -62,6 +62,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration;
 import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.spi.DefaultParseResult;
 import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -108,7 +109,8 @@ public class SyntaxAnalyzerResult {
         if (found != null) {
             return found;
         }
-        return detected != null ? detected : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
+        return detected != null ? detected : 
+            mayBeXhtml() ? HtmlVersion.getDefaultXhtmlVersion() : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
     }
     
     public HtmlModel getHtmlModel() {
@@ -128,6 +130,12 @@ public class SyntaxAnalyzerResult {
             detectedHtmlVersion = detectHtmlVersion();
         }
         return detectedHtmlVersion;
+    }
+
+    public boolean mayBeXhtml() {
+        FileObject fo = getSource().getSourceFileObject();
+        String mimeType = fo != null ? fo.getMIMEType() : null;
+        return getHtmlTagDefaultNamespace() != null || "text/xhtml".equals(mimeType);
     }
 
     private HtmlVersion detectHtmlVersion() {

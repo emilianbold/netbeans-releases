@@ -300,7 +300,16 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         dl.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_EDITOR_AD"));
         dl.pack();
         dl.setSize(new java.awt.Dimension(400, (int) dl.getPreferredSize().getHeight()));
-        dl.setVisible(true);
+        try {
+            dl.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CLOSED_OPTION);
+        } finally {
+            dl.dispose();
+        }
         // Update data structure
         Configuration[] editedConfs = configurationsEditor.getListData().toArray(new Configuration[configurationsEditor.getListData().size()]);
         int active = -1;

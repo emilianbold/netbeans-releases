@@ -33,7 +33,6 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,10 +44,12 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -73,27 +74,29 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
- * implementaion of CsmFileInfoQuery
+ * CsmFileInfoQuery implementation
  * @author Vladimir Voskresenskky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
 public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
-    public List<String> getSystemIncludePaths(CsmFile file) {
+    public List<FSPath> getSystemIncludePaths(CsmFile file) {
         return getIncludePaths(file, true);
     }
 
     @Override
-    public List<String> getUserIncludePaths(CsmFile file) {
+    public List<FSPath> getUserIncludePaths(CsmFile file) {
         return getIncludePaths(file, false);
     }
 
-    private List<String> getIncludePaths(CsmFile file, boolean system) {
-        List<String> out = Collections.<String>emptyList();
+    private List<FSPath> getIncludePaths(CsmFile file, boolean system) {
+        List<FSPath> out = Collections.<FSPath>emptyList();
         if (file instanceof FileImpl) {
             NativeFileItem item = Utils.getCompiledFileItem((FileImpl) file);
             if (item != null) {
@@ -196,6 +199,28 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return result;
     }
 
+    @Override
+    public CharSequence getName(CsmUID<CsmFile> fileUID) {
+        return getFileName(fileUID);
+    }
+
+    public static CharSequence getFileName(CsmUID<CsmFile> fileUID) {
+        CharSequence filePath = UIDUtilities.getFileName(fileUID);
+        int indx = CharSequenceUtilities.lastIndexOf(filePath, '/'); // NOI18N
+        if (indx < 0) {
+            indx = CharSequenceUtilities.lastIndexOf(filePath, '\\'); // NOI18N
+        }
+        if (indx > 0 && indx < filePath.length()) {
+            filePath = CharSequenceUtilities.toString(filePath, indx + 1, filePath.length());
+        }    
+        return filePath;
+    }
+    
+    @Override
+    public CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID) {
+        return UIDUtilities.getFileName(fileUID);
+    }
+    
     private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
     private static final class NamedLock {
         private final String name;
@@ -249,7 +274,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                     try {
                         long lastParsedTime = fileImpl.getLastParsedTime();
-                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
+                        APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
                         if (apt != null) {
                             Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
                             if (handlers.isEmpty()) {
@@ -299,7 +324,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
             try {
-                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
+                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
 
                 GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
                 TokenStream ts = guardWalker.getTokenStream();
@@ -353,7 +378,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 ProjectBase startProject = Utils.getStartProject(startEntry);
                 if (startProject != null) {
                     CharSequence path = startEntry.getStartFile();
-                    CsmFile startFile = startProject.getFile(new File(path.toString()), false);
+                    CsmFile startFile = startProject.getFile(path, false);
                     if (startFile != null) {
                         addBackup = false;
                     }
@@ -383,7 +408,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
             ProjectBase startProject = Utils.getStartProject(startEntry);
             if (startProject != null) {
-                CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
+                CsmFile startFile = startProject.getFile(startEntry.getStartFile(), false);
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
                     Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
@@ -451,4 +476,13 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return 0;
     }
+
+    @Override
+    public long getOffset(CsmFile file, int line, int column) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl) file).getOffset(line, column);
+        }
+        return 0;
+    }
+
 }

@@ -51,11 +51,11 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import java.beans.FeatureDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
-
-/** A property editor for String class.
+/**
+ * A property editor for String class.
 * @author   Ian Formanek
-* @version  1.00, 18 Sep, 1998
 */
 public class StringEditor extends PropertyEditorSupport implements ExPropertyEditor
 {
@@ -68,33 +68,52 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
         return (editable);
     }
                 
+    @Override
+    public String getAsText() {
+        Object value = getValue();
+        if (value != null) {
+            return value.toString();
+        } else {
+            return nullValue != null ? nullValue : NbBundle.getMessage(StringEditor.class, "CTL_NullValue");
+        }
+    }
+
     /** sets new value */
+    @Override
     public void setAsText(String s) {
         if ( "null".equals( s ) && getValue() == null ) // NOI18N
             return;
+        if (nullValue != null && nullValue.equals (s)) {
+            setValue (null);
+            return;
+        }
+
         setValue(s);
     }
 
+    @Override
     public String getJavaInitializationString () {
         String s = (String) getValue ();
         return "\"" + toAscii(s) + "\""; // NOI18N
     }
 
+    @Override
     public boolean supportsCustomEditor () {
         return customEd;
     }
 
+    @Override
     public java.awt.Component getCustomEditor () {
         Object val = getValue();
         String s = ""; // NOI18N
         if (val != null) {
             s = val instanceof String ? (String) val : val.toString();
         }
-        return new StringCustomEditor (s, isEditable(), oneline, instructions, this, env); // NOI18N
+        return new StringCustomEditor (s, isEditable(), oneline, instructions, this, env);
     }
 
     private static String toAscii(String str) {
-        StringBuffer buf = new StringBuffer(str.length() * 6); // x -> \u1234
+        StringBuilder buf = new StringBuilder(str.length() * 6); // x -> \u1234
         char[] chars = str.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
@@ -126,12 +145,18 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
     private boolean oneline=false;
     private boolean customEd=true;
     private PropertyEnv env;
+    /** null or name to use for null value */
+    private String nullValue;
 
     // bugfix# 9219 added attachEnv() method checking if the user canWrite in text box 
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
 
-        FeatureDescriptor desc = env.getFeatureDescriptor();
+        readEnv(env.getFeatureDescriptor());
+    }
+
+    /*@VisibleForTesting*/ void readEnv (FeatureDescriptor desc) {
         if (desc instanceof Node.Property){
             Node.Property prop = (Node.Property)desc;
             editable = prop.canWrite();
@@ -139,8 +164,18 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
             //editor
             instructions = (String) prop.getValue ("instructions"); //NOI18N
             oneline = Boolean.TRUE.equals (prop.getValue ("oneline")); //NOI18N
-            customEd = !Boolean.TRUE.equals (prop.getValue 
+            customEd = !Boolean.TRUE.equals (prop.getValue
                 ("suppressCustomEditor")); //NOI18N
+        }
+        Object obj = desc.getValue(ObjectEditor.PROP_NULL);
+        if (Boolean.TRUE.equals(obj)) {
+            nullValue = NbBundle.getMessage(StringEditor.class, "CTL_NullValue");
+        } else {
+            if (obj instanceof String) {
+                nullValue = (String)obj;
+            } else {
+                nullValue = null;
+            }
         }
     }
 }

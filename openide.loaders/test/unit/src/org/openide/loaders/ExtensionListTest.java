@@ -44,8 +44,13 @@
 
 package org.openide.loaders;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import junit.framework.TestCase;
+import org.netbeans.junit.MockServices;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 
 /**
  *
@@ -83,7 +88,7 @@ public class ExtensionListTest extends TestCase {
         assertFalse(instance.isRegistered("x.form"));
     }     
 
-    public void testAddMime() {
+    public void testAddMime() throws IOException {
         ExtensionList instance = new ExtensionList();
         instance.addMimeType("text/x-java");
         instance.addMimeType("text/html");
@@ -95,6 +100,27 @@ public class ExtensionListTest extends TestCase {
         assertEquals("text/x-java", en.nextElement());
         assertFalse(en.hasMoreElements());
         
+
+        MockServices.setServices(MockMimeR.class);
         
-    }     
+        FileObject fo = FileUtil.getConfigRoot().createData("My.xml");
+        assertFalse("XML files are not recognized", instance.isRegistered(fo));
+        assertEquals("Instantiated", 1, MockMimeR.cnt);
+    }   
+    
+    public static final class MockMimeR extends MIMEResolver {
+        static int cnt;
+        
+        public MockMimeR() {
+            super("text/xml");
+            cnt++;
+        }
+        
+        @Override
+        public String findMIMEType(FileObject fo) {
+            fail("Shall not be called at all");
+            return null;
+        }
+        
+    }
 }

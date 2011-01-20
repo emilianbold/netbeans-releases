@@ -48,7 +48,8 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
 
-class CLibrary {
+// public because it's needed by "Term Driver".
+public class CLibrary {
     private final GenericCLibrary delegate;
     private final GenericConstants constants;
 
@@ -221,7 +222,7 @@ class CLibrary {
     // struct termios
     // Not used on the mac
 
-    static class SolarisTermios extends Structure {
+    static public class SolarisTermios extends Structure {
         public int c_iflag;     // input modes
         public int c_oflag;     // output modes
         public int c_cflag;     // control modes
@@ -234,7 +235,7 @@ class CLibrary {
     }
 
     // Not used on the mac
-    static class LinuxTermios extends Structure {
+    static public class LinuxTermios extends Structure {
         public int c_iflag;     // input modes
         public int c_oflag;     // output modes
         public int c_cflag;     // control modes

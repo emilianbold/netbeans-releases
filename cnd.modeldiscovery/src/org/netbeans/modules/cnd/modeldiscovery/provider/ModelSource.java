@@ -57,13 +57,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -156,7 +155,7 @@ public class ModelSource implements SourceFileProperties {
     @Override
     public List<String> getUserInludePaths() {
         if (userIncludePaths == null) {
-            List<String> includePaths = item.getUserIncludePaths();
+            List<String> includePaths = CndFileUtils.toPathList(item.getUserIncludePaths());
             Set<String> res = new LinkedHashSet<String>();
             for(String path : includePaths){
                 path = getRelativepath(path);
@@ -173,7 +172,7 @@ public class ModelSource implements SourceFileProperties {
             path = path.replace('/', File.separatorChar);
         }
         path = CndPathUtilitities.toRelativePath(getCompilePath(), path);
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         return path;
     }
     
@@ -325,7 +324,7 @@ public class ModelSource implements SourceFileProperties {
     
     @Override
     public List<String> getSystemInludePaths() {
-        return item.getSystemIncludePaths();
+        return CndFileUtils.toPathList(item.getSystemIncludePaths());
     }
     
     @Override

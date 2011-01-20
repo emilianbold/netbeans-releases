@@ -97,7 +97,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -234,9 +233,6 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     private void runGoal(RunConfig config, boolean checkShowDialog) {
-        // save all edited files.. maybe finetune for project's files only, however that would fail for multiprojects..
-        LifecycleManager.getDefault().saveAll();
-
         // check the prerequisites
         Lookup.Result<PrerequisitesChecker> res = config.getProject().getLookup().lookup(new Lookup.Template<PrerequisitesChecker>(PrerequisitesChecker.class));
         for (PrerequisitesChecker elem : res.allInstances()) {

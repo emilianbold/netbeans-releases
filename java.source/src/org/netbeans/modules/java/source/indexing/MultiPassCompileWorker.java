@@ -59,6 +59,7 @@ import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -81,9 +83,8 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.util.LMListener;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
 
@@ -112,7 +113,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
 
-        final LMListener mem = new LMListener();
+        final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
 
         final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
@@ -128,7 +129,7 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
             try {
                 if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt);
+                    dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
@@ -165,7 +166,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
                 if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt);
+                    dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
@@ -220,7 +221,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                 }
                 if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt);
+                    dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
@@ -245,7 +246,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
                 }
                 if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt);
+                    dumpSymFiles(fileManager, jt, previous.createdFiles);
                     mem.isLowMemory();
                     jt = null;
                     diagnosticListener.cleanDiagnostics();
@@ -378,7 +379,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
-    private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti) throws IOException {
+    private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti, Set<File> alreadyCreated) throws IOException {
         if (jti != null) {
             final Types types = Types.instance(jti.getContext());
             final Enter enter = Enter.instance(jti.getContext());
@@ -410,12 +411,21 @@ final class MultiPassCompileWorker extends CompileWorker {
                     ScanNested scanner = new ScanNested(env);
                     scanner.scan(env.tree);
                     for (Env<AttrContext> dep: scanner.dependencies) {
-                        if (processedEnvs.add(dep))
-                            TreeLoader.dumpSymFile(jfm, jti, dep.enclClass.sym);
+                        if (processedEnvs.add(dep)) {
+                            dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated);
+                        }
                     }
-                    TreeLoader.dumpSymFile(jfm, jti, env.enclClass.sym);                    
+                    dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated);
                 }
             }
+        }
+    }
+    
+    private void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol cs, Set<File> alreadyCreated) throws IOException {
+        JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
+                cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
+        if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
+            TreeLoader.dumpSymFile(jfm, jti, cs);
         }
     }
 }

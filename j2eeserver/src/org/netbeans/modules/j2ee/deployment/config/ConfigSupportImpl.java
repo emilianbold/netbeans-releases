@@ -89,6 +89,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
 import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
@@ -781,7 +782,13 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                                 return null;
                             }
                             ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
-                            moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
+                            if (moduleConfigurationFactory instanceof ModuleConfigurationFactory2
+                                    && instance != null) {
+                                moduleConfiguration = ((ModuleConfigurationFactory2) moduleConfigurationFactory)
+                                        .create(j2eeModule, instance.getUrl());
+                            } else {
+                                moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
+                            }
                         } catch (ConfigurationException ce) {
                             LOGGER.log(Level.INFO, null, ce);
                             return null;

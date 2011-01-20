@@ -41,10 +41,6 @@ config/Preferences/org/netbeans/modules/j2ee
 config/Preferences/org/netbeans/modules/j2ee/sun
 config/Preferences/org/netbeans/modules/j2ee/sun/appsrv81.properties
 
-# issue 154037
-config/Preferences/org/netbeans/modules/maven
-config/Preferences/org/netbeans/modules/maven/touchme.properties
-
 # why is this happening?
 var/cache/index
 var/cache/index/0.11

@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
 import org.netbeans.api.java.source.ClassIndex;
@@ -68,7 +70,7 @@ import org.openide.util.Utilities;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public abstract class ClassIndexImpl {
-    
+        
     public static enum State {
         NEW,
         INITIALIZED,
@@ -95,7 +97,8 @@ public abstract class ClassIndexImpl {
     
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> ();       
     public static ClassIndexFactory FACTORY;
-
+    private static final Logger LOG = Logger.getLogger(ClassIndexImpl.class.getName());
+    
     private State state = State.NEW;
     private final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
     
@@ -183,7 +186,25 @@ public abstract class ClassIndexImpl {
         }
         this.state=state;
     }
-        
+    
+    /**
+     * Handles exception. When exception is thrown from the non initialized index,
+     * the index has not been checked if it's corrupted. If it's corrupted don't display
+     * the error to user just log it. The index will be recovered during the scan.
+     * @param ret ret value
+     * @param e exception
+     * @return ret
+     * @throws Exception 
+     */
+    protected final <R, E extends Exception> R handleException (final R ret, final E e) throws E {
+        if (State.NEW == getState()) {
+            LOG.log(Level.FINE, "Exception from non initialized index", e); //NOI18N
+            return ret;
+        } else {
+            throw e;
+        }
+    }
+    
     public static interface Writer {
         void clear() throws IOException;
         void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;

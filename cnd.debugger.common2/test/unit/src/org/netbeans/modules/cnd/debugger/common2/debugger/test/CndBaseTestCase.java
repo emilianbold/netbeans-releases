@@ -133,9 +133,12 @@ public abstract class CndBaseTestCase extends NbTestCase {
                 File harness = nbjunit.getParentFile().getParentFile();
                 Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
                 TreeSet<File> sorted = new TreeSet<File>();
-                for (File p : harness.getParentFile().listFiles()) {
-                    if (p.getName().startsWith("platform")) {
-                        sorted.add(p);
+                File[] listFiles = harness.getParentFile().listFiles();
+                if (listFiles != null) {
+                    for (File p : listFiles) {
+                        if (p.getName().startsWith("platform")) {
+                            sorted.add(p);
+                        }
                     }
                 }
                 Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());

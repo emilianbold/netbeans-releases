@@ -58,6 +58,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.ValidateCommand;
@@ -309,37 +310,39 @@ public class RepositoryController extends BugtrackingController implements Docum
                 String url = getUrl();
                 String user = getUser();
                 String httpUser = getHttpUser();
+                String password = getPassword();
+                String httpPassword = getHttpPassword();
                 TaskRepository taskRepo = JiraRepository.createTaskRepository(
                         name,
                         url,
                         user,
-                        getPassword(),
+                        password,
                         getHttpUser(),
-                        getHttpPassword());
+                        httpPassword);
 
                 ValidateCommand cmd = new ValidateCommand(taskRepo);
                 repository.getExecutor().execute(cmd, false, false, false);
                 if(cmd.hasFailed()) {
                     if(cmd.getErrorMessage() == null) {
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
-                                           Level.WARNING, name, url, user, httpUser);
+                        logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed, yet the returned error message is null.", // NOI18N
+                                           Level.WARNING, name, url, user, password, httpUser, httpPassword);
                         errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
                     } else {
                         errorMessage = cmd.getErrorMessage();
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
-                                           Level.WARNING, name, url, user, httpUser);
+                        logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed: " + errorMessage, // NOI18N
+                                           Level.WARNING, name, url, user, password, httpUser, httpPassword);
                     }
                     validateError = true;
                 } else {
-                    logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
-                                       Level.INFO, name, url, user, httpUser);
+                    logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] worked.", // NOI18N
+                                       Level.INFO, name, url, user, password, httpUser, httpPassword);
                     panel.connectionLabel.setVisible(true);
                 }
                 fireDataChanged();
             }
 
-            private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
-                Jira.LOG.log(level, msg, new Object[] {name, url, user, httpUser});
+            private void logValidateMessage(String msg, Level level, String name, String url, String user, String password, String httpUser, String httpPassword) {
+                Jira.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(password), httpUser, BugtrackingUtil.getPasswordLog(httpPassword)});
             }
         };
         taskRunner.startTask();

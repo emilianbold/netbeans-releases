@@ -58,8 +58,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
@@ -126,8 +128,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             if (initialized) {
                 return;
             }
-            org.netbeans.api.java.source.JavaSource source = org.netbeans.api.java.source.JavaSource.forFileObject(org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject(refactoredObj));
-            source.runUserActionTask(new org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.CompilationController>() {
+            JavaSource source = JavaSource.forFileObject(refactoredObj.getFileObject());
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void run(org.netbeans.api.java.source.CompilationController info) {
                     try {
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);

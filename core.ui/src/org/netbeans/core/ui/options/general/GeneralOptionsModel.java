@@ -76,7 +76,11 @@ class GeneralOptionsModel {
     
     void setProxyType (int proxyType) {
         if (proxyType != getProxyType ()) {
-            getProxyPreferences  ().putInt (ProxySettings.PROXY_TYPE, proxyType);
+            if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
+                getProxyPreferences  ().putInt (ProxySettings.PROXY_TYPE, usePAC() ? ProxySettings.AUTO_DETECT_PAC : ProxySettings.AUTO_DETECT_PROXY);
+            } else {
+                getProxyPreferences  ().putInt (ProxySettings.PROXY_TYPE, proxyType);
+            }
         }
     }
     
@@ -200,6 +204,12 @@ class GeneralOptionsModel {
     
     void setAuthenticationPassword(char [] password) {
         ProxySettings.setAuthenticationPassword(password);
+    }
+    
+    static boolean usePAC() {
+        String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
+        boolean usePAC = s != null && s.startsWith("PAC"); // NOI18N
+        return usePAC;
     }
     
     // private helper methods ..................................................

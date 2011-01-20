@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,8 +61,10 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public class SourceRootContainer {
     private final Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<CharSequence,Integer>();
+    private final boolean isFixedRoots;
     
-    public SourceRootContainer() {
+    public SourceRootContainer(boolean isFixedRoots) {
+        this.isFixedRoots = isFixedRoots;
     }
     
     public boolean isMySource(String includePath){
@@ -80,8 +82,14 @@ public class SourceRootContainer {
             includePath = includePath.substring(0,i);
             Integer val = projectRoots.get(DefaultCache.getManager().getString(includePath));
             if (val != null) {
-                if (val > Integer.MAX_VALUE/4) {
-                    return true;
+                if (isFixedRoots) {
+                    if (val > Integer.MAX_VALUE/4) {
+                        return true;
+                    }
+                } else {
+                    if (val > 0) {
+                        return true;
+                    }
                 }
             }
         }
@@ -95,17 +103,18 @@ public class SourceRootContainer {
     
     public void addSources(List<NativeFileItem> items){
         for( NativeFileItem nativeFileItem : items ) {
-            addFile(nativeFileItem.getFile());
+            addFile(nativeFileItem);
         }
     }
     
-    private void addFile(File file){
-        File parentFile = CndFileUtils.normalizeFile(file).getParentFile();
-        String path = parentFile.getAbsolutePath();
+    private void addFile(NativeFileItem nativeFileItem) {
+        FileObject fo = nativeFileItem.getFileObject();
+        FileObject parent = fo.getParent();
+        String path = CndFileUtils.getNormalizedPath(parent);
         addPath(path);
         String canonicalPath;
         try {
-            canonicalPath = parentFile.getCanonicalPath();
+            canonicalPath = CndFileUtils.getCanonicalPath(parent);
             if (!path.equals(canonicalPath)) {
                 addPath(canonicalPath);
             }

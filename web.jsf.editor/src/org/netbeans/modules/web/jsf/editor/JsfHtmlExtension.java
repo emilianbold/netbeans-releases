@@ -51,7 +51,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.servlet.jsp.tagext.TagData;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -96,7 +95,10 @@ import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.Tag;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -154,6 +156,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void recolor(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 NbEditorDocument nbdoc = (NbEditorDocument) doc;
                 nbdoc.extWriteLock();
@@ -172,11 +175,11 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void highlightJsfTags(HtmlParserResult result, final Map<OffsetRange, Set<ColoringAttributes>> highlights) {
         final Snapshot snapshot = result.getSnapshot();
         Source source = snapshot.getSource();
-        JsfSupport jsfs = JsfSupport.findFor(source);
+        JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
         if (jsfs == null) {
             return;
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
 
         Map<String, String> nss = result.getNamespaces();
 
@@ -192,6 +195,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                 final FaceletsLibrary tldl = libs.get(namespace);
                 AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
+                    @Override
                     public void visit(AstNode node) {
                         if (node.type() == AstNode.NodeType.OPEN_TAG ||
                                 node.type() == AstNode.NodeType.ENDTAG) {
@@ -238,11 +242,11 @@ public class JsfHtmlExtension extends HtmlExtension {
     public List<CompletionItem> completeOpenTags(CompletionContext context) {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
-        JsfSupport jsfs = JsfSupport.findFor(source);
+        JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -324,11 +328,11 @@ public class JsfHtmlExtension extends HtmlExtension {
     public List<CompletionItem> completeAttributes(CompletionContext context) {
         HtmlParserResult result = context.getResult();
         Source source = result.getSnapshot().getSource();
-        JsfSupport jsfs = JsfSupport.findFor(source);
+        JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, FaceletsLibrary> libs = jsfs.getFaceletsLibraries();
+        Map<String, FaceletsLibrary> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -346,20 +350,23 @@ public class JsfHtmlExtension extends HtmlExtension {
             return Collections.emptyList();
         }
         
-        TldLibrary.Tag tag = flib.getTag(tagName);
-        if (tag != null) {
-            Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
-            //TODO resolve help
-            Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
+        LibraryComponent comp = flib.getComponent(tagName);
+        if (comp != null) {
+            Tag tag = comp.getTag();
+            if (tag != null) {
+                Collection<Attribute> attrs = tag.getAttributes();
+                //TODO resolve help
+                Collection<String> existingAttrNames = queriedNode.getAttributeKeys();
 
-            for (TldLibrary.Attribute a : attrs) {
-                String attrName = a.getName();
-                if (!existingAttrNames.contains(attrName) ||
-                        existingAttrNames.contains(context.getItemText())) {
-                    //show only unused attributes except the one where the caret currently stays
-                    //this is because of we need to show the item in the completion since
-                    //use might want to see javadoc of already used attribute
-                    items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
+                for (Attribute a : attrs) {
+                    String attrName = a.getName();
+                    if (!existingAttrNames.contains(attrName)
+                            || existingAttrNames.contains(context.getItemText())) {
+                        //show only unused attributes except the one where the caret currently stays
+                        //this is because of we need to show the item in the completion since
+                        //use might want to see javadoc of already used attribute
+                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
+                    }
                 }
             }
 
@@ -423,14 +430,14 @@ public class JsfHtmlExtension extends HtmlExtension {
             //xml namespace completion for facelets namespaces
             HtmlParserResult result = context.getResult();
             Source source = result.getSnapshot().getSource();
-            JsfSupport jsfs = JsfSupport.findFor(source);
+            JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
             if (jsfs == null) {
                 return Collections.emptyList();
             }
 
-            Collection<String> nss = new ArrayList<String>(jsfs.getFaceletsLibraries().keySet());
+            Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
             //add also xhtml ns to the completion
-            nss.add(JsfUtils.XHTML_NS);
+            nss.add(LibraryUtils.XHTML_NS);
             for(String namespace : nss) {
                 if(namespace.startsWith(context.getPrefix())) {
                     items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
@@ -447,81 +454,88 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         HtmlParserResult htmlresult = (HtmlParserResult) result;
         Snapshot snapshot = result.getSnapshot();
-        AstNode leaf = htmlresult.findLeaf(caretOffset);
-        if (leaf.type() == AstNode.NodeType.OPEN_TAG) {
+        AstNode leaf = htmlresult.findLeafTag(caretOffset, true, true);
+        if (leaf != null && leaf.type() == AstNode.NodeType.OPEN_TAG) {
             String namespace = leaf.getNamespace();
-            FaceletsLibrary lib = JsfSupport.findFor(result.getSnapshot().getSource()).getFaceletsLibraries().get(namespace);
-            if (lib != null) {
-                if (lib instanceof CompositeComponentLibrary) {
-                    String tagName = leaf.getNameWithoutPrefix();
-                    CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
-                    if (component == null) {
-                        return DeclarationLocation.NONE;
-                    }
-		    CompositeComponentModel model = component.getComponentModel();
-                    FileObject file = model.getSourceFile();
+            JsfSupportImpl jsfs = JsfSupportImpl.findFor(result.getSnapshot().getSource());
+            if (jsfs == null) {
+                return DeclarationLocation.NONE;
+            }
+            FaceletsLibrary lib = jsfs.getLibraries().get(namespace);
+            if (lib == null) {
+                return DeclarationLocation.NONE;
+            }
+            if (lib instanceof CompositeComponentLibrary) {
+                String tagName = leaf.getNameWithoutPrefix();
+                CompositeComponentLibrary.CompositeComponent component = (CompositeComponentLibrary.CompositeComponent) lib.getComponent(tagName);
+                if (component == null) {
+                    return DeclarationLocation.NONE;
+                }
+                CompositeComponentModel model = component.getComponentModel();
+                FileObject file = model.getSourceFile();
 
-                    //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
-                    int astOffset = snapshot.getEmbeddedOffset(caretOffset);
+                //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
+                int astOffset = snapshot.getEmbeddedOffset(caretOffset);
 
-                    int jumpOffset = 0;
-                    TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
-                    htmlTs.move(astOffset);
-                    if (htmlTs.moveNext() || htmlTs.movePrevious()) {
-                        if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
-                            //jumpOffset = 0;
-                        } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
-                            final String attributeName = htmlTs.token().text().toString();
-                            //find the attribute in the interface
+                int jumpOffset = 0;
+                TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
+                htmlTs.move(astOffset);
+                if (htmlTs.moveNext() || htmlTs.movePrevious()) {
+                    if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
+                        //jumpOffset = 0;
+                    } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
+                        final String attributeName = htmlTs.token().text().toString();
+                        //find the attribute in the interface
 
-                            Source source = Source.create(file);
-                            final int[] attrOffset = new int[1];
-                            try {
-                                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        Source source = Source.create(file);
+                        final int[] attrOffset = new int[1];
+                        try {
+                            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                                    @Override
-                                    public void run(ResultIterator resultIterator) throws Exception {
-                                        Result result = resultIterator.getParserResult(caretOffset);
-                                        if (result instanceof HtmlParserResult) {
-                                            HtmlParserResult hresult = (HtmlParserResult) result;
-                                            AstNode root = hresult.root(JsfUtils.COMPOSITE_LIBRARY_NS);
-                                            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    Result result = resultIterator.getParserResult(caretOffset);
+                                    if (result instanceof HtmlParserResult) {
+                                        HtmlParserResult hresult = (HtmlParserResult) result;
+                                        AstNode root = hresult.root(LibraryUtils.COMPOSITE_LIBRARY_NS);
+                                        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
-                                                public void visit(AstNode node) {
-                                                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
-                                                        for (AstNode child : node.children()) {
-                                                            if (child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
-                                                                String nameAttrvalue = child.getUnqotedAttributeValue("name");
-                                                                if (nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
-                                                                    //we found it
-                                                                    attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
-                                                                    break;
-                                                                }
+                                            @Override
+                                            public void visit(AstNode node) {
+                                                if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNameWithoutPrefix().equals("interface")) {
+                                                    for (AstNode child : node.children()) {
+                                                        if (child.type() == AstNode.NodeType.OPEN_TAG && child.getNameWithoutPrefix().equals("attribute")) {
+                                                            String nameAttrvalue = child.getUnqotedAttributeValue("name");
+                                                            if (nameAttrvalue != null && nameAttrvalue.equals(attributeName)) {
+                                                                //we found it
+                                                                attrOffset[0] = child.startOffset(); //offset of the attribute tag is fine
+                                                                break;
                                                             }
                                                         }
                                                     }
                                                 }
-                                            });
-                                        }
+                                            }
+                                        });
                                     }
-                                });
-                            } catch (ParseException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            jumpOffset = attrOffset[0];
-
+                                }
+                            });
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
+                        jumpOffset = attrOffset[0];
+
                     }
+                }
 
 
-                    if (file != null) {
-                        return new DeclarationLocation(file, jumpOffset);
-                    }
+                if (file != null) {
+                    return new DeclarationLocation(file, jumpOffset);
+                }
 
-                } else {
-                    //TODO - normal components hyperlinking - mostly nav. to java classes
-                    }
+            } else {
+                //TODO - normal components hyperlinking - mostly nav. to java classes
             }
+
 
         }
 

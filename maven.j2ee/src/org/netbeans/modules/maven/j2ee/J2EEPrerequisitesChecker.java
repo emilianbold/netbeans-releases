@@ -42,20 +42,25 @@
 
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author mkleint
  */
-public class J2EEPrerequisitesChecker implements PrerequisitesChecker {
+public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     private List applicableActions = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN,
@@ -96,6 +101,26 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker {
             }
             ((WebModuleProviderImpl)provider).getWebModuleImplementation().setWarInplace(inplace);
         }
+    }
+
+    @Override
+    public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
+        String actionName = config.getActionName();
+        if (!(ActionProvider.COMMAND_CLEAN.equals(actionName) || ActionProvider.COMMAND_REBUILD.equals(actionName))) {
+            return true;
+        }
+        J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            if (ExecutionChecker.DEV_NULL.equals(provider.getServerID())) {
+                return true;
+            }
+            try {
+                Deployment.getDefault ().undeploy(provider, false, new ExecutionChecker.DLogger(con.getInputOutput().getOut()));
+            } catch (DeploymentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return true;
     }
     
 }

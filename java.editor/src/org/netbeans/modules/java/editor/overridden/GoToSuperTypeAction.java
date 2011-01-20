@@ -50,12 +50,12 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
@@ -123,11 +123,9 @@ public class GoToSuperTypeAction extends BaseAction {
                 return ;
             }
             
-            Point p = new Point(target.modelToView(target.getCaretPosition()).getLocation());
+            Point p = target.modelToView(target.getCaretPosition()).getLocation();
             
-            SwingUtilities.convertPointToScreen(p, target);
-            
-            IsOverriddenAnnotation.performGoToAction(type[0], result, p, "");
+            IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(IsOverriddenAnnotationAction.computeCaption(type[0], ""), result), target, p);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         } catch (BadLocationException e) {

@@ -72,10 +72,10 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
- *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver.class)
 public final class IncludeResolverImpl extends CsmIncludeResolver {
@@ -165,11 +165,11 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
             if (file != null) {
                 if (file.equals(currentFile) || file.isHeaderFile()) {
-                    return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
+                    return getIncludeDirectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
                 } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
                     Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
                     if (!decls.isEmpty()) {
-                        return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+                        return getIncludeDirectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
                     }
                 }
             } else {
@@ -182,13 +182,13 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     }
 
     // Says is header standard or not
-    private boolean isStandardHeader(List<String> sysIncsPaths, CsmFile header) {
+    private boolean isStandardHeader(List<FSPath> sysIncsPaths, CsmFile header) {
         String bestSystemPath = getRelativePath(sysIncsPaths, header.getAbsolutePath().toString());
         return standardHeaders.contains(header.getAbsolutePath().toString().substring(bestSystemPath.length() + 1));
     }
     
     // Returns standard header if it exists
-    private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<String> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
+    private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<FSPath> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
         if (scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
             return null;
         }
@@ -208,7 +208,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     }
 
     // Generates "#include *" string for item
-    private String getIncludeDerectiveByFile(CsmFile currentFile, CsmObject item) {
+    private String getIncludeDirectiveByFile(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             if (currentFile instanceof FileImpl) {
                 NativeFileItem nativeFile = ((FileImpl) currentFile).getNativeFileItem();
@@ -316,9 +316,10 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
 
     
     // Returns relative path for file from list of paths
-    private String getRelativePath(List<String> paths, String filePath) {
+    private String getRelativePath(List<FSPath> paths, String filePath) {
         String goodPath = ""; // NOI18N
-        for (String path : paths) {
+        for (FSPath fsPath : paths) {
+            String path = fsPath.getPath();
             if (filePath.startsWith(path)) {
                 if (goodPath.length() < path.length()) {
                     goodPath = path;

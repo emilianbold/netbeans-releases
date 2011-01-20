@@ -43,14 +43,18 @@ package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -75,6 +79,8 @@ import org.openide.filesystems.FileObject;
  * @author Anuradha G
  */
 public final class ModelUtils {
+
+    private ModelUtils() {}
 
     /**
      * 
@@ -336,24 +342,36 @@ public final class ModelUtils {
         return result;
     }
 
+    /**
+     *          [0] type - default/legacy
+     *          [1] repo root
+     *          [2] groupId
+     *          [3] artifactId
+     *          [4] version
+     *          [5] classifier (optional, not part of path, but url's ref)
+     */
     private static Pattern DEFAULT = Pattern.compile("(.+)[/]{1}(.+)[/]{1}(.+)[/]{1}(.+)\\.pom"); //NOI18N
     private static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z0-9_]+[a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
+    private static final List<String> knownRepositories = Arrays.asList(RepositoryPreferences.REPO_CENTRAL, "http://download.java.net/maven/1/", "http://download.java.net/maven/glassfish/");
 
     /** Returns a library descriptor corresponding to the given library,
      * or null if not recognized successfully.
      *
      * @param pom library to check
-     * @param knownRepositories repositories to match against
-     * @return LibraryDescriptor corresponding to the library with respect to the
-     * known repositories, or null if the pom URL format is not recognized.
+     * @return LibraryDescriptor corresponding to the library, or null if the pom URL format is not recognized.
      */
-    public static LibraryDescriptor checkLibrary(URL pom, Set<String> knownRepositories) {
+    @SuppressWarnings("SBSC_USE_STRINGBUFFER_CONCATENATION")
+    public static LibraryDescriptor checkLibrary(URL pom) {
         String path = pom.getPath();
         Matcher match = LEGACY.matcher(path);
         boolean def = false;
         if (!match.matches()) {
             match = DEFAULT.matcher(path);
             def = true;
+        }
+        Collection<String> repos = new LinkedHashSet<String>(knownRepositories);
+        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+            repos.add(info.getRepositoryUrl());
         }
         if (match.matches()) {
             String classifier = pom.getRef(); // may be null;
@@ -362,7 +380,7 @@ public final class ModelUtils {
             String groupId = match.group(1);
             String artifactId = match.group(2);
             String version = match.group(3);
-            for (String repoString : knownRepositories) {
+            for (String repoString : repos) {
                 try {
                     URL repo = new URL(repoString);
                     String root = repo.getProtocol() + "://" + repo.getHost() + (repo.getPort() != -1 ? (":" + repo.getPort()) : ""); //NOI18N

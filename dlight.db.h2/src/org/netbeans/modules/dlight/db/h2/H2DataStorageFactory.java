@@ -129,6 +129,8 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     @Override
     public synchronized H2DataStorage createStorage(String uniqueKey) {
         try {
+            //check if it exesits already by any chance...
+
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Create Storage with unique id={0}", uniqueKey);//NOI18N
             H2DataStorage result = new H2DataStorage(true, uniqueKey);
             result.connect();
@@ -163,6 +165,8 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
                     "storage with the uniqueID={0} and dbURL={1} successfully OPENED" , new String[]{uniqueKey, dbURL});     //NOI18N           
                 return result;
+            }else{
+                return createStorage(uniqueKey);
             }
         } catch (SQLException ex) {
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);

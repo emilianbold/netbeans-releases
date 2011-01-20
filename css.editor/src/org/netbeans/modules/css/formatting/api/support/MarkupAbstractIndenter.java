@@ -53,9 +53,11 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  * Implementation of AbstractIndenter for tag based languages.
@@ -68,7 +70,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private List<EliminatedTag> eliminatedTags;
     private boolean inOpeningTagAttributes;
     private boolean inUnformattableTagContent;
-    private String unformattableTagName = null;
+    private CharSequence unformattableTagName = null;
     private int attributesIndent;
     private int firstPreservedLineIndent = -1;
 
@@ -93,15 +95,15 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     abstract protected boolean isTagContentToken(Token<T1> token);
 
-    abstract protected boolean isClosingTagOptional(String tagName);
+    abstract protected boolean isClosingTagOptional(CharSequence tagName);
 
-    abstract protected boolean isOpeningTagOptional(String tagName);
+    abstract protected boolean isOpeningTagOptional(CharSequence tagName);
 
-    abstract protected Boolean isEmptyTag(String tagName);
+    abstract protected Boolean isEmptyTag(CharSequence tagName);
 
-    abstract protected boolean isTagContentUnformattable(String tagName);
+    abstract protected boolean isTagContentUnformattable(CharSequence tagName);
 
-    abstract protected Set<String> getTagChildren(String tagName);
+    abstract protected Set<String> getTagChildren(CharSequence tagName);
 
     abstract protected boolean isPreservedLine(Token<T1> token, IndenterContextData<T1> context);
 
@@ -189,7 +191,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (ts.offset() < to) {
                 break;
             }
-            String tag;
+            CharSequence tag;
             // if closing tag was found jump to opening one but
             // only if both opening and closing tags are mandatory - not doing
             // so can result in wrong pair matching:
@@ -207,7 +209,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
-                    assert getTokenName(ts.token()).equalsIgnoreCase(tag) : "tag="+tag+" token="+ts.token();
+                    assert LexerUtils.equals(getTokenName(ts.token()), tag, true, false) : "tag="+tag+" token="+ts.token();
                     int rangeStart;
                     // if document is being editted end tag symbol might be accidentally missing:
                     if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
@@ -234,8 +236,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
     }
 
-    private final MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
-        String tagName = getTokenName(token);
+    private MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation) {
+        return createMarkupItem(token, openingTag, indentation, false);
+    }
+    
+    private MarkupItem createMarkupItem(Token<T1> token, boolean openingTag, int indentation, boolean foreign) {
+        CharSequence tagName = getTokenName(token);
         if (openingTag) {
             boolean optionalEnd = isClosingTagOptional(getTokenName(token));
             Set<String> children = null;
@@ -243,26 +249,28 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (optionalEnd && empty != null && !empty.booleanValue()) {
                 children = getTagChildren(tagName);
             }
-            return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false, false);
+            return new MarkupItem(tagName, true, indentation, optionalEnd, children, 
+                    empty != null ? empty.booleanValue() : false, false, false, foreign);
         } else {
             Boolean empty = isEmptyTag(tagName);
-            return new MarkupItem(tagName, false, indentation, false, null, empty != null ? empty.booleanValue() : false, false, false);
+            return new MarkupItem(tagName, false, indentation, false, null, 
+                    empty != null ? empty.booleanValue() : false, false, false, foreign);
         }
 
     }
 
-    private static MarkupItem createVirtualMarkupItem(String tagName, boolean empty) {
-        return new MarkupItem(tagName, false, -1, false, null, empty, true, false);
+    private static MarkupItem createVirtualMarkupItem(CharSequence tagName, boolean empty) {
+        return new MarkupItem(tagName, false, -1, false, null, empty, true, false, false);
     }
 
-    private static MarkupItem createEliminatedMarkupItem(String tagName, boolean openingTag) {
-        return new MarkupItem(tagName, openingTag, -1, false, null, false, false, true);
+    private static MarkupItem createEliminatedMarkupItem(CharSequence tagName, boolean openingTag) {
+        return new MarkupItem(tagName, openingTag, -1, false, null, false, false, true, false);
     }
 
     private boolean moveToOpeningTag(JoinedTokenSequence<T1> tokenSequence) {
         int originalIndex = tokenSequence.index();
 
-        String searchedTagName = getTokenName(tokenSequence.token());
+        CharSequence searchedTagName = getTokenName(tokenSequence.token());
         int balance = 0;
 
         while (tokenSequence.movePrevious()) {
@@ -270,7 +278,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (!isOpenTagNameToken(tk) && !isCloseTagNameToken(tk)) {
                 continue;
             }
-            if (searchedTagName.equalsIgnoreCase(getTokenName(tk))) {
+            if (LexerUtils.equals(searchedTagName, getTokenName(tk), true, false)) {
                 if (isOpenTagNameToken(tk)) {
                     if (balance == 0) {
                         return true;
@@ -327,7 +335,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 //assert item.openingTag : dumpMoreDiagnosticToResolveIssue162700(fileStack);
                 break;
             }
-            if (!item.empty) {
+            if (!item.empty || item.foreignLanguageTag) {
                 // eliminate opening and closing sequence on one line:
                 IndentCommand ic = new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
                     lineStartOffset);
@@ -403,7 +411,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         List<MarkupItem> lineItems = new ArrayList<MarkupItem>();
 
-        String lastOpenTagName = null;
+        CharSequence lastOpenTagName = null;
 
         boolean unformattableTagContent = isInUnformattableTagContent();
 
@@ -417,7 +425,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
 
             if (isOpenTagNameToken(token)) {
-                lineItems.add(createMarkupItem(token, true, getIndentationSize()));
+                boolean foreign = isForeignLanguageStartToken(token, ts);
+                lineItems.add(createMarkupItem(token, true, getIndentationSize(), foreign));
                 setInOpeningTagAttributes(true);
                 lastOpenTagName = getTokenName(token);
             } else if (isTagArgumentToken(token) && getAttributesIndent() == -1) {
@@ -431,8 +440,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 ts.moveIndex(index);
                 ts.moveNext();
             } else if (isCloseTagNameToken(token)) {
-                lineItems.add(createMarkupItem(token, false, getIndentationSize()));
-                String tokenName = getTokenName(token);
+                boolean foreign = isForeignLanguageEndToken(token, ts);
+                lineItems.add(createMarkupItem(token, false, getIndentationSize(), foreign));
+                CharSequence tokenName = getTokenName(token);
                 // unformattable tags can be nested (eg. textarea within pre) so
                 // make sure we close unformattable section only by corresponing tag:
                 if (isTagContentUnformattable(tokenName) && tokenName.equals(unformattableTagName)) {
@@ -515,12 +525,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 if (isStartTagSymbol(ts.token()) || isStartTagClosingSymbol(ts.token())) {
                     boolean closingTag = isStartTagClosingSymbol(ts.token());
                     if (ts.moveNext()) {
-                        String tokenName = getTokenName(ts.token());
+                        CharSequence tokenName = getTokenName(ts.token());
                         List<IndentCommand> iis2 = new ArrayList<IndentCommand>();
                         // there can be multiple virtual closing tags before 'tokenName' one:
                         for (int i=index; i< fileStack.size(); i++) {
                             MarkupItem item = fileStack.get(i);
-                            if (item.empty) {
+                            if (item.empty && !item.foreignLanguageTag) {
                                 continue;
                             }
                             assert !item.processed : item;
@@ -530,7 +540,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName) && context.isIndentThisLine()) {
+                                if (closingTag && LexerUtils.equals(item.tagName, tokenName, true, false) && context.isIndentThisLine()) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;
@@ -582,7 +592,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         }
     }
 
-    private String getTokenName(Token<T1> token) {
+    private CharSequence getTokenName(Token<T1> token) {
         //
         // trim() is here intentionally to get rid of new line character
         // from tag name in case of JSP like:
@@ -592,7 +602,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         //
         // at the moment tag is: T[ 1]: "jsp:useBean\n" <1,13> TAG[3] DefT, st=5, IHC=19351667
         //
-        return token.text().toString().trim();
+        return CharSequenceUtilities.trim(token.text());
     }
 
     private Token<T1> findPreviousNonWhiteSpaceToken(JoinedTokenSequence<T1> ts) {
@@ -601,7 +611,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     }
 
     private static class MarkupItem {
-        public String tagName;
+        public CharSequence tagName;
         public boolean openingTag;
         public int indentLevel;
         public boolean processed;
@@ -610,9 +620,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         public boolean virtual;
         public boolean empty;
         public boolean eliminated;
+        public boolean foreignLanguageTag;
 
-        public MarkupItem(String tagName, boolean openingTag, int indentLevel,
-                boolean optionalClosingTag, Set<String> children, boolean empty, boolean virtual, boolean eliminated) {
+        public MarkupItem(CharSequence tagName, boolean openingTag, int indentLevel,
+                boolean optionalClosingTag, Set<String> children, boolean empty, boolean virtual, 
+                boolean eliminated, boolean foreignLanguageTag) {
             this.tagName = tagName;
             this.openingTag = openingTag;
             this.indentLevel = indentLevel;
@@ -622,6 +634,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             this.empty = empty;
             this.virtual = virtual;
             this.eliminated = eliminated;
+            this.foreignLanguageTag = foreignLanguageTag;
         }
 
         @Override
@@ -634,6 +647,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     "processed="+processed+"," +
                     //"children="+children+"," +
                     "virtual="+virtual+"," +
+                    "foreign="+foreignLanguageTag+"," +
                     "empty="+empty+"]";
         }
 
@@ -705,7 +719,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     // everything is OK;
                     break;
                 } else if (item.children != null) {
-                    if (item.children.contains(newItem.tagName.toUpperCase())) {
+                    if (item.children.contains(newItem.tagName.toString().toUpperCase())) {
                         // everything is OK;
                         break;
                     } else {
@@ -722,7 +736,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                         // it can have two children: <head> and <body>. Because <table> is not a child
                         // of <html> perhaps <html> was closed? Not really because both children has optional
                         // opening tag and in such a case just do nothing and do not try to close <html>.
-                        for (String s : item.children) {
+                        for (CharSequence s : item.children) {
                             if (isOpeningTagOptional(s)) {
                                 // one of the children of 'item' has optional start which means
                                 // we cannot assume that tag 'item' should be closed.
@@ -762,7 +776,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
                 continue;
             } else {
-                if (item.tagName.equalsIgnoreCase(newItem.tagName)) {
+                if (LexerUtils.equals(item.tagName, newItem.tagName, true, false)) {
                     lastFailureSize = -1;
                     // nothing to do:
                     break;
@@ -803,7 +817,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         int balance = 0;
         for (int index=i-1; index >= 0; index--) {
             MarkupItem item = list.get(index);
-            if (item.tagName.equalsIgnoreCase(closeTag.tagName)) {
+            if (LexerUtils.equals(item.tagName, closeTag.tagName, true, false)) {
                 if (item.openingTag) {
                     if (balance == 0) {
                         return index;
@@ -843,7 +857,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         return inUnformattableTagContent;
     }
 
-    private void setInUnformattableTagContent(boolean inUnformattableTagContent, String unformattableTagName) {
+    private void setInUnformattableTagContent(boolean inUnformattableTagContent, CharSequence unformattableTagName) {
         this.inUnformattableTagContent = inUnformattableTagContent;
         this.unformattableTagName = unformattableTagName;
     }
@@ -856,9 +870,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
     private static class EliminatedTag {
         private int start;
         private int end;
-        private String tag;
+        private CharSequence tag;
 
-        public EliminatedTag(int start, int end, String tag) {
+        public EliminatedTag(int start, int end, CharSequence tag) {
             this.start = start;
             this.end = end;
             this.tag = tag;

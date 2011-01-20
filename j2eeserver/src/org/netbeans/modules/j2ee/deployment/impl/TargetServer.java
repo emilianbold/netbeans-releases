@@ -774,6 +774,11 @@ public class TargetServer {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
 
+        if (provider.isOnlyCompileOnSaveEnabled()) {
+            // XXXX is this right response? it should not result in any error
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+            
         if (!DeployOnSaveManager.isServerStateSupported(instance)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
@@ -785,6 +790,13 @@ public class TargetServer {
             Exceptions.printStackTrace(ex);
         }
 
+        // This may happen because of events coming in for server resources
+        // because of COS enabled all the time :( For web resources these
+        // events are not even fired.
+        if (dtarget.getTargetModules() == null) {
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+        
         TargetModule[] modules = getDeploymentDirectoryModules();
 
         try {
@@ -834,6 +846,7 @@ public class TargetServer {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
+
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");

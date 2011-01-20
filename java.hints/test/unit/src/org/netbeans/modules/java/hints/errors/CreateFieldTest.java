@@ -105,6 +105,13 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 "CreateFieldFix:whantAutoGenerateThisVariableInXClass:test.X:java.lang.Object:[static]",
                 "package test;import javax.swing.JFrame;import javax.swing.JOptionPane;public class Test {public boolean isOk() {JFrame frame = null;JOptionPane.showMessageDialog(frame,X.whantAutoGenerateThisVariableInXClass,\"Error\",JOptionPane.ERROR_MESSAGE );return true;}} class X { static Object whantAutoGenerateThisVariableInXClass; }");
     }
+
+    public void test192219() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test<T> { private T getA() { return a|a;} }",
+                "CreateFieldFix:aa:test.Test:T:[private]",
+                "package test; public class Test<T> { private T aa; private T getA() { return aa;} }");
+    }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);

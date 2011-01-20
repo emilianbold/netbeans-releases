@@ -79,6 +79,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
@@ -109,30 +110,63 @@ public class ConvertAnonymousToInner extends AbstractHint {
         return EnumSet.of(Kind.NEW_CLASS);
     }
 
-    static Fix computeFix(CompilationInfo info, TreePath path, int pos) {
-        if (path.getLeaf().getKind() != Kind.NEW_CLASS)
-            return null;
+    static Fix computeFix(CompilationInfo info, int selStart, int selEnd, boolean onlyHeader) {
+        TreePath tp = findNCT(info, info.getTreeUtilities().pathFor((selStart + selEnd + 1) / 2), selStart, selEnd, onlyHeader);
+
+        if (tp == null) {
+            tp = findNCT(info, info.getTreeUtilities().pathFor((selStart + selEnd + 1) / 2 + 1), selStart, selEnd, onlyHeader);
+        }
         
-        NewClassTree nct = (NewClassTree) path.getLeaf();
-        
-        if (nct.getClassBody() == null) {
+        if (tp == null) {
             return null;
         }
         
-        if (pos != (-1)) {
-            long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), nct.getClassBody());
-            
-            if (pos > start) {
-                return null;
+        return new FixImpl(TreePathHandle.create(tp, info), info.getJavaSource(), info.getFileObject());
+    }
+
+    private static TreePath findNCT(CompilationInfo info, TreePath tp, int selStart, int selEnd, boolean onlyHeader) {
+        while (tp != null) {
+            if (tp.getLeaf().getKind() != Kind.NEW_CLASS) {
+                tp = tp.getParentPath();
+                continue;
             }
+
+            NewClassTree nct = (NewClassTree) tp.getLeaf();
+
+            if (nct.getClassBody() == null) {
+                tp = tp.getParentPath();
+                continue;
+            }
+
+            if (selStart == selEnd) {
+                if (onlyHeader) {
+                    long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), nct.getClassBody());
+
+                    if (selStart > start) {
+                        return null;
+                    }
+                }
+
+                break;
+            } else {
+                long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), nct);
+                long end = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), nct);
+
+                if (start == selStart && end == selEnd) {
+                    break;
+                }
+            }
+
+            tp = tp.getParentPath();
         }
-        
-        return new FixImpl(TreePathHandle.create(path, info), info.getJavaSource(), info.getFileObject());
+
+        return tp;
     }
     
     public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
         int pos = CaretAwareJavaSourceTaskFactory.getLastPosition(compilationInfo.getFileObject());
-        Fix f = computeFix(compilationInfo, treePath, pos);
+        int[] selection = SelectionAwareJavaSourceTaskFactory.getLastSelection(compilationInfo.getFileObject());
+        Fix f = computeFix(compilationInfo, selection[0], selection[1], true);
         
         if (f == null)
             return null;

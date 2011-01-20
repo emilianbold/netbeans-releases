@@ -171,10 +171,11 @@ public class EdgeWidget extends ConnectionWidget {
                 DependencyGraphScene grScene = (DependencyGraphScene)getScene();
                 DependencyNode includedDepN = grScene.getGraphNodeRepresentant(
                         edge.getTarget()).getArtifact();
+                DependencyNode parent = includedDepN.getParent();
                 String confText = NbBundle.getMessage(EdgeWidget.class,
                         edgeConflictType == ArtifactGraphNode.CONFLICT ? "TIP_VersionConflict" : "TIP_VersionWarning",
                         includedDepN.getArtifact().getVersion(),
-                        includedDepN.getParent().getArtifact().getArtifactId());
+                        parent != null ? parent.getArtifact().getArtifactId() : "???");
                 conflictVersion.setToolTipText(confText);
                 sb.append(confText);
                 sb.append("<br>");

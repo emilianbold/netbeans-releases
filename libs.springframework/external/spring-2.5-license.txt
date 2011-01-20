@@ -4,6 +4,7 @@ License: Apache-2.0
 OSR: 8070
 Description: Java/J2EE application framework
 Origin: http://www.springframework.org
+Files: spring-2.5.6.SEC01.jar
 
                                  Apache License
                            Version 2.0, January 2004

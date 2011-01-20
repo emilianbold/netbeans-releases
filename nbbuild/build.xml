@@ -1479,12 +1479,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     <mkdir dir="${netbeans.build.dir}"/>
     <dirset id="source.dirset" dir="${nb_all}"
-            includes="${allmodules},${harness-modules},nbbuild,ide,nbi"
+            includes="${allmodules},${harness-modules},nbbuild,ide,nbi,libs.antlr3.devel"
             excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
     />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}">
+            <include name="libs.antlr3.devel/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
     <zip zipfile="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip" duplicate="preserve">
       <zipfileset dir="${nb_all}" includes="${source.dirs}">
           <exclude name="*/build/**/*"/>
@@ -1556,6 +1561,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               <include name="**/*.jar"/>
           </modules>
       </layerindex>
+  </target>
+
+  <target name="summarize-hgmail" depends="generate-golden-files-init" description="Create summary of .hgmail coverage.">
+      <taskdef name="summarize-hgmail" classname="org.netbeans.nbbuild.SummarizeHgmail" classpath="nbantext.jar"/>
+      <summarize-hgmail output="${generated.files.dir}/hgmail-summary.txt">
+          <hgmails dir="${nb_all}">
+              <include name=".hgmail"/>
+              <include name="*/.hgmail"/>
+          </hgmails>
+      </summarize-hgmail>
   </target>
 
   <target name="display-l10n-list-matches" description="Show which files are actually matched by an l10n.list in some module.">

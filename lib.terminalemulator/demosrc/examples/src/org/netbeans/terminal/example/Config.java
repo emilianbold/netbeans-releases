@@ -66,6 +66,7 @@ public final class Config {
     private final boolean restartable;
     private final boolean hupOnClose;
     private final boolean keep;
+    private final boolean debug;
 
     public Config(
 		String command,
@@ -78,7 +79,8 @@ public final class Config {
 		ContainerStyle containerStyle,
 		boolean restartable,
 		boolean hupOnClose,
-		boolean keep
+		boolean keep,
+                boolean debug
 	    ) {
 	this.command  = command;
 	this.containerProvider  = containerProvider;
@@ -91,6 +93,7 @@ public final class Config {
 	this.restartable  = restartable;
 	this.hupOnClose  = hupOnClose;
 	this.keep = keep;
+	this.debug = debug;
     }
 
     public static Config getShellConfig() {
@@ -104,7 +107,8 @@ public final class Config {
 			  ContainerStyle.TABBED,
 	                  false,	// restartable
 	                  true,		// hupOnClose
-			  false		// keep
+			  false,	// keep
+                          false         // debug
 			  );
     }
 
@@ -119,7 +123,8 @@ public final class Config {
 			  ContainerStyle.TABBED,
 	                  true,		// restartable
 	                  true,		// hupOnClose
-			  false		// keep
+			  false,	// keep
+                          false         // debug
 			  );
     }
 
@@ -157,6 +162,10 @@ public final class Config {
 
     public boolean isKeep() {
 	return keep;
+    }
+
+    public boolean isDebug() {
+        return debug;
     }
 
     public IOShuttling getIOShuttling() {

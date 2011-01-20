@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
 import java.io.*;
 import java.util.Arrays;
@@ -251,6 +252,44 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
                 ParameterizedTypeTree man = make.ParameterizedType(make.Identifier("LinkedList"), Collections.singletonList(make.Wildcard(Tree.Kind.UNBOUNDED_WILDCARD, make.Identifier("Object"))));
 
                 workingCopy.rewrite(var.getType(), man);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test158480() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private LinkedList<? super Integer> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private LinkedList<?> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree type = (ParameterizedTypeTree) var.getType();
+                Tree tp = type.getTypeArguments().get(0);
+
+                workingCopy.rewrite(type.getTypeArguments().get(0), make.Wildcard(Kind.UNBOUNDED_WILDCARD, null));
             }
 
         };

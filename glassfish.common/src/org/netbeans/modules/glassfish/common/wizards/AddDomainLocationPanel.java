@@ -189,7 +189,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         int dex = domainField.indexOf(File.separator);
         if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
             AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
-            String uri = wizardIterator.formatUri(gfRoot, GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
+            String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
             if (-1 == wizardIterator.getHttpPort()) {
                 wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainField)); // NOI18N
                 return false;

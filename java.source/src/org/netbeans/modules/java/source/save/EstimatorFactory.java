@@ -61,67 +61,67 @@ final class EstimatorFactory {
     
     static PositionEstimator throwz(List<? extends ExpressionTree> oldL, 
                                     List<? extends ExpressionTree> newL,
-                                    WorkingCopy copy)
+                                    DiffContext diffContext)
     {
-        return new PositionEstimator.ThrowsEstimator(oldL, newL, copy);
+        return new PositionEstimator.ThrowsEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator implementz(List<? extends Tree> oldL, 
                                         List<? extends Tree> newL,
-                                        WorkingCopy copy)
+                                        DiffContext diffContext)
     {
-        return new PositionEstimator.ImplementsEstimator(oldL, newL, copy);
+        return new PositionEstimator.ImplementsEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator extendz(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
-                                     WorkingCopy copy)
+                                     DiffContext diffContext)
     {
-        return new PositionEstimator.ExtendsEstimator(oldL, newL, copy);
+        return new PositionEstimator.ExtendsEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator statements(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
-                                     WorkingCopy copy)
+                                     DiffContext diffContext)
     {
-        return new PositionEstimator.MembersEstimator(oldL, newL, copy);
+        return new PositionEstimator.MembersEstimator(oldL, newL, diffContext, false);
     }
 
     static PositionEstimator catches(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
-                                     WorkingCopy copy)
+                                     DiffContext diffContext)
     {
-        return new PositionEstimator.CatchesEstimator(oldL, newL, copy);
+        return new PositionEstimator.CatchesEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator cases(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
-                                     WorkingCopy copy)
+                                     DiffContext diffContext)
     {
-        return new PositionEstimator.CasesEstimator(oldL, newL, copy);
+        return new PositionEstimator.CasesEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator members(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
-                                     WorkingCopy copy)
+                                     DiffContext diffContext)
     {
-        return new PositionEstimator.MembersEstimator(oldL, newL, copy);
+        return new PositionEstimator.MembersEstimator(oldL, newL, diffContext, true);
     }
     
     static PositionEstimator toplevel(List<? extends Tree> oldL, 
                                       List<? extends Tree> newL,
-                                      WorkingCopy copy)
+                                      DiffContext diffContext)
     {
-        return new PositionEstimator.TopLevelEstimator(oldL, newL, copy);
+        return new PositionEstimator.TopLevelEstimator(oldL, newL, diffContext);
     }
 
     static PositionEstimator annotations(List<? extends Tree> oldL, 
                                       List<? extends Tree> newL,
-                                      WorkingCopy copy,
+                                      DiffContext diffContext,
                                       boolean parameterPrint)
     {
         if (parameterPrint) {
-            return new PositionEstimator.AnnotationsEstimator(oldL, newL, copy) {
+            return new PositionEstimator.AnnotationsEstimator(oldL, newL, diffContext) {
                 @Override
                 public int prepare(int startPos, StringBuilder aHead, StringBuilder aTail) {
                     int result = super.prepare(startPos, aHead, aTail);
@@ -135,7 +135,7 @@ final class EstimatorFactory {
                 }
             };
         } else {
-            return new PositionEstimator.AnnotationsEstimator(oldL, newL, copy);
+            return new PositionEstimator.AnnotationsEstimator(oldL, newL, diffContext);
         }
     }
     
@@ -176,8 +176,8 @@ final class EstimatorFactory {
      */
     static PositionEstimator imports(List<? extends ImportTree> oldL, 
                                      List<? extends ImportTree> newL,
-                                     WorkingCopy copy)
+                                     DiffContext diffContext)
     {
-        return new PositionEstimator.ImportsEstimator(oldL, newL, copy);
+        return new PositionEstimator.ImportsEstimator(oldL, newL, diffContext);
     }
 }

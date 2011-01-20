@@ -96,6 +96,7 @@ public class CreateAction extends ContextAction {
             return false;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Create"; // NOI18N
     }
@@ -136,6 +137,7 @@ public class CreateAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 performCreate(context);
             }
@@ -144,6 +146,9 @@ public class CreateAction extends ContextAction {
 
     private void performCreate (VCSContext context) {
         final Mercurial hg = Mercurial.getInstance();
+        if (!hg.isAvailable(true)) {
+            return;
+        }
 
         final File rootToManage = selectRootToManage(context);
         if (rootToManage == null) {
@@ -152,6 +157,7 @@ public class CreateAction extends ContextAction {
 
         RequestProcessor rp = hg.getRequestProcessor(rootToManage);
         HgProgressSupport supportCreate = new HgProgressSupport() {
+            @Override
             public void perform() {
 
                 try {
@@ -178,6 +184,7 @@ public class CreateAction extends ContextAction {
                 org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Progress")); // NOI18N
 
         HgProgressSupport supportAdd = new HgProgressSupport() {
+            @Override
             public void perform() {
                 OutputLogger logger = getLogger();
                 try {
@@ -221,6 +228,7 @@ public class CreateAction extends ContextAction {
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
         final RequestProcessor.Task validateTask = Mercurial.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 String validatedPath = panel.tfRootPath.getText();
                 String errorMessage = null;
@@ -280,14 +288,17 @@ public class CreateAction extends ContextAction {
         });
 
         panel.tfRootPath.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validate();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validate();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validate();
             }

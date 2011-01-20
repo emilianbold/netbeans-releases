@@ -120,7 +120,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                 onDownload();
             } else {
                 SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
-                SvnClientFactory.reset();
+                SvnClientFactory.resetCLI();
             }
         }
     }

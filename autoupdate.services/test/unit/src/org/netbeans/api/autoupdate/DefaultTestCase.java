@@ -51,9 +51,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
 import org.netbeans.core.startup.MainLookup;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.autoupdate.services.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
@@ -69,8 +69,12 @@ public class DefaultTestCase extends NbTestCase {
     private static URL catalogURL;
     protected boolean modulesOnly = true;
     protected List<UpdateUnit> keepItNotToGC;
+    @SuppressWarnings("NonConstantLogger")
+    protected final Logger LOG;
+    
     public DefaultTestCase(String testName) {
         super(testName);
+        LOG = Logger.getLogger("test." + testName);
     }
         
     public static class MyProvider extends AutoupdateCatalogProvider {

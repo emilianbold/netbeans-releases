@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -59,7 +59,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
 
     private static Hk2DeploymentFactory preludeInstance;
     private static Hk2DeploymentFactory ee6Instance;
-    private static Hk2DeploymentFactory ee6WCInstance;
     private String[] uriFragments;
     private String version;
     private String displayName;
@@ -100,29 +99,14 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         // FIXME -- these strings should come from some constant place
         if (ee6Instance == null) {
             ServerUtilities tmp = ServerUtilities.getEe6Utilities();
-            ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:"}, "0.2", // NOI18N
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));  // NOI18N
+            ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:", "deployer:gfv3ee6wc:", "deployer:gfv3"}, "0.2", // NOI18N
+                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_FactoryDisplayName"));  // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
             ee6Instance.setServerUtilities(tmp);
         }
         return ee6Instance;
     }
 
-    /**
-     *
-     * @return
-     */
-    public static synchronized DeploymentFactory createEe6WC() {
-        // FIXME -- these strings should come from some constant place
-        if (ee6WCInstance == null) {
-            ServerUtilities tmp = ServerUtilities.getEe6WCUtilities();
-            ee6WCInstance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6wc:"}, "0.3", // NOI18N
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_WCDisplayName"));  // NOI18N
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6WCInstance);
-            ee6WCInstance.setServerUtilities(tmp);
-        }
-        return ee6WCInstance;
-    }
     /**
      * 
      * @param uri 

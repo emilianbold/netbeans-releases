@@ -65,6 +65,7 @@ import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
 /**
@@ -327,6 +328,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     public Collection<? extends MethodScope> getDeclaredConstructors() {
+        System.out.println("getDeclaredConstructors");
         return ModelUtils.filter(getDeclaredMethods(), new ModelUtils.ElementFilter<MethodScope>() {
             public boolean isAccepted(MethodScope methodScope) {
                 return methodScope.isConstructor();
@@ -378,7 +380,15 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
+                if (element instanceof MethodScopeImpl && ((MethodScopeImpl)element).isConstructor()
+                        && element instanceof LazyBuild) {
+                    LazyBuild scope = (LazyBuild)element;
+                    if (!scope.isScanned()) {
+                        scope.scan();
+                    }
+                }
+                boolean value = element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
+                return value;
             }
         });
     }

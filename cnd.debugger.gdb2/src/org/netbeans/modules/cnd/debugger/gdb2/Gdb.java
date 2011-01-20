@@ -47,12 +47,14 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 import java.io.IOException;
 
 import java.awt.Color;
+import java.nio.charset.Charset;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.text.MessageFormat;
+import java.util.LinkedList;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -76,11 +78,14 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 // for dyingWords. SHOULD be moved elsewhere!
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
+import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
 
 public class Gdb {
@@ -127,14 +132,25 @@ public class Gdb {
 
         @Override
         public void finishProgress() {
-            super.finishProgress();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    StartProgressManager.super.finishProgress();
+                }
+            });
             StatusDisplayer.getDefault().setStatusText("");     // NOI18N
         }
 
         @Override
-        public void updateProgress(char beginEnd, int level,
-                                        String message, int count, int total) {
-            super.updateProgress(beginEnd, level, message, count, total);
+        public void updateProgress(final char beginEnd,
+                                   final int level,
+                                   final String message,
+                                   final int count,
+                                   final int total) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    StartProgressManager.super.updateProgress(beginEnd, level, message, count, total);
+                }
+            });
             StatusDisplayer.getDefault().setStatusText(message);
         }
     }
@@ -194,8 +210,9 @@ public class Gdb {
 	}
 
 	private Gdb getGdb(Factory factory,
-			   boolean connectExisting) {
-	    return new Gdb(factory, connectExisting);
+			   boolean connectExisting,
+                           boolean remote) {
+	    return new Gdb(factory, connectExisting, remote);
 	}
 
 	public boolean connectExisting() {
@@ -226,6 +243,10 @@ public class Gdb {
 		// Figure gdb'a exec path
 		//
 		gdbname = NativeDebuggerImpl.getDebuggerString((MakeConfiguration)ndi.getConfiguration());
+                if (gdbname == null) {
+                    listener.connectFailed("gdb", Catalog.get("MSG_NoGgb"), null); // NOI18N
+                    return;
+                }
 	    }
 
 
@@ -246,8 +267,10 @@ public class Gdb {
 
 	    // Get a gdb but don't associate it with the Listener
 	    // (DebuggerEngine) until we have a solid connection.
+            
+            
 
-	    tentativeGdb = getGdb(this, connectExisting);
+	    tentativeGdb = getGdb(this, connectExisting, Host.isRemote(host));
 
 	    String hostName = null;
 	    if (remote)
@@ -263,7 +286,7 @@ public class Gdb {
 	    //
 	    // setup the IOPack
 	    //
-	    ioPack = IOPack.create(remote, ndi.getInputOutput(), ndi.getProfile(), executor);
+	    ioPack = IOPack.create(remote, ndi, executor);
 	    tentativeGdb.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 
@@ -299,40 +322,18 @@ public class Gdb {
 		} else {
 		    avec.add(gdbname);
 		}
-
+                
 		if (gdbInitFile != null) {
 		    avec.add("-x"); // NOI18N
 		    avec.add(gdbInitFile);
 		}
-
+                    
 		// flags to get gdb going as an MI service
 		avec.add("--interpreter"); // NOI18N
 		avec.add("mi"); // NOI18N
 
 		if (gdbInitFile != null) {
 		    // doesn't look like gdb has the equivalent of dbx' -s
-		}
-
-
-		// attach or debug corefile
-		String program = ndi.getTarget();
-		long attach_pid = ndi.getPid();
-		String corefile = ndi.getCorefile();
-
-		if (corefile != null) {
-		    // debug corefile
-		    if (program == null) {
-			program = " "; // NOI18N
-		    }
-		    avec.add(program);
-		    avec.add(corefile);
-
-		} else if (attach_pid != -1) {
-		    // attach
-		    String image = Long.toString(attach_pid);
-		    if (program == null) {
-			program = "-"; // NOI18N
-		    }
 		}
 
 		// Arrange for gdb victims to run under the Pio
@@ -449,10 +450,10 @@ public class Gdb {
 		ioPack.console().getTerm().setCustomColor(1,
 		    Color.green.darker());
 		ioPack.console().getTerm().setCustomColor(2,
-		    Color.blue.brighter());
+		    Color.red.darker());
 
 		pid = executor.startEngine(gdbname, gdb_argv, null,
-		    ioPack.console());
+		    ioPack.console(), false, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
 				      "startEngine -> pid %d\n", pid); // NOI18N
@@ -529,14 +530,14 @@ public class Gdb {
 	private void cancelStartup() {
 	}
 
-	private void connectionAvailable(boolean success, String version) {
+	private void connectionAvailable(boolean success, String version, FileMapper fmap) {
 	    tentativeGdb.startProgressManager().updateProgress('<', 1, null, 0, 0);
 	    cancelStartup();
 	    if (success) {
 		// OLD connected = true;
 		// OLD debugger.connectionEstablished();
 		listener.assignGdb(tentativeGdb);
-		tentativeGdb.initializeGdb(version);
+		tentativeGdb.initializeGdb(version, fmap);
 	    }
 	}
     }
@@ -551,21 +552,37 @@ public class Gdb {
     private final MIProxy myMIProxy;
 
     private boolean connected;
+    
+    // set to true when sending signal to pause gdb
+    private volatile boolean signalled = false;
+    
+    // set to true when silent stop is requested
+    private volatile boolean silentStop = false;
 
-    private void initializeGdb(String version) {
+    private void initializeGdb(String version, FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
 	    System.out.printf("Gdb.initializeGdb()\n"); // NOI18N
-	debugger.gdbVersionString(version);
-	debugger.initializeGdb();
+	debugger.setGdbVersion(version);
+	debugger.initializeGdb(fmap);
 	if (!debugger.willBeLoading())
 	    startProgressManager().finishProgress();
     }
 
-    private Gdb(Factory factory, boolean connectExisting) {
+    private Gdb(Factory factory, boolean connectExisting, boolean remote) {
 	this.factory = factory;
         tap = new Tap();
-        myMIProxy = new MyMIProxy(tap);
+        myMIProxy = new MyMIProxy(tap, getCharSetEncoding(remote));
         tap.setMiProxy(myMIProxy);
+    }
+    
+    private static String getCharSetEncoding(boolean remote) {
+        String encoding;
+        if (remote) {
+            encoding = ProcessUtils.getRemoteCharSet();
+        } else {
+            encoding = Charset.defaultCharset().name();
+        }
+        return encoding;
     }
 
     private Factory factory() {
@@ -586,6 +603,22 @@ public class Gdb {
 
     protected Executor getExecutor() {
 	return executor;
+    }
+
+    boolean isSignalled() {
+        return signalled;
+    }
+    
+    void resetSignalled() {
+        signalled = false;
+    }
+
+    boolean isSilentStop() {
+        return silentStop;
+    }
+
+    void resetSilentStop() {
+        silentStop = false;
     }
 
     Tap tap() {
@@ -637,18 +670,22 @@ public class Gdb {
      * action, we're NOT asking dbx to do it - this we're actually doing
      * ourselves!!
      */
-    void pause(int pid) {
+    boolean pause(int pid, boolean silentStop) {
         // The following predicate is _not_ the same as isReceptive()
         if (debugger.state().isRunning && debugger.state().isProcess) {
 	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
 	    try {
+                signalled = true;
+                this.silentStop = silentStop;
 		signaller.interrupt(pid);
 	    } catch(java.io.IOException e) {
 		ErrorManager.getDefault().annotate(e,
 		    "Sending kill signal to process failed"); // NOI18N
 		ErrorManager.getDefault().notify(e);
+                return false;
 	    }
         }
+        return true;
     }
 
     public static void dyingWords(String msg, IOPack ioPack) {
@@ -735,7 +772,7 @@ public class Gdb {
 
         // characters from gdb accumulate here and are forwarded to the tap
         private StringBuilder interceptBuffer = new StringBuilder();
-        private List<String> interceptedLines = new ArrayList<String>();
+        private LinkedList<String> interceptedLines = new LinkedList<String>();
 
 	/* OLD
         // buffer for accumulating incoming (from process) characters (via
@@ -878,31 +915,45 @@ public class Gdb {
             this.miProxy = miProxy;
         }
 
+        private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
+
         // interface MICommandInjector
         public void inject(String cmd) {
-            char[] cmda = cmd.toCharArray();
+            final char[] cmda = cmd.toCharArray();
 
-            // echo
-            toDTE.putChars(bold_sequence, 0, bold_sequence.length);
-            toDTE.putChars(cmda, 0, cmda.length);
-            toDTE.putChar(char_CR);			// tack on a CR
-            toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-            toDTE.flush();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // echo
+                    toDTE.putChars(bold_sequence, 0, bold_sequence.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.flush();
 
-            // send to gdb
-            toDCE.sendChars(cmda, 0, cmda.length);
+                    // send to gdb
+                    sendQueue.post(new Runnable() {
+                        public void run() {
+                            toDCE.sendChars(cmda, 0, cmda.length);
+                        }
+                    });
+                }
+            });
         }
 
         // interface MICommandInjector
         public void log(String cmd) {
-            char[] cmda = cmd.toCharArray();
+            final char[] cmda = cmd.toCharArray();
 
-            // echo
-            toDTE.putChars(log_sequence, 0, log_sequence.length);
-            toDTE.putChars(cmda, 0, cmda.length);
-            // toDTE.putChar(char_CR);			// tack on a CR
-            toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-            toDTE.flush();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // echo
+                    toDTE.putChars(log_sequence, 0, log_sequence.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    // toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.flush();
+                }
+            });
 
             // don't send to gdb
         }
@@ -922,7 +973,7 @@ public class Gdb {
                 appendChar(char_CR);
 
 		String line = interceptBuffer.toString();
-                interceptedLines.add(line);
+                interceptedLines.addLast(line);
                 interceptBuffer = new StringBuilder();
 
 		// do some pattern recognition and alternative colored output.
@@ -971,16 +1022,17 @@ public class Gdb {
 	    putBuf.append(c);
         }
 
+        private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
+
         private void dispatchInterceptedLines() {
             while (!interceptedLines.isEmpty()) {
-                String line = interceptedLines.remove(0);
+                final String line = interceptedLines.removeFirst();
 
-                // make sure we keep on processing lines no matter what
-                try {
-                    miProxy.processLine(line);
-                } catch (Exception x) {
-                    x.printStackTrace();
-                }
+                processingQueue.post(new Runnable() {
+                    public void run() {
+                        miProxy.processLine(line);
+                    }
+                });
             }
         }
     }
@@ -991,23 +1043,46 @@ public class Gdb {
 	// remember version between consoleStreamOutput's capture
 	// and connectionEstablished().
 	private String version;
+        private FileMapper fmap = null;
 
-        public MyMIProxy(MICommandInjector injector) {
-            super(injector, "(gdb)"); // NOI18N
+        public MyMIProxy(MICommandInjector injector, String encoding) {
+            super(injector, "(gdb)", encoding); // NOI18N
         }
 
+        private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
+        
         @Override
         protected void consoleStreamOutput(MIRecord record) {
-	    super.consoleStreamOutput(record);
+            if (record.isStream() && record.stream().startsWith(SWITCHING_PREFIX)) {
+                String msg = record.stream();
+                try {
+                    int end = SWITCHING_PREFIX.length();
+                    while (Character.isDigit(msg.charAt(end))) {
+                        end++;
+                    }
+                    debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
+                    debugger.session().setPid(Long.valueOf(msg.substring(SWITCHING_PREFIX.length(), end)));
+                } catch (NumberFormatException ex) {
+                }
+            } else {
+                super.consoleStreamOutput(record);
+                
+                if (record.isStream()) {
+                    String stream = record.stream();
+                    if (stream.contains("configured") && stream.contains("mingw")) { //NOI18N
+                        fmap = FileMapper.getDefault(FileMapper.Type.MSYS);
+                    }
+                }
 
-            if (version == null &&
-		record.isStream() &&
-		record.stream().startsWith(versionString)) {
+                if (version == null &&
+                    record.isStream() &&
+                    record.stream().startsWith(versionString)) {
 
-		version = record.stream();
-                // OLD debugger.gdbVersionString(record.stream());
-		return;
-	    }
+                    version = record.stream();
+                    // OLD debugger.gdbVersionString(record.stream());
+                    return;
+                }
+            }
         }
 
         @Override
@@ -1016,9 +1091,36 @@ public class Gdb {
             if (record.token() == 0) {
                 if (record.cls().equals("stopped")) { // NOI18N
                     debugger.genericStopped(record);
+                    // LATER: should be inside manager somehow
+                    // this is neccessary, otherwise we may have wrong console output in the next command
+                    // IZ 193352
+                    clearMessages();
                 } else if (record.cls().equals("running")) { // NOI18N
                     debugger.genericRunning();
+                    // LATER: should be inside manager somehow
+                    // this is neccessary, otherwise we may have wrong console output in the next command
+                    // IZ 193352
+                    clearMessages();
                 }
+            } else {
+                dispatch(record);
+            }
+        }
+        
+        @Override
+        protected void notifyAsyncOutput(MIRecord record) {
+            if (record.token() == 0) {
+                if (record.cls().equals("thread-group-added") || //NOI18N
+                    record.cls().equals("thread-group-removed") || //NOI18N
+                    record.cls().equals("thread-group-started") || //NOI18N
+                    record.cls().equals("thread-group-exited") || //NOI18N
+                    record.cls().equals("thread-created") || //NOI18N
+                    record.cls().equals("thread-exited") || //NOI18N
+                    record.cls().equals("thread-selected") || //NOI18N
+                    record.cls().equals("library-loaded") || //NOI18N
+                    record.cls().equals("library-unloaded")) { //NOI18N
+                        // just skip
+                    }
             } else {
                 dispatch(record);
             }
@@ -1034,13 +1136,6 @@ public class Gdb {
         }
 
         @Override
-        protected void prompt() {
-            /* DEBUG
-            System.out.println(" PROMPT: ");
-             */
-        }
-
-        @Override
         protected void connectionEstablished() {
             connected = true;
 	    /* OLD
@@ -1048,7 +1143,7 @@ public class Gdb {
 	    */
 	    if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
 		System.out.printf("MyMIProxy.connectionEstablished()\n"); // NOI18N
-	    factory.connectionAvailable(true, version);
+	    factory.connectionAvailable(true, version, fmap);
         }
 
         @Override
@@ -1062,7 +1157,7 @@ public class Gdb {
 	}
     }
 
-    public void sendCommand(MICommand cmd) {
+    void sendCommand(MICommand cmd) {
         myMIProxy.send(cmd);
     }
 }

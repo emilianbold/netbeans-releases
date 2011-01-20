@@ -45,18 +45,22 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -70,7 +74,7 @@ import org.openide.util.NbBundle;
 @SupportedAnnotationTypes("*") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedOptions(JavaCardErrorProcessor.JAVACARD_OPTION)
-public final class JavaCardErrorProcessor extends AbstractTypeProcessor {
+public final class JavaCardErrorProcessor extends AbstractProcessor {
     static final String JAVACARD_OPTION = "netbeans_private_enable_javacard_processor"; //NOI18N
     //PENDING (post 6.9):  Allow an SDK to encode this list in platform.properties
     private static final Set<TypeKind> UNSUPPORTED_PRIMITIVES_CLASSIC_PROJECTS =
@@ -90,13 +94,37 @@ public final class JavaCardErrorProcessor extends AbstractTypeProcessor {
     }
 
     @Override
-    public void typeProcess(TypeElement te, TreePath tp) {
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Map<String, String> m = env.getOptions();
         boolean containsKey = m.containsKey(JAVACARD_OPTION);
-        if (containsKey) {
-            boolean classic = Boolean.valueOf(m.get(JAVACARD_OPTION));
-            new ScannerImpl(env).scan(tp, classic);
+
+        if (!containsKey) return false;
+
+        boolean classic = Boolean.valueOf(m.get(JAVACARD_OPTION));
+        Set<TypeElement> topLevel = new HashSet<TypeElement>();
+
+        for (Element el : roundEnv.getRootElements()) {
+            if (el.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+                topLevel.add((TypeElement) el);
+                break;
+            }
+            el = el.getEnclosingElement();
         }
+
+        Trees t = Trees.instance(env);
+
+        for (TypeElement clazz : topLevel) {
+            TreePath clazzTP = t.getPath(clazz);
+
+            if (clazzTP == null) {
+                //XXX: can happen?
+                continue;
+            }
+
+            new ScannerImpl(env).scan(clazzTP, classic);
+        }
+
+        return false;
     }
 
     private static final class ScannerImpl extends TreePathScanner<Void, Boolean> {

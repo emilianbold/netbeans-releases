@@ -42,11 +42,16 @@
 
 package org.netbeans.html.api.validation;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.openide.filesystems.FileObject;
 
 /**
+ *
+ * Possible features: filter.foreign.namespaces
  *
  * @author marekfukala
  */
@@ -56,6 +61,7 @@ public final class ValidationContext {
     private FileObject file;
     private HtmlVersion version;
     private SyntaxAnalyzerResult result;
+    private Map<String, Boolean> features = new HashMap<String, Boolean>();
 
     public ValidationContext(String source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
         this.source = source;
@@ -79,5 +85,14 @@ public final class ValidationContext {
     public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
         return result;
     }
-    
+
+    public boolean isFeatureEnabled(String featureName) {
+        Boolean val = features != null ? features.get(featureName) : null;
+        return val != null ? val : false;
+    }
+
+    public void enableFeature(String featureName, boolean enabled) {
+        features.put(featureName, enabled);
+    }
+
 }

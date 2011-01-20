@@ -462,27 +462,62 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     }
 
+    /**
+     * Finding item after new keyword.
+     * @param completionResult
+     * @param request
+     */
     private void autoCompleteNewClass(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
-        if (QualifiedName.create(request.prefix).getName().isEmpty()) {
-            autoCompleteClassNames(completionResult, request, false);
-            return;
-        }
-        final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
+        // At first find all classes that match the prefix
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
-        
-        final NameKind query = isCamelCase ?
-            NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) :
-            NameKind.prefix(prefix);
-
+        final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
+        final NameKind nameQuery = NameKind.create(request.prefix,
+                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
         Model model = request.result.getModel();
-        Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
-        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
-        if (!constructors.isEmpty()) {
+        Set<ClassElement> classes = request.index.getClasses(nameQuery, ModelUtils.getAliasedNames(model, request.anchor), Trait.ALIAS);
+
+        if (!classes.isEmpty()) {
             completionResult.setFilterable(false);
         }
-        for (MethodElement constructor : constructors) {
-            completionResult.add(PHPCompletionItem.NewClassItem.getItem(constructor, request));
+        boolean addedExact = false;
+        if (classes.size() == 1) {
+            // if there is only once class find constructors for it
+            final NameKind query = isCamelCase ?
+                NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) :
+                NameKind.prefix(prefix);
+            Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+            Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
+            
+            for (MethodElement constructor : constructors) {
+                for (final PHPCompletionItem.NewClassItem newClassItem :
+                        PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
+                    completionResult.add(newClassItem);
+                }
+            }
+        } else {
+            final NameKind query = NameKind.exact(prefix);
+            for (ClassElement clazz : classes) {
+                // check whether the prefix is exactly the class
+                if (clazz.getName().equals(request.prefix)) {
+                    // find constructor of the class
+                    if (!addedExact) { // add the constructors only once
+                        Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+                        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
+                        for (MethodElement constructor : constructors) {
+                            for (final PHPCompletionItem.NewClassItem newClassItem :
+                                    PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
+                                completionResult.add(newClassItem);
+                            }
+                        }
+                        addedExact = true; 
+                    }
+                } else {
+                    // put to the cc just the class
+                    completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, null));
+                }
+            }
         }
+        
     }
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,
@@ -1163,7 +1198,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
         return null;
     }
 

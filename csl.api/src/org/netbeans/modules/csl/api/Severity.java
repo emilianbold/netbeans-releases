@@ -49,6 +49,8 @@ package org.netbeans.modules.csl.api;
  * @author Tor Norbye
  */
 public enum Severity {
+    /** Just an informational hint */
+    INFO,
     /** The error is only a warning; may be correct, may not be, but user should be alerted */
     WARNING,
     /** The error is a problem that must be dealt with */

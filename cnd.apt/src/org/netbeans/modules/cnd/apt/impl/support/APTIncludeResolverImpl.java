@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileSystem;
 
 /**
  * implementation of include resolver
@@ -66,26 +67,43 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> systemIncludePaths;
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
+    private final FileSystem fileSystem;
+//    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
     
-    public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
+    public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
+        this.fileSystem = fs;
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
+//        if (TRACE) { 
+//            System.err.printf("APTIncludeResolverImpl.ctor %s %s systemIncludePaths: %s\n", fileSystem, path, systemIncludePaths); // NOI18N
+//        }
     }       
 
 
     @Override
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
-        return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+        ResolvedPath result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+//        if (TRACE) {
+//            System.err.printf("APTIncludeResolverImpl.resolveInclude %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
+//            if (result == null) {
+//                result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
+//            }
+//        }
+        return result;
     }
 
     @Override
     public ResolvedPath resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
-        return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
+        ResolvedPath result = resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
+//        if (TRACE) {
+//            System.err.printf("APTIncludeResolverImpl.resolveIncludeNext %s in %s -> %s\n", apt.getFileName(callback), baseFile, result);
+//        }
+        return result;
     }
 
     public CharSequence getBasePath() {
@@ -98,31 +116,31 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private ResolvedPath resolveFilePath(String includedFile, boolean system, boolean includeNext) {
         ResolvedPath result = null;
         if (includedFile != null && (includedFile.length() > 0)) {
-            result = APTIncludeUtils.resolveAbsFilePath(includedFile);
+            result = APTIncludeUtils.resolveAbsFilePath(fileSystem, includedFile);
             if (result == null && !system && !includeNext) {
                 // for <system> "current dir" has lowest priority
                 // for #include_next should start from another dir
-                result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
             }
             if ( result == null) {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
                 PathsCollectionIterator paths = 
                         new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
                 result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
-            }
+                }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
-                result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
             }
         }
         if (result == null && fileSearch != null) {
             String path = fileSearch.searchInclude(includedFile, baseFile);
             if (path != null) {
-                result = APTIncludeUtils.resolveFilePath(CndPathUtilitities.getBaseName(path), path);
+                result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilitities.getBaseName(path), path);
             }
         }
         return result;
-    }  
+    }
 
 //    private String resolveNextFilePath(String file, boolean system) {
 //        String result = null;

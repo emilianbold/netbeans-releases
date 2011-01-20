@@ -453,7 +453,7 @@ public final class J2EEProjectProperties {
     
     @SuppressWarnings("deprecated")
     private static Map<String, String> extractPlatformLibrariesRootHeuristic(J2eePlatform j2eePlatform) {
-        if (j2eePlatform.getPlatformRoots() == null) {
+        if (j2eePlatform.getPlatformRoots() == null || j2eePlatform.getPlatformRoots().length == 0) {
             return null;
         }
         File rootFile = FileUtil.normalizeFile(j2eePlatform.getPlatformRoots()[0]);

@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 
 /**
  *
@@ -63,12 +62,10 @@ public class RootsToFile {
     private long cachedAccesCount = 0;
     private long accesCount = 0;
     private final int statisticsFrequency;
-    private final VersioningSystem vcs;
     private final Callback callback;
     private final Logger log;
 
-    public RootsToFile (VersioningSystem vcs, Callback callback, Logger log, int statisticsFrequency) {
-        this.vcs = vcs;
+    public RootsToFile (Callback callback, Logger log, int statisticsFrequency) {
         this.statisticsFrequency = statisticsFrequency;
         this.callback = callback;
         this.log = log;
@@ -132,7 +129,7 @@ public class RootsToFile {
             return root;
         }
 
-        root = vcs.getTopmostManagedAncestor(file);
+        root = callback.getTopmostManagedAncestor(file);
         if(root != null) {
             if(file.isFile()) file = file.getParentFile();
             List<File> folders = new ArrayList<File>();
@@ -160,5 +157,6 @@ public class RootsToFile {
 
     public static interface Callback {
         public boolean repositoryExistsFor (File file);
+        public File getTopmostManagedAncestor(File file);
     }
 }

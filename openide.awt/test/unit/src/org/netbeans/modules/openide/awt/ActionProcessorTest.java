@@ -40,6 +40,7 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.Component;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
@@ -59,6 +60,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
@@ -574,6 +576,21 @@ public class ActionProcessorTest extends NbTestCase {
             return this;
         }
     }
+    @ActionID(category="eager", id="direct.six")
+    @ActionRegistration(displayName="Direct Action")
+    public static class Direct6 extends AbstractAction implements DynamicMenuContent {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+        @Override
+        public JComponent[] getMenuPresenters() {
+            return null;
+        }
+        @Override
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return null;
+        }
+    }
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
         assertNotNull("Instance found", fo);
@@ -608,6 +625,13 @@ public class ActionProcessorTest extends NbTestCase {
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Action created", obj);
         assertEquals("Direct class is created", Direct5.class, obj.getClass());
+    }
+    public void testDirectInstanceIfImplementsDynamicMenuContent() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-six.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct6.class, obj.getClass());
     }
     
     public void testNoKeyForDirects() throws IOException {

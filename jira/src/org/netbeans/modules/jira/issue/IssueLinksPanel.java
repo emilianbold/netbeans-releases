@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -66,6 +67,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -125,8 +127,12 @@ public class IssueLinksPanel extends JPanel {
             if (izzue == null) {
                 izzue = repository.getIssue(issueKey);
             }
-            String summary = izzue.getSummary();
-            summaryMap.put(issueKey, summary);
+            if(izzue != null) {
+                String summary = izzue.getSummary();
+                summaryMap.put(issueKey, summary);
+            } else {
+                Jira.LOG.log(Level.WARNING, "issue {0} is supposed to be linked with not available issue {1}", new Object[]{issue.getKey(), linkedIssue.getIssueKey()});
+            }
         }
     }
 

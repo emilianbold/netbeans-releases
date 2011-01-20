@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+
 public interface BreakpointModel {
     static interface Listener {
 	public void bptUpdated();
@@ -53,4 +55,5 @@ public interface BreakpointModel {
     public void removeListener(Listener listener);
     public int find(long address);
     public int findDisabled(long address);
+    NativeBreakpoint[] getBreakpoints();
 }

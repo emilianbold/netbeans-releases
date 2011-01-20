@@ -118,7 +118,7 @@ abstract class AbstractEventAction extends AbstractWebBeansAction {
         }
         catch (MetadataModelException e) {
             Logger.getLogger( AbstractEventAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
+                log( Level.INFO, e.getMessage(), e);
         }
         catch (IOException e) {
             Logger.getLogger( AbstractEventAction.class.getName()).

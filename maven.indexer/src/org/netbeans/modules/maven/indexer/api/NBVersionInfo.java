@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.maven.indexer.api;
 
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.netbeans.api.annotations.common.SuppressWarnings;
+
 /**
  *
  * @author Anuradha G
  */
-public class NBVersionInfo {
+public final class NBVersionInfo implements Comparable<NBVersionInfo> {
 
     private String groupId;
     private String artifactId;
@@ -168,6 +171,37 @@ public class NBVersionInfo {
     @Override
     public String toString() {
         return groupId + ":" + artifactId + ":" + version + ":" + repoId;
+    }
+
+    @SuppressWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS") // for now we do not try to do equals/hashCode; TBD if needed
+    public @Override int compareTo(NBVersionInfo o) {
+        int c = groupId.compareTo(o.groupId);
+        if (c != 0) {
+            return c;
+        }
+        c = artifactId.compareTo(o.artifactId);
+        if (c != 0) {
+            return c;
+        }
+        c = version().compareTo(o.version());
+        if (c != 0) {
+            return -c; // show newest versions first!
+        }
+        if (type != null && o.type != null) {
+            c = type.compareTo(o.type);
+            if (c != 0) {
+                return c; // show e.g. jar vs. nbm artifacts in some predictable order
+            }
+        }
+        return System.identityHashCode(this) - System.identityHashCode(o); // don't care
+    }
+    private ComparableVersion version() {
+        if (version.matches("RELEASE\\d+(-.+)?")) { // NOI18N
+            // Maven considers RELEASE671 to be newer than RELEASE69. Hack up the version here.
+            return new ComparableVersion(version.replaceAll("(\\d)", ".$1")); // NOI18N
+        } else {
+            return new ComparableVersion(version);
+        }
     }
     
 }

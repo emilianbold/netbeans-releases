@@ -142,7 +142,7 @@ public class MakeManual extends Task {
         String id;
         String token = anchor != null ? anchor : path.replaceFirst("\\.html$", "").replaceFirst("^.+/", "");
         String linktextlower = linktext != null ? linktext.toLowerCase(Locale.US) : "";
-        if (tasknames.contains(token)) {
+        if (tasknames.contains(token) && !path.equals("projecthelper.html")) {
             id = "org.apache.tools.ant.module.tasks." + token;
         } else if (tasknames.contains(linktextlower)) {
             id = "org.apache.tools.ant.module.tasks." + linktextlower;
@@ -156,7 +156,7 @@ public class MakeManual extends Task {
                 id += "." + anchor;
             }
         }
-        String title = linktext != null ? linktext : "Ant 1.8.1 Manual";
+        String title = linktext != null ? linktext : "Ant 1.8.2 Manual";
         String log = "";
         for (int i = 0; i < depth; i++) {
             log += "\t";
@@ -188,12 +188,8 @@ public class MakeManual extends Task {
                 String relurl = m.group(1);
                 String newanchor = m.group(3);
                 String newpath = URI.create(path).resolve(relurl).toString();
-                if (path.equals("coretasklist.html") && newpath.equals("optionaltasklist.html")) {
-                    // Wait until the next link to it.
-                    continue;
-                }
                 if (path.equals("developlist.html") && newpath.startsWith("tutorial-")) {
-                    // Ditto.
+                    // Wait until the next link to it.
                     continue;
                 }
                 String newlinktext = m.group(4).replaceAll("<[iI]>(.+?)</[iI]>", "($1)").replace("&amp;", "&");

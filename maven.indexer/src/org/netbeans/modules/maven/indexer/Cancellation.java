@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.indexer;
 import java.util.Set;
 import org.openide.util.Cancellable;
 import org.openide.util.WeakSet;
-import org.sonatype.nexus.index.DefaultNexusIndexer;
 
 /**
  * Thrown when a task is canceled.

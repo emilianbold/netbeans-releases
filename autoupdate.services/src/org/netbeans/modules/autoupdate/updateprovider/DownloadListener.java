@@ -100,7 +100,7 @@ public class DownloadListener implements NetworkAccess.NetworkListener {
 
     public void notifyException() throws IOException {
         if (isExceptionStored()) {
-            throw new IOException(getStoredException().getLocalizedMessage());
+            throw new IOException(getStoredException().getLocalizedMessage(), getStoredException());
         }
 
     }

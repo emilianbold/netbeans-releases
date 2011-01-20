@@ -105,6 +105,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
     private Object[][] members = new Object[0][0];
     private ElementKind sourceKind;
+    private ChangeListener parent;
     
     
     /** Creates new form PullUpPanel
@@ -114,6 +115,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      *      invoked on a method, the method will be pre-selected to be pulled up)
      */
     public PullUpPanel(PullUpRefactoring refactoring, Set<MemberInfo<ElementHandle>> selectedMembers, final ChangeListener parent) {
+        this.parent = parent;
         this.refactoring = refactoring;
         this.tableModel = new TableModel();
         this.selectedMembers = selectedMembers;
@@ -358,7 +360,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             members[rowIndex][columnIndex] = value;
-            fireTableDataChanged();
+            parent.stateChanged(null);
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {

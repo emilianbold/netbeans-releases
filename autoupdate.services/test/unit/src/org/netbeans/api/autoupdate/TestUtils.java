@@ -45,6 +45,8 @@
 package org.netbeans.api.autoupdate;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -55,10 +57,12 @@ import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.core.startup.Main;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Radek Matous, Jirka Rechtacek
@@ -87,7 +91,25 @@ public class TestUtils {
         mgr = Main.getModuleSystem().getManager();
         assert mgr != null;
     }
-    
+
+    public static File getFile(NbTestCase t, URL res) throws IOException {
+        File create;
+        String name = res.getFile().replaceAll(".*/", "").replaceAll(".jar$", "");
+        for (int i = 0; ; i++) {
+            String add = i == 0 ? ".jar" : i + ".jar";
+            create = new File(t.getWorkDir(), name + add);
+            if (!create.exists()) {
+                break;
+            }
+        }
+        
+        FileOutputStream os = new FileOutputStream(create);
+        FileUtil.copy(res.openStream(), os);
+        os.close();
+        
+        return create;
+    }
+
     public static class CustomItemsProvider implements UpdateProvider {
         public String getName() {
             return "items-with-custom-installer";

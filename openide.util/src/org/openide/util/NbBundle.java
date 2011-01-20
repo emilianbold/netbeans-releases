@@ -46,6 +46,10 @@ package org.openide.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -81,6 +85,7 @@ import java.util.logging.Logger;
 * </pre>
 * will in German locale look for the key {@code Foo.displayName} in
 * {@code com/mycom/Bundle_de.properties} and then {@code com/mycom/Bundle.properties} (in that order).
+ * Usually however it is easiest to use {@link org.openide.util.NbBundle.Messages}.
 */
 public class NbBundle extends Object {
 
@@ -768,6 +773,68 @@ public class NbBundle extends Object {
     @Deprecated
     public static void setClassLoaderFinder(ClassLoaderFinder loaderFinder) {
         throw new Error();
+    }
+
+    /**
+     * Creates a helper class with static definitions of bundle keys.
+     * <p>
+     * The generated class will be called {@code Bundle} and be in the same package.
+     * Each key is placed in a {@code Bundle.properties} file also in the same package,
+     * and the helper class gets a method with the same name as the key
+     * (converted to a valid Java identifier as needed)
+     * which loads the key from the (possibly now localized) bundle using {@link NbBundle#getMessage(Class, String)}.
+     * The method will have as many arguments (of type {@code Object}) as there are message format parameters.
+     * </p>
+     * <p>It is an error to duplicate a key within a package, even if the duplicates are from different compilation units.</p>
+     * <p>Example usage:</p>
+     * <pre>
+     * package some.where;
+     * import org.openide.util.NbBundle.Messages;
+     * import static some.where.Bundle.*;
+     * import org.openide.DialogDisplayer;
+     * import org.openide.NotifyDescriptor;
+     * class Something {
+     *     &#64;Messages({
+     *         "dialog.title=Bad File",
+     *         "# {0} - file path",
+     *         "dialog.message=The file {0} was invalid."
+     *     })
+     *     void showError(File f) {
+     *         NotifyDescriptor d = new NotifyDescriptor.Message(
+     *             dialog_message(f), NotifyDescriptor.ERROR_MESSAGE);
+     *         d.setTitle(dialog_title());
+     *         DialogDisplayer.getDefault().notify(d);
+     *     }
+     * }
+     * </pre>
+     * <p>which generates during compilation {@code Bundle.java}:</p>
+     * <pre>
+     * class Bundle {
+     *     static String dialog_title() {...}
+     *     static String dialog_message(Object file_path) {...}
+     * }
+     * </pre>
+     * <p>and {@code Bundle.properties}:</p>
+     * <pre>
+     * dialog.title=Bad File
+     * # {0} - file path
+     * dialog.message=The file {0} was invalid.
+     * </pre>
+     * @since org.openide.util 8.10
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
+    public @interface Messages {
+        /**
+         * List of key/value pairs.
+         * Each must be of the form {@code key=Some Value}.
+         * Anything is permitted in the value, including newlines.
+         * Unlike in a properties file, there should be no whitespace before the key or around the equals sign.
+         * Values containing <code>{0}</code> etc. are assumed to be message formats and so may need escapes for metacharacters such as {@code '}.
+         * A line may also be a comment if it starts with {@code #}, which may be useful for translators;
+         * it is recommended to use the format {@code # {0} - summary of param}.
+         */
+        String[] value();
     }
 
     /**

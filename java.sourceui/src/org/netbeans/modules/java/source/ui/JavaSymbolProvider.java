@@ -199,7 +199,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                     }
 
                     final Project project = FileOwnerQuery.getOwner(root);
-                    final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL());
+                    final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL(), true);
                     if (impl != null) {
                         final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
                         for (String currentIdent : ident) {

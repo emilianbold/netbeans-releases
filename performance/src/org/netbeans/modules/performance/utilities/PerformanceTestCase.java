@@ -433,8 +433,13 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }
 
         dumpLog();
-        if(exceptionDuringMeasurement!=null)
-            throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
+        if(exceptionDuringMeasurement!=null) {
+            try {
+                throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
+            } finally {
+                exceptionDuringMeasurement = null;
+            }
+        }
 
        compare(performanceDataName, measuredTime);
 

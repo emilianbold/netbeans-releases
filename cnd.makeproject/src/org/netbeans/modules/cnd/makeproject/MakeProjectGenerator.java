@@ -248,13 +248,17 @@ public class MakeProjectGenerator {
 
         if (prjParams.getFullRemote()) {
             // mode
-            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE); // NOI18N
-            fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name())); // NOI18N
+            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE);
+            fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name()));
             data.appendChild(fullRemoteNode);
             // host
-            Element rfsHostNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST); // NOI18N
-            rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID())); // NOI18N
+            Element rfsHostNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST);
+            rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID()));
             data.appendChild(rfsHostNode);
+            // mount point
+            Element rfsBaseDir = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
+            rfsHostNode.appendChild(doc.createTextNode(dirFO.getPath()));
+            data.appendChild(rfsBaseDir);
         }
 
         h.putPrimaryConfigurationData(data, true);
@@ -300,7 +304,7 @@ public class MakeProjectGenerator {
         } else {
             task.run();
         }
-        if (!prjParams.getFullRemote()) {
+        if (!prjParams.getFullRemote() && !prjParams.isMakefileProject()) {
             // create Makefile
             copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
                     projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());

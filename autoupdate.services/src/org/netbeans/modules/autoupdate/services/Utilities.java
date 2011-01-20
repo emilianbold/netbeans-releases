@@ -86,7 +86,6 @@ import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
@@ -141,8 +140,7 @@ public class Utilities {
     private static final String USER_KS_FILE_NAME = "user.ks";
     private static final String KS_USER_PASSWORD = "open4user";
     private static Lookup.Result<KeyStoreProvider> result;
-    private static Logger err = null;
-    private static ModuleManager mgr = null;
+    private static final Logger err = Logger.getLogger(Utilities.class.getName ());
     
     
     public static Collection<KeyStore> getKeyStore () {
@@ -171,6 +169,7 @@ public class Utilities {
         private KeyStoreProviderListener () {
         }
         
+        @Override
         public void resultChanged (LookupEvent ev) {
             result = null;
         }
@@ -456,7 +455,11 @@ public class Utilities {
     }
     
     public static Module toModule (ModuleInfo info) {
-        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ());
+        Module m = getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ());
+        if (m == null && info instanceof Module) {
+            m = (Module)info;
+        }
+        return m;
     }
     
     public static boolean isFixed (ModuleInfo info) {
@@ -491,15 +494,20 @@ public class Utilities {
             ModuleUpdateElementImpl el = (ModuleUpdateElementImpl) Trampoline.API.impl(element);
             Set<Dependency> deps = new HashSet<Dependency> (el.getModuleInfo ().getDependencies ());
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
-            Set<Dependency> newones;
             
             int max_counter = el.getType().equals(UpdateManager.TYPE.KIT_MODULE) ? 2 : 1;
             int counter = max_counter;
             boolean aggressive = topAggressive && counter > 0;
 
-            while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element, aggressive)).isEmpty ()) {
-                deps = newones;                
-                aggressive = aggressive && (--counter) > 0;
+            Set<Dependency> all = new HashSet<Dependency>();
+            for (;;) {
+                Set<Dependency> newones = processDependencies(deps, retval, availableInfos, brokenDependencies, element, aggressive);
+                newones.removeAll(all);
+                if (newones.isEmpty()) {
+                    break;
+                }
+                all.addAll(newones);
+                deps = newones;
             }
 
             Set<Dependency> moreBroken = new HashSet<Dependency> ();
@@ -848,23 +856,28 @@ public class Utilities {
     }
     
     private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
-        if (mgr == null) {
-            mgr = Main.getModuleSystem().getManager();
-            assert mgr != null;
-            if (mgr == null) {
-                return null;
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (!codeNameBase.equals(mi.getCodeNameBase())) {
+                continue;
+            }
+            if (mi instanceof Module) {
+                Module m = (Module)mi;
+                if (specificationVersion == null || m == null) {
+                    err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
+                    return m;
+                } else {
+                    SpecificationVersion version = m.getSpecificationVersion();
+                    if (version == null) {
+                        err.log(Level.FINER, "No version for {0}", m);
+                        return null;
+                    }
+                    final int res = version.compareTo(specificationVersion);
+                    err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
+                    return res >= 0 ? m : null;
+                }
             }
         }
-        Module m = mgr.get(codeNameBase);
-        if (specificationVersion == null || m == null) {
-            return m;
-        } else {
-            SpecificationVersion version = m.getSpecificationVersion();
-            if (version == null) {
-                return null;
-            }
-            return version.compareTo(specificationVersion) >= 0 ? m : null;
-        }
+        return null;
     }
     
     public static boolean isAutomaticallyEnabled(String codeNameBase) {
@@ -1030,9 +1043,6 @@ public class Utilities {
     }
     
     private static Logger getLogger () {
-        if (err == null) {
-            err = Logger.getLogger (Utilities.class.getName ());
-        }
         return err;
     }
     
@@ -1103,16 +1113,16 @@ public class Utilities {
             // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
             if (dir4test.canWrite () && dir4test.canRead ()) {
                 boolean canWrite = canWrite (dir4test);
-                getLogger ().log (Level.FINE, "Can write into " + dir4test + "? " + canWrite);
+                getLogger ().log (Level.FINE, "Can write into {0}? {1}", new Object[]{dir4test, canWrite});
                 return canWrite;
             } else {
-                getLogger ().log (Level.FINE, "Can write into " + dir4test + "? " + dir4test.canWrite ());
+                getLogger ().log (Level.FINE, "Can write into {0}? {1}", new Object[]{dir4test, dir4test.canWrite ()});
                 return dir4test.canWrite ();
             }
         }
         
         cluster.mkdirs ();
-        getLogger ().log (Level.FINE, "Can write into new cluster " + cluster + "? " + cluster.canWrite ());
+        getLogger ().log (Level.FINE, "Can write into new cluster {0}? {1}", new Object[]{cluster, cluster.canWrite ()});
         return cluster.canWrite ();
     }
     
@@ -1123,7 +1133,7 @@ public class Utilities {
                 FileWriter fw = null;
                 try {
                     fw = new FileWriter (f, true);
-                    getLogger ().log (Level.FINE, f + " has write permission");
+                    getLogger ().log (Level.FINE, "{0} has write permission", f);
                 } catch (IOException ioe) {
                     // just check of write permission
                     getLogger ().log (Level.FINE, f + " has no write permission", ioe);
@@ -1142,7 +1152,7 @@ public class Utilities {
                 try {
                     File dummy = File.createTempFile ("dummy", null, f);
                     dummy.delete ();
-                    getLogger ().log (Level.FINE, f + " has write permission");
+                    getLogger ().log (Level.FINE, "{0} has write permission", f);
                 } catch (IOException ioe) {
                     getLogger ().log (Level.FINE, f + " has no write permission", ioe);
                     return false;
@@ -1254,7 +1264,7 @@ public class Utilities {
                     }
                 }
                 if (alias == null) {
-                    getLogger ().log (Level.INFO, "Too many certificates with " + c);
+                    getLogger ().log (Level.INFO, "Too many certificates with {0}", c);
                 }
 
                 ks.setCertificateEntry (alias, c);

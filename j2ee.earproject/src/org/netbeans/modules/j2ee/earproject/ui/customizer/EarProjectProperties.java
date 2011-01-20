@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +65,7 @@ import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -107,13 +109,10 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 
 /**
  * Helper class. Defines constants for properties. Knows the proper
@@ -152,6 +151,7 @@ public final class EarProjectProperties {
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
     public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; //NOI18N
+    public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; //NOI18N
     public static final String CLIENT_MODULE_URI = "client.module.uri"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -232,7 +232,8 @@ public final class EarProjectProperties {
     Document ARUGMENTS_MODEL;
     Document VM_OPTIONS_MODEL;
     Document APPLICATION_CLIENT_MODEL;
-    ButtonModel DEPLOY_ON_SAVE_MODEL;
+    JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL;
+    JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
     
     // Private fields ----------------------------------------------------------
     
@@ -304,6 +305,24 @@ public final class EarProjectProperties {
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_COMPILE_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                    DEPLOY_ON_SAVE_MODEL.setSelected(false);
+                }
+            }
+        });
+        DEPLOY_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                    COMPILE_ON_SAVE_MODEL.setSelected(true);
+                }
+            }
+        });
+        
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
                 Profile.fromPropertiesString(projectProperties.getProperty(J2EE_PLATFORM)),
@@ -375,7 +394,7 @@ public final class EarProjectProperties {
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
         
         // compile on save listeners
-        if (DEPLOY_ON_SAVE_MODEL.isEnabled() && DEPLOY_ON_SAVE_MODEL.isSelected()) {
+        if (COMPILE_ON_SAVE_MODEL.isEnabled() && COMPILE_ON_SAVE_MODEL.isSelected()) {
             LOGGER.log(Level.FINE, "Starting listening on cos for {0}", project.getAppModule());
             Deployment.getDefault().enableCompileOnSaveSupport(project.getAppModule());
         } else {
@@ -866,7 +885,7 @@ public final class EarProjectProperties {
                     saveLibrariesLocation();
                     storeProperties();
                     //Delete COS mark
-                    if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                    if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
                         DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, null, true); // NOI18N
                     }
                     setupDeploymentDescriptor(project);

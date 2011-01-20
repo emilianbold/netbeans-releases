@@ -50,6 +50,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * test for line-col/offset converting
@@ -69,7 +70,7 @@ public class FileImplOffsetsTest extends TraceModelTestBase {
         File testFile = getDataFile(source);
         assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists());        
         super.performModelTest(testFile, System.out, System.err);
-        FileImpl file = getProject().getFile(testFile, true);
+        FileImpl file = getProject().getFile(CndFileUtils.normalizeFile(testFile).getAbsolutePath(), true);
         assertNotNull("csm file not found for " + testFile.getAbsolutePath(), file);
         checkFileOffsetsConverting(file);
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,6 +61,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
+import org.netbeans.core.ProxySettings;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -87,6 +88,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
     /** 
      * Creates new form GeneralOptionsPanel. 
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public GeneralOptionsPanel () {
         initComponents ();
 
@@ -119,14 +121,17 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         tfProxyPort.addActionListener (this);
         tfProxyPort.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validatePortValue();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validatePortValue();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validatePortValue();
             }
@@ -375,6 +380,7 @@ private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     final WebBrowsersOptionsModel wbModel = new WebBrowsersOptionsModel();
     WebBrowsersOptionsPanel wbPanel = new WebBrowsersOptionsPanel(wbModel, cbWebBrowser.getSelectedItem().toString());
     DialogDescriptor dialogDesc = new DialogDescriptor (wbPanel, loc("LBL_WebBrowsersPanel_Title"), true, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (DialogDescriptor.OK_OPTION.equals(e.getSource())) {
                     wbModel.applyChanges();
@@ -523,6 +529,9 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 String sPort = System.getProperty ("http.proxyPort"); // NOI18N
                 toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Format", sHost, sPort);
             }
+            if (GeneralOptionsModel.usePAC()) {
+                toolTip = getPacFile();
+            }
             return toolTip;
         } else {
             return null;
@@ -552,23 +561,29 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         // proxy settings
         switch (model.getProxyType ()) {
-            case 0:
+            case ProxySettings.DIRECT_CONNECTION:
                 rbNoProxy.setSelected (true);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
                 bMoreProxy.setEnabled (false);
                 break;
-            case 1:
+            case ProxySettings.AUTO_DETECT_PROXY:
                 rbUseSystemProxy.setSelected (true);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
                 bMoreProxy.setEnabled (false);
                 break;
-            default:
+            case ProxySettings.MANUAL_SET_PROXY:
                 rbHTTPProxy.setSelected (true);
                 tfProxyHost.setEnabled (true);
                 tfProxyPort.setEnabled (true);
                 bMoreProxy.setEnabled (true);
+                break;
+            case ProxySettings.AUTO_DETECT_PAC:
+                rbUseSystemProxy.setSelected (true);
+                tfProxyHost.setEnabled (false);
+                tfProxyPort.setEnabled (false);
+                bMoreProxy.setEnabled (false);
                 break;
         }
         tfProxyHost.setText (model.getHttpProxyHost ());
@@ -662,6 +677,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return changed;
     }
 
+    @Override
     public void actionPerformed (ActionEvent e) {
         changed = true;
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());
@@ -669,4 +685,10 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         bMoreProxy.setEnabled (rbHTTPProxy.isSelected ());
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
     }
+
+    private static String getPacFile() {
+        String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
+        return init.substring(4).trim();
+    }
+    
 }

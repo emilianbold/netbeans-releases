@@ -59,9 +59,9 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -104,28 +104,23 @@ public final class NestedType extends TypeImpl {
     }
 
     @Override
-    public CsmClassifier getClassifier(Resolver parent) {
+    public CsmClassifier getClassifier() {
         CsmClassifier classifier = _getClassifier();
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
             _setClassifier(null);
             if (parentType != null) {
-                CsmClassifier parentClassifier;
-                if (parentType instanceof Resolver.SafeClassifierProvider) {
-                    parentClassifier = ((Resolver.SafeClassifierProvider)parentType).getClassifier(parent);
-                } else {
-                    parentClassifier = parentType.getClassifier();
-                }
+                CsmClassifier parentClassifier = parentType.getClassifier();
                 if (CsmBaseUtilities.isValid(parentClassifier)) {
-                    MemberResolverImpl memberResolver = new MemberResolverImpl(parent);
+                    MemberResolverImpl memberResolver = new MemberResolverImpl();
                     classifier = getNestedClassifier(memberResolver, parentClassifier, getOwnText());
                 }
             }
             if (!CsmBaseUtilities.isValid(classifier)) {
                 // try to resolve qualified name, not through the parent classifier
                 List<CharSequence> fqn = getFullQName();
-                classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]), parent);
+                classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]));
             }
             _setClassifier(classifier);
         }
@@ -133,9 +128,13 @@ public final class NestedType extends TypeImpl {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
             CsmObject obj= null;
             if (ip instanceof InstantiationProviderImpl) {
-                Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-                if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                    obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver, getStartOffset());
+                Resolver resolver = ResolverFactory.createResolver(this);
+                try {
+                    if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                    }
+                } finally {
+                    ResolverFactory.releaseResolver(resolver);
                 }
             } else {
                 obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());

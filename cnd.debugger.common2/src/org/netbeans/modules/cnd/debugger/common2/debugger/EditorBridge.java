@@ -253,7 +253,7 @@ public final class EditorBridge {
      *         has no LineSet, or if the LineSet fails to locate
      *         the given line.
      */
-    private static Line lineNumberToLine(DataObject dao, int lineNumber)
+    public static Line lineNumberToLine(DataObject dao, int lineNumber)
 	throws Exception {
 	LineCookie lc = dao.getCookie(LineCookie.class);
 	if (lc == null) {

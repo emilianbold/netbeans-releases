@@ -51,10 +51,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.sonatype.nexus.index.ArtifactContext;
-import org.sonatype.nexus.index.ArtifactScanningListener;
-import org.sonatype.nexus.index.ScanningResult;
-import org.sonatype.nexus.index.context.IndexingContext;
+import org.apache.maven.index.ArtifactContext;
+import org.apache.maven.index.ArtifactScanningListener;
+import org.apache.maven.index.ScanningResult;
+import org.apache.maven.index.context.IndexingContext;
 
 /**
  *

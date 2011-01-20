@@ -183,7 +183,7 @@ public class StatusCommand extends GitCommand {
                             } else {
                                 statusIndexWC = GitStatus.Status.STATUS_ADDED;
                             }
-                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true, Utils.checkExecutable(repository), repository.getFS()))) {
+                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;
@@ -203,8 +203,7 @@ public class StatusCommand extends GitCommand {
 
                     GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
                     if (stage == 0) {
-                        statuses.put(file, status);
-                        listener.notifyStatus(status);
+                        addStatus(file, status);
                     } else {
                         conflicts[stage - 1] = status;
                     }
@@ -258,7 +257,7 @@ public class StatusCommand extends GitCommand {
         return renames;
     }
 
-    private void handleConflict (GitStatus[] conflicts, String workTreePath) {
+    protected final void handleConflict (GitStatus[] conflicts, String workTreePath) {
         if (conflicts[0] != null || conflicts[1] != null || conflicts[2] != null) {
             GitStatus status;
             Type type;
@@ -282,11 +281,15 @@ public class StatusCommand extends GitCommand {
             GitConflictDescriptor desc = new JGitConflictDescriptor(type);
             status = new JGitStatus(true, status.getRelativePath(), workTreePath, status.getFile(), GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL,
                     GitStatus.Status.STATUS_NORMAL, desc, status.isFolder(), null);
-            statuses.put(status.getFile(), status);
-            listener.notifyStatus(status);
+            addStatus(status.getFile(), status);
         }
         // clear conflicts cache
         Arrays.fill(conflicts, null);
+    }
+
+    protected final void addStatus (File file, GitStatus status) {
+        statuses.put(file, status);
+        listener.notifyStatus(status);
     }
 
 }

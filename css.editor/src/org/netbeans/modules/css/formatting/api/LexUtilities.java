@@ -266,10 +266,12 @@ public class LexUtilities {
         List<TokenSequence<T1>> tss = new ArrayList<TokenSequence<T1>>();
         for (LanguagePath lp : lps) {
             List<TokenSequence<?>> tss2 = th.tokenSequenceList(lp, start, end);
-            for (TokenSequence<?> ts2 : tss2) {
-                ts2.moveStart();
-                if (ts2.moveNext()) {
-                    tss.add((TokenSequence<T1>)ts2);
+            if (tss2 != null) {
+                for (TokenSequence<?> ts2 : tss2) {
+                    ts2.moveStart();
+                    if (ts2.moveNext()) {
+                        tss.add((TokenSequence<T1>)ts2);
+                    }
                 }
             }
         }

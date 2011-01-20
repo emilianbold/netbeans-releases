@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
@@ -59,14 +60,15 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public final class APTSystemStorage {
     private final Map<String, APTMacroMap> allMacroMaps = new HashMap<String, APTMacroMap>();
-    private final APTIncludePathStorage includesStorage = new APTIncludePathStorage();
+    private final APTIncludePathStorage includesStorage;
     private final static String baseNewName = "#SYSTEM MACRO MAP# "; // NOI18N
     private final static APTSystemStorage instance = new APTSystemStorage();
     
     private APTSystemStorage() {
+        includesStorage = new APTIncludePathStorage();
     }
     
-    public static APTSystemStorage getDefault() {
+    public static synchronized APTSystemStorage getInstance() {
         return instance;
     }
     
@@ -108,15 +110,19 @@ public final class APTSystemStorage {
 //        return includesStorage.get(sysIncludes);
 //    }
     
-    public List<IncludeDirEntry> getIncludes(CharSequence configID, List<String> sysIncludes) {
+    public List<IncludeDirEntry> getIncludes(CharSequence configID, List<FSPath> sysIncludes) {
         return includesStorage.get(configID, sysIncludes);
     }   
     
-    public void dispose() {
+    private void disposeImpl() {
         synchronized (allMacroMaps) {
             allMacroMaps.clear();
         }
         includesStorage.dispose();
+    }
+    
+    public static void dispose() {
+        instance.disposeImpl();
         APTMacroCache.getManager().dispose();
         IncludeDirEntry.disposeCache();
     }

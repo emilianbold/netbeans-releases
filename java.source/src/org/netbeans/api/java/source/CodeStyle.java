@@ -324,6 +324,10 @@ public final class CodeStyle {
         return preferences.getBoolean(alignMultilineTryResources, getDefaultAsBoolean(alignMultilineTryResources));
     }
 
+    public boolean alignMultilineDisjunctiveCatchTypes() {
+        return preferences.getBoolean(alignMultilineDisjunctiveCatchTypes, getDefaultAsBoolean(alignMultilineDisjunctiveCatchTypes));
+    }
+
     public boolean alignMultilineFor() {
         return preferences.getBoolean(alignMultilineFor, getDefaultAsBoolean(alignMultilineFor));
     }
@@ -404,6 +408,11 @@ public final class CodeStyle {
      */
     public WrapStyle wrapTryResources() {
         String wrap = preferences.get(wrapTryResources, getDefaultAsString(wrapTryResources));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapDisjunctiveCatchTypes() {
+        String wrap = preferences.get(wrapDisjunctiveCatchTypes, getDefaultAsString(wrapDisjunctiveCatchTypes));
         return WrapStyle.valueOf(wrap);
     }
 

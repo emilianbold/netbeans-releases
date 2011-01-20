@@ -760,9 +760,10 @@ public final class LibrariesNode extends AbstractNode {
             if (roots.length == 0) {
                 return;
             }
-            final FileObject projectSourcesArtifact = roots[0];
-            for (int i=0; i<filePaths.length;i++) {
-                try {
+            try {
+                final FileObject projectSourcesArtifact = roots[0];
+                final List<URI> toAdd = new ArrayList<URI>(filePaths.length);            
+                for (int i=0; i<filePaths.length;i++) {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, filePaths[i]);
@@ -807,14 +808,19 @@ public final class LibrariesNode extends AbstractNode {
                                 throw new AssertionError(ex);
                             }
                         }
-                        Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
-                        ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
-                        assert modifierImpl != null : prj.getProjectDirectory();
-                        modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                        assert u != null;
+                        toAdd.add(u);
+                    }                    
                 }
+                final Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+                final ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
+                assert modifierImpl != null : prj.getProjectDirectory();
+                modifierImpl.addRoots(toAdd.toArray(new URI[toAdd.size()]),
+                    findSourceGroup(projectSourcesArtifact, modifierImpl),
+                    ClassPath.COMPILE,
+                    ClassPathModifier.ADD_NO_HEURISTICS);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
 

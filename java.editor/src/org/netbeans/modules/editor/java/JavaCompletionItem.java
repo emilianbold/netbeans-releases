@@ -174,10 +174,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType);
     }
 
-    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
+    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, smartType);
+                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType);
             case CONSTRUCTOR:
                 return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null);
             default:
@@ -902,7 +902,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (val != 1 || ctor != null) {
                                     final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
                                             val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
-                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, true);
+                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true);
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -1236,12 +1236,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
         private String typeName;
-        private boolean isPrimitive;
+        private boolean addSemicolon;
         private String sortText;
         private String leftText;
         private String rightText;
         
-        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
@@ -1261,7 +1261,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             TypeMirror retType = type.getReturnType();
             this.typeName = Utilities.getTypeName(info, retType, false).toString();
-            this.isPrimitive = retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID;
+            this.addSemicolon = addSemicolon && (retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID);
         }
         
         public int getSortPriority() {
@@ -1384,35 +1384,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
-            if (toAdd == null) {
-                if (isPrimitive) {
-                    try {
-                        final String[] ret = new String[1];
-                        Source s = Source.create(c.getDocument());
-                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                controller.toPhase(Phase.PARSED);
-                                int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(c.getSelectionEnd());
-                                TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                                Tree tree = tp.getLeaf();
-                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                                    tp = tp.getParentPath();
-                                    if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
-                                        ret[0] = ";"; //NOI18N
-                                }
-                                if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
-                                    (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
-                                    tp = tp.getParentPath();
-                                if (tp.getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT || tp.getLeaf().getKind() == Tree.Kind.BLOCK)
-                                    ret[0] = ";"; //NOI18N
-                            }
-                        });
-                        toAdd = ret[0];
-                    } catch (ParseException ex) {
-                    }
-                }
+            if (toAdd == null && addSemicolon) {
+                toAdd = ";"; //NOI18N
             }
             if (inImport || params.isEmpty()) {
                 String add = inImport ? ";" : CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
@@ -1546,7 +1519,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
-            super(info, elem, type, substitutionOffset, false, false, false, false);
+            super(info, elem, type, substitutionOffset, false, false, false, false, false);
             this.implement = implement;
         }
         

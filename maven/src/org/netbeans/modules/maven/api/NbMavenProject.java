@@ -362,12 +362,23 @@ public final class NbMavenProject {
     }
 
     /**
-     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode) if download strategy is not DownloadStrategy.NEVER in options
-     * Not to be called from AWT thread. The current thread will continue after downloading binaries and firing project change event.
-     *
+     * @deprecated Use {@link #downloadDependencyAndJavadocSource(boolean) with {@code true}.
      */
+    @Deprecated
     public void downloadDependencyAndJavadocSource() {
-        synchronousDependencyDownload();
+        downloadDependencyAndJavadocSource(true);
+    }
+    /**
+     * Download binaries and then trigger dependency javadoc/source download (in async mode) if download strategy is not DownloadStrategy.NEVER in options
+     * Not to be called from AWT thread in synch mode; the current thread will continue after downloading binaries and firing project change event.
+     * @param synch true to download dependencies binaries (not source/Javadoc) synchronously; false to download everything asynch
+     */
+    public void downloadDependencyAndJavadocSource(boolean synch) {
+        if (synch) {
+            synchronousDependencyDownload();
+        } else {
+            triggerDependencyDownload();
+        }
         //see Bug 189350 : honer global  maven settings
         if (MavenSettings.getDefault().getJavadocDownloadStrategy() != DownloadStrategy.NEVER) {
             triggerSourceJavadocDownload(true);

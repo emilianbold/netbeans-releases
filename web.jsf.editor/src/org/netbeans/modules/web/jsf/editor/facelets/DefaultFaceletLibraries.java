@@ -48,7 +48,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -105,7 +106,7 @@ public class DefaultFaceletLibraries {
             FaceletsLibraryDescriptor descritor;
             try {
                 descritor = FaceletsLibraryDescriptor.create(lfo);
-                librariesDescriptors.put(descritor.getURI(), descritor);
+                librariesDescriptors.put(descritor.getNamespace(), descritor);
             } catch (LibraryDescriptorException ex) {
                 Logger.global.log(Level.WARNING, "Error parsing facelets library " +
                         FileUtil.getFileDisplayName(lfo) + " in jsf-impl.jar from bundled web.jsf20 library", ex);
@@ -114,50 +115,14 @@ public class DefaultFaceletLibraries {
 
     }
 
-
-    private static Map<String, LibraryInfo> LIBRARY_INFOS;
-
-    private static synchronized LibraryInfo getLibraryInfo(String libraryUri) {
-        if(LIBRARY_INFOS == null) {
-            LIBRARY_INFOS = new HashMap<String, LibraryInfo>();
-
-            LIBRARY_INFOS.put("http://java.sun.com/jsf/facelets", new LibraryInfo("Facelets", "ui")); //NOI18N
-            LIBRARY_INFOS.put("http://mojarra.dev.java.net/mojarra_ext", new LibraryInfo("Mojarra Extensions", "mj")); //NOI18N
-            LIBRARY_INFOS.put("http://java.sun.com/jsf/composite", new LibraryInfo("Composite Components", "cc")); //NOI18N
-            LIBRARY_INFOS.put("http://java.sun.com/jsf/html", new LibraryInfo("Html Basic", "h")); //NOI18N
-            LIBRARY_INFOS.put("http://java.sun.com/jsf/core", new LibraryInfo("Jsf Core", "f")); //NOI18N
-            LIBRARY_INFOS.put("http://java.sun.com/jsp/jstl/core", new LibraryInfo("Jstl Core", "c")); //NOI18N
-        }
-
-        return LIBRARY_INFOS.get(libraryUri);
-    }
-
     public static String getLibraryDisplayName(String uri) {
-        LibraryInfo li = getLibraryInfo(uri);
+        LibraryInfo li = DefaultLibraryInfo.forNamespace(uri);
         return li != null ? li.getDisplayName() : null;
     }
 
     public static String getLibraryDefaultPrefix(String uri) {
-        LibraryInfo li = getLibraryInfo(uri);
+        LibraryInfo li = DefaultLibraryInfo.forNamespace(uri);
         return li != null ? li.getDefaultPrefix() : null;
     }
 
-    private static class LibraryInfo {
-        public String displayName;
-        public String defaultPrefix;
-
-        public LibraryInfo(String displayName, String defaultPrefix) {
-            this.displayName = displayName;
-            this.defaultPrefix = defaultPrefix;
-        }
-
-        public String getDefaultPrefix() {
-            return defaultPrefix;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-    }
 }

@@ -54,11 +54,12 @@ import java.io.IOException;
 import java.io.File;
 import java.util.Enumeration;
 import java.beans.PropertyVetoException;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 
 public class ExLocalFileSystem extends LocalFileSystem {
     public static ExLocalFileSystem getInstance (File root) throws PropertyVetoException, IOException {
         ExLocalFileSystem retVal = new ExLocalFileSystem ();
-        if (root.equals(Attributes.getRootForAttributes())) {
+        if (Utils.equals(root, Attributes.getRootForAttributes())) {
             retVal.attr = new OneFileAttributeAttachedToRoot(retVal.info, retVal.change, retVal.list);
         } else {
             retVal.attr = new Attributes(root, retVal.info, retVal.change, retVal.list);

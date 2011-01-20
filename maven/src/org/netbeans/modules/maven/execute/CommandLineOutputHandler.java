@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -66,6 +67,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
     //8 means 4 paralel builds, one for input, one for output.
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 8); //NOI18N
+    private static final Logger LOG = Logger.getLogger(CommandLineOutputHandler.class.getName());
     private InputOutput inputOutput;
     private static final Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); // NOI18N
     static final Pattern startPatternM2 = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); // NOI18N
@@ -73,10 +75,9 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     private OutputWriter stdOut;
-    //    private ProgressHandle handle;
+    private String currentProject;
     private String currentTag;
     Task outTask;
-//    private MavenEmbedderLogger logger;
     private Input inp;
     private ProgressHandle handle;
 
@@ -95,7 +96,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
     @Override
     protected final void checkSleepiness() {
-        handle.progress("");
+        handle.progress(currentProject == null ? "" : currentTag == null ? currentProject : currentProject + " " + currentTag); // NOI18N
         super.checkSleepiness();
     }
 
@@ -124,9 +125,16 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         return this.inputOutput;
     }
 
+    private static final String SEC_MOJO_EXEC = "mojo-execute"; //NOI18N
+    private void closeCurrentTag() {
+        if (currentTag != null) {
+            CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
+            currentTag = null;
+        }
+    }
+
     private class Output implements Runnable {
 
-        private static final String SEC_MOJO_EXEC = "mojo-execute"; //NOI18N
         private BufferedReader str;
         private boolean skipLF = false;
 
@@ -137,7 +145,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         private String readLine() throws IOException {
             char[] char1 = new char[1];
             boolean isReady = true;
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             while (isReady) {
                 int ret = str.read(char1);
                 if (ret != 1) {
@@ -181,7 +189,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
         }
 
-        public void run() {
+        public @Override void run() {
             CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE,null), stdOut);
             try {
 
@@ -195,10 +203,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                     if (line.startsWith("[INFO] Final Memory:")) { //NOI18N
                         // previous value [INFO] --------------- is too early, the compilation errors don't get processed in this case.
                         //heuristics..
-                        if (currentTag != null) {
-                            CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
-                        }
-                        currentTag = null;
+                        closeCurrentTag();
                     }
                     String tag = null;
                     Matcher match = startPatternM3.matcher(line);
@@ -223,16 +228,20 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         }
                     }
                     if (tag != null) {
-                        if (currentTag != null) {
-                            CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
-                        }
-                        CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
+                        closeCurrentTag();
                         currentTag = tag;
+                        CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
+                        checkSleepiness();
                     } else {
                         match = linePattern.matcher(line);
                         if (match.matches()) {
-                            String level = match.group(1);
-                            processLine(match.group(2), stdOut, Level.valueOf(level));
+                            String levelS = match.group(1);
+                            Level level = Level.valueOf(levelS);
+                            String text = match.group(2);
+                            processLine(text, stdOut, level);
+                            if (level == Level.INFO) {
+                                checkProgress(text);
+                            }
                         } else {
                             // oh well..
                             processLine(line, stdOut, Level.INFO);
@@ -258,7 +267,6 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         private InputOutput inputOutput;
         private OutputStream str;
         private boolean stopIn = false;
-        private Thread runningThread;
 
         public Input(OutputStream out, InputOutput inputOutput) {
             str = out;
@@ -274,8 +282,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
             }
         }
 
-        public void run() {
-            runningThread = Thread.currentThread();
+        public @Override void run() {
             Reader in = inputOutput.getIn();
             try {
                 while (true) {
@@ -304,84 +311,68 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         }
     }
 
-//    @Override
-//    MavenEmbedderLogger getLogger() {
-//        return logger;
-//    }
+    /**
+     * #192200: try to indicate progress esp. in a reactor build.
+     * @see org.apache.maven.cli.ExecutionEventLogger
+     */
+    private void checkProgress(String text) {
+        switch (state) {
+        case INITIAL:
+            if (text.equals("Reactor Build Order:")) { // NOI18N
+                state = ProgressState.GOT_REACTOR_BUILD_ORDER;
+            }
+            break;
+        case GOT_REACTOR_BUILD_ORDER:
+            if (text.trim().isEmpty()) {
+                state = ProgressState.GETTING_REACTOR_PROJECTS;
+            } else {
+                state = ProgressState.INITIAL; // ???
+            }
+            break;
+        case GETTING_REACTOR_PROJECTS:
+            if (text.trim().isEmpty()) {
+                state = ProgressState.NORMAL;
+                reactorSize++; // so we do not show 100% completion while building last project
+                handle.switchToDeterminate(reactorSize);
+                LOG.log(java.util.logging.Level.FINE, "reactor size: {0}", reactorSize);
+            } else {
+                reactorSize++;
+            }
+            break;
+        case NORMAL:
+            if (forkCount == 0 && text.matches("-+")) { // NOI18N
+                state = ProgressState.GOT_DASHES;
+            } else if (text.startsWith("<<< ")) { // NOI18N
+                forkCount++;
+                LOG.log(java.util.logging.Level.FINE, "fork count up to {0}", forkCount);
+            } else if (forkCount > 0 && text.startsWith(">>> ")) { // NOI18N
+                forkCount--;
+                LOG.log(java.util.logging.Level.FINE, "fork count down to {0}", forkCount);
+            }
+            break;
+        case GOT_DASHES:
+            if (text.startsWith("Building ") && !text.startsWith("Building in ") || text.startsWith("Skipping ")) { // NOI18N
+                currentProject = text.substring(9);
+                closeCurrentTag();
+                handle.progress(currentProject, Math.min(++projectCount, reactorSize));
+                LOG.log(java.util.logging.Level.FINE, "got project #{0}: {1}", new Object[] {projectCount, currentProject});
+            }
+            state = ProgressState.NORMAL;
+            break;
+        default:
+            assert false : state;
+        }
+    }
+    enum ProgressState {
+        INITIAL,
+        GOT_REACTOR_BUILD_ORDER,
+        GETTING_REACTOR_PROJECTS,
+        NORMAL,
+        GOT_DASHES,
+    }
+    private ProgressState state = ProgressState.INITIAL;
+    private int forkCount;
+    private int reactorSize;
+    private int projectCount;
 
-//    private class Logger implements MavenEmbedderLogger {
-//
-//        private Logger() {
-//        }
-//
-//        public void debug(String arg0) {
-//            inputOutput.getOut().println(arg0);
-//        }
-//
-//        public void debug(String arg0, Throwable arg1) {
-//            inputOutput.getOut().println(arg0);
-//        }
-//
-//        public boolean isDebugEnabled() {
-//            return true;
-//        }
-//
-//        public void info(String arg0) {
-//            inputOutput.getOut().println(arg0);
-//        }
-//
-//        public void info(String arg0, Throwable arg1) {
-//            inputOutput.getOut().println(arg0);
-//        }
-//
-//        public boolean isInfoEnabled() {
-//            return true;
-//        }
-//
-//        public void warn(String arg0) {
-//            inputOutput.getOut().println(arg0);
-//        }
-//
-//        public void warn(String arg0, Throwable arg1) {
-//            inputOutput.getOut().println(arg0);
-//        }
-//
-//        public boolean isWarnEnabled() {
-//            return true;
-//        }
-//
-//        public void error(String arg0) {
-//            inputOutput.getErr().println(arg0);
-//        }
-//
-//        public void error(String arg0, Throwable arg1) {
-//            inputOutput.getErr().println(arg0);
-//        }
-//
-//        public boolean isErrorEnabled() {
-//            return true;
-//        }
-//
-//        public void fatalError(String arg0) {
-//            inputOutput.getErr().println(arg0);
-//        }
-//
-//        public void fatalError(String arg0, Throwable arg1) {
-//            inputOutput.getErr().println(arg0);
-//        }
-//
-//        public boolean isFatalErrorEnabled() {
-//            return true;
-//        }
-//
-//        public void setThreshold(int arg0) {
-//        }
-//
-//        public int getThreshold() {
-//            return MavenEmbedderLogger.LEVEL_DEBUG;
-//        }
-//
-//        public void close() {
-//        }
-//    }
 }

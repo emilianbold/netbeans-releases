@@ -49,7 +49,11 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -151,6 +155,42 @@ public class CssBracketCompleter implements KeystrokeHandler {
                         }
                     }
                 }
+
+                //issue 189711 workaround - if the css code is embedde in html attribute value
+                //and user types " at the end of the value additional quotation is incorrectly
+                //added: <div id="myid| + " => <div id="myid""
+                //
+                //we need to check if the actuall css code is embedded in an attribute
+                //value w/o depending on the html module. An SPI in web.common could do it as well
+                LanguagePath langPath = ts.languagePath();
+                LanguagePath parentPath = langPath.parent();
+                if(parentPath != null) {
+                    //we are embedded
+                    Language top = parentPath.topLanguage();
+                    if("text/html".equals(top.mimeType())) {
+                        //in html
+                        TokenHierarchy hi = TokenHierarchy.get(doc);
+                        List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
+                        if(embedded.size() > 1) {
+                            TokenSequence<?> htmlts = embedded.get(embedded.size() - 2);
+                            if(htmlts.languagePath().equals(parentPath)) {
+                                //it relly looks like our parent ts
+                                htmlts.move(dot);
+                                if(htmlts.moveNext() || htmlts.movePrevious()) {
+                                    TokenId id = htmlts.token().id();
+                                    //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
+                                    if(id.name().equals("VALUE_CSS")) { //NOI18N
+                                        //we are in a css value, do not complete the quote
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+
+
+                    }
+                }
+
 
                 //cover "text| and user types "
                 //in such case just the quotation should be added
@@ -300,6 +340,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                 try {
                     doc.runAtomic(new Runnable() {
 
+                        @Override
                         public void run() {
                             try {
                                 indent.reindent(from.getOffset(), to.getOffset());

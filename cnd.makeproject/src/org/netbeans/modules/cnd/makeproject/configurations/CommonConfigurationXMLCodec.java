@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
@@ -80,6 +81,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V74 - NB 7.0
+ *    No longer generation makefiles for unmanaged projects. Calling projects make directly
+ * V73 - NB 7.0
+ *    add C/C++ flag USE_LINKER_PKG_CONFIG_LIBRARIES
+ * Without changing version
+ *    added REMOTE_FILESYSTEM_BASE_DIR tag in project.xml
+ * V72 - NB 7.0
+ *   move platform in private project area
+ * V71 - NB 7.0
+ *   introduce default tool collection
  * V70 - NB 7.0
  *   move DEVELOPMENT_SERVER_ELEMENT in private area
  * Without changing version yet - NB 7.0
@@ -204,15 +215,15 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 70;
+    public final static int CURRENT_VERSION = 74;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
     // Old style. FIXUP: should be removed....
-    protected final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor"; // NOI18N
+    public final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor"; // NOI18N
     protected final static String DEFAULT_CONF_ELEMENT = "defaultConf"; // NOI18N
-    protected final static String CONFS_ELEMENT = "confs"; // NOI18N
-    protected final static String CONF_ELEMENT = "conf"; // NOI18N
+    public final static String CONFS_ELEMENT = "confs"; // NOI18N
+    public final static String CONF_ELEMENT = "conf"; // NOI18N
     protected final static String DIRECTORY_PATH_ELEMENT = "directoryPath"; // NOI18N
     protected final static String PATH_ELEMENT = "pElem"; // NOI18N
     protected final static String FOLDER_PATH_ELEMENT = "folderPath"; // Old style. FIXUP : < version 5 // NOI18N
@@ -228,16 +239,16 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String SOURCE_FOLDERS_FILTER_ELEMENT = "sourceFolderFilter"; // NOI18N
     protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
-    protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
-    protected final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
-    protected final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
+    public final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
+    public final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
+    public final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
     protected final static String REMOTE_MODE_ELEMENT = MakeProject.REMOTE_MODE; // NOI18N
-    protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
+    public final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
     protected final static String FORTRAN_REQUIRED_ELEMENT = "fortranRequired"; // NOI18N
     protected final static String ASSEMBLER_REQUIRED_ELEMENT = "assemblerRequired"; // NOI18N
-    protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
+    public final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     protected final static String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
     // Compile Type
@@ -255,9 +266,10 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String COMMANDLINE_TOOL_ELEMENT = "commandlineTool"; // NOI18N
     protected final static String ADDITIONAL_DEP_ELEMENT = "additionalDep"; // NOI18N
     protected final static String ADDITIONAL_OPTIONS_ELEMENT = "additionalOptions"; // NOI18N
-    protected final static String OUTPUT_ELEMENT = "output"; // NOI18N
+    public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
+    protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
@@ -313,7 +325,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String LINKER_LIB_FILE_ITEM_ELEMENT = "linkerLibFileItem"; // NOI18N
     protected final static String LINKER_LIB_OPTION_ITEM_ELEMENT = "linkerOptionItem"; // NOI18N
     // Make Artifact
-    protected final static String MAKE_ARTIFACT_ELEMENT = "makeArtifact"; // NOI18N
+    public final static String MAKE_ARTIFACT_ELEMENT = "makeArtifact"; // NOI18N
     protected final static String MAKE_ARTIFACT_PL_ELEMENT = "PL"; // NOI18N
     protected final static String MAKE_ARTIFACT_CT_ELEMENT = "CT"; // NOI18N
     protected final static String MAKE_ARTIFACT_CN_ELEMENT = "CN"; // NOI18N
@@ -322,7 +334,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String MAKE_ARTIFACT_WD_ELEMENT = "WD"; // NOI18N
     protected final static String MAKE_ARTIFACT_BC_ELEMENT = "BC"; // NOI18N
     protected final static String MAKE_ARTIFACT_CC_ELEMENT = "CC"; // NOI18N
-    protected final static String MAKE_ARTIFACT_OP_ELEMENT = "OP"; // NOI18N
+    public final static String MAKE_ARTIFACT_OP_ELEMENT = "OP"; // NOI18N
     // Archiver Tool
     protected final static String ARCHIVERTOOL_ELEMENT = "archiverTool"; // NOI18N
     protected final static String RANLIB_TOOL_ELEMENT = "ranlibTool"; // NOI18N
@@ -526,33 +538,39 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeLogicalFolders(XMLEncoderStream xes) {
-        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders());
+        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0);
     }
 
-    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
-        if (folder.getKind() != null) {
-            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-                        new AttrValuePair(KIND_ATTR, "" + folder.getKind()), // NOI18N
-                    });
-        } else {
-            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-                    });
+    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, int level) {
+        Kind kind = folder.getKind();
+        Kind storedKind = null;
+        if (kind != null) {
+            switch (kind) {
+                case ROOT:
+                case TEST:
+                case IMPORTANT_FILES_FOLDER:
+                case TEST_LOGICAL_FOLDER:
+                    storedKind = kind;
+            }
         }
+        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
+        attrList.add(new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName())); // NOI18N
+        attrList.add(new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles())); // NOI18N
+        if (storedKind != null) {
+            attrList.add(new AttrValuePair(KIND_ATTR, "" + folder.getKind())); // NOI18N
+        }
+        if (folder.getRoot() != null) {
+            attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
+        }
+        xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
             if (subfolders[i].isDiskFolder()) {
                 writeDiskFolder(xes, subfolders[i]);
             } else {
-                writeLogicalFolder(xes, subfolders[i]);
+                writeLogicalFolder(xes, subfolders[i], level++);
             }
         }
         // write out items
@@ -569,23 +587,8 @@ public abstract class CommonConfigurationXMLCodec
         if (folder.getRoot() != null) {
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
-        if (folder.getKind() != null) {
-            attrList.add(new AttrValuePair(KIND_ATTR, "" + folder.getKind())); // NOI18N
-        }
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
 
-//        if (folder.getRoot() != null) {
-//            xes.elementOpen(DISK_FOLDER_ELEMENT,
-//                    new AttrValuePair[]{
-//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-//                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
-//                    });
-//        } else {
-//            xes.elementOpen(DISK_FOLDER_ELEMENT,
-//                    new AttrValuePair[]{
-//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-//                    });
-//        }
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
@@ -668,6 +671,9 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
         }
+        if (cCompilerConfiguration.getUseLinkerLibraries().getModified()) {
+            xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + cCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
+        }
         if (cCompilerConfiguration.getWarningLevel().getModified()) {
             xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
         }
@@ -717,6 +723,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getUseLinkerLibraries().getModified()) {
+            xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + ccCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getWarningLevel().getModified()) {
             xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
@@ -945,7 +954,7 @@ public abstract class CommonConfigurationXMLCodec
                     new AttrValuePair(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory()),
                     new AttrValuePair(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand()),
                     new AttrValuePair(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand()),
-                    new AttrValuePair(MAKE_ARTIFACT_OP_ELEMENT, makeArtifact.getOutput()),});
+                    new AttrValuePair(MAKE_ARTIFACT_OP_ELEMENT, makeArtifact.getStoredOutput()),});
         /*
         xes.elementOpen(MAKE_ARTIFACT_ELEMENT);
         xes.element(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation());

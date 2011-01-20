@@ -50,6 +50,8 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Knowledge of which project some files belong to.
+ * <p>An implementation must attempt to return a result quickly and avoid
+ * blocking on foreign locks. In particular, it should not call {@code OpenProjects}.
  * @see org.netbeans.api.project.FileOwnerQuery
  * @author Jesse Glick
  */

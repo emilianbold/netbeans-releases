@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+
+
+        <title>JavaMail Session: General Attributes</title>
+
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+    </head>
+
+    <body>
+
+        <h2>JavaMail Session: General Attributes</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You see this page of the New File wizard when you are <a href="../general/def_javamail.html">defining a JavaMail Session resource</a>.
+        On this page you specify general and advanced configuration information for a JavaMail Session resource
+        and specify the JNDI name of the resource.</p> 
+        
+        <p>Use this page as follows:</p>
+        <ol>
+            <li>Supply the general information for the resource. 
+            The following information is required and must be supplied before you can Finish or 
+            proceed to the next screen:
+            <ul>
+                <li><b>JNDI Name.</b> The JNDI must be unique to the resource. JavaMail Session resources are usually placed withing the <tt>mail</tt> naming subcontext.</li>
+                <li><b>Mail Host.</b> The host name is the DNS name of the default mail server. 
+                The name must be resolvable to an actual host name.</li>
+                <li><b>Default User.</b> Enter the user name to use when connecting to the mail server.</li>
+                <li><b>Default Return Address.</b> Enter the email address of the default user, in the form <tt>username@host.domain</tt>.</li>
+            </ul></li>
+            <li>Advanced information is optional. It is best to leave the advanced settings at their default values unless 
+            the Application Server's mail provider has been reconfigured to 
+            use a nondefault store or transport protocol.
+            <ul class="note">
+                <li>Setting Debug Enabled to True, enables extra debugging output including 
+                a protocol trace, for this mail session. If the JavaMail log level
+                is set to FINE or finer, the debugging output is generated and is included 
+                in the system log file. See "Configuring Log Levels" for 
+                information about setting the log level.</li>
+            </ul></li>
+            <li>Click Finish to create the resource.<br>
+            Click Next to proceed to the advanced properties screen.</li>
+        </ol>
+       <p>When you complete the wizard, the resource properties are added to <tt>sun-resources.xml</tt>.
+        If you need to edit the properties of the resource, you can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+        Server Resources node of your project in the Projects window and double-clicking the file. </p>
+                
+        <p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it.
+        The resource is automatically registered when you deploy your project.</p>
+        <p>After the resource is registered, the resource appears in the JavaMail Sessions node under the Resources node for the server
+        instance in the Services window.</p> 
+        
+        <p>For more on the Sun JavaMail API, see:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://java.sun.com/products/javamail/">
+            <param name="text" value="<html><u>http://java.sun.com/products/javamail/</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object> 
+
+        <dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd>    <a href="../general/def_javamail.html">Defining a JavaMail Session resource</a></dd>
+        </dl>
+
+        <hr>
+
+        <small><a href="../../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

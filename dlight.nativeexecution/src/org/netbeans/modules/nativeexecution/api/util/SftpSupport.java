@@ -253,7 +253,7 @@ class SftpSupport {
                 try {
                     res = new Md5checker(execEnv).check(new File(srcFileName), dstFileName);
                 } catch (NoSuchAlgorithmException ex) {
-                    Logger.getInstance().log(Level.WARNING, "Can not perform md5 check for {0}: {1}", new Object[]{execEnv.getDisplayName(), ex.getMessage()});
+                    LOG.log(Level.WARNING, "Can not perform md5 check for {0}: {1}", new Object[]{execEnv.getDisplayName(), ex.getMessage()});
                     if (HostInfoUtils.fileExists(execEnv, dstFileName)) {
                         res = Md5checker.Result.UPTODATE;
                     } else {
@@ -262,7 +262,7 @@ class SftpSupport {
                 } catch (Md5checker.CheckSumException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.FINE, "SftpSupport interrupted", ex);
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }

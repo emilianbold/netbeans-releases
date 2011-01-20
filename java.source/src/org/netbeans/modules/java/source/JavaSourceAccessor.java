@@ -44,13 +44,9 @@
 
 package org.netbeans.modules.java.source;
 
-import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +66,6 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.ModificationResult.Difference.Kind;
 import org.netbeans.api.java.source.PositionConverter;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.parsing.api.Source;
@@ -269,9 +264,6 @@ public abstract class JavaSourceAccessor {
      * @param info
      */
     public abstract void invalidate (CompilationInfo info);
-
-    public abstract AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type);
-    public abstract AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t);
 
     public static boolean holdsParserLock() {
 	return Utilities.holdsParserLock();

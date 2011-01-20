@@ -44,6 +44,7 @@
 
 package org.openide.explorer;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -55,7 +56,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -331,8 +331,11 @@ final class ExplorerActionsImpl {
 
             if (node != null) {
                 try {
-                    Transferable trans = getClipboard().getContents(this);
-                    updatePasteTypes(trans, node);
+                    Clipboard clip = getClipboard();
+                    if (clip != null) {
+                        Transferable trans = clip.getContents(this);
+                        updatePasteTypes(trans, node);
+                    }
                 } catch (NullPointerException npe) {
                     Logger.getLogger (ExplorerActionsImpl.class.getName ()).
                         log (Level.INFO, "Caused by http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6322854", npe);
@@ -399,7 +402,7 @@ final class ExplorerActionsImpl {
     private static Clipboard getClipboard() {
         Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
 
-        if (c == null) {
+        if (c == null && !GraphicsEnvironment.isHeadless()) {
             c = Toolkit.getDefaultToolkit().getSystemClipboard();
         }
 
@@ -554,8 +557,9 @@ final class ExplorerActionsImpl {
 
             if (trans != null) {
                 Clipboard clipboard = getClipboard();
-
-                clipboard.setContents(trans, new StringSelection("")); // NOI18N
+                if (clipboard != null) {
+                    clipboard.setContents(trans, new StringSelection("")); // NOI18N
+                }
             }
         }
 

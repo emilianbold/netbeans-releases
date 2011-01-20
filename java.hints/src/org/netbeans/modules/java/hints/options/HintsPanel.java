@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,8 @@
 package org.netbeans.modules.java.hints.options;
 
 import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -54,9 +56,12 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -73,18 +78,47 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 
 final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
+
+    private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
     
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
-    private final DefaultTreeModel errorTreeModel;
+    private DefaultTreeModel errorTreeModel;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    //AWT only:
+    private HintMetadata toSelect = null;
       
     DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
 
-    HintsPanel(@NullAllowed OptionsFilter filter) {
+    @Messages("LBL_Loading=Loading...")
+    HintsPanel(@NullAllowed final OptionsFilter filter) {
+        WORKER.post(new Runnable() {
+
+            @Override
+            public void run() {
+                RulesManager.getInstance();
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        HintsPanel.this.removeAll();
+                        HintsPanel.this.init(filter);
+                    }
+                });
+            }
+        });
+
+        setLayout(new GridBagLayout());
+        add(new JLabel(Bundle.LBL_Loading()), new GridBagConstraints());
+    }
+
+    private void init(@NullAllowed OptionsFilter filter) {
         initComponents();
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
@@ -99,14 +133,21 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
         toProblemCheckBox.setVisible(false);
         
-        update();
-
         errorTreeModel = constructTM(RulesManager.getInstance().allHints.keySet());
 
         if (filter != null) {
             filter.installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
         } else {
             errorTree.setModel(errorTreeModel);
+        }
+
+        initialized.set(true);
+        update();
+        
+        if (toSelect != null) {
+            select(toSelect);
+            
+            toSelect = null;
         }
     }
     
@@ -263,6 +304,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     
         
     synchronized void update() {
+        if (!initialized.get()) return;
         if ( logic != null ) {
             logic.disconnect();
         }
@@ -271,6 +313,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
     
     void cancel() {
+        if (!initialized.get()) return;
         logic.disconnect();
         logic = null;
     }
@@ -280,6 +323,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
     
     void applyChanges() {
+        if (!initialized.get()) return;
         logic.applyChanges();
         logic.disconnect();
         logic = null;
@@ -404,6 +448,12 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
 
     void select(HintMetadata hm) {
+        if (errorTree == null) {
+            //lazy init:
+            toSelect = hm;
+            return;
+        }
+        
 	TreePath path = hint2Path.get(hm);
 	
         errorTree.setSelectionPath(path);

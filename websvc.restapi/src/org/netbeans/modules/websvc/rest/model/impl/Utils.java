@@ -45,12 +45,17 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
@@ -76,6 +81,31 @@ public class Utils {
 
     public static String getProduceMime(Element element) {
         return getAnnotationValue(element, RestConstants.PRODUCE_MIME, VALUE);
+    }
+    
+    static void fillQueryParams( Map<String, String> queryParams,
+            Element element )
+    {
+        if ( !( element instanceof ExecutableElement)){
+            return;
+        }
+        ExecutableElement method = (ExecutableElement)element;
+        List<? extends VariableElement> parameters = method.getParameters();
+        for (VariableElement variableElement : parameters) {
+            String paramName = null;
+            if ( hasAnnotationType(variableElement, RestConstants.QUERY_PARAM)){
+                paramName = getAnnotationValue(variableElement, 
+                        RestConstants.QUERY_PARAM, VALUE);
+            }
+            String defaultValue = null;
+            if ( hasAnnotationType(variableElement, RestConstants.DEFAULT_VALUE)){
+                defaultValue = getAnnotationValue(variableElement, 
+                        RestConstants.DEFAULT_VALUE, VALUE);
+            }
+            if ( paramName != null ){
+                queryParams.put( paramName , defaultValue );
+            }
+        }
     }
 
     public static String getApplicationPath(Element element) {
@@ -144,7 +174,14 @@ public class Utils {
     }
 
     private static String stripQuotes(String value) {
-        return value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
+        int index = value.indexOf('"');
+        if ( index !=-1 ){
+            int lastIndex = value.lastIndexOf('"');
+            if ( lastIndex != -1 && index != lastIndex ) {
+                return value.substring(index + 1, lastIndex);
+            }
+        }
+        return value;
     }
     
     static boolean checkForJsr311Bootstrap(TypeElement element, Project project, AnnotationModelHelper helper) {

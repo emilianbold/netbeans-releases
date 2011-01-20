@@ -45,6 +45,7 @@
 package org.netbeans.core;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -194,8 +195,14 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
                 putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
             }
         }
-        if( null != browserComponent )
-            browserComponent.getBrowserImpl().getComponent ().requestFocusInWindow ();
+        if( null != browserComponent ) {
+            HtmlBrowser.Impl impl = browserComponent.getBrowserImpl();
+            if( null != impl ) {
+                Component c = impl.getComponent();
+                if( null != c )
+                    c.requestFocusInWindow();
+            }
+        }
         super.componentActivated ();
         SwingUtilities.invokeLater( new Runnable() {
 

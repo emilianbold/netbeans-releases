@@ -211,15 +211,15 @@ public class LoggerStringConcat {
         TreeMaker make = wc.getTreeMaker();
 
         for (List<TreePath> element : sorted) {
-            if (element.size() == 1 && element.get(0).getLeaf().getKind() == Kind.STRING_LITERAL) {
-                String literalValue = (String) ((LiteralTree) element.get(0).getLeaf()).getValue();
+            if (element.size() == 1 && Utilities.isStringOrCharLiteral(element.get(0).getLeaf())) {
+                String literalValue = ((LiteralTree) element.get(0).getLeaf()).getValue().toString();
 
                 literalValue = literalValue.replaceAll("'", "''");
                 literalValue = literalValue.replaceAll(Pattern.quote("{"), Matcher.quoteReplacement("'{'"));
                 literalValue = literalValue.replaceAll(Pattern.quote("}"), Matcher.quoteReplacement("'}'"));
                 workingLiteral.append(literalValue);
             } else {
-                if (element.size() == 1 && !Utilities.isConstantString(wc, element.get(0))) {
+                if (element.size() == 1 && !Utilities.isConstantString(wc, element.get(0), true)) {
                     workingLiteral.append("{");
                     workingLiteral.append(Integer.toString(variablesCount++));
                     workingLiteral.append("}");
@@ -233,8 +233,8 @@ public class LoggerStringConcat {
                     for (Iterator<TreePath> it = element.iterator(); it.hasNext(); ) {
                         TreePath tp = it.next();
                         
-                        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) {
-                            String literalValue = (String) ((LiteralTree) tp.getLeaf()).getValue();
+                        if (Utilities.isStringOrCharLiteral(tp.getLeaf())) {
+                            String literalValue = ((LiteralTree) tp.getLeaf()).getValue().toString();
 
                             if (literalValue.contains("'") || literalValue.contains("{") || literalValue.contains("}")) {
                                 literalValue = literalValue.replaceAll("'", "''");

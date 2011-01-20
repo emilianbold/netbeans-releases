@@ -42,20 +42,13 @@
 
 package org.netbeans.core.nativeaccess;
 
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
+import com.sun.jna.platform.WindowUtils;
 import java.awt.Shape;
 import java.awt.Window;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
-import org.netbeans.core.nativeaccess.transparency.WindowUtils;
 
 
 /**
@@ -73,8 +66,6 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     @Override
     public boolean isWindowAlphaSupported() {
-        if( !is32Bit() )
-            return false;
         boolean res = false;
         try {
             res = WindowUtils.isWindowAlphaSupported();

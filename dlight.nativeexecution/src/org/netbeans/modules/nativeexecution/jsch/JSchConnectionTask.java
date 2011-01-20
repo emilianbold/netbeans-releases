@@ -84,16 +84,17 @@ public final class JSchConnectionTask implements Cancellable {
         cancelled = false;
     }
 
-    public void start() {
-        if (!resultRef.compareAndSet(null,
-                connectorThread.submit(new Callable<JSchConnectionTask.Result>() {
+    public synchronized void start() {
+        if (resultRef.get() == null) {
+            Future<Result> result =
+                    connectorThread.submit(new Callable<JSchConnectionTask.Result>() {
 
-            @Override
-            public Result call() throws Exception {
-                return connect();
-            }
-        }))) {
-            return;
+                @Override
+                public Result call() throws Exception {
+                    return connect();
+                }
+            });
+            resultRef.set(result);
         }
     }
 

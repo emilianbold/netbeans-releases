@@ -154,6 +154,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         useSharedMemRB = new javax.swing.JRadioButton();
         useUserDefinedAddress = new javax.swing.JCheckBox();
         addressValue = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
         pickerPanel = new javax.swing.JPanel();
         javaInstallLabel = new javax.swing.JLabel();
         openDirectoryBrowser = new javax.swing.JButton();
@@ -170,7 +171,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
         buttonGroup1.add(useSharedMemRB);
         org.openide.awt.Mnemonics.setLocalizedText(useSharedMemRB, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useSharedMemRB.text")); // NOI18N
 
-        useUserDefinedAddress.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useUserDefinedAddress.text", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useUserDefinedAddress, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useUserDefinedAddress.text", new Object[] {})); // NOI18N
         useUserDefinedAddress.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleAddressUsage(evt);
@@ -178,6 +179,9 @@ public class VmCustomizer extends javax.swing.JPanel  {
         });
 
         addressValue.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue.text", new Object[] {})); // NOI18N
+
+        jLabel1.setLabelFor(addressValue);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout debugSettingsPanelLayout = new javax.swing.GroupLayout(debugSettingsPanel);
         debugSettingsPanel.setLayout(debugSettingsPanelLayout);
@@ -191,7 +195,9 @@ public class VmCustomizer extends javax.swing.JPanel  {
                     .addGroup(debugSettingsPanelLayout.createSequentialGroup()
                         .addComponent(useUserDefinedAddress)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addressValue, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)))
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addressValue, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         debugSettingsPanelLayout.setVerticalGroup(
@@ -203,9 +209,17 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addGap(8, 8, 8)
                 .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(useUserDefinedAddress)
-                    .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addContainerGap())
         );
+
+        useSocketRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseSockets")); // NOI18N
+        useSharedMemRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_SharedMem")); // NOI18N
+        useUserDefinedAddress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseSelectedAddress")); // NOI18N
+        addressValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue")); // NOI18N
+        addressValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_DebugerAddress")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_AddressLabel")); // NOI18N
 
         javaInstallLabel.setLabelFor(javaExecutableField);
         org.openide.awt.Mnemonics.setLocalizedText(javaInstallLabel, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.javaInstallLabel.text")); // NOI18N
@@ -243,7 +257,12 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addContainerGap())
         );
 
-        useIDEProxyInfo.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useIDEProxyInfo.text")); // NOI18N
+        javaInstallLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_JavaLabel")); // NOI18N
+        openDirectoryBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_Browse")); // NOI18N
+        javaExecutableField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.javaExecutableField.accessiblename")); // NOI18N
+        javaExecutableField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_JavaField")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(useIDEProxyInfo, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.useIDEProxyInfo.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -268,6 +287,10 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addComponent(useIDEProxyInfo)
                 .addContainerGap())
         );
+
+        useIDEProxyInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseIdeProxySettings")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_JavaPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void openInstallChooser(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openInstallChooser
@@ -330,6 +353,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
     private javax.swing.JTextField addressValue;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel debugSettingsPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField javaExecutableField;
     private javax.swing.JLabel javaInstallLabel;
     private javax.swing.JButton openDirectoryBrowser;

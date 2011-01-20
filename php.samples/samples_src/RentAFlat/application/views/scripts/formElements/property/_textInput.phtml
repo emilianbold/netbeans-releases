@@ -1,0 +1,9 @@
+<div class="clearfix">
+    <div class="lab">
+    	<label><?php echo $this->element->getLabel() ?>:</label>
+    </div>
+    <?php if($this->element->hasErrors())
+            echo $this->formErrors($this->element->getMessages()); ?>
+		<?php
+        echo $this->{$this->element->helper}($this->element->getName(), $this->element->getValue(), $this->element->getAttribs()) ?>
+	</div>

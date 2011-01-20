@@ -49,15 +49,15 @@
     <property name="netbeans.type" value="java"/>
 
     <!-- GlassFish ESB latest continuous -->
-    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
-    <property name="sierra.path" value="hudson/job/main/ws/cache/latest"/>
-    <property name="sierra.file" value="main.zip"/>
-    <property name="sierra.name" value="main"/>
+    <property name="sierra.host" value="http://beryl.russia.sun.com:8080"/>
+    <property name="sierra.path" value="hudson/job/soa-main/ws/cache/latest"/>
+    <property name="sierra.file" value="soa-main.zip"/>
+    <property name="sierra.name" value="soa-main"/>
     <property name="sierra.user" value=".netbeans/dev"/>
 
     <!-- NetBeans latest nightly -->
-    <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
-    <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
+    <property name="netbeans.host" value="http://bits.netbeans.org"/>
+    <property name="netbeans.path" value="download/trunk/nightly/latest/zip"/>
     <property name="netbeans.zip"  value="netbeans.zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
 

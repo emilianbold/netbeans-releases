@@ -96,10 +96,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
@@ -347,12 +343,9 @@ public class HgUtils {
         Set<Pattern> patterns = ignorePatterns.get(key);
         if (patterns == null) {
             patterns = new HashSet<Pattern>(5);
-        }
-        if (patterns.isEmpty()) {
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }
-	
         return patterns;
     }
 
@@ -445,6 +438,7 @@ public class HgUtils {
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
+            Logger.getLogger(HgUtils.class.getName()).log(Level.FINE, "Calling sharability for {0}:::{1}", new Object[] { file, topFile }); //NOI18N
             int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
             if (sharability == SharabilityQuery.NOT_SHARABLE) {
                 addNotSharable(topFile, path);

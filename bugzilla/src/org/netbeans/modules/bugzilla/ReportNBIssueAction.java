@@ -61,6 +61,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  */
 public class ReportNBIssueAction extends SystemAction {
+    private RequestProcessor rp;
 
     public ReportNBIssueAction() {
         setIcon(null);
@@ -79,7 +80,7 @@ public class ReportNBIssueAction extends SystemAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 final BugzillaRepository repo = NBRepositorySupport.findNbRepository();
@@ -118,5 +119,12 @@ public class ReportNBIssueAction extends SystemAction {
         }
         repo.setCredentials(null, null, null, null); // reset
         return false;
+    }
+    
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null){
+            rp = new RequestProcessor("Report NB Issue", 10);
+        }
+        return rp;
     }
 }

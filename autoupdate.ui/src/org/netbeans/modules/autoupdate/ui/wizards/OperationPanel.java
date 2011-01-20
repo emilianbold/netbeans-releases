@@ -58,6 +58,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.modules.autoupdate.ui.actions.Installer;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,7 +83,8 @@ public class OperationPanel extends javax.swing.JPanel {
     @Override
     public void addNotify () {
         super.addNotify ();
-        RequestProcessor.getDefault ().post(new Runnable () {
+        Installer.RP.post(new Runnable () {
+            @Override
             public void run () {
                 firePropertyChange (RUN_ACTION, null, Boolean.TRUE);
             }

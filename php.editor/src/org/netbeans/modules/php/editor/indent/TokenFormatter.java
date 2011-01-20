@@ -56,7 +56,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -71,7 +70,8 @@ import org.openide.util.Exceptions;
 public class TokenFormatter {
 
     protected static String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
-
+    private static String EMPTY_STRING = "";
+    
     private static final Logger LOGGER = Logger.getLogger(TokenFormatter.class.getName());
 
     // it's for testing
@@ -91,6 +91,7 @@ public class TokenFormatter {
 	public int indentArrayItems;
 	public int margin;
         public int tabSize;
+        public boolean expandTabsToSpaces;
 
 	public CodeStyle.BracePlacement classDeclBracePlacement;
 	public CodeStyle.BracePlacement methodDeclBracePlacement;
@@ -208,6 +209,7 @@ public class TokenFormatter {
 	    indentArrayItems = codeStyle.getItemsInArrayDeclarationIndentSize();
 	    margin = codeStyle.getRightMargin();
             tabSize = codeStyle.getTabSize();
+            expandTabsToSpaces = codeStyle.expandTabToSpaces();
 
 	    classDeclBracePlacement = codeStyle.getClassDeclBracePlacement();
 	    methodDeclBracePlacement = codeStyle.getMethodDeclBracePlacement();
@@ -1207,11 +1209,11 @@ public class TokenFormatter {
 //                                if (indentLine && indentRule && formatToken.getId() != FormatToken.Kind.CLOSE_TAG) {
 //                                    countSpaces = Math.max(countSpaces, indent);
 //                                }
-                                newText = createWhitespace(doc, newLines, countSpaces);
+                                newText = createWhitespace(docOptions, newLines, countSpaces);
                                 if (wsBetweenBraces) {
-                                    newText = createWhitespace(doc, 1, 
+                                    newText = createWhitespace(docOptions, 1, 
                                             indent + docOptions.indentSize)
-                                            + createWhitespace(doc, 1,
+                                            + createWhitespace(docOptions, 1,
                                             lastBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent);
                                 }
                                 int realOffset = changeOffset + delta;
@@ -1220,7 +1222,8 @@ public class TokenFormatter {
                                     && realOffset <= formatContext.endOffset() + 1) {
 
                                     int caretPosition = caretOffset + delta;
-                                    if (caretPosition == formatContext.endOffset() && oldText.charAt(0) == ' ' && newText.charAt(0) != ' ') {
+                                    if (caretPosition == formatContext.endOffset() && oldText.length() > 0 && newText.length() > 0 
+                                            && oldText.charAt(0) == ' ' && newText.charAt(0) != ' ') {
 //                                        int positionOldText = caretPosition - realOffset - 1;
 //                                        if (positionOldText > -1 && positionOldText < oldText.length()
 //                                                && oldText.charAt(positionOldText) == ' '
@@ -1299,7 +1302,7 @@ public class TokenFormatter {
                                                         finalIndent = 0;
                                                     }
                                                     if (lineIndent < finalIndent) {
-                                                        delta = replaceString(doc, currentOffset - delta, index, "", createWhitespace(doc, 0, finalIndent - lineIndent), delta, false);
+                                                        delta = replaceString(doc, currentOffset - delta, index, "", createWhitespace(docOptions, 0, finalIndent - lineIndent), delta, false);
                                                     }
                                                 }
 
@@ -1518,7 +1521,7 @@ public class TokenFormatter {
 		StringBuilder sb = new StringBuilder();
 		boolean indentLine = false;
                 boolean firstLine = true;  // is the first line of the comment?
-		String indentString = createWhitespace(doc, 0, indent + 1);
+		String indentString = createWhitespace(docOptions, 0, indent + 1);
                 int indexFirstLine = 0;
                 while (indexFirstLine < comment.length() && comment.charAt(indexFirstLine) == ' ') {
                     indexFirstLine ++;
@@ -1677,7 +1680,7 @@ public class TokenFormatter {
                         // if there was a difference on the previous line, apply the difference for the current line as well.
                         if (previousIndentDelta != 0 && indexNewTextLine > -1 && (replaceNewLength >= 0)) {
                             replaceNewLength += previousIndentDelta;
-                            replaceNew = createWhitespace(document, 0, Math.max(0, replaceNewLength));
+                            replaceNew = createWhitespace(docOptions, 0, Math.max(0, replaceNewLength));
                         }
                         indexOldTextLine = oldText.lastIndexOf('\n');
                         String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
@@ -1719,7 +1722,7 @@ public class TokenFormatter {
                                             && indexNewText > 0
                                             && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
                                         int newSpaces = countOfSpaces(replaceNew, docOptions.tabSize) + previousIndentDelta;
-                                        replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
+                                        replaceNew = createWhitespace(docOptions, 0, Math.max(0, newSpaces));
                                     }
                                     if (!replaceOld.equals(replaceNew)
                                             && ((indexOldText + replaceOld.length()) <= oldText.length()
@@ -1750,7 +1753,7 @@ public class TokenFormatter {
                                                 && indexNewText > 0
                                                 && indexNewTextLine > -1 && (newSpaces > 0)) {
                                             newSpaces = newSpaces + previousIndentDelta;
-                                            replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
+                                            replaceNew = createWhitespace(docOptions, 0, Math.max(0, newSpaces));
                                         }
                                         sb.append(replaceNew);
                                         if (addNewLine) {
@@ -1892,15 +1895,20 @@ public class TokenFormatter {
 	return token.getId() == FormatToken.Kind.WHITESPACE_INDENT || token.getId() == FormatToken.Kind.LINE_COMMENT;
     }
 
-    private String createWhitespace(Document document, int lines, int spaces) {
+    private String createWhitespace(DocumentOptions docOptions, int lines, int spaces) {
+        if (lines == 0 && spaces == 0) {
+            return EMPTY_STRING;
+        }
 	StringBuilder sb = new StringBuilder();
         
         for (int i = 0; i < lines; i++) {
             sb.append('\n');
         }
         if (spaces > 0) {
-            sb.append(IndentUtils.createIndentString(document, spaces));
+            // should be called IndentUtils from editor api, when issue #192289 will be fixed
+            sb.append(IndentUtils.cachedOrCreatedIndentString(spaces, docOptions.expandTabsToSpaces, docOptions.tabSize));
         }
+        
 	return sb.toString();
     }
 }

@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -71,6 +74,9 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
 
     private boolean testReconnect = false;
     private boolean trace = Boolean.getBoolean("cnd.test.remote.code.model.trace");
+    static {
+        System.setProperty("apt.trace.resolver", "true");
+    }
 
     public RemoteCodeModelTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -98,21 +104,24 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         }
     }
 
-    protected void checkIncludes(CsmFile csmFile, boolean recursive) throws Exception {
-        trace("Checking %s\n", csmFile.getAbsolutePath());
-        for (CsmInclude incl : csmFile.getIncludes()) {
-            CsmFile includedFile = incl.getIncludeFile();
-            trace("\t%s -> %s\n", incl.getIncludeName(), includedFile);
-            assertNotNull("Unresolved include: " + incl.getIncludeName() + " in " + csmFile.getAbsolutePath(), includedFile);
-            if (recursive) {
-                checkIncludes(includedFile, true);
+    protected void checkIncludes(CsmFile csmFile, boolean recursive, Set<CsmFile> antiLoop) throws Exception {
+        if (!antiLoop.contains(csmFile)) {
+            antiLoop.add(csmFile);
+            trace("Checking %s\n", csmFile.getAbsolutePath());
+            for (CsmInclude incl : csmFile.getIncludes()) {
+                CsmFile includedFile = incl.getIncludeFile();
+                trace("\t%s -> %s\n", incl.getIncludeName(), includedFile);
+                assertNotNull("Unresolved include: " + incl.getIncludeName() + " in " + csmFile.getAbsolutePath(), includedFile);
+                if (recursive) {
+                    checkIncludes(includedFile, true, antiLoop);
+                }
             }
         }
     }
 
     protected void checkIncludes(CsmProject csmProject, boolean recursive) throws Exception {
         for (CsmFile csmFile : csmProject.getAllFiles()) {
-            checkIncludes(csmFile, recursive);
+            checkIncludes(csmFile, recursive, new HashSet<CsmFile>());
         }
     }
 
@@ -163,13 +172,13 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
     @ForAllEnvironments
     public void testQuoteGNU() throws Exception {
         testReconnect = false;
-        processSample(Toolchain.GNU, "Arguments", "Quote_01");
+        processSample(Toolchain.GNU, "Quote", "Quote_01");
     }
 
     @ForAllEnvironments
     public void testQuoteSolStudio() throws Exception {
         testReconnect = false;
-        processSample(Toolchain.SUN, "Arguments", "Quote_02");
+        processSample(Toolchain.SUN, "Quote", "Quote_02");
     }
 
 //    @ForAllEnvironments

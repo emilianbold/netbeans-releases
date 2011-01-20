@@ -45,12 +45,11 @@ package org.netbeans.modules.cnd.remote.mapper;
 import java.text.ParseException;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,7 +66,7 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
 
     @Override
     public String getLocalMirror(ExecutionEnvironment executionEnvironment) {
-        return CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(executionEnvironment));
+        return FileSystemCacheProvider.getCacheRoot(executionEnvironment);
     }
 
     @Override
@@ -94,7 +93,8 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
             Exceptions.printStackTrace(ex);
         }
         // each local host maps into own remote folder to prevent collisions on path mapping level
-        String result = home + "/.netbeans/remote/" + localHostID; //NOI18N
+        // remote hosts should be separated as well since they can share home directory
+        String result = home + "/.netbeans/remote/" + executionEnvironment.getHost() + "/" + localHostID; //NOI18N
         if (POSTFIX != null) {
             result += '-' + POSTFIX;
         }

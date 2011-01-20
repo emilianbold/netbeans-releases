@@ -285,7 +285,7 @@ public class AssignmentIssuesTest extends TestBase {
                 + "public class Test {\n"
                 + "    private int i;\n"
                 + "    public static void main(Test t) {\n"
-                + "        i = t.i - 10;\n"
+                + "        t.i = i - 10;\n"
                 + "    }\n"
                 + "}");
     }

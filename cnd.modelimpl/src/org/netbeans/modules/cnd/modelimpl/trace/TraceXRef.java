@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -54,6 +53,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -192,7 +192,7 @@ public class TraceXRef extends TraceModel {
             }
         } finally {
             super.shutdown(true);
-            APTDriver.getInstance().close();
+            APTDriver.close();
             APTFileCacheManager.close();
         }
     }
@@ -210,7 +210,7 @@ public class TraceXRef extends TraceModel {
     }
 
     private CsmFile getCsmFile(String path) {
-        return super.getProject().findFile(new File(path).getAbsolutePath(), false);
+        return super.getProject().findFile(new java.io.File(path).getAbsolutePath(), false);
     }
 
     @Override
@@ -246,8 +246,9 @@ public class TraceXRef extends TraceModel {
     }
     private static final int FACTOR = 1;
 
-    public static void traceProjectRefsStatistics(CsmProject csmPrj, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
+    public static void traceProjectRefsStatistics(CsmProject csmPrj, final Map<CharSequence, Long> times, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
         final XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
+        final boolean collect = times.isEmpty();
         Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
         int i = 0;
         for (CsmFile file : csmPrj.getAllFiles()) {
@@ -267,6 +268,7 @@ public class TraceXRef extends TraceModel {
         long time = System.nanoTime();
         for (final CsmFile file : allFiles) {
             Runnable task = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (canceled.get()) {
@@ -277,8 +279,15 @@ public class TraceXRef extends TraceModel {
                         }
                         String oldName = Thread.currentThread().getName();
                         try {
-                            Thread.currentThread().setName("Testing xRef " + file.getAbsolutePath()); //NOI18N
-                            analyzeFile(file, params, bag, printOut, printErr, canceled);
+                            CharSequence absolutePath = file.getAbsolutePath();
+                            if (!collect && !times.containsKey(absolutePath)) {
+                                return;
+                            }
+                            Thread.currentThread().setName("Testing xRef " + absolutePath); //NOI18N
+                            long time = analyzeFile(file, params, bag, printOut, printErr, canceled);
+                            if (collect && (time > params.timeThreshold)) {
+                                times.put(absolutePath, time);
+                            }
                         } finally {
                             Thread.currentThread().setName(oldName);
                         }
@@ -311,7 +320,7 @@ public class TraceXRef extends TraceModel {
     }
 
     public static void traceRefs(Collection<CsmReference> out, CsmObject targetDecl, CsmObject targetDef, PrintStream streamOut) {
-        if (out.size() == 0) {
+        if (out.isEmpty()) {
             streamOut.println("REFERENCES ARE NOT FOUND"); // NOI18N
         } else {
             streamOut.println("REFERENCES ARE:"); // NOI18N
@@ -342,6 +351,7 @@ public class TraceXRef extends TraceModel {
     }
     public static final Comparator<CsmOffsetable> FILE_NAME_START_OFFSET_COMPARATOR = new Comparator<CsmOffsetable>() {
 
+        @Override
         public int compare(CsmOffsetable i1, CsmOffsetable i2) {
             if (i1 == i2) {
                 return 0;
@@ -358,7 +368,7 @@ public class TraceXRef extends TraceModel {
         }
     };
 
-    private static void analyzeFile(final CsmFile file, final StatisticsParameters params,
+    private static long analyzeFile(final CsmFile file, final StatisticsParameters params,
             final XRefResultSet<UnresolvedEntry> bag, final PrintWriter out, final OutputWriter printErr,
             final AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
@@ -380,6 +390,7 @@ public class TraceXRef extends TraceModel {
         }
         bag.incrementLineCounter(lineCount);
         out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time + "ms"); // NOI18N
+        return time;
     }
 
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<UnresolvedEntry> bag,
@@ -412,6 +423,7 @@ public class TraceXRef extends TraceModel {
             this.reportUnresolved = reportUnresolved;
         }
 
+        @Override
         public void visit(CsmReferenceContext context) {
             CsmReference ref = context.getReference();
             if (canceled.get()) {
@@ -445,6 +457,7 @@ public class TraceXRef extends TraceModel {
                     scope,
                     new CsmFileReferences.Visitor() {
 
+                @Override
                         public void visit(CsmReferenceContext context) {
                             CsmReference ref = context.getReference();
                             XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, params, ref, funContext, printOut, printErr);
@@ -842,6 +855,7 @@ public class TraceXRef extends TraceModel {
             if (allUnresolvedPoints > 0) {
                 Collection<UnresolvedEntry> unresolvedEntries = bag.getUnresolvedEntries(new Comparator<UnresolvedEntry>() {
 
+                    @Override
                     public int compare(UnresolvedEntry o1, UnresolvedEntry o2) {
                         return o2.getNrUnnamed() - o1.getNrUnnamed();
                     }
@@ -1124,11 +1138,13 @@ public class TraceXRef extends TraceModel {
         public final boolean analyzeSmartAlgorith;
         public final boolean reportUnresolved;
         public final int numThreads;
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads) {
+        public final long timeThreshold;
+        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads, long timeThreshold) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
             this.reportUnresolved = reportUnresolved;
             this.numThreads = numThreads;
+            this.timeThreshold = timeThreshold;
         }
     }
 
@@ -1173,9 +1189,11 @@ public class TraceXRef extends TraceModel {
             this.offset = ref.getStartOffset();
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
 
+        @Override
         public void outputLineAction(OutputEvent ev) {
             CsmFile file = fileUID.getObject();
             if (file != null) {
@@ -1183,6 +1201,7 @@ public class TraceXRef extends TraceModel {
             }
         }
 
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
     }

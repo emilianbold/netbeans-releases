@@ -1885,8 +1885,7 @@ public abstract class NativeBreakpoint
 		c.removeAnnotations();
 	    }
 	} else {
-	    for (int ax = 0; ax < annotations.size(); ax++) {
-		DebuggerAnnotation a = annotations.get(ax);
+	    for (DebuggerAnnotation a : annotations) {
 		a.setLine(null, true);
 		a.removeInstBpt(this);
 	    } 
@@ -1991,7 +1990,7 @@ public abstract class NativeBreakpoint
     public boolean isVisitable() {
 	if (annotations == null)
 	    return false;
-	else if (annotations.size() == 0)
+	else if (annotations.isEmpty())
 	    return false;
 	else
 	    return true;
@@ -2017,8 +2016,7 @@ public abstract class NativeBreakpoint
      * Return true if this NativeBreakpoint has an annotation on the given line.
      */
     public boolean matchesLine(String src, int line) {
-	for (int ax = 0; ax < annotations.size(); ax++) {
-	    DebuggerAnnotation a = annotations.get(ax);
+	for (DebuggerAnnotation a : annotations) {
 	    if (a.matchesLine(src, line))
 		return true;
 	}
@@ -2168,16 +2166,18 @@ public abstract class NativeBreakpoint
 	return pos.equals(((NativeBreakpoint)that).pos, comparator);
     }
 
-
-
-    private String getAnnotationType() {
-        StringBuffer type = new StringBuffer(DebuggerAnnotation.TYPE_BPT);
-	if (isConditional)
-	    type.append(DebuggerAnnotation.TYPE_BPTX_COMPLEX);
-	if (isBroken())
-	    type.append(DebuggerAnnotation.TYPE_BPTX_BROKEN);
-	if (!isEnabled())
+    public String getAnnotationType() {
+        StringBuilder type = new StringBuilder();
+        if (!isEnabled()) {
 	    type.append(DebuggerAnnotation.TYPE_BPTX_DISABLED);
+        }
+        if (isConditional) {
+	    type.append(DebuggerAnnotation.TYPE_BPTX_COMPLEX);
+        }
+        type.append(DebuggerAnnotation.TYPE_BPT);
+        if (isBroken() && isEnabled()) {
+	    type.append(DebuggerAnnotation.TYPE_BPTX_BROKEN);
+        }
         return type.toString();
     }
 
@@ -2194,13 +2194,13 @@ public abstract class NativeBreakpoint
 	}
 
 	String type = getAnnotationType();
-	for (int ax = 0; ax < annotations.size(); ax++) {
-	    DebuggerAnnotation a = annotations.get(ax);
+	for (DebuggerAnnotation a : annotations) {
 	    a.setAnnotationType(type);
 	    a.setShortDescription(getError());
 	    long addr = a.getAddr();
-	    if (addr != 0)
+	    if (addr != 0) {
 		a.enableInstBpt(this);
+            }
 	}
     }
 
@@ -2913,7 +2913,7 @@ public abstract class NativeBreakpoint
 
 
     private static final String debugger_icon_dir =
-	"org/netbeans/modules/debugger/resources/editor";       // NOI18N
+	"org/netbeans/modules/debugger/resources/breakpointsView";       // NOI18N
 
     private static final String icon_dir =
 	"org/netbeans/modules/cnd/debugger/common2/icons";       // NOI18N
@@ -2927,18 +2927,20 @@ public abstract class NativeBreakpoint
 	// StringBuffer name = new StringBuffer("viewBpt");
 
 	// texteditor glyph gutter icons
-	StringBuffer name = new StringBuffer("Bpt"); // NOI18N
-
-	if (isConditional)
-	    name.append("_cmpx"); // NOI18N
-	if (isFired())
-	    name.append("_hit"); // NOI18N
-	if (isBroken())
-	    name.append("_broken"); // NOI18N
-        if (! isEnabled())
-	    name.append("_dis"); // NOI18N
-
-	return icon_dir + "/" + name.toString(); // NOI18N
+	StringBuilder name = new StringBuilder();
+        if (!isEnabled()) {
+	    name.append(DebuggerAnnotation.TYPE_BPTX_DISABLED);
+        }
+        if (isConditional) {
+	    name.append("Conditional"); //NOI18N
+        }
+        name.append(DebuggerAnnotation.TYPE_BPT);
+        if (isBroken() && isEnabled()) {
+	    name.append(DebuggerAnnotation.TYPE_BPTX_BROKEN);
+        } else if (isFired()) {
+            name.append("Hit"); //NOI18N
+        }
+	return debugger_icon_dir + "/" + name.toString(); // NOI18N
     }
 
     private int routingToken = 0;

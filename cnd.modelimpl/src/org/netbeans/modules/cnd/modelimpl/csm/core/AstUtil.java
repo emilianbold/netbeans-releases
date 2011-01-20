@@ -46,22 +46,10 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -322,7 +310,25 @@ public class AstUtil {
         return null;
     }
 
+    public static String toString(AST ast) {
+        final StringBuilder out = new StringBuilder();
+        ASTVisitor impl = new ASTVisitor() {
 
+            @Override
+            public void visit(AST node) {
+                print(node, out);
+                for (AST node2 = node; node2 != null; node2 = node2.getNextSibling()) {
+                    if (node2.getFirstChild() != null) {
+                        out.append('>');
+                        visit(node2.getFirstChild());
+                        out.append('<');
+                    }
+                }
+            }
+        };
+        impl.visit(ast);
+        return out.toString();
+    }
 
     public static void toStream(AST ast, final PrintStream ps) {
         ASTVisitor impl = new ASTVisitor() {
@@ -372,44 +378,18 @@ public class AstUtil {
         ps.print(']');
         //ps.print('\n');
     }
-
-    private static int fileIndex = 0;
-    public static AST testASTSerialization(FileBuffer buffer, AST ast) {
-        AST astRead = null;
-        File file = buffer.getFile();
-        // testing caching ast
-        String prefix = "cnd_modelimpl_"+(fileIndex++); // NOI18N
-        String suffix = file.getName();
-        try {
-            File out = File.createTempFile(prefix, suffix);
-            if (false) { System.err.println("...saving AST of file " + file.getAbsolutePath() + " into tmp file " + out); } // NOI18N
-            //long astTime = System.currentTimeMillis();
-            // write
-            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(out), TraceFlags.BUF_SIZE));
-            try {
-                CacheUtil.writeAST(oos, ast);
-            } finally {
-                oos.close();
-            }
-            //long writeTime = System.currentTimeMillis() - astTime;
-            //if (false) { System.err.println("saved AST of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
-            //astTime = System.currentTimeMillis();
-            // read
-            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(out), TraceFlags.BUF_SIZE));
-            try {
-                astRead = CacheUtil.readAST(ois);
-            } catch (ClassNotFoundException ex) {
-                DiagnosticExceptoins.register(ex);
-            } finally {
-                ois.close();
-            }
-            //long readTime = System.currentTimeMillis() - astTime;
-            //if (false) { System.err.println("read AST of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
-            out.delete();
-        } catch (IOException ex) {
-            DiagnosticExceptoins.register(ex);
-        }
-        return astRead;
+    
+    private static void print(AST ast, StringBuilder out) {
+        out.append('[');
+        out.append(ast.getText());
+        out.append('(');
+        out.append(ast.getType());
+        out.append(')');
+        out.append(ast.getLine());
+        out.append(':');
+        out.append(ast.getColumn());
+        out.append(']');
+        //out.append('\n');
     }
 
     public static String getOffsetString(AST ast) {

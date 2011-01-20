@@ -57,21 +57,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Lazy statements
  *
- * @author Vladimir Kvashin, Nick Krasilnikov
+ * @author Vladimir Kvashin, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
 
     private volatile SoftReference<List<CsmStatement>> statements = null;
 
-    protected LazyStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
-        super(ast, file, scope);
-        // we need to throw away the compound statement AST under this element
-        ast.setFirstChild(null);
+    protected LazyStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
+        super(file, start, end, scope);
     }
 
     @Override
@@ -125,13 +124,15 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
             Utils.LOG.log(Level.SEVERE, "Can\'t create compound statement: can\'t create token stream for file {0}", file.getAbsolutePath()); // NOI18N
             return false;
         } else {
-            AST resolvedAst = resolveLazyStatement(stream);
-            renderStatements(resolvedAst, list);
+            CsmParserProvider.CsmParserResult result = resolveLazyStatement(stream);
+            if (result != null) {
+                result.render(list);
+            }
             return true;
         }
     }
 
-    private void renderStatements(AST ast, List<CsmStatement> list) {
+    public void renderStatements(AST ast, List<CsmStatement> list) {
         for (ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling()) {
             CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this);
             if (stmt != null) {
@@ -148,24 +149,8 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         return out;
     }
 
-    abstract protected AST resolveLazyStatement(TokenStream tokenStream);
-    abstract protected int/*CPPTokenTypes*/ getFirstTokenID();
-    
-//    {
-//        int flags = CPPParserEx.CPP_CPLUSPLUS;
-//        if (!TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG) {
-//            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-//        }
-//        CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
-//        parser.setLazyCompound(false);
-//        parser.compound_statement();
-//        AST out = parser.getAST();
-//        if(out == null) {
-//            parser.function_try_block();
-//            out = parser.getAST();
-//        }
-//        return out;
-//    }
+    abstract protected CsmParserProvider.CsmParserResult resolveLazyStatement(TokenStream tokenStream);
+    abstract protected int/*CPPTokenTypes*/ getFirstTokenID();    
 
     @Override
     public void write(DataOutput output) throws IOException {

@@ -60,6 +60,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.JDialog;
 import org.openide.awt.StatusDisplayer;
 
@@ -88,26 +89,13 @@ public final class JavaHierarchy {
             if (javaSource != null) {
                 try {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
                             public void run(
                                 CompilationController compilationController)
                                 throws Exception {
                                 compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-
-                                Trees trees = compilationController.getTrees();
-                                CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
-                                List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
-
-                                Set<Element> elementsSet = new LinkedHashSet<Element>(typeDecls.size() + 1);
-
-                                for (Tree tree : typeDecls) {
-                                    Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
-
-                                    if (element != null) {
-                                        elementsSet.add(element);
-                                    }
-                                }
-
-                                Element[] elements = elementsSet.toArray(JavaMembersModel.EMPTY_ELEMENTS_ARRAY);
+                                final List<? extends TypeElement> topLevels = compilationController.getTopLevelElements();
+                                final Element[] elements = topLevels.toArray(new Element[topLevels.size()]);
                                 show(fileObject, elements, compilationController);
                             }
                         }, true);
@@ -136,6 +124,7 @@ public final class JavaHierarchy {
                 }
             }
             String title = NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", membersOf);            
+            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHierarchy.class, "ACSD_JavaHierarchyDialog", membersOf));
             dialog.setTitle(title); // NOI18N
             dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements));
             dialog.setVisible(true);

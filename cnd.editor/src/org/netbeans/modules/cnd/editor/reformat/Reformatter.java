@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -147,40 +149,93 @@ public class Reformatter implements ReformatTask {
             ts = ts.embedded();
         }
     }
-    
+
+    private static final int FAST_DIFF_SIZE = 1000;
+    private static final int GAP_SIZE = 500;
     private void reformatImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
         int prevStart = -1;
         int prevEnd = -1;
         String prevText = null;
-        for (Diff diff : new ReformatterImpl(ts, startOffset, endOffset, codeStyle).reformat()) {
-            int curStart = diff.getStartOffset();
-            int curEnd = diff.getEndOffset();
-            if (startOffset > curEnd || endOffset < curStart) {
-                continue;
-            }
-            String curText = diff.getText();
-            if (endOffset < curEnd) {
-                if (curText != null && curText.length() > 0) {
-                    curText = curEnd - endOffset >= curText.length() ? null : 
-                           curText.substring(0, curText.length() - curEnd + endOffset);
+        LinkedList<Diff> reformatDiffs = new ReformatterImpl(ts, startOffset, endOffset, codeStyle).reformat();
+        if (reformatDiffs.size() < FAST_DIFF_SIZE) {
+            for (Diff diff : reformatDiffs) {
+                int curStart = diff.getStartOffset();
+                int curEnd = diff.getEndOffset();
+                if (startOffset > curEnd || endOffset < curStart) {
+                    continue;
                 }
-                curEnd = endOffset;
-            }
-            if (prevStart == curEnd) {
-                prevStart = curStart;
-                prevText = curText+prevText;
-                continue;
-            } else {
-                if (!applyDiff(prevStart, prevEnd, prevText)){
-                    return;
+                String curText = diff.getText();
+                if (endOffset < curEnd) {
+                    if (curText != null && curText.length() > 0) {
+                        curText = curEnd - endOffset >= curText.length() ? null :
+                               curText.substring(0, curText.length() - curEnd + endOffset);
+                    }
+                    curEnd = endOffset;
                 }
-                prevStart = curStart;
-                prevEnd = curEnd;
-                prevText = curText;
+                if (prevStart == curEnd) {
+                    prevStart = curStart;
+                    prevText = curText+prevText;
+                    continue;
+                } else {
+                    if (!applyDiff(prevStart, prevEnd, prevText)){
+                        return;
+                    }
+                    prevStart = curStart;
+                    prevEnd = curEnd;
+                    prevText = curText;
+                }
             }
-        }
-        if (prevStart > -1) {
-            applyDiff(prevStart, prevEnd, prevText);
+            if (prevStart > -1) {
+                applyDiff(prevStart, prevEnd, prevText);
+            }
+        } else {
+            StringBuilder buf = new StringBuilder(doc.getText(0, doc.getLength()));
+            LinkedList<String> res = new LinkedList<String>();
+            for (Diff diff : reformatDiffs) {
+                int start = diff.getStartOffset();
+                int end = diff.getEndOffset();
+                if (buf.length() > end + GAP_SIZE) {
+                    res.addFirst(buf.substring(end + GAP_SIZE));
+                    buf.setLength(end + GAP_SIZE);
+                }
+                String text = diff.getText();
+                if (startOffset > end || endOffset < start) {
+                    System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
+                    continue;
+                }
+                if (endOffset < end) {
+                    if (text != null && text.length() > 0) {
+                        text = end - endOffset >= text.length() ? null : text.substring(0, text.length() - end + endOffset);
+                    }
+                    end = endOffset;
+                }
+                String what = buf.substring(start, end);
+                if (text != null && text.equals(what)) {
+                    // optimization
+                    continue;
+                }
+                if (end - start > 0) {
+                    if (!checkRemoved(what)){
+                        // Reformat failed
+                        Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
+                        String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                                doc.getText(start, end - start), text);
+                        log.severe(error);
+                        return;
+                    }
+                    buf.delete(start, end);
+                }
+                if (text != null && text.length() > 0) {
+                    buf.insert(start, text);
+                }
+            }
+            res.addFirst(buf.toString());
+            StringBuilder prod = new StringBuilder(doc.getLength());
+            for(String s : res) {
+                prod.append(s);
+            }
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, prod.toString(), null);
         }
     }
 

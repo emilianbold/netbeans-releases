@@ -45,12 +45,14 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import org.openide.modules.ModuleInstall;
+import org.openide.util.RequestProcessor;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
  * often not needed at all.
  */
 public class Installer extends ModuleInstall {
+    public static final RequestProcessor RP = new RequestProcessor("AutoUpdate-UI"); // NOI18N
     
     @Override
     public void restored () {

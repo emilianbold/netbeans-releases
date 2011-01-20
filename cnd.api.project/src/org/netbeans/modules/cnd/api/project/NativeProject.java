@@ -43,11 +43,12 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
-import java.io.File;
+import org.netbeans.modules.cnd.utils.FSPath;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 public interface NativeProject {
     /**
@@ -57,6 +58,11 @@ public interface NativeProject {
      */
     public Object getProject();
 
+    /**
+     * File system project sources reside in
+     */
+    public FileSystem getFileSystem();
+    
      /**
      * Returns file path to project root
      * @return file path to project root
@@ -110,14 +116,6 @@ public interface NativeProject {
      
      /**
       * Finds a file item in the project.
-      * @param file the file item to find
-      * @return the file item if found. Otherwise it returns null.
-      */
-     // XXX:FileObject conversion: remove
-     public NativeFileItem findFileItem(File file);
-
-     /**
-      * Finds a file item in the project.
       * @param fileObject  a file object to find item for
       * @return the file item if found. Otherwise it returns null.
       */
@@ -130,20 +128,19 @@ public interface NativeProject {
      public NativeFileSearch getNativeFileSearch();
      
     /**
-     * Returns a list <String> of compiler defined include paths used when parsing 'orpan' source files.
-     * @return a list <String> of compiler defined include paths.
+     * Returns a list <IncludeSearchPath> of compiler defined include paths used when parsing 'orpan' source files.
+     * @return a list <IncludeSearchPath> of compiler defined include paths.
      * A path is always an absolute path.
-     * Include paths are not prefixed with the compiler include path option (usually -I).
      */
-    public List<String> getSystemIncludePaths();
+    public List<FSPath> getSystemIncludePaths();
     
     /**
-     * Returns a list <String> of user defined include paths used when parsing 'orpan' source files.
-     * @return a list <String> of user defined include paths.
+     * Returns a list <IncludeSearchPath> of user defined include paths used when parsing 'orpan' source files.
+     * @return a list <IncludeSearchPath> of user defined include paths.
      * A path is always an absolute path.
      * Include paths are not prefixed with the compiler include path option (usually -I).
      */
-    public List<String> getUserIncludePaths();
+    public List<FSPath> getUserIncludePaths();
     
     /**
      * Returns a list <String> of compiler defined macro definitions used when parsing 'orpan' source files.

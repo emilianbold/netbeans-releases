@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -111,7 +112,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     }
 
     protected final FileImpl getFileImpl(File file) {
-        return helper.getProject().getFile(file, true);
+        return helper.getProject().getFile(CndFileUtils.normalizeFile(file).getAbsolutePath(), true);
     }
 
     protected final void reparseFile(CsmFile file) {
@@ -120,7 +121,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             try {
                 file.scheduleParsing(true);
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
     }

@@ -50,8 +50,11 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 
 /**
@@ -85,12 +88,12 @@ public abstract class CsmFileInfoQuery {
     /**
      * @return list of system include paths used to parse file
      */
-    public abstract List<String> getSystemIncludePaths(CsmFile file);
+    public abstract List<FSPath> getSystemIncludePaths(CsmFile file);
     
     /**
      * @return list of user include paths used to parse file
      */
-    public abstract List<String> getUserIncludePaths(CsmFile file);
+    public abstract List<FSPath> getUserIncludePaths(CsmFile file);
     
     /**
      *
@@ -152,6 +155,18 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract long getFileVersion(CsmFile file);
 
+    /**
+     * Calculates offset by line and column
+     * @param file - file.
+     * @param line - line in file.
+     * @param column - column.
+     * @return offset in file
+     */
+    public abstract long getOffset(CsmFile file, int line, int column);
+
+    public abstract CharSequence getName(CsmUID<CsmFile> fileUID);
+    
+    public abstract CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID);
     //
     // Implementation of the default query
     //
@@ -159,22 +174,27 @@ public abstract class CsmFileInfoQuery {
         Empty() {
         }
 
-        public List<String> getSystemIncludePaths(CsmFile file) {
-            return Collections.<String>emptyList();
+        @Override
+        public List<FSPath> getSystemIncludePaths(CsmFile file) {
+            return Collections.<FSPath>emptyList();
         }
 
-        public List<String> getUserIncludePaths(CsmFile file) {
-            return Collections.<String>emptyList();
+        @Override
+        public List<FSPath> getUserIncludePaths(CsmFile file) {
+            return Collections.<FSPath>emptyList();
         }
 
+        @Override
         public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
             return Collections.<CsmOffsetable>emptyList();
         }
 
+        @Override
         public List<CsmReference> getMacroUsages(CsmFile file) {
             return Collections.<CsmReference>emptyList();
         }
 
+        @Override
         public CsmOffsetable getGuardOffset(CsmFile file) {
             return null;
         }
@@ -207,6 +227,29 @@ public abstract class CsmFileInfoQuery {
         @Override
         public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int offset) {
             return Collections.singleton(CsmCompilationUnit.createCompilationUnit(file));
+        }
+
+        @Override
+        public long getOffset(CsmFile file, int line, int column) {
+            return 0;
+        }
+
+        @Override
+        public CharSequence getName(CsmUID<CsmFile> fileUID) {
+            CsmFile file = fileUID.getObject();
+            if (file != null) {
+                return file.getName();
+            }
+            return CharSequences.empty();
+        }
+
+        @Override
+        public CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID) {
+            CsmFile file = fileUID.getObject();
+            if (file != null) {
+                return file.getAbsolutePath();
+            }
+            return CharSequences.empty();
         }
     }
 }

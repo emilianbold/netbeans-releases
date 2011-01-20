@@ -55,6 +55,7 @@ import org.netbeans.modules.java.queries.SFBQImpl2Result;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -83,7 +84,9 @@ public class SourceForBinaryQuery {
 
     /**
      * Returns the source root for given binary root (for example, src folder for jar file or build folder).
-     * @param binaryRoot the ClassPath root of compiled files.
+     * @param binaryRoot the ClassPath root of compiled files. The root URL must refer to folder.
+     * In the case of an archive file the jar protocol URL must be used. The folder URL has to end with '/'
+     * The {@link FileUtil#urlForArchiveOrDir} can be used to create folder URLs.
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findSourceRoots (URL binaryRoot) {
@@ -108,7 +111,9 @@ public class SourceForBinaryQuery {
      * information if the source root(s) should be preferred over the binaries used by the java infrastructure.
      * Most of the clients don't need this information, so thay can use the original
      * {@link SourceForBinaryQuery#findSourceRoots(java.net.URL)} method.
-     * @param binaryRoot the ClassPath root of compiled files.
+     * @param binaryRoot the ClassPath root of compiled files. The root URL must refer to folder.
+     * In the case of an archive file the jar protocol URL must be used. The folder URL has to end with '/'
+     * The {@link FileUtil#urlForArchiveOrDir} can be used to create folder URLs.
      * @return a result object encapsulating the answer (never null)
      * @since 1.15
      */

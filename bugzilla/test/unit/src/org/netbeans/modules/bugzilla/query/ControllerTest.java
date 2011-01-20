@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
@@ -84,6 +85,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         }
     }
 
+    @RandomlyFails
     public void testParameters() throws MalformedURLException, CoreException, InterruptedException {
         LogHandler h = new LogHandler("Finnished populate query controller");
         Bugzilla.LOG.addHandler(h);
@@ -102,7 +104,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         String[] parametersGiven = parametersUrl.split("&");
         String params = c.getUrlParameters();
         assertTrue(params.startsWith("&"));
-        params = params.substring(1, params.length() - 1);
+        params = params.substring(1, params.length());
         String[] parametersReturned = params.split("&");
 //        assertEquals(parametersGiven.length, parametersReturned.length);
 
@@ -113,7 +115,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         for (int i = 1; i < parametersGiven.length; i++) { // skip the first elemenent - its = ""
             String p = parametersGiven[i];
             if(!s.contains(p)) {
-                fail("missing given parameter [" + p + "] between returned");
+                fail("missing given parameter [" + p + "] between returned at index " + i);
             }
         }
 

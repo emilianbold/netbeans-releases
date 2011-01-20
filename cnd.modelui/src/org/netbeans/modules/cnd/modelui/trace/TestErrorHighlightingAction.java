@@ -111,6 +111,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         final AtomicBoolean canceled = new AtomicBoolean(false);
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle(taskName, new Cancellable() {
+            @Override
             public boolean cancel() {
                 canceled.set(true);
                 return true;
@@ -127,7 +128,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         };
 
         if( ! csmProject.isStable(null) ) {
-            io.getOut().printf("Waiting until the project is parsed"); //NOI18N
+            out.printf("Waiting until the project is parsed"); //NOI18N
             csmProject.waitParse();
         }
 
@@ -153,6 +154,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         err.flush();
         out.flush();
+        err.close();
+        out.close();
     }
 
     private void testFile(final CsmFile file,
@@ -173,6 +176,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         final AtomicInteger cnt = new AtomicInteger(0);
 
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
+            @Override
             public void addError(CsmErrorInfo errorInfo) {
                 if (errorInfo.getSeverity() == CsmErrorInfo.Severity.ERROR) {
                     reportError(file, errorInfo, err, lineConv);
@@ -182,6 +186,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
                     cnt.incrementAndGet();
                 }
             }
+            @Override
             public void done() {}
         };
 
