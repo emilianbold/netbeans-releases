@@ -1387,6 +1387,39 @@ public class Utilities {
     }
 
     /**
+     * Execute the given runnable with view hierarchy being locked.
+     * This is necessary when exploring the view hierarchy by views' methods
+     * since the views changes may happen due to changes from highlighting layers
+     * that cause the views to be rebuilt.
+     * @param component non-null text component of which the view hierarchy is being explored.
+     * @param readLockDocument if true lock the document before locking the view hierarchy.
+     *  This parameter should only be false if it's known that the document was already read/write-locked
+     *  prior calling this method.
+     * @r non-null runnable to execute.
+     */
+    public static void runViewHierarchyTransaction(final JTextComponent component,
+            boolean readLockDocument, final Runnable r)
+    {
+        Runnable wrapRun = new Runnable() {
+            @Override
+            public void run() {
+                if (HighlightingManager.LINEWRAP_ENABLED) {
+                    ((DocumentView) getDocumentView(component)).runTransaction(r);
+                } else {
+                    r.run();
+                }
+            }
+        };
+        Document doc;
+        if (readLockDocument && (doc = component.getDocument()) != null) {
+            doc.render(wrapRun);
+        } else {
+            wrapRun.run();
+        }
+        
+    }
+
+    /**
      * Creates nice textual description of sequence of KeyStrokes. Usable for
      * displaying MultiKeyBindings. The keyStrokes are delimited by space.
      * @param Array of KeyStrokes representing the actual sequence.

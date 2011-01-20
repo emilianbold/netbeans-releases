@@ -70,6 +70,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -181,24 +182,32 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
         
     /*package private for tests*/int[] getLinesSpan(int currentLine) {
-        double componentHeight = getComponentHeight();
-        double usableHeight = getUsableHeight();
+        AbstractDocument adoc = doc;
+        if (adoc != null)
+            adoc.readLock();
+        try {
+            double componentHeight = getComponentHeight();
+            double usableHeight = getUsableHeight();
 
-        double position  = _modelToView(currentLine, componentHeight, usableHeight);
-        
-        if (position == (-1))
-            return new int[] {currentLine, currentLine};
-            
-        int    startLine = currentLine;
-        int    endLine   = currentLine;
-        
-        while (position == _modelToView(startLine - 1, componentHeight, usableHeight) && startLine > 0)
-            startLine--;
-        
-        while ((endLine + 1) < Utilities.getRowCount(doc) && position == _modelToView(endLine + 1, componentHeight, usableHeight))
-            endLine++;
-        
-        return new int[] {startLine, endLine};
+            double position  = _modelToView(currentLine, componentHeight, usableHeight);
+
+            if (position == (-1))
+                return new int[] {currentLine, currentLine};
+
+            int    startLine = currentLine;
+            int    endLine   = currentLine;
+
+            while (position == _modelToView(startLine - 1, componentHeight, usableHeight) && startLine > 0)
+                startLine--;
+
+            while ((endLine + 1) < Utilities.getRowCount(doc) && position == _modelToView(endLine + 1, componentHeight, usableHeight))
+                endLine++;
+
+            return new int[] {startLine, endLine};
+        } finally {
+            if (adoc != null)
+                adoc.readUnlock();
+        }
     }
     
     private void drawOneColorGlobalStatus(Graphics g, Color color) {
@@ -305,47 +314,56 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int currentline = getCurrentLine();
         int annotatedLine = data.findNextUsedLine(-1);
         
-        while (annotatedLine != Integer.MAX_VALUE) {
+        AbstractDocument adoc = doc;
+        if (adoc != null)
+            adoc.readLock();
+        try {
+            while (annotatedLine != Integer.MAX_VALUE) {
 //            System.err.println("annotatedLine = " + annotatedLine );
-            int[] lineSpan  = getLinesSpan(annotatedLine);
-            int   startLine = lineSpan[0];
-            int   endLine   = lineSpan[1];
-            
-            Mark m = data.getMainMarkForBlock(startLine, endLine);
-            
-            if (m != null) {
-                Status s = m.getStatus();
-                double start = modelToView(annotatedLine);
-                
-                if (s != null) {
+                int[] lineSpan = getLinesSpan(annotatedLine);
+                int startLine = lineSpan[0];
+                int endLine = lineSpan[1];
+
+                Mark m = data.getMainMarkForBlock(startLine, endLine);
+
+                if (m != null) {
+                    Status s = m.getStatus();
+                    double start = modelToView(annotatedLine);
+
+                    if (s != null) {
 //                    System.err.println("m = " + m );
-                    Color color = m.getEnhancedColor();
-                    
-                    if (color == null)
-                        color = Status.getDefaultColor(s);
-                    
-                    assert color != null;
-                    
-                    g.setColor(color);
-                    
-                    
-                    //g.fillRect(1, (int) start, THICKNESS - 2, PIXELS_FOR_LINE);                            
-                    //* 3D Version
-                    if ( m.getType() != Mark.TYPE_CARET ) {
-                        g.fillRect(1, (int) start , THICKNESS - 2, PIXELS_FOR_LINE);                            
-                        //g.draw3DRect(1, (int) start, THICKNESS - 3, PIXELS_FOR_LINE - 1, true);
+                        Color color = m.getEnhancedColor();
+
+                        if (color == null) {
+                            color = Status.getDefaultColor(s);
+                        }
+
+                        assert color != null;
+
+                        g.setColor(color);
+
+
+                        //g.fillRect(1, (int) start, THICKNESS - 2, PIXELS_FOR_LINE);                            
+                        //* 3D Version
+                        if (m.getType() != Mark.TYPE_CARET) {
+                            g.fillRect(1, (int) start, THICKNESS - 2, PIXELS_FOR_LINE);
+                            //g.draw3DRect(1, (int) start, THICKNESS - 3, PIXELS_FOR_LINE - 1, true);
+                        }
+                        //*/                       
+                        if ((startLine <= currentline && currentline <= endLine) || m.getType() == Mark.TYPE_CARET) {
+                            drawCurrentLineMark(g, (int) start);
+                        }
                     }
-                    //*/                       
-                    if ((startLine <= currentline && currentline <= endLine) || m.getType() == Mark.TYPE_CARET ) {
-                        drawCurrentLineMark(g, (int)start);
-                    }                    
                 }
+
+                annotatedLine = data.findNextUsedLine(endLine);
             }
-            
-            annotatedLine = data.findNextUsedLine(endLine);
+
+            drawGlobalStatus(g);
+        } finally {
+            if (adoc != null)
+                adoc.readUnlock();
         }
-        
-        drawGlobalStatus(g);
         
         g.setColor(oldColor);
         
