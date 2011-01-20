@@ -81,7 +81,6 @@ public class ProxyAutoConfig {
 
     private static final Map<String, ProxyAutoConfig> file2pac = new HashMap<String, ProxyAutoConfig>(2);
     private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
-    
     private static final String NS_PROXU_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
 
     public static synchronized ProxyAutoConfig get(String pacFile) {
@@ -117,10 +116,16 @@ public class ProxyAutoConfig {
     }
 
     private void initEngine(String pacURL) {
-        InputStream pacIS = downloadPAC(pacURL);
+        InputStream pacIS;
+        try {
+            pacIS = downloadPAC(pacURL);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "InputStream for " + pacURL + " throws " + ex, ex);
+            return;
+        }
         assert pacIS != null : "No InputStream for " + pacURL;
         if (pacIS == null) {
-            throw new IllegalArgumentException("No InputStream for " + pacURL);
+            return ;
         }
         String utils = downloadUtils();
         ScriptEngine eng;
@@ -181,20 +186,17 @@ public class ProxyAutoConfig {
         return res;
     }
 
-    private static InputStream downloadPAC(String pacURL) {
+    private static InputStream downloadPAC(String pacURL) throws IOException {
         InputStream is = null;
+        URL url = null;
         try {
-            URL url = null;
-            try {
-                url = new URL(pacURL);
-            } catch (MalformedURLException ex) {
-                LOGGER.log(Level.INFO, "Malformed " + pacURL, ex);
-            }
-            URLConnection conn = url.openConnection(Proxy.NO_PROXY);
-            is = conn.getInputStream();
-        } catch (IOException ex) {
-            LOGGER.log(Level.FINE, ex.getLocalizedMessage(), ex);
+            url = new URL(pacURL);
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.INFO, "Malformed " + pacURL, ex);
+            return null;
         }
+        URLConnection conn = url.openConnection(Proxy.NO_PROXY);
+        is = conn.getInputStream();
         return is;
     }
 
@@ -285,7 +287,7 @@ public class ProxyAutoConfig {
         FileObject fo = null;
         try {
             try {
-                fo = URLMapper.findFileObject(new URL (NS_PROXU_AUTO_CONFIG_URL));
+                fo = URLMapper.findFileObject(new URL(NS_PROXU_AUTO_CONFIG_URL));
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
             }

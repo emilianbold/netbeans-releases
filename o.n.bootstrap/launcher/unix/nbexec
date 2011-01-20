@@ -465,7 +465,6 @@ if [ -z "$http_proxy_tmp" ]; then
 fi
 
 if [ ! -z "$http_proxy_tmp" ] ; then
-        echo Found Proxy: $http_proxy_tmp
 	jargs="-Dnetbeans.system_http_proxy=\"$http_proxy_tmp\" -Dnetbeans.system_http_non_proxy_hosts=\"$http_non_proxy_hosts\" $jargs"
 fi
 
