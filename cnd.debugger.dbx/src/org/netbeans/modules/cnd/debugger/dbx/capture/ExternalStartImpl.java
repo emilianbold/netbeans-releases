@@ -124,7 +124,7 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
 	}
 
 
-	if (Host.isRemote(host)) {
+	if (host.isRemote()) {
 	    // Start remote bridge
 	    success = initXstart(host);
 	}  else {
@@ -140,7 +140,7 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
      */
 
     public boolean stop() {
-	if (Host.isRemote(host)) {
+	if (host.isRemote()) {
 	    if (bridgeExecutor == null )
 		return false;
 	    else
@@ -266,7 +266,7 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
             CaptureInfo ci;
 
             if (hostName != null &&
-		!hostName.equals("localhost") && // NOI18N
+		!hostName.equals(Host.localhost) &&
 		!DebuggerManager.isStandalone()) {
 
 		hostName = System.getProperty("user.name") + "@" +

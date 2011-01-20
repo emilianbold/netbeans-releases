@@ -82,7 +82,7 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
 
         if (dbx == null) {
 	    String overrideInstallDir = null;
-	    if (Host.isRemote(host))
+	    if (host.isRemote())
 		overrideInstallDir = host.getRemoteStudioLocation();
 
 	    if (overrideInstallDir != null) {

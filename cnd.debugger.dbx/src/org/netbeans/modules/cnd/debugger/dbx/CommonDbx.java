@@ -527,7 +527,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    if (executor != null)
 		assert executor.host() == host;
 	    */
-	    remote = Host.isRemote(host);
+	    remote = host.isRemote();
 
 	    if (!connectExisting) {
 		//

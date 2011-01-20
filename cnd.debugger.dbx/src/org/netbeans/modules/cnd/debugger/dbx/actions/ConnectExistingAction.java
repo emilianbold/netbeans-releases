@@ -52,6 +52,7 @@ import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.dbx.DbxDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
@@ -98,7 +99,7 @@ public class ConnectExistingAction extends CallableSystemAction {
         Configuration conf = dt.getConfig();
 
         DbxDebuggerInfo ddi = DbxDebuggerInfo.create();
-        ddi.setHostName("localhost"); // NOI18N
+        ddi.setHostName(Host.localhost);
         ddi.setProfile(runProfile(conf));
         ddi.setConfiguration(conf);
         ddi.setAction(DebuggerManager.CONNECT);
