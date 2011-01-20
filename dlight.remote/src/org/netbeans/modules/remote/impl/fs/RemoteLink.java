@@ -143,9 +143,18 @@ public final class RemoteLink extends RemoteFileObjectBase {
     @Override
     public FileObject[] getChildren() {
         RemoteFileObjectBase delegate = getDelegate();
-        return (delegate == null) ? new FileObject[0] : delegate.getChildren();
+        if (delegate != null) {
+            FileObject[] children = delegate.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                String childLinkPath = link + '/' + children[i].getNameExt();
+                FileObject wrapper = fileSystem.getFactory().createRemoteLink(this, remotePath + '/' + children[i].getNameExt(), childLinkPath);
+                children[i] = wrapper;
+            }
+            return children;
+        }
+        return new FileObject[0];
     }
-
+    
     @Override
     public FileObject createData(String name) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();

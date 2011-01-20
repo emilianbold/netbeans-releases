@@ -100,6 +100,15 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             WritingQueue.getInstance(execEnv).waitFinished(null);
             CharSequence readContent = readFile(realFO);
             assertEquals("File content differ", content.toString(), readContent.toString());
+            
+            FileObject linkDirFO = getFileObject(linkDir);
+            FileObject[] children = linkDirFO.getChildren();
+            for (FileObject child : children) {
+                String childPath = child.getPath();
+                String parentPath = linkDirFO.getPath();
+                assertTrue("Incorrect link child path: " + childPath + " should start with parent path " + parentPath, 
+                        child.getPath().startsWith(parentPath));
+            }
         } finally {
             if (baseDir != null) {
                 CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));

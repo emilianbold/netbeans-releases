@@ -249,7 +249,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (entry.getFileType() == FileType.Directory) {
                 return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
             }  else if (entry.getFileType() == FileType.Symlink) {
-                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, childCache, entry.getLink());
+                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, entry.getLink());
             } else {
                 return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
             }
@@ -289,7 +289,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (entry.getFileType() == FileType.Directory) {
                     childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childCache);
                 } else if(entry.getFileType() == FileType.Symlink) {
-                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, childCache, entry.getLink());
+                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, entry.getLink());
                 } else {
                     childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, entry.getFileType());
                 }
