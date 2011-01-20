@@ -171,7 +171,11 @@ public final class ModificationResult {
     }
     
     public @NonNull Set<? extends FileObject> getModifiedFileObjects() {
-        return diffs.keySet();
+        Set<FileObject> result = new HashSet<FileObject>(diffs.keySet());
+        
+        result.remove(null);
+        
+        return result;
     }
     
     public List<? extends Difference> getDifferences(@NonNull FileObject fo) {
