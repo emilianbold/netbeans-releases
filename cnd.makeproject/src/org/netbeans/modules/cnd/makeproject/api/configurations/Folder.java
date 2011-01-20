@@ -150,14 +150,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
         AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, getProject());
         FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
-        if (folderFile == null) {
-            // that's a normal situation when moving or deleting items and folders
-            log.log(Level.FINEST, "Null file object; folder kind: {0}, path: {1}", new Object[] { kind, AbsRootPath }); //NOI18N
-            return;
-        }
+//        if (folderFile == null) { // see IZ 194221
+//            // that's a normal situation when moving or deleting items and folders
+//            log.log(Level.FINEST, "Null file object; folder kind: {0}, path: {1}", new Object[] { kind, AbsRootPath }); //NOI18N
+//            return;
+//        }
 
         // Folders to be removed
-        if (!folderFile.isValid()
+        if (folderFile == null || !folderFile.isValid()
                 || !folderFile.isFolder()
                 || !VisibilityQuery.getDefault().isVisible(folderFile)
                 || getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
