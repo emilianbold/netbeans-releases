@@ -363,7 +363,7 @@ public class RetoucheUtils {
         ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
         if (cp == null) {
             // see http://www.netbeans.org/issues/show_bug.cgi?id=159228
-            throw new IllegalStateException(String.format("No classpath for %s.", folder)); // NOI18N
+            throw new IllegalStateException(String.format("No classpath for %s.", folder.getPath())); // NOI18N
         }
         return cp.getResourceName(folder, '.', false);
     }
