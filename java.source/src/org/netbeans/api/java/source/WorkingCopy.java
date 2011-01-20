@@ -619,7 +619,7 @@ public class WorkingCopy extends CompilationController {
         }
         List<Difference> result = new LinkedList<Difference>();
         
-        if (this.impl.getFileObject() != null) {
+        if (getFileObject() != null) {
             result.addAll(processCurrentCompilationUnit(new DiffContext(this), tag2Span));
         }
         
