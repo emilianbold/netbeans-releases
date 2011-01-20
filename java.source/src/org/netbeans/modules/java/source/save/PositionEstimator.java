@@ -878,22 +878,27 @@ public abstract class PositionEstimator {
         private List<int[]> data;
         private List<String> append;
         private int minimalLeftPosition;
+        private final boolean skipTrailingSemicolons;
         
         public MembersEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
-                                final DiffContext diffContext)
+                                final DiffContext diffContext,
+                                boolean skipTrailingSemicolons)
         {
             super(oldL, newL, diffContext);
             this.minimalLeftPosition = (-1);
+            this.skipTrailingSemicolons = skipTrailingSemicolons;
         }
         
         public MembersEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
                                 final int minimalLeftPosition,
-                                final DiffContext diffContext)
+                                final DiffContext diffContext,
+                                boolean skipTrailingSemicolons)
         {
             super(oldL, newL, diffContext);
             this.minimalLeftPosition = minimalLeftPosition;
+            this.skipTrailingSemicolons = skipTrailingSemicolons;
         }
         
         @Override()
@@ -972,7 +977,7 @@ public abstract class PositionEstimator {
                 }
                 seq.move(treeEnd);
                 int wideEnd = treeEnd;
-                while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                while (seq.moveNext() && (nonRelevant.contains((token = seq.token()).id()) || JavaTokenId.SEMICOLON == seq.token().id())) {
                     if (JavaTokenId.WHITESPACE == token.id()) {
                         int indexOf = token.text().toString().indexOf('\n');
                         if (indexOf > -1) {
@@ -985,6 +990,8 @@ public abstract class PositionEstimator {
                         break;
                     } else if (JavaTokenId.JAVADOC_COMMENT == token.id()) {
                         break;
+                    } else if (skipTrailingSemicolons && JavaTokenId.SEMICOLON == token.id()) {
+                        wideEnd = seq.offset() + token.text().length();
                     }
                     if (wideEnd > treeEnd)
                         break;

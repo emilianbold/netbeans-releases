@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -1147,6 +1148,90 @@ public class VariousUtils {
         }
         namesProposals.add(name);
         return namesProposals;
+    }
+    
+    /**
+     * This method is trying to guess the full qualified name  from a name. 
+     * Names are resolved following these resolution rules like in the php runtime:
+     *
+     * 1. Calls to fully qualified functions, classes or constants are resolved 
+     * at compile-time. For instance new \A\B resolves to class A\B.
+     * 2. All unqualified and qualified names (not fully qualified names) are 
+     * translated during compilation according to current import rules. 
+     * For example, if the namespace A\B\C is imported as C, a call to C\D\e() 
+     * is translated to A\B\C\D\e().
+     * 3. Inside a namespace, all qualified names not translated according to 
+     * import rules have the current namespace prepended. For example, if a call 
+     * to C\D\e() is performed within namespace A\B, it is translated to A\B\C\D\e().
+     * 4. Unqualified class names are translated during compilation according 
+     * to current import rules (full name substituted for short imported name). 
+     * In example, if the namespace A\B\C is imported as C, new C() is translated 
+     * to new A\B\C().
+     * 5. Inside namespace (say A\B), calls to unqualified functions are resolved 
+     * at run-time. Here is how a call to function foo() is resolved:
+     *      1. It looks for a function from the current namespace: A\B\foo().
+     *      2. It tries to find and call the global function foo().
+     * 6. Inside namespace (say A\B), calls to unqualified or qualified class 
+     * names (not fully qualified class names) are resolved at run-time. Here is 
+     * how a call to new C() or new D\E() is resolved. For new C():
+     *      1. It looks for a class from the current namespace: A\B\C.
+     *      2. It attempts to autoload A\B\C.
+     * For new D\E():
+     *      1. It looks for a class by prepending the current namespace: A\B\D\E.
+     *      2. It attempts to autoload A\B\D\E.
+     * To reference any global class in the global namespace, its fully qualified name new \C() must be used.
+     *
+     * @param name the qualified name that should be resolved according the 
+     * mentioned rules.
+     * @param nameOffset Offset of the name that should be resolved. The resolving 
+     * full qualified names depends on the location of imports (use declaration).
+     * @param contextNamespace Namespace where is the qualified name located
+     * @return collection of full qualified names that fits the input name in the 
+     * name space context. Usually the method returns just one, but it can return, if is not clear
+     * whether the name belongs to the defined namespace or to the default one.
+     */
+    public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace){
+        Set<QualifiedName> namespaces = new HashSet<QualifiedName>();
+        boolean resolved = false;
+        if (name.getKind() == QualifiedNameKind.FULLYQUALIFIED) {
+            namespaces.add(name);
+            resolved = true;
+        } else {
+            Collection<? extends UseElement> uses = contextNamespace.getDeclaredUses();
+            if (uses.size() > 0) {
+                for(UseElement useDeclaration : contextNamespace.getDeclaredUses()) {
+                    if (useDeclaration.getOffset() < nameOffset) {
+                        String firstNameSegment = name.getSegments().getFirst();
+                        QualifiedName returnName = null;
+                        if ((useDeclaration.getAliasedName() != null
+                                    && firstNameSegment.equals(useDeclaration.getAliasedName().getAliasName()))) {
+                            returnName = useDeclaration.getAliasedName().getRealName();
+                        } else {
+                            returnName = QualifiedName.create(useDeclaration.getName());
+                            if (!firstNameSegment.equals(returnName.getSegments().getLast())) {
+                                returnName = null;
+                            }
+                        }
+                        if (returnName != null) {
+                            for (int i = 1; i < name.getSegments().size(); i++) {
+                                returnName = returnName.append(name.getSegments().get(i));
+                            }
+                            namespaces.add(returnName.toFullyQualified());
+                            resolved = true;
+                        }
+                    }
+                }
+            }
+        }
+        if (!resolved) {
+            if (name.getKind() == QualifiedNameKind.UNQUALIFIED) {
+                namespaces.add(contextNamespace.getNamespaceName().append(name).toFullyQualified());
+            } else {
+                // the name is qualified -> append the name to the namespace name
+                namespaces.add(QualifiedName.create(contextNamespace).append(name).toFullyQualified());
+            }
+        }
+        return namespaces;
     }
 
 }
