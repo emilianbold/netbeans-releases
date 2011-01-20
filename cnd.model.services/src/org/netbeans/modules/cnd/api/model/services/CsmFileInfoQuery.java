@@ -155,6 +155,15 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract long getFileVersion(CsmFile file);
 
+    /**
+     * Calculates offset by line and column
+     * @param file - file.
+     * @param line - line in file.
+     * @param column - column.
+     * @return offset in file
+     */
+    public abstract long getOffset(CsmFile file, int line, int column);
+
     public abstract CharSequence getName(CsmUID<CsmFile> fileUID);
     
     public abstract CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID);
@@ -202,6 +211,11 @@ public abstract class CsmFileInfoQuery {
 
         @Override
         public long getFileVersion(CsmFile file) {
+            return 0;
+        }
+
+        @Override
+        public long getOffset(CsmFile file, int line, int column) {
             return 0;
         }
 

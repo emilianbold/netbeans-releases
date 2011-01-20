@@ -623,7 +623,13 @@ public class ImportProject implements PropertyChangeListener {
                     } else if ("..".equals(segment)) { // NOI18N
                         parent = parent.getParent();
                     } else {
-                        parent = parent.createFolder(segment);
+                        FileObject test = parent.getFileObject(segment,null);
+                        if (test != null) {
+                            parent = test;
+                        } else {
+                            parent = parent.createFolder(segment);
+                        }
+
                     }
                 }
             } catch (IOException ex) {
