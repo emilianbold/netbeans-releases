@@ -317,6 +317,20 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     public ViewHierarchy viewHierarchy() { // not synced (multiple instances should not harm)
         return viewHierarchy;
     }
+    
+    public void runTransaction(Runnable r) {
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                r.run();
+            } finally {
+                mutex.unlock();
+            }
+        } else { // If no mutex present run without mutex (not running at all would be more serious)
+            r.run();
+        }
+    }
 
     @Override
     public float getPreferredSpan(int axis) {
@@ -460,17 +474,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         } else { // Setting null parent
             // Set the textComponent to null under mutex
             // so that children suddenly don't see a null textComponent
-            PriorityMutex mutex = getMutex();
-            if (mutex != null) {
-                mutex.lock();
-                try {
-                    textComponent.removePropertyChangeListener(this);
-                    textComponent = null; // View services stop working and propagating to children
-                    super.setParent(parent);
-                } finally {
-                    mutex.unlock();
+            getDocument().render(new Runnable() {
+                @Override
+                public void run() {
+                    PriorityMutex mutex = getMutex();
+                    if (mutex != null) {
+                        mutex.lock();
+                        try {
+                            textComponent.removePropertyChangeListener(DocumentView.this);
+                            textComponent = null; // View services stop working and propagating to children
+                            DocumentView.super.setParent(null);
+                        } finally {
+                            mutex.unlock();
+                        }
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -1093,6 +1112,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return retOffset;
     }
 
+    @Override
+    public View getView(int index) {
+        if (LOG.isLoggable(Level.FINE)) {
+            checkDocumentLocked();
+            checkMutexAcquired();
+        }
+        return super.getView(index);
+    }
+
     void setIncomingModification(boolean incomingModification) {
         this.incomingModification = incomingModification;
     }
@@ -1282,6 +1310,21 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (LOG.isLoggable(Level.FINE)) {
             if (!DocumentUtilities.isReadLocked(getDocument())) {
                 LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
+            }
+        }
+    }
+    
+    void checkMutexAcquired() {
+        if (LOG.isLoggable(Level.FINE)) {
+            PriorityMutex mutex = getMutex();
+            if (mutex != null) {
+                Thread mutexThread = mutex.getLockThread();
+                if (mutexThread != Thread.currentThread()) {
+                    if (mutexThread == null) {
+                        LOG.log(Level.FINE, "View hierarchy mutex not acquired for text component " + textComponent,
+                                new Exception());
+                    }
+                }
             }
         }
     }

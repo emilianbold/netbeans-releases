@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -329,9 +330,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
             final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
             if (js != null) {
                 final long startTime = System.currentTimeMillis();
-                Iterator<FileObject> files = js.getFileObjects().iterator();
-                FileObject fo = files.hasNext() ? files.next() : null;
-                if (fo != null && fo.isValid()) {                                        
+                final ClassPath scp = js.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                if (scp != null && scp.contains(file)) {                    
                     try {
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
@@ -378,6 +378,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }
+                } else {
+                    LOGGER.log(
+                            Level.INFO,
+                            "Not updating cache for file {0}, does not belong to classpath {1}",    //NOI18N
+                            new Object[] {
+                                FileUtil.getFileDisplayName(file),
+                                scp
+                            });
                 }
                 this.dirty = null;
                 final long endTime = System.currentTimeMillis();

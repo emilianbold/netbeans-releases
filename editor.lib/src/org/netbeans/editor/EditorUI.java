@@ -712,7 +712,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         return getCMInternal().get(coloringName);
     }
 
-    private void updateLineHeight(JTextComponent component) {
+    private void updateLineHeight(final JTextComponent component) {
         if (component == null) {
             return;
         }
@@ -768,47 +768,52 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
 
         if (HighlightingManager.LINEWRAP_ENABLED) {
-            int wrapMaxHeight = -1;
-            View rootView = Utilities.getDocumentView(component);
+            final View rootView = Utilities.getDocumentView(component);
+            final int[] wrapMaxHeight = new int[] { -1 };
             if (rootView != null) {
-                for(int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
-                    View view = rootView.getView(i);
-                    if (view == null) { // seen in tests
-                        break;
-                    }
-
-                    int offset = view.getStartOffset();
-                    Rectangle r = null;
-
-                    try {
-                        r = component.getUI().modelToView(component, offset);
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.INFO, null, ble);
-                    }
-
-                    if (r == null) {
-                        break;
-                    }
-
-                    if (LOG.isLoggable(Level.FINE)) {
-                        if (wrapMaxHeight < r.getHeight()) {
-                            try {
-                                LOG.fine("Updating maxHeight from " //NOI18N
-                                    + wrapMaxHeight + " to " + r.getHeight() // NOI18N
-                                    + ", line=" + i // NOI18N
-                                    + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
-                                );
-                            } catch (BadLocationException ble) {
-                                LOG.log(Level.FINE, null, ble);
+                Utilities.runViewHierarchyTransaction(component, true, new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
+                            View view = rootView.getView(i);
+                            if (view == null) { // seen in tests
+                                break;
                             }
+
+                            int offset = view.getStartOffset();
+                            Rectangle r = null;
+
+                            try {
+                                r = component.getUI().modelToView(component, offset);
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.INFO, null, ble);
+                            }
+
+                            if (r == null) {
+                                break;
+                            }
+
+                            if (LOG.isLoggable(Level.FINE)) {
+                                if (wrapMaxHeight[0] < r.getHeight()) {
+                                    try {
+                                        LOG.fine("Updating maxHeight from " //NOI18N
+                                                + wrapMaxHeight + " to " + r.getHeight() // NOI18N
+                                                + ", line=" + i // NOI18N
+                                                + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
+                                                );
+                                    } catch (BadLocationException ble) {
+                                        LOG.log(Level.FINE, null, ble);
+                                    }
+                                }
+                            }
+
+                            wrapMaxHeight[0] = Math.max(wrapMaxHeight[0], (int) r.getHeight());
                         }
                     }
-
-                    wrapMaxHeight = Math.max(wrapMaxHeight, (int) r.getHeight());
-                }
+                });
             }
-            if (wrapMaxHeight > 0) {
-                maxHeight = wrapMaxHeight;
+            if (wrapMaxHeight[0] > 0) {
+                maxHeight = wrapMaxHeight[0];
             }
         }
         
