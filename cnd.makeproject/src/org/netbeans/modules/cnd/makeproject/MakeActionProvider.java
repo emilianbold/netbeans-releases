@@ -241,6 +241,12 @@ public final class MakeActionProvider implements ActionProvider {
         return supportedActions;
     }
 
+    private void saveIfModified() {
+        if (getProjectDescriptor() != null && getProjectDescriptor().getModified()) {
+            getProjectDescriptor().save();
+        }
+    }
+
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
@@ -249,16 +255,19 @@ public final class MakeActionProvider implements ActionProvider {
         }
 
         if (COMMAND_COPY.equals(command)) {
+            saveIfModified();
             DefaultProjectOperations.performDefaultCopyOperation(project);
             return;
         }
 
         if (COMMAND_MOVE.equals(command)) {
+            saveIfModified();
             DefaultProjectOperations.performDefaultMoveOperation(project);
             return;
         }
 
         if (COMMAND_RENAME.equals(command)) {
+            saveIfModified();
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         }
