@@ -403,6 +403,12 @@ detect_kde_proxy () {
                     http_proxy_tmp="DIRECT"
                 fi
                 return 0
+            else
+                if /bin/grep 'ProxyType=2' "$kioslaverc" >/dev/null 2>&1; then
+                    pac_file=`grep "Proxy Config Script=" $kioslaverc  | cut -f 2 -d =`
+                    http_proxy_tmp="PAC "$pac_file
+                    return 0
+                fi
             fi
         fi
     fi
