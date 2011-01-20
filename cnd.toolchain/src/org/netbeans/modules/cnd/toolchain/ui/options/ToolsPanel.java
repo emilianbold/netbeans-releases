@@ -505,7 +505,12 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     /** Apply changes */
     public void applyChanges() {
-        if (changed || ToolsPanelSupport.isChangedInOtherPanels()) {
+        boolean changedInOtherPanels = ToolsPanelSupport.isChangedInOtherPanels();
+        if (changed || changedInOtherPanels) {
+            List<Runnable> fireChanges = null;
+            if (changedInOtherPanels) {
+                fireChanges = ToolsPanelSupport.saveChangesInOtherPanels();
+            }
 
             CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
             changed = false;
@@ -516,6 +521,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             }
             currentCompilerSet = cs;
             tcm.applyChanges((ServerRecord) cbDevHost.getSelectedItem());
+            if (fireChanges != null) {
+                for(Runnable fire : fireChanges) {
+                    fire.run();
+                }
+            }
         }
         getToolCollectionPanel().applyChanges();
     }

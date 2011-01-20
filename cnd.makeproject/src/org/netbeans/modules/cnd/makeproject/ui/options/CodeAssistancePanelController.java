@@ -69,7 +69,8 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
     
     @Override
     public void applyChanges() {
-        panel.save();
+        //delegate applying to tools panel. see IsChangedListener interface
+        //panel.save();
     }
     
     @Override
@@ -102,6 +103,7 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
         panel.addPropertyChangeListener(l);
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         panel.removePropertyChangeListener(l);
     }

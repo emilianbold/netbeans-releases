@@ -250,15 +250,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
-    public void setModified(boolean val) {
+    void setModified(boolean val) {
         modified = val;
     }
 
-    public boolean isModified() {
-        return modified;
-    }
-
-    public void fireFilesPropertiesChanged() {
+    private void fireFilesPropertiesChanged() {
         if (CodeAssistancePanelController.TRACE_CODEASSIST) {
             System.err.println("fireFilesPropertiesChanged for ParserSettingsPanel");
         }
@@ -426,12 +422,14 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         return isChanged;
     }
 
-    public void save() {
+    @Override
+    public Runnable saveChanges() {
         if (CodeAssistancePanelController.TRACE_CODEASSIST) {
             System.err.println("save for ParserSettingsPanel");
         }
         PredefinedPanel[] viewedPanels = getPredefinedPanels();
         boolean wasChanges = false;
+        Runnable res = null;
         for (int i = 0; i < viewedPanels.length; i++) {
             wasChanges |= viewedPanels[i].save();
         }
@@ -439,13 +437,19 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             if (CodeAssistancePanelController.TRACE_CODEASSIST) {
                 System.err.println("fireFilesPropertiesChanged in save for ParserSettingsPanel");
             }
-            fireFilesPropertiesChanged();
+            res = new Runnable() {
+                @Override
+                public void run() {
+                    fireFilesPropertiesChanged();
+                }
+            };
             modified = false;
         } else {
             if (CodeAssistancePanelController.TRACE_CODEASSIST) {
                 System.err.println("not need to fireFilesPropertiesChanged in save for ParserSettingsPanel");
             }
         }
+        return res;
     }
 
     private PredefinedPanel[] getPredefinedPanels() {
