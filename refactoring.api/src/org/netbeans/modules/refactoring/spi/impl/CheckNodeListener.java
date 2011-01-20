@@ -60,6 +60,10 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * This listener controls click and double click on the CheckNodes. In addition
@@ -98,7 +102,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
-                        if (o instanceof RefactoringElement) {
+                        if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
                         }
                     } else {
@@ -141,7 +145,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
-                        if (o instanceof RefactoringElement) {
+                        if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
                         }
                     } else {
@@ -256,6 +260,15 @@ class CheckNodeListener implements MouseListener, KeyListener {
             o = ((TreeElement) o).getUserObject();
             if (o instanceof RefactoringElement) {
                 APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).openInEditor();
+            } else if (o instanceof FileObject) {
+                try {
+                    OpenCookie oc = DataObject.find((FileObject) o).getCookie(OpenCookie.class);
+                    if (oc != null) {
+                        oc.open();
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    //ignore, unknown file, do nothing
+                }
             }
         }
     }
