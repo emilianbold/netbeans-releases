@@ -76,7 +76,14 @@ public class PortChildren extends Children.Keys<WsdlOperation> {
        
     private void updateKeys() {
         List<WsdlOperation> keys =  wsdlPort.getOperations();
-        setKeys(keys == null ? new ArrayList<WsdlOperation>() : keys);
+        if ( keys == null ){
+            setKeys(Collections.<WsdlOperation>emptyList() );
+        }
+        else {
+            Collections.sort( keys , WsdlOperationComparator.getInstance());
+            setKeys(keys);
+        }
+        
     }
 
     protected Node[] createNodes(WsdlOperation key) {

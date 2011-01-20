@@ -100,7 +100,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerW
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.StateModel;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
@@ -261,20 +261,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     public Host getHost() {
         if (host == null) {
-            host = new Host();		// initialize to fallback
-
-            final String hostName = getNDI().getHostName();
-            if (DebuggerManager.isStandalone()) {
-                HostList hostList = DebuggerManager.get().getHostList();
-                if (hostList != null) {
-                    host = hostList.getHostByName(hostName);
-		    if (host == null)
-			host = hostList.getHostByDispName(hostName);
-
-                }
-            } else {
-                host = CndRemote.hostFromName(host, hostName);
-	    }
+            host = Host.byName(getNDI().getHostName());
         }
         return host;
     }

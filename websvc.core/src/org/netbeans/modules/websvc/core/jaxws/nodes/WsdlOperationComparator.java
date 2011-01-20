@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,70 +40,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.core.jaxws.nodes;
 
-package org.netbeans.modules.cnd.makeproject.ui.options;
+import java.util.Comparator;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 
-@OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID,
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_CodeAssistanceTab", // NOI18N
-    position=300
-)
-public final class CodeAssistancePanelController extends OptionsPanelController {
-    public static final boolean TRACE_CODEASSIST = Boolean.getBoolean("trace.codeassist.controller");
-//    private CodeAssistancePanel panel = new CodeAssistancePanel();
-    private ParserSettingsPanel panel = new ParserSettingsPanel();
+class WsdlOperationComparator implements Comparator<WsdlOperation>{
     
-    @Override
-    public void update() {
-        panel.update();
+    private WsdlOperationComparator(){
     }
     
-    @Override
-    public void applyChanges() {
-        //delegate applying to tools panel. see IsChangedListener interface
-        //panel.save();
+    static  WsdlOperationComparator getInstance(){
+        return INSTANCE;
     }
     
-    @Override
-    public void cancel() {
-        panel.cancel();
+    public int compare(WsdlOperation op1, WsdlOperation op2) {
+        String name1 = op1.getName();
+        String name2 = op2.getName();
+        if ( name1== null ){
+            return -1;
+        }
+        else {
+            return name1.compareTo(name2);
+        }
     }
     
-    @Override
-    public boolean isValid() {
-        return panel.isDataValid();
-    }
-    
-    @Override
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-    
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
-    }
-    
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
-    }
-    
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
-    }
+    private static WsdlOperationComparator INSTANCE = new WsdlOperationComparator();
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -59,6 +59,7 @@ class PlatformLauncher {
     static const char *REG_PROXY_ENABLED_NAME;
     static const char *REG_PROXY_SERVER_NAME;
     static const char *REG_PROXY_OVERRIDE_NAME;
+    static const char *REG_PAC_FILE;
 
     static const char *PROXY_DIRECT;
     static const char *HEAP_DUMP_PATH;
