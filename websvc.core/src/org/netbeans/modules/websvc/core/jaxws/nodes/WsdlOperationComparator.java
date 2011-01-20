@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -43,51 +42,29 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
-/** Port children (Operation elements)
- *
- * @author mkuchtiak
- */
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import java.util.Comparator;
 
-public class PortChildren extends Children.Keys<WsdlOperation> {
-    WsdlPort wsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+
+class WsdlOperationComparator implements Comparator<WsdlOperation>{
     
-    public PortChildren(WsdlPort wsdlPort) {
-        this.wsdlPort=wsdlPort;
+    private WsdlOperationComparator(){
     }
     
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        updateKeys();
+    static  WsdlOperationComparator getInstance(){
+        return INSTANCE;
     }
     
-    @Override
-    protected void removeNotify() {
-        setKeys(Collections.<WsdlOperation>emptyList());
-        super.removeNotify();
-    }
-       
-    private void updateKeys() {
-        List<WsdlOperation> keys =  wsdlPort.getOperations();
-        if ( keys == null ){
-            setKeys(Collections.<WsdlOperation>emptyList() );
+    public int compare(WsdlOperation op1, WsdlOperation op2) {
+        String name1 = op1.getName();
+        String name2 = op2.getName();
+        if ( name1== null ){
+            return -1;
         }
         else {
-            Collections.sort( keys , WsdlOperationComparator.getInstance());
-            setKeys(keys);
+            return name1.compareTo(name2);
         }
-        
     }
-
-    protected Node[] createNodes(WsdlOperation key) {
-        return new Node[] {new OperationNode((WsdlOperation) key)};
-    }
-
+    
+    private static WsdlOperationComparator INSTANCE = new WsdlOperationComparator();
 }

@@ -130,7 +130,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
         if (wsdlModel != null) {
             keys = wsdlModel.getServices();
         }
-        setKeys(keys == null ? new ArrayList<WsdlService>() : keys);
+        setKeys(keys == null ? Collections.<WsdlService>emptyList() : keys);
     }
 
     protected Node[] createNodes(WsdlService key) {

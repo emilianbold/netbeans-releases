@@ -51,6 +51,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -141,6 +142,9 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     
     private RequestProcessor requestProcessor = 
         new RequestProcessor("JaxWs-request-processor");        // NOI18N
+    
+    private static Comparator<WebOperationInfo> OPERATION_INFO_COMPARATOR = 
+            new WebOperationInfoComparator();
     
     public JaxWsChildren(Service service, FileObject srcRoot, FileObject implClass) {
         super();
@@ -243,16 +247,23 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     
     private void updateKeys() {
         if (isFromWsdl()) {
-            List<WsdlOperation> keys = new ArrayList<WsdlOperation>();
+            List<WsdlOperation> keys = null;
             if (wsdlModel!=null) {
                 WsdlService wsdlService = wsdlModel.getServiceByName(service.getServiceName());
                 if (wsdlService!=null) {
                     WsdlPort wsdlPort = wsdlService.getPortByName(service.getPortName());
-                    if (wsdlPort!=null)
+                    if (wsdlPort!=null) {
                         keys =  wsdlPort.getOperations();
+                    }
                 }
             }
-            setKeys(keys);
+            if ( keys != null ){
+                Collections.sort(keys, WsdlOperationComparator.getInstance() );
+                setKeys(keys);
+            }
+            else {
+                setKeys( Collections.emptyList());
+            }
         } else {
             requestProcessor.postRequest(new Runnable() {
                 public void run() {
@@ -359,6 +370,10 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                     if (keys[0] == null) {
                         keys[0] = Collections.emptyList();
                     }
+                    else {
+                        Collections.sort( (List<WebOperationInfo>)keys[0], 
+                                OPERATION_INFO_COMPARATOR);
+                    }
                     setKeys(keys[0]);
                 }
             });
@@ -392,7 +407,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                 
                 @Override
                 public String getDisplayName() {
-                    return method.getOperationName()+": "+getClassName(method.getReturnType()); //NOI18N
+                    return getWebOperationInfoName(method);
                 } 
             };
             StringBuffer buf = new StringBuffer();
@@ -412,15 +427,6 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     
     private JAXWSSupport getJAXWSSupport() {
         return JAXWSSupport.getJAXWSSupport(srcRoot);
-    }
-    
-    private String getClassName(String fullClassName) {
-        StringTokenizer tok = new StringTokenizer(fullClassName,"."); //NOI18N
-        String token = "";
-        while (tok.hasMoreTokens()) {
-            token = tok.nextToken();
-        }
-        return token;
     }
     
     private void setBindings(JAXWSSupport support, WsdlModeler wsdlModeler, Service service) {
@@ -684,6 +690,28 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     
     boolean isModelGenerationFinished() {
         return modelGenerationFinished;
+    }
+    
+    private static String getClassName(String fullClassName) {
+        StringTokenizer tok = new StringTokenizer(fullClassName,"."); //NOI18N
+        String token = "";
+        while (tok.hasMoreTokens()) {
+            token = tok.nextToken();
+        }
+        return token;
+    }
+    
+    private static String getWebOperationInfoName(WebOperationInfo method){
+        return method.getOperationName()+": "+getClassName(method.getReturnType()); //NOI18N
+    }
+    
+    private static class WebOperationInfoComparator implements Comparator<WebOperationInfo>{
+        
+        public int compare(WebOperationInfo info1, WebOperationInfo info2) {
+            String name1 = getWebOperationInfoName( info1);
+            String name2 = getWebOperationInfoName( info2);
+            return name1.compareTo(name2);
+        }
     }
     
     private class WebOperationInfo {
