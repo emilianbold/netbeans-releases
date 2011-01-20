@@ -1270,7 +1270,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
+    public void addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
+        CndUtils.assertTrueInConsole(folder != null, "null folder"); //NOI18N
+        CndUtils.assertTrueInConsole(dir != null, "null directory"); //NOI18N
+        if (folder == null || dir == null || !dir.isValid()) {
+            return;
+        }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top;
         top = folder.findFolderByName(dir.getNameExt());
@@ -1294,7 +1299,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         addSourceRoot(dir.getPath());
 
-        return top;
+        return;
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
