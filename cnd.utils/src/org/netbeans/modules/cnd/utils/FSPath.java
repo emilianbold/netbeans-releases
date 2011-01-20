@@ -78,6 +78,6 @@ public class FSPath {
 
     @Override
     public String toString() {
-        return "" + fileSystem + ';' + path;
+        return "" + fileSystem + ':' + path;
     }    
 }

@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.DetailView;
 
 public class HostListEditor extends MasterDetailView {
 
-    private final HostList original;
-    private final RecordList<Host> editable;	// working copy
+    private final CustomizableHostList original;
+    private final RecordList<CustomizableHost> editable;	// working copy
 
     
     private JDialog dialog;
@@ -81,13 +81,13 @@ public class HostListEditor extends MasterDetailView {
     public HostListEditor() {
 	super(null, MasterDetailView.WITHLIST, null);
 
-	original = HostList.getInstance();
+	original = CustomizableHostList.getInstance();
 	editable = original.cloneList();
 
-        Host localhost = editable.getRecordAt(0);
-	DetailView<Host> detailView = new HostPanel(localhost);
+        CustomizableHost localhost = editable.getRecordAt(0);
+	DetailView<CustomizableHost> detailView = new HostPanel(localhost);
 
-	MasterView<Host> masterView = new MasterView<Host>(editable, detailView);
+	MasterView<CustomizableHost> masterView = new MasterView<CustomizableHost>(editable, detailView);
 
 	addMasterView(masterView);
 	addDetailView(detailView);

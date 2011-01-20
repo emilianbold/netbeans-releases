@@ -50,9 +50,9 @@ import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.AbstractReco
 
 import org.netbeans.modules.cnd.debugger.common2.utils.UserdirFile;
 
-public class HostList extends AbstractRecordList<Host> {
+public class CustomizableHostList extends AbstractRecordList<CustomizableHost> {
 
-    private static HostList instance = null;
+    private static CustomizableHostList instance = null;
 
     private static int listMaxSize = 100; // FIXUP should be 500?
 
@@ -62,21 +62,21 @@ public class HostList extends AbstractRecordList<Host> {
     private static final UserdirFile userdirFile =
         new UserdirFile(moduleFolderName, folderName, filename);
 
-    public HostList(int max) {
+    public CustomizableHostList(int max) {
 	super(max);
     }
 
     /**
      * Cloning constructor.
      */
-    protected HostList(HostList that) {
+    protected CustomizableHostList(CustomizableHostList that) {
 	super(listMaxSize, that);
     }
 
-    public static HostList getInstance() {
+    public static CustomizableHostList getInstance() {
 	if (instance == null) {
 	    try {
-		instance = new HostList(listMaxSize);
+		instance = new CustomizableHostList(listMaxSize);
 		instance.restore(userdirFile);
 		instance.addLocalhost();
 	    }
@@ -117,8 +117,8 @@ public class HostList extends AbstractRecordList<Host> {
     }
 
     // override AbstractRecordList
-    public HostList cloneList() {
-	return new HostList(this);
+    public CustomizableHostList cloneList() {
+	return new CustomizableHostList(this);
     }
 
     // override AbstractRecordList
@@ -136,23 +136,23 @@ public class HostList extends AbstractRecordList<Host> {
 	if (i == 0) {
 	    return;
 	} else if (i == -1) {
-	    addRecord(new Host());
+	    addRecord(new CustomizableHost());
 	} else {
 	    // Move it to the front (someone edited the XML?)
 	    addRecord(getRecordAt(i), true);
 	}
     }
 
-    public Host getHostByDispName(String hostname) {
-	for (Host host : this) {
+    public CustomizableHost getHostByDispName(String hostname) {
+	for (CustomizableHost host : this) {
 	    if (host.displayName().equals(hostname))
 		return host;
 	}
 	return null;
     }
 
-    public Host getHostByName(String hostname) {
-	for (Host host : this) {
+    public CustomizableHost getHostByName(String hostname) {
+	for (CustomizableHost host : this) {
 	    if (host.getHostName().equals(hostname))
 		return host;
 	}

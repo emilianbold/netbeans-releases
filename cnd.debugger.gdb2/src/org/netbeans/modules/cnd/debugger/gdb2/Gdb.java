@@ -236,7 +236,7 @@ public class Gdb {
 	    //
 	    if (executor != null)
 		assert executor.host() == host;
-	    remote = Host.isRemote(host);
+	    remote = host.isRemote();
 
 	    if (!connectExisting) {
 		//
@@ -270,7 +270,7 @@ public class Gdb {
             
             
 
-	    tentativeGdb = getGdb(this, connectExisting, Host.isRemote(host));
+	    tentativeGdb = getGdb(this, connectExisting, host.isRemote());
 
 	    String hostName = null;
 	    if (remote)
