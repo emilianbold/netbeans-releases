@@ -361,6 +361,6 @@ public class CustomizableHost extends Host implements Record, OptionSetOwner {
 
     @Override
     public String toString() {
-        return "CustomizableHost: " + getHostName();
+        return "CustomizableHost: " + getHostName(); //NOI18N
     }
 }
