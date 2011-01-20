@@ -803,7 +803,15 @@ public final class ProjectEar extends J2eeApplicationProvider
                     // FIXME manifest ant TLD magic
                     File buildDir = project.getAntProjectHelper().resolveFile(
                             project.evaluator().getProperty(EarProjectProperties.BUILD_DIR));
-                    File destFile = new File(buildDir, artifact.getFile().getName());
+                    String relocation = artifact.getRelocation();
+                    File destFile = null;
+                    if (relocation != null) {
+                        destFile = new File(buildDir, relocation + File.separator
+                                + artifact.getFile().getName());
+                    } else {
+                        destFile = new File(buildDir, artifact.getFile().getName());
+                    }
+
                     try {
                         FileUtil.createData(destFile);
                     } catch (IOException ex) {

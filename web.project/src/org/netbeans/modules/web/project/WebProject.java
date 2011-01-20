@@ -1855,21 +1855,22 @@ public final class WebProject implements Project {
         }
 
         @Override
-        public Map<Item, String> getArtifacts() {
+        public List<ArtifactCopyOnSaveSupport.Item> getArtifacts() {
             final AntProjectHelper helper = getAntProjectHelper();
 
             ClassPathSupport cs = new ClassPathSupport(evaluator(), getReferenceHelper(),
                     helper, getUpdateHelper(), new ClassPathSupportCallbackImpl(helper));
 
-            Map<Item, String> result = new HashMap<Item, String>();
+            List<ArtifactCopyOnSaveSupport.Item> result = new ArrayList<ArtifactCopyOnSaveSupport.Item>();
             for (ClassPathSupport.Item item : cs.itemsList(
                     helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
                     WebProjectProperties.TAG_WEB_MODULE_LIBRARIES)) {
 
                 if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
                     String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
+                    String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
                     if (path != null) {
-                        result.put(item, path);
+                        result.add(new Item(item, new ItemDescription(path, RelocationType.fromString(dirs))));
                     }
                 }
             }
@@ -1877,12 +1878,17 @@ public final class WebProject implements Project {
         }
 
         @Override
-        protected Artifact filterArtifact(Artifact artifact) {
-            if (containsTLD(artifact.getFile())) {
+        protected Artifact filterArtifact(Artifact artifact, RelocationType type) {
+            if (containsTLD(artifact.getFile()) || type == RelocationType.NONE) {
                 return artifact;
             }
-
-            return artifact.relocatable();
+            if (type == RelocationType.ROOT) {
+                return artifact.relocatable();
+            } else if (type == RelocationType.LIB) {
+                return artifact.relocatable("lib"); // NOI18N
+            } else {            
+                return artifact;
+            }
         }
 
         private boolean containsTLD(File f) {
