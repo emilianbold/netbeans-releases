@@ -45,16 +45,4 @@ made subject to such option by the copyright holder.
 -->
 <project name="o.n.core" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    
-    <target name="create-nsautoproxyconfig">
-        <echo message="Copy nsProxyAutoConfig.js"/>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="external/nsProxyAutoConfig.js" todir="${cluster}/modules/ext" overwrite="true"/>
-    </target>
-    <target name="netbeans-extra" depends="create-nsautoproxyconfig"/>
-    <target name="clean-nsautoproxyconfig">
-        <echo message="Clean nsProxyAutoConfig.js"/>
-        <delete file="${o.n.core.dir}/modules/ext/nsProxyAutoConfig.js" failonerror="false"/>
-    </target>
-    <target name="clean" depends="clean-nsautoproxyconfig,projectized-common.clean"/>
 </project>
