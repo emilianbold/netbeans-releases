@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -21,11 +21,11 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lWebBrowser" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbWebBrowser" pref="1294" max="32767" attributes="0"/>
+                      <Component id="cbWebBrowser" pref="1317" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="1494" max="32767" attributes="2"/>
+                  <Component id="jSeparator2" alignment="0" pref="1495" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lWebProxy" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
@@ -39,7 +39,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="bMoreProxy" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="errorLabel" pref="1254" max="32767" attributes="0"/>
+                                      <Component id="errorLabel" pref="1279" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="lProxyHost" min="-2" max="-2" attributes="0"/>
@@ -54,15 +54,15 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="jSeparator3" alignment="0" pref="1494" max="32767" attributes="2"/>
+                  <Component id="jSeparator3" alignment="0" pref="1495" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lUsage" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblUsageInfo" alignment="0" pref="1365" max="32767" attributes="0"/>
+                          <Component id="lblUsageInfo" alignment="0" pref="1370" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jUsageCheck" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="838" max="32767" attributes="0"/>
+                              <EmptySpace pref="854" max="32767" attributes="0"/>
                           </Group>
                           <Component id="lblLearnMore" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
