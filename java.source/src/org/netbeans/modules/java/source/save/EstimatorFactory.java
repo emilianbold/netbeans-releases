@@ -84,7 +84,7 @@ final class EstimatorFactory {
                                      List<? extends Tree> newL,
                                      DiffContext diffContext)
     {
-        return new PositionEstimator.MembersEstimator(oldL, newL, diffContext);
+        return new PositionEstimator.MembersEstimator(oldL, newL, diffContext, false);
     }
 
     static PositionEstimator catches(List<? extends Tree> oldL, 
@@ -105,7 +105,7 @@ final class EstimatorFactory {
                                      List<? extends Tree> newL,
                                      DiffContext diffContext)
     {
-        return new PositionEstimator.MembersEstimator(oldL, newL, diffContext);
+        return new PositionEstimator.MembersEstimator(oldL, newL, diffContext, true);
     }
     
     static PositionEstimator toplevel(List<? extends Tree> oldL, 

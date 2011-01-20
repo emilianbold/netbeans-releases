@@ -571,10 +571,10 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
     
     /**
      * #92726, #92127: When semicolon is in class declaration, it is represented
-     * as an empty initilizer in the tree with position -1. This causes many
+     * as an empty initializer in the tree with position -1. This causes many
      * problems during generating. See issues for details.
      */
-    public void DISABLEDtestAddAfterEmptyInit1() throws Exception {
+    public void testAddAfterEmptyInit1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -595,6 +595,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
+            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -624,10 +625,10 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
     
     /**
      * #92726, #92127: When semicolon is in class declaration, it is represented
-     * as an empty initilizer in the tree with position -1. This causes many
+     * as an empty initializer in the tree with position -1. This causes many
      * problems during generating. See issues for details.
      */
-    public void DISABLEDtestAddAfterEmptyInit2() throws Exception {
+    public void DISABLED190952testAddAfterEmptyInit2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
