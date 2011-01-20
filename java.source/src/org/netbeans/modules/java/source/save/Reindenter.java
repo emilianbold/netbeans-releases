@@ -400,6 +400,21 @@ public class Reindenter implements IndentTask {
                 currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.RPAREN), (int)sp.getEndPosition(cut, ((WhileLoopTree)last).getCondition()) - 1, currentIndent);
                 break;
             case BLOCK:
+                boolean isStatic = ((BlockTree)last).isStatic();
+                if (isStatic) {
+                    token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                    if (token != null && token.token().id() == JavaTokenId.STATIC && token.offset() == lastPos) {
+                        switch (cs.getOtherBracePlacement()) {
+                            case NEW_LINE_INDENTED:
+                                currentIndent += cs.getIndentSize();
+                                break;
+                            case NEW_LINE_HALF_INDENTED:
+                                currentIndent += (cs.getIndentSize() / 2);
+                                break;
+                        }
+                        break;
+                    }
+                }
                 token = findFirstNonWhitespaceToken(startOffset, endOffset);
                 nextTokenId = token != null ? token.token().id() : null;
                 if (nextTokenId == null || nextTokenId != JavaTokenId.RBRACE) {
@@ -418,6 +433,8 @@ public class Reindenter implements IndentTask {
                         currentIndent = 0;
                     } else if (t != null) {
                         currentIndent = getCurrentIndent(t);
+                    } else if (isStatic) {
+                        currentIndent += cs.getIndentSize();
                     } else if (isLeftBraceOnNewLine(lastPos, startOffset)) {
                         switch (path.get(1).getKind() == Kind.METHOD ? cs.getMethodDeclBracePlacement() : cs.getOtherBracePlacement()) {
                             case SAME_LINE:
@@ -441,6 +458,17 @@ public class Reindenter implements IndentTask {
                                 break;
                         }
                     }
+                } else if (isStatic) {
+                    switch (cs.getOtherBracePlacement()) {
+                        case NEW_LINE_INDENTED:
+                            currentIndent += cs.getIndentSize();
+                            break;
+                        case NEW_LINE_HALF_INDENTED:
+                            currentIndent += (cs.getIndentSize() / 2);
+                            break;
+                    }
+                } else if (!isLeftBraceOnNewLine(lastPos, startOffset)) {
+                    currentIndent = getCurrentIndent(path.get(1));                    
                 }
                 break;
             case SWITCH:

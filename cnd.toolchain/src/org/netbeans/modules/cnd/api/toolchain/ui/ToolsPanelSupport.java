@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.api.toolchain.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
@@ -154,6 +156,19 @@ public class ToolsPanelSupport {
             }
         }
         return isChanged;
+    }
+
+    public static List<Runnable> saveChangesInOtherPanels() {
+        List<Runnable> res = new ArrayList<Runnable>();
+        synchronized (listenerIsChanged) {
+            for (IsChangedListener l : listenerIsChanged) {
+                Runnable saveChanges = l.saveChanges();
+                if (saveChanges != null) {
+                    res.add(saveChanges);
+                }
+            }
+        }
+        return res;
     }
 
     /**

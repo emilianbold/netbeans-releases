@@ -51,6 +51,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -68,6 +69,8 @@ public class DiffContext {
     public final JCCompilationUnit origUnit;
     public final Trees trees;
     public final Document doc;
+    public final PositionConverter positionConverter;
+    public final FileObject file;
 
     public DiffContext(CompilationInfo copy) {
         this.tokenSequence = copy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -77,9 +80,11 @@ public class DiffContext {
         this.origUnit = (JCCompilationUnit) copy.getCompilationUnit();
         this.trees = copy.getTrees();
         this.doc = copy.getSnapshot().getSource().getDocument(false); //TODO: true or false?
+        this.positionConverter = copy.getPositionConverter();
+        this.file = copy.getFileObject();
     }
 
-    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code) {
+    public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file) {
         this.tokenSequence = TokenHierarchy.create(code, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         this.origText = code;
         this.style = getCodeStyle(copy);
@@ -87,6 +92,8 @@ public class DiffContext {
         this.origUnit = (JCCompilationUnit) cut;
         this.trees = copy.getTrees();
         this.doc = null;
+        this.positionConverter = positionConverter;
+        this.file = file;
     }
 
     private static CodeStyle getCodeStyle(CompilationInfo info) {

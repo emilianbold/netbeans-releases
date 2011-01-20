@@ -114,6 +114,10 @@ public abstract class CndFileSystemProvider {
     public static CharSequence toUrl(FSPath fsPath) {
         return getDefault().toUrlImpl(fsPath);
     }
+    
+    public static CharSequence toUrl(FileSystem fileSystem, CharSequence absPath) {
+        return getDefault().toUrlImpl(fileSystem, absPath);
+    }
 
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
@@ -142,6 +146,7 @@ public abstract class CndFileSystemProvider {
 
     protected abstract CharSequence fileObjectToUrlImpl(FileObject fileObject);
     protected abstract CharSequence toUrlImpl(FSPath fSPath);
+    protected abstract CharSequence toUrlImpl(FileSystem fileSystem, CharSequence absPath);
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
 
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
@@ -251,7 +256,7 @@ public abstract class CndFileSystemProvider {
             }
             return fileObject.getPath();
         }
-
+        
         @Override
         protected CharSequence toUrlImpl(FSPath fSPath) {
             for (CndFileSystemProvider provider : cache) {
@@ -263,6 +268,17 @@ public abstract class CndFileSystemProvider {
             return fSPath.getPath();
         }
 
+        @Override
+        protected CharSequence toUrlImpl(FileSystem fileSystem, CharSequence absPath) {
+            for (CndFileSystemProvider provider : cache) {
+                CharSequence url = provider.toUrlImpl(fileSystem, absPath);
+                if (url != null) {
+                    return url;
+                }
+            }
+            return absPath;
+        }
+        
         @Override
         public String getCaseInsensitivePathImpl(CharSequence path) {
             for (CndFileSystemProvider provider : cache) {

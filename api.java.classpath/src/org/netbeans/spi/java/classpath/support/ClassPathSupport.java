@@ -121,7 +121,7 @@ public class ClassPathSupport {
         assert roots != null;
         List<PathResourceImplementation> l = new ArrayList<PathResourceImplementation> ();
         for (FileObject root : roots) {
-            if (root == null) {
+            if (root == null || !root.isValid()) {
                 continue;
             }
             try {

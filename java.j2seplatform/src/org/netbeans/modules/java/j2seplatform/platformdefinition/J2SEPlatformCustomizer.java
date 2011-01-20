@@ -69,7 +69,9 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -77,6 +79,8 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
@@ -525,12 +529,11 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
         private boolean addPath (File f) {
             try {
-                URL url = f.toURI().toURL();
-                return this.addPath (url);
+                return this.addPath (findRoot(f, type));
             } catch (MalformedURLException mue) {
                 return false;
             }
-        }
+        }       
 
         private boolean addPath (URL url) {
             if (FileUtil.isArchiveFile(url)) {
@@ -549,6 +552,28 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             updatePlatform();
             fireIntervalAdded(this,oldSize,oldSize);
             return true;
+        }
+        
+        private static URL findRoot(final File file, final int type) throws MalformedURLException {
+            if (type != CLASSPATH) {                
+                final FileObject fo = URLMapper.findFileObject(FileUtil.urlForArchiveOrDir(file));
+                if (fo != null) {
+                    try {
+                        FileObject result = null;
+                        if (type == SOURCES) {
+                            result = JavadocAndSourceRootDetection.findSourceRoot(fo);
+                        } else if (type == JAVADOC) {
+                            result = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+                        }
+                        if (result != null) {
+                            return result.getURL();
+                        }
+                    } catch (FileStateInvalidException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            }
+            return file.toURI().toURL();
         }
 
         private synchronized java.util.List<URL> getData () {

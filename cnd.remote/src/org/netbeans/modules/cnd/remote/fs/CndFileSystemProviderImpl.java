@@ -96,6 +96,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
+    protected CharSequence toUrlImpl(FileSystem fileSystem, CharSequence absPath) {
+        return FileSystemProvider.toUrl(fileSystem, absPath.toString());
+    }
+
+    @Override
     protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
         return FileSystemProvider.getCanonicalPath(fileSystem, absPath.toString());
     }            

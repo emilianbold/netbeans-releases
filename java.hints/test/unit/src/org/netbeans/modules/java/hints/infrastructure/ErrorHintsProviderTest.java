@@ -225,7 +225,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
         performTest("TestShortErrorsMethodInvocation1", true);
     }
     
-    public void testTestShortErrorsMethodInvocation2() throws Exception {
+    public void DISABLED194510testTestShortErrorsMethodInvocation2() throws Exception {
         performTest("TestShortErrorsMethodInvocation2", true);
     }
     
