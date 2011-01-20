@@ -63,8 +63,10 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -76,12 +78,15 @@ import org.openide.util.NbBundle;
 */
 public final class ConnectAction extends AbstractAction {
 
+    private static RequestProcessor computeEnabledRP = new RequestProcessor("ConnectAction is enabled", 1); // NOI18N
+    private RequestProcessor.Task computeEnabledTask;
     private ConnectorPanel cp;
     private DialogDescriptor descr;
     private Dialog dialog;
     private JButton bOk;
     private JButton bCancel;
     private NotificationLineSupport notificationSupport;
+    private volatile boolean lastEnabled = true;
 
     
     public ConnectAction () {
@@ -100,10 +105,22 @@ public final class ConnectAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        List attachTypes = DebuggerManager.getDebuggerManager ().lookup (
-            null, AttachType.class
-        );
-        return attachTypes.size() > 0;
+        if (computeEnabledTask == null) {
+            computeEnabledTask = computeEnabledRP.create(new Runnable() {
+                public void run() {
+                    List attachTypes = DebuggerManager.getDebuggerManager ().lookup (
+                        null, AttachType.class
+                    );
+                    lastEnabled = attachTypes.size() > 0;
+                }
+            });
+        }
+        computeEnabledTask.schedule(0);
+        try {
+            computeEnabledTask.waitFinished(100);   // Wait 100ms at most in AWT.
+        } catch (InterruptedException ex) {
+        }
+        return lastEnabled;
     }
     
     public void actionPerformed (ActionEvent evt) {

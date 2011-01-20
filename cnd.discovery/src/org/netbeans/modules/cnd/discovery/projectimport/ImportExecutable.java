@@ -466,9 +466,10 @@ public class ImportExecutable implements PropertyChangeListener {
                 gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
             }
             StringBuilder buf = new StringBuilder();
+            String binaryDir = CndPathUtilitities.getDirName(binary);
             for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
                 if (entry.getValue() != null) {
-                    if (isMyDll(entry.getValue(), root)) {
+                    if (isMyDll(entry.getValue(), root) || isMyDll(entry.getValue(), binaryDir)) {
                         if (buf.length() > 0) {
                             buf.append(';');
                         }

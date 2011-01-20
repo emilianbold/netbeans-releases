@@ -860,8 +860,10 @@ final class NodeListener implements MouseListener, KeyListener,
                 callDefaultAction(nbNode, e.getSource(),
                                   e.getID(), "enter");   //NOI18N
             }
-        } else if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
-                   && (e.getModifiersEx() == 0)) {
+        } else if (((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
+                   && (e.getModifiersEx() == 0)) ||
+                   ((e.getKeyCode() == KeyEvent.VK_F10)
+                   && e.isShiftDown())) {
             e.consume();
             int selCount = tree.getSelectionCount();
             if (selCount >= 1) {

@@ -55,6 +55,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -158,7 +159,73 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
 
     @Override
-    public int getLineByOffset(int offset) throws IOException {
+    public int[] getLineColumnByOffset(int offset) throws IOException {
+        int[] lineCol = new int[]{1, 1};
+        int line = _getLineByOffset(offset);
+        int start = _getStartLineOffset(line);
+        lineCol[0] = line;
+        // find line and column
+        String text = getText();
+        int TABSIZE = ModelSupport.getTabSize();
+        for (int curOffset = start; curOffset < offset; curOffset++) {
+            char curChar = text.charAt(curOffset);
+            switch (curChar) {
+                case '\n':
+                    // just increase line number
+                    lineCol[0] = lineCol[0] + 1;
+                    lineCol[1] = 1;
+                    break;
+                case '\t':
+                    int col = lineCol[1];
+                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
+                    lineCol[1] = newCol;
+                    break;
+                default:
+                    lineCol[1]++;
+                    break;
+            }
+        }
+        return lineCol;
+    }
+
+    @Override
+    public int getOffsetByLineColumn(int line, int column) throws IOException {
+        int startOffset = _getStartLineOffset(line);
+        String text = getText();
+        int TABSIZE = ModelSupport.getTabSize();
+        int currCol = 1;
+        int outOffset;
+        loop:for (outOffset = startOffset; outOffset < text.length(); outOffset++) {
+            if (currCol >= column) {
+                break;
+            }
+            char curChar = text.charAt(outOffset);
+            switch (curChar) {
+                case '\n':
+                    break loop;
+                case '\t':
+                    int col = currCol;
+                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
+                    currCol = newCol;
+                    break;
+                default:
+                    currCol++;
+                    break;
+            }
+        }
+        return outOffset;
+    }
+
+    private int _getStartLineOffset(int line) throws IOException {
+        line--;
+        int[] list = getLineOffsets();
+        if (line < list.length) {
+            return list[line];
+        }
+        return list[list.length-1];
+    }
+
+    private int _getLineByOffset(int offset) throws IOException {
         int[] list = getLineOffsets();
 	int low = 0;
 	int high = list.length - 1;
@@ -180,16 +247,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             }
 	}
 	return low;
-    }
-
-    @Override
-    public int getStartLineOffset(int line) throws IOException {
-        line--;
-        int[] list = getLineOffsets();
-        if (line < list.length) {
-            return list[line];
-        }
-        return list[list.length-1];
     }
     
     private WeakReference<Object> lines = new WeakReference<Object>(null);
