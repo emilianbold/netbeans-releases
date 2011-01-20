@@ -59,7 +59,7 @@ class HostListXMLWriter extends XMLDocWriter implements UserdirFile.Writer {
     private UserdirFile userdirFile;
     private HostListXMLCodec encoder;
 
-    HostListXMLWriter(UserdirFile userdirFile, RecordList<Host> model) {
+    HostListXMLWriter(UserdirFile userdirFile, RecordList<CustomizableHost> model) {
 	this.userdirFile = userdirFile;
 	encoder = new HostListXMLCodec(model);
     } 
