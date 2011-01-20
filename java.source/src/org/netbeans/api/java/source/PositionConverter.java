@@ -62,6 +62,10 @@ public final class PositionConverter {
         assert snapshot != null;
         this.snapshot = snapshot;        
     }
+
+    PositionConverter() {
+        this.snapshot = null;
+    }
     
     // API of the class --------------------------------------------------------
 
@@ -73,7 +77,7 @@ public final class PositionConverter {
      * @since 0.21
      */
     public int getOriginalPosition(int javaSourcePosition) {
-        return snapshot.getOriginalOffset(javaSourcePosition);        
+        return snapshot != null ? snapshot.getOriginalOffset(javaSourcePosition) : javaSourcePosition;
     }
     
     /**Compute position in the virtual Java source for given position
@@ -84,7 +88,7 @@ public final class PositionConverter {
      * @since 0.21
      */
     public int getJavaSourcePosition(int originalPosition) {
-        return snapshot.getEmbeddedOffset(originalPosition);
+        return snapshot != null ? snapshot.getEmbeddedOffset(originalPosition) : originalPosition;
     }        
 
 }

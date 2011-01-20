@@ -138,8 +138,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected boolean isClosingTagOptional(String tagName) {
-        HtmlTag elem = model.getTag(tagName);
+    protected boolean isClosingTagOptional(CharSequence tagName) {
+        HtmlTag elem = model.getTag(tagName.toString());
         if (elem == null) {
             return false;
         }
@@ -147,8 +147,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected boolean isOpeningTagOptional(String tagName) {
-        HtmlTag elem = model.getTag(tagName);
+    protected boolean isOpeningTagOptional(CharSequence tagName) {
+        HtmlTag elem = model.getTag(tagName.toString());
         if (elem == null) {
             return false;
         }
@@ -156,8 +156,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected Boolean isEmptyTag(String tagName) {
-       HtmlTag elem = model.getTag(tagName);
+    protected Boolean isEmptyTag(CharSequence tagName) {
+       HtmlTag elem = model.getTag(tagName.toString());
         if (elem == null) {
             return false;
         }
@@ -167,9 +167,9 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     private static final String[] TAGS_WITH_UNFORMATTABLE_CONTENT = new String[]{"pre", "textarea"}; //NOI18N
     
     @Override
-    protected boolean isTagContentUnformattable(String tagName) {
+    protected boolean isTagContentUnformattable(CharSequence tagName) {
         for (String t : TAGS_WITH_UNFORMATTABLE_CONTENT) {
-            if (t.equalsIgnoreCase(tagName)) {
+            if (t.equalsIgnoreCase(tagName.toString())) {
                 return true;
             }
         }
@@ -177,8 +177,8 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     @Override
-    protected Set<String> getTagChildren(String tagName) {
-        HtmlTag tag = model.getTag(tagName);
+    protected Set<String> getTagChildren(CharSequence tagName) {
+        HtmlTag tag = model.getTag(tagName.toString());
         if(tag == null) {
             return null;
         }
