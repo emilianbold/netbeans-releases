@@ -80,7 +80,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
         if (TRACE) { 
-            System.out.printf("APTIncludeResolverImpl.ctor %s %s\n", fileSystem, path);
+            System.out.printf("APTIncludeResolverImpl.ctor %s %s\n", fileSystem, path); // NOI18N
         }
     }       
 
