@@ -296,10 +296,15 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.INFO, ex.getMessage(), ex);
         }
         try {
-            reader.skip(4679);
             String line = null;
+            boolean doAppend = false;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
+                if( line.startsWith("var pacUtils =") ) { //NOI18N
+                    doAppend = true;
+                }
+                if( !doAppend )
+                    continue;
                 if (line.endsWith("+")) { // NOI18N
                     line = line.substring(0, line.length() - 1);
                 }

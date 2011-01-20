@@ -3,8 +3,10 @@ Version: mozilla2.0
 Description: Implementation of PAC Utils API used by proxy auto configuration (PAC) files. Required for resolution of proxies defined using these APIs.
 License: MPL 1.1
 Origin: http://mxr.mozilla.org/mozilla2.0/source/netwerk/base/src/nsProxyAutoConfig.js
+Files: nsProxyAutoConfig.js
 
-Version: MPL 1.1/GPL 2.0/LGPL 2.1
+Use of nsProxyAutoConfig.js version mozilla2.0 is governed by the terms of the
+license below:
 
 The contents of this file are subject to the Mozilla Public License Version
 1.1 (the "License"); you may not use this file except in compliance with

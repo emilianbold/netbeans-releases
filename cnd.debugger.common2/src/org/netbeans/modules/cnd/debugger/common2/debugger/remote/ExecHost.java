@@ -145,6 +145,6 @@ class ExecHost extends Host {
 
     @Override
     public String toString() {
-        return "ExecHost: " + hostName; //MOI18N
+        return "ExecHost: " + hostName; //NOI18N
     }
 }
