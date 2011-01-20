@@ -242,7 +242,7 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private void saveIfModified() {
-        if (getProjectDescriptor() != null && getProjectDescriptor().getModified()) {
+        if (getProjectDescriptor() != null && getProjectDescriptor().isModified()) {
             getProjectDescriptor().save();
         }
     }
