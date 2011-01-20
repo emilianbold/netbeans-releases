@@ -483,6 +483,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.javadoc</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.web.beans</friend>
                 <package>org.netbeans.modules.java.hints.spi</package>
             </friend-packages>

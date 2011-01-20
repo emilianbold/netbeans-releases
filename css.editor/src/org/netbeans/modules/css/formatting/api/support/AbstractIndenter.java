@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.embedding.VirtualSource;
@@ -1213,9 +1214,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         while ((forward ? joinedTS.offset() <= rowEndOffset :
-                        (joinedTS.offset()+joinedTS.token().text().toString().length()) >= rowEndOffset)) {
+                        (joinedTS.offset()+joinedTS.token().length()) >= rowEndOffset)) {
             int tokenStart = joinedTS.offset();
-            int tokenEnd = joinedTS.offset() + joinedTS.token().text().toString().length();
+            int tokenEnd = joinedTS.offset() + joinedTS.token().length();
             boolean ok = joinedTS.embedded() == null;
             if (!ok) {
                 // there is some embedding; check for example for following case:
@@ -1277,7 +1278,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      */
     private boolean isWhiteSpaceToken(JoinedTokenSequence<T1> joinedTS, int rowStartOffset, int rowEndOffset, boolean forward) {
         int start = joinedTS.offset();
-        int end = joinedTS.offset() + joinedTS.token().text().toString().length();
+        int end = joinedTS.offset() + joinedTS.token().length();
         if (forward) {
             if (rowStartOffset > start) {
                 start = Math.min(rowStartOffset, end);
@@ -1293,13 +1294,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 end = Math.max(rowStartOffset, start);
             }
         }
-        String text = joinedTS.token().text().toString().substring(
-                start-joinedTS.offset(), end-joinedTS.offset()).trim();
-        return text.length() == 0;
+        return CharSequenceUtilities.trim(joinedTS.token().text().subSequence(
+                start-joinedTS.offset(), end-joinedTS.offset())).length() == 0;
     }
 
     private int findNonWhiteSpaceCharacter(JoinedTokenSequence<T1> joinedTS, int offset, boolean forward) {
-        String tokenText = joinedTS.token().text().toString();
+        CharSequence tokenText = joinedTS.token().text();
         int tokenStart = joinedTS.offset();
         int index = offset - tokenStart;
         if (!forward && index == tokenText.length()) {
