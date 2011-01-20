@@ -406,7 +406,7 @@ public final class ProjectSupport {
 	final String hostName = seed.getHostName();
 	CndRemote.validate(hostName, new Runnable() {
 		public void run() {
-		    Host host = CndRemote.hostFromName(null, hostName);
+		    Host host = Host.byName(hostName);
 		    seed.setHost(host);
 		    CndRemote.fillConfiguratioFromHost(seed.conf, host);
 		}
