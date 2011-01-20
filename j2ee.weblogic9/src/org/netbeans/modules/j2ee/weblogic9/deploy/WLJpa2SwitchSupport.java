@@ -66,9 +66,8 @@ import org.openide.util.Exceptions;
 public final class WLJpa2SwitchSupport {
 
     private static final String OEPECONTRIBUTIONSJAR = "oepe-contributions.jar";//NO18N
-    private static final String WEBLOGICJAR = "weblogic.jar";//NO18N
-    private static final String JPAJAR1 = "javax.persistence_1.0.0.0_2-0-0.jar";
-    private static final String JPAJAR2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";
+    private static final String JPAJAR1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
+    private static final String JPAJAR2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
     
     private final WLDeploymentManager deploymentManager;
 
@@ -78,7 +77,7 @@ public final class WLJpa2SwitchSupport {
 
     public void enable() {
         File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
-        File webLogicJarFile = new File(libDir, WEBLOGICJAR);
+        File webLogicJarFile = WLPluginProperties.getWeblogicJar(deploymentManager);
         JarFile webLogicJar = null;
         try {
             webLogicJar = new JarFile(webLogicJarFile);
@@ -107,7 +106,7 @@ public final class WLJpa2SwitchSupport {
                 if(cp.indexOf(JPAJAR1)>-1 && cp.indexOf(JPAJAR2)>-1) override = false;//should ful path be checked?
             }
             if(override){
-                backupOEPE(libDir, oepeJarFile);
+                backup(oepeJarFile);
                 oepeFO = null;
             }
         }
@@ -132,7 +131,7 @@ public final class WLJpa2SwitchSupport {
         // delete referneces to jars in oepe-contributions.jar
         File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
         File oepeJarFile = new File(libDir, OEPECONTRIBUTIONSJAR);
-        backupOEPE(libDir, oepeJarFile);
+        backup(oepeJarFile);
         createOEPEJar(oepeJarFile, "");
     }
 
@@ -145,25 +144,19 @@ public final class WLJpa2SwitchSupport {
         return false;
     }
 
-    private void backupOEPE(File libDir, File oepeJarFile){
-        FileObject oepeFO = FileUtil.toFileObject(oepeJarFile);
-        String bakName = FileUtil.findFreeFileName(oepeFO.getParent(), OEPECONTRIBUTIONSJAR, "bak");//NOI18N
+    private FileObject backup(File jarFile){
+        FileObject fo = FileUtil.toFileObject(jarFile);
+        String bakName = FileUtil.findFreeFileName(fo.getParent(), jarFile.getName(), "bak");//NOI18N
         try {
-            FileUtil.copyFile(oepeFO, oepeFO.getParent(), bakName, "bak"); //NOI18N
+            return FileUtil.copyFile(fo, fo.getParent(), bakName, "bak"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return null;
     }
 
     private void replaceManifest(File webLogicJarFile, Manifest wlManifest) {
-        FileObject webLogicJarFO = FileUtil.toFileObject(webLogicJarFile);
-        FileObject bakJar = null;
-        try {
-            String bakName = FileUtil.findFreeFileName(webLogicJarFO.getParent(), WEBLOGICJAR, "bak");//NOI18N
-            bakJar = FileUtil.copyFile(webLogicJarFO, webLogicJarFO.getParent(), bakName, "bak"); //NOI18N
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        FileObject bakJar = backup(webLogicJarFile);
         //need replace
         FileOutputStream dest = null;
         try {
@@ -190,11 +183,11 @@ public final class WLJpa2SwitchSupport {
             Exceptions.printStackTrace(ex);
         }
         JarEntry entry = null;
-        byte[] temp = new byte[1024];
+        byte[] temp = new byte[32768];
         try {
             while ((entry = in.getNextJarEntry()) != null) {
                 String name = entry.getName();
-                if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) {
+                if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) {//NOI18N
                     continue;
                 }
                 out.putNextEntry(entry);
@@ -245,6 +238,12 @@ public final class WLJpa2SwitchSupport {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        try {
+            out.closeEntry();
+            out.finish();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
             try {
                 if (out != null) {
                     out.close();
