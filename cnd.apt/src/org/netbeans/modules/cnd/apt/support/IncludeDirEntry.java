@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -93,7 +94,7 @@ public final class IncludeDirEntry {
 
     public static IncludeDirEntry get(FileSystem fs, String dir) {
         CndUtils.assertAbsolutePathInConsole(dir);
-        CharSequence key = FilePathCache.getManager().getString(dir);
+        CharSequence key = FilePathCache.getManager().getString(CndFileSystemProvider.toUrl(fs, dir));
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
         synchronized (delegate) {
             IncludeDirEntry out = delegate.get(key);
@@ -149,7 +150,7 @@ public final class IncludeDirEntry {
     @Override
     public String toString() {
         Boolean val = exists;
-        return (val == null ? "Not Initialized exist flag" : (val.booleanValue() ? "" : "NOT EXISTING ")) + asCharSeq + " at " + fileSystem; // NOI18N
+        return (val == null ? "Not Initialized exist flag" : (val.booleanValue() ? "" : "NOT EXISTING ")) + fileSystem + ':' + asCharSeq; // NOI18N
     }
 
     private void invalidateDirExistence() {
