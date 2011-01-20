@@ -116,7 +116,6 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
             = "abbrev-ignore-modification"; // NOI18N
 
-    private static final String COMPLETION_VISIBLE = "completion-visible"; // NOI18N
     private static final String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; //NOI18N
 
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
