@@ -664,7 +664,8 @@ public final class JavaSource {
                 theParser[0] = copy.impl.getParser();
                 final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
                 if (diffs != null && diffs.size() > 0) {
-                    result.addDiffs(copy.getFileObject(), diffs);
+                    final FileObject file = copy.getFileObject();
+                    result.diffs.put(file != null ? file : FileUtil.createMemoryFileSystem().getRoot().createData("temp", "java"), diffs);
                 }
             }
         };
