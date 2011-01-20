@@ -121,7 +121,7 @@ public abstract class CsmFileInfoQuery {
     
     /**
      * 
-     * @param file header file (for sourse file result is empty list)
+     * @param file header file (for source file result is empty list)
      * @return list of include directives from source file to header file
      */
     public abstract List<CsmInclude> getIncludeStack(CsmFile file);
@@ -154,15 +154,6 @@ public abstract class CsmFileInfoQuery {
      *   support versioning
      */
     public abstract long getFileVersion(CsmFile file);
-
-    /**
-     * Calculates offset by line and column
-     * @param file - file.
-     * @param line - line in file.
-     * @param column - column.
-     * @return offset in file
-     */
-    public abstract long getOffset(CsmFile file, int line, int column);
 
     public abstract CharSequence getName(CsmUID<CsmFile> fileUID);
     
@@ -227,11 +218,6 @@ public abstract class CsmFileInfoQuery {
         @Override
         public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int offset) {
             return Collections.singleton(CsmCompilationUnit.createCompilationUnit(file));
-        }
-
-        @Override
-        public long getOffset(CsmFile file, int line, int column) {
-            return 0;
         }
 
         @Override

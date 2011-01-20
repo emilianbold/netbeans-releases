@@ -476,13 +476,4 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return 0;
     }
-
-    @Override
-    public long getOffset(CsmFile file, int line, int column) {
-        if (file instanceof FileImpl) {
-            return ((FileImpl) file).getOffset(line, column);
-        }
-        return 0;
-    }
-
 }
