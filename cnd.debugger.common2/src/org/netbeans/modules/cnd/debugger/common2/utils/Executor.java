@@ -51,7 +51,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
-import java.util.List;
 import java.util.Map;
 
 import org.openide.ErrorManager;
@@ -88,7 +87,7 @@ public abstract class Executor {
     }
 
     public boolean isRemote() {
-	return Host.isRemote(host);
+	return host.isRemote();
     }
 
     public abstract ExecutionEnvironment getExecutionEnvironment();
@@ -107,8 +106,6 @@ public abstract class Executor {
 
     public abstract boolean is_64(String p);
 
-    public abstract boolean svc_is64();
-	    
     public abstract InputStream getInputStream();
 
     public abstract OutputStream getOutputStream();

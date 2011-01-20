@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostListEditor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.awt.event.ItemEvent;
@@ -142,10 +142,12 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	executableComboBox.setModel(new DefaultComboBoxModel(exePaths));
 	((JTextField)executableComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(executableValidateListener);
 
+        if (host != null) {
+            lastHostChoice = host;
+        }
 	initRemoteHost();
-        setHostChoice(host);
 	initEngine();
-	lastHostChoice = hostChoices[0];
+	lastHostChoice = null;
 	adjustAutoCore();
 
         validateAll();
@@ -259,7 +261,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         updateRemoteHostList();
 
 	if (DebuggerManager.isStandalone()) {
-	    HostList hostlist = hostList();
+	    CustomizableHostList hostlist = DebuggerManager.get().getHostList();
 
 	    // listen to host host list model
 	    if (hostlist != null) {
@@ -288,13 +290,13 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	String ac = evt.getActionCommand();
 	if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
 	    JComboBox cb = (JComboBox)evt.getSource();
-	    if (cb != null) {
+	    if (cb != null && cb.getItemCount() > 0) {
 		String hostName = getHostName();
-		CndRemote.validate(hostName, new Runnable() {
-		    public void run() {
-			whenHostUpdated();
-		    }
-		});
+                CndRemote.validate(hostName, new Runnable() {
+                    public void run() {
+                        whenHostUpdated();
+                    }
+                });
 	    }
 	}
     }
@@ -324,44 +326,9 @@ final class DebugCorePanel extends javax.swing.JPanel {
      * Refresh hostComboBox with new remote host list.
      */
     private void updateRemoteHostList() {
-	if (DebuggerManager.isStandalone()) {
-	    HostList hostlist = hostList();
-	    if (hostlist != null) {
-		hostChoices = hostlist.getRecordsDisplayName();
-	    }
-	} else {
-	    /*
-	     * CND API changes, not needed anymore
-            ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-            if (serverList != null)
-	     */
-                hostChoices = CndRemote.getServerListIDs();
-	}
-
-        hostComboBox.removeAllItems();
-        if (hostChoices != null)
-            for (int i = 0; i < hostChoices.length; i++) {
-                hostComboBox.addItem(hostChoices[i]);
-            }
-
+        AttachPanel.fillHostsCombo(hostComboBox);
         // current value
-	setHostChoice(lastHostChoice);
-    }
-
-    private HostList hostList() {
-        return DebuggerManager.get().getHostList();
-    }
-
-    private void setHostChoice(String hostname) {
-        int res = 0;
-        for (String item : hostChoices) {
-            if (item.equals(hostname)) {
-                hostComboBox.setSelectedIndex(res);
-                return;
-            }
-            res++;
-        }
-        hostComboBox.setSelectedIndex(0);
+        AttachPanel.setHostChoice(lastHostChoice, hostComboBox);
     }
 
     public String getCorefilePath() {
@@ -373,9 +340,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
      * May return null if the current selection is not in the remote host DB.
      */
     public String getHostName() {
-	//return (String) hostComboBox.getSelectedItem();
-        int selectedIndex = hostComboBox.getSelectedIndex();
-        return CndRemote.hostNameFromIndex(selectedIndex);
+        return hostComboBox.getSelectedItem().toString();
     }
 
     public String getExecutablePath() {
@@ -648,7 +613,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             public void run() {
                 try {
-                    Host host = AttachPanel.getHost(hostname);
+                    Host host = Host.byName(hostname);
                     final ExecutionEnvironment exEnv = host.executionEnvironment();
                     ConnectionManager.getInstance().connectTo(exEnv);
 
@@ -693,7 +658,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             public void run() {
                 try {
-                    Host host = AttachPanel.getHost(hostname);
+                    Host host = Host.byName(hostname);
                     final ExecutionEnvironment exEnv = host.executionEnvironment();
                     ConnectionManager.getInstance().connectTo(exEnv);
 
@@ -738,7 +703,6 @@ final class DebugCorePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox engineComboBox;
     private javax.swing.JLabel engineLabel;
 
-    private String[] hostChoices = null;
     private static String lastHostChoice;
     private javax.swing.JComboBox hostComboBox;
     private javax.swing.JLabel hostLabel;
@@ -763,7 +727,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	    return false;
 	}
 
-        Host host = AttachPanel.getHost((String)hostComboBox.getSelectedItem());
+        Host host = Host.byName(getHostName());
         final ExecutionEnvironment exEnv = host.executionEnvironment();
 
         try {
@@ -831,7 +795,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	    return true;
 	}
 
-        Host host = AttachPanel.getHost((String)hostComboBox.getSelectedItem());
+        Host host = Host.byName(getHostName());
         final ExecutionEnvironment exEnv = host.executionEnvironment();
 
         try {

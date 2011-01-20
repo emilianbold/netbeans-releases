@@ -44,24 +44,18 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.remote;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
-import org.openide.ErrorManager;
-
 import org.xml.sax.Attributes;
 import org.netbeans.modules.cnd.api.xml.*;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSetXMLCodec;
 import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.RecordList;
-import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.Record;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Log;
 
 class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
 
-    private RecordList<Host> model;
+    private RecordList<CustomizableHost> model;
     private OptionSetXMLCodec optionsXMLCodec;
-    private Host currentHost;	// decoded
+    private CustomizableHost currentHost;	// decoded
 
     private static final String TAG_REMOTEHOST = "host";	// NOI18N
     private static final String TAG_REMOTEHOSTS = "hosts";	// NOI18N
@@ -72,7 +66,7 @@ class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
     /**
      * decoder form
      */
-    HostListXMLCodec(RecordList<Host> model) {
+    HostListXMLCodec(RecordList<CustomizableHost> model) {
 	this.model = model;
     }
 
@@ -104,7 +98,7 @@ class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
 	}
 
 	if (element.equals(TAG_REMOTEHOST)) {
-	    currentHost = new Host();
+	    currentHost = new CustomizableHost();
 	    optionsXMLCodec =  new OptionSetXMLCodec(currentHost.getOptions());
 	    model.appendRecord(currentHost);
 	}
@@ -125,7 +119,7 @@ class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
     public void encode(XMLEncoderStream xes) {
         xes.elementOpen(TAG_REMOTEHOSTS, version());
             // deal with remote host list
-	    for (Host host : model) {
+	    for (CustomizableHost host : model) {
 		String hostName = host.getHostName();
 		if (!hostName.equals("localhost")) { // NOI18N
 		    AttrValuePair id_attr[] = new AttrValuePair[] {

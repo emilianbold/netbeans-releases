@@ -97,9 +97,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.EngineProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.GlobalOptionSet;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTargetList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.ConsoleTopComponent;
@@ -511,7 +510,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         }
         if (isStandalone()) {
             DebugTargetList.saveList();
-            HostList.saveList();
+            CustomizableHostList.saveList();
         }
     }
     /*
@@ -1116,15 +1115,15 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             return;
         }
     }
-    private HostList hostList = null;
+    private CustomizableHostList hostList = null;
 
-    public HostList getHostList() {
+    public CustomizableHostList getHostList() {
         if (!isStandalone()) {
             return null;
         }
 
         if (hostList == null) {
-            hostList = HostList.getInstance();
+            hostList = CustomizableHostList.getInstance();
         }
 
         return hostList;
@@ -1228,8 +1227,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         ndi.setPid(dt.getPid());
 
         //ndi.setTarget(dt.getExecutable());
-	Host host = new Host();
-	host = CndRemote.hostFromName(host, dt.getHostName());
+	Host host = Host.byName(dt.getHostName());
         Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 	EngineDescriptor engine = ndi.getEngineDescriptor();
 	// CR 6997426, cause gdb problem IZ 193248

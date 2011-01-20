@@ -71,9 +71,10 @@ import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.EditHostListAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHost;
 
 public class CaptureListenAction extends SystemAction implements Presenter.Menu  {
 
@@ -108,8 +109,8 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
             JMenu menu = (JMenu)e.getSource();
 	    String [] hostChoices = null;
 	    String hostName = null;
-	    HostList hostlist = null;
-	    hostlist = HostList.getInstance();
+	    CustomizableHostList hostlist = null;
+	    hostlist = CustomizableHostList.getInstance();
 
 	    if (DebuggerManager.isStandalone()) {
 		hostChoices = hostlist.getRecordsName();
@@ -117,22 +118,18 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
                 hostChoices = CndRemote.getServerListIDs();
 	    }
 	    if ( hostChoices.length > 0 ) {
-		Host host;
-		ExternalStart xstart;
-		String hostDispName;
-
 		for (int i = 0; i < hostChoices.length ; i++) {
 		    if (i >= MasterView.MAX_VISIBLE_IN_MENU)
 			break;
 
-		    hostDispName = hostName = hostChoices[i];
+		    String hostDispName = hostName = hostChoices[i];
 		    if (DebuggerManager.isStandalone()) {
-			host = hostlist.getHostByName(hostName);
+			CustomizableHost host = hostlist.getHostByName(hostName);
 			hostDispName = host.displayName();
 		    }
 
 		    // 6798371
-		    xstart = ExternalStartManager.getXstart(hostName);
+		    ExternalStart xstart = ExternalStartManager.getXstart(hostName);
 		    boolean allowed;
 		    if (xstart == null) {
 			allowed = false;
@@ -187,12 +184,7 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 		return;
 	    }
 
-	    Host host;
-	    // 6798371
-	    if (DebuggerManager.isStandalone())
-		host = HostList.getInstance().getHostByName(hostName);
-	    else
-		host = CndRemote.hostFromName(null, hostName);
+	    Host host = Host.byName(hostName);
 
 	    if (xstart == null) {
 		xstart = ExternalStartManager.createExternalStart(host);
