@@ -110,6 +110,7 @@ made subject to such option by the copyright holder.
                         <specification-version>1.23</specification-version>
                     </run-dependency>
                 </dependency>
+<!--
                 <dependency>
                     <code-name-base>org.netbeans.modules.autoupdate.ui</code-name-base>
                     <build-prerequisite/>
@@ -118,6 +119,7 @@ made subject to such option by the copyright holder.
                         <specification-version>1.18</specification-version>
                     </run-dependency>
                 </dependency>
+-->                    
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2me.cdc.platform</code-name-base>
                     <build-prerequisite/>

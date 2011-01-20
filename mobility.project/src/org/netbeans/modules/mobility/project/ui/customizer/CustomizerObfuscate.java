@@ -69,7 +69,7 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+//import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
@@ -240,14 +240,14 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
                         for (UpdateElement req : oc.add(element).getRequiredElements()) {
                             oc.add(req);
                         }
-                        PluginManager.openInstallWizard(oc);
+//                        PluginManager.openInstallWizard(oc);
                         ((CardLayout)getLayout()).show(this, "panel1"); //NOI18N
                         return;
                     }
                 }
             }
         }
-        PluginManager.show();
+//        PluginManager.show();
         ((CardLayout)getLayout()).show(this, "panel1"); //NOI18N
     }//GEN-LAST:event_jButton1ActionPerformed
     

@@ -131,7 +131,6 @@
                 <friend>org.netbeans.modules.autoupdate.pluginimporter</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
-                <friend>org.netbeans.modules.mobility.project</friend>
                 <package>org.netbeans.modules.autoupdate.ui.api</package>
             </friend-packages>
         </data>
