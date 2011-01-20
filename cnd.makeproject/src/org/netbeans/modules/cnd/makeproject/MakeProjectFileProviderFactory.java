@@ -210,9 +210,12 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         Sources srcs = project.getLookup().lookup(Sources.class);
                         final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
                         if (genericSG != null && genericSG.length > 0) {
-                            if (genericSG[0].getRootFolder().equals(context.getRoot())) {
-                                NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                                computeFiles(project, descriptor, matcher, result);
+                            for(SourceGroup group : genericSG) {
+                                if (group.getRootFolder().equals(context.getRoot())) {
+                                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                    computeFiles(project, descriptor, matcher, result);
+                                    break;
+                                }
                             }
                         }
                         return false;
