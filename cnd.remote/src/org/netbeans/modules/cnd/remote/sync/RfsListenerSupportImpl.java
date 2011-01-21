@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.api.java.source;
 
-import com.sun.source.tree.Tree;
-import org.apache.lucene.store.FSDirectory;
-import org.netbeans.modules.java.source.transform.Transformer;
-import org.netbeans.modules.parsing.lucene.LuceneIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
+package org.netbeans.modules.cnd.remote.sync;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.remote.api.RfsListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
- * @author Jan Lahoda
+ * 
+ * @author vk155633
  */
-public final class SourceUtilsTestUtil2 {
+public class RfsListenerSupportImpl {
 
-    private SourceUtilsTestUtil2() {
-    }
-
-    public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t) {
-//        if (afterCommit)
-//            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.init();
-        t.attach(wc.impl.getJavacTask().getContext(), wc);
-        t.apply(wc.getCompilationUnit());
-        t.release();
-        t.destroy();
+    private final ExecutionEnvironment execEnv;
+    private final List<RfsListener> listeners = new ArrayList<RfsListener>();
+    
+    private static final Map<ExecutionEnvironment, RfsListenerSupportImpl> instances = new HashMap<ExecutionEnvironment, RfsListenerSupportImpl>();
+    
+    public static RfsListenerSupportImpl getInstanmce(ExecutionEnvironment execEnv) {
+        synchronized (instances) {
+            RfsListenerSupportImpl instance = instances.get(execEnv);
+            if (instance == null) {
+                instance = new RfsListenerSupportImpl(execEnv);
+                instances.put(execEnv, instance);
+            }
+            return instance;
+        }        
     }
     
-    public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t, Tree tree) {
-//        if (afterCommit)
-//            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.init();
-        t.attach(wc.impl.getJavacTask().getContext(), wc);
-        t.apply(tree);
-        t.release();
-        t.destroy();
+    private RfsListenerSupportImpl(ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
+    }    
+    
+    public void addListener(RfsListener listener) {
+        synchronized (listeners) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
     }
     
-    public static void disableLocks() {
-        LuceneIndex.setDisabledLocks(true);
+    public void removeListener(RfsListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
     
+    public void fireFileChanged(File localFile, String remotePath) {
+        RfsListener[] listenersCopy;
+        synchronized (listeners) {
+            listenersCopy = listeners.toArray(new RfsListener[listeners.size()]);
+        }
+        for (RfsListener listener : listenersCopy) {
+            listener.fileChanged(execEnv, localFile, remotePath);
+        }
+    }
 }

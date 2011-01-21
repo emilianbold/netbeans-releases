@@ -24,6 +24,10 @@
         </folder>
     </folder>
     <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-cnd-navigation-is_specialized.xml" url="overrides/is-specialized-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-specializes.xml" url="overrides/specializes-annotation.xml"/>
+        </folder>
         <folder name="text">
             <folder name="x-h">
                 <folder name="GlyphGutterActions">

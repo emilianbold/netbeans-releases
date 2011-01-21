@@ -2864,8 +2864,8 @@ public final class TreeMaker {
     
     private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments, SourcePositions positions) {
         TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-        TranslateIdentifier ti = new TranslateIdentifier(copy, block, false, seq, positions);
-        ti.translate(block);
+        AssignComments ti = new AssignComments(copy, block, false, seq, positions);
+        ti.scan(block, null);
         /*List<? extends StatementTree> trees = block.getStatements();
         SourcePositions pos = copy.getTrees().getSourcePositions();
         for (StatementTree statement : trees) {

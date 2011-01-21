@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.api.java.source;
 
-import com.sun.source.tree.Tree;
-import org.apache.lucene.store.FSDirectory;
-import org.netbeans.modules.java.source.transform.Transformer;
-import org.netbeans.modules.parsing.lucene.LuceneIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
+package org.netbeans.modules.cnd.toolchain.compilers;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Alexander Simon
  */
-public final class SourceUtilsTestUtil2 {
+public class SPICompilerAccesor {
+    private final Tool compiler;
 
-    private SourceUtilsTestUtil2() {
+    public SPICompilerAccesor(Tool compiler) {
+        this.compiler = compiler;
+    }
+    
+    public List<List<String>> getSystemIncludesAndDefines() {
+        if (compiler instanceof CCCCompiler) {
+            Pair systemIncludesAndDefines = ((CCCCompiler) compiler).getFreshSystemIncludesAndDefines();
+            List<List<String>> res = new ArrayList<List<String>>();
+            res.add(systemIncludesAndDefines.systemIncludeDirectoriesList);
+            res.add(systemIncludesAndDefines.systemPreprocessorSymbolsList);
+            return res;
+        }
+        return null;
     }
 
-    public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t) {
-//        if (afterCommit)
-//            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.init();
-        t.attach(wc.impl.getJavacTask().getContext(), wc);
-        t.apply(wc.getCompilationUnit());
-        t.release();
-        t.destroy();
+    public void applySystemIncludesAndDefines(List<List<String>> pair) {
+        if (compiler instanceof CCCCompiler) {
+            ((CCCCompiler) compiler).setSystemIncludeDirectories(pair.get(0));
+            ((CCCCompiler) compiler).setSystemPreprocessorSymbols(pair.get(1));
+        }
     }
-    
-    public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t, Tree tree) {
-//        if (afterCommit)
-//            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.init();
-        t.attach(wc.impl.getJavacTask().getContext(), wc);
-        t.apply(tree);
-        t.release();
-        t.destroy();
-    }
-    
-    public static void disableLocks() {
-        LuceneIndex.setDisabledLocks(true);
-    }
-    
 }

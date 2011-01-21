@@ -543,6 +543,7 @@ public class WorkingCopy extends CompilationController {
     }
 
     private static String template(CompilationUnitTree cut) {
+        if ("package-info.java".equals(cut.getSourceFile().getName())) return "Templates/Classes/package-info.java";
         if (cut.getTypeDecls().isEmpty()) return "Templates/Classes/Empty.java";
 
         switch (cut.getTypeDecls().get(0).getKind()) {

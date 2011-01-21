@@ -793,12 +793,21 @@ public class TomcatManager implements DeploymentManager {
                     tp.setPassword(passwd);
                 }
             }
+            
+            String usersString = null;
+            if (passwd != null) {
+                if (isTomcat70()) {
+                    usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager-script,admin\"/>\n</tomcat-users>";
+                } else {
+                    usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>";
+                }
+            }
             String [] patternTo = new String [] { 
                 null, 
                 null, 
                 null,
                 null,
-                passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>" : null,   // NOI18N
+                usersString,
                 null, 
                 "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
                 isTomcat50() || isTomcat55() ? "docBase=\"${catalina.home}/server/webapps/manager\"" : null,   // NOI18N 

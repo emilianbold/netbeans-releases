@@ -188,6 +188,7 @@ class RfsLocalController extends NamedRunnable {
                         if (kind == RequestKind.WRITTEN) {
                             fileData.setState(localFile, FileState.UNCONTROLLED);
                             remoteUpdates.add(localFile);
+                            RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                             logger.log(Level.FINEST, "uncontrolled %s", localFile);
                         } else {
                             CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
@@ -352,6 +353,7 @@ class RfsLocalController extends NamedRunnable {
                     if (fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
                         if (filter.accept(localFile)) {
                             remoteUpdates.add(localFile);
+                            RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                         }
                     }
                 }

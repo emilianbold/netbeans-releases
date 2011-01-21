@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -102,6 +103,10 @@ public class IOPack {
 
     public String getSlaveName() {
         return null;
+    }
+    
+    public MacroMap updateEnv(MacroMap macroMap) {
+        return macroMap;
     }
     
     public boolean isExternal() {

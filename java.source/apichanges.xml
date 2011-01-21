@@ -108,6 +108,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="run-modification-task-sourceless">
+             <api name="general"/>
+             <summary>JavaSource.runModificationTask can run on source-less JavaSources</summary>
+             <version major="0" minor="74"/>
+             <date day="21" month="1" year="2011"/>
+             <author login="jlahoda"/>
+             <compatibility addition="no" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 <code>JavaSource.runModificationTask</code> method works on source-less <code>JavaSource</code>s.
+             </description>
+             <class package="org.netbeans.api.java.source" name="JavaSource"/>
+             <issue number="119887"/>
+        </change>
         <change id="index-based-is-main">
              <api name="general"/>
              <summary>Added a method for checking the existence of the main method using index only</summary>

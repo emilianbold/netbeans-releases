@@ -77,8 +77,16 @@ import org.openide.util.NbBundle;
                 return "INHERITS"; // NOI18N
             case IS_OVERRIDDEN:
                 return "INHERITED"; // NOI18N
-            case COMBINED:
+            case SPECIALIZES:
+                return "SPECIALIZES"; // NOI18N
+            case IS_SPECIALIZED:
+                return "IS_SPECIALIZED"; // NOI18N
+            case OVERRIDEN_COMBINED:
                 return "INHERITS_AND_INHERITED"; // NOI18N
+            case TEMPLATE_COMBINED:
+                return "SPECIALIZES_AND_SPECIALIZED_CLASS"; // NOI18N
+            case COMBINED:
+                return "INHERIT_TEMPLATE_COMBINED_CLASS"; // NOI18N
             default:
                 return "???"; // NOI18N
         }

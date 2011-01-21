@@ -733,6 +733,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
                         make.Block(Collections.<StatementTree>emptyList(), false),
                         null // default value - not applicable
                 );
+                newTree = GeneratorUtilities.get(workingCopy).importFQNs(newTree);
                 workingCopy.rewrite(null, newTree);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, nju));
             }
@@ -742,6 +743,51 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
         System.err.println(res);
         assertEquals(res, golden);
+    }
+    
+    public void testNewPackageInfo() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+        FileObject packInfo = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/package-info.java");
+        TestUtilities.copyStringToFile(packInfo, "package foo;\n/*mark*/\n");
+        packInfo.setAttribute("template", Boolean.TRUE);
+        FileObject testSourceFO = FileUtil.createData(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        
+        String golden = 
+            "package zoo;\n\n\n" +
+            "/*mark*/\n";
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree newTree = make.CompilationUnit(
+                        sourceRoot,
+                        "zoo/package-info.java",
+                        Collections.<ImportTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                workingCopy.rewrite(null, newTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/package-info.java"));
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     String getGoldenPckg() {
