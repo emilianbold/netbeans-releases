@@ -125,21 +125,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
-        while (fileObject instanceof RemoteLink) {
-            FileObject delegate = ((RemoteLink) fileObject).getDelegate();
-            if (delegate == null) {
-                RemoteLogger.getInstance().log(Level.INFO, "Null delegate for remote link {0}", fileObject); //NOI18N
-                break;
-            } else {
-                fileObject = delegate;
-            }
-        }
-        return fileObject;
+        return RemoteFileSystemUtils.getCanonicalFileObject(fileObject);
     }
 
     @Override
     public String getCanonicalPath(FileObject fileObject) throws IOException {
-        return getCanonicalFileObject(fileObject).getPath();
+        return RemoteFileSystemUtils.getCanonicalFileObject(fileObject).getPath();
     }
 
     public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {

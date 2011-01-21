@@ -72,14 +72,14 @@ public final class FileObjectCrawler extends Crawler {
     private final FileObject[] files;
 
     public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, true, cancelRequest);
+        super (root.getURL(), checkTimeStamps, true, true, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = null;
     }
 
     public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, false, cancelRequest);
+        super (root.getURL(), checkTimeStamps, false, supportsAllFiles(root, files), cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = files;
@@ -210,6 +210,18 @@ public final class FileObjectCrawler extends Crawler {
         } else {
             return null;
         }
+    }
+    
+    //Todo: Not exaclty correct. The correct implementation should find if whole root content
+    //is covered by files. But correct implementation will be very very slow and probably no one
+    //calls it with such params.
+    private static boolean supportsAllFiles(final FileObject root, final FileObject... files) {
+        for (FileObject file : files) {
+            if (root == file) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final class Stats {
