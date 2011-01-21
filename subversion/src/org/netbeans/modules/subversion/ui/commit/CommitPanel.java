@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.util.common.SectionButton;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import java.awt.Component;
 import java.awt.Container;
@@ -66,6 +68,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -126,9 +129,9 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     final JLabel filesLabel = new JLabel();
     private final JPanel filesPanel = new JPanel(new GridLayout(1, 1));
-    private final JLabel filesSectionButton = new JLabel();
+    private SectionButton filesSectionButton = new SectionButton();
     private final JPanel filesSectionPanel = new JPanel();
-    private final JLabel hooksSectionButton = new JLabel();
+    private SectionButton hooksSectionButton = new SectionButton();
     private final PlaceholderPanel hooksSectionPanel = new PlaceholderPanel();
     private final JLabel jLabel1 = new JLabel();
     private final JLabel jLabel2 = new JLabel();
@@ -136,7 +139,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
     private final JLabel templateLink = new JLabel();
-    private Icon expandedIcon, collapsedIcon;
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
 
     private CommitTable commitTable;
@@ -205,11 +207,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void initCollapsibleSections() {
-        JTree tv = new JTree();
-        BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
-        expandedIcon = tvui.getExpandedIcon();
-        collapsedIcon = tvui.getCollapsedIcon();
-
         initSectionButton(filesSectionButton, filesSectionPanel,
                           "initFilesPanel",                             //NOI18N
                           DEFAULT_DISPLAY_FILES);
@@ -225,42 +222,39 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
-    private void initSectionButton(final JLabel label,
+    private void initSectionButton(final SectionButton button,
                                    final JPanel panel,
                                    final String initPanelMethodName,
                                    final boolean defaultSectionDisplayed) {
         if (defaultSectionDisplayed) {
-            displaySection(label, panel, initPanelMethodName);
+            displaySection(panel, initPanelMethodName);
         } else {
-            hideSection(label, panel);
+            hideSection(panel);
         }
-        label.addMouseListener(new MouseAdapter() {
+        button.setSelected(defaultSectionDisplayed);
+        button.addActionListener(new ActionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 if (panel.isVisible()) {
-                    hideSection(label, panel);
+                    hideSection(panel);
                 } else {
-                    displaySection(label, panel, initPanelMethodName);
+                    displaySection(panel, initPanelMethodName);
                 }
             }
         });
     }
 
-    private void displaySection(JLabel sectionButton,
-                                Container sectionPanel,
+    private void displaySection(Container sectionPanel,
                                 String initPanelMethodName) {
         if (sectionPanel.getComponentCount() == 0) {
             invokeInitPanelMethod(initPanelMethodName);
         }
         sectionPanel.setVisible(true);
-        sectionButton.setIcon(expandedIcon);
         enlargeVerticallyAsNecessary();
     }
 
-    private void hideSection(JLabel sectionButton,
-                             JPanel sectionPanel) {
+    private void hideSection(JPanel sectionPanel) {
         sectionPanel.setVisible(false);
-        sectionButton.setIcon(collapsedIcon);
     }
 
     private void invokeInitPanelMethod(String methodName) {
@@ -409,10 +403,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
         basePanel.add(jScrollPane1);
         basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
+        filesSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesSectionButton.getMaximumSize().height));
         basePanel.add(filesSectionButton);
         basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel, RELATED));
         basePanel.add(filesSectionPanel);
         basePanel.add(makeVerticalStrut(filesSectionPanel, hooksSectionButton, RELATED));
+        hooksSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, hooksSectionButton.getMaximumSize().height));
         basePanel.add(hooksSectionButton);
         basePanel.add(makeVerticalStrut(hooksSectionButton, hooksSectionPanel, RELATED));
         basePanel.add(hooksSectionPanel);
