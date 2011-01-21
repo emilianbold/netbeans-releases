@@ -540,7 +540,7 @@ public class CndPathUtilitities {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;
-        } else if (CharSequenceUtils.indexOf(path, ':') == 1 && isWindows) {
+        } else if (CharSequenceUtils.indexOf(path, ':') == 1) { //  && isWindows) {
             return true;
         } else {
             return false;
