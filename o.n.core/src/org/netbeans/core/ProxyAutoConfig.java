@@ -81,7 +81,7 @@ public class ProxyAutoConfig {
 
     private static final Map<String, ProxyAutoConfig> file2pac = new HashMap<String, ProxyAutoConfig>(2);
     private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
-    private static final String NS_PROXU_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
+    private static final String NS_PROXY_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
 
     public static synchronized ProxyAutoConfig get(String pacFile) {
         if (file2pac.get(pacFile) == null) {
@@ -284,10 +284,12 @@ public class ProxyAutoConfig {
     private static String downloadUtils() {
         StringBuilder builder = new StringBuilder();
         BufferedReader reader = null;
+        // XXX why is the below not more simply:
+        // reader = new BufferedReader(new URL(NS_PROXY_AUTO_CONFIG_URL).openStream());
         FileObject fo = null;
         try {
             try {
-                fo = URLMapper.findFileObject(new URL(NS_PROXU_AUTO_CONFIG_URL));
+                fo = URLMapper.findFileObject(new URL(NS_PROXY_AUTO_CONFIG_URL));
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
             }

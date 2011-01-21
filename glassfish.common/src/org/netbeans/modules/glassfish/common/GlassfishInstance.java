@@ -177,7 +177,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             added.addAll(factories);
             added.removeAll(currentFactories);
             currentFactories = factories;
-        
+
             for (GlassfishModuleFactory moduleFactory : added) {
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                     Object t = moduleFactory.createModule(lookup);
@@ -390,6 +390,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         }
 
         instanceProvider.removeServerInstance(this);
+        ic.remove(this);
     }
 
     //

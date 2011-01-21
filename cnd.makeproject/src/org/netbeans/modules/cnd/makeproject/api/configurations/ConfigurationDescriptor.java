@@ -114,7 +114,7 @@ public abstract class ConfigurationDescriptor {
 
     public abstract boolean save();
     public abstract boolean save(String extraMessage);
-    public abstract boolean getModified();
+    public abstract boolean isModified();
     public abstract void setModified();
     //public abstract void setModified(boolean state);
     public abstract void closed();

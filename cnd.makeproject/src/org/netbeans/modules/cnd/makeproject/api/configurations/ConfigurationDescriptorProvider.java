@@ -444,9 +444,9 @@ public class ConfigurationDescriptorProvider {
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (projectDescriptor == null || !projectDescriptor.getModified()) {
+            if (projectDescriptor == null || !projectDescriptor.isModified()) {
                 synchronized (readLock) {
-                    if (projectDescriptor == null || !projectDescriptor.getModified()) {
+                    if (projectDescriptor == null || !projectDescriptor.isModified()) {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
                         LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N

@@ -136,7 +136,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyCopying() {
         LOGGER.log(Level.FINE, "notify Copying MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.save();
+        //project.save();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
@@ -173,7 +173,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoving() throws IOException {
         LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.saveAndMarkDeleted();
+        project.markDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
@@ -206,7 +206,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyRenaming() throws IOException {
         LOGGER.log(Level.FINE, "notify Renaming MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.save();
+        //project.save();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         ConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
         configurationDescriptor.setModified(); // IZ 186029

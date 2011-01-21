@@ -52,6 +52,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -163,7 +165,7 @@ public final class NbMavenProjectImpl implements Project {
     private final Lookup lookup;
     private Updater updater1;
     private Updater updater2;
-    private MavenProject project;
+    private Reference<MavenProject> project;
     private ProblemReporterImpl problemReporter;
     private final Info projectInfo;
     private final MavenSharabilityQueryImpl sharability;
@@ -326,10 +328,12 @@ public final class NbMavenProjectImpl implements Project {
      * when one the pom files have changed.
      */
     public @NonNull synchronized MavenProject getOriginalMavenProject() {
-        if (project == null) {
-            project = loadOriginalMavenProject(true);
+        MavenProject mp = project == null ? null : project.get();
+        if (mp == null) {
+            mp = loadOriginalMavenProject(true);
         }
-        return project;
+        project = new SoftReference<MavenProject>(mp);
+        return mp;
     }
 
     private @NonNull MavenProject loadOriginalMavenProject(boolean fallbackOnline) {
@@ -383,7 +387,7 @@ public final class NbMavenProjectImpl implements Project {
                                      newOnlinewproject = getFallbackProject();
                                 }
                                 synchronized (NbMavenProjectImpl.this) {
-                                  project = newOnlinewproject;
+                                  project = new SoftReference<MavenProject>(newOnlinewproject);
                                   if (res.hasExceptions()) {
                                        reportExceptions(res);
                                   }
@@ -495,7 +499,7 @@ public final class NbMavenProjectImpl implements Project {
         problemReporter.clearReports(); //#167741 -this will trigger node refresh?
         MavenProject prj = loadOriginalMavenProject(false);
         synchronized (this) {
-            project = prj;
+            project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
@@ -521,7 +525,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     void doBaseProblemChecks() {
-        problemReporter.doBaseProblemChecks(project);
+        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
     }
 
     public String getDisplayName() {

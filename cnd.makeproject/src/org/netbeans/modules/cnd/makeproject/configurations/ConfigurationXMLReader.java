@@ -213,7 +213,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             SwingUtilities.invokeLater(warning);
         }
 
-        if (configurationDescriptor.getModified()) {
+        if (configurationDescriptor.isModified()) {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }
