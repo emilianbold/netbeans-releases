@@ -99,7 +99,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -357,15 +358,20 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return true;
     }
 
+    @Messages({
+        "Lbl_BuildNeeded=This feature needs a build of your application.",
+        "Lbl_ShowNextTime=Show this message next time",
+        "Lbl_Close=Close"
+    })
     private void notifyBuildNeeded(String featureDisplayName) {
         if( !NbPreferences.forModule(MavenNbModuleImpl.class).getBoolean("showNextTime_BuildNeeded", true) ) //NOI18N
             return;
         JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.add( new JLabel(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_BuildNeeded")), BorderLayout.CENTER ); //NOI18N
-        JCheckBox checkShowNextTime = new JCheckBox(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_ShowNextTime")); //NOI18N
+        panel.add( new JLabel(Lbl_BuildNeeded()), BorderLayout.CENTER ); //NOI18N
+        JCheckBox checkShowNextTime = new JCheckBox(Lbl_ShowNextTime()); //NOI18N
         checkShowNextTime.setSelected(true);
         panel.add(checkShowNextTime, BorderLayout.SOUTH);
-        JButton btnClose= new JButton(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_Close")); //NOI18N
+        JButton btnClose= new JButton(Lbl_Close()); //NOI18N
         DialogDisplayer.getDefault().notify(new NotifyDescriptor(panel, featureDisplayName,
                 NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE,
                 new Object[]{btnClose}, btnClose));
