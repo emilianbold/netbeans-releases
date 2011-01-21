@@ -76,7 +76,8 @@ import org.openide.NotifyDescriptor.Message;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.apisupport.hints.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * One category of hint.
@@ -122,15 +123,17 @@ public interface Hinter {
         /**
          * @return standard description to pass to {@link #addHint}
          */
+        @Messages("Hinter.description=Use of layer entry where annotation is available")
         public String standardDescription() {
-            return NbBundle.getMessage(Hinter.class, "Hinter.description");
+            return Hinter_description();
         }
 
         /**
          * @return standard fix description to pass to {@link #addHint}
          */
+        @Messages("Hinter.fix.description=Convert registration to Java annotation")
         public String standardFixDescription() {
-            return NbBundle.getMessage(Hinter.class, "Hinter.fix.description");
+            return Hinter_fix_description();
         }
 
         /**
@@ -249,10 +252,11 @@ public interface Hinter {
          * @param task a task to run (may modify Java sources and layer objects; all will be saved for you)
          * @throws IOException in case of problem (will instead show a message and return early if the type could not be found)
          */
+        @Messages({"# {0} - layer attribute", "Hinter.missing_instance_class=Could not find Java source corresponding to {0}."})
         public void findAndModifyDeclaration(@NullAllowed final Object instanceAttribute, final ModifyDeclarationTask task) throws IOException {
             FileObject java = findDeclaringSource(instanceAttribute);
             if (java == null) {
-                DialogDisplayer.getDefault().notify(new Message(NbBundle.getMessage(Hinter.class, "Hinter.missing_instance_class", instanceAttribute), NotifyDescriptor.WARNING_MESSAGE));
+                DialogDisplayer.getDefault().notify(new Message(Hinter_missing_instance_class(instanceAttribute), NotifyDescriptor.WARNING_MESSAGE));
                 return;
             }
             JavaSource js = JavaSource.forFileObject(java);
@@ -264,7 +268,7 @@ public interface Hinter {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
                     Element decl = findDeclaration(wc, instanceAttribute);
                     if (decl == null) {
-                        DialogDisplayer.getDefault().notify(new Message(NbBundle.getMessage(Hinter.class, "Hinter.missing_instance_class", instanceAttribute), NotifyDescriptor.WARNING_MESSAGE));
+                        DialogDisplayer.getDefault().notify(new Message(Hinter_missing_instance_class(instanceAttribute), NotifyDescriptor.WARNING_MESSAGE));
                         return;
                     }
                     ModifiersTree mods;
