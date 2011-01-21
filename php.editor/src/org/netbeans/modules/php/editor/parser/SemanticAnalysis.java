@@ -353,11 +353,17 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private class FieldAccessVisitor extends DefaultVisitor {
             private final Set<ColoringAttributes> coloring;
-
+            
             public FieldAccessVisitor(Set<ColoringAttributes> coloring) {
                 this.coloring = coloring;
             }
 
+            @Override
+            public void visit(ArrayAccess node) {
+                scan(node.getName());
+                // don't scan(scan(node.getIndex()); issue #194535
+            }
+            
             @Override
             public void visit(Identifier identifier) {
                 //remove the field, because is used
