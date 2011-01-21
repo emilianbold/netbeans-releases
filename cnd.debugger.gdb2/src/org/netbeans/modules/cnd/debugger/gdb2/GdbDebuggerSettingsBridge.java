@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
@@ -64,6 +65,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 
 public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     
@@ -173,15 +175,17 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     }
 
     protected void applyEnvvars() {
-	// Iterate over the environment variable list
+        MacroMap macroMap = MacroMap.createEmpty(gdbDebugger.getExecutionEnvironment());
         RunProfile mainRunProfile = getMainSettings().runProfile();
-	String [] envvars = mainRunProfile.getEnvironment().getenv();
-	if (envvars == null) {
-	    return;
+        macroMap.putAll(mainRunProfile.getEnvironment().getenvAsMap());
+        
+        // init unbuffer if needed
+        gdbDebugger.getIOPack().updateEnv(macroMap);
+        
+        // Iterate over the environment variable list
+        for (Map.Entry<String, String> entry : macroMap.entrySet()) {
+            gdbDebugger.setEnv(entry.getKey() + '=' + entry.getValue());
         }
-	for (String envVar : envvars) {
-	    gdbDebugger.setEnv(envVar);
-	}
     }
 
     protected void applySignals(Signals o, Signals n) {
