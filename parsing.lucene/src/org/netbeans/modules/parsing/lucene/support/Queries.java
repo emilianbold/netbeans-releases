@@ -293,26 +293,6 @@ public final class Queries {
         private  TermCollector termCollector;
                 
         @Override
-        public final BitSet bits(IndexReader reader) throws IOException {
-            final FilteredTermEnum enumerator = getTermEnum(reader);
-            try {
-                final BitSet bitSet = new BitSet(reader.maxDoc());
-                new DocumentVisitor() {
-                    @Override
-                    public void visit(Term term, int doc) {
-                        bitSet.set(doc);
-                        if (termCollector != null) {
-                            termCollector.add(doc, term);
-                        }
-                    }
-                }.generate(reader, enumerator);
-                return bitSet;
-            } finally {
-                enumerator.close();
-            }
-        }
-
-        @Override
         public final DocIdSet getDocIdSet(IndexReader reader) throws IOException {
             final FilteredTermEnum enumerator = getTermEnum(reader);
             try {
