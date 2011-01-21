@@ -321,8 +321,8 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
     }
 
     protected void paintComponent(Graphics gr) {
-        Graphics2D g = (Graphics2D) gr;
-        Rectangle clip = g.getClipBounds();
+        final Graphics2D g = (Graphics2D) gr;
+        final Rectangle clip = g.getClipBounds();
         Stroke cs = g.getStroke();
 
         if (checkLinesWidth(gr)) return;
@@ -335,7 +335,7 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
         }
         
         EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(master.getEditorPane());
-        int lineHeight = editorUI.getLineHeight();
+        final int lineHeight = editorUI.getLineHeight();
         
         g.setColor(getBackground());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
@@ -379,40 +379,48 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
         }
         hotspots = newActionIcons;
         
-        int linesXOffset = master.isFirst() ? actionsWidth : 0;
-        linesXOffset += LINES_BORDER_WIDTH;
+        final int linesXOffset = (master.isFirst() ? actionsWidth : 0) + LINES_BORDER_WIDTH;
         
         g.setFont(getLinesFont()); 
         g.setColor(linesColor);
-        try {
-            View rootView = Utilities.getDocumentView(master.getEditorPane());
-            int lineNumber = Utilities.getLineOffset((BaseDocument) master.getEditorPane().getDocument(), master.getEditorPane().viewToModel(new Point(clip.x, clip.y)));
-            if (lineNumber > 0) --lineNumber;
-            View view = rootView.getView(lineNumber);
-            Rectangle rec = master.getEditorPane().modelToView(view.getStartOffset());
-            if (rec == null) {
-                return;
-            }
-            int yOffset;
-            int linesDrawn = clip.height / lineHeight + 4;  // draw past clipping rectangle to avoid partially drawn numbers
-            int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
-            if (lineNumber + linesDrawn > docLines) {
-                linesDrawn = docLines - lineNumber;
-            }
-            for (int i = 0; i < linesDrawn; i++) {
-                view = rootView.getView(lineNumber);
-                Rectangle rec1 = master.getEditorPane().modelToView(view.getStartOffset());
-                Rectangle rec2 = master.getEditorPane().modelToView(view.getEndOffset() - 1);
-                if (rec1 == null || rec2 == null) {
-                    break;
+        
+        Utilities.runViewHierarchyTransaction(master.getEditorPane(), true, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int localLineHeight = lineHeight;
+                    View rootView = Utilities.getDocumentView(master.getEditorPane());
+                    int lineNumber = Utilities.getLineOffset((BaseDocument) master.getEditorPane().getDocument(), master.getEditorPane().viewToModel(new Point(clip.x, clip.y)));
+                    if (lineNumber > 0) {
+                        --lineNumber;
+                    }
+                    View view = rootView.getView(lineNumber);
+                    Rectangle rec = master.getEditorPane().modelToView(view.getStartOffset());
+                    if (rec == null) {
+                        return;
+                    }
+                    int yOffset;
+                    int linesDrawn = clip.height / localLineHeight + 4;  // draw past clipping rectangle to avoid partially drawn numbers
+                    int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
+                    if (lineNumber + linesDrawn > docLines) {
+                        linesDrawn = docLines - lineNumber;
+                    }
+                    for (int i = 0; i < linesDrawn; i++) {
+                        view = rootView.getView(lineNumber);
+                        Rectangle rec1 = master.getEditorPane().modelToView(view.getStartOffset());
+                        Rectangle rec2 = master.getEditorPane().modelToView(view.getEndOffset() - 1);
+                        if (rec1 == null || rec2 == null) {
+                            break;
+                        }
+                        yOffset = rec1.y + rec1.height - rec1.height / 4;
+                        localLineHeight = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
+                        g.drawString(formatLineNumber(++lineNumber), linesXOffset, yOffset);
+                    }
+                } catch (BadLocationException ex) {
+                    //
                 }
-                yOffset = rec1.y + rec1.height - rec1.height / 4;
-                lineHeight = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
-                g.drawString(formatLineNumber(++lineNumber), linesXOffset, yOffset);
             }
-        } catch (BadLocationException ex) {
-            //
-        }
+        });
     }
 
     private String formatLineNumber(int lineNumber) {
