@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 /**
@@ -67,6 +71,16 @@ class OutputPack extends IOPack {
     @Override
     public String[] getIOFiles() {
         return new String[]{ioProxy.getInFilename(), ioProxy.getOutFilename()};
+    }
+
+    @Override
+    public MacroMap updateEnv(MacroMap macroMap) {
+        try {
+            UnbufferSupport.initUnbuffer(exEnv, macroMap);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return macroMap;
     }
 
     @Override

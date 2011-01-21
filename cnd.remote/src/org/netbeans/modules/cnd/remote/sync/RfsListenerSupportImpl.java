@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,66 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.navigation.overrides;
+package org.netbeans.modules.cnd.remote.sync;
 
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.remote.api.RfsListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
- * @author Vladimir Kvashin
+ * 
+ * @author vk155633
  */
-/*package*/ class InheritAnnotation extends BaseAnnotation {
+public class RfsListenerSupportImpl {
 
-    public InheritAnnotation(StyledDocument document, CsmClass decl,
-            Collection<? extends CsmOffsetableDeclaration> descDecls,
-            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
-            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls, baseTemplates, templateSpecializations);
+    private final ExecutionEnvironment execEnv;
+    private final List<RfsListener> listeners = new ArrayList<RfsListener>();
+    
+    private static final Map<ExecutionEnvironment, RfsListenerSupportImpl> instances = new HashMap<ExecutionEnvironment, RfsListenerSupportImpl>();
+    
+    public static RfsListenerSupportImpl getInstanmce(ExecutionEnvironment execEnv) {
+        synchronized (instances) {
+            RfsListenerSupportImpl instance = instances.get(execEnv);
+            if (instance == null) {
+                instance = new RfsListenerSupportImpl(execEnv);
+                instances.put(execEnv, instance);
+            }
+            return instance;
+        }        
     }
-
-
-    @Override
-    public String getShortDescription() {
-        String out = descUIDs.isEmpty() ? "" : NbBundle.getMessage(getClass(), "LAB_Extended");
-        out = addTemplateAnnotation(out);
-        return out;
-    }
-
-    @Override
-    protected CharSequence debugTypeString() {
-        switch (type) {
-            case OVERRIDES:
-                return "INHERITS"; // NOI18N
-            case IS_OVERRIDDEN:
-                return "INHERITED"; // NOI18N
-            case SPECIALIZES:
-                return "SPECIALIZES"; // NOI18N
-            case IS_SPECIALIZED:
-                return "IS_SPECIALIZED"; // NOI18N
-            case OVERRIDEN_COMBINED:
-                return "INHERITS_AND_INHERITED"; // NOI18N
-            case TEMPLATE_COMBINED:
-                return "SPECIALIZES_AND_SPECIALIZED_CLASS"; // NOI18N
-            case COMBINED:
-                return "INHERIT_TEMPLATE_COMBINED_CLASS"; // NOI18N
-            default:
-                return "???"; // NOI18N
+    
+    private RfsListenerSupportImpl(ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
+    }    
+    
+    public void addListener(RfsListener listener) {
+        synchronized (listeners) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
         }
     }
-
+    
+    public void removeListener(RfsListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+    
+    public void fireFileChanged(File localFile, String remotePath) {
+        RfsListener[] listenersCopy;
+        synchronized (listeners) {
+            listenersCopy = listeners.toArray(new RfsListener[listeners.size()]);
+        }
+        for (RfsListener listener : listenersCopy) {
+            listener.fileChanged(execEnv, localFile, remotePath);
+        }
+    }
 }

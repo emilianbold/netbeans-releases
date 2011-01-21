@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.navigation.overrides;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-/*package*/ class InheritAnnotation extends BaseAnnotation {
+public class SPICompilerAccesor {
+    private final Tool compiler;
 
-    public InheritAnnotation(StyledDocument document, CsmClass decl,
-            Collection<? extends CsmOffsetableDeclaration> descDecls,
-            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
-            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
-        super(document, decl, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls, baseTemplates, templateSpecializations);
+    public SPICompilerAccesor(Tool compiler) {
+        this.compiler = compiler;
+    }
+    
+    public List<List<String>> getSystemIncludesAndDefines() {
+        if (compiler instanceof CCCCompiler) {
+            Pair systemIncludesAndDefines = ((CCCCompiler) compiler).getFreshSystemIncludesAndDefines();
+            List<List<String>> res = new ArrayList<List<String>>();
+            res.add(systemIncludesAndDefines.systemIncludeDirectoriesList);
+            res.add(systemIncludesAndDefines.systemPreprocessorSymbolsList);
+            return res;
+        }
+        return null;
     }
 
-
-    @Override
-    public String getShortDescription() {
-        String out = descUIDs.isEmpty() ? "" : NbBundle.getMessage(getClass(), "LAB_Extended");
-        out = addTemplateAnnotation(out);
-        return out;
-    }
-
-    @Override
-    protected CharSequence debugTypeString() {
-        switch (type) {
-            case OVERRIDES:
-                return "INHERITS"; // NOI18N
-            case IS_OVERRIDDEN:
-                return "INHERITED"; // NOI18N
-            case SPECIALIZES:
-                return "SPECIALIZES"; // NOI18N
-            case IS_SPECIALIZED:
-                return "IS_SPECIALIZED"; // NOI18N
-            case OVERRIDEN_COMBINED:
-                return "INHERITS_AND_INHERITED"; // NOI18N
-            case TEMPLATE_COMBINED:
-                return "SPECIALIZES_AND_SPECIALIZED_CLASS"; // NOI18N
-            case COMBINED:
-                return "INHERIT_TEMPLATE_COMBINED_CLASS"; // NOI18N
-            default:
-                return "???"; // NOI18N
+    public void applySystemIncludesAndDefines(List<List<String>> pair) {
+        if (compiler instanceof CCCCompiler) {
+            ((CCCCompiler) compiler).setSystemIncludeDirectories(pair.get(0));
+            ((CCCCompiler) compiler).setSystemPreprocessorSymbols(pair.get(1));
         }
     }
-
 }
