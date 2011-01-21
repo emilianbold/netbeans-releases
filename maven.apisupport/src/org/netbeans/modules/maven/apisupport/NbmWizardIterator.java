@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.apisupport;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -82,7 +81,8 @@ import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 
 public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
@@ -138,10 +138,11 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             };
     }
     
+    @Messages("LBL_CreateProjectStep2=Name and Location")
     private String[] createSteps() {
             return new String[] {
-                NbBundle.getMessage(NbmWizardIterator.class, "LBL_CreateProjectStep2"),
-                NbBundle.getMessage(NbmWizardIterator.class, "LBL_CreateProjectStepNbm")
+                LBL_CreateProjectStep2(),
+                LBL_CreateProjectStepNbm()
             };
     }
     
@@ -265,9 +266,9 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     }
     
     @Override
+    @Messages("NameFormat={0} of {1}")
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(NbmWizardIterator.class, "NameFormat"),
-                new Object[] {index + 1, panels.length});
+        return NameFormat(index + 1, panels.length);
     }
     
     @Override

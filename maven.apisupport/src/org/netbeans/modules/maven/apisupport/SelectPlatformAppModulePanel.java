@@ -67,6 +67,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 
 /**
  * Dialog listing opened Maven NB platform projects with a button to browse for
@@ -169,6 +171,7 @@ final class SelectPlatformAppModulePanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblOpenProjects;
     // End of variables declaration//GEN-END:variables
 
+    @Messages("Err_NotMavenNBAppProject=The selected project is not a Maven NetBeans Platform Application project.")
     private void browseProject() {
         JFileChooser chooser = ProjectChooser.projectChooser();
         while( true ) {
@@ -184,7 +187,7 @@ final class SelectPlatformAppModulePanel extends javax.swing.JPanel {
                 Project p = ProjectManager.getDefault().findProject(fo);
                 if( null == p || !isNbAppProject(p) ) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(SelectPlatformAppModulePanel.class, "Err_NotMavenNBAppProject"))); //NOI18N
+                            Err_NotMavenNBAppProject())); //NOI18N
                     continue;
                 }
                 appModuleProject = p;
@@ -221,10 +224,11 @@ final class SelectPlatformAppModulePanel extends javax.swing.JPanel {
      * @return True if the user select NB Platform App project suite the given
      * project is part of, false otherwise.
      */
+    @Messages("Title_SelectProject=Select Project")
     static boolean findAppModule(Project project) {
         SelectPlatformAppModulePanel panel = new SelectPlatformAppModulePanel();
         DialogDescriptor dd = new DialogDescriptor(panel, 
-                NbBundle.getMessage(SelectPlatformAppModulePanel.class, "Title_SelectProject"), true, null); //NOI18N
+                Title_SelectProject(), true, null); //NOI18N
         panel.dd = dd;
         dd.setValid(false);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
