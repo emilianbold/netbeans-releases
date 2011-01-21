@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.windows.IOColors;
@@ -683,6 +684,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             ch.close();
         } finally {
             fos.close();
+            FileUtil.refreshFor(new java.io.File(path));
         }
     }
 
