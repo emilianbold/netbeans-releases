@@ -384,8 +384,8 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         protected void setPreviewLabels() {
-            previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
-            previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
+            previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
+            previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
         
     }

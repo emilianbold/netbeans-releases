@@ -75,10 +75,12 @@ import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
+import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -261,6 +263,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
+    public File[] ignore (File[] files, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        IgnoreCommand cmd = new IgnoreCommand(repository, files, monitor, this);
+        cmd.execute();
+        return cmd.getModifiedIgnoreFiles();
+    }
+    
+    @Override
     /**
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
@@ -355,7 +365,15 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     @Override
     public GitUser getUser() throws GitException {        
         return new JGitUserInfo(new PersonIdent(gitRepository.getRepository()));
-    }    
+    }
+    
+    @Override
+    public File[] unignore (File[] files, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        UnignoreCommand cmd = new UnignoreCommand(repository, files, monitor, this);
+        cmd.execute();
+        return cmd.getModifiedIgnoreFiles();
+    }
 
     // <editor-fold defaultstate="collapsed" desc="listener methods">
     @Override

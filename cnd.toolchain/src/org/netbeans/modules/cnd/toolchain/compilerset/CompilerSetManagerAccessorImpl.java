@@ -129,6 +129,9 @@ public class CompilerSetManagerAccessorImpl {
                 if (csm != null && csm.getDefaultCompilerSet() == null) {
                     CompilerSetPreferences.saveToDisk(csm);
                 }
+                if (csm != null) {
+                    ToolchainValidator.INSTANCE.validate(env, csm);
+                }
             }
             if (csm == null) {
                 csm = new CompilerSetManagerImpl(env, initialize);

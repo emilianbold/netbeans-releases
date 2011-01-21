@@ -291,9 +291,6 @@ public final class IOWindow implements IOContainer.Provider {
         public void requestVisible() {
             if (!isShowing()) {
 		super.requestVisible();
-		if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
-		    requestActive();
-		}
 	    }
         }
 

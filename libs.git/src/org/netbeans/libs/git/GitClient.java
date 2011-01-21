@@ -189,6 +189,15 @@ public interface GitClient {
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException;
 
     /**
+     * Ignores given files
+     * @param files
+     * @param monitor
+     * @return array of .gitignore modified during the ignore process
+     * @throws GitException an error occurs
+     */
+    public File[] ignore (File[] files, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
      * XXX init what???
@@ -261,6 +270,15 @@ public interface GitClient {
      * @throws GitException
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    
+    /**
+     * Unignores given files
+     * @param files
+     * @param monitor
+     * @return array of .gitignore modified during the unignore process
+     * @throws GitException an error occurs
+     */
+    public File[] unignore (File[] files, ProgressMonitor monitor) throws GitException;
 
     /**
      * Returns the user from this clients repository

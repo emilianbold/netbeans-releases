@@ -46,6 +46,8 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.Tree;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.modules.java.source.transform.Transformer;
+import org.netbeans.modules.parsing.lucene.LuceneIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
 
 /**
  *
@@ -77,7 +79,7 @@ public final class SourceUtilsTestUtil2 {
     }
     
     public static void disableLocks() {
-        FSDirectory.setDisableLocks(true);
+        LuceneIndex.setDisabledLocks(true);
     }
     
 }

@@ -322,12 +322,12 @@ class VersioningPanel extends JPanel {
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
-        btnCheckout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/checkout_paths.png"))); // NOI18N
-        btnCheckout.setToolTipText(bundle.getString("CTL_Synchronize_Action_CheckoutPaths_Tooltip")); // NOI18N
-        btnCheckout.setFocusable(false);
-        btnCheckout.setPreferredSize(new java.awt.Dimension(22, 25));
-        jPanel2.add(btnCheckout);
-        btnCheckout.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_CheckoutPaths_Text")); // NOI18N
+        btnRevert.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/get_clean.png"))); // NOI18N
+        btnRevert.setToolTipText(bundle.getString("CTL_Synchronize_Action_CheckoutPaths_Tooltip")); // NOI18N
+        btnRevert.setFocusable(false);
+        btnRevert.setPreferredSize(new java.awt.Dimension(22, 25));
+        jPanel2.add(btnRevert);
+        btnRevert.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_CheckoutPaths_Text")); // NOI18N
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_Synchronize_Action_Commit_Tooltip")); // NOI18N
@@ -348,11 +348,11 @@ class VersioningPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton btnCheckout = new javax.swing.JButton();
     final javax.swing.JButton btnCommit = new javax.swing.JButton();
     final javax.swing.JButton btnDiff = new javax.swing.JButton();
     private javax.swing.ButtonGroup btnGroupModes;
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
+    final javax.swing.JButton btnRevert = new javax.swing.JButton();
     final javax.swing.JToolBar jPanel2 = new javax.swing.JToolBar();
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

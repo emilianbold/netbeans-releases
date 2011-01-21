@@ -71,6 +71,8 @@ import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.ignore.IgnoreAction;
+import org.netbeans.modules.git.ui.ignore.UnignoreAction;
 import org.netbeans.modules.git.ui.init.InitAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
@@ -139,6 +141,17 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
+                IgnoreAction ia = SystemAction.get(IgnoreAction.class);
+                UnignoreAction uia = SystemAction.get(UnignoreAction.class);
+                if (ia.isEnabled() || uia.isEnabled()) {
+                    actions.add(null);
+                    if (ia.isEnabled()) {
+                        actions.add(ia);
+                    }
+                    if (uia.isEnabled()) {
+                        actions.add(uia);
+                    }
+                }
                 actions.add(null);
                 if (ca.isEnabled()) {
                     actions.add(SystemAction.get(ConnectAction.class));
@@ -178,6 +191,17 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (a.isEnabled()) {
                     actions.add(null);
                     actions.add(a);
+                }
+                SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
+                SystemActionBridge uia = SystemActionBridge.createAction(SystemAction.get(UnignoreAction.class), NbBundle.getMessage(UnignoreAction.class, "LBL_UnignoreAction_PopupName"), lkp);
+                if (ia.isEnabled() || uia.isEnabled()) {
+                    actions.add(null);
+                    if (ia.isEnabled()) {
+                        actions.add(ia);
+                    }
+                    if (uia.isEnabled()) {
+                        actions.add(uia);
+                    }
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N

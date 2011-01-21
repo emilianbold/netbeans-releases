@@ -295,6 +295,40 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, subFolder2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(subFolder2).isFolder());
         assertNull(statuses.get(file6));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file2));
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+        
+        statuses = getClient(workDir).getStatus(new File[] { file2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertNull(statuses.get(folder));
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder, file2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder, file2, file3 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file4));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder, file2, file3, file4 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
     }
 
     public void testIgnoredFilesAreNotTracked () throws Exception {
