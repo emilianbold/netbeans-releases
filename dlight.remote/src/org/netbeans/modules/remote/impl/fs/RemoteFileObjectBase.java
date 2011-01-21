@@ -46,12 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -146,15 +144,21 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     abstract public RemoteFileObjectBase getFileObject(String relativePath);
-    
+
     @Override
-    public RemoteDirectory getParent() {
+    abstract public RemoteFileObjectBase getFileObject(String name, String ext);
+
+    @Override
+    abstract public RemoteFileObjectBase[] getChildren();
+
+    @Override
+    public RemoteFileObjectBase getParent() {
         int slashPos = remotePath.lastIndexOf('/');
         if (slashPos > 0) {
             String parentPath = remotePath.substring(0, slashPos);
             FileObject parent = fileSystem.findResource(parentPath);
             RemoteLogger.assertTrue(parent != null, "Null parent for " + remotePath); //NOI18N
-            return (RemoteDirectory )parent;
+            return (RemoteFileObjectBase)parent;
         } else {
             return fileSystem.getRoot();
         }
@@ -162,7 +166,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public long getSize() {
-        RemoteDirectory parent = this.getParent();
+        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
         if (parent != null) {
             return parent.getSize(this);
         }
@@ -178,7 +182,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public boolean canRead() {
         try {
-            RemoteDirectory parent = getParent();
+            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
             if (parent == null) {
                 return true;
             } else {
@@ -194,7 +198,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public boolean canWrite() {
         try {
-            RemoteDirectory parent = getParent();
+            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
             if (parent == null) {
                 return false;
             } else {
@@ -227,7 +231,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Date lastModified() {
-        RemoteDirectory parent = this.getParent();
+        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
         if (parent != null) {
             return parent.lastModified(this);
         }

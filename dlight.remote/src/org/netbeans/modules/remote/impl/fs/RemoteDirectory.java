@@ -107,7 +107,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject getFileObject(String name, String ext) {
+    public RemoteFileObjectBase getFileObject(String name, String ext) {
          return getFileObject(name + '.' + ext); // NOI18N
     }
 
@@ -234,7 +234,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (".".equals(relativePath)) { // NOI18N
             return this;
         } else if ("..".equals(relativePath)) { // NOI18N
-            RemoteDirectory parent = getParent();
+            RemoteFileObjectBase parent = getParent();
             return (parent == null) ? this : parent ;
         }
         RemoteLogger.assertTrue(slashPos == -1);
@@ -277,11 +277,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject[] getChildren() {
+    public RemoteFileObjectBase[] getChildren() {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
             List<DirectoryStorage.Entry> entries = storage.list();
-            FileObject[] childrenFO = new FileObject[entries.size()];
+            RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirectoryStorage.Entry entry = entries.get(i);
                 String childPath = remotePath + '/' + entry.getName(); //NOI18N
@@ -313,7 +313,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // never report CancellationException
             RemoteLogger.finest(ex);
         }
-        return new FileObject[0];
+        return new RemoteFileObjectBase[0];
     }
 
     @Override
