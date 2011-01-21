@@ -270,7 +270,7 @@ public class FileInformation extends VCSFileInformation {
             } else if (isCopied()) {
                 sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_AddedCopied_Short"); //NOI18N
             } else {
-                sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_New_Short"); //NOI18N
+                sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Added_Short"); //NOI18N
             }
         } else if (containsStatus(Status.MODIFIED_HEAD_INDEX)) {
             sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Modified_Short"); //NOI18N
@@ -281,7 +281,7 @@ public class FileInformation extends VCSFileInformation {
         }
 
         if (containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-            sWorkingTree = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_New_Short"); //NOI18N
+            sWorkingTree = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Added_Short"); //NOI18N
         } else if (containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) {
             sWorkingTree = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Modified_Short"); //NOI18N
         } else if (containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {

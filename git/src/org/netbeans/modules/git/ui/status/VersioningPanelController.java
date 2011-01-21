@@ -74,6 +74,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.git.ui.diff.DiffAction;
@@ -159,7 +160,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         panel.tgbHeadVsIndex.addActionListener(this);
         panel.tgbIndexVsWorking.addActionListener(this);
         panel.btnCommit.addActionListener(this);
-        panel.btnCheckout.addActionListener(this);
+        panel.btnRevert.addActionListener(this);
         panel.btnDiff.addActionListener(this);
         panel.btnRefresh.addActionListener(this);
         Git.getInstance().getFileStatusCache().addPropertyChangeListener(this);
@@ -222,8 +223,8 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             Utils.postParallel(new Runnable() {
                 @Override
                 public void run() {
-                    if (e.getSource() == panel.btnCheckout) {
-                        SystemAction.get(CheckoutPathsAction.class).performAction(context);
+                    if (e.getSource() == panel.btnRevert) {
+                        SystemAction.get(RevertChangesAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnCommit) {
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
