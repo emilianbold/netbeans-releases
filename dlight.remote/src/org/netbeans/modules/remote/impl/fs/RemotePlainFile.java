@@ -74,8 +74,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public final FileObject[] getChildren() {
-        return new FileObject[0];
+    public final RemoteFileObjectBase[] getChildren() {
+        return new RemoteFileObjectBase[0];
     }
 
     @Override
@@ -89,7 +89,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public final FileObject getFileObject(String name, String ext) {
+    public final RemoteFileObjectBase getFileObject(String name, String ext) {
         return null;
     }
 
@@ -110,7 +110,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 }
                 fileContentCache.clear();
             }
-            InputStream newStream = getParent()._getInputStream(this);
+            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (parent == null) {
+                return RemoteFileSystemUtils.createDummyInputStream();
+            }
+            InputStream newStream = parent._getInputStream(this);
             if (newStream instanceof CachedRemoteInputStream) {
                 fileContentCache = new SoftReference<CachedRemoteInputStream>((CachedRemoteInputStream) newStream);
             } else {
@@ -176,7 +180,10 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
     @Override
     protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        getParent().ensureChildSync(this);
+        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
+        if (parent != null) {
+            parent.ensureChildSync(this);
+        }
     }
 
     @Override

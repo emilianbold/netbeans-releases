@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.remote.impl.fs;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author vk155633
  */
-public final class RemoteLink extends RemoteLinkBase {
+public class RemoteLinkChild extends RemoteLinkBase {
 
-    private String link;
-
-    public RemoteLink(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, FileObject parent, String remotePath, String link) {
+    private final RemoteFileObjectBase delegate;
+    
+    public RemoteLinkChild(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, FileObject parent, String remotePath, RemoteFileObjectBase delegate) {
         super(fileSystem, execEnv, parent, remotePath);
-        setLink(link, parent);
-    }
-
-    private static String normalize(String link, FileObject parent) {
-        if (link.startsWith("/")) { // NOI18N
-            return link;
-        }
-        String parentPath = parent.getPath();
-        if (!parentPath.startsWith("/")) { // NOI18N
-            parentPath = "/" + parentPath; // NOI18N
-        }
-        return parentPath + '/' + link; //TODO:rfs cope with ../.. , etc
-    }
-
-    @Override
-    public FileType getType() {
-        return FileType.Symlink;
+        Parameters.notNull("delegate", delegate);
+        this.delegate = delegate;
     }
 
     @Override
     public RemoteFileObjectBase getDelegate() {
-        RemoteFileObjectBase delegate = fileSystem.findResource(link);
         return delegate;
     }
-        
-    /*package*/ final void setLink(String link, FileObject parent) {
-        this.link = normalize(link, parent);
-    }
+
+    @Override
+    public FileType getType() {
+        return delegate.getType();
+    }    
 }
