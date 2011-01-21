@@ -151,13 +151,12 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
                     case TOMCAT_55:
                         manager = (TomcatManager) TomcatFactory.create55().getDeploymentManager(url, username, password);
                         break;
-                    // not the default for now
-                    case TOMCAT_70 :
-                        manager = (TomcatManager) TomcatFactory.create70().getDeploymentManager(url, username, password);
-                        break;
-                    case TOMCAT_60:
-                    default:
+                    case TOMCAT_60 :
                         manager = (TomcatManager) TomcatFactory.create60().getDeploymentManager(url, username, password);
+                        break;
+                    case TOMCAT_70:
+                    default:
+                        manager = (TomcatManager) TomcatFactory.create70().getDeploymentManager(url, username, password);
                 }
             } catch (DeploymentManagerCreationException e) {
                 // this should never happen

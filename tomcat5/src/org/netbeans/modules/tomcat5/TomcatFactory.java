@@ -116,15 +116,14 @@ public final class TomcatFactory implements DeploymentFactory {
                 tomcatUriPrefix = TOMCAT_URI_PREFIX_55;
                 disconnectedUri = DISCONNECTED_URI_55;
                 break;
-            // not the default for now
-            case TOMCAT_70 :
-                tomcatUriPrefix = TOMCAT_URI_PREFIX_70;
-                disconnectedUri = DISCONNECTED_URI_70;
-                break;
             case TOMCAT_60 :
-            default:
                 tomcatUriPrefix = TOMCAT_URI_PREFIX_60;
                 disconnectedUri = DISCONNECTED_URI_60;
+                break;
+            case TOMCAT_70 :
+            default:
+                tomcatUriPrefix = TOMCAT_URI_PREFIX_70;
+                disconnectedUri = DISCONNECTED_URI_70;
                 break;
         }
     }
@@ -226,12 +225,11 @@ public final class TomcatFactory implements DeploymentFactory {
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory");
             case TOMCAT_55 :
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory55");
-            // not the default for now
-            case TOMCAT_70 :
-                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory70");
             case TOMCAT_60 :
-            default:
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory60");
+            case TOMCAT_70 :
+            default:
+                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory70");
         }
     }
     
