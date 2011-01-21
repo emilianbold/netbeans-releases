@@ -53,6 +53,7 @@ import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -67,7 +68,7 @@ public class AstNode {
         UNKNOWN_TAG, ROOT, COMMENT, DECLARATION, ERROR,
         TEXT, TAG, UNMATCHED_TAG, OPEN_TAG, ENDTAG, ENTITY_REFERENCE
     };
-    private String name;
+    private final String name;
     private NodeType nodeType;
     protected int startOffset;
     protected int endOffset;
@@ -368,6 +369,7 @@ public class AstNode {
     }
 
     public String getNameWithoutPrefix() {
+        if(name == null) { throw new NullPointerException(); } //issue 194537 - some diagnostic has been added to the html.parser module so once exception reporter reopens the issue again the ide log should be source of the info.
         int colonIndex = name().indexOf(':');
         return colonIndex == -1 ? name() : name().substring(colonIndex + 1);
     }
