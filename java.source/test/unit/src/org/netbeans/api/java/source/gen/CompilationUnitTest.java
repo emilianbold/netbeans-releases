@@ -733,6 +733,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
                         make.Block(Collections.<StatementTree>emptyList(), false),
                         null // default value - not applicable
                 );
+                newTree = GeneratorUtilities.get(workingCopy).importFQNs(newTree);
                 workingCopy.rewrite(null, newTree);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, nju));
             }
