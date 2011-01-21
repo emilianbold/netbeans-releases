@@ -66,6 +66,7 @@ import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.status.GitStatusNode;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -191,23 +192,6 @@ public final class GitUtils {
         if (topFile == null || topFile.equals(file)) {
             return false;
         }
-        
-//        Set<Pattern> patterns = getIgnorePatterns(topFile);
-//        try {
-//        path = path.substring(topFile.getAbsolutePath().length() + 1);
-//        } catch(StringIndexOutOfBoundsException e) {
-//            throw e;
-//        }
-//        if (File.separatorChar != '/') {
-//            path = path.replace(File.separatorChar, '/');
-//        }
-//
-//        for (Iterator i = patterns.iterator(); i.hasNext();) {
-//            Pattern pattern = (Pattern) i.next();
-//            if (pattern.matcher(path).find()) {
-//                return true;
-//            }
-//        }
 
         // check cached not sharable folders and files
         if (isNotSharable(path, topFile)) {
@@ -224,7 +208,11 @@ public final class GitUtils {
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
             if (sharability == SharabilityQuery.NOT_SHARABLE) {
-                addNotSharable(topFile, path);
+                if (GitModuleConfig.getDefault().getAutoIgnoreFiles()) {
+                    ignoreNotSharableAncestor(topFile, file);
+                } else {
+                    addNotSharable(topFile, path);
+                }
                 return true;
             }
         }
@@ -268,6 +256,24 @@ public final class GitUtils {
         }
         retval = notSharablePaths.contains(path);
         return retval;
+    }
+
+    /**
+     * Permanently ignores (modifies ignore file) topmost not-sharable ancestor of a given file.
+     * @param topFile
+     * @param notSharableFile 
+     */
+    private static void ignoreNotSharableAncestor (File topFile, File notSharableFile) {
+        if (topFile.equals(notSharableFile)) {
+            throw new IllegalStateException("Trying to ignore " + notSharableFile + " in " + topFile); //NOI18N
+        }
+        File parent;
+        // find the topmost 
+        while (!topFile.equals(parent = notSharableFile.getParentFile()) && SharabilityQuery.getSharability(FileUtil.normalizeFile(parent)) == SharabilityQuery.NOT_SHARABLE) {
+            notSharableFile = parent;
+        }
+        addNotSharable(topFile, notSharableFile.getAbsolutePath());
+        SystemAction.get(IgnoreAction.class).ignore(topFile, new File[] { notSharableFile });
     }
 
     /**
