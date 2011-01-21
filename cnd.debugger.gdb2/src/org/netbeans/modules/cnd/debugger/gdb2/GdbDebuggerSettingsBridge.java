@@ -92,11 +92,6 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         DbgProfile newDbgProfile = info.getDbgProfile();
         assert newRunProfile != null;
 
-        String[] arguments = info.getArguments();
-        // SHOULD we just set argument w/o checking?
-        if (arguments != null) {
-            newRunProfile.setArgs(arguments);
-        }
         String exename = info.getTarget();
         assignTentativeSettings(GdbDebuggerSettings.create(newRunProfile, newDbgProfile), exename);
     }
