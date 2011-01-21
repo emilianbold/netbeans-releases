@@ -355,6 +355,12 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         System.err.println(compilerName);
         System.err.println(sourceRoot);
         System.err.println(mainFunctionPosition);
+        if (canAnalyze.getErrors() != null && canAnalyze.getErrors().size() > 0) {
+            for(String error : canAnalyze.getErrors()) {
+                System.err.print(error);
+            }
+            assert true;
+        }
         assertEquals(compiler, compilerName);
         assertEquals(root, sourceRoot);
         assertNotNull(mainFunctionPosition);
@@ -428,11 +434,11 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             dump = new Dwarf(objFileName);
             res = dump.readPubNames();
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (WrongFileFormatException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } finally {
             if (dump != null) {
                 dump.dispose();
