@@ -151,13 +151,8 @@ public final class ProjectActionEvent {
     }
 
     public String getExecutable() {
-	if (type == PredefinedType.RUN) {
-            return getExecutableFromRunCommand();
-        }
-        // FIXUP: This is temporary solution to avoid Select Executable window appearance
-        // during the debug of the library.
-        // The fix is made based on assumption that for debugging library some binary should be chosen as Run Command
-	if ((type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) && configuration.isLibraryConfiguration()) {
+        // see IZ 191812 we should always get executable for debug from run command
+	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             return getExecutableFromRunCommand();
         }
 	return executable;
