@@ -73,6 +73,10 @@ import org.openide.util.NbBundle;
     /*package*/ enum AnnotationType {
         IS_OVERRIDDEN,
         OVERRIDES,
+        OVERRIDEN_COMBINED,
+        IS_SPECIALIZED,
+        SPECIALIZES,
+        TEMPLATE_COMBINED,
         COMBINED
     }
 
@@ -94,14 +98,27 @@ import org.openide.util.NbBundle;
         assert decl != null;
         this.document = document;
         this.pos = new DeclarationPosition(decl);
-        if ((baseDecls.isEmpty() && baseTemplates.isEmpty()) && (!descDecls.isEmpty() || !templateSpecializations.isEmpty())) {
-            type = AnnotationType.IS_OVERRIDDEN;
-        } else if ((!baseDecls.isEmpty() || !baseTemplates.isEmpty()) && (descDecls.isEmpty() && templateSpecializations.isEmpty())) {
-            type = AnnotationType.OVERRIDES;
-        } else if ((!baseDecls.isEmpty() || !baseTemplates.isEmpty()) && (!descDecls.isEmpty() || !templateSpecializations.isEmpty())) {
+        if (baseTemplates.isEmpty() && templateSpecializations.isEmpty()) {
+            // overrides only 
+            if (baseDecls.isEmpty()) {
+                type = AnnotationType.IS_OVERRIDDEN;
+            } else if (descDecls.isEmpty()) {
+                type =  AnnotationType.OVERRIDES;
+            } else {
+                type = AnnotationType.OVERRIDEN_COMBINED;
+            }
+        } else if (baseDecls.isEmpty() && descDecls.isEmpty()) {
+            // templates only
+            if (baseTemplates.isEmpty()) {
+                type = AnnotationType.IS_SPECIALIZED;
+            } else if (templateSpecializations.isEmpty()) {
+                type = AnnotationType.SPECIALIZES;
+            } else {
+                type = AnnotationType.TEMPLATE_COMBINED;
+            }
+        } else {
+            assert !baseTemplates.isEmpty() || !templateSpecializations.isEmpty() || !descDecls.isEmpty() || !baseDecls.isEmpty() : "all are empty?";
             type = AnnotationType.COMBINED;
-        } else { //both are empty
-            throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
         }
         baseUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseDecls.size());
         for (CsmOffsetableDeclaration d : baseDecls) {
@@ -132,6 +149,12 @@ import org.openide.util.NbBundle;
                 return "org-netbeans-modules-editor-annotations-is_overridden"; //NOI18N
             case OVERRIDES:
                 return "org-netbeans-modules-editor-annotations-overrides"; //NOI18N
+            case SPECIALIZES:
+                return "org-netbeans-modules-cnd-navigation-specializes"; // NOI18N
+            case IS_SPECIALIZED:
+                return "org-netbeans-modules-cnd-navigation-is_specialized"; // NOI18N
+            case OVERRIDEN_COMBINED:
+            case TEMPLATE_COMBINED:
             case COMBINED:
                 return "org-netbeans-modules-editor-annotations-override-is-overridden-combined"; //NOI18N
             default:
