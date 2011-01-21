@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
@@ -83,6 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -105,7 +108,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
+final public class NativeProjectProvider implements NativeProject, PropertyChangeListener, ChangeListener {
 
     private static final boolean TRACE = false;
     private final Project project;
@@ -115,6 +118,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
+        ToolsPanelSupport.addCodeAssistanceChangeListener(this);
     }
 
     @Override
@@ -938,5 +942,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
         return search;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireFilesPropertiesChanged();
     }
 }
