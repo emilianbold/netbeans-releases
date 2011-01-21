@@ -228,7 +228,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         panel.tgbHeadVsIndex.addActionListener(this);
         panel.tgbIndexVsWorking.addActionListener(this);
         panel.btnCommit.addActionListener(this);
-        panel.btnCheckout.addActionListener(this);
+        panel.btnRevert.addActionListener(this);
         panel.btnRefresh.addActionListener(this);
         Git.getInstance().getFileStatusCache().addPropertyChangeListener(list = WeakListeners.propertyChange(this, Git.getInstance().getFileStatusCache()));
     }
@@ -361,10 +361,10 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private void initToolbarButtons () {
         if (context != null) {
             panel.btnCommit.setEnabled(false);
-            panel.btnCheckout.setEnabled(false);
+            panel.btnRevert.setEnabled(false);
         } else {
             panel.btnCommit.setVisible(false);
-            panel.btnCheckout.setVisible(false);
+            panel.btnRevert.setVisible(false);
             panel.btnRefresh.setVisible(false);
         }
     }
@@ -561,7 +561,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             Utils.postParallel(new Runnable() {
                 @Override
                 public void run() {
-                    if (e.getSource() == panel.btnCheckout) {
+                    if (e.getSource() == panel.btnRevert) {
                         SystemAction.get(CheckoutPathsAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnCommit) {
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
@@ -728,14 +728,14 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 nextAction.setEnabled(false);
                 prevAction.setEnabled(false);
                 panel.btnCommit.setEnabled(false);
-                panel.btnCheckout.setEnabled(false);
+                panel.btnRevert.setEnabled(false);
             } else {
                 fileTable.getComponent().setEnabled(true);
                 fileTable.getComponent().setPreferredSize(null);
                 Dimension dim = fileTable.getComponent().getPreferredSize();
                 fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                 panel.btnCommit.setEnabled(true);
-                panel.btnCheckout.setEnabled(true);
+                panel.btnRevert.setEnabled(true);
             }
             if (panel.splitPane != null) {
                 updateSplitLocation();
