@@ -104,7 +104,7 @@ public class TomcatUsers {
             roles = ""; // NOI18N
         }
         StringBuilder newRoles = new StringBuilder(roles.trim());
-            if (TomcatVersion.TOMCAT_70.equals(version)) {
+        if (TomcatVersion.TOMCAT_70.equals(version)) {
             if (!hasRole(roles, "manager-script")) { // NOI18N
                 if (newRoles.length() > 0 && !newRoles.toString().endsWith(",")) { // NOI18N
                     newRoles.append(',');
