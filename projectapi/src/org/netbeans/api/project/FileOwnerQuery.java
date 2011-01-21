@@ -103,7 +103,7 @@ public class FileOwnerQuery {
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(file);
             if (p != null) {
-                LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {file, p, q});
+                LOG.log(Level.FINE, "getOwner({0}) -> {1} @{2} from {3}", new Object[] {file, p, p.hashCode(), q});
                 return p;
             }
         }

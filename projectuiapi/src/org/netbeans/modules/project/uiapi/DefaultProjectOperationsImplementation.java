@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -81,7 +80,6 @@ import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -91,12 +89,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 
 /**
  * @author Jan Lahoda
@@ -479,6 +474,12 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
             
             FileObject projectDirectory = project.getProjectDirectory();
+            LOG.log(Level.FINE, "doMoveProject 1/2: {0} @{1}", new Object[] {projectDirectory, project.hashCode()});
+            if (LOG.isLoggable(Level.FINER)) {
+                for (Project real : OpenProjects.getDefault().getOpenProjects()) {
+                    LOG.log(Level.FINER, "  open project: {0} @{1}", new Object[] {real, real.hashCode()});
+                }
+            }
             
             double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK);
 
@@ -507,6 +508,7 @@ public final class DefaultProjectOperationsImplementation {
             
             assert nue != null;
             assert nue != project : "got same Project for " + projectDirectory + " and " + target;
+            LOG.log(Level.FINE, "doMoveProject 2/2: {0} @{1}", new Object[] {target, nue.hashCode()});
 
             ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueProjectName);
             
@@ -515,6 +517,11 @@ public final class DefaultProjectOperationsImplementation {
             ProjectManager.getDefault().saveProject(nue);
             
             open(nue, wasMain);
+            if (LOG.isLoggable(Level.FINER)) {
+                for (Project real : OpenProjects.getDefault().getOpenProjects()) {
+                    LOG.log(Level.FINER, "  open project: {0} @{1}", new Object[] {real, real.hashCode()});
+                }
+            }
             
             handle.progress(totalWork);
             handle.finish();
@@ -719,38 +726,15 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static void close(final Project prj) {
-        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public @Override Void run() {
-                LifecycleManager.getDefault().saveAll();
-		
-                Action closeAction = CommonProjectActions.closeProjectAction();
-                closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(prj)) : null;
-                
-                if (closeAction != null && closeAction.isEnabled()) {
-                    closeAction.actionPerformed(new ActionEvent(prj, -1, "")); // NOI18N
-                } else {
-                    //fallback:
-                    OpenProjects.getDefault().close(new Project[] {prj});
-                }
-                
-                return null;
-            }
-        });
+        LifecycleManager.getDefault().saveAll();
+        OpenProjects.getDefault().close(new Project[] {prj});
     }
     
     private static void open(final Project prj, final boolean setAsMain) {
-        //#176017 -used to be Mutex.EVENT.readAccess but that goes against the
-        // regular means of opening projects (via open project dialog) that
-        //opens projects in non-awt thread. OpenProjectHooks shall not IMO
-        //be called in AWT.
-//        RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-                OpenProjects.getDefault().open(new Project[] {prj}, false);
-                if (setAsMain) {
-                    OpenProjects.getDefault().setMainProject(prj);
-                }
-//            }
-//        });
+        OpenProjects.getDefault().open(new Project[] {prj}, false);
+        if (setAsMain) {
+            OpenProjects.getDefault().setMainProject(prj);
+        }
     }
     
     static interface Executor {

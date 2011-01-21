@@ -47,6 +47,8 @@ package org.netbeans.api.project.ui;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.project.uiapi.Utilities;
@@ -86,6 +88,8 @@ public final class OpenProjects {
     public static final String PROPERTY_MAIN_PROJECT = "MainProject"; // NOI18N
     
     private static OpenProjects INSTANCE = new OpenProjects();
+
+    private static final Logger LOG = Logger.getLogger(OpenProjects.class.getName());
     
     private OpenProjectsTrampoline trampoline;
     
@@ -215,9 +219,12 @@ public final class OpenProjects {
         }
         for (Project real : getOpenProjects()) {
             if (p.equals(real) || real.equals(p)) {
+                LOG.log(Level.FINE, "isProjectOpen => true for {0} @{1} ~ real @{2}", new Object[] {p, p.hashCode(), real.hashCode()});
                 return true;
             }
+            LOG.log(Level.FINER, "distinct from {0} @{1}", new Object[] {real, real.hashCode()});
         }
+        LOG.log(Level.FINE, "isProjectOpen => false for {0} @{1}", new Object[] {p, p.hashCode()});
         return false;
     }
 
