@@ -1035,12 +1035,8 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
-    public synchronized void saveAndMarkDeleted(){
-        if (isDeleted.compareAndSet(false, true)) {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                projectDescriptorProvider.getConfigurationDescriptor().save();
-            }
-        }
+    public synchronized void markDeleted(){
+        isDeleted.compareAndSet(false, true);
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {

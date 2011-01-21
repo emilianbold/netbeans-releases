@@ -98,7 +98,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -604,8 +603,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return clone;
     }
 
-    @Override
+
+    /**
+     * @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor.isModified instead.
+     */
+    @Deprecated
     public boolean getModified() {
+        return isModified();
+    }
+
+    @Override
+    public boolean isModified() {
         return modified;
     }
 
@@ -720,7 +728,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         updateExtensionList();
-        if (!getModified()) {
+        if (!isModified()) {
             // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
             new ConfigurationMakefileWriter(this).writeMissingMakefiles();
             return true;

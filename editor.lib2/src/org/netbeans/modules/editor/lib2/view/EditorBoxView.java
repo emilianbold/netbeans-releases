@@ -199,7 +199,7 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
      * @return the view at index <code>index</code>
      */
     @Override
-    public final View getView(int index) {
+    public View getView(int index) {
         return (children != null) ? children.get(index) : null;
     }
     
