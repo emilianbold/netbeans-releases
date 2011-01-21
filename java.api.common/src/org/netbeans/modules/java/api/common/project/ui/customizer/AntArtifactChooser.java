@@ -60,6 +60,7 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -262,6 +263,12 @@ final class AntArtifactChooser extends JPanel implements PropertyChangeListener 
                 DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
                     NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
                     NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+
+            if (AntArtifactQuery.findArtifactsByType(selectedProject, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage (AntArtifactChooser.class,"MSG_NO_JAR_OUTPUT")));
                 return null;
             }
             
