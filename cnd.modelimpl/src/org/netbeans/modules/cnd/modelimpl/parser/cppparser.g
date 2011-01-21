@@ -432,6 +432,7 @@ tokens {
     protected static final int declNotFirst = 3;
     protected static final int declFunctionParam = 4;
     protected static final int declExternFunction = 5;
+    protected static final int declSimpleFunction = 6;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -1033,6 +1034,13 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declExternFunction]
         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
     |
+        // Simple function declaration without return type
+        (ID LPAREN (simple_parameter_list)? RPAREN (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declSimpleFunction]
+        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+    |
         // Function definition with return value
         (   (LITERAL___extension__)?
             (options {greedy=true;} :function_attribute_specification!)?
@@ -1583,6 +1591,13 @@ declaration[int kind]
         {beginDeclaration();}
         LITERAL_extern
         ((COMMA!)? init_declarator_list[kind])?
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON )
+        {endDeclaration();}
+    |
+        {kind == declSimpleFunction}? (ID LPAREN) =>
+        {beginDeclaration();}
+        init_declarator_list[kind]
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         {endDeclaration();}
@@ -2539,6 +2554,18 @@ parameter_declaration
 		)?
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
+
+simple_parameter_list
+    :	
+    simple_parameter_declaration
+    (COMMA! simple_parameter_declaration)*
+    ;
+
+simple_parameter_declaration
+    :
+    declaration_specifiers[false, true]
+    (ID)*
+    ;
 
 type_name // aka type_id
 	:
