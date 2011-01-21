@@ -76,7 +76,7 @@ public final class IndexDocumentImpl implements IndexDocument {
         @SuppressWarnings("deprecation") //NOI18N
         final Field field = new Field (key, value,
                 stored ? Field.Store.YES : Field.Store.NO,
-                searchable ? Field.Index.NO_NORMS : Field.Index.NO);
+                searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO);
         doc.add (field);
     }
     
@@ -102,7 +102,7 @@ public final class IndexDocumentImpl implements IndexDocument {
 
     @SuppressWarnings("deprecation") //NOI18N
     private static Fieldable sourceNameField(String relativePath) {
-        return new Field(FIELD_PRIMARY_KEY, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
+        return new Field(FIELD_PRIMARY_KEY, relativePath, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
     }
     
     static Query sourceNameQuery(String relativePath) {

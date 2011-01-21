@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import org.apache.lucene.store.NoLockFactory;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -81,6 +82,7 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -109,8 +111,14 @@ public class LuceneIndex implements Index {
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     private static final FieldSelector ALL_FIELDS = new AllFieldsSelector();
     
+    private static LockFactory lockFactory;
     
     private final DirCache dirCache;       
+    
+    /** unit tests */
+    public static void setDisabledLocks(final boolean disabled) {
+        lockFactory = disabled ? NoLockFactory.getNoLockFactory() : null;
+    }
 
     public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -821,7 +829,7 @@ public class LuceneIndex implements Index {
         
         private static FSDirectory createFSDirectory (final File indexFolder) throws IOException {
             assert indexFolder != null;
-            FSDirectory directory  = FSDirectory.open(indexFolder);
+            final FSDirectory directory  = FSDirectory.open(indexFolder, lockFactory);
             directory.getLockFactory().setLockPrefix(CACHE_LOCK_PREFIX);
             return directory;
         } 
