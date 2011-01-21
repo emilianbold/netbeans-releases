@@ -219,7 +219,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public String toURL(FileSystem fileSystem, String absPath) {
-        RemoteLogger.assertTrue(absPath.startsWith("/"), "Path should be absolute: " + absPath); //NOPI18N
+        RemoteLogger.assertTrue(RemoteFileSystemUtils.isPathAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
         if (fileSystem instanceof RemoteFileSystem) {
             ExecutionEnvironment env =((RemoteFileSystem) fileSystem).getExecutionEnvironment();
             return getUrlPrefix(env) + absPath;
