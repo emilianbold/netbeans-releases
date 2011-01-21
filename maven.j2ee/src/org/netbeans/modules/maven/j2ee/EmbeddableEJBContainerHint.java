@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -117,6 +118,11 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
         }
         
         FileObject testFile = info.getFileObject();
+        Project prj = FileOwnerQuery.getOwner(testFile);
+        if (prj.getLookup().lookup(NbMavenProject.class) == null) {
+            // handles only Maven projects; Ant projects solves this issue differently
+            return null;
+        }
         ClassPath cp = ClassPath.getClassPath(testFile, ClassPath.EXECUTE);
         if (cp == null) {
             return null;
@@ -137,7 +143,6 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
         }
         
         List<Fix> fixes = new ArrayList<Fix>();
-        Project prj = FileOwnerQuery.getOwner(testFile);
         J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
             fixes = FixEjbContainerAction.createGF3SystemScope(prj);
