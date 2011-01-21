@@ -42,29 +42,64 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.JButton;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class RevisionPicker {
+public class RevisionPicker implements PropertyChangeListener {
     private final RevisionPickerDialog panel;
+    private final JButton okButton;
+    private final RevisionInfoPanelController infoPanelController;
+    private Revision revision;
+    private DialogDescriptor dd;
+    private final RepositoryBrowserPanel browserPanel;
 
-    public RevisionPicker (File repository) {
-        panel = new RevisionPickerDialog();
+    public RevisionPicker (File repository, File[] roots) {
+        infoPanelController = new RevisionInfoPanelController(repository);
+        browserPanel = new RepositoryBrowserPanel(RepositoryBrowserPanel.OPTIONS_INSIDE_PANEL, repository, roots, null);
+        panel = new RevisionPickerDialog(infoPanelController.getPanel(), browserPanel);
+        okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(RevisionPicker.class, "LBL_RevisionPickerDialog.okButton.title")); //NOI18N
     }
 
-    public RevisionPickerDialog getPanel () {
-        return panel;
+    boolean open () {
+        dd = new DialogDescriptor(panel, NbBundle.getMessage(RevisionPicker.class, "LBL_RevisionPickerDialog.title"), //NOI18N
+                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RevisionPickerDialog.class), null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        updateDialogState();
+        browserPanel.addPropertyChangeListener(this);
+        dialog.setVisible(true);
+        browserPanel.removePropertyChangeListener(this);
+        return dd.getValue() == okButton;
     }
 
-    public void setEnabled (boolean enabled) {
-        panel.btnSelectRevision.setEnabled(enabled);
-        panel.revisionField.setEnabled(enabled);
+    Revision getRevision () {
+        return revision;
     }
 
-    public String getRevision () {
-        return panel.revisionField.getText();
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == RepositoryBrowserPanel.PROP_REVISION_CHANGED) {
+            revision = (Revision) evt.getNewValue();
+            updateDialogState();
+        }
+    }
+
+    private void updateDialogState () {
+        boolean enabled = revision != null;
+        dd.setValid(enabled);
+        okButton.setEnabled(enabled);
+        infoPanelController.loadInfo(revision == null ? null : revision.getName());
     }
 }

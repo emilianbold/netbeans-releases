@@ -73,12 +73,8 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
@@ -87,8 +83,11 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorP
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableClosure;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.ExistingDisabledReason;
 import org.netbeans.modules.websvc.api.support.LogUtils;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
@@ -103,6 +102,7 @@ import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.EntityResourcesIterator;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.netbeans.modules.websvc.rest.wizard.WizardProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -128,13 +128,9 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
             Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
-    private static final FacadeGeneratorProvider FACADE_GENERATOR =
-            Lookup.getDefault().lookup(FacadeGeneratorProvider.class);
     private RelatedCMPHelper helper;
     private ProgressPanel progressPanel;
     private PersistenceGenerator generator;
-
-    private final Map<String, String> entityNames = new HashMap<String, String>();
 
     @Override
     public void initialize(WizardDescriptor wizard) {
@@ -278,12 +274,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
 
-            Set<FileObject> files = generator.createdObjects();
+            Set<FileObject> files = getAffectedFiles(generator, helper );
 
             RestUtils.ensureRestDevelopmentReady(project);
-            Set<Entity> entities = getEntities(project, files);
+            Set<Entity> entities = Util.getEntities(project, files);
             
-            if (RestUtils.isJavaEE6(Templates.getProject(wizard))) {
+	    if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
 
                 String targetPackage = null;
                 String resourcePackage = null;
@@ -323,34 +319,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                     targetResourceFolder = targetFolder;
                 }
 
-                Map<String, String> selectedEntityNames = new HashMap<String, String>();
-
                 EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
                 EntityResourceBeanModel model = builder.build(entities);
-                Collection<EntityResourceBean> beans = model.getResourceBeans();
-                Map<String,String> beanMap = new HashMap<String,String>();
-                for (EntityResourceBean bean : beans) {
-                    if (bean.isItem()) {
-                        EntityClassInfo classInfo = bean.getEntityClassInfo();
-                        EntityClassInfo.FieldInfo fieldInfo = classInfo.getIdFieldInfo();
-                        if (fieldInfo != null) {
-                            beanMap.put(classInfo.getType(), fieldInfo.getType());
-                        }
-                    }
-                }
+                Util.generateRESTFacades(project, entities,  model,
+                        targetResourceFolder, resourcePackage);
 
-                Iterator<Entity> it = entities.iterator();
-                while (it.hasNext()) {
-                    Entity entity = it.next();
-                    String primaryKeyType = beanMap.get(entity.getClass2());
-                    selectedEntityNames.put(
-                            entity.getClass2(),
-                            (primaryKeyType == null ? "java.lang.String" : primaryKeyType)); // NOI18N
-                }
-                instantiateWProgress(handle, targetResourceFolder, resourcePackage, selectedEntityNames);
-
-            } else {
-                
+            } else {    
                 EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
                 EntityResourceBeanModel model = builder.build(entities);
 
@@ -415,6 +389,40 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
     }
 
+    private Set<FileObject> getAffectedFiles( PersistenceGenerator generator,
+            RelatedCMPHelper helper )
+    {
+        Set<FileObject> created = generator.createdObjects();
+        TableClosure closure = helper.getTableClosure();
+        Set<Table> tables = closure.getSelectedTables();
+        Set<FileObject> extension = new HashSet<FileObject>(); 
+        for(Table table :tables ){
+            if ( table.isDisabled() ){
+                DisabledReason reason = table.getDisabledReason();
+                if ( reason instanceof ExistingDisabledReason ){
+                    String fqnClass = ((ExistingDisabledReason)reason).getFQClassName();
+                    try {
+                        FileObject fileObject = SourceGroupSupport.
+                            getFileObjectFromClassName(fqnClass, helper.getProject());
+                        if ( !created.contains( fileObject) ){
+                            extension.add( fileObject );
+                        }
+                    }
+                    catch(IOException e){
+                        Logger.getLogger("global").log(Level.SEVERE, null, e);
+                    }
+                }
+            }
+        }
+        if ( extension.size() == 0 ){
+            return created;
+        }
+        else {
+            extension.addAll( created );
+            return extension;
+        }
+    }
+
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
@@ -459,37 +467,6 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             }
         }
         return panels;
-    }
-
-    private Set<Entity> getEntities(Project project, Set<FileObject> files) throws IOException {
-        final Set<Entity> entities = new HashSet<Entity>();
-        for (FileObject file : files) {
-            JavaSource source = JavaSource.forFileObject(file);
-            source.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement classElement = SourceUtils.getPublicTopLevelElement(controller);
-                    if (classElement != null) {
-                        String entityName = null;
-                        TypeElement annotationElement = controller.getElements().getTypeElement(Constants.PERSISTENCE_TABLE);
-                        if (annotationElement != null) {
-                            entityName = TypeUtil.getAnnotationValueName(controller, classElement, annotationElement);
-                            if (entityName == null) {
-                                annotationElement =  controller.getElements().getTypeElement(Constants.PERSISTENCE_ENTITY);
-                                if (annotationElement != null) {
-                                    entityName = TypeUtil.getAnnotationValueName(controller, classElement, annotationElement);
-                                }
-                            }
-                        }
-                        if (entityName != null) {
-                            entities.add(new RuntimeJpaEntity(classElement, entityName));
-                        }
-                    }
-                }
-            }, true);
-        }
-        return entities;
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -579,49 +556,6 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             return folder;
         } else {
             return FileUtil.createFolder(sourceGroup.getRootFolder(), relativePkgName);
-        }
-    }
-
-    private Set instantiateWProgress(ProgressContributor handle, FileObject targetFolder, String resourcePackage, Map<String, String> selectedEntityNames) throws IOException {
-        Project project = Templates.getProject(wizard);
-        initEntityNames(project);
-        final Set<FileObject> createdFiles = new HashSet<FileObject>();
-        FacadeGenerator facadeGenerator = FACADE_GENERATOR.createGenerator();
-
-//        int stepsCount = selectedEntityNames.size();
-
-        for (String entity : selectedEntityNames.keySet()) {
-            //handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_GenSessionBean", entity), step++);
-            facadeGenerator.generate(project, entityNames, targetFolder, entity, selectedEntityNames.get(entity), resourcePackage, false, false, true);
-        }
-        //PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});
-        return createdFiles;
-    }
-
-    /**
-     * Initializes the {@link #entityNames} map.
-     */
-    private void initEntityNames(Project project) throws IOException {
-
-        //XXX should probably be using MetadataModelReadHelper. needs a progress indicator as well (#113874).
-        try {
-            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
-            MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
-            Future<Void> result = entityMappingsModel.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Void>() {
-
-                @Override
-                public Void run(EntityMappingsMetadata metadata) throws Exception {
-                    for (Entity entity : metadata.getRoot().getEntity()) {
-                        entityNames.put(entity.getClass2(), entity.getName());
-                    }
-                    return null;
-                }
-            });
-            result.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 

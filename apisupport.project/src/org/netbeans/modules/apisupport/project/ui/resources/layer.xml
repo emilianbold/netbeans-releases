@@ -238,6 +238,7 @@ made subject to such option by the copyright holder.
             <file name="templateTopComponent.form" url="../wizard/winsys/templateTopComponent.frmx"/>
             <file name="templateTopComponent.java" url="../wizard/winsys/templateTopComponent.javx"/>
             <file name="templateTopComponentAnno.java" url="../wizard/winsys/templateTopComponentAnno.javx"/>
+            <file name="templateTopComponent637.java" url="../wizard/winsys/templateTopComponent637.javx"/>
             <file name="templateWstcref.xml" url="../wizard/winsys/templateWstcref.xml"/>
             <file name="instantiatingIterator.java" url="../wizard/wizard/instantiatingIterator.javx"/>
             <file name="sampleAction.java" url="../wizard/wizard/sampleAction.javx"/>

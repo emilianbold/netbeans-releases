@@ -66,7 +66,7 @@ public final class DataTableMetadata {
     private final String statement;
     private final List<Column> primaryKeyColumns = new ArrayList<Column>();
     private final List<Column> autoIncrementList = new ArrayList<Column>();
-    
+    private final List<ForeignKeyConstraint> fKeys;
 
     /**
      * Creates new table description with the name <code>name</code> and using <code>columns</code> as table column descriptions
@@ -97,39 +97,45 @@ public final class DataTableMetadata {
         this.indexedColumns = indexedColumns == null ? Collections.<Column>emptyList() : indexedColumns;
         this.statement = statement;
         this.sourceTables = sourceTables;
+        fKeys = new ArrayList<ForeignKeyConstraint>();
         columnNames = new ArrayList<String>(columns.size());
         for (Column c : columns) {
             columnNames.add(c.getColumnName());
         }
     }
-    
-    /**
-     * Adds foreign key constraint
-     * @param foreignKey the current table column which IS foreign key
-     * @param referenceTable the table foreign key column is referenced to
-     * @param referenceColumn the column foreign key column is referenced to 
-     */
-    public void addForeignKey(Column foreignKey, DataTableMetadata referenceTable, Column referenceColumn){
-        
+
+    public void addForeignKey(Column c, DataTableMetadata referenceTable, Column referenceColumn) {
+        if (!this.getColumns().contains(c)) {
+            throw new IllegalArgumentException("Column " + c.getColumnName() + " doesn't belong to the table " + getName());//NOI18N
+        }
+        if (!referenceTable.getColumns().contains(referenceColumn)) {
+            throw new IllegalArgumentException("Column " + referenceColumn.getColumnName() + " doesn't belong to the table " + referenceTable.getName());//NOI18N
+        }
+        ForeignKeyConstraint fk = new ForeignKeyConstraint(this, c, referenceTable, referenceColumn);
+        fKeys.add(fk);
     }
-    
-    public void setPrimaryKey(List<Column> primaryKeys){
+
+    public List<ForeignKeyConstraint> getForeignKeyConstraints() {
+        return Collections.unmodifiableList(fKeys);
+    }
+
+    public void setPrimaryKey(List<Column> primaryKeys) {
         this.primaryKeyColumns.clear();
         this.primaryKeyColumns.addAll(primaryKeys);
     }
-    
-    public void setAutoIncrement(Column c){
-        if (autoIncrementList.contains(c)){
+
+    public void setAutoIncrement(Column c) {
+        if (autoIncrementList.contains(c)) {
             return;
         }
         autoIncrementList.add(c);
     }
-    
-    public boolean isPrimaryKey(Column c){
+
+    public boolean isPrimaryKey(Column c) {
         return primaryKeyColumns.contains(c);
     }
-    
-    public boolean isAutoIncrement(Column c){
+
+    public boolean isAutoIncrement(Column c) {
         return autoIncrementList.contains(c);
     }
 
@@ -335,4 +341,3 @@ public final class DataTableMetadata {
         }
     }
 }
-

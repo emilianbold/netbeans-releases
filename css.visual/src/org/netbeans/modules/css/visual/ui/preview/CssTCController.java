@@ -51,6 +51,7 @@ import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 /**
@@ -127,7 +128,7 @@ public class CssTCController implements PropertyChangeListener {
         FileObject fob = tc.getLookup().lookup(FileObject.class);
         if (fob != null) {
             String mimeType = fob.getMIMEType();
-            if (mimeType != null && "text/x-css".equals(mimeType)) {
+            if (mimeType != null && "text/x-css".equals(mimeType)) { //NOI18N
                 return true;
             }
         }
@@ -136,13 +137,17 @@ public class CssTCController implements PropertyChangeListener {
 
     private void previewableActivated(TopComponent tc) {
         this.lastCSSTC = tc;
-        WindowManager.getDefault().findTopComponentGroup("Csswsgrp").open();
-//        CssEditorSupport.getDefault().cssTCActivated(tc);
+        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup("Csswsgrp"); //NOI18N
+        if(tcg != null) {
+            tcg.open();
+        }
     }
 
     private void notPreviewableActivated() {
         this.lastCSSTC = null;
-        WindowManager.getDefault().findTopComponentGroup("Csswsgrp").close();
-//        CssEditorSupport.getDefault().cssTCDeactivated();
+        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup("Csswsgrp"); //NOI18N
+        if(tcg != null) {
+            tcg.close();
+        }
     }
 }

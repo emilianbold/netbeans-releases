@@ -88,7 +88,7 @@ public class CustomMenuBarTest extends NbTestCase {
         //Verify that test layer was added to default filesystem
         assertNotNull(FileUtil.getConfigFile("LookAndFeel/MenuBar.instance"));
 
-        MainWindow mw = (MainWindow) WindowManager.getDefault().getMainWindow();
+        MainWindow mw = MainWindow.getInstance();
         mw.initializeComponents();
         assertEquals(mw.getJMenuBar(), createMenuBar());
         IDEInitializer.removeLayers();
@@ -101,18 +101,18 @@ public class CustomMenuBarTest extends NbTestCase {
 
         //Verify that test layer was added to default filesystem
         assertNotNull(FileUtil.getConfigFile("LookAndFeel/StatusLine.instance"));
-        MainWindow mw = (MainWindow) WindowManager.getDefault().getMainWindow();
+        MainWindow mw = MainWindow.getInstance();
         mw.initializeComponents();
-        assertTrue(findComponent(mw, createStatusLine()));
+        assertTrue(findComponent(mw.getFrame(), createStatusLine()));
 
         IDEInitializer.removeLayers();
     }
 
     public void testNoToolbar() throws Exception {
-        MainWindow mw = (MainWindow) WindowManager.getDefault().getMainWindow();
+        MainWindow mw = MainWindow.getInstance();
         mw.initializeComponents();
         ToolbarPool tp = ToolbarPool.getDefault();
-        assertTrue(!findComponent(mw, tp));
+        assertTrue(!findComponent(mw.getFrame(), tp));
     }
 
     private static boolean findComponent(Container cont, Component comp) {

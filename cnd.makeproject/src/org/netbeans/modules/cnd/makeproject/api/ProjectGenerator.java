@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileUtil;
 
 public class ProjectGenerator {
 
@@ -78,6 +79,7 @@ public class ProjectGenerator {
         private String hostUID;
         private boolean fullRemote;
         private CompilerSet cs;
+        private boolean defaultToolchain;
         private String postCreationClassName;
         private String mainProject;
         private String subProjects;
@@ -99,9 +101,9 @@ public class ProjectGenerator {
          * @param projectName name of the project
          * @param projectFolder project folder (i.e. ~/NetbeansProjects/projectName)
          */
-        public ProjectParameters(String projectName, File projectFolder) {
+        public ProjectParameters(String projectName, File projectFolder) {            
             this.projectName = projectName;
-            this.projectFolder = projectFolder;
+            this.projectFolder = FileUtil.normalizeFile(projectFolder);
             this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             this.configurations = new MakeConfiguration[0];
             this.openFlag = false;
@@ -161,9 +163,10 @@ public class ProjectGenerator {
             return this;
         }
         
-        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs) {
+        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs, boolean defaultCS) {
             this.hostUID = hostUID;
             this.cs = cs;
+            this.defaultToolchain = defaultCS;
             return this;
         }
 
@@ -241,6 +244,10 @@ public class ProjectGenerator {
             return cs;
         }
 
+        public boolean isDefaultToolchain() {
+            return defaultToolchain;
+        }
+
         /**
          * @return the postCreationClassName
          */
@@ -289,6 +296,10 @@ public class ProjectGenerator {
 
         public String getDatabaseConnection() {
             return databaseConnection;
+        }
+
+        public boolean isMakefileProject() {
+            return configurations[0].isMakefileConfiguration();
         }
 
     }

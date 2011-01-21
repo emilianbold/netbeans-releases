@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  */
 public class BorderStyleEditor extends StyleEditor {
 
-    BorderDataTable borderDataTable = new BorderDataTable();
+    BorderDataTable borderDataTable;
 
     /** Creates new form FontStyleEditor */
     public BorderStyleEditor() {
@@ -83,6 +83,7 @@ public class BorderStyleEditor extends StyleEditor {
 
     @Override
     protected void lazyInitializePanel() {
+        borderDataTable = new BorderDataTable();
         initComponents();
         borderPanel.add(borderDataTable, BorderLayout.CENTER);
     }

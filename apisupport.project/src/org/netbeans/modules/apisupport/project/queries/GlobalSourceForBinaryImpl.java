@@ -127,24 +127,27 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 return null;
             }
             File binaryRootF = FileUtil.archiveOrDirForURL(binaryRoot);
-            FileObject fo = binaryRootF != null ? FileUtil.toFileObject(binaryRootF) : null;
-            if (fo == null) {
-                Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
+            if (binaryRootF == null) {
                 return null;
             }
+            String name = binaryRootF.getName();
+            if (!name.endsWith(".jar")) { // NOI18N
+                return null;
+            }
+            String cnb = name.substring(0, name.length() - 4).replace('-', '.');
             if (supposedPlaf == null) {
                 // try external clusters
                 URL[] sourceRoots = ModuleList.getSourceRootsForExternalModule(binaryRootF);
-                if (sourceRoots.length > 0)
-                    return new ExtClusterResult(new SourceRootsSupport(sourceRoots, null),
-                            binaryRoot, fo.getName().replace('-', '.'));
+                if (sourceRoots.length > 0) {
+                    return new ExtClusterResult(new SourceRootsSupport(sourceRoots, null), cnb);
+                }
                 return null;    // TODO C.P library wrapper sources support? probably not
             }
   //          if (testCnb != null && supposedPlaf != null) {
                 // test
    //             supposedPlaf.
    //         }
-            return new NbPlatformResult(supposedPlaf, binaryRoot, fo.getName().replace('-', '.'));
+            return new NbPlatformResult(supposedPlaf, cnb);
         } catch (IOException ex) {
             throw new AssertionError(ex);
         }
@@ -153,12 +156,10 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
     static abstract class SourceRootsProviderResult implements SourceForBinaryQuery.Result {
         private SourceRootsProvider srp;
         final String cnb;
-        final URL binaryRoot;
 
-        SourceRootsProviderResult(final SourceRootsProvider srp, final URL binaryRoot, final String cnb) {
+        SourceRootsProviderResult(SourceRootsProvider srp, String cnb) {
             this.srp = srp;
             this.cnb = cnb;
-            this.binaryRoot = binaryRoot;
         }
 
         public FileObject[] getRoots() {
@@ -226,9 +227,9 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
 
     private static final class ExtClusterResult extends SourceRootsProviderResult {
 
-        private ExtClusterResult(SourceRootsSupport sourceRootsSupport, URL binaryRoot, String cnb) {
+        private ExtClusterResult(SourceRootsSupport sourceRootsSupport, String cnb) {
 
-            super(sourceRootsSupport, binaryRoot, cnb);
+            super(sourceRootsSupport, cnb);
         }
 
         @Override
@@ -262,8 +263,8 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         
         private boolean alreadyListening;
         
-        NbPlatformResult(final NbPlatform platform, final URL binaryRoot, final String cnb) {
-            super(platform, binaryRoot, cnb);
+        NbPlatformResult(NbPlatform platform, String cnb) {
+            super(platform, cnb);
             this.platform = platform;
 //            this.testType = testType;
 //            this.testCluster = testCluster;

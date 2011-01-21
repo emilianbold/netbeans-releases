@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.util.WeakList;
  * Coordiates parse finish event for project and it's libs.
  * Singleton.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class ParseFinishNotificator {
 

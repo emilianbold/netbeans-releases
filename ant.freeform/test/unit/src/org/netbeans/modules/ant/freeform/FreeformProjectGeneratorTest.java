@@ -134,7 +134,16 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         assertNotNull("Project does not have ActionProvider", ap);
-        assertEquals("Project cannot have any action", 0, ap.getSupportedActions().length);
+        final List<String> expectedActions = Arrays.asList(new String[]{
+            ActionProvider.COMMAND_RENAME,
+            ActionProvider.COMMAND_MOVE,
+            ActionProvider.COMMAND_COPY,
+            ActionProvider.COMMAND_DELETE
+        });
+        Collections.sort(expectedActions);
+        final List<String> actions = Arrays.asList(ap.getSupportedActions());
+        Collections.sort(actions);
+        assertEquals("Project should have file ops actions", expectedActions, actions);
         
         List<FreeformProjectGenerator.TargetMapping> list = FreeformProjectGenerator.getTargetMappings(helper);
         assertNotNull("getTargetMappings() cannot return null", list);

@@ -54,6 +54,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -71,18 +73,26 @@ public class InitJobTest extends NbTestCase {
     /** event dispatch thread */
     Thread edThread;
     /** test component */
-    SimpleInitComp comp;
+    JPanel comp;
     /** parent, main frame */
     private Frame frame;
+    private final Logger LOG;
     
     /** Creates a new instance of UtilProgressCursorTest */
     public InitJobTest(String testName) {
         super(testName);
+        LOG = Logger.getLogger("test." + testName);
     }
     
     /** Run tests in EQ thread, as it touches Swing */
+    @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override
@@ -94,10 +104,11 @@ public class InitJobTest extends NbTestCase {
      * impl conforms to the API behaviour described in javadoc *
      */
     public void testInitJob() throws Exception {
-        System.out.println("Testing simple init job run");
+        LOG.info("Testing simple init job run");
         initializeSimple();
-        comp = new SimpleInitComp();
-        Utilities.attachInitJob(comp, comp);
+        final SimpleInitComp c = new SimpleInitComp();
+        comp = c;
+        Utilities.attachInitJob(c, c);
         frame = new Frame();
         frame.setSize(100, 100);
         frame.setVisible(true);
@@ -106,34 +117,21 @@ public class InitJobTest extends NbTestCase {
         dlg.add(comp);
         dlg.setVisible(true);
     }
-    
-    public void testCancelAbility() throws Exception {
-        System.out.println("Testing cancel ability of async init job");
-        initializeSimple();
-        initCancelResults();
-        CancelInitComp comp = new CancelInitComp();
-        Utilities.attachInitJob(comp, comp);
-        frame = new Frame();
-        frame.setSize(100, 100);
-        frame.setVisible(true);
-        dlg = new Dialog(frame, true);
-        dlg.setSize(50, 50);
-        dlg.add(comp);
-        dlg.setVisible(true);
-    }
-    
     
     /**********************************************************************/
     
     private void constructCalled(Thread thread, long time) {
+        LOG.info("constructCalled");
         constructCalls.add(new CallData(thread, time));
     }
     
     private void finishCalled(Thread thread, long time) {
+        LOG.info("finishCalled");
         finishCalls.add(new CallData(thread, time));
     }
     
     private void cancelCalled() {
+        LOG.info("cancelCalled");
         cancelCalls.add(new CallData(Thread.currentThread(), System.currentTimeMillis()));
     }
     
@@ -180,7 +178,7 @@ public class InitJobTest extends NbTestCase {
             fail("Cancellable.cancel was called " + cancelCalls.size() +
                     " times intead of just once.");
         }
-        if (finishCalls.size() != 0) {
+        if (!finishCalls.isEmpty()) {
             fail("AsyncGUIJob.finish should not been called at all, but was called "
                     + finishCalls.size() + " times.");
         }
@@ -222,14 +220,18 @@ public class InitJobTest extends NbTestCase {
         public TimerListener(boolean cancel) {
             this.cancel = cancel;
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
+            LOG.log(Level.INFO, "Disposing dialog: {0}", dlg);
             dlg.dispose();
+            LOG.log(Level.INFO, "Disposing frame: {0}", frame);
             frame.dispose();
             if (cancel) {
                 checkCancelResults();
             } else {
                 checkSimpleResults();
             }
+            LOG.log(Level.INFO, "actionPerformed end {0}", cancel);
         }
     }
     
@@ -242,6 +244,7 @@ public class InitJobTest extends NbTestCase {
          * Always called and completed before {@link #finished} method.
          *
          */
+        @Override
         public void construct() {
             constructCalled(Thread.currentThread(), System.currentTimeMillis());
         }
@@ -251,15 +254,18 @@ public class InitJobTest extends NbTestCase {
          * method completed its execution.
          *
          */
+        @Override
         public void finished() {
             finishCalled(Thread.currentThread(), System.currentTimeMillis());
         }
         
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             Timer timer = new Timer(1000, new TimerListener(false));
             timer.setRepeats(false);
             timer.start();
+            LOG.log(Level.INFO, "Time started for {0}", this);
         }
         
     } // end of SimpleInitComp
@@ -273,6 +279,7 @@ public class InitJobTest extends NbTestCase {
          * Always called and completed before {@link #finished} method.
          *
          */
+        @Override
         public void construct() {
             // perform loooong task
             try {
@@ -287,20 +294,24 @@ public class InitJobTest extends NbTestCase {
          * method completed its execution.
          *
          */
+        @Override
         public void finished() {
             finishCalled(Thread.currentThread(), System.currentTimeMillis());
         }
         
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             Timer timer = new Timer(1000, new TimerListener(true));
             timer.setRepeats(false);
             timer.start();
+            LOG.log(Level.INFO, "Time started for {0}", this);
         }
         
         /** Cancel processing of the job.
          *
          */
+        @Override
         public boolean cancel() {
             cancelCalled();
             return true;

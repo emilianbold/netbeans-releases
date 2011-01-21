@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * Test case for hyperlink to library content
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
 
@@ -178,8 +178,8 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
 
     public void testEndl() throws Exception {
-        performTest("src/main2.cc", 7, 8, "sys_include/iostream", 20, 5);
-        performTest("src/main2.cc", 7, 26, "sys_include/iostream", 14, 5);
+        performTest("src/main2.cc", 7, 8, "sys_include/iostream_ours", 20, 5);
+        performTest("src/main2.cc", 7, 26, "sys_include/iostream_ours", 14, 5);
     }
 
     public void testNamespaceInDifferentFolders() throws Exception {

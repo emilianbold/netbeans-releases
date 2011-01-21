@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,11 +73,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
@@ -91,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
@@ -102,9 +101,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -125,6 +121,7 @@ public class ImportExecutable implements PropertyChangeListener {
     private CreateDependencies cd;
     private final boolean createProjectMode;
     private String sourcesPath;
+    private boolean addSourceRoot;
     private List<String> dependencies;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
@@ -135,6 +132,7 @@ public class ImportExecutable implements PropertyChangeListener {
             createProjectMode = true;
             postCreateProject();
         } else {
+            addSourceRoot = true;
             createProjectMode = false;
         }
     }
@@ -159,10 +157,10 @@ public class ImportExecutable implements PropertyChangeListener {
 
     @SuppressWarnings("unchecked")
     private void createProject() {
-        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
-        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
-        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
-        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
+        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT);
+        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH);
+        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME);
         dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
         String baseDir;
         if (projectFolder != null) {
@@ -179,20 +177,21 @@ public class ImportExecutable implements PropertyChangeListener {
             baseDir = projectParentFolder + File.separator + projectName;
             projectFolder = CndFileUtils.createLocalFile(baseDir);
         }
-        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
-        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
-        MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
+        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
+        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
+        boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
+        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalizeSlashes(baseDir),  sourcesPath,
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;
-        exe = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), exe);
-        exe = CndPathUtilitities.normalize(exe);
+        exe = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalizeSlashes(baseDir), exe);
+        exe = CndPathUtilitities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         String exePath = new File(binaryPath).getParentFile().getAbsolutePath();
-        exePath = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), exePath);
-        exePath = CndPathUtilitities.normalize(exePath);
+        exePath = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalizeSlashes(baseDir), exePath);
+        exePath = CndPathUtilitities.normalizeSlashes(exePath);
         conf.getProfile().setRunDirectory(exePath);
         conf.getProfile().setBuildFirst(false);
 
@@ -221,6 +220,8 @@ public class ImportExecutable implements PropertyChangeListener {
                 }
             });
             prjParams.setSourceFolders(list.iterator());
+        } else {
+            addSourceRoot = true;
         }
         prjParams.setSourceFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
         try {
@@ -271,12 +272,19 @@ public class ImportExecutable implements PropertyChangeListener {
                         MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
                         applicable = extension.isApplicable(map, lastSelectedProject);
                         if (applicable.isApplicable()) {
+                            if (sourcesPath == null) {
+                                sourcesPath = applicable.getSourceRoot();
+                            }
+                            if (addSourceRoot && sourcesPath != null && sourcesPath.length()>1) {
+                                configurationDescriptor.addSourceRoot(sourcesPath);
+                            }
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }
                             String additionalDependencies = null;
                             if (projectKind == ProjectKind.IncludeDependencies) {
-                                additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
+                                additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration(),
+                                        DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                 if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
                                     map.put("DW:libraries", additionalDependencies); // NOI18N
                                 }
@@ -287,10 +295,11 @@ public class ImportExecutable implements PropertyChangeListener {
                                     discoverScripts(lastSelectedProject);
                                     saveMakeConfigurationDescriptor(lastSelectedProject);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
-                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies);
+                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
+                                                DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     }
                                 } catch (IOException ex) {
-                                    ex.printStackTrace();
+                                    ex.printStackTrace(System.err);
                                 }
                             }
                         }
@@ -428,7 +437,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
     }
 
-    private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration) {
+    private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration, String binary) {
         if (dependencies == null) {
             String root = sourcesPath;
             if (root == null || root.length()==0) {
@@ -441,7 +450,8 @@ public class ImportExecutable implements PropertyChangeListener {
                 return null;
             }
             Map<String,String> dllPaths = new HashMap<String, String>();
-            String ldLibPath = getLdLibraryPath(activeConfiguration);
+            String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
+            ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, applicable.getSearchPaths(), binary);
             boolean search = false;
             for(String dll : applicable.getDependencies()) {
                 String p = findLocation(dll, ldLibPath);
@@ -452,13 +462,14 @@ public class ImportExecutable implements PropertyChangeListener {
                     dllPaths.put(dll, null);
                 }
             }
-            if (search) {
+            if (search && root.length() > 1) {
                 gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
             }
             StringBuilder buf = new StringBuilder();
+            String binaryDir = CndPathUtilitities.getDirName(binary);
             for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
                 if (entry.getValue() != null) {
-                    if (isMyDll(entry.getValue(), root)) {
+                    if (isMyDll(entry.getValue(), root) || isMyDll(entry.getValue(), binaryDir)) {
                         if (buf.length() > 0) {
                             buf.append(';');
                         }
@@ -476,54 +487,6 @@ public class ImportExecutable implements PropertyChangeListener {
                 buf.append(path);
             }
             return buf.toString();
-        }
-    }
-
-    static String getLdLibraryPath(MakeConfiguration activeConfiguration) {
-        String ldLibraryPathName = getLdLibraryPathName(activeConfiguration);
-        String ldLibPath = activeConfiguration.getProfile().getEnvironment().getenv(ldLibraryPathName); // NOI18N
-        ExecutionEnvironment eenv = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
-        if (ldLibPath != null) {
-            try {
-                ldLibPath = MacroExpanderFactory.getExpander(eenv).expandMacros(ldLibPath, HostInfoUtils.getHostInfo(eenv).getEnvironment());
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        if (ldLibPath == null) {
-            ldLibPath = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName); // NOI18N
-        }
-        if (ldLibPath == null) {
-            ldLibPath = "";  // NOI18N
-        }
-        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
-        switch (platformInfo.getPlatform()) {
-            case PlatformTypes.PLATFORM_WINDOWS:
-                break;
-            case PlatformTypes.PLATFORM_MACOSX:
-                ldLibPath += ":/usr/lib:/usr/local/lib:/Library/Frameworks:/System/Library/Frameworks";  // NOI18N
-                break;
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-            case PlatformTypes.PLATFORM_LINUX:
-            default:
-                ldLibPath += ":/lib:/usr/lib";  // NOI18N
-        }
-        return ldLibPath;
-    }
-
-    private static String getLdLibraryPathName(MakeConfiguration conf) {
-        switch (conf.getDevelopmentHost().getBuildPlatform()) {
-            case PlatformTypes.PLATFORM_WINDOWS:
-                PlatformInfo pi = conf.getPlatformInfo();
-                return pi.getPathName();
-            case PlatformTypes.PLATFORM_MACOSX:
-                return "DYLD_LIBRARY_PATH"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-            case PlatformTypes.PLATFORM_LINUX:
-            default:
-                return "LD_LIBRARY_PATH"; // NOI18N
         }
     }
 
@@ -585,7 +548,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         FileImpl impl = (FileImpl) file;
                         NativeFileItem item = impl.getNativeFileItem();
                         if (item == null) {
-                            String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
+                            String path = impl.getAbsolutePath().toString();
                             item = normalizedItems.get(path);
                         }
                         boolean isLineDirective = false;
@@ -604,8 +567,9 @@ public class ImportExecutable implements PropertyChangeListener {
                                     logger.log(Level.FINE, "#fix excluded header for file {0}", impl.getAbsolutePath()); // NOI18N
                                 }
                                 ProjectBridge.setExclude((Item) item, false);
+                                ProjectBridge.setHeaderTool((Item) item);
                                 if (file.isHeaderFile()) {
-                                    needCheck.add(item.getFile().getAbsolutePath());
+                                    needCheck.add(item.getAbsolutePath());
                                 }
                             }
                         } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {
@@ -618,7 +582,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         } else if (item == null) {
                             // It should be in project?
                             if (file.isHeaderFile()) {
-                                String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
+                                String path = impl.getAbsolutePath().toString();
                                 needAdd.add(path);
                             }
                         }
@@ -632,18 +596,51 @@ public class ImportExecutable implements PropertyChangeListener {
                             for(String path : needAdd) {
                                 String name = path;
                                 if (Utilities.isWindows()) {
-                                    path = path.replace('\\', '/');
+                                    path = path.replace('\\', '/'); // NOI18N
                                 }
-                                int i = path.lastIndexOf('/');
+                                int i = path.lastIndexOf('/'); // NOI18N
                                 if (i >= 0){
                                     String folderPath = path.substring(0,i);
                                     Folder prefferedFolder = prefferedFolders.get(folderPath);
+                                    if (prefferedFolder == null) {
+                                        LinkedList<String> mkFolder = new LinkedList<String>();
+                                        while(true) {
+                                            i = folderPath.lastIndexOf('/'); // NOI18N
+                                            if (i > 0) {
+                                                mkFolder.addLast(folderPath.substring(i+1));
+                                                folderPath = folderPath.substring(0,i);
+                                                prefferedFolder = prefferedFolders.get(folderPath);
+                                                if (prefferedFolder != null) {
+                                                    break;
+                                                }
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                        if (prefferedFolder != null) {
+                                            while(true) {
+                                                if (mkFolder.isEmpty()) {
+                                                    break;
+                                                }
+                                                String segment = mkFolder.pollLast();
+                                                prefferedFolder = prefferedFolder.addNewFolder(segment, segment, true, (Folder.Kind)null);
+                                                folderPath+="/"+segment; // NOI18N
+                                                prefferedFolders.put(folderPath, prefferedFolder);
+                                            }
+                                        }
+                                    }
                                     if (prefferedFolder != null) {
-                                        Item item = bridge.createItem(name);
-                                        item = prefferedFolder.addItem(item);
-                                        bridge.setHeaderTool(item);
-                                        if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
-                                            needCheck.add(path);
+                                        String relPath = bridge.getRelativepath(name);
+                                        Item item = bridge.getProjectItem(relPath);
+                                        if (item == null) {
+                                            item = bridge.createItem(name);
+                                            item = prefferedFolder.addItem(item);
+                                        }
+                                        if (item != null) {
+                                            bridge.setHeaderTool(item);
+                                            if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
+                                                needCheck.add(path);
+                                            }
                                         }
                                     }
                                 }
@@ -761,21 +758,23 @@ public class ImportExecutable implements PropertyChangeListener {
             if (!set.contains(path)){
                 set.add(path);
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    try {
-                        String canPath = ff[i].getCanonicalPath();
-                        String absPath = ff[i].getAbsolutePath();
-                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                            continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
                         }
-                    } catch (IOException ex) {
-                        //Exceptions.printStackTrace(ex);
+                        String name = ff[i].getName();
+                        if (result.containsKey(name)) {
+                           result.put(name, ff[i].getAbsolutePath());
+                        }
+                        gatherSubFolders(ff[i], set, result);
                     }
-                    String name = ff[i].getName();
-                    if (result.containsKey(name)) {
-                       result.put(name, ff[i].getAbsolutePath());
-                    }
-                    gatherSubFolders(ff[i], set, result);
                 }
             }
         }

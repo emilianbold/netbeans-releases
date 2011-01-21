@@ -78,6 +78,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
      * Calls to createComponent. Noramalizes size nad assigns
      * helpId based on subclass name.
      */
+    @Override
     public final synchronized Component getComponent() {
         if (panel == null) {
             try {
@@ -100,13 +101,16 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
      */
     protected abstract JComponent createComponent();
 
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public void readSettings(Object settings) {
     }
 
+    @Override
     public void storeSettings(Object settings) {
     }
 
@@ -126,6 +130,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         setValid(false, msg);
     }
 
+    @Override
     public final boolean isValid() {
         return valid;
     }
@@ -135,6 +140,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
     }
 
     // comes on next or finish
+    @Override
     public final void validate () throws WizardValidationException {
         validateBeforeNext();
         if (isValid() == false || errorMessage != null) {
@@ -152,12 +158,14 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
      */
     protected abstract void validateBeforeNext();
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized(listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized(listeners) {
             listeners.remove(l);

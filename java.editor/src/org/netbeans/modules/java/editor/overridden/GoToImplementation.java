@@ -44,6 +44,7 @@ package org.netbeans.modules.java.editor.overridden;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.java.source.CompilationController;
@@ -61,6 +64,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.java.GoToSupport;
 import org.netbeans.modules.editor.java.GoToSupport.Context;
@@ -87,14 +91,29 @@ public final class GoToImplementation extends BaseAction {
     public void actionPerformed(ActionEvent e, final JTextComponent c) {
         goToImplementation(c);
     }
-
+    
     public static void goToImplementation(final JTextComponent c) {
+        final Document doc = c.getDocument();
+        final int caretPos = c.getCaretPosition();
+        final AtomicBoolean cancel = new AtomicBoolean();
+        
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                goToImpl(c, doc, caretPos, cancel);
+            }
+        }, NbBundle.getMessage(GoToImplementation.class, "CTL_GoToImplementation"), cancel, false);
+    }
+
+    public static void goToImpl(final JTextComponent c, final Document doc, final int caretPos, final AtomicBoolean cancel) {
         try {
-            JavaSource.forDocument(c.getDocument()).runUserActionTask(new Task<CompilationController>() {
+            JavaSource.forDocument(doc).runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
+                    if (cancel != null && cancel.get())
+                        return ;
                     parameter.toPhase(Phase.RESOLVED);
                     
-                    Context context = GoToSupport.resolveContext(parameter, c.getDocument(), c.getCaretPosition(), false);
+                    Context context = GoToSupport.resolveContext(parameter, doc, caretPos, false);
 
                     if (context == null || !SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
@@ -104,11 +123,11 @@ public final class GoToImplementation extends BaseAction {
                     Element el = context.resolved;
 
                     TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
-                    ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
+                    final ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
 
                     Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
 
-                    List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
+                    final List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
 
                     if (overridingMethods == null || overridingMethods.isEmpty()) {
                         String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";
@@ -117,22 +136,23 @@ public final class GoToImplementation extends BaseAction {
                         return;
                     }
                     
-                    Point p = new Point(c.modelToView(c.getCaretPosition()).getLocation());
-
-                    SwingUtilities.convertPointToScreen(p, c);
+                    final String caption = NbBundle.getMessage(GoToImplementation.class, method != null ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
                     
-                    performGoToAction(overridingMethods, p, method != null);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            try {
+                                Point p = new Point(c.modelToView(caretPos).getLocation());
+                                IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, overridingMethods), c, p);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                 }
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    static void performGoToAction(List<ElementDescription> declarations, Point position, boolean method) {
-        String caption = NbBundle.getMessage(GoToImplementation.class, method ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
-        
-        PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
     }
 
     private static Set<ElementKind> SUPPORTED_ELEMENTS = EnumSet.of(ElementKind.METHOD, ElementKind.ANNOTATION_TYPE, ElementKind.CLASS, ElementKind.ENUM, ElementKind.INTERFACE);

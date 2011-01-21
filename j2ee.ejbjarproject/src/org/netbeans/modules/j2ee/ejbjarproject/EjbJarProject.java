@@ -52,9 +52,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +63,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -78,7 +77,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.Roots;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
@@ -121,7 +119,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -159,7 +156,6 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
@@ -459,6 +455,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 new EjbJarJPASupport(this),
                 Util.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
+                new EjbJarJPATargetInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
@@ -870,8 +867,8 @@ public class EjbJarProject implements Project, FileChangeListener {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE);
-            if (Boolean.parseBoolean(deployOnSave)) {
+            String compileOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE);
+            if (Boolean.parseBoolean(compileOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
             artifactSupport.enableArtifactSynchronization(true);
@@ -900,6 +897,16 @@ public class EjbJarProject implements Project, FileChangeListener {
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (props.getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE) == null) {
+                String server = evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                props.setProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE, 
+                    server == null ? "false" : DeployOnSaveUtils.isDeployOnSaveSupported(server));
+            }
+            
+            if (props.getProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE) == null) {
+                props.setProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE, 
+                        props.getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+            }
             J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
             J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
@@ -1315,21 +1322,23 @@ public class EjbJarProject implements Project, FileChangeListener {
         }
 
         @Override
-        public Map<Item, String> getArtifacts() {
+        public List<ArtifactCopyOnSaveSupport.Item> getArtifacts() {
             final AntProjectHelper helper = getAntProjectHelper();
 
             ClassPathSupport cs = new ClassPathSupport(evaluator(), getReferenceHelper(), helper,
                 getUpdateHelper(), new ClassPathSupportCallbackImpl(helper));
 
-            Map<Item, String> result = new HashMap<Item, String>();
+            List<ArtifactCopyOnSaveSupport.Item> result = new ArrayList<ArtifactCopyOnSaveSupport.Item>();
             for (ClassPathSupport.Item item : cs.itemsList(
                     helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES)) {
 
                 if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
                     String included = item.getAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT);
+                    String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
                     if (Boolean.parseBoolean(included)) {
-                        result.put(item, "");
+                        result.add(new Item(item,
+                                new ItemDescription("", RelocationType.fromString(dirs))));
                     }
                 }
             }
@@ -1337,8 +1346,13 @@ public class EjbJarProject implements Project, FileChangeListener {
         }
 
         @Override
-        protected Artifact filterArtifact(Artifact artifact) {
-            return artifact.relocatable();
+        protected Artifact filterArtifact(Artifact artifact, RelocationType type) {
+            if (type == RelocationType.ROOT) {
+                return artifact.relocatable();
+            } else if (type == RelocationType.LIB) {
+                return artifact.relocatable("lib"); // NOI18N
+            }
+            return artifact;
         }
 
     }

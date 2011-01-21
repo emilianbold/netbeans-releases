@@ -45,13 +45,12 @@ import java.io.IOException;
 import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -75,7 +74,7 @@ public final class RepositoryPreferences {
     public static final String LOCAL_REPO_ID = "local";//NOI18N
 
     /** location of Maven Central */
-    public static final String REPO_CENTRAL = "http://repo1.maven.org/maven2"; // NOI18N
+    public static final String REPO_CENTRAL = "http://repo1.maven.org/maven2/"; // NOI18N
 
     //TODO - move elsewhere, implementation detail??
     public static final String TYPE_NEXUS = "nexus"; //NOI18N
@@ -94,7 +93,7 @@ public final class RepositoryPreferences {
     public static final int FREQ_ONCE_DAY = 1;
     public static final int FREQ_STARTUP = 2;
     public static final int FREQ_NEVER = 3;
-    private final Map<FileObject, RepositoryInfo> infoCache = new TreeMap<FileObject, RepositoryInfo>(new Comp());
+    private final Map<FileObject, RepositoryInfo> infoCache = new HashMap<FileObject, RepositoryInfo>();
     private static final String REPO_FOLDER = "Projects/org-netbeans-modules-maven/Repositories";
 
     //---------------------------------------------------------------------------
@@ -144,37 +143,33 @@ public final class RepositoryPreferences {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
         if (repoFolder != null) {
             synchronized (infoCache) {
-                for (FileObject fo : repoFolder.getChildren()) {
-                    if (!infoCache.containsKey(fo)) {
-                        RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
-                        infoCache.put(fo, ri);
-                    }
-                }
+                List<FileObject> repos = FileUtil.getOrder(Arrays.asList(repoFolder.getChildren()), false);
                 HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
-                gone.removeAll(Arrays.asList(repoFolder.getChildren()));
+                for (FileObject fo : repos) {
+                    RepositoryInfo ri = infoCache.get(fo);
+                    if (ri == null) {
+                        try {
+                            ri = RepositoryInfo.createRepositoryInfo(fo);
+                            infoCache.put(fo, ri);
+                        } catch (IllegalArgumentException x) {
+                            LOG.log(Level.INFO, fo.getPath(), x);
+                            try {
+                                fo.delete();
+                            } catch (IOException x2) {
+                                LOG.log(Level.INFO, null, x2);
+                            }
+                            continue;
+                        }
+                    }
+                    toRet.add(ri);
+                    gone.remove(fo);
+                }
                 for (FileObject g : gone) {
                     infoCache.remove(g);
                 }
-                toRet.addAll(infoCache.values());
             }
         }
         return toRet;
-    }
-
-    public Set<String> getKnownRepositoryUrls() {
-        Set<String> urls = new HashSet<String>();
-        for (RepositoryInfo ri : getRepositoryInfos()) {
-            if (ri.getRepositoryUrl() != null) {
-                urls.add(ri.getRepositoryUrl());
-            }
-        }
-        // these urls are essential (together with central) for correct
-        // resolution of maven pom urls in libraries
-        urls.add(REPO_CENTRAL);
-        urls.add("http://download.java.net/maven/2");//NOI18N
-        urls.add("http://download.java.net/maven/1");//NOI18N
-        urls.add("http://download.java.net/maven/glassfish");//NOI18N
-        return urls;
     }
 
     /**
@@ -200,7 +195,13 @@ public final class RepositoryPreferences {
             }
             if (info.getRepositoryUrl() != null) {
                 fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
-                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl());
+                String inferred = info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX;
+                Object stored = fo.getAttribute(KEY_INDEX_URL);
+                String updated = info.getIndexUpdateUrl();
+                // #16761 workaround; would prefer to simply store updated == inferred ? null : updated
+                if (!updated.equals(inferred) || (stored != null && !stored.equals(updated))) {
+                    fo.setAttribute(KEY_INDEX_URL, updated);
+                }
             }
         } catch (SyncFailedException x) {
             LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
@@ -261,7 +262,7 @@ public final class RepositoryPreferences {
     }
 
     public int getIndexUpdateFrequency() {
-        return getPreferences().getInt(PROP_INDEX_FREQ, FREQ_ONCE_WEEK);
+        return getPreferences().getInt(PROP_INDEX_FREQ, Boolean.getBoolean("netbeans.full.hack") ? FREQ_NEVER : FREQ_ONCE_WEEK);
     }
 
     public Date getLastIndexUpdate(String repoId) {
@@ -278,41 +279,6 @@ public final class RepositoryPreferences {
 
     public void setIncludeSnapshots(boolean includeSnapshots) {
         getPreferences().putBoolean(PROP_SNAPSHOTS, includeSnapshots);
-    }
-
-
-    private static class Comp implements Comparator<FileObject> {
-
-        @Override
-        public int compare(FileObject o1, FileObject o2) {
-            if (!o1.isValid() && !o2.isValid()) {
-                return 0;
-            }
-            if (!o1.isValid()) {
-                return 1;
-            }
-            if (!o2.isValid()) {
-                return -1;
-            }
-            Integer pos1 = (Integer)o1.getAttribute("position");
-            if (pos1 == null) {
-                LOG.log(Level.WARNING, "FileObject {0} doesn''t have attribute ''position'' defined.", o1.getPath());
-                pos1 = o1.hashCode();
-            }
-            Integer pos2 = (Integer)o2.getAttribute("position");
-            if (pos2 == null) {
-                LOG.log(Level.WARNING, "FileObject {0} doesn''t have attribute ''position'' defined.", o1.getPath());
-                pos2 = o1.hashCode();
-            }
-            if (pos2 > pos1) {
-                return -1;
-            }
-            if (pos2 < pos1) {
-                return 1;
-            }
-            return 0;
-        }
-
     }
 
 }

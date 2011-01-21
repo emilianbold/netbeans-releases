@@ -29,9 +29,12 @@
  */
 package org.netbeans.feedreader;
 
+import org.netbeans.feedreader.nodes.RssNode;
 import java.awt.BorderLayout;
-import java.io.Serializable;
 import javax.swing.ActionMap;
+import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -41,13 +44,17 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
-final class FeedTopComponent extends TopComponent implements ExplorerManager.Provider {
-
-    private static FeedTopComponent instance;
-    
+@ConvertAsProperties(dtd = "-//org.netbeans.feedreader//FeedTopComponent//EN", autostore = false)
+@TopComponent.Description(preferredID = "FeedTopComponent", iconBase="org/netbeans/feedreader/rss16.gif", 
+persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@ActionID(category = "Window", id = "org.netbeans.feedreader.FeedTopComponent")
+@ActionReference(path = "Menu/Window", position=10)
+@TopComponent.OpenActionRegistration(displayName = "#CTL_FeedAction", preferredID = "FeedTopComponent")
+public final class FeedTopComponent extends TopComponent implements ExplorerManager.Provider {
     private final ExplorerManager manager = new ExplorerManager();
     private final BeanTreeView view = new BeanTreeView();
-    
+
     private FeedTopComponent() {
         setName(NbBundle.getMessage(FeedTopComponent.class, "CTL_FeedTopComponent"));
         setToolTipText(NbBundle.getMessage(FeedTopComponent.class, "HINT_FeedTopComponent"));
@@ -64,41 +71,19 @@ final class FeedTopComponent extends TopComponent implements ExplorerManager.Pro
         map.put("delete", ExplorerUtils.actionDelete(manager, true));
         associateLookup(ExplorerUtils.createLookup(manager, map));
     }
-    
-    public static synchronized FeedTopComponent getDefault() {
-        if (instance == null) {
-            instance = new FeedTopComponent();
-        }
-        return instance;
+
+    void writeProperties(java.util.Properties p) {
+        // better to version settings since initial version as advocated at
+        // http://wiki.apidesign.org/wiki/PropertyFiles
+        p.setProperty("version", "1.0");
     }
-    
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+
+    void readProperties(java.util.Properties p) {
+        String version = p.getProperty("version");
     }
-    
-    @Override
-    protected String preferredID() {
-        return "FeedTopComponent";
-    }
-    
-    @Override
-    protected Object writeReplace() {
-        return new ResolvableHelper();
-    }
-    
-    private static final class ResolvableHelper implements Serializable {
-        
-        private static final long serialVersionUID = 1L;
-        
-        public Object readResolve() {
-            return FeedTopComponent.getDefault();
-        }
-        
-    }
-    
+
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-    
+
 }

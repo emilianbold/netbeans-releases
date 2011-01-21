@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+    <!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+    -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Registering a GlassFish Application Server Instance</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Registering a GlassFish Application Server Instance</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>To begin developing enterprise applications you must first register an instance of the
+        GlassFish Server with the IDE.</p>
+
+        <p>If you deploy your applications to a remote instance of the
+        application server, those libraries are available at runtime. However, during
+        development, to compile your project you need a local instance of this server and libraries.</p>
+        <p>You can have multiple instances of the GlassFish application server registered with the
+        IDE, but you must first specify the local folder that contains the local installation of 
+        the server. You only need to specify the location of the local installation once.</p>
+    
+        <p><b>To register an instance of the GlassFish Server:</b></p>
+        <ol>
+            <li>Choose Tools &gt; Servers.</li>
+            <li>In the Servers dialog box, click Add Server to open the Add Server wizard.
+            <ul class="note">
+                <li>Alternatively, right-click the Servers node in the Services window and choose 
+                Add Server. </li>
+            </ul></li>
+            <li>Select the server you want to register.</li>
+            <li>Type a name for the server instance. This name is used to identify the server in the IDE.</li>
+            <li>Click Next.</li>
+            <li>Supply the platform location of the server.</li>
+            <li>Select the type of domain you are registering.
+                <ul class="note">
+                <li>If you are registering the local default domain, the available domains are listed in the drop-down list.
+                If you are registering a remote domain, you need to specify the host and port used to communicate with the remote domain.
+                </li></ul>
+            </li>
+            <li>Click Finish to complete the Add Server Instance wizard. 
+            Alternatively, click Next if you want to enter a username and password for the domain.
+            <ul class="note">
+                <li>If you do not enter a username and password when you register the server instance, 
+                you are prompted to supply the username and password when needed.<br>
+                The default username/password is admin/adminadmin.</li>
+            </ul>
+            </li>
+            <li>Click Close in the Servers dialog box.</li>
+        </ol>  
+        <p>After a server instance is registered with the IDE, a node for the server instance is visible in the Services
+        window under the Servers node. 
+        You can perform the following tasks by right-clicking 
+        the server instance node and choosing a task from the pop-up menu:</p> 
+        <ul>
+            <li>Start and stop a local server instance</li>
+            <li>Remove an instance of the server</li> 
+            <li>Open the server's admin console in a browser</li>
+            <li>View the server log file</li> 
+            <li>View the properties of the server</li>
+            <li>Contact the GlassFish Update Center to check for available software and server updates</li>
+        </ul>
+        <p><b>To remove an instance of the server:</b></p>
+        <ol>
+            <li>Choose Tools &gt; Servers.</li>
+            <li>In the Servers dialog box, select the server name in the left pane.</li>
+            <li>Click Remove.</li>
+            <li>Click Close.</li>
+        </ol>
+        <ul class="note">
+            <li>
+                Alternatively, in the Services window right-click the server instance you want to remove and 
+                choose Remove from the pop-up menu.
+            </li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="working_withSJS.html">Working With the GlassFish Application Server</a></dd>
+        </dl>
+        <hr>
+
+        <small><a href="../../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

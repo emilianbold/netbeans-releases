@@ -184,7 +184,7 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) { // See 193227
             File ioFile = FileUtil.toFile(file);
             if (ioFile.isDirectory()) {
                 return;
@@ -193,7 +193,7 @@ public class MakeTemplateListener implements OperationListener {
                 return;
             }
             String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
-            itemPath = CndPathUtilitities.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             Item item = new Item(itemPath);
 
             folder.addItemAction(item);

@@ -26,14 +26,9 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,15 +36,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -59,12 +49,10 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spi.ErrorRule;
+import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
@@ -75,76 +63,43 @@ import org.openide.util.NbBundle;
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=70746">RFE 70746</a>
  * @see <a href="http://kenai.com/projects/nb-svuid-generator/sources/mercurial/show/src/eu/easyedu/netbeans/svuid">Original Implementation Source Code</a>
  */
-public class SerialVersionUID extends AbstractHint {
-    private static final String SIMPLE_SERIALIZABLE = "Serializable";
+public class SerialVersionUID implements ErrorRule<Void> {
+    public static final Set<String> CODES = Collections.singleton("compiler.warn.missing.SVUID");
 
     private static final String SERIAL = "serial"; //NOI18N
     private static final String SVUID = "serialVersionUID"; //NOI18N
-    private static final String SERIALIZABLE = "java.io.Serializable"; //NOI18N
     private final AtomicBoolean cancel = new AtomicBoolean();
 
     public SerialVersionUID() {
-        super(false, false, AbstractHint.HintSeverity.WARNING);
-    }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(getClass(), "DSC_SerialVersionUID"); //NOI18N
     }
 
     public Set<Kind> getTreeKinds() {
         return TreeUtilities.CLASS_TREE_KINDS;
     }
 
-    public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
+    @Override
+    public Set<String> getCodes() {
+        return CODES;
+    }
+
+    @Override
+    public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
             return null;
         }
-        cancel.set(false);
+
         TypeElement type = (TypeElement) info.getTrees().getElement(treePath);
-        if (type == null || type.getKind() == ElementKind.INTERFACE || type.getKind() == ElementKind.ENUM ||
-                !isSerializable(type) || hasSerialVersionUID(type) || hasSuppressWarning(type, SERIAL)) {
-            return null;
-        }
-        // Contrary to popular belief, abstract classes *should* define serialVersionUID,
-        // according to the documentation of Serializable. It refers to "all classes".
         List<Fix> fixes = new ArrayList<Fix>();
+
         fixes.add(new FixImpl(TreePathHandle.create(treePath, info), false));
         // fixes.add(new FixImpl(TreePathHandle.create(treePath, info), true));
-        ErrorDescription ed = null;
-        String desc = NbBundle.getMessage(getClass(), "ERR_SerialVersionUID"); //NOI18N
-        if (type.getNestingKind().equals(NestingKind.ANONYMOUS)) {
-            SourcePositions pos = info.getTrees().getSourcePositions();
-            Tree clazzTree = null;
-            for (Tree tree : treePath) {
-                if (tree.getKind().equals(Tree.Kind.NEW_CLASS)) {
-                    clazzTree = ((NewClassTree) tree).getIdentifier();
-                    break;
-                }
-            }
-            // clazzTree = treePath.getParentPath().getLeaf() to mark all implementation!
-            if (clazzTree == null) {
-                return null; // return nothing
-            }
-            long start = pos.getStartPosition(info.getCompilationUnit(), clazzTree);
-            long end = pos.getEndPosition(info.getCompilationUnit(), clazzTree);
-            ed = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), (int) start, (int) end);
-        } else {
+
+        if (!type.getNestingKind().equals(NestingKind.ANONYMOUS)) {
             // add SuppressWarning only to non-anonymous class
             fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SERIAL));
-            int[] span = info.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf());
-            if (span == null) { //span cannot be found, do not show anything
-                return null;
-            }
-            ed = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), span[0], span[1]);
         }
 
-        if (cancel.get()) {
-            return null;
-        }
-        return Collections.singletonList(ed);
+        return fixes;
     }
 
     public String getId() {
@@ -236,47 +191,4 @@ public class SerialVersionUID extends AbstractHint {
         }
     }
 
-    private boolean isSerializable(TypeElement type) {
-        if (type.getNestingKind().equals(NestingKind.ANONYMOUS)) {
-            if (type.getSuperclass().toString().equals(SIMPLE_SERIALIZABLE)) {
-                return true;
-            }
-        }
-
-        for (TypeElement t : GeneratorUtils.getAllParents(type)) {
-            if (t.getKind() == ElementKind.INTERFACE && t.getQualifiedName().contentEquals(SERIALIZABLE)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasSerialVersionUID(TypeElement type) {
-        for (VariableElement e : ElementFilter.fieldsIn(type.getEnclosedElements())) {
-            if (e.getSimpleName().contentEquals(SVUID)) {
-                Set<Modifier> modifiers = e.getModifiers();
-                // documentation says ANY-ACCESS-MODIFIER static final long serialVersionUID
-                if (modifiers.containsAll(EnumSet.of(STATIC, FINAL))) {
-                    TypeMirror t = e.asType();
-                    if (t.getKind() != null && t.getKind() == TypeKind.LONG) {
-                        return true;
-                    }
-                }
-
-            }
-        }
-        return false;
-    }
-
-    private static boolean hasSuppressWarning(TypeElement type, String warning) {
-        SuppressWarnings annotation = type.getAnnotation(SuppressWarnings.class);
-        if (annotation != null) {
-            for (String val : annotation.value()) {
-                if (val.equals(warning)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }

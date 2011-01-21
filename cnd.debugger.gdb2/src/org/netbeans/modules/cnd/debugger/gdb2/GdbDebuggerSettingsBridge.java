@@ -181,11 +181,11 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	// Iterate over the environment variable list
         RunProfile mainRunProfile = getMainSettings().runProfile();
 	String [] envvars = mainRunProfile.getEnvironment().getenv();
-	if (envvars == null) 
+	if (envvars == null) {
 	    return;
-	for (int i = 0; i < envvars.length; i++) {
-	    gdbDebugger.setEnv(envvars[i].toString());
-
+        }
+	for (String envVar : envvars) {
+	    gdbDebugger.setEnv(envVar);
 	}
     }
 

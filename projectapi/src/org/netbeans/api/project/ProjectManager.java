@@ -163,7 +163,7 @@ public final class ProjectManager {
      * Cache of loaded projects (modified or not).
      * Also caches a dir which is <em>not</em> a project.
      */
-    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = Collections.synchronizedMap(new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>());
+    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>();
     
     /**
      * Set of modified projects (subset of loaded projects).
@@ -263,9 +263,13 @@ public final class ProjectManager {
                         } else if (o != null && !LoadStatus.SOME_SUCH_PROJECT.is(o)) {
                             Project p = o.first().get();
                             if (p != null) {
-                                LOG.log(Level.FINE, "findProject({0}) in {1}: cached project", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                LOG.log(Level.FINE, "findProject({0}) in {1}: cached project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
                                 return p;
+                            } else {
+                                LOG.log(Level.FINE, "findProject({0}) in {1}: null project reference", new Object[] {projectDirectory, Thread.currentThread().getName()});
                             }
+                        } else {
+                            LOG.log(Level.FINE, "findProject({0} in {1}: no entries among {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), dir2Proj});
                         }
                         // not in cache
                         dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
@@ -275,17 +279,17 @@ public final class ProjectManager {
                             loadingThread.set(ldng);
                         }
                         ldng.add(projectDirectory);
-                        LOG.log(Level.FINE, "findProject({0}) in {1}: will load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                        LOG.log(Level.FINE, "findProject({0}) in {1}: may load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
                     }
                     boolean resetLP = false;
                     try {
                         Project p = createProject(projectDirectory);
-                        LOG.log(Level.FINE, "findProject({0}) in {1}: created new project", new Object[] {projectDirectory, Thread.currentThread().getName()});
                         //Thread.dumpStack();
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
                             projectDirectory.addFileChangeListener(projectDeletionListener);
                             if (p != null) {
+                                LOG.log(Level.FINE, "findProject({0}) in {1}: created new project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
                                 dir2Proj.put(projectDirectory, Union2.<Reference<Project>,LoadStatus>createFirst(new TimedWeakReference<Project>(p)));
                                 resetLP = true;
                                 return p;
@@ -481,8 +485,10 @@ public final class ProjectManager {
                 } finally {
                     if (!resetLP) {
                         // some runtime exception interrupted.
-                        assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
-                        dir2Proj.remove(projectDirectory);
+                        synchronized (dir2Proj) {
+                            assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
+                            dir2Proj.remove(projectDirectory);
+                        }
                     }
                 }
             }
@@ -563,13 +569,23 @@ public final class ProjectManager {
 
         public void notifyDeleted() throws IllegalStateException {
             assert p != null;
+            final FileObject dir = p.getProjectDirectory();
+            LOG.log(Level.FINE, "notifyDeleted: {0}", dir);
             mutex().writeAccess(new Mutex.Action<Void>() {
                 public Void run() {
-                    dir2Proj.remove(p.getProjectDirectory());
+                    synchronized (dir2Proj) {
+                        Union2<Reference<Project>,LoadStatus> o = dir2Proj.get(dir);
+                        if (o != null && o.hasFirst() && o.first().get() == p) {
+                            dir2Proj.remove(dir);
+                        } else {
+                            // #194046: project folder was moved, so now points to new project
+                            LOG.log(Level.FINE, "notifyDeleted skipping dir2Proj update since {0} @{1} != {2}", new Object[] {p, p.hashCode(), o});
+                        }
+                    }
                     proj2Factory.remove(p);
                     modifiedProjects.remove(p);
                     if (!removedProjects.add(p)) {
-                        LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", p.getProjectDirectory());
+                        LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", dir);
                     }
                     //#111892
                     Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
@@ -722,12 +738,18 @@ public final class ProjectManager {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            dir2Proj.remove(fe.getFile());
+            synchronized (dir2Proj) {
+                LOG.log(Level.FINE, "deleted: {0}", fe.getFile());
+                dir2Proj.remove(fe.getFile());
+            }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            dir2Proj.remove(fe.getFile());
+            synchronized (dir2Proj) {
+                LOG.log(Level.FINE, "renamed: {0}", fe.getFile());
+                dir2Proj.remove(fe.getFile());
+            }
         }
         
     }

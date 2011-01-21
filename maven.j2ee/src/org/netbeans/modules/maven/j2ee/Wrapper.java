@@ -93,7 +93,7 @@ public class Wrapper {
                 try {
                     dn = si.getDisplayName();
                 } catch (InstanceRemovedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_Invalid_Server");
                 }
                 return org.openide.util.NbBundle.getMessage(Wrapper.class, "MSG_No_Permanent_Server", dn);
             } else {
@@ -134,24 +134,12 @@ public class Wrapper {
     
     public static ComboBoxUpdater<Wrapper> createComboBoxUpdater(final ModelHandle handle, final JComboBox combo, JLabel label) {
         return  new ComboBoxUpdater<Wrapper>(combo, label) {
+            @Override
             public Wrapper getDefaultValue() {
-                Wrapper wr = null;
-                String id = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
-                if (id != null) {
-                    wr = Wrapper.findWrapperByInstance(id, combo);
-                }
-                if (wr == null) {
-                    String str = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
-                    if (str == null) {
-                        str = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD);
-                    }
-                    if (str != null) {
-                        wr = findWrapperByType(str, combo);
-                    }
-                }
-                return wr;
+                return null;
             }
 
+            @Override
             public Wrapper getValue() {
                 Wrapper wr = null;
                 String id = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
@@ -175,6 +163,7 @@ public class Wrapper {
                 return wr;
             }
 
+            @Override
             public void setValue(Wrapper wr) {
                 if (wr == null) {
                     return;

@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.indexer.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -143,7 +144,10 @@ public final class QueryRequest extends Observable {
     public void addResults(List<NBVersionInfo> newResults, boolean queryFinished) {
         synchronized (results) {
             if (null!=newResults) results.addAll(newResults);
-            if (queryFinished) this.queryFinished = true;
+            if (queryFinished) {
+                this.queryFinished = true;
+                Collections.sort(results);
+            }
             setChanged();
             notifyObservers();
         }

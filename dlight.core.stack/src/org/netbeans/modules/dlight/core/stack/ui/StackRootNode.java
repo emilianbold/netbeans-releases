@@ -61,22 +61,26 @@ final class StackRootNode extends AbstractNode{
     private final Image icon;
     private final Action[] actions;
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack, Action[] actions) {
-        super(stack == null || stack.size() == 0 ? Children.LEAF : new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack));
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, 
+            Icon icon, String stackName, List<FunctionCall> stack, Action[] actions, boolean useHtmlFormat) {
+        super(stack == null || stack.size() == 0 ? Children.LEAF :
+            new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack, useHtmlFormat));
         //super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren(new CallStackTreeModel(sourceFileInfoDataProvider, stack),stack.get(stack.size() - 1)));
         this.stackName = stackName;
         this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;
         this.actions = actions == null ? new Action[0] : actions;
     }
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, 
+            String stackName, List<FunctionCall> stack, boolean useHtmlFormat) {
      //   super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
-        this(sourceFileInfoDataProvider, icon, stackName, stack, null);
+        this(sourceFileInfoDataProvider, icon, stackName, stack, null, useHtmlFormat);
 
     }
     
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
-        this(sourceFileInfoDataProvider, null, stackName, stack);
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, 
+            String stackName, List<FunctionCall> stack, boolean useHtmlFormat) {
+        this(sourceFileInfoDataProvider, null, stackName, stack, useHtmlFormat);
     }
 
     @Override

@@ -51,7 +51,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
-import java.util.List;
 import java.util.Map;
 
 import org.openide.ErrorManager;
@@ -62,7 +61,6 @@ import org.openide.windows.InputOutput;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -89,7 +87,7 @@ public abstract class Executor {
     }
 
     public boolean isRemote() {
-	return Host.isRemote(host);
+	return host.isRemote();
     }
 
     public abstract ExecutionEnvironment getExecutionEnvironment();
@@ -104,14 +102,10 @@ public abstract class Executor {
 
     public abstract void sigqueue(int sig, int data) throws IOException;
 
-    public abstract Platform platform();
-
     public abstract String readlink(long pid);
 
     public abstract boolean is_64(String p);
 
-    public abstract boolean svc_is64();
-	    
     public abstract InputStream getInputStream();
 
     public abstract OutputStream getOutputStream();
@@ -120,7 +114,7 @@ public abstract class Executor {
     public abstract int startShellCmd(String engine_argv[]);
 
     public abstract int startEngine(String engine_path, String engine_argv[], Map<String, String> additionalEnv,
-			            TermComponent console);
+			            TermComponent console, boolean usePty, boolean disableEcho);
 
     public abstract String getStartError();
 
@@ -128,26 +122,6 @@ public abstract class Executor {
      * Wait for command started with either startShellCmd() or startEngine().
      */
     protected abstract int waitForEngine() throws InterruptedException ;
-
-
-
-    /**
-     * Run a command and wait til it's output is closed.
-     * The output can then be retrieved with getCmdOutput() or
-     * getCmdOutputLines().
-     */
-    public abstract void runShellCmd(String engine_argv[]);
-
-    /**
-     * Retrieve the output of the command run by runShellCmd() as one string
-     */
-    public abstract String getCmdOutput();
-
-    /**
-     * Retrieve the output of the command run by runShellCmd() separated into
-     * lines.
-     */
-    public abstract List<String> getCmdOutputLines();
 
     protected void destroyEngine() {
 	destroyedByHand = true;
@@ -158,8 +132,6 @@ public abstract class Executor {
      * Post an error if exits abnormally.
      */
     public abstract void reap();
-
-    public abstract void cleanup();
 
     public boolean destroyedByHand() {
 	return destroyedByHand;

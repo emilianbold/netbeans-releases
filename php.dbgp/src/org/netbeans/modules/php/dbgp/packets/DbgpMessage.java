@@ -46,6 +46,7 @@ package org.netbeans.modules.php.dbgp.packets;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.util.HashMap;
@@ -61,6 +62,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
+import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
@@ -78,6 +80,7 @@ import org.xml.sax.SAXException;
  */
 public abstract class DbgpMessage {
     
+    private static final Logger LOGGER = Logger.getLogger(DbgpMessage.class.getName());
 
     private static final String ERR_PACKET_ERROR 
                                                 = "ERR_PacketError";    // NOI18N
@@ -308,20 +311,62 @@ public abstract class DbgpMessage {
         }
     }
     
+    /**
+     * Remove invalid XML characters from the string
+     * @param text The string containing xml message.
+     * @return
+     */
+    private static String removeNonXMLCharacters(String text) {
+        StringBuilder out = new StringBuilder();
+        StringBuilder errorMessage = null;
+        int codePoint;           
+        int index = 0;
+        while (index < text.length()) {
+            codePoint = text.codePointAt(index);
+            if ((codePoint == 0x9) ||
+                    (codePoint == 0xA)
+                    || (codePoint == 0xD)
+                    || ((codePoint >= 0x20) && (codePoint <= 0xD7FF))
+                    || ((codePoint >= 0xE000) && (codePoint <= 0xFFFD))
+                    || ((codePoint >= 0x10000) && (codePoint <= 0x10FFFF))) {
+                out.append(Character.toChars(codePoint));
+            } else {
+                if (errorMessage == null) {
+                    errorMessage = new StringBuilder();
+                    errorMessage.append("The message from xdebug contains invalid XML characters: ");  //NOI18N
+                } else {
+                    errorMessage.append(", ");      //NOI18N
+                }
+                errorMessage.append(codePoint);
+            }
+            index += Character.charCount(codePoint);
+        }
+        if (errorMessage != null) {
+            errorMessage.append("\nPlease mentioned it in http://netbeans.org/bugzilla/show_bug.cgi?id=179309."); //NOI18N
+            LOGGER.warning(errorMessage.toString());
+        }
+        return out.toString();
+    } 
+
     private static Node getNode( byte[] bytes ) throws IOException {
         if ( BUILDER == null || bytes == null ) {
             return null;
         }
         try {
-            InputSource is = new InputSource(new ByteArrayInputStream( bytes ));
+            // this is basically workaround for a bug in xdebug, where xdebug
+            // includes invalid xml characters into the message.
+            String input = removeNonXMLCharacters(new String(bytes));
+            InputSource is = new InputSource(new StringReader(input));
             is.setEncoding("UTF-8");
             Document doc = BUILDER.parse( is );
             return doc.getDocumentElement();
         }
         catch (SAXException e) {
             notifyPacketError(e);
+            
+            return null;
         }
-        return null;
+        //return null;
     }
     
     private static String replaceHtmlEntities( String str ) {

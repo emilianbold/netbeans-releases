@@ -60,6 +60,8 @@ import javax.swing.border.*;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import org.netbeans.api.debugger.Properties;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
@@ -86,12 +88,13 @@ import org.netbeans.modules.cnd.debugger.common2.utils.MRUComboBoxModel;
 import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostList;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostListEditor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
+import org.openide.util.NbBundle;
 
 /**
  * Panel which presents a list of available processes and lets user
@@ -144,7 +147,7 @@ public final class AttachPanel extends TopComponent {
     private String lastExecPath = null;
 
     // <From Process>
-    private final EngineDescriptor engine;
+    private EngineDescriptor engine;
 
     /** Don't allow filter unless filterReady is true */
     private boolean filterReady = false;
@@ -180,7 +183,7 @@ public final class AttachPanel extends TopComponent {
 
     private void initializeNew() {
         initRemoteHost();
-        lastHostChoice = hostChoices[0];
+        lastHostChoice = null;
         lastFilter = (String) filterCombo.getSelectedItem();
     }
 
@@ -188,7 +191,7 @@ public final class AttachPanel extends TopComponent {
         this.dialogManager = dialogManager;
         this.okButton = okButton;
 
-        lastHostChoice = hostChoices[0]; // always localhost when dialog first shown
+        lastHostChoice = null;
         hostCombo.setSelectedIndex(0);   // always localhost when dialog first shown
         filterCombo.setSelectedItem(lastFilter);
         executableProjectPanel.initGui();
@@ -204,7 +207,7 @@ public final class AttachPanel extends TopComponent {
         updateRemoteHostList();
 
         if (DebuggerManager.isStandalone()) {
-            HostList hostlist = hostList();
+            CustomizableHostList hostlist = DebuggerManager.get().getHostList();
 
             // listen to host list model
             if (hostlist != null) {
@@ -216,7 +219,7 @@ public final class AttachPanel extends TopComponent {
                         if (hostName != null)
                         {
                             hostCombo.setSelectedItem(hostName);
-			    setHostChoice(hostName);
+			    setHostChoice(hostName, hostCombo);
                         }
                         return;
                     // setDirty(true);
@@ -225,33 +228,17 @@ public final class AttachPanel extends TopComponent {
             }
         } else {
         }
-        hostCombo.setSelectedIndex(0);
     }
 
     /**
      * Refresh hostCombo with new remote host list.
      */
     private void updateRemoteHostList() {
-        if (DebuggerManager.isStandalone()) {
-            HostList hostlist = hostList();
-            if (hostlist != null) {
-                hostChoices = hostlist.getRecordsDisplayName();
-            }
-        } else {
-            hostChoices = CndRemote.getServerListIDs();
-        }
-
-        hostCombo.removeAllItems();
-        if (hostChoices != null) {
-            for (int i = 0; i < hostChoices.length; i++) {
-                hostCombo.addItem(hostChoices[i]);
-            }
-        }
-
+        fillHostsCombo(hostCombo);
         // current value
-        setHostChoice(lastHostChoice);
+        setHostChoice(lastHostChoice, hostCombo);
     }
-
+    
     /**
      * Override the regular cell renderer so we can add margins to the
      * text in the cells.
@@ -334,17 +321,11 @@ public final class AttachPanel extends TopComponent {
         filterCombo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                String ac = evt.getActionCommand();
-                if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
-                    JComboBox cb = (JComboBox) evt.getSource();
-                    if (cb != null) {
-                        String filter = (String) cb.getSelectedItem();
-                        if (filter != null) {
-                            lastFilter = filter;
-                        }
-                    }
+                String filter = (String) filterCombo.getSelectedItem();
+                if (filter != null && !filter.equals(lastFilter)) {
+                    lastFilter = filter;
+                    refreshProcesses(null, false);
                 }
-                refreshProcesses(null, false);
 
             // An attempt to fix 6642223 ...
 		/* LATER
@@ -364,9 +345,10 @@ public final class AttachPanel extends TopComponent {
             }
         });
 
-        JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
+        final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
+                lastFilter = cbEditor.getText();
                 refreshProcesses(null, false);
             }
         });
@@ -383,8 +365,8 @@ public final class AttachPanel extends TopComponent {
                 String ac = evt.getActionCommand();
                 if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
                     JComboBox cb = (JComboBox) evt.getSource();
-                    if (cb != null) {
-                        String hostName = (String) cb.getSelectedItem();
+                    if (cb != null && cb.getItemCount() > 0) {
+                        String hostName = getHostName();
                         if (hostName != null && !hostName.equals(lastHostChoice)) {
                             refreshProcesses(hostName, true);
                             lastHostChoice = hostName;
@@ -527,7 +509,9 @@ public final class AttachPanel extends TopComponent {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                procTableClicked(evt);
+                if (procTable.isEnabled()) {
+                    procTableClicked(evt);
+                }
             }
         });
 
@@ -623,14 +607,19 @@ public final class AttachPanel extends TopComponent {
 	}
     }
     
-    private void doAttach() {
+    private void doAttach(String loadedPID) {
 
-        int selectedRow = procTable.getSelectedRow();
-        if (selectedRow == -1) {
-            return;
+        Object pidobj = loadedPID;
+
+        if (pidobj == null) {
+
+            int selectedRow = procTable.getSelectedRow();
+            if (selectedRow == -1) {
+                return;
+            }
+
+            pidobj = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx());
         }
-
-        Object pidobj = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx());
 
         if (pidobj instanceof String) {
             ProjectSupport.ProjectSeed seed;
@@ -699,20 +688,7 @@ public final class AttachPanel extends TopComponent {
      * May return null if the current selectionis not in the remote host DB.
      */
     private String getHostName() {
-        // 6939252
-        int selectedIndex = hostCombo.getSelectedIndex();
-        return CndRemote.hostNameFromIndex(selectedIndex);
-    }
-
-    static Host getHost(String hostName) {
-        if (hostName == null) {
-            hostName = "localhost"; // NOI18N
-        }
-        if (hostName.indexOf("(") != -1) { // NOI18N
-            return CndRemote.hostFromDispName(null, hostName);
-        } else {
-            return CndRemote.hostFromName(null, hostName);
-        }
+        return hostCombo.getSelectedItem().toString();
     }
 
     //
@@ -756,6 +732,15 @@ public final class AttachPanel extends TopComponent {
             }
         }
         return items;
+    }
+    
+    private void tableInfo(final String infoKey) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                procTable.setEnabled(false);
+                processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
+            }
+        });
     }
 
     /**
@@ -820,13 +805,8 @@ public final class AttachPanel extends TopComponent {
             //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
             final boolean getAllProcesses = false;
 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    procTable.setEnabled(false);
-                    processModel.setDataVector(new Object[][]{{Catalog.get("MSG_Gathering_Data")}}, new Object[]{" "}); //NOI18N
-                }
-            });
-
+            tableInfo("MSG_Gathering_Data"); //NOI18N
+            
             CndRemote.validate(hostName, new Runnable() {
                 public void run() {
                     requestProcesses(fre, hostname, getAllProcesses);
@@ -838,40 +818,9 @@ public final class AttachPanel extends TopComponent {
     }
 
     private void requestProcesses(final Pattern re, final String hostname, final boolean getAll) {
-        final Host selectedHost = getHost(hostname);
-
-	/* use RP instead of Thread
-        Thread t = new Thread() {
-
-            @Override
-            public void run() {
-                finishFilter(selectedHost, fpsProvider, re, getAll);
-            }
-        };
-        t.start();
-	*/
-
-        getDataAsyc(selectedHost, getAll, new Runnable() {
-            public void run() {
-                filterProcesses(re);
-            }
-        });
-    }
-
-    private static class AttachTableModel extends DefaultTableModel {
-        @Override
-        public boolean isCellEditable(int row, int col) {
-            return false;
-        }
-    }
-
-    private final static RequestProcessor getPcRP =  
-				new RequestProcessor("processes"); // throughput 1 // NOI18N
-
-    private void getDataAsyc(final Host selectedHost,
-            final boolean getAll, final Runnable continuation) {
-	Runnable asycData = new Runnable() {
+        Runnable asycData = new Runnable() {
 	    public void run() {
+                final Host selectedHost = Host.byName(hostname);
                 PsProvider psProvider = PsProvider.getDefault(selectedHost);
                 if (psProvider == null) {
                     // "clear" the table
@@ -886,7 +835,11 @@ public final class AttachPanel extends TopComponent {
 			psProvider.getData(getAll); // may take a while
 		setPsData(data);
 		try {
-		    javax.swing.SwingUtilities.invokeAndWait(continuation);
+		    javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            filterProcesses(re);
+                        }
+                    });
 		} catch (Exception x) {
 		    x.printStackTrace();
 		}
@@ -895,6 +848,16 @@ public final class AttachPanel extends TopComponent {
 
 	RequestProcessor.Task task = getPcRP.post(asycData);
     }
+
+    private static class AttachTableModel extends DefaultTableModel {
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return false;
+        }
+    }
+
+    private final static RequestProcessor getPcRP =  
+				new RequestProcessor("processes"); // throughput 1 // NOI18N
 
     private PsProvider.PsData psData = null;
 
@@ -911,6 +874,7 @@ public final class AttachPanel extends TopComponent {
         final PsProvider.PsData psData = getPsData();
 
         if (psData == null) {
+            tableInfo("MSG_PS_Failed"); //NOI18N
             return;
         }
 
@@ -988,7 +952,6 @@ public final class AttachPanel extends TopComponent {
     private javax.swing.JLabel tableLabel;
     private javax.swing.JCheckBox allProcessesCheckBox;
     private javax.swing.JPanel buttonRowPanel;
-    private String[] hostChoices = null;
     private static String lastHostChoice;
     private static String lastFilter;
     private javax.swing.JComboBox hostCombo;
@@ -997,7 +960,7 @@ public final class AttachPanel extends TopComponent {
     private final AttachController controller = new AttachController();
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
-        public abstract void documentChanged(DocumentEvent e);
+        protected abstract void documentChanged(DocumentEvent e);
 
         public void changedUpdate(DocumentEvent e) {
             documentChanged(e);
@@ -1016,23 +979,28 @@ public final class AttachPanel extends TopComponent {
         return controller;
     }
 
-    private class AttachController implements Controller {
+    // This class is made public, to support attach history
+    // see org.netbeans.modules.debugger.ui.actions.ConnectorPanel.ok() method implementation
+    public class AttachController implements Controller {
 
         private final PropertyChangeSupport pcs =
                 new PropertyChangeSupport(this);
+        private String loadedPID = null;
 
         // interface Controller
         final public boolean isValid() {
 	    if (!ckMatch())
 		return false;
 
-            int selectedRow = procTable.getSelectedRow();
-            if (selectedRow == -1) {
-                return false;
-            }
-            Object pidobj = processModel.getValueAt(selectedRow, 1);
-            if (!(pidobj instanceof String)) {
-                return false;
+            if (loadedPID == null) {
+                int selectedRow = procTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    return false;
+                }
+                Object pidobj = processModel.getValueAt(selectedRow, 1);
+                if (!(pidobj instanceof String)) {
+                    return false;
+                }
             }
             return true;
         }
@@ -1045,7 +1013,7 @@ public final class AttachPanel extends TopComponent {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        doAttach();
+                        doAttach(loadedPID);
                     }
                 });
                 return true;
@@ -1072,6 +1040,78 @@ public final class AttachPanel extends TopComponent {
         private void validChanged() {
             pcs.firePropertyChange(Controller.PROP_VALID, null, null);
         }
+
+        private static final String COMMAND_PROP = "command"; //NOI18N
+        private static final String EXECUTABLE_PATH_PROP = "executable_path"; //NOI18N
+        private static final String SELECTED_PROJECT_PROP = "selected_project"; //NOI18N
+        private static final String ENGINE_PROP = "engine"; //NOI18N
+        private static final String HOST_NAME_PROP = "host_name"; //NOI18N
+        private static final String NO_EXISTING_PROCESS = "qwdq123svdfv"; //NOI18N
+
+        public boolean load(Properties props) {
+            Vector<Vector<String>> processes = psData.processes(Pattern.compile(props.getString(COMMAND_PROP, NO_EXISTING_PROCESS)));
+            if (processes.isEmpty()) {
+                return false;
+            }
+            EngineType et = EngineTypeManager.getEngineTypeByID(props.getString(ENGINE_PROP, "")); //NOI18N
+            if (et == null) {
+                return false;
+            }
+            String hostName = props.getString(HOST_NAME_PROP, ""); //NOI18N
+            hostCombo.setSelectedItem(hostName);
+            if (!hostCombo.getSelectedItem().equals(hostName)) {
+                return false;
+            }
+            String selectedProject = props.getString(SELECTED_PROJECT_PROP, "");  //NOI18N
+            if (!executableProjectPanel.containsProjectWithPath(selectedProject)) {
+                return false;
+            }
+            executableProjectPanel.setSelectedProjectByPath(selectedProject);
+            loadedPID = processes.get(0).get(psData.pidColumnIdx());
+            executableProjectPanel.setExecutablePath(props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
+            engine = new EngineDescriptor(et);
+            return true;
+        }
+
+        public void save(Properties props) {
+            String selectedCommand = getSelectedProcessCommand();
+            if (selectedCommand != null) {
+                props.setString(COMMAND_PROP, selectedCommand);
+                props.setString(EXECUTABLE_PATH_PROP, executableProjectPanel.getExecutablePath());
+                props.setString(SELECTED_PROJECT_PROP, executableProjectPanel.getSelectedProjectPath());
+                props.setString(ENGINE_PROP, engine.getType().getDebuggerID());
+                props.setString(HOST_NAME_PROP, (String) hostCombo.getSelectedItem());
+            }
+        }
+
+        public String getDisplayName() {
+            String selectedCommand = getSelectedProcessCommand();
+            if (selectedCommand != null) {
+                return getString("ATTACH_HISTORY_MESSAGE", (new File(selectedCommand)).getName(), (String) hostCombo.getSelectedItem()); //NOI18N
+            }
+            return ""; //NOI18N
+        }
+
+        private String getSelectedProcessCommand() {
+            int selectedRow = procTable.getSelectedRow();
+            if (selectedRow == -1) {
+                return null;
+            }
+            return getProcessCommand(selectedRow);
+        }
+
+        private String getProcessCommand(int row) {
+            Object commandobj = processModel.getValueAt(row, getPsData().commandColumnIdx());
+            if (commandobj instanceof String) {
+                return (String) commandobj;
+            }
+            return null;
+        }
+
+        private String getString(String key, String... a1) {
+            return NbBundle.getMessage(AttachController.class, key, a1);
+        }
+
     }
 
     private void hostsButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1103,22 +1143,39 @@ public final class AttachPanel extends TopComponent {
 	    */
         }
     }
+    
+    public static void fillHostsCombo(JComboBox combo) {
+        String[] hostChoices = null;
+        if (DebuggerManager.isStandalone()) {
+            CustomizableHostList hostlist = DebuggerManager.get().getHostList();
+            if (hostlist != null) {
+                hostChoices = hostlist.getRecordsDisplayName();
+            }
+        } else {
+            hostChoices = CndRemote.getServerListIDs();
+        }
 
-    private HostList hostList() {
-        return DebuggerManager.get().getHostList();
+        combo.removeAllItems();
+        if (hostChoices != null) {
+            for (String item : hostChoices) {
+                combo.addItem(item);
+            }
+        }
     }
 
-    private void setHostChoice(String hostname) {
-        if (hostList() == null) {
+    public static void setHostChoice(String hostname, JComboBox combo) {
+        if (hostname == null) {
+            combo.setSelectedIndex(0);
             return;
         }
-
-        int hx = hostList().getHostIndexByName(hostname);
-        if (hx != -1) {
-            hostCombo.setSelectedIndex(hx);
-        } else {
-            hostCombo.setSelectedIndex(0);
+        for(int i=0; i < combo.getModel().getSize(); i++) {
+            Object item = combo.getModel().getElementAt(i);
+            if (item.toString().startsWith(hostname)) {
+                combo.setSelectedIndex(i);
+                return;
+            }
         }
+        combo.setSelectedIndex(0);
     }
 
     @Override

@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -238,6 +239,20 @@ public class FileUtils {
             }
         }
         throw new IOException("Can not delete: " + orig.getAbsolutePath());  // NOI18N
+    }
+    
+    /**
+     * Normalizes the given file and return a FileObject
+     * @param file
+     * @return 
+     */
+    public static FileObject toFileObject(File file) {
+        File nfile = FileUtil.normalizeFile(file);
+        if(nfile != null) {
+            return FileUtil.toFileObject(nfile);
+        } else {
+            return FileUtil.toFileObject(file);            
+        }
     }
     
     private static BufferedInputStream createInputStream(File file) throws IOException {

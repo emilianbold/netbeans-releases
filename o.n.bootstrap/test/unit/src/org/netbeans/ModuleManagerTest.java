@@ -2625,6 +2625,19 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testMissingSpecVersion() throws Exception {
+        File dir = getWorkDir();
+        ModuleManager mgr = new ModuleManager(new MockModuleInstaller(), new MockEvents());
+        mgr.mutexPrivileged().enterWriteAccess();
+        File jar = new File(dir, "api.jar");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: api\n\n");
+        mgr.create(jar, null, false, false, false);
+        jar = new File(dir, "client.jar");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:OpenIDE-Module: client\nOpenIDE-Module-Module-Dependencies: api > 1.0\n\n");
+        Module client = mgr.create(jar, null, false, false, false);
+        assertEquals(1, client.getProblems().size());
+    }
+
     private File copyJar(File file, String manifest) throws IOException {
         File ret = File.createTempFile(file.getName(), "2ndcopy", file.getParentFile());
         JarFile jar = new JarFile(file);

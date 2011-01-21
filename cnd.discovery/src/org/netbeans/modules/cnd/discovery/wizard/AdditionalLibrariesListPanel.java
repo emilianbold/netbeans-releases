@@ -60,7 +60,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 /**
@@ -92,20 +91,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
 
     @Override
     public String addAction() {
-        FileFilter[] filters;
-        if (Utilities.isWindows()){
-            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-        }  else {
-            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getElfDynamicLibraryFileFilter()};
-        }
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
         FileChooser fileChooser = new FileChooser(
                 getString("LIBRARY_CHOOSER_TITLE_TXT"),
                 getString("LIBRARY_CHOOSER_BUTTON_TXT"),
@@ -121,7 +107,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         StringBuilder buf = new StringBuilder();
         for (File item : fileChooser.getSelectedFiles()){
             String itemPath = item.getPath();
-            itemPath = CndPathUtilitities.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
             if (buf.length() > 0) {
                 buf.append(';');
             }
@@ -189,15 +175,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        List<String> vector = getListData();
-        Object[] arr = vector.toArray();
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == o) {
-                vector.remove(i);
-                vector.add(i, newS);
-                break;
-            }
-        }
+        replaceElement(o, newS);
     }
     
     private String getString(String key) {

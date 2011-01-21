@@ -30,7 +30,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change>
+            <api name="database_explorer_api"/>
+            <summary>Allow specify display name of the DatabaseConnection</summary>
+            <version major="1" minor="42"/>
+            <date day="22" month="11" year="2010"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes"/>
+            <description>
+                Allow to specify the display name of the connection as it shows
+                under the Databases node. Added new factory method to create
+                database connection with given display name.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseConnection"/>
+            <issue number="192150"/>
+        </change>
         <change>
             <api name="database_explorer_api"/>
             <summary>Add a DatabaseConnection.getJDBCDriver() method</summary>

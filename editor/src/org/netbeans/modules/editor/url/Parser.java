@@ -64,13 +64,13 @@ public final class Parser {
         OUTER: for (int cntr = 0; cntr < text.length(); cntr++) {
             char ch = text.charAt(cntr);
 
-            if (state == 5) {
+            if (state == 6) {
                 if (Character.isLetterOrDigit(ch)) {
                     continue OUTER;
                 }
 
                 switch (ch) {
-                    case '/': case '.': case '?': //NOI18N
+                    case '/': case '.': case '?': case '+': //NOI18N
                     case '%': case '_': case '~': case '=': //NOI18N
                     case '\\':case '&': case '$': case '-': //NOI18N
                     case '\'':case '#': case ',': case ':'://NOI18N
@@ -97,17 +97,18 @@ public final class Parser {
                     if (state == 1) {
                         state = 2;
                         continue OUTER;
-                    } else {
-                        if (state == 2) {
+                    } else if (state == 2) {
                             state = 3;
                             continue OUTER;
-                        }
+                    } else if (state == 7) {
+                        state = 8;
+                        continue OUTER;
                     }
                     break;
                 case 'f': //NOI18N
                     if (state == 0) {
                         lastURLStart = cntr;
-                        state = 2;
+                        state = 7;
                         continue OUTER;
                     }
                     break;
@@ -115,11 +116,20 @@ public final class Parser {
                     if (state == 3) {
                         state = 4;
                         continue OUTER;
+                    } else if (state == 8) {
+                        state = 5;
+                        continue OUTER;
+                    }
+                    break;
+                case 's': //NOI18N
+                    if (state == 4) {
+                        state = 5;
+                        continue OUTER;
                     }
                     break;
                 case ':': //NOI18N
-                    if (state == 4) {
-                        state = 5;
+                    if (state == 4 || state == 5) {
+                        state = 6;
                         continue OUTER;
                     }
                     break;
@@ -129,14 +139,14 @@ public final class Parser {
             lastURLStart = (-1);
         }
 
-        if (lastURLStart != (-1) && state == 5) {
+        if (lastURLStart != (-1) && state == 6) {
             result.add(new int[] {lastURLStart, text.length()});
         }
         
         return result;
     }
     
-    private static final Pattern URL_PATTERN = Pattern.compile("(http|ftp):[0-9a-zA-Z/.?%_~=\\\\&$\\-'#,:]*"); //NOI18N
+    private static final Pattern URL_PATTERN = Pattern.compile("(https|http|ftp):[0-9a-zA-Z/.?%+_~=\\\\&$\\-'#,:]*"); //NOI18N
 
     public static Iterable<int[]> recognizeURLsREBased(CharSequence text) {
         Matcher m = URL_PATTERN.matcher(text);

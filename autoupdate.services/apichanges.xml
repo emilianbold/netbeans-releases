@@ -57,6 +57,25 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="custom-icons">
+            <api name="general"/>
+            <summary>Icons for update centers</summary>
+            <version major="1" minor="23"/>
+            <date day="10" month="1" year="2011"/>
+            <author login="jtulach"/>   
+            <compatibility addition="yes" binary="compatible" deletion="no"
+                deprecation="yes" semantic="compatible" source="compatible"  
+            />
+            <description>
+                <p>
+                Define icon when specifying an update center using 
+                <code>categoryIconBase</code> attribute.
+                </p>
+            </description>
+            <class package="org.netbeans.api.autoupdate" name="UpdateElement"/>
+            <class package="org.netbeans.api.autoupdate" name="UpdateUnitProvider"/>
+            <issue number="183778"/>
+        </change>
         <change id="source-group-modifier">
             <api name="general"/>
             <summary>Feature enabled only when all its dependencies are enabled</summary>

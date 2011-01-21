@@ -97,6 +97,7 @@ final class CopyHandler implements OperationListener {
                 CompilationUnitTree compilationUnitTree = workingCopy.getCompilationUnit();
                 // change the package when file was move to different dir.
                 CompilationUnitTree cutCopy = make.CompilationUnit(
+                        compilationUnitTree.getPackageAnnotations(),
                         "".equals(packageName) ? null : make.Identifier(packageName), // NOI18N
                         compilationUnitTree.getImports(),
                         compilationUnitTree.getTypeDecls(),

@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.java.hints;
 
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -187,7 +188,7 @@ public class StaticImport extends AbstractHint {
         return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
 
-    public static final class FixImpl implements Fix, Task<WorkingCopy> {
+    public static final class FixImpl implements EnhancedFix, Task<WorkingCopy> {
 
         private final TreePathHandle handle;
         private final String fqn;
@@ -242,6 +243,11 @@ public class StaticImport extends AbstractHint {
             CompilationUnitTree cut = copy.getCompilationUnit();
             CompilationUnitTree nue = JavaFixAllImports.addImports(cut, Collections.singletonList(fqn), make, true);
             copy.rewrite(cut, nue);
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return "\uFFFFa";
         }
     }
 

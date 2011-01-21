@@ -48,6 +48,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
@@ -76,6 +80,9 @@ public final class JAXWSLightSupport {
 
     private JAXWSLightSupportImpl impl;
     private PropertyChangeSupport propertyChangeSupport;
+    private ReentrantReadWriteLock myLock;
+    private ReadLock myReadLock;
+    private WriteLock myWriteLoick; 
 
     static  {
         JAXWSLightSupportAccessor.DEFAULT = new JAXWSLightSupportAccessor() {
@@ -96,6 +103,9 @@ public final class JAXWSLightSupport {
         }
         this.impl = impl;
         propertyChangeSupport = new PropertyChangeSupport(this);
+        myLock = new ReentrantReadWriteLock();
+        myReadLock = myLock.readLock();
+        myWriteLoick = myLock.writeLock();
     }
 
     /** Returns instance of JAXWSLightSupport from project's lookup, or null if not present.
@@ -123,6 +133,7 @@ public final class JAXWSLightSupport {
      * @param service service or client
      */
     public void addService(JaxWsService service) {
+        checkLock();
         impl.addService(service);
         propertyChangeSupport.firePropertyChange(PROPERTY_SERVICE_ADDED, null, service);
     }
@@ -132,7 +143,13 @@ public final class JAXWSLightSupport {
      * @return list of web services
      */
     public List<JaxWsService> getServices() {
-        return impl.getServices();
+        myReadLock.lock();
+        try {
+            return impl.getServices();
+        }
+        finally {
+            myReadLock.unlock();
+        }
     }
 
     /** Remove JAX-WS service from project.
@@ -140,10 +157,20 @@ public final class JAXWSLightSupport {
      * @param service service
      */
     public void removeService(JaxWsService service) {
+        checkLock();
         impl.removeService(service);
         propertyChangeSupport.firePropertyChange(PROPERTY_SERVICE_REMOVED, service, null);
     }
-
+    
+    public void runAtomic( Runnable runnable ){
+        myWriteLoick.lock();
+        try {
+            runnable.run();
+        }
+        finally {
+            myWriteLoick.unlock();
+        }
+    }
 
     /** Get deployment descriptor folder for the project (folder containing configuration files, like web.xml).
      *
@@ -194,14 +221,22 @@ public final class JAXWSLightSupport {
      *
      * @param pcl
      */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener pcl) {
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
         propertyChangeSupport.addPropertyChangeListener(pcl);
     }
     /** Unregister property change listener from JAX-WS support
      *
      * @param pcl
      */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener pcl) {
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         propertyChangeSupport.removePropertyChangeListener(pcl);
+    }
+    
+    private void checkLock() {
+        if ( !myWriteLoick.isHeldByCurrentThread() ){
+            throw new IllegalStateException("Trying to invoke mutable operation " +
+                    "outside of transaction. Atomic access should be used " +
+                    "for mutable opertations");
+        }
     }
 }

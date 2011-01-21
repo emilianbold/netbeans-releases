@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!--
+ * Copyright 2009 Sun Microsystems, Inc.
+ * All rights reserved. Use is subject to license terms.
+-->
+<title>Deployment Descriptor Visual Editor: Servlets</title>
+  
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Deployment Descriptor Visual Editor: Servlets</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp; </small></p>
+<p>Configure properties for a servlet.</p>
+<ul>
+  <li><b>Servlet Name.</b> Read-only field displaying the servlet name for
+identification purposes only.<br>
+  </li>
+  <li><b>Run As Role.</b> If a run-as role name was designated in the <tt>web.xml</tt>
+file, then this field displays the run-as role value (read only). If no
+run-as role name was specified in the <tt>web.xml</tt> file, then this field is
+blank and disabled.<br>
+  </li>
+ <!-- TODO -- update this page -- <li>User in Role: This field is disabled if the run-as role field is
+disabled. If the run-as role field displays a value, then the user can
+set a role name that becomes the principal role under which the servlet
+is run.<br>
+  </li>-->
+  <li><b>Principal Name.</b> The name of the principal assigned to a security role. 
+  The name of the principal must match a name specified on the GlassFish application server.</li>
+  <li><b>Class Name.</b> This field specifies the implementation class.</li>
+</ul>
+<p>For servlet-based web service endpoint configuration, see <a href="WebserviceDescriptor.html">Web Service Descriptor</a></p>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../../ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/configure/configure_webapp_dd.html">Editing a Web Application's Deployment Descriptors</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_changeserver.html">Changing
+    the Target Server</a></dd>
+    <dd><tt>glassfish-web.xml</tt> Visual Editor:</dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppGeneral.html">General</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SecurityWebRoleMapping.html">Security</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebserviceDescriptor.html">Web Services</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messaging</a></dd>
+    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../appclientconfigeditors/sun-applicationclient_env.html">Environment</a></dd>
+</dl>
+<hr>
+<small><a href="../../../credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

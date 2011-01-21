@@ -463,6 +463,9 @@ public final class ELTypeUtilities {
                         current = parent.jjtGetChild(i);
                         if (current instanceof AstPropertySuffix || current instanceof AstMethodSuffix) {
                             method = getElementForProperty(current, enclosing);
+                            if(method == null) {
+                                continue;
+                            }
                             enclosing = info.getTypes().asElement(getReturnType(method));
                         }
                     }
@@ -562,6 +565,10 @@ public final class ELTypeUtilities {
                                 };
                                 runTask(task);
                                 enclosing = task.getResult();
+
+                                if(enclosing == null) {
+                                    return ;
+                                }
                             } else {
                                 enclosing = propertyType;
                             }

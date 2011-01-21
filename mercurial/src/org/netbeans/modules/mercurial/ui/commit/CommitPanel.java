@@ -196,9 +196,9 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                           "initFilesPanel",                             //NOI18N
                           DEFAULT_DISPLAY_FILES);
         if (!hooks.isEmpty()) {
-            hooksSectionButton.setText((hooks.size() == 1)
-                                       ? hooks.iterator().next().getDisplayName()
-                                       : getMessage("LBL_Advanced"));   //NOI18N
+            Mnemonics.setLocalizedText(hooksSectionButton, (hooks.size() == 1)
+                                           ? hooks.iterator().next().getDisplayName()
+                                           : getMessage("LBL_Advanced")); // NOI18N                 
             initSectionButton(hooksSectionButton, hookSectionPanel,
                               "initHooksPanel",                         //NOI18N
                               DEFAULT_DISPLAY_HOOKS);
@@ -281,7 +281,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             JTabbedPane hooksTabbedPane = new JTabbedPane();
             for (HgHook hook : hooks) {
                 hooksTabbedPane.add(hook.createComponent(hookContext),
-                                    hook.getDisplayName());
+                                    hook.getDisplayName().replaceAll("\\&", ""));
             }
             hookSectionPanel.add(hooksTabbedPane);
         }
@@ -366,7 +366,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/load_template.png"))); // NOI18N
         templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
 
-        messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
+        messageTextArea.setColumns(70);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(4);
         messageTextArea.setTabSize(4);

@@ -96,11 +96,12 @@ public interface GitClient {
     /**
      * Prints content of an index entry accordant with the given file to output stream
      * @param file
+     * @param stage 
      * @param out output stream
      * @return true if the file was found in the index and printed to out, otherwise false
      * @throws GitException
      */
-    public boolean catIndexEntry (File file, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
+    public boolean catIndexEntry (File file, int stage, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
@@ -109,7 +110,24 @@ public interface GitClient {
      * @throws GitException other error
      */
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    
+    /**
+     * Checks out the the state of a given revision.
+     * @param revision cannot be null
+     * @param failOnConflict if set to false, the command tries to merge local changes into the new branch
+     * @throws GitException other error
+     */
+    public void checkoutBranch (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
+    /**
+     * Cleans the working tree by recursively removing files that are not under 
+ *   * version control starting from the given roots.
+     * @param roots
+     * @param monitor
+     * @throws GitException 
+     */
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException;
+    
     /**
      * Commits all changes made in the index to all files under the given roots
      * @param roots
@@ -131,11 +149,29 @@ public interface GitClient {
     public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Creates a new branch with a given name, starting at revision
+     * @param branchName
+     * @param revision
+     * @param monitor
+     * @return created branch
+     * @throws GitException  an error occurs
+     */
+    public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+    
+    /**
      * Returns all branches
      * @param all if false then only local branches will be returned
      * @return
      */
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
+     * @param roots 
+     * @param monitor
+     * @return
+     */
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException;
 
     /**
      * Returns an array of statuses for files under given roots
@@ -158,6 +194,39 @@ public interface GitClient {
      * XXX init what???
      */
     public void init (ProgressMonitor monitor) throws GitException;
+
+    /**
+     * TODO is this method really necessary?
+     * Returns files that are marked as modified between the HEAD and Index.
+     * @param roots
+     * @throws GitException when an error occurs
+     */
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Digs through the repository's history and returns the revision information belonging to the given revision string.
+     * @param revision
+     * @param monitor
+     * @return revision
+     */
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Digs through the repository's history and returns revisions according to the given search criteria.
+     * @param searchCriteria
+     * @param monitor 
+     * @return revisions that fall between the given boundaries
+     */
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Merges a given revision with the current head
+     * @param revision
+     * @param monitor
+     * @return result of the merge
+     * @throws GitException an error occurs
+     */
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree

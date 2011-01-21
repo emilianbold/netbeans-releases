@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.pty;
 
-import org.netbeans.modules.nativeexecution.support.HelperUtility;
+import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 
 /**
  *

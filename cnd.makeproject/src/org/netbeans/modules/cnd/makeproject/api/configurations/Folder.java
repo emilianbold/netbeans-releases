@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +66,6 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -81,8 +81,12 @@ import org.openide.util.WeakSet;
 public class Folder implements FileChangeListener, ChangeListener {
 
     public enum Kind {
-
-        SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST
+        ROOT,
+        SOURCE_LOGICAL_FOLDER,
+        SOURCE_DISK_FOLDER,
+        IMPORTANT_FILES_FOLDER,
+        TEST_LOGICAL_FOLDER,
+        TEST
     };
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
@@ -99,14 +103,22 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String root;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static boolean checkedLogging = checkLogging();
-    private Kind kind;
+    private final Kind kind;
 
-    public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
+    public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles, Kind kind) {
         this.configurationDescriptor = configurationDescriptor;
         this.parent = parent;
         this.name = name;
         this.displayName = displayName;
         this.projectFiles = projectFiles;
+        if (kind == null) {
+            if (parent.isDiskFolder()) {
+                kind = Kind.SOURCE_DISK_FOLDER;
+            } else {
+                kind = Kind.SOURCE_LOGICAL_FOLDER;
+            }
+        }
+        this.kind = kind;
         this.items = new ArrayList<Object>();
     }
 
@@ -116,10 +128,6 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public void pack() {
         items.trimToSize();
-    }
-
-    private void setKind(Kind kind) {
-        this.kind = kind;
     }
 
     public Kind getKind() {
@@ -140,16 +148,16 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String rootPath = getRootPath();
         String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
-        AbsRootPath = CndFileUtils.normalizeAbsolutePath(AbsRootPath);
-
+        AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, getProject());
         FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
-        CndUtils.assertNotNull(folderFile, "null folder file object"); //NOI18N
-        if (folderFile == null) {
-            return;
-        }
+//        if (folderFile == null) { // see IZ 194221
+//            // that's a normal situation when moving or deleting items and folders
+//            log.log(Level.FINEST, "Null file object; folder kind: {0}, path: {1}", new Object[] { kind, AbsRootPath }); //NOI18N
+//            return;
+//        }
 
         // Folders to be removed
-        if (!folderFile.isValid()
+        if (folderFile == null || !folderFile.isValid()
                 || !folderFile.isFolder()
                 || !VisibilityQuery.getDefault().isVisible(folderFile)
                 || getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
@@ -334,7 +342,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             reversePath(aParent, builder, fromRoot);
             builder.append('/'); // NOI18N
         }
-        if (fromRoot && folder.getRoot() != null) {
+        if (fromRoot && folder.isDiskFolder() && folder.getRoot() != null) {
             builder.append(folder.getRoot());
         } else {
             builder.append(folder.getName());
@@ -364,17 +372,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean isDiskFolder() {
-        Folder f = this;
-        while (true) {
-            if (f.getRoot() != null) {
-                return true;
-            }
-            f = f.getParent();
-            if (f == null) {
-                break;
-            }
-        }
-        return false;
+        return getKind() == Kind.SOURCE_DISK_FOLDER;
     }
 
     public boolean isTestLogicalFolder() {
@@ -389,8 +387,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         return getKind() == Kind.TEST;
     }
 
-    public ArrayList<Object> getElements() {
-        return items;
+    public List<Object> getElements() {
+        return Collections.unmodifiableList(items);
     }
 
     private void reInsertElement(Object element) {
@@ -673,8 +671,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Folder addNewFolder(String name, String displayName, boolean projectFiles, Kind kind) {
-        Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
-        newFolder.setKind(kind);
+        Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles, kind);
         addFolder(newFolder, true);
         return newFolder;
     }
@@ -914,8 +911,12 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
     public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
-        ArrayList<DataObject> files = new ArrayList<DataObject>();
+        LinkedHashSet<DataObject> files = new LinkedHashSet<DataObject>();
+        getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
+        return files;
+    }
 
+    private void getAllItemsAsDataObjectSet(Set<DataObject> files, boolean projectFilesOnly, String MIMETypeFilter) {
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
@@ -925,14 +926,11 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
                         files.add(da);
                     }
-                }
-                if (item instanceof Folder) {
-                    files.addAll(((Folder) item).getAllItemsAsDataObjectSet(projectFilesOnly, MIMETypeFilter));
+                } else if (item instanceof Folder) {
+                    ((Folder) item).getAllItemsAsDataObjectSet(files, projectFilesOnly, MIMETypeFilter);
                 }
             }
         }
-
-        return new LinkedHashSet<DataObject>(files);
     }
 
     /*
@@ -1076,7 +1074,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String itemPath = file.getPath();
         itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = CndPathUtilitities.normalize(itemPath);
+        itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
         Item item = new Item(itemPath);
         addItemAction(item, false);
     }
@@ -1094,7 +1092,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 // It is possible that short-living temporary folder is created while building project
                 return;
             }
-            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false);
+            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
         }
     }
 

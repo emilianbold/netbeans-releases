@@ -182,6 +182,30 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return "[" + getStartOffset() + "-" + getEndOffset() + "]"; // NOI18N
     }
 
+    protected CharSequence getPositionString() {
+        StringBuilder sb = new StringBuilder(); 
+        sb.append('[');
+        CsmFile containingFile = getContainingFile();
+        if (containingFile == null) {
+            sb.append(" NO CONTAINER ").append(fileUID);// NOI18N
+        } else {
+            sb.append(containingFile.getName());
+        }
+        sb.append(' ');
+        Position pos;
+        pos = getStartPosition();
+        sb.append(pos.getLine());
+        sb.append(':');
+        sb.append(pos.getColumn());
+        sb.append('-');
+        pos = getEndPosition();
+        sb.append(pos.getLine());
+        sb.append(':');
+        sb.append(pos.getColumn());
+        sb.append(']');
+        return sb;
+    }
+
     @Override
     public String toString() {
         return getOffsetString();

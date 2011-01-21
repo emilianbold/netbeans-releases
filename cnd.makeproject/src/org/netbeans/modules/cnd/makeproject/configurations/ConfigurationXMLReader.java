@@ -78,7 +78,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
     private static int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-    private FileObject projectDirectory;
+    private final FileObject projectDirectory;
     private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
@@ -117,7 +117,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                         try {
                             Thread.sleep(10000); // to emulate long reading for testing purpose
                         } catch (InterruptedException ex) {
-                            ex.printStackTrace();
+                            ex.printStackTrace(System.err);
                         }
                     }
                     if (_read(relativeOffset, tag, xml, configurationDescriptor) == null) {
@@ -213,7 +213,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             SwingUtilities.invokeLater(warning);
         }
 
-        if (configurationDescriptor.getModified()) {
+        if (configurationDescriptor.isModified()) {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }

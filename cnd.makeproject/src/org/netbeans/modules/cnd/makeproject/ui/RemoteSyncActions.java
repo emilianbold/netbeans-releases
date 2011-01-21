@@ -490,7 +490,8 @@ class RemoteSyncActions {
 
     private static void gatherFiles(Collection<File> files, Folder folder) {
         for (Item item : folder.getItemsAsArray()) {
-            File file = item.getFile();
+            FileObject fo = item.getFileObject();            
+            File file = FileUtil.toFile(fo);
             if (file != null && !file.isDirectory()) {
                 files.add(file);
             }

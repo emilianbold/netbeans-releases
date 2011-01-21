@@ -243,6 +243,12 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             if (!CsmBaseUtilities.isValid(referencedObject)) {
                 return new Problem(true, NbBundle.getMessage(CsmRefactoringPlugin.class, "DSC_ElementNotResolved"));
             }
+            if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
+                CsmFunction functionDeclaration = CsmBaseUtilities.getFunctionDeclaration((CsmFunction)referencedObject);
+                if (functionDeclaration == null) {
+                    return new Problem(true, NbBundle.getMessage(CsmRefactoringPlugin.class, "DSC_MethodElementWithoutDeclaration"));
+                }
+            }
             // element is still available
             return null;
         }

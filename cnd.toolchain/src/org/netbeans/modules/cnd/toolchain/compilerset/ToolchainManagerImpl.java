@@ -130,14 +130,14 @@ public final class ToolchainManagerImpl {
                 descriptors.add(new ToolchainDescriptorImpl(v));
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
         if (CREATE_SHADOW && !NbPreferences.forModule(ToolchainManagerImpl.class).getBoolean(SHADOW_KEY, false)) {
             try {
                 writeToolchains();
                 NbPreferences.forModule(ToolchainManagerImpl.class).putBoolean(SHADOW_KEY, true);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
     }
@@ -165,7 +165,7 @@ public final class ToolchainManagerImpl {
                                     displayName = bundle.getString(file.getPath());
                             }
                         } catch (MissingResourceException ex) {
-                            ex.printStackTrace();
+                            ex.printStackTrace(System.err);
                         }
                     }
                     CompilerVendor v = new CompilerVendor(file.getNameExt()+".xml", position.intValue()); // NOI18N
@@ -181,14 +181,14 @@ public final class ToolchainManagerImpl {
                 descriptors.add(new ToolchainDescriptorImpl(v));
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
         if (CREATE_SHADOW && !NbPreferences.forModule(ToolchainManagerImpl.class).getBoolean(SHADOW_KEY, false)) {
             try {
                 writeToolchains();
                 NbPreferences.forModule(ToolchainManagerImpl.class).putBoolean(SHADOW_KEY, true);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
     }
@@ -201,7 +201,7 @@ public final class ToolchainManagerImpl {
             writeToolchains();
             NbPreferences.forModule(ToolchainManagerImpl.class).putBoolean(SHADOW_KEY, true);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         descriptors.clear();
         initToolchainManager();
@@ -259,7 +259,7 @@ public final class ToolchainManagerImpl {
             read(file.getInputStream(), v, cache);
             return true;
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return false;
     }
@@ -279,7 +279,7 @@ public final class ToolchainManagerImpl {
             SAXParser saxParser = spf.newSAXParser();
             xmlReader = saxParser.getXMLReader();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
             return false;
         }
         SAXHandler handler = new SAXHandler(v, cache);
@@ -289,7 +289,7 @@ public final class ToolchainManagerImpl {
             InputSource source = new InputSource(inputStream);
             xmlReader.parse(source);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
             return false;
         }
         return true;

@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
@@ -426,10 +427,22 @@ public class ProjectManagerTest extends NbTestCase {
             }
         });
     }
-    
-    private void assertNoAccess() {
-        assertFalse("No read access", ProjectManager.mutex().isReadAccess());
-        assertFalse("No write access", ProjectManager.mutex().isWriteAccess());
+
+    public void testRenameProjectFolder() throws Exception { // #194046
+        FileObject p1 = scratch.createFolder("p1");
+        p1.createFolder("testproject");
+        Project project1 = pm.findProject(p1);
+        FileObject p2;
+        FileLock lock = p1.lock();
+        try {
+            p2 = p1.move(lock, scratch, "p2", null);
+        } finally {
+            lock.releaseLock();
+        }
+        assertEquals(p1, p2);
+        Project project2 = pm.findProject(p2);
+        TestUtil.notifyDeleted(project1);
+        assertEquals(project2, pm.findProject(p2));
     }
     
     /**

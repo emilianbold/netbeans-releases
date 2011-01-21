@@ -18,9 +18,11 @@ import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Coord;
+import org.netbeans.lib.terminalemulator.Term;
 
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.terminal.example.Config;
 
@@ -86,17 +88,30 @@ public class ControlView {
 					  IOSelect.AdditionalOperation.REQUEST_ACTIVE);
 		    IOSelect.select(action.io, extraOps);
 		}
+
 		else if (action.cmd.equals("visibility: on")) {
 		    IOVisibility.setVisible(action.io, true);
 		}
 		else if (action.cmd.equals("visibility: off")) {
 		    IOVisibility.setVisible(action.io, false);
 		}
+
 		else if (action.cmd.equals("closable: true")) {
 		    IOVisibility.setClosable(action.io, true);
 		}
 		else if (action.cmd.equals("closable: false")) {
 		    IOVisibility.setClosable(action.io, false);
+		}
+
+		else if (action.cmd.equals("debug: on")) {
+		    Term term = IOTerm.term(action.io);
+                    if (term != null)
+                        term.setDebugFlags(Term.DEBUG_INPUT|Term.DEBUG_OUTPUT |Term.DEBUG_OPS);
+		}
+		else if (action.cmd.equals("debug: off")) {
+		    Term term = IOTerm.term(action.io);
+                    if (term != null)
+                        term.setDebugFlags(0);
 		}
 
 		refresh();
@@ -241,6 +256,15 @@ public class ControlView {
 	} else {
 	    printf("IOEmulation not supported");
 	}
+	printf("\n");
+
+        if (IOTerm.isSupported(io)) {
+            tabTo(8);
+	    printf("debug: ");
+	    printAction(io, "on", "debug: on");
+            printf(" ");
+	    printAction(io, "off", "debug: off");
+        }
 	printf("\n");
 
 	tabTo(8);

@@ -172,15 +172,17 @@ public class CndCoreTestUtils {
         toDir.mkdirs();
         assert (toDir.isDirectory());
         File files[] = sourceDir.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            File curFile = files[i];
-            File newFile = new File(toDir, curFile.getName());
-            if (curFile.isDirectory()) {
-                copyDirToWorkDir(curFile, newFile);
-            } else {
-                copyToWorkDir(curFile, newFile);
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                File curFile = files[i];
+                File newFile = new File(toDir, curFile.getName());
+                if (curFile.isDirectory()) {
+                    copyDirToWorkDir(curFile, newFile);
+                } else {
+                    copyToWorkDir(curFile, newFile);
+                }
             }
-        }        
+        }
     }  
     
     public static boolean diff(File first, File second, File diff) throws IOException {

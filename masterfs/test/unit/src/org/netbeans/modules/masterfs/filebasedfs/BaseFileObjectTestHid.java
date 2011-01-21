@@ -150,6 +150,18 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue(newFile.getAbsolutePath(), fo.isData());
     }
 
+    public void testCaseSensitiveFolderRename() throws Exception {
+        FileObject parent = root.getFileObject("testdir/mountdir10");
+        List<FileObject> arr = Arrays.asList(parent.getChildren());
+        FileLock lock = parent.lock();
+        final String up = parent.getName().toUpperCase();
+        parent.rename(lock, up, null);
+        assertEquals("Capital name", up, parent.getNameExt());
+        
+        List<FileObject> now = Arrays.asList(parent.getChildren());
+        assertEquals("Same children: ", arr, now);
+    }
+    
     public void testRootToFileObject() throws Exception {
         FileObjectFactory fs = FileObjectFactory.getInstance(getWorkDir());
         assertNotNull(fs);
@@ -822,7 +834,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         // #176032
         testdir = root.getFileObject(".");
         assertNotNull(testdir);
-        testdir = root.getFileObject("..");
+        testdir = root.getParent();
         assertNotNull(testdir);
     }
     

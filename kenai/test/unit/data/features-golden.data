@@ -3,58 +3,52 @@ WIKI
 Wiki
 null
 wiki
-https://testkenai.com/projects/golden-project-1/pages/Home
+https://testjava.net/projects/nb-jnet-test/pages/Home
 forum
 FORUM
 General Discussion
 null
 forum
-https://testkenai.com/projects/golden-project-1/forums/forum
+https://testjava.net/projects/nb-jnet-test/forums/forum
 subversion
 SOURCE
 Subversion Repository
-https://svn.testkenai.com/svn/golden-project-1~subversion
+https://svn.testjava.net/svn/nb-jnet-test~subversion
 subversion
-https://testkenai.com/projects/golden-project-1/sources/subversion/show
+https://testjava.net/projects/nb-jnet-test/sources/subversion/show
 commits
 LISTS
 Commits Mailing List
 null
 lists
-https://testkenai.com/projects/golden-project-1/lists/commits/archive
+https://testjava.net/projects/nb-jnet-test/lists/commits/archive
 issues
 LISTS
 Issues Mailing List
 null
 lists
-https://testkenai.com/projects/golden-project-1/lists/issues/archive
-golden-project-1bugzilla
+https://testjava.net/projects/nb-jnet-test/lists/issues/archive
+nb-jnet-testbugzilla
 ISSUES
 Bugzilla
-http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1
+http://testjave.net/bugzilla/buglist.cgi?product=nb-jnet-test
 bugzilla
-http://testkenai.com/bugzilla/buglist.cgi?product=golden-project-1&order=Importance&limit=25
-golden-project-1
+http://testjava.net/bugzilla/buglist.cgi?product=nb-jnet-test&order=Importance&limit=25
+nb-jnet-test
 CHAT
 chat
 null
 instant_messenger
-https://testkenai.com/projects/golden-project-1/instant_messenger/golden-project-1
+https://testjava.net/projects/nb-jnet-test/instant_messenger/nb-jnet-test
 source-code-repository2
 SOURCE
 Source Code Repository
-https://hg.testkenai.com/hg/golden-project-1~source-code-repository2
+https://hg.testjava.net/hg/nb-jnet-test~source-code-repository2
 mercurial
-https://testkenai.com/projects/golden-project-1/sources/source-code-repository2/show
-jira
-ISSUES
-Issue Tracking
-http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
-jira
-http://testkenai.com/jira/browse/GOLDEN_PROJECT_1
+https://testjava.net/projects/nb-jnet-test/sources/source-code-repository2/show
 downloads
 DOWNLOADS
 Downloads
-https://testkenai.com/projects/golden-project-1/downloads
+https://testjava.net/projects/nb-jnet-test/downloads
 downloads
-https://testkenai.com/projects/golden-project-1/downloads
+https://testjava.net/projects/nb-jnet-test/downloads

@@ -42,7 +42,7 @@ do
     fi
 done
 
-ant generate-golden-files generate-files-layout index-layer-paths || exit
+ant generate-golden-files generate-files-layout index-layer-paths summarize-hgmail || exit
 generated=nbbuild/build/generated
 cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
 if wget -O nbbuild/build/old-generated.zip "${JOB_URL}lastSuccessfulBuild/artifact/nbbuild/build/generated/*zip*/generated.zip"; then

@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 /**
@@ -57,7 +58,7 @@ import java.util.ArrayList;
  * </ul>
  */
 
-public class MITList extends MIValue {
+public class MITList extends MIValue implements Iterable<MITListItem> {
 
     private final ArrayList<MITListItem> list;
     private final boolean isList;
@@ -108,6 +109,9 @@ public class MITList extends MIValue {
 	return true;
     }
 
+    public Iterator<MITListItem> iterator() {
+        return list.iterator();
+    }
 
     /* OLD
     // interface MIValue

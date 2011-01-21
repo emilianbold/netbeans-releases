@@ -93,37 +93,39 @@ public class UserNode extends LeafNode {
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if( null == panel ) {
-            panel = new JPanel( new GridBagLayout() );
-            panel.setOpaque(false);
+        synchronized(this) { // ensure panel and it's components created before accessing them
+            if( null == panel ) {
+                panel = new JPanel( new GridBagLayout() );
+                panel.setOpaque(false);
 
-            btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
-                    dashboard.createLoginAction());
-            btnLogout = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Logout"), getLogoutAction());
-            lblUser = new TreeLabel();
-            lblProgress = createProgressLabel(progressTitle); //NOI18N
-            btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_kenai_project.png", true), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
-            btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"));
-            btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/new_kenai_project.png", true), ProjectAccessor.getDefault().getNewKenaiProjectAction()); //NOI18N
-            btnNewProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_NewKenaiProject"));
-            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/refresh.png", true), new AbstractAction() { //NOI18N
-                public void actionPerformed(ActionEvent e) {
-                    DashboardImpl.getInstance().refreshProjects();
-                }
-            });
-            btnRefresh.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_Refresh"));
+                btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
+                        dashboard.createLoginAction());
+                btnLogout = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Logout"), getLogoutAction());
+                lblUser = new TreeLabel();
+                lblProgress = createProgressLabel(progressTitle); //NOI18N
+                btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_kenai_project.png", true), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
+                btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"));
+                btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/new_kenai_project.png", true), ProjectAccessor.getDefault().getNewKenaiProjectAction()); //NOI18N
+                btnNewProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_NewKenaiProject"));
+                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/refresh.png", true), new AbstractAction() { //NOI18N
+                    public void actionPerformed(ActionEvent e) {
+                        DashboardImpl.getInstance().refreshProjects();
+                    }
+                });
+                btnRefresh.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_Refresh"));
 
-            panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
-            panel.add( lblUser, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
-            panel.add( lpar, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnLogout, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( rpar, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( lblProgress, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnRefresh, new GridBagConstraints(8,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            panel.add( btnNewProject, new GridBagConstraints(9,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            panel.add( btnOpenProject, new GridBagConstraints(10,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
+                panel.add( lblUser, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
+                panel.add( lpar, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( btnLogout, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( rpar, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( lblProgress, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( btnRefresh, new GridBagConstraints(8,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+                panel.add( btnNewProject, new GridBagConstraints(9,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                panel.add( btnOpenProject, new GridBagConstraints(10,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            }
         }
 
         lblProgress.setForeground(foreground);

@@ -138,7 +138,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     @Override
     public Lookup getLookup() {
-        if (curData == null) {
+        if (curData == null || !curData.isValid()) {
             return this.panelUI.getLookup();
         } else {
             if (this.panelUI.getLookup().lookup(Node.class) == null) {

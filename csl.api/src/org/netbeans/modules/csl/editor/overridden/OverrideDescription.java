@@ -77,4 +77,9 @@ public class OverrideDescription {
 
         return ImageUtilities.image2Icon(ImageUtilities.mergeImages(ImageUtilities.icon2Image(icon), badge, 16, 0));
     }
+
+    public boolean isOverridden() {
+        return overriddenFlag;
+    }
+    
 }

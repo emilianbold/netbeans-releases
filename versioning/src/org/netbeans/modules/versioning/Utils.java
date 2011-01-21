@@ -78,7 +78,7 @@ public class Utils {
     /**
      * Request processor for long running tasks.
      */
-    private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
+    private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1, false, false);
 
     /**
      * Keeps the nb masterfilesystem
@@ -103,10 +103,16 @@ public class Utils {
         Set<File> roots = new HashSet<File>(files.size());
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
-            roots.add(new FlatFolder(FileUtil.toFile(folder).getAbsolutePath()));
+            File file = FileUtil.toFile(folder);
+            if (file != null) {
+                roots.add(new FlatFolder(file.getAbsolutePath()));
+            }
         } else {
             for (FileObject fo : files) {
-                roots.add(FileUtil.toFile(fo));
+                File file = FileUtil.toFile(fo);
+                if (file != null) {
+                    roots.add(file);
+                }
             }
         }
         return Accessor.VCSContextAccessor.createContextForFiles(roots, files);

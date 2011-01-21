@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.source.save;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -55,9 +56,9 @@ import org.netbeans.modules.java.source.save.CasualDiff.Diff;
  * @author Pavel Flaska
  */
 class DiffFacility {
-    CasualDiff gdiff;
+    private final Collection<Diff> gdiff;
 
-    public DiffFacility(CasualDiff diff) {
+    public DiffFacility(Collection<Diff> diff) {
         this.gdiff = diff;
     }
     
@@ -129,7 +130,7 @@ class DiffFacility {
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                gdiff.append(Diff.insert(delEnd == Difference.NONE ? 
+                gdiff.add(Diff.insert(delEnd == Difference.NONE ?
                         delStart < lines1.length ? lines1[delStart].start + offset : (lines1.length != 0 ? lines1[lines1.length-1].end + offset : offset)
                         : lines1[delEnd].end + offset,
                         builder.toString()));
@@ -138,7 +139,7 @@ class DiffFacility {
 
             // deletion
             else if (type == 'd') {
-                gdiff.append(Diff.delete(lines1[delStart].start + offset, lines1[delEnd].end + offset));
+                gdiff.add(Diff.delete(lines1[delStart].start + offset, lines1[delEnd].end + offset));
             }
             
             // change
@@ -164,7 +165,7 @@ class DiffFacility {
                     }
                     String s = builder.toString();
                     if (!"".equals(s)) {
-                        gdiff.append(Diff.insert(lines1[delEnd].end + offset, s));
+                        gdiff.add(Diff.insert(lines1[delEnd].end + offset, s));
                     }
                 } else {
                     //one step change
@@ -223,15 +224,15 @@ class DiffFacility {
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                gdiff.append(Diff.insert(currentPos + (delEnd == Difference.NONE ?
-                        delStart < lines1.length ? lines1[delStart].start : lines1[lines1.length-1].end
+                gdiff.add(Diff.insert(currentPos + (delEnd == Difference.NONE ?
+                        delStart < lines1.length ? lines1[delStart].start : (lines1.length > 0 ? lines1[lines1.length-1].end : 0)
                         : lines1[delEnd].end),
                         builder.toString()));
             }
             
             // deletion
             else if (type == 'd') {
-                gdiff.append(Diff.delete(currentPos + lines1[delStart].start, currentPos + lines1[delEnd].end));
+                gdiff.add(Diff.delete(currentPos + lines1[delStart].start, currentPos + lines1[delEnd].end));
             }
             
             // change
@@ -240,12 +241,12 @@ class DiffFacility {
                 /*for (int i = delStart; i <= delEnd; i++) {
                     builder.append(lines1[i].data);
                 }*/
-                gdiff.append(Diff.delete(currentPos + lines1[delStart].start, currentPos + lines1[delEnd].end));
+                gdiff.add(Diff.delete(currentPos + lines1[delStart].start, currentPos + lines1[delEnd].end));
                 //builder = new StringBuilder();
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                gdiff.append(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
+                gdiff.add(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
                         builder.toString()));
             }
                     

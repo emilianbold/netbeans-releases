@@ -45,10 +45,10 @@
 package org.netbeans.api.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -63,7 +63,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
 import org.openide.util.Parameters;
@@ -105,7 +104,7 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class ElementHandle<T extends Element> {
-    private static Logger log = Logger.getLogger(ElementHandle.class.getName());
+    private static final Logger log = Logger.getLogger(ElementHandle.class.getName());
     static {
         ElementHandleAccessor.INSTANCE = new ElementHandleAccessorImpl ();
     }
@@ -135,10 +134,10 @@ public final class ElementHandle<T extends Element> {
         T result = resolveImpl (compilationInfo.impl.getJavacTask());
         if (result == null) {
             if (log.isLoggable(Level.INFO))
-                log.log(Level.INFO, "Cannot resolve: "+toString()); //NOI18N                
+                log.log(Level.INFO, "Cannot resolve: {0}", toString()); //NOI18N                
         } else {
             if (log.isLoggable(Level.FINE))
-                log.log(Level.FINE, "Resolved element = " + result);
+                log.log(Level.FINE, "Resolved element = {0}", result);
         }
         return result;
     }
@@ -146,7 +145,7 @@ public final class ElementHandle<T extends Element> {
     
     private T resolveImpl (final JavacTaskImpl jt) {
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Resolving element kind: " + this.kind); // NOI18N       
+            log.log(Level.FINE, "Resolving element kind: {0}", this.kind); // NOI18N       
         switch (this.kind) {
             case PACKAGE:
                 assert signatures.length == 1;
@@ -162,8 +161,8 @@ public final class ElementHandle<T extends Element> {
             case CONSTRUCTOR:            
             {
                 assert signatures.length == 3;
-                final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
-                if (type != null) {
+                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                if (type instanceof TypeElement) {
                    final List<? extends Element> members = type.getEnclosedElements();
                    for (Element member : members) {
                        if (this.kind == member.getKind()) {
@@ -174,16 +173,18 @@ public final class ElementHandle<T extends Element> {
                            }
                        }
                    }
-                } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind);  // NOI18N
+                } else if (type != null) {
+                    return (T) new Symbol.MethodSymbol(0, jt.getElements().getName(this.signatures[1]), Symtab.instance(jt.getContext()).unknownType, (Symbol)type);
+                } else 
+                    log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind);  // NOI18N
                 break;
             }
             case INSTANCE_INIT:
             case STATIC_INIT:
             {
                 assert signatures.length == 2;
-                final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
-                if (type != null) {
+                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                if (type instanceof TypeElement) {
                    final List<? extends Element> members = type.getEnclosedElements();
                    for (Element member : members) {
                        if (this.kind == member.getKind()) {
@@ -194,16 +195,16 @@ public final class ElementHandle<T extends Element> {
                            }
                        }
                    }
-                } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind); // NOI18N
+                } else
+                    log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind); // NOI18N
                 break;
             }
             case FIELD:
             case ENUM_CONSTANT:
             {
                 assert signatures.length == 3;
-                final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
-                if (type != null) {
+                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                if (type instanceof TypeElement) {
                     final List<? extends Element> members = type.getEnclosedElements();
                     for (Element member : members) {
                         if (this.kind == member.getKind()) {
@@ -214,27 +215,29 @@ public final class ElementHandle<T extends Element> {
                             }
                         }
                     }
-                } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind); // NOI18N
+                } else if (type != null) {
+                    return (T) new Symbol.VarSymbol(0, jt.getElements().getName(this.signatures[1]), Symtab.instance(jt.getContext()).unknownType, (Symbol)type);
+                } else 
+                    log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind); // NOI18N
                 break;
             }
             case TYPE_PARAMETER:
             {
                 if (signatures.length == 2) {
-                     TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
-                     if (type != null) {
-                         List<? extends TypeParameterElement> tpes = type.getTypeParameters();
+                     Element type = getTypeElementByBinaryName (signatures[0], jt);
+                     if (type instanceof TypeElement) {
+                         List<? extends TypeParameterElement> tpes = ((TypeElement)type).getTypeParameters();
                          for (TypeParameterElement tpe : tpes) {
                              if (tpe.getSimpleName().contentEquals(signatures[1])) {
                                  return (T)tpe;
                              }
                          }
-                     } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length);   // NOI18N
+                     } else 
+                        log.log(Level.INFO, "Resolved type is null for kind = {0} signatures.length = {1}", new Object[] {this.kind, signatures.length});   // NOI18N
                 }
                 else if (signatures.length == 4) {
-                    final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
-                    if (type != null) {
+                    final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                    if (type instanceof TypeElement) {
                         final List<? extends Element> members = type.getEnclosedElements();
                         for (Element member : members) {
                             if (member.getKind() == ElementKind.METHOD || member.getKind() == ElementKind.CONSTRUCTOR) {
@@ -251,8 +254,8 @@ public final class ElementHandle<T extends Element> {
                                 }
                             }
                         }
-                    } else if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length); // NOI18N
+                    } else 
+                        log.log(Level.INFO, "Resolved type is null for kind = {0} signatures.length = {1}", new Object[] {this.kind, signatures.length}); // NOI18N
                 }
                 else {
                     throw new IllegalStateException ();
@@ -306,7 +309,7 @@ public final class ElementHandle<T extends Element> {
      * a {@link TypeElement} it throws a {@link IllegalStateException}
      * @return the qualified name
      * @throws an {@link IllegalStateException} when this {@link ElementHandle} 
-     * isn't creatred for the {@link TypeElement}.
+     * isn't created for the {@link TypeElement}.
      */
     public @NonNull String getBinaryName () throws IllegalStateException {
         if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
@@ -453,7 +456,7 @@ public final class ElementHandle<T extends Element> {
         final StringBuilder result = new StringBuilder ();
         result.append (this.getClass().getSimpleName());
         result.append ('[');                                // NOI18N
-        result.append ("kind=" +this.kind.toString());      // NOI18N
+        result.append ("kind=").append (this.kind.toString());      // NOI18N
         result.append ("; sigs=");                          // NOI18N
         for (String sig : this.signatures) {
             result.append (sig);
@@ -497,6 +500,7 @@ public final class ElementHandle<T extends Element> {
     
     private static class ElementHandleAccessorImpl extends ElementHandleAccessor {
         
+        @Override
         public ElementHandle create(ElementKind kind, String... descriptors) {
             assert kind != null;
             assert descriptors != null;
@@ -538,15 +542,19 @@ public final class ElementHandle<T extends Element> {
             }            
         }
 
+        @Override
         public <T extends Element> T resolve(ElementHandle<T> handle, JavacTaskImpl jti) {
             return handle.resolveImpl (jti);
         }
     }
     
-    private static TypeElement getTypeElementByBinaryName (final String signature, final JavacTaskImpl jt) {
+    private static Element getTypeElementByBinaryName (final String signature, final JavacTaskImpl jt) {
         if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Calling getTypeElementByBinaryName: signature=" + signature);
-        if (isArray(signature)) {
+            log.log(Level.FINE, "Calling getTypeElementByBinaryName: signature = {0}", signature);
+        if (isNone(signature)) {
+            return Symtab.instance(jt.getContext()).noSymbol;
+        }
+        else if (isArray(signature)) {
             return Symtab.instance(jt.getContext()).arrayClass;
         }
         else {
@@ -555,8 +563,11 @@ public final class ElementHandle<T extends Element> {
         }
     }
     
+    private static boolean isNone (String signature) {
+        return signature.length() == 0;
+    }
+
     private static boolean isArray (String signature) {
         return signature.length() == 1 && signature.charAt(0) == '[';
     }
-    
 }

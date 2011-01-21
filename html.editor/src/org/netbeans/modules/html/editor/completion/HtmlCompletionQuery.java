@@ -44,6 +44,7 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
@@ -52,7 +53,6 @@ import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -116,55 +116,52 @@ public class HtmlCompletionQuery extends UserTask {
 
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
-        Parser.Result parserResult = resultIterator.getParserResult(offset);
+        final Parser.Result parserResult = resultIterator.getParserResult(offset);
         if (parserResult == null) {
             return;
         }
-        Snapshot snapshot = parserResult.getSnapshot();
-        int embeddedOffset = snapshot.getEmbeddedOffset(offset);
-        String resultMimeType = parserResult.getSnapshot().getMimeType();
-        if (resultMimeType.equals("text/html")) {
-            //proceed only on html content
-            this.completionResult = query((HtmlParserResult) parserResult);
-        } else if(resultMimeType.equals("text/javascript")) {
-            //complete the </script> end tag
-            this.completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, embeddedOffset, SCRIPT_TAG_NAME);
-        } else if(resultMimeType.equals("text/x-css")) {
-            //complete the </style> end tag
-            this.completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, embeddedOffset, STYLE_TAG_NAME);
-        }
+        final Snapshot snapshot = parserResult.getSnapshot();
+        final Document doc = snapshot.getSource().getDocument(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                int embeddedOffset = snapshot.getEmbeddedOffset(offset);
+                String resultMimeType = parserResult.getSnapshot().getMimeType();
+                if (resultMimeType.equals("text/html")) {
+                    //proceed only on html content
+                    completionResult = query((HtmlParserResult) parserResult);
+                } else if(resultMimeType.equals("text/javascript")) {
+                    //complete the </script> end tag
+                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, SCRIPT_TAG_NAME);
+                } else if(resultMimeType.equals("text/x-css")) {
+                    //complete the </style> end tag
+                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, STYLE_TAG_NAME);
+                }
+            }
+
+        });
+
     }
 
-    private CompletionResult queryHtmlEndTagInEmbeddedCode(final Snapshot snapshot, final int embeddedOffset, final String endTagName) {
+    private CompletionResult queryHtmlEndTagInEmbeddedCode(Snapshot snapshot, Document doc, final int embeddedOffset, final String endTagName) {
         // End tag autocompletion support
         // We want the end tag autocompletion to appear just after <style> and <script> tags.
         // Since there is css language as leaf languge, this needs to be treated separately.
-        final Document doc = snapshot.getSource().getDocument(false);
-        if(doc != null) {
-            final AtomicReference<CompletionResult> result = new AtomicReference<CompletionResult>();
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
-                    int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
-                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
-                    if(ts != null)  {
-                        if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && CharSequenceUtilities.equals(ts.token().text(), ">")) {
-                            Token openTagToken = Utils.findTagOpenToken(ts);
-                            if (openTagToken != null && CharSequenceUtilities.equals(openTagToken.text(), endTagName)) {
+        int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
+        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
+        if(ts != null)  {
+            if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && CharSequenceUtilities.equals(ts.token().text(), ">")) {
+                Token openTagToken = Utils.findTagOpenToken(ts);
+                if (openTagToken != null && CharSequenceUtilities.equals(openTagToken.text(), endTagName)) {
 
-                                List<? extends CompletionItem> items = Collections.singletonList(
-                                        HtmlCompletionItem.createAutocompleteEndTag(endTagName, documentItemOffset));
-                                result.set(new CompletionResult(items, offset));
-                            }
-                        }
-                    }
+                    List<? extends CompletionItem> items = Collections.singletonList(
+                            HtmlCompletionItem.createAutocompleteEndTag(endTagName, documentItemOffset));
+                    return new CompletionResult(items, offset);
                 }
-            });
-            if(result.get() != null) {
-                return result.get();
             }
-
         }
+
 
         String expectedCode = "</" + endTagName;
         // Common end tag completion
@@ -194,7 +191,7 @@ public class HtmlCompletionQuery extends UserTask {
             int itemOffset = embeddedOffset - patternSize + ltIndex;
 
             //convert back to document offsets
-            int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
+            documentItemOffset = snapshot.getOriginalOffset(itemOffset);
 
             List<? extends CompletionItem> items = Collections.singletonList(HtmlCompletionItem.createEndTag(endTagName, documentItemOffset, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
             return new CompletionResult(items, offset);
@@ -246,6 +243,7 @@ public class HtmlCompletionQuery extends UserTask {
                 }
             }
         } else {
+            backward = true;
             if (!ts.movePrevious()) {
                 //can't get previous token
                 return null;
@@ -263,14 +261,29 @@ public class HtmlCompletionQuery extends UserTask {
 
         // Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1
         // debug>>>
-        if((astOffset - itemOffset) < 0) {
+        if((astOffset - itemOffset) < 0 || preText.length() < (astOffset - itemOffset)) {
             StringBuilder b = new StringBuilder();
-            b.append("just happened Bug 182267 -  StringIndexOutOfBoundsException: String index out of range: -1\n"); //NOI18N
-            b.append("current's snapshot token sequence:\n"); //NOI18N
-            b.append(ts.toString()); //dump token seuquence
-            b.append(String.format("astOffset = %1$s, itemOffset = %2$s\n", astOffset, itemOffset)); //NOI18N
+            b.append("Inconsistency in the snapshot! Detailed info:"); //NOI18N
+            b.append("\n------------------------------------------------");
+            b.append("\ndocument.getText():");
+            try {
+                b.append(document.getText(0, document.getLength()));
+            } catch (BadLocationException ex) {
+                b.append(ex.getMessage());
+            }
+            b.append("\n------------------------------------------------");
+            b.append("\ntoken hierarchy:\n").append(hi.toString());
+            b.append("\n------------------------------------------------");
+            b.append("\ntoken sequence:\n").append(ts.toString());
+            b.append("\n------------------------------------------------");
+            b.append("\nsnapshot.getText():").append(snapshot.getText().toString());
+            b.append("\n------------------------------------------------");
+            b.append("\nsnapshot.toString():").append(snapshot).toString();
+            b.append("\nsource:").append(snapshot.getSource()).toString();
+            b.append(String.format("\nastOffset = %1$s, itemOffset = %2$s", astOffset, itemOffset)); //NOI18N
+            b.append(String.format("\npreText=%s; len=%s", preText, preText.length()));
+            
             Logger.getAnonymousLogger().warning(b.toString());
-
             //and let the original exception to be thrown so the item is properly bound to the original report
         }
         //<<<debug
@@ -288,8 +301,8 @@ public class HtmlCompletionQuery extends UserTask {
         int searchAstOffset = astOffset == snapshot.getText().length() ? astOffset - 1 : astOffset;
 
         //finds a leaf node for all the declared namespaces content including the default html content
-        AstNode node;
-        AstNode root;
+        AstNode node = null;
+        AstNode root = null;
         //html5 parse tree broken workaround:
         //In most cases when user edits the file the resulting parse tree
         //from the html5 parser is broken to such extent, that it is not possible
@@ -315,36 +328,37 @@ public class HtmlCompletionQuery extends UserTask {
         }
         if(useHtmlParseResult) {
             //use the standart mechanism
-            node = parserResult.findLeaf(searchAstOffset, backward);
-            if(node == null) {
-                return null;
+            node = parserResult.findLeafTag(searchAstOffset, !backward, false);
+            if(node == null || node.equals(parserResult.root())) {
+                //fallback to the default simple xml parse tree (mlSyntaxTreeBuilder.makeUncheckedTree() )
+                //if no leaf node found or just the root seems to be the leaf. This situation is likely
+                //caused by an erroneous parse tree
+                useHtmlParseResult = false; 
+            } else {
+                root = node.getRootNode();
             }
-            root = node.getRootNode();
-        } else {
+        } 
+        
+        if(!useHtmlParseResult) {
             //html5 && errors in the source => likely broken parse tree
             //force use the legacy tree builder, even if the tree is quite inaccurate,
             //it is not broken to such extent as the html5 parser one.
 //            System.err.println("Broken HTML5 parse tree, using the legacy SyntaxTreeBuilder!");
 //            root = SyntaxTreeBuilder.makeTree(htmlResult.source(), HtmlVersion.HTML40_TRANSATIONAL, parserResult.getSyntaxAnalyzerResult().getElements().items());
             root = XmlSyntaxTreeBuilder.makeUncheckedTree(htmlResult.source(), parserResult.getSyntaxAnalyzerResult().getElements().items());
-            node = AstNodeUtils.findDescendant(root, searchAstOffset, backward);
+            node = AstNodeUtils.findNode(root, searchAstOffset, !backward, false);
             if(node == null) {
-                return null;
-            }
-            //an element being typed is parsed as normal element end then
-            //returned as a leaf node for the position, which is clearly wrong
-            //since we need its parent to be able to complete the typed element
-            if(node.getNameWithoutPrefix().equals(preText)) {
-                node = node.parent();
-            }
-            
+                node = root;
+            }            
         }
-
+        
+        assert node != null;
+        assert root != null;
 
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
         assert undeclaredTagsParseTreeRoot != null;
-        AstNode undeclaredTagsLeafNode = AstNodeUtils.findDescendant(undeclaredTagsParseTreeRoot, searchAstOffset, backward);
+        AstNode undeclaredTagsLeafNode = AstNodeUtils.findNode(undeclaredTagsParseTreeRoot, searchAstOffset, !backward, false);
 
 
         //namespace is null for html content
@@ -366,6 +380,14 @@ public class HtmlCompletionQuery extends UserTask {
                 result = translateCharRefs(documentItemOffset, model.getNamedCharacterReferences(), preText.length() > 0 ? preText.substring(1) : "");
             }
         } else if (id == HTMLTokenId.TAG_OPEN) { // NOI18N
+
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+
             //complete open tags with prefix
             anchor = documentItemOffset;
             //we are inside a tagname, the real content is the position before the tag
@@ -389,6 +411,14 @@ public class HtmlCompletionQuery extends UserTask {
 
         } else if ((id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) || 
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && "<".equals(item.text().toString()))) { // NOI18N
+
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+
             //complete open tags with no prefix
             anchor = offset;
             result = new ArrayList<CompletionItem>();
@@ -513,10 +543,6 @@ public class HtmlCompletionQuery extends UserTask {
                     return null;
                 }
                 HtmlTagAttribute attribute = tag.getAttribute(argName);
-                if(attribute == null) {
-                    return null;
-                }
-
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
@@ -525,7 +551,7 @@ public class HtmlCompletionQuery extends UserTask {
                         result.addAll(translateValues(anchor, attribute.getPossibleValues()));
                         ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
-                            result.addAll(valuesCompletion.getItems(file, offset, ""));
+                            result.addAll(valuesCompletion.getItems(file, anchor, ""));
                         }
                     }
 
@@ -552,7 +578,7 @@ public class HtmlCompletionQuery extends UserTask {
                         result.addAll(translateValues(documentItemOffset, filter(attribute.getPossibleValues(), prefix), quotationChar));
                         ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
-                            result.addAll(valuesCompletion.getItems(file, offset, prefix));
+                            result.addAll(valuesCompletion.getItems(file, anchor, prefix));
                         }
                     }
 

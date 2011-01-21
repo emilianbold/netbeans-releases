@@ -106,11 +106,10 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-bash ${SCRIPT_DIR}/pack-base.sh
 cd $NB_ALL
 
 #Build JNLP
-ant -Djnlp.codebase=http://bits.netbeans.org/trunk/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
+ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
 ERROR_CODE=$?
 
 create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE

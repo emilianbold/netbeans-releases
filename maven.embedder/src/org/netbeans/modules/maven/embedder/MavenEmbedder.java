@@ -46,6 +46,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
@@ -115,6 +119,10 @@ public final class MavenEmbedder {
         return plexus;
     }
 
+    public Properties getSystemProperties() {
+        return embedderConfiguration.getSystemProperties();
+    }
+
     private String getLocalRepositoryPath() {
         if (embedderConfiguration.getLocalRepository() != null) {
             return embedderConfiguration.getLocalRepository().getAbsolutePath();
@@ -139,34 +147,15 @@ public final class MavenEmbedder {
         SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
         req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
         req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
-        req.setSystemProperties(embedderConfiguration.getSystemProperties());
+        req.setSystemProperties(getSystemProperties());
         try {
             return settingsBuilder.build(req).getEffectiveSettings();
-        } catch (SettingsBuildingException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (SettingsBuildingException x) {
+            Logger.getLogger(MavenEmbedder.class.getName()).log(Level.FINE, null, x); // #192768: do not even bother logging to console by default, too noisy
             return new Settings();
         }
     }
 
-// Can this be removed?
-//    public SettingsValidationResult validateSettings(File settingsFile) {
-//        SettingsValidationResult result = new SettingsValidationResult();
-//        if (settingsFile != null) {
-//            if (settingsFile.canRead()) {
-//                @SuppressWarnings("unchecked")
-//                List<String> messages = settingsBuilder.validateSettings(settingsFile).getMessages();
-//                for (String message : messages) {
-//                    result.addMessage(message);
-//                }
-//            } else {
-//                result.addMessage("Can not read settings file " + settingsFile.getAbsolutePath());
-//            }
-//        }
-//
-//        return result;
-//    }
-    
- 
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
@@ -250,12 +239,12 @@ public final class MavenEmbedder {
 
         LifecycleMapping lifecycleMapping = lookupComponent(LifecycleMapping.class);
         if (lifecycleMapping != null) {
-            List<String> phases = new ArrayList<String>();
+            Set<String> phases = new TreeSet<String>();
             Map<String, Lifecycle> lifecycles = lifecycleMapping.getLifecycles();
             for (Lifecycle lifecycle : lifecycles.values()) {
-                phases.addAll(lifecycle.getPhases().values());
+                phases.addAll(lifecycle.getPhases().keySet());
             }
-            return phases;
+            return new ArrayList<String>(phases);
         }
 
         return Collections.<String>emptyList();
@@ -289,7 +278,7 @@ public final class MavenEmbedder {
           req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
         }
         
-        req.setSystemProperties(embedderConfiguration.getSystemProperties());
+        req.setSystemProperties(getSystemProperties());
         req.setOffline(embedderConfiguration.isOffline());
         try {
             populator.populateDefaults(req);

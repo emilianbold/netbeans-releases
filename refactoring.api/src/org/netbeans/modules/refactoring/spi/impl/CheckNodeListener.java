@@ -60,6 +60,10 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * This listener controls click and double click on the CheckNodes. In addition
@@ -98,7 +102,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
-                        if (o instanceof RefactoringElement) {
+                        if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
                         }
                     } else {
@@ -124,13 +128,6 @@ class CheckNodeListener implements MouseListener, KeyListener {
                 if (e.getClickCount() == 1 && chRect.contains(p) && !node.isDisabled()) {
                     boolean isSelected = !(node.isSelected());
                     node.setSelected(isSelected);
-                    if (node.getSelectionMode() == CheckNode.DIG_IN_SELECTION) {
-                        if (isSelected) {
-                            tree.expandPath(path);
-                        } else {
-                            tree.collapsePath(path);
-                        }
-                    }
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
@@ -141,14 +138,14 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
                     if (row == 0) {
                         tree.revalidate();
-                        tree.repaint();
                     }
+                    tree.repaint();
                 } // double click, open the document
                 else if (e.getClickCount() == 2 && chRect.contains(p) == false) {
                     Object o = node.getUserObject();
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
-                        if (o instanceof RefactoringElement) {
+                        if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
                         }
                     } else {
@@ -263,6 +260,15 @@ class CheckNodeListener implements MouseListener, KeyListener {
             o = ((TreeElement) o).getUserObject();
             if (o instanceof RefactoringElement) {
                 APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).openInEditor();
+            } else if (o instanceof FileObject) {
+                try {
+                    OpenCookie oc = DataObject.find((FileObject) o).getCookie(OpenCookie.class);
+                    if (oc != null) {
+                        oc.open();
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    //ignore, unknown file, do nothing
+                }
             }
         }
     }

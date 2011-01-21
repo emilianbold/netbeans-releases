@@ -79,8 +79,8 @@ class SQLExecutionHelper {
     private final DataView dataView;
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 20, true); // NOI18N
-    private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
-    public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
+    private static final String LIMIT_CLAUSE = "LIMIT "; // NOI18N
+    public static final String OFFSET_CLAUSE = "OFFSET "; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
 
     SQLExecutionHelper(DataView dataView) {
@@ -552,8 +552,8 @@ class SQLExecutionHelper {
     private String appendLimitIfRequired(String sql) {
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
             if (!isLimitUsedInSelect(sql)) {
-                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
-                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
+                sql += ' ' + LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
+                sql += ' ' + OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
             }
         }
 
@@ -577,7 +577,7 @@ class SQLExecutionHelper {
             }
 
             try {
-                if (dataView.isLimitSupported() && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
+                if (dataView.isLimitSupported() && ! isLimitUsedInSelect(sql)) {
                     stmt.setMaxRows(pageSize);
                 } else {
                     stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
@@ -602,6 +602,9 @@ class SQLExecutionHelper {
         } else {
             try {
                 isResultSet = stmt.execute(appendLimitIfRequired(sql));
+            } catch (NullPointerException ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + ex);
+                    throw new SQLException(ex);
             } catch (SQLException sqlExc) {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);

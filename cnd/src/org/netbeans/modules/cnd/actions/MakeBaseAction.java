@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.awt.Frame;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -64,7 +63,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -72,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -136,26 +135,32 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             LifecycleManager.getDefault().saveAll();
         }
         DataObject dataObject = node.getCookie(DataObject.class);
-        final FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = CndFileUtils.toFile(fileObject);
+        final FileObject makeFileObject = dataObject.getPrimaryFile();
         // Build directory
-        String buildDir = getBuildDirectory(node,PredefinedToolKind.MakeTool);
+        FileObject buildDirFileObject = getBuildDirectory(node,PredefinedToolKind.MakeTool);
+        if (buildDirFileObject == null) {
+            trace("Run folder folder is  null"); //NOI18N
+            return null;
+        } 
+        String buildDir = buildDirFileObject.getPath();
         // Executable
         String executable = getCommand(node, project, PredefinedToolKind.MakeTool, "make"); // NOI18N
         // Arguments
         String[] args;
         if (target.length() == 0) {
-            args = new String[]{"-f", makefile.getName()}; // NOI18N
+            args = new String[]{"-f", makeFileObject.getNameExt()/*, "MAKE="+executable*/}; // NOI18N
         } else {
-            args = new String[]{"-f", makefile.getName(), target}; // NOI18N
+            args = new String[]{"-f", makeFileObject.getNameExt(), target/*, "MAKE="+executable*/}; // NOI18N
         }
-        final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        final ExecutionEnvironment execEnv = getExecutionEnvironment(makeFileObject, project);
+        if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {
+            buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
+        }
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;
         }
-        Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
+        Map<String, String> envMap = getEnv(execEnv, node, project, additionalEnvironment);
         if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
@@ -179,10 +184,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(executable, buildDir, args, envMap);
+        traceExecutable(executable, buildDir, args, execEnv.toString(), envMap);
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), syncWorker); // NOI18N
+                new CompilerLineConvertor(project, getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setExecutable(executable).

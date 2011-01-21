@@ -342,7 +342,7 @@ public final class ProjectSupport {
 	// we may not always have an executable, especially under core|attach!
 	if (!isAuto(seed.executable) && isAbsolute(seed.executable)) {
 	    seed.conf.getMakefileConfiguration().getOutput().
-		setValue(org.netbeans.modules.cnd.utils.CndPathUtilitities.normalize(seed.executable));
+		setValue(org.netbeans.modules.cnd.utils.CndPathUtilitities.normalizeSlashes(seed.executable));
 	}
 
         String currentDebuggerProfileID = EngineTypeManager.engine2DebugProfileID(seed.engineType);
@@ -406,7 +406,7 @@ public final class ProjectSupport {
 	final String hostName = seed.getHostName();
 	CndRemote.validate(hostName, new Runnable() {
 		public void run() {
-		    Host host = CndRemote.hostFromName(null, hostName);
+		    Host host = Host.byName(hostName);
 		    seed.setHost(host);
 		    CndRemote.fillConfiguratioFromHost(seed.conf, host);
 		}
@@ -547,7 +547,10 @@ public final class ProjectSupport {
 		assert seed.conf == null;
 		seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
 
+		/* CR 7000724 don't override configuration of existing project
 		populateConfiguration(seed);
+		 *
+		 */
 		break;
 	}
 	return;

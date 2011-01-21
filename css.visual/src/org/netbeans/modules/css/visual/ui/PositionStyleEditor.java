@@ -73,8 +73,8 @@ import org.openide.util.NbBundle;
 public class PositionStyleEditor extends StyleEditor {
 
     DefaultComboBoxModel positionModeList;
-    PositionData positionData = new PositionData();
-    ClipData clipData = new ClipData();
+    PositionData positionData;
+    ClipData clipData;
 
     /** Creates new form FontStyleEditor */
     public PositionStyleEditor() {
@@ -82,6 +82,8 @@ public class PositionStyleEditor extends StyleEditor {
     }
 
     protected void lazyInitializePanel() {
+        positionData = new PositionData();
+        clipData = new ClipData();
         initComponents();
         initialize();
 

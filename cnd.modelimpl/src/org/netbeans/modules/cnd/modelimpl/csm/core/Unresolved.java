@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -61,6 +60,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 
@@ -170,7 +173,7 @@ public final class Unresolved implements Disposable {
 	}
     }
 
-    private static final String UNRESOLVED_FILE_FAKE_PATH = new File((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$").getAbsolutePath(); // NOI18N
+    private static final String UNRESOLVED_FILE_FAKE_PATH = CndFileUtils.createLocalFile((System.getProperty("java.io.tmpdir")), "$_UNRESOLVED_CND_MODEL_FILE_5858$").getAbsolutePath(); // NOI18N
     public final class UnresolvedFile implements CsmFile, CsmIdentifiable, Disposable {
 
         private UnresolvedFile() {
@@ -194,7 +197,7 @@ public final class Unresolved implements Disposable {
             return _getProject();
         }
 
-        private synchronized CsmProject _getProject() {
+        private synchronized ProjectBase _getProject() {
             if( projectRef == null ) {
                 assert projectUID != null;
                 return (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
@@ -220,6 +223,14 @@ public final class Unresolved implements Disposable {
         public String getAbsolutePath() {
             return UNRESOLVED_FILE_FAKE_PATH; // NOI18N
         }
+
+        @Override
+        public FileObject getFileObject() {
+            ProjectBase csmProject = _getProject();
+            FileSystem fs = (csmProject == null) ? CndFileUtils.getLocalFileSystem() : csmProject.getFileSystem();
+            return InvalidFileObjectSupport.getInvalidFileObject(fs, getAbsolutePath());
+        }
+        
         @Override
         public boolean isValid() {
             return getProject().isValid();

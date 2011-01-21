@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationException;
@@ -87,12 +88,12 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         MockServices.setServices(MyProvider.class, CustomItemsProvider.class);
         URL engineURL = TestUtils.class.getResource("data/org-yourorghere-engine-1-2.nbm");
         assertNotNull(engineURL);
-        File engineFile = new File(engineURL.getFile());
+        File engineFile = TestUtils.getFile(this, engineURL);
         assertTrue(engineFile.exists());
         
         URL independentURL = TestUtils.class.getResource("data/org-yourorghere-independent-1-1.nbm");
         assertNotNull(independentURL);
-        File independentFile = new File(independentURL.getFile());
+        File independentFile = TestUtils.getFile(this, independentURL);
         assertTrue(independentFile.exists());
         
         String source = "local-downloaded";
@@ -114,8 +115,9 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         OperationContainer<InstallSupport> oc =  OperationContainer.createForUpdate();
         OperationContainer.OperationInfo info = oc.add(nbmsEngine, engine1_2);
         assertNotNull(info);
-        assertEquals(1, info.getBrokenDependencies().size());
-        String brokenDep = (String)info.getBrokenDependencies().toArray()[0];
+        final Set brokeDeps = info.getBrokenDependencies();
+        assertEquals("One broken dep: " + brokeDeps, 1, brokeDeps.size());
+        String brokenDep = (String)brokeDeps.toArray()[0];
         assertEquals("module org.yourorghere.independent > 1.1",brokenDep);
         assertEquals(0, info.getRequiredElements().size());
         UpdateUnit independentEngine =  null;

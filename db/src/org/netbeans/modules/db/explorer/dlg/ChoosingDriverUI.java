@@ -105,10 +105,10 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     private void updateState() {
         Object drvO = cbDrivers.getSelectedItem();
         if (drvO instanceof JDBCDriver) {
+            drv = (JDBCDriver) drvO;
             // update current with modified files if any
             if (customizeDriverPanel.getDriver() != null) {
                 JDBCDriver current = customizeDriverPanel.getDriver();
-                drv = customizeDriverPanel.getDriver();
                 // any change?
                 if (! Arrays.equals(current.getURLs(), customizeDriverPanel.getDriverURLs())) {
                     JDBCDriver modified = JDBCDriver.create(current.getName(), current.getDisplayName(), current.getClassName(), customizeDriverPanel.getDriverURLs());
@@ -119,6 +119,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                         JDBCDriverManager.getDefault().removeDriver(current);
                         JDBCDriverManager.getDefault().addDriver(modified);
                         drv = modified;
+                        cbDrivers.getModel().setSelectedItem(modified);
                     } catch (DatabaseException ex) {
                         Logger.getLogger(ChoosingDriverUI.class.getName()).log(Level.WARNING,
                                 "Unable to modify driver " + current.getName() + " and add driver jar files " +
@@ -126,13 +127,9 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                                 ": can not convert to URL", ex);
                     }
                 }
-                wizard.setDriver(drv);
-                customizeDriverPanel.setDriver(drv);
-            } else {
-                drv = (JDBCDriver) drvO;
-                wizard.setDriver(drv);
-                customizeDriverPanel.setDriver(drv);
             }
+            wizard.setDriver(drv);
+            customizeDriverPanel.setDriver(drv);
         } else {
             wizard.setDriver(drv);
             customizeDriverPanel.setDriver(null);
@@ -172,7 +169,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbDrivers, 0, 322, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -185,6 +182,8 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ACD_ChoosingDriverUI")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

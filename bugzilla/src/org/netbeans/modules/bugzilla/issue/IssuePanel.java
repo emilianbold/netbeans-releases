@@ -944,7 +944,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         keywordsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(keywordsLabel));
         assignedField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(assignedLabel));
         qaContactField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(qaContactLabel));
-        ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));
+        ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));        
         blocksField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(blocksLabel));
         dependsField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(dependsLabel));
         CyclicDependencyDocumentListener cyclicDependencyListener = new CyclicDependencyDocumentListener();
@@ -2214,6 +2214,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String removedCCs = getMissingCCs(oldCCs, newCCs);
         String addedCCs = getMissingCCs(newCCs, oldCCs);
 
+        issue.setFieldValue(IssueField.CC, ccField.getText());
         storeFieldValue(IssueField.REMOVECC, removedCCs);
         storeFieldValue(IssueField.NEWCC, addedCCs);
     }
@@ -2624,7 +2625,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "6.10";                    // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.0";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {

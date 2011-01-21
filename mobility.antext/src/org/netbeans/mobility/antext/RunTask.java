@@ -56,11 +56,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -681,7 +686,8 @@ public class RunTask extends Task
                     {}
                     else if (s.startsWith("Installed From:")) try
                     { //NOI18N
-                        if (new URL(s.substring(15).trim()).equals(jadUrlURL))
+                        s = s.substring(15).trim();
+                        if (new URL(s).equals(jadUrlURL) || new URL(URLDecoder.decode(s, "UTF-8")).equals(jadUrlURL))
                         {
                             args.put("storagenum", String.valueOf(i)); //NOI18N
                             return;

@@ -81,6 +81,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         }
     }
 
+    @Override
     public HelpCtx getHelp() {
         if ( bottomPanel != null ) {
             HelpCtx bottomHelp = bottomPanel.getHelp();
@@ -93,19 +94,23 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         return null;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public boolean isValid() {
         return gui != null && gui.getTargetName() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) ;
     }
     
+    @Override
     public void readSettings(WizardDescriptor settings) {
                 
         wizard = settings;
@@ -136,7 +141,8 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         }
     }
     
-    public void storeSettings(WizardDescriptor settings) { 
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
         if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
@@ -167,6 +173,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     
     protected abstract void doStoreSettings(WizardDescriptor settings);
 
+    @Override
     public void stateChanged(ChangeEvent e) {        
         changeSupport.fireChange();
     }
@@ -218,7 +225,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
      * @param extension extension of created file
      * @return localized error message or null if all right
      */    
-    final public static String canUseFileName(FileObject targetFolder, String folderName, String newObjectName, boolean allowFileSeparator) {
+    public static String canUseFileName(FileObject targetFolder, String folderName, String newObjectName, boolean allowFileSeparator) {
         String relFileName = folderName + "/" + newObjectName; // NOI18N
 
         boolean allowSlash = false;

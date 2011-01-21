@@ -49,4 +49,9 @@ public interface IsChangedListener {
      * Returns true if something has changed
      */
     public boolean isChanged();
+
+    /**
+     * Returns runnable that fire changes
+     */
+    public Runnable saveChanges();
 }

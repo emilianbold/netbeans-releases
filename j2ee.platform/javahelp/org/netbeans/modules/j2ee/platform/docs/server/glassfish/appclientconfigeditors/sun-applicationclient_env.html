@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <!--
+        * Copyright 2009 Sun Microsystems, Inc.
+        * All rights reserved. Use is subject to license terms.
+        -->
+        <title>Deployment Descriptor Visual Editor: Environment</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Deployment Descriptor Visual Editor: Environment</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The deployment descriptor visual editor lets you edit the
+            platform-specific deployment descriptor for the GlassFish application server. </p>
+            
+            <p>You get to this tab by double-clicking the <tt>glassfish-web.xml</tt> or <tt>glassfish-application-client.xml</tt> file under the project's
+            Configuration Files node in the Projects window and clicking the Environment tab in the visual editor.</p>
+            <p>If any configuration information for the project is not specified 
+            in this server-specific descriptor file, it defaults to a corresponding setting in the general descriptor file for 
+            the application, if an equivalency exists.</p>
+            
+            <p>The Environment tab contains the following sections for editing deployment descriptor properties of reference elements. 
+            If no reference element exists, you can create new references elements to the descriptor file by selecting the section title 
+            and then clicking the button to add a new reference element.
+            When you create a new reference element it is visible as a node under the section.
+            The IDE generates a default reference name.</p>
+
+            <ul>
+                <li><a href="#ejbref">EJB References</a></li>
+                <li><a href="#resref">Resource References</a></li>
+                <li><a href="#resenvref">Resource Environment References</a></li>
+            </ul>
+
+            <h3><a name="ejbref"></a>EJB References</h3>
+            <ul>
+                <li><b>EJB Reference Name.</b> This displays the EJB Reference name.</li>
+                <li><b>JNDI Name.</b> The JNDI name for the EJB reference. This field should not be empty.</li>
+            </ul>
+
+            <h3><a name="resref"></a>Resource References</h3>
+            <ul>
+                <li><b>Resource Reference Name.</b> This displays the Resource Reference name.</li>
+                <li><b>JNDI Name.</b> Enter the JNDI name for the Resource reference.</li>
+                <li><b>Principal Name.</b> Enter the principal name for the Resource
+                reference. (optional) If you enter a principal name you must also provide a password.</li>
+                <li><b>Principal Password.</b> Required if the Principal name is provided.</li>
+            </ul>
+
+            <h3><a name="resenvref"></a>Resource Environment References</h3>
+            <ul>
+                <li><b>Resource Environment Reference Name.</b> This displays the Resource environment reference name.</li>
+                <li><b>JNDI Name.</b> Enter the JNDI name for the Resource Environment reference. This field should not be empty.</li>
+            </ul>
+
+            
+
+            <p>For more on server-specific deployment descriptors for
+            the Sun Java System Application Server, see the following document:
+            
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://docs.sun.com/app/docs/doc/819-3660/6n5s7klpc?a=view1">
+                <param name="text" value="<html><u>http://docs.sun.com/app/docs/doc/819-3660/6n5s7klpc?a=view</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+            </p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../../appclient/appclient_edit_dd.html">Editing an Enterprise Application Client's Deployment Descriptors</a></dd>
+            <dd><a href="../../appclient/appclient_about.html">About Enterprise Application Clients</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

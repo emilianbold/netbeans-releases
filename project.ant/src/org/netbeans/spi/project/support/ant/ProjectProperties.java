@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -424,11 +423,7 @@ final class ProjectProperties {
      */
     public PropertyProvider getStockPropertyPreprovider() {
         if (stockPropertyPreprovider == null) {
-            Map<String,String> m;
-            Properties p = System.getProperties();
-            synchronized (p) {
-                m = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
-            }
+            Map<String,String> m = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
             File _antJar = antJar();
             if (_antJar != null) {

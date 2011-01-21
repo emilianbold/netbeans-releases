@@ -189,7 +189,13 @@ public enum HTMLTokenId implements TokenId {
                             PartType ptype = token.partType();
                             int startSkipLength = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
                             int endSkipLength = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
-                            return LanguageEmbedding.create(lang, startSkipLength, endSkipLength, true);
+                            //do not join css code sections in attribute value between each other,
+                            //only token parts inside one value
+                            return LanguageEmbedding.create(
+                                    lang,
+                                    startSkipLength,
+                                    endSkipLength,
+                                    (ptype == PartType.END || ptype == PartType.COMPLETE) ? false : true);
                         }
                     }
                     break;
@@ -204,7 +210,14 @@ public enum HTMLTokenId implements TokenId {
                             PartType ptype = token.partType();
                             int startSkipLength = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
                             int endSkipLength = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
-                            return LanguageEmbedding.create(lang, startSkipLength, endSkipLength, true);
+
+                            //do not join css code sections in attribute value between each other,
+                            //only token parts inside one value
+                            return LanguageEmbedding.create(
+                                    lang,
+                                    startSkipLength,
+                                    endSkipLength,
+                                    (ptype == PartType.END || ptype == PartType.COMPLETE) ? false : true);
                         }
                     }
                     break;

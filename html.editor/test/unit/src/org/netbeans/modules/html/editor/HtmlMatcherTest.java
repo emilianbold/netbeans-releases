@@ -110,7 +110,7 @@ public class HtmlMatcherTest extends TestBase {
         setDocumentText("<html>  <body> nazdar </body> </html>");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(6, false, 1);
+        BracesMatcher matcher = createMatcher(7, false, 1);
         assertNull(matcher.findOrigin());
         assertNull(matcher.findMatches());
         
@@ -178,7 +178,7 @@ public class HtmlMatcherTest extends TestBase {
         //               0         1         2         3
         BracesMatcher matcher = createMatcher(13, false, 1);
         assertOrigin(11, 18, matcher);
-        assertMatch(14, 14, matcher); //body has optional end tag so returning the searched position range (hack)
+        assertMatch(13, 13, matcher); //body has optional end tag so returning the searched position range (hack)
         
         matcher = createMatcher(8, false, 1);
         assertOrigin(6, 11, matcher);

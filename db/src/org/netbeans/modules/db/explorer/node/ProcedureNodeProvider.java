@@ -71,7 +71,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Rob Englander
+ * @author Rob Englander, Jiri Rechtacek
  */
 public class ProcedureNodeProvider extends NodeProvider {
 
@@ -169,13 +169,71 @@ public class ProcedureNodeProvider extends NodeProvider {
         if (connection != null &&
                 DatabaseModule.IDENTIFIER_MYSQL.equalsIgnoreCase(connection.getDriverName())) {
             // MySQL
+            boolean connected = !connection.getConnector().isDisconnected();
+            MetadataModel metaDataModel = connection.getMetadataModel();
+            if (connected && metaDataModel != null) {
+                try {
+                    metaDataModel.runReadAction(
+                        new Action<Metadata>() {
+                            @Override
+                            public void run(Metadata metaData) {
+                                Statement stmt;
+                                object2type = new HashMap<String, ProcedureNode.Type> ();
+                                validObjects = new HashSet<String> ();
+                                try {
+                                    stmt = connection.getConnection().createStatement();
+                                    ResultSet rs = stmt.executeQuery("SELECT NAME, TYPE" // NOI18N
+                                            + " FROM mysql.proc" // NOI18N
+                                            + " WHERE TYPE = 'PROCEDURE' OR TYPE = 'FUNCTION'"); // NOI18N
+
+                                    while(rs.next()) {
+                                        // name of procedure
+                                        String objectName = rs.getString("NAME"); // NOI18N
+                                        // type of procedure
+                                        String objectType = rs.getString("TYPE"); // NOI18N
+                                        if ("PROCEDURE".equals(objectType)) { // NOI18N
+                                            object2type.put(objectName, ProcedureNode.Type.Procedure);
+                                        } else if ("FUNCTION".equals(objectType)) { // NOI18N
+                                            object2type.put(objectName, ProcedureNode.Type.Function);
+                                        } else {
+                                            assert false : "Unknown type " + objectType;
+                                        }
+                                        // XXX: all procedurec are valid in MySQL
+                                        validObjects.add(objectName);
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema " + schemaName);
+                                }
+                                try {
+                                    stmt = connection.getConnection().createStatement();
+                                    ResultSet rs = stmt.executeQuery("SELECT TRIGGER_NAME" // NOI18N
+                                            + " FROM information_schema.triggers"); // NOI18N
+
+                                    while(rs.next()) {
+                                        // name of procedure
+                                        String objectName = rs.getString("TRIGGER_NAME"); // NOI18N
+                                        // type of procedure is trigger
+                                        object2type.put(objectName, ProcedureNode.Type.Trigger);
+                                        // XXX: all triggers are valid in MySQL
+                                        validObjects.add(objectName);
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of triggers in schema " + schemaName);
+                                }
+                            }
+                        }
+                    );
+                } catch (MetadataModelException e) {
+                    NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
+                }
+            }
         } else if (connection != null && connection.getDriverName() != null &&
                 connection.getDriverName().startsWith(DatabaseModule.IDENTIFIER_ORACLE)) {
             // Oracle
             boolean connected = !connection.getConnector().isDisconnected();
             MetadataModel metaDataModel = connection.getMetadataModel();
             if (schemaName == null) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, "No schema for " + this);
+                Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, "No schema for " + this);
                 return ;
             }
             if (connected && metaDataModel != null) {
@@ -212,9 +270,10 @@ public class ProcedureNodeProvider extends NodeProvider {
                                             object2type.put(objectName, ProcedureNode.Type.Trigger);
                                         } else {
                                             assert false : "Unknown type " + objectType;
-                                        }                                    }
+                                        }                                    
+                                    }
                                 } catch (SQLException ex) {
-                                    Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema" + schemaName);
+                                    Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema" + schemaName);
                                 }
                             }
                         }

@@ -57,13 +57,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -91,7 +88,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -103,7 +99,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -368,7 +363,7 @@ public class RetoucheUtils {
         ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
         if (cp == null) {
             // see http://www.netbeans.org/issues/show_bug.cgi?id=159228
-            throw new IllegalStateException(String.format("No classpath for %s.", folder)); // NOI18N
+            throw new IllegalStateException(String.format("No classpath for %s.", folder.getPath())); // NOI18N
         }
         return cp.getResourceName(folder, '.', false);
     }
@@ -385,12 +380,7 @@ public class RetoucheUtils {
     
     public static String getPackageName(URL url) {
         File f = null;
-        try {
-            String path = URLDecoder.decode(url.getPath(), "utf-8"); // NOI18N
-            f = FileUtil.normalizeFile(new File(path));
-        } catch (UnsupportedEncodingException u) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
-        }
+        f = FileUtil.normalizeFile(new File(url.getPath()));
         String suffix = "";
         
         do {
@@ -404,11 +394,7 @@ public class RetoucheUtils {
             if (!"".equals(suffix)) {
                 suffix = "." + suffix; // NOI18N
             }
-            try {
-                suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1), "utf-8") + suffix; // NOI18N
-            } catch (UnsupportedEncodingException u) {
-                throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
-            }
+            suffix = f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1) + suffix; // NOI18N
             f = f.getParentFile();
         } while (f!=null);
         throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
@@ -435,7 +421,7 @@ public class RetoucheUtils {
     
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
-        File f = result != null ? null : FileUtil.normalizeFile(new File(URLDecoder.decode(url.getPath(), "UTF-8"))); //NOI18N
+        File f = result != null ? null : FileUtil.normalizeFile(new File(url.getPath())); //NOI18N
         while (result==null) {
             result = FileUtil.toFileObject(f);
             f = f.getParentFile();
@@ -609,32 +595,27 @@ public class RetoucheUtils {
         assert files.length >0;
         Set<URL> dependentRoots = new HashSet();
         for (FileObject fo: files) {
-            Project p = null;
+            ClassPath cp = null;
             FileObject ownerRoot = null;
             if (fo != null) {
-                p = FileOwnerQuery.getOwner(fo);
-                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                 if (cp!=null) {
                     ownerRoot = cp.findOwnerRoot(fo);
                 }
             }
-            if (p != null && ownerRoot != null) {
+            if (cp != null && ownerRoot != null) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
                     dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 } else {
                     dependentRoots.add(sourceRoot);
                 }
-                final Set<URL> toExclude = new HashSet<URL>(Arrays.asList(UnitTestForSourceQuery.findSources(ownerRoot)));
-                for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                    final URL rootURL = URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL);
-                    if (!toExclude.contains(rootURL)) {
-                        dependentRoots.add(rootURL);
-                    }
+                for (FileObject f : cp.getRoots()) {
+                    dependentRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
                 }
             } else {
-                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:cp.getRoots()) {
+                for(ClassPath scp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                    for (FileObject root:scp.getRoots()) {
                         dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
                     }
                 }
@@ -806,7 +787,10 @@ public class RetoucheUtils {
             
             path = path.getParentPath();
             if (path == null) {
-                selectedTree = javac.getCompilationUnit().getTypeDecls().get(0);
+                List<? extends Tree> typeDecls = javac.getCompilationUnit().getTypeDecls();
+                if (typeDecls.isEmpty())
+                    return null;
+                selectedTree = typeDecls.get(0);
                 if (selectedTree.getKind().asInterface() == ClassTree.class) {
                     return javac.getTrees().getPath(javac.getCompilationUnit(), selectedTree);
                 } else {
@@ -1070,7 +1054,7 @@ public class RetoucheUtils {
             currentToImport--;
         }
         // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
 
     /**

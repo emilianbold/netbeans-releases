@@ -53,16 +53,17 @@ import org.openide.windows.InputOutput;
  *
  * @author Egor Ushakov
  */
-public class InternalTerminalPack extends IOPack {
+class InternalTerminalPack extends IOPack {
     private Pty pty = null;
     protected final InputOutput io;
     private String slaveName = null;
 
     public InternalTerminalPack(TermComponent console, InputOutput io, ExecutionEnvironment exEnv) {
-        super(console, exEnv);
+        super(console, exEnv, false);
         this.io = io;
     }
 
+    @Override
     public boolean start() {
         try {
             pty = PtySupport.allocate(exEnv);

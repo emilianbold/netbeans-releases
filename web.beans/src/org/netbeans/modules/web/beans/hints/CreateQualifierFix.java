@@ -42,48 +42,21 @@
  */
 package org.netbeans.modules.web.beans.hints;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.EnumSet;
-
-import javax.lang.model.element.Modifier;
-
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.util.TreePath;
 
 
 /**
  * @author ads
  *
  */
-final class CreateQualifierFix implements Fix {
+final class CreateQualifierFix extends CreateAnnotationFix {
 
     CreateQualifierFix( CompilationInfo compilationInfo, String name , 
             String packageName , FileObject fileObject)
     {
-        myInfo = compilationInfo;
-        myName = name;
-        myPackage = packageName;
-        myFileObject = fileObject;
+       super(compilationInfo, name, packageName, fileObject);
     }
 
     /* (non-Javadoc)
@@ -91,62 +64,20 @@ final class CreateQualifierFix implements Fix {
      */
     @Override
     public String getText() {
-        if ( myPackage == null || myPackage.length() == 0 ){
+        if ( getPackage() == null || getPackage().length() == 0 ){
             return NbBundle.getMessage(CreateQualifierFix.class, 
                     "LBL_FixCreateQualifierDefaultPackage");
         }
         return NbBundle.getMessage(CreateQualifierFix.class, 
-                "LBL_FixCreateQualifier" , myName , myPackage );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.editor.hints.Fix#implement()
-     */
-    @Override
-    public ChangeInfo implement() throws Exception {
-        FileObject template = FileUtil.getConfigFile("Templates/CDI/Qualifier.java"); // NOI18N
-        FileObject target;
-        
-        FileObject root = myInfo.getClasspathInfo()
-                .getClassPath(PathKind.SOURCE)
-                .findOwnerRoot(myInfo.getFileObject());
-        FileObject pakage = FileUtil.createFolder(root, myPackage.replace('.', '/'));
-        
-        DataObject templateDO = DataObject.find(template);
-        DataObject od = templateDO.createFromTemplate(
-                DataFolder.findFolder(pakage), myName);
-
-        target = od.getPrimaryFile();
-
-        /*JavaSource javaSource = JavaSource.forFileObject(target);
-        ModificationResult diff = javaSource.
-            runModificationTask(new Task<WorkingCopy>() {
-            public void run(final WorkingCopy working) throws IOException {
-                working.toPhase(Phase.RESOLVED);
-                
-                TreeMaker make = working.getTreeMaker();
-                CompilationUnitTree cut = working.getCompilationUnit();
-                ExpressionTree pack = cut.getPackageName() ;
-                ClassTree source =   (ClassTree) cut.getTypeDecls().get(0);
-                
-                ModifiersTree modifiers = make.Modifiers(EnumSet.<Modifier>of(Modifier.PUBLIC));
-                
-                ClassTree targetTree = (ClassTree)(new TreePath(
-                        new TreePath(cut), source)).getLeaf();
-                ClassTree annotationTree = make.AnnotationType(modifiers, 
-                        targetTree.getSimpleName(), targetTree.getMembers());
-                
-                working.rewrite(cut, make.CompilationUnit(pack, cut.getImports(), 
-                        Collections.singletonList(annotationTree), cut.getSourceFile()));
-            }
-        });
-        diff.commit();*/
-        return new ChangeInfo(target, null, null);
+                "LBL_FixCreateQualifier" , getName() , getPackage() );
     }
     
-    private CompilationInfo myInfo;
-    private String myName;
-    private String myPackage;
-    private FileObject myFileObject;
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.hints.CreateAnnotationFix#getTemplate()
+     */
+    @Override
+    protected String getTemplate() {
+        return "Templates/CDI/Qualifier.java";          // NOI18N
+    }
 
 }

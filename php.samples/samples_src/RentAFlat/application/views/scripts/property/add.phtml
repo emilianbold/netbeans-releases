@@ -1,0 +1,13 @@
+<div id="conbox">
+    <div id="skip" class="none"><a name="skip"></a></div>
+    <div id="con">
+        <h1>Add New Offer</h1>
+
+        <div class="box-content">
+            <?php
+            $this->form->setAction($this->url(array("controller" => "property", "action" => "save-form")));
+            echo $this->form;
+            ?>
+        </div>
+    </div>
+</div>

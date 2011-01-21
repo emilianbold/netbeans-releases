@@ -109,21 +109,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Actions">
-        <folder name="System">
-            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance"/>
-        </folder>
-    </folder>
-    
-    <folder name="Menu">
-        <folder name="Tools">
-            <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-xml-catalog-CatalogAction.instance"/>
-                <attr name="position" intvalue="1100"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="Plugins">
         <folder name="XML">
             <folder name="UserCatalogs">

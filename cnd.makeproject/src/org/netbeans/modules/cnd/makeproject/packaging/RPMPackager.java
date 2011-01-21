@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.packaging;
 
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
@@ -155,6 +156,7 @@ public class RPMPackager implements PackagerDescriptor {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
             List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
+            String tmprpmdir = "/tmp/cnd/rpms"; // NOI18N
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {
@@ -186,7 +188,7 @@ public class RPMPackager implements PackagerDescriptor {
 
             bw.write("# Ensure proper rpm build environment\n"); // NOI18N
             bw.write("RPMMACROS=~/.rpmmacros\n"); // NOI18N
-            bw.write("NBTOPDIR=~/.netbeans/6.8/cnd3/rpms\n"); // NOI18N
+            bw.write("NBTOPDIR=" + tmprpmdir + "\n"); // NOI18N
             bw.write("\n"); // NOI18N
             bw.write("if [ ! -f ${RPMMACROS} ]\n"); // NOI18N
             bw.write("then\n"); // NOI18N

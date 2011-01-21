@@ -56,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
@@ -90,7 +89,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            for(String dll : dump.readPubNames()) {
+            for(String dll : dump.readPubNames().getDlls()) {
                 assertEquals(dll, "libc.so.1"); // NOI18N
             }
         } catch (FileNotFoundException ex) {

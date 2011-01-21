@@ -108,7 +108,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void makefileFieldChanged() {
         File makefile = new File(makefileName);
         if (makefile.getParent() != null) {
-            buildCommandWorkingDirTextField.setText(CndPathUtilitities.normalize(makefile.getParent()));
+            buildCommandWorkingDirTextField.setText(CndPathUtilitities.normalizeSlashes(makefile.getParent()));
             String buildCommand = MessageFormat.format(DEF_BUILD_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             String cleanCommand = MessageFormat.format(DEF_CLEAN_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             buildCommandTextField.setText(buildCommand);
@@ -153,21 +153,21 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         if (buildCommandWorkingDirTextField.getText().length() == 0) {
             String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOWORKINGDIR"); // NOI18N
             controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-            return false;
+            //return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
                     || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), controller.getWizardDescriptor())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-                return false;
+                //return false;
             }
         }
         if (outputTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-                return false;
+                //return false;
             }
         }
         return true;
@@ -197,7 +197,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         instructionsTextArea = new javax.swing.JTextArea();
         group2Label = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(323, 223));
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
 
         buildCommandWorkingDirLabel.setLabelFor(buildCommandWorkingDirTextField);
@@ -301,6 +301,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         instructionsTextArea.setLineWrap(true);
         instructionsTextArea.setText(bundle.getString("BuildActionsInstructions")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -339,20 +340,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
-        FileFilter[] filters;
-        if (Utilities.isWindows()){
-            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-        } else {
-            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
-            FileFilterFactory.getElfStaticLibraryFileFilter(),
-            FileFilterFactory.getElfDynamicLibraryFileFilter()};
-        }
+        FileFilter[] filters = FileFilterFactory.getBinaryFilters();
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),
@@ -367,7 +355,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         //String path = CndPathUtilitities.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        String path = CndPathUtilitities.normalize(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilitities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
         outputTextField.setText(path);
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
     
@@ -397,7 +385,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalize(path);
+        path = CndPathUtilitities.normalizeSlashes(path);
         buildCommandWorkingDirTextField.setText(path);
     }//GEN-LAST:event_buildCommandWorkingDirBrowseButtonActionPerformed
     

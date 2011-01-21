@@ -47,6 +47,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import javax.swing.Icon;
 import junit.framework.*;
 
@@ -180,11 +181,17 @@ public class ImageUtilitiesTest extends TestCase {
         assertNotNull("Should not be null", icon);
         assertNotNull("Should not be null", image);
 
+        URL u = getClass().getResource("/org/openide/util/testimage.png");
+        assertNotNull("URL found", u);
+        assertEquals("URL obtained", u, image.getProperty("url", null));
+
         Icon icon2 = ImageUtilities.image2Icon(image);
         Image image2 = ImageUtilities.icon2Image(icon);
 
         assertEquals("Should be same instance", icon, icon2);
         assertEquals("Should be same instance", image, image2);
+
+        assertEquals("Url is still there", u, image2.getProperty("url", null));
     }
 
     public void testLoadingNonExisting() {

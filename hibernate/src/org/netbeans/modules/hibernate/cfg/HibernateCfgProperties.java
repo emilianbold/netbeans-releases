@@ -176,7 +176,7 @@ public class HibernateCfgProperties {
     private final static String[] RELEASE_MODES = new String[] {"auto", "on_close", "after_transaction", "after_statement"}; // NOI18N
     private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", NbBundle.getMessage(HibernateCfgProperties.class, "LBL_CustomClass")}; // NOI18N
     private final static String[] QUERY_FACTORY_CLASS = new String[] {"org.hibernate.hql.ast.ASTQueryTranslatorFactory",
-    "org.hibernate.hql.classic.ClassicQueryTransactionFactory"}; // NOI18N
+    "org.hibernate.hql.classic.ClassicQueryTranslatorFactory"}; // NOI18N
     private final static String[] HBM2DDL_AUTO = new String[] {"validate", "update", "create", "create-drop" }; // NOI18N
 
     private static Map<String, Object> possiblePropertyValues = new HashMap<String, Object>();

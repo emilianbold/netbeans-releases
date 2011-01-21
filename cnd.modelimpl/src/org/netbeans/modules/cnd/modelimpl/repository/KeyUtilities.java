@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -119,6 +120,12 @@ public class KeyUtilities {
         assert paramList != null;
         return new ParamListKey(paramList);
     }
+    
+    public static Key createInstantiationKey(CsmInstantiation inst) {
+        assert inst != null;
+        return new InstantiationKey(inst);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
 
     public static int getUnitId(CharSequence unitName) {

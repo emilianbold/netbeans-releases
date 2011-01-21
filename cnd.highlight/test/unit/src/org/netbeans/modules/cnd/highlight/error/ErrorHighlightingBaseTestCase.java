@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupte
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.openide.filesystems.FileUtil;
 
 /**
  * 
@@ -133,7 +134,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         BaseDocument doc = getBaseDocument(testSourceFile);
 
         // TODO: find more elegant solution than setting buffer explicitely
-        FileBufferDoc buffer = new FileBufferDoc(testSourceFile.getAbsolutePath(), doc);
+        FileBufferDoc buffer = new FileBufferDoc(FileUtil.toFileObject(testSourceFile), doc);
         ((FileImpl) csmFile).setBuffer(buffer);
 
         Collection<CsmErrorInfo> errorInfos;

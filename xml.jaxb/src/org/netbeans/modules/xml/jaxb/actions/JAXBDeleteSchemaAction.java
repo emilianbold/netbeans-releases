@@ -51,7 +51,10 @@ import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.actions.NodeAction;
+
 
 /**
  * @author gmpatil
@@ -67,11 +70,16 @@ public class JAXBDeleteSchemaAction extends NodeAction {
                 nodes[0].getLookup().lookup(JAXBWizardSchemaNode.class);
         if (schemaNode != null){
             Schema schema = schemaNode.getSchema();
-            Project prj = schemaNode.getProject();
+            final Project prj = schemaNode.getProject();
             ProjectHelper.deleteSchemaFromModel(prj, schema);
             ProjectHelper.cleanupLocalSchemaDir(prj, schema);
-            ProjectHelper.cleanCompileXSDs(prj, false);
-            ProjectHelper.checkAndDeregisterScript(prj);
+            ProjectHelper.cleanCompileXSDs(prj, false, new TaskListener() {
+                
+                @Override
+                public void taskFinished( Task arg0 ) {
+                    ProjectHelper.checkAndDeregisterScript(prj);
+                }
+            });
         }        
     }
     

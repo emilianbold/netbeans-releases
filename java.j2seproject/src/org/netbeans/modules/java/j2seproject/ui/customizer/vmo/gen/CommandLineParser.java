@@ -1,16 +1,14 @@
-// $ANTLR 3.1.3 Mar 17, 2009 19:23:44 C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g 2010-10-21 13:38:38
-
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 /Users/tom/Downloads/CommandLine.g 2010-12-08 16:45:37
 
 package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
 
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.*;
-import java.util.Collections;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-
+import java.util.HashSet;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.*;
 
 
 import org.antlr.runtime.*;
@@ -23,48 +21,14 @@ import org.antlr.runtime.tree.*;
 
 public class CommandLineParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "WS", "SERVER", "CLIENT", "ESA", "DSA", "VERBOSE", "Text", "VERSION", "SVERION", "HELP", "X", "XINT", "XBATCH", "XCJNI", "XFUTURE", "XNOCLSGC", "XINCGC", "XPROF", "XRS", "XSHARE", "BOOTCP", "MEMSIZE", "MEMS", "MEMX", "SS", "LOGGC", "SPLASH", "JAGENT", "EA", "DEA", "AGENT", "JRE_SEARCH", "JRE_NO_SEARCH", "CP", "CPROP", "Letter", "'-'", "'='", "':'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "WS", "TEXT", "LETTER", "'-'", "'='"
     };
-    public static final int DEA=33;
-    public static final int T__42=42;
-    public static final int HELP=13;
-    public static final int SVERION=12;
-    public static final int T__40=40;
-    public static final int XBATCH=16;
-    public static final int T__41=41;
-    public static final int EA=32;
-    public static final int CLIENT=6;
-    public static final int DSA=8;
-    public static final int XNOCLSGC=19;
-    public static final int BOOTCP=24;
-    public static final int CPROP=38;
-    public static final int MEMSIZE=25;
-    public static final int ESA=7;
-    public static final int SS=28;
-    public static final int VERSION=11;
-    public static final int MEMS=26;
-    public static final int EOF=-1;
-    public static final int JRE_NO_SEARCH=36;
-    public static final int XFUTURE=18;
-    public static final int X=14;
-    public static final int SERVER=5;
-    public static final int XSHARE=23;
-    public static final int VERBOSE=9;
     public static final int WS=4;
-    public static final int SPLASH=30;
-    public static final int XPROF=21;
-    public static final int XRS=22;
-    public static final int MEMX=27;
-    public static final int AGENT=34;
-    public static final int Text=10;
-    public static final int JAGENT=31;
-    public static final int JRE_SEARCH=35;
-    public static final int XINCGC=20;
-    public static final int XINT=15;
-    public static final int XCJNI=17;
-    public static final int LOGGC=29;
-    public static final int Letter=39;
-    public static final int CP=37;
+    public static final int LETTER=6;
+    public static final int TEXT=5;
+    public static final int EOF=-1;
+    public static final int T__8=8;
+    public static final int T__7=7;
 
     // delegates
     // delegators
@@ -88,10 +52,106 @@ public class CommandLineParser extends Parser {
     }
 
     public String[] getTokenNames() { return CommandLineParser.tokenNames; }
-    public String getGrammarFileName() { return "C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g"; }
+    public String getGrammarFileName() { return "/Users/tom/Downloads/CommandLine.g"; }
 
 
-        public List<JavaVMOption<?>> parse() {
+
+    	private static final String SERVER = "server";
+    	private static final String CLIENT = "client";
+    	private static final String ESA = "esa";
+    	private static final String ESA_LONG = "enablesystemassertions";
+    	private static final String DSA = "dsa";
+    	private static final String DSA_LONG = "disablesystemassertions";
+    	private static final String EA = "ea";
+    	private static final String EA_LONG = "enableassertions";
+    	private static final String DA = "da";
+    	private static final String DA_LONG = "disableassertions";
+    	private static final String VERBOSE = "verbose";
+    	private static final String SVERSION = "showversion";
+    	private static final String HELP = "?";
+    	private static final String HELP_LONG = "help";
+    	private static final String X = "X";
+    	private static final String XINT = "Xint";
+    	private static final String XBATCH = "Xbatch";
+    	private static final String XCJNI = "Xcheck";
+    	private static final String XFUTURE = "Xfuture";
+    	private static final String XNOCLSGC = "Xnoclassgc";
+    	private static final String XINCGC = "Xincgc";
+    	private static final String XPROF = "Xprof";
+    	private static final String XRS = "Xrs";
+    	private static final String XSHARE = "Xshare";
+    	private static final String JRE_SEARCH="jre-restrict-search";
+    	private static final String JRE_NO_SEARCH="jre-no-restrict-search";
+    	private static final String SPLASH = "splash";
+    	private static final String XLOGGC = "Xloggc";
+    	private static final String JAVAAGENT = "javaagent";
+    	private static final String AGENTLIB = "agentlib";
+    	private static final String AGENTPATH = "agentpath";
+    	private static final String BOOTCP = "Xbootclasspath";
+    	private static final String BOOTCPAPPEND = "Xbootclasspath/a";
+    	private static final String BOOTCPPREPEND = "Xbootclasspath/p";
+    	private static final String VERSION = "version";
+    	private static final String CLASSPATH = "cp";
+    	private static final String CLASSPATH_LONG = "classpath";
+
+    	private static final Set<String> switchOptions = new HashSet<String>() {
+    	    {
+    	    	this.addAll(Arrays.asList(
+    	    	SERVER,
+    	    	CLIENT,
+    	    	ESA,
+    	    	ESA_LONG,
+    	    	DSA,
+    	    	DSA_LONG,
+    	    	EA,
+    	    	EA_LONG,
+    	    	DA,
+    	    	DA_LONG,
+    	    	SVERSION,
+    	    	HELP,
+    	    	HELP_LONG,
+    	    	X,
+    	    	XINT,
+    	    	XBATCH,
+    	    	XFUTURE,
+    	    	XNOCLSGC,
+    	    	XINCGC,
+    	    	XPROF,
+    	    	XRS,
+    	    	JRE_SEARCH,
+    	    	JRE_NO_SEARCH));
+    	    }
+    	};
+    	
+    	private static final Set<String> paramOptions = new HashSet<String>(){
+    	    {
+    	        addAll(Arrays.asList(
+    	        SPLASH,
+    	        XLOGGC,
+    	        JAVAAGENT,
+    	        AGENTLIB,
+    	        AGENTPATH,
+    	        BOOTCP,
+    	        BOOTCPAPPEND,
+    	        BOOTCPPREPEND
+    	        ));
+    	    }
+    	};
+    	
+    	private static final Pattern memOptions = Pattern.compile("X(m[sx]|ss)\\d+[gGmMkK]");
+    	
+    	private static boolean isParamOption(final String text) {
+    		for (String option : paramOptions) {
+    		    if (text.startsWith(option+':')) {
+    		    	return true;
+    		    }
+    		}
+    		return false;
+    	}
+    	
+    	//xxx: Wrong! Should use TreeGrammer and not to populate customizer with custom nodes
+    	//Should be rewritten but I have no time for this
+    	public List<JavaVMOption<?>> parse() {
             Set<JavaVMOption<?>> result = new HashSet<JavaVMOption<?>>(); 
             try {
                 vmOptions_return options_return = vmOptions();
@@ -127,6 +187,8 @@ public class CommandLineParser extends Parser {
         private static OptionDefinition[] optionsTemplates = {
                 new OptionDefinition("client", Kind.SWITCH),
                 new OptionDefinition("server", Kind.SWITCH),
+                new OptionDefinition("ea", Kind.SWITCH),
+                new OptionDefinition("da", Kind.SWITCH),
                 new OptionDefinition("esa", Kind.SWITCH),
                 new OptionDefinition("dsa", Kind.SWITCH),
                 new OptionDefinition("verbose", Kind.SWITCH),
@@ -186,63 +248,136 @@ public class CommandLineParser extends Parser {
         }
 
 
-
-
-
     public static class vmOptions_return extends ParserRuleReturnScope {
         CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "vmOptions"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:233:1: vmOptions : ( option )* ;
+    // /Users/tom/Downloads/CommandLine.g:249:1: vmOptions : ( ( WS )? option )* ( WS )? -> ( option )* ;
     public final CommandLineParser.vmOptions_return vmOptions() throws RecognitionException {
         CommandLineParser.vmOptions_return retval = new CommandLineParser.vmOptions_return();
         retval.start = input.LT(1);
 
         CommonTree root_0 = null;
 
-        CommandLineParser.option_return option1 = null;
+        Token WS1=null;
+        Token WS3=null;
+        CommandLineParser.option_return option2 = null;
 
 
-
+        CommonTree WS1_tree=null;
+        CommonTree WS3_tree=null;
+        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
+        RewriteRuleSubtreeStream stream_option=new RewriteRuleSubtreeStream(adaptor,"rule option");
         try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:234:2: ( ( option )* )
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:234:5: ( option )*
+            // /Users/tom/Downloads/CommandLine.g:250:2: ( ( ( WS )? option )* ( WS )? -> ( option )* )
+            // /Users/tom/Downloads/CommandLine.g:250:4: ( ( WS )? option )* ( WS )?
             {
-            root_0 = (CommonTree)adaptor.nil();
-
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:234:5: ( option )*
-            loop1:
+            // /Users/tom/Downloads/CommandLine.g:250:4: ( ( WS )? option )*
+            loop2:
             do {
-                int alt1=2;
-                int LA1_0 = input.LA(1);
+                int alt2=2;
+                int LA2_0 = input.LA(1);
 
-                if ( (LA1_0==Text||LA1_0==40) ) {
-                    alt1=1;
+                if ( (LA2_0==WS) ) {
+                    int LA2_1 = input.LA(2);
+
+                    if ( (LA2_1==TEXT||LA2_1==7) ) {
+                        alt2=1;
+                    }
+
+
+                }
+                else if ( (LA2_0==TEXT||LA2_0==7) ) {
+                    alt2=1;
                 }
 
 
-                switch (alt1) {
+                switch (alt2) {
             	case 1 :
-            	    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:234:6: option
+            	    // /Users/tom/Downloads/CommandLine.g:250:5: ( WS )? option
             	    {
-            	    pushFollow(FOLLOW_option_in_vmOptions700);
-            	    option1=option();
+            	    // /Users/tom/Downloads/CommandLine.g:250:5: ( WS )?
+            	    int alt1=2;
+            	    int LA1_0 = input.LA(1);
+
+            	    if ( (LA1_0==WS) ) {
+            	        alt1=1;
+            	    }
+            	    switch (alt1) {
+            	        case 1 :
+            	            // /Users/tom/Downloads/CommandLine.g:250:5: WS
+            	            {
+            	            WS1=(Token)match(input,WS,FOLLOW_WS_in_vmOptions75);  
+            	            stream_WS.add(WS1);
+
+
+            	            }
+            	            break;
+
+            	    }
+
+            	    pushFollow(FOLLOW_option_in_vmOptions77);
+            	    option2=option();
 
             	    state._fsp--;
 
-            	    adaptor.addChild(root_0, option1.getTree());
+            	    stream_option.add(option2.getTree());
 
             	    }
             	    break;
 
             	default :
-            	    break loop1;
+            	    break loop2;
                 }
             } while (true);
 
+            // /Users/tom/Downloads/CommandLine.g:250:16: ( WS )?
+            int alt3=2;
+            int LA3_0 = input.LA(1);
 
+            if ( (LA3_0==WS) ) {
+                alt3=1;
+            }
+            switch (alt3) {
+                case 1 :
+                    // /Users/tom/Downloads/CommandLine.g:250:16: WS
+                    {
+                    WS3=(Token)match(input,WS,FOLLOW_WS_in_vmOptions80);  
+                    stream_WS.add(WS3);
+
+
+                    }
+                    break;
+
+            }
+
+
+
+            // AST REWRITE
+            // elements: option
+            // token labels: 
+            // rule labels: retval
+            // token list labels: 
+            // rule list labels: 
+            // wildcard labels: 
+            retval.tree = root_0;
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+            root_0 = (CommonTree)adaptor.nil();
+            // 250:20: -> ( option )*
+            {
+                // /Users/tom/Downloads/CommandLine.g:250:23: ( option )*
+                while ( stream_option.hasNext() ) {
+                    adaptor.addChild(root_0, stream_option.nextTree());
+
+                }
+                stream_option.reset();
+
+            }
+
+            retval.tree = root_0;
             }
 
             retval.stop = input.LT(-1);
@@ -269,229 +404,104 @@ public class CommandLineParser extends Parser {
     };
 
     // $ANTLR start "option"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:1: option : ( '-' ( switchDef | splash | continuous | version | loosedParameter | propertyDef | looseTextualNode[true] ) | looseTextualNode[false] );
+    // /Users/tom/Downloads/CommandLine.g:252:1: option : ( '-' switchOption -> switchOption | nonSwitchOption -> nonSwitchOption );
     public final CommandLineParser.option_return option() throws RecognitionException {
         CommandLineParser.option_return retval = new CommandLineParser.option_return();
         retval.start = input.LT(1);
 
         CommonTree root_0 = null;
 
-        Token char_literal2=null;
-        CommandLineParser.switchDef_return switchDef3 = null;
+        Token char_literal4=null;
+        CommandLineParser.switchOption_return switchOption5 = null;
 
-        CommandLineParser.splash_return splash4 = null;
-
-        CommandLineParser.continuous_return continuous5 = null;
-
-        CommandLineParser.version_return version6 = null;
-
-        CommandLineParser.loosedParameter_return loosedParameter7 = null;
-
-        CommandLineParser.propertyDef_return propertyDef8 = null;
-
-        CommandLineParser.looseTextualNode_return looseTextualNode9 = null;
-
-        CommandLineParser.looseTextualNode_return looseTextualNode10 = null;
+        CommandLineParser.nonSwitchOption_return nonSwitchOption6 = null;
 
 
-        CommonTree char_literal2_tree=null;
-
+        CommonTree char_literal4_tree=null;
+        RewriteRuleTokenStream stream_7=new RewriteRuleTokenStream(adaptor,"token 7");
+        RewriteRuleSubtreeStream stream_switchOption=new RewriteRuleSubtreeStream(adaptor,"rule switchOption");
+        RewriteRuleSubtreeStream stream_nonSwitchOption=new RewriteRuleSubtreeStream(adaptor,"rule nonSwitchOption");
         try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:8: ( '-' ( switchDef | splash | continuous | version | loosedParameter | propertyDef | looseTextualNode[true] ) | looseTextualNode[false] )
-            int alt3=2;
-            int LA3_0 = input.LA(1);
+            // /Users/tom/Downloads/CommandLine.g:252:8: ( '-' switchOption -> switchOption | nonSwitchOption -> nonSwitchOption )
+            int alt4=2;
+            int LA4_0 = input.LA(1);
 
-            if ( (LA3_0==40) ) {
-                alt3=1;
+            if ( (LA4_0==7) ) {
+                alt4=1;
             }
-            else if ( (LA3_0==Text) ) {
-                alt3=2;
+            else if ( (LA4_0==TEXT) ) {
+                alt4=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 3, 0, input);
+                    new NoViableAltException("", 4, 0, input);
 
                 throw nvae;
             }
-            switch (alt3) {
+            switch (alt4) {
                 case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:10: '-' ( switchDef | splash | continuous | version | loosedParameter | propertyDef | looseTextualNode[true] )
+                    // /Users/tom/Downloads/CommandLine.g:252:10: '-' switchOption
                     {
-                    root_0 = (CommonTree)adaptor.nil();
+                    char_literal4=(Token)match(input,7,FOLLOW_7_in_option95);  
+                    stream_7.add(char_literal4);
 
-                    char_literal2=(Token)match(input,40,FOLLOW_40_in_option712); 
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:15: ( switchDef | splash | continuous | version | loosedParameter | propertyDef | looseTextualNode[true] )
-                    int alt2=7;
-                    switch ( input.LA(1) ) {
-                    case SERVER:
-                    case CLIENT:
-                    case ESA:
-                    case DSA:
-                    case VERBOSE:
-                    case SVERION:
-                    case HELP:
-                    case X:
-                    case XINT:
-                    case XBATCH:
-                    case XCJNI:
-                    case XFUTURE:
-                    case XNOCLSGC:
-                    case XINCGC:
-                    case XPROF:
-                    case XRS:
-                    case XSHARE:
-                    case JRE_SEARCH:
-                    case JRE_NO_SEARCH:
-                        {
-                        alt2=1;
-                        }
-                        break;
-                    case BOOTCP:
-                    case LOGGC:
-                    case SPLASH:
-                    case JAGENT:
-                    case AGENT:
-                        {
-                        alt2=2;
-                        }
-                        break;
-                    case MEMS:
-                    case MEMX:
-                    case SS:
-                        {
-                        alt2=3;
-                        }
-                        break;
-                    case VERSION:
-                        {
-                        alt2=4;
-                        }
-                        break;
-                    case CP:
-                        {
-                        alt2=5;
-                        }
-                        break;
-                    case CPROP:
-                        {
-                        alt2=6;
-                        }
-                        break;
-                    case Text:
-                        {
-                        alt2=7;
-                        }
-                        break;
-                    default:
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 2, 0, input);
-
-                        throw nvae;
-                    }
-
-                    switch (alt2) {
-                        case 1 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:16: switchDef
-                            {
-                            pushFollow(FOLLOW_switchDef_in_option716);
-                            switchDef3=switchDef();
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, switchDef3.getTree());
-
-                            }
-                            break;
-                        case 2 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:26: splash
-                            {
-                            pushFollow(FOLLOW_splash_in_option718);
-                            splash4=splash();
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, splash4.getTree());
-
-                            }
-                            break;
-                        case 3 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:33: continuous
-                            {
-                            pushFollow(FOLLOW_continuous_in_option720);
-                            continuous5=continuous();
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, continuous5.getTree());
-
-                            }
-                            break;
-                        case 4 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:44: version
-                            {
-                            pushFollow(FOLLOW_version_in_option722);
-                            version6=version();
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, version6.getTree());
-
-                            }
-                            break;
-                        case 5 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:52: loosedParameter
-                            {
-                            pushFollow(FOLLOW_loosedParameter_in_option724);
-                            loosedParameter7=loosedParameter();
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, loosedParameter7.getTree());
-
-                            }
-                            break;
-                        case 6 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:68: propertyDef
-                            {
-                            pushFollow(FOLLOW_propertyDef_in_option726);
-                            propertyDef8=propertyDef();
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, propertyDef8.getTree());
-
-                            }
-                            break;
-                        case 7 :
-                            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:80: looseTextualNode[true]
-                            {
-                            pushFollow(FOLLOW_looseTextualNode_in_option728);
-                            looseTextualNode9=looseTextualNode(true);
-
-                            state._fsp--;
-
-                            adaptor.addChild(root_0, looseTextualNode9.getTree());
-
-                            }
-                            break;
-
-                    }
-
-
-                    }
-                    break;
-                case 2 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:237:106: looseTextualNode[false]
-                    {
-                    root_0 = (CommonTree)adaptor.nil();
-
-                    pushFollow(FOLLOW_looseTextualNode_in_option734);
-                    looseTextualNode10=looseTextualNode(false);
+                    pushFollow(FOLLOW_switchOption_in_option97);
+                    switchOption5=switchOption();
 
                     state._fsp--;
 
-                    adaptor.addChild(root_0, looseTextualNode10.getTree());
+                    stream_switchOption.add(switchOption5.getTree());
 
+
+                    // AST REWRITE
+                    // elements: switchOption
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 252:27: -> switchOption
+                    {
+                        adaptor.addChild(root_0, stream_switchOption.nextTree());
+
+                    }
+
+                    retval.tree = root_0;
+                    }
+                    break;
+                case 2 :
+                    // /Users/tom/Downloads/CommandLine.g:253:3: nonSwitchOption
+                    {
+                    pushFollow(FOLLOW_nonSwitchOption_in_option107);
+                    nonSwitchOption6=nonSwitchOption();
+
+                    state._fsp--;
+
+                    stream_nonSwitchOption.add(nonSwitchOption6.getTree());
+
+
+                    // AST REWRITE
+                    // elements: nonSwitchOption
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 253:20: -> nonSwitchOption
+                    {
+                        adaptor.addChild(root_0, stream_nonSwitchOption.nextTree());
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
 
@@ -514,361 +524,407 @@ public class CommandLineParser extends Parser {
     }
     // $ANTLR end "option"
 
-    public static class switchDef_return extends ParserRuleReturnScope {
+    public static class switchOption_return extends ParserRuleReturnScope {
         CommonTree tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start "switchDef"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:242:1: switchDef : ( SERVER | CLIENT | ESA | DSA | VERBOSE | SVERION | HELP | X | XINT | XBATCH | XCJNI | XFUTURE | XNOCLSGC | XINCGC | XPROF | XRS | XSHARE | JRE_SEARCH | JRE_NO_SEARCH ) ->;
-    public final CommandLineParser.switchDef_return switchDef() throws RecognitionException {
-        CommandLineParser.switchDef_return retval = new CommandLineParser.switchDef_return();
+    // $ANTLR start "switchOption"
+    // /Users/tom/Downloads/CommandLine.g:255:1: switchOption : ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' t2= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS t2= TEXT -> | t= TEXT ->);
+    public final CommandLineParser.switchOption_return switchOption() throws RecognitionException {
+        CommandLineParser.switchOption_return retval = new CommandLineParser.switchOption_return();
         retval.start = input.LT(1);
 
         CommonTree root_0 = null;
 
-        Token SERVER11=null;
-        Token CLIENT12=null;
-        Token ESA13=null;
-        Token DSA14=null;
-        Token VERBOSE15=null;
-        Token SVERION16=null;
-        Token HELP17=null;
-        Token X18=null;
-        Token XINT19=null;
-        Token XBATCH20=null;
-        Token XCJNI21=null;
-        Token XFUTURE22=null;
-        Token XNOCLSGC23=null;
-        Token XINCGC24=null;
-        Token XPROF25=null;
-        Token XRS26=null;
-        Token XSHARE27=null;
-        Token JRE_SEARCH28=null;
-        Token JRE_NO_SEARCH29=null;
+        Token t=null;
+        Token t2=null;
+        Token char_literal7=null;
+        Token WS8=null;
 
-        CommonTree SERVER11_tree=null;
-        CommonTree CLIENT12_tree=null;
-        CommonTree ESA13_tree=null;
-        CommonTree DSA14_tree=null;
-        CommonTree VERBOSE15_tree=null;
-        CommonTree SVERION16_tree=null;
-        CommonTree HELP17_tree=null;
-        CommonTree X18_tree=null;
-        CommonTree XINT19_tree=null;
-        CommonTree XBATCH20_tree=null;
-        CommonTree XCJNI21_tree=null;
-        CommonTree XFUTURE22_tree=null;
-        CommonTree XNOCLSGC23_tree=null;
-        CommonTree XINCGC24_tree=null;
-        CommonTree XPROF25_tree=null;
-        CommonTree XRS26_tree=null;
-        CommonTree XSHARE27_tree=null;
-        CommonTree JRE_SEARCH28_tree=null;
-        CommonTree JRE_NO_SEARCH29_tree=null;
-        RewriteRuleTokenStream stream_HELP=new RewriteRuleTokenStream(adaptor,"token HELP");
-        RewriteRuleTokenStream stream_SVERION=new RewriteRuleTokenStream(adaptor,"token SVERION");
-        RewriteRuleTokenStream stream_XBATCH=new RewriteRuleTokenStream(adaptor,"token XBATCH");
-        RewriteRuleTokenStream stream_XSHARE=new RewriteRuleTokenStream(adaptor,"token XSHARE");
-        RewriteRuleTokenStream stream_VERBOSE=new RewriteRuleTokenStream(adaptor,"token VERBOSE");
-        RewriteRuleTokenStream stream_CLIENT=new RewriteRuleTokenStream(adaptor,"token CLIENT");
-        RewriteRuleTokenStream stream_XPROF=new RewriteRuleTokenStream(adaptor,"token XPROF");
-        RewriteRuleTokenStream stream_DSA=new RewriteRuleTokenStream(adaptor,"token DSA");
-        RewriteRuleTokenStream stream_XNOCLSGC=new RewriteRuleTokenStream(adaptor,"token XNOCLSGC");
-        RewriteRuleTokenStream stream_XRS=new RewriteRuleTokenStream(adaptor,"token XRS");
-        RewriteRuleTokenStream stream_ESA=new RewriteRuleTokenStream(adaptor,"token ESA");
-        RewriteRuleTokenStream stream_JRE_SEARCH=new RewriteRuleTokenStream(adaptor,"token JRE_SEARCH");
-        RewriteRuleTokenStream stream_XINCGC=new RewriteRuleTokenStream(adaptor,"token XINCGC");
-        RewriteRuleTokenStream stream_XINT=new RewriteRuleTokenStream(adaptor,"token XINT");
-        RewriteRuleTokenStream stream_XCJNI=new RewriteRuleTokenStream(adaptor,"token XCJNI");
-        RewriteRuleTokenStream stream_JRE_NO_SEARCH=new RewriteRuleTokenStream(adaptor,"token JRE_NO_SEARCH");
-        RewriteRuleTokenStream stream_XFUTURE=new RewriteRuleTokenStream(adaptor,"token XFUTURE");
-        RewriteRuleTokenStream stream_X=new RewriteRuleTokenStream(adaptor,"token X");
-        RewriteRuleTokenStream stream_SERVER=new RewriteRuleTokenStream(adaptor,"token SERVER");
+        CommonTree t_tree=null;
+        CommonTree t2_tree=null;
+        CommonTree char_literal7_tree=null;
+        CommonTree WS8_tree=null;
+        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
+        RewriteRuleTokenStream stream_TEXT=new RewriteRuleTokenStream(adaptor,"token TEXT");
+        RewriteRuleTokenStream stream_8=new RewriteRuleTokenStream(adaptor,"token 8");
+
+
+        	int index = 0;
+        	String name = null;
+        	String value = null;
 
         try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:2: ( ( SERVER | CLIENT | ESA | DSA | VERBOSE | SVERION | HELP | X | XINT | XBATCH | XCJNI | XFUTURE | XNOCLSGC | XINCGC | XPROF | XRS | XSHARE | JRE_SEARCH | JRE_NO_SEARCH ) ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:4: ( SERVER | CLIENT | ESA | DSA | VERBOSE | SVERION | HELP | X | XINT | XBATCH | XCJNI | XFUTURE | XNOCLSGC | XINCGC | XPROF | XRS | XSHARE | JRE_SEARCH | JRE_NO_SEARCH )
-            {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:4: ( SERVER | CLIENT | ESA | DSA | VERBOSE | SVERION | HELP | X | XINT | XBATCH | XCJNI | XFUTURE | XNOCLSGC | XINCGC | XPROF | XRS | XSHARE | JRE_SEARCH | JRE_NO_SEARCH )
-            int alt4=19;
-            switch ( input.LA(1) ) {
-            case SERVER:
-                {
-                alt4=1;
-                }
-                break;
-            case CLIENT:
-                {
-                alt4=2;
-                }
-                break;
-            case ESA:
-                {
-                alt4=3;
-                }
-                break;
-            case DSA:
-                {
-                alt4=4;
-                }
-                break;
-            case VERBOSE:
-                {
-                alt4=5;
-                }
-                break;
-            case SVERION:
-                {
-                alt4=6;
-                }
-                break;
-            case HELP:
-                {
-                alt4=7;
-                }
-                break;
-            case X:
-                {
-                alt4=8;
-                }
-                break;
-            case XINT:
-                {
-                alt4=9;
-                }
-                break;
-            case XBATCH:
-                {
-                alt4=10;
-                }
-                break;
-            case XCJNI:
-                {
-                alt4=11;
-                }
-                break;
-            case XFUTURE:
-                {
-                alt4=12;
-                }
-                break;
-            case XNOCLSGC:
-                {
-                alt4=13;
-                }
-                break;
-            case XINCGC:
-                {
-                alt4=14;
-                }
-                break;
-            case XPROF:
-                {
-                alt4=15;
-                }
-                break;
-            case XRS:
-                {
-                alt4=16;
-                }
-                break;
-            case XSHARE:
-                {
-                alt4=17;
-                }
-                break;
-            case JRE_SEARCH:
-                {
-                alt4=18;
-                }
-                break;
-            case JRE_NO_SEARCH:
-                {
-                alt4=19;
-                }
-                break;
-            default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 4, 0, input);
-
-                throw nvae;
-            }
-
-            switch (alt4) {
+            // /Users/tom/Downloads/CommandLine.g:261:2: ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' t2= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS t2= TEXT -> | t= TEXT ->)
+            int alt5=10;
+            alt5 = dfa5.predict(input);
+            switch (alt5) {
                 case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:5: SERVER
+                    // /Users/tom/Downloads/CommandLine.g:261:4: {...}? =>t= TEXT
                     {
-                    SERVER11=(Token)match(input,SERVER,FOLLOW_SERVER_in_switchDef749);  
-                    stream_SERVER.add(SERVER11);
+                    if ( !((switchOptions.contains(input.LT(1).getText()))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "switchOptions.contains(input.LT(1).getText())");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption135);  
+                    stream_TEXT.add(t);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 261:78: ->
+                    {
+                        adaptor.addChild(root_0, new SwitchNode(t));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 2 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:12: CLIENT
+                    // /Users/tom/Downloads/CommandLine.g:262:3: {...}? =>t= TEXT
                     {
-                    CLIENT12=(Token)match(input,CLIENT,FOLLOW_CLIENT_in_switchDef751);  
-                    stream_CLIENT.add(CLIENT12);
+                    if ( !((VERBOSE.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERBOSE+':'))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "VERBOSE.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERBOSE+':')");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption166);  
+                    stream_TEXT.add(t);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 262:107: ->
+                    {
+                        adaptor.addChild(root_0, new SwitchNode(t));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 3 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:19: ESA
+                    // /Users/tom/Downloads/CommandLine.g:263:3: {...}? =>t= TEXT
                     {
-                    ESA13=(Token)match(input,ESA,FOLLOW_ESA_in_switchDef753);  
-                    stream_ESA.add(ESA13);
+                    if ( !((VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':'))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':')");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption186);  
+                    stream_TEXT.add(t);
+
+                    index = t.getText().indexOf(':'); if (index > 0) {name=t.getText().substring(0,index); value = (index+1) == t.getText().length() ? "" : t.getText().substring(index+1);} else {name=t.getText();} 
 
 
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 263:304: ->
+                    {
+                        adaptor.addChild(root_0,  index < 0 ? new SwitchNode(t) : new ParametrizedNode(t, name, ":", value));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 4 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:23: DSA
+                    // /Users/tom/Downloads/CommandLine.g:264:3: {...}? =>t= TEXT
                     {
-                    DSA14=(Token)match(input,DSA,FOLLOW_DSA_in_switchDef755);  
-                    stream_DSA.add(DSA14);
+                    if ( !((input.LT(1).getText().startsWith(XSHARE+':'))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "input.LT(1).getText().startsWith(XSHARE+':')");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption203);  
+                    stream_TEXT.add(t);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 264:60: ->
+                    {
+                        adaptor.addChild(root_0, new SwitchNode(t));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 5 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:27: VERBOSE
+                    // /Users/tom/Downloads/CommandLine.g:265:3: {...}? =>t= TEXT
                     {
-                    VERBOSE15=(Token)match(input,VERBOSE,FOLLOW_VERBOSE_in_switchDef757);  
-                    stream_VERBOSE.add(VERBOSE15);
+                    if ( !((input.LT(1).getText().startsWith(XCJNI+':'))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "input.LT(1).getText().startsWith(XCJNI+':')");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption218);  
+                    stream_TEXT.add(t);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 265:61: ->
+                    {
+                        adaptor.addChild(root_0, new SwitchNode(t));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 6 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:35: SVERION
+                    // /Users/tom/Downloads/CommandLine.g:266:3: {...}? =>t= TEXT '=' t2= TEXT
                     {
-                    SVERION16=(Token)match(input,SVERION,FOLLOW_SVERION_in_switchDef759);  
-                    stream_SVERION.add(SVERION16);
+                    if ( !((input.LT(1).getText().charAt(0) == 'D')) ) {
+                        throw new FailedPredicateException(input, "switchOption", "input.LT(1).getText().charAt(0) == 'D'");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption235);  
+                    stream_TEXT.add(t);
+
+                    char_literal7=(Token)match(input,8,FOLLOW_8_in_switchOption237);  
+                    stream_8.add(char_literal7);
+
+                    t2=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption241);  
+                    stream_TEXT.add(t2);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 266:69: ->
+                    {
+                        adaptor.addChild(root_0, new UserPropertyNode(t, t2, (t!=null?t.getCharPositionInLine():0)));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 7 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:43: HELP
+                    // /Users/tom/Downloads/CommandLine.g:267:3: {...}? =>t= TEXT
                     {
-                    HELP17=(Token)match(input,HELP,FOLLOW_HELP_in_switchDef761);  
-                    stream_HELP.add(HELP17);
+                    if ( !((isParamOption(input.LT(1).getText()))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "isParamOption(input.LT(1).getText())");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption259);  
+                    stream_TEXT.add(t);
+
+                    index = t.getText().indexOf(':'); if (index > 0) {name=t.getText().substring(0,index); value = (index+1) == t.getText().length() ? "" : t.getText().substring(index+1);}
 
 
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 267:227: ->
+                    {
+                        adaptor.addChild(root_0, new ParametrizedNode(t, name, ":", value));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 8 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:48: X
+                    // /Users/tom/Downloads/CommandLine.g:268:3: {...}? =>t= TEXT
                     {
-                    X18=(Token)match(input,X,FOLLOW_X_in_switchDef763);  
-                    stream_X.add(X18);
+                    if ( !((memOptions.matcher(input.LT(1).getText()).matches())) ) {
+                        throw new FailedPredicateException(input, "switchOption", "memOptions.matcher(input.LT(1).getText()).matches()");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption276);  
+                    stream_TEXT.add(t);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 268:69: ->
+                    {
+                        adaptor.addChild(root_0, new ParametrizedNode(t, 3));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 9 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:50: XINT
+                    // /Users/tom/Downloads/CommandLine.g:269:3: {...}? =>t= TEXT WS t2= TEXT
                     {
-                    XINT19=(Token)match(input,XINT,FOLLOW_XINT_in_switchDef765);  
-                    stream_XINT.add(XINT19);
+                    if ( !((CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText()))) ) {
+                        throw new FailedPredicateException(input, "switchOption", "CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText())");
+                    }
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption293);  
+                    stream_TEXT.add(t);
+
+                    WS8=(Token)match(input,WS,FOLLOW_WS_in_switchOption295);  
+                    stream_WS.add(WS8);
+
+                    t2=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption299);  
+                    stream_TEXT.add(t2);
 
 
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 269:114: ->
+                    {
+                        adaptor.addChild(root_0, new ParametrizedNode(t, " ", t2, false));
+
+                    }
+
+                    retval.tree = root_0;
                     }
                     break;
                 case 10 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:55: XBATCH
+                    // /Users/tom/Downloads/CommandLine.g:270:3: t= TEXT
                     {
-                    XBATCH20=(Token)match(input,XBATCH,FOLLOW_XBATCH_in_switchDef767);  
-                    stream_XBATCH.add(XBATCH20);
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption311);  
+                    stream_TEXT.add(t);
 
+
+
+                    // AST REWRITE
+                    // elements: 
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    // 270:10: ->
+                    {
+                        adaptor.addChild(root_0, new UnrecognizedOption(t));
 
                     }
-                    break;
-                case 11 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:62: XCJNI
-                    {
-                    XCJNI21=(Token)match(input,XCJNI,FOLLOW_XCJNI_in_switchDef769);  
-                    stream_XCJNI.add(XCJNI21);
 
-
-                    }
-                    break;
-                case 12 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:68: XFUTURE
-                    {
-                    XFUTURE22=(Token)match(input,XFUTURE,FOLLOW_XFUTURE_in_switchDef771);  
-                    stream_XFUTURE.add(XFUTURE22);
-
-
-                    }
-                    break;
-                case 13 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:76: XNOCLSGC
-                    {
-                    XNOCLSGC23=(Token)match(input,XNOCLSGC,FOLLOW_XNOCLSGC_in_switchDef773);  
-                    stream_XNOCLSGC.add(XNOCLSGC23);
-
-
-                    }
-                    break;
-                case 14 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:85: XINCGC
-                    {
-                    XINCGC24=(Token)match(input,XINCGC,FOLLOW_XINCGC_in_switchDef775);  
-                    stream_XINCGC.add(XINCGC24);
-
-
-                    }
-                    break;
-                case 15 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:92: XPROF
-                    {
-                    XPROF25=(Token)match(input,XPROF,FOLLOW_XPROF_in_switchDef777);  
-                    stream_XPROF.add(XPROF25);
-
-
-                    }
-                    break;
-                case 16 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:98: XRS
-                    {
-                    XRS26=(Token)match(input,XRS,FOLLOW_XRS_in_switchDef779);  
-                    stream_XRS.add(XRS26);
-
-
-                    }
-                    break;
-                case 17 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:102: XSHARE
-                    {
-                    XSHARE27=(Token)match(input,XSHARE,FOLLOW_XSHARE_in_switchDef781);  
-                    stream_XSHARE.add(XSHARE27);
-
-
-                    }
-                    break;
-                case 18 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:109: JRE_SEARCH
-                    {
-                    JRE_SEARCH28=(Token)match(input,JRE_SEARCH,FOLLOW_JRE_SEARCH_in_switchDef783);  
-                    stream_JRE_SEARCH.add(JRE_SEARCH28);
-
-
-                    }
-                    break;
-                case 19 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:243:120: JRE_NO_SEARCH
-                    {
-                    JRE_NO_SEARCH29=(Token)match(input,JRE_NO_SEARCH,FOLLOW_JRE_NO_SEARCH_in_switchDef785);  
-                    stream_JRE_NO_SEARCH.add(JRE_NO_SEARCH29);
-
-
+                    retval.tree = root_0;
                     }
                     break;
 
             }
+            retval.stop = input.LT(-1);
+
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end "switchOption"
+
+    public static class nonSwitchOption_return extends ParserRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start "nonSwitchOption"
+    // /Users/tom/Downloads/CommandLine.g:272:1: nonSwitchOption : t= TEXT ->;
+    public final CommandLineParser.nonSwitchOption_return nonSwitchOption() throws RecognitionException {
+        CommandLineParser.nonSwitchOption_return retval = new CommandLineParser.nonSwitchOption_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        Token t=null;
+
+        CommonTree t_tree=null;
+        RewriteRuleTokenStream stream_TEXT=new RewriteRuleTokenStream(adaptor,"token TEXT");
+
+        try {
+            // /Users/tom/Downloads/CommandLine.g:273:2: (t= TEXT ->)
+            // /Users/tom/Downloads/CommandLine.g:273:4: t= TEXT
+            {
+            t=(Token)match(input,TEXT,FOLLOW_TEXT_in_nonSwitchOption327);  
+            stream_TEXT.add(t);
 
 
 
@@ -883,9 +939,9 @@ public class CommandLineParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 244:3: ->
+            // 273:11: ->
             {
-                adaptor.addChild(root_0, new SwitchNode(((Token)retval.start)));
+                adaptor.addChild(root_0, new UnknownOption(t));
 
             }
 
@@ -908,942 +964,135 @@ public class CommandLineParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end "switchDef"
-
-    public static class propertyDef_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "propertyDef"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:249:1: propertyDef : CPROP ( '=' Text )? ->;
-    public final CommandLineParser.propertyDef_return propertyDef() throws RecognitionException {
-        CommandLineParser.propertyDef_return retval = new CommandLineParser.propertyDef_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token CPROP30=null;
-        Token char_literal31=null;
-        Token Text32=null;
-
-        CommonTree CPROP30_tree=null;
-        CommonTree char_literal31_tree=null;
-        CommonTree Text32_tree=null;
-        RewriteRuleTokenStream stream_Text=new RewriteRuleTokenStream(adaptor,"token Text");
-        RewriteRuleTokenStream stream_41=new RewriteRuleTokenStream(adaptor,"token 41");
-        RewriteRuleTokenStream stream_CPROP=new RewriteRuleTokenStream(adaptor,"token CPROP");
-
-
-        	System.out.println("Parsing user property definition");
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:253:2: ( CPROP ( '=' Text )? ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:253:4: CPROP ( '=' Text )?
-            {
-            CPROP30=(Token)match(input,CPROP,FOLLOW_CPROP_in_propertyDef813);  
-            stream_CPROP.add(CPROP30);
-
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:253:10: ( '=' Text )?
-            int alt5=2;
-            int LA5_0 = input.LA(1);
-
-            if ( (LA5_0==41) ) {
-                alt5=1;
-            }
-            switch (alt5) {
-                case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:253:11: '=' Text
-                    {
-                    char_literal31=(Token)match(input,41,FOLLOW_41_in_propertyDef816);  
-                    stream_41.add(char_literal31);
-
-                    Text32=(Token)match(input,Text,FOLLOW_Text_in_propertyDef818);  
-                    stream_Text.add(Text32);
-
-
-                    }
-                    break;
-
-            }
-
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 253:22: ->
-            {
-                adaptor.addChild(root_0, new UserPropertyNode(CPROP30, Text32, (CPROP30!=null?CPROP30.getCharPositionInLine():0)));
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end "propertyDef"
-
-    protected static class splash_scope {
-        String name;
-        String value;
-        int idx;
-    }
-    protected Stack splash_stack = new Stack();
-
-    public static class splash_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "splash"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:264:1: splash : ( SPLASH | BOOTCP | LOGGC | JAGENT | AGENT ) -> ^() ;
-    public final CommandLineParser.splash_return splash() throws RecognitionException {
-        splash_stack.push(new splash_scope());
-        CommandLineParser.splash_return retval = new CommandLineParser.splash_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token SPLASH33=null;
-        Token BOOTCP34=null;
-        Token LOGGC35=null;
-        Token JAGENT36=null;
-        Token AGENT37=null;
-
-        CommonTree SPLASH33_tree=null;
-        CommonTree BOOTCP34_tree=null;
-        CommonTree LOGGC35_tree=null;
-        CommonTree JAGENT36_tree=null;
-        CommonTree AGENT37_tree=null;
-        RewriteRuleTokenStream stream_AGENT=new RewriteRuleTokenStream(adaptor,"token AGENT");
-        RewriteRuleTokenStream stream_JAGENT=new RewriteRuleTokenStream(adaptor,"token JAGENT");
-        RewriteRuleTokenStream stream_SPLASH=new RewriteRuleTokenStream(adaptor,"token SPLASH");
-        RewriteRuleTokenStream stream_LOGGC=new RewriteRuleTokenStream(adaptor,"token LOGGC");
-        RewriteRuleTokenStream stream_BOOTCP=new RewriteRuleTokenStream(adaptor,"token BOOTCP");
-
-
-        	((splash_scope)splash_stack.peek()).name ="";
-        	((splash_scope)splash_stack.peek()).value ="";
-        	((splash_scope)splash_stack.peek()).idx = -1;
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:2: ( ( SPLASH | BOOTCP | LOGGC | JAGENT | AGENT ) -> ^() )
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:4: ( SPLASH | BOOTCP | LOGGC | JAGENT | AGENT )
-            {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:4: ( SPLASH | BOOTCP | LOGGC | JAGENT | AGENT )
-            int alt6=5;
-            switch ( input.LA(1) ) {
-            case SPLASH:
-                {
-                alt6=1;
-                }
-                break;
-            case BOOTCP:
-                {
-                alt6=2;
-                }
-                break;
-            case LOGGC:
-                {
-                alt6=3;
-                }
-                break;
-            case JAGENT:
-                {
-                alt6=4;
-                }
-                break;
-            case AGENT:
-                {
-                alt6=5;
-                }
-                break;
-            default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 6, 0, input);
-
-                throw nvae;
-            }
-
-            switch (alt6) {
-                case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:5: SPLASH
-                    {
-                    SPLASH33=(Token)match(input,SPLASH,FOLLOW_SPLASH_in_splash868);  
-                    stream_SPLASH.add(SPLASH33);
-
-
-                    }
-                    break;
-                case 2 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:12: BOOTCP
-                    {
-                    BOOTCP34=(Token)match(input,BOOTCP,FOLLOW_BOOTCP_in_splash870);  
-                    stream_BOOTCP.add(BOOTCP34);
-
-
-                    }
-                    break;
-                case 3 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:19: LOGGC
-                    {
-                    LOGGC35=(Token)match(input,LOGGC,FOLLOW_LOGGC_in_splash872);  
-                    stream_LOGGC.add(LOGGC35);
-
-
-                    }
-                    break;
-                case 4 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:25: JAGENT
-                    {
-                    JAGENT36=(Token)match(input,JAGENT,FOLLOW_JAGENT_in_splash874);  
-                    stream_JAGENT.add(JAGENT36);
-
-
-                    }
-                    break;
-                case 5 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:32: AGENT
-                    {
-                    AGENT37=(Token)match(input,AGENT,FOLLOW_AGENT_in_splash876);  
-                    stream_AGENT.add(AGENT37);
-
-
-                    }
-                    break;
-
-            }
-
-
-            		((splash_scope)splash_stack.peek()).idx = ((Token)retval.start).getText().indexOf(':');
-            		((splash_scope)splash_stack.peek()).name =((Token)retval.start).getText().substring(0, ((splash_scope)splash_stack.peek()).idx); 
-            		((splash_scope)splash_stack.peek()).value =((Token)retval.start).getText().substring(((splash_scope)splash_stack.peek()).idx + 1);
-            		
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 281:3: -> ^()
-            {
-                // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:281:6: ^()
-                {
-                CommonTree root_1 = (CommonTree)adaptor.nil();
-                root_1 = (CommonTree)adaptor.becomeRoot(new ParametrizedNode(((Token)retval.start), ((splash_scope)splash_stack.peek()).name, ":", ((splash_scope)splash_stack.peek()).value), root_1);
-
-                adaptor.addChild(root_0, root_1);
-                }
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-            splash_stack.pop();
-        }
-        return retval;
-    }
-    // $ANTLR end "splash"
-
-    public static class columnSeparatorOpt_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "columnSeparatorOpt"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:288:1: columnSeparatorOpt : ( EA | DEA ) ( ':' Text )? ->;
-    public final CommandLineParser.columnSeparatorOpt_return columnSeparatorOpt() throws RecognitionException {
-        CommandLineParser.columnSeparatorOpt_return retval = new CommandLineParser.columnSeparatorOpt_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token EA38=null;
-        Token DEA39=null;
-        Token char_literal40=null;
-        Token Text41=null;
-
-        CommonTree EA38_tree=null;
-        CommonTree DEA39_tree=null;
-        CommonTree char_literal40_tree=null;
-        CommonTree Text41_tree=null;
-        RewriteRuleTokenStream stream_DEA=new RewriteRuleTokenStream(adaptor,"token DEA");
-        RewriteRuleTokenStream stream_Text=new RewriteRuleTokenStream(adaptor,"token Text");
-        RewriteRuleTokenStream stream_EA=new RewriteRuleTokenStream(adaptor,"token EA");
-        RewriteRuleTokenStream stream_42=new RewriteRuleTokenStream(adaptor,"token 42");
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:2: ( ( EA | DEA ) ( ':' Text )? ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:4: ( EA | DEA ) ( ':' Text )?
-            {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:4: ( EA | DEA )
-            int alt7=2;
-            int LA7_0 = input.LA(1);
-
-            if ( (LA7_0==EA) ) {
-                alt7=1;
-            }
-            else if ( (LA7_0==DEA) ) {
-                alt7=2;
-            }
-            else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 7, 0, input);
-
-                throw nvae;
-            }
-            switch (alt7) {
-                case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:5: EA
-                    {
-                    EA38=(Token)match(input,EA,FOLLOW_EA_in_columnSeparatorOpt907);  
-                    stream_EA.add(EA38);
-
-
-                    }
-                    break;
-                case 2 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:8: DEA
-                    {
-                    DEA39=(Token)match(input,DEA,FOLLOW_DEA_in_columnSeparatorOpt909);  
-                    stream_DEA.add(DEA39);
-
-
-                    }
-                    break;
-
-            }
-
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:13: ( ':' Text )?
-            int alt8=2;
-            int LA8_0 = input.LA(1);
-
-            if ( (LA8_0==42) ) {
-                alt8=1;
-            }
-            switch (alt8) {
-                case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:289:14: ':' Text
-                    {
-                    char_literal40=(Token)match(input,42,FOLLOW_42_in_columnSeparatorOpt913);  
-                    stream_42.add(char_literal40);
-
-                    Text41=(Token)match(input,Text,FOLLOW_Text_in_columnSeparatorOpt915);  
-                    stream_Text.add(Text41);
-
-
-                    }
-                    break;
-
-            }
-
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 289:25: ->
-            {
-                adaptor.addChild(root_0, new ParametrizedNode(((Token)retval.start), ":", Text41));
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end "columnSeparatorOpt"
-
-    public static class continuous_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "continuous"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:292:1: continuous : ( MEMS | MEMX | SS ) ->;
-    public final CommandLineParser.continuous_return continuous() throws RecognitionException {
-        CommandLineParser.continuous_return retval = new CommandLineParser.continuous_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token MEMS42=null;
-        Token MEMX43=null;
-        Token SS44=null;
-
-        CommonTree MEMS42_tree=null;
-        CommonTree MEMX43_tree=null;
-        CommonTree SS44_tree=null;
-        RewriteRuleTokenStream stream_SS=new RewriteRuleTokenStream(adaptor,"token SS");
-        RewriteRuleTokenStream stream_MEMS=new RewriteRuleTokenStream(adaptor,"token MEMS");
-        RewriteRuleTokenStream stream_MEMX=new RewriteRuleTokenStream(adaptor,"token MEMX");
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:293:2: ( ( MEMS | MEMX | SS ) ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:293:4: ( MEMS | MEMX | SS )
-            {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:293:4: ( MEMS | MEMX | SS )
-            int alt9=3;
-            switch ( input.LA(1) ) {
-            case MEMS:
-                {
-                alt9=1;
-                }
-                break;
-            case MEMX:
-                {
-                alt9=2;
-                }
-                break;
-            case SS:
-                {
-                alt9=3;
-                }
-                break;
-            default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 9, 0, input);
-
-                throw nvae;
-            }
-
-            switch (alt9) {
-                case 1 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:293:5: MEMS
-                    {
-                    MEMS42=(Token)match(input,MEMS,FOLLOW_MEMS_in_continuous934);  
-                    stream_MEMS.add(MEMS42);
-
-
-                    }
-                    break;
-                case 2 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:293:10: MEMX
-                    {
-                    MEMX43=(Token)match(input,MEMX,FOLLOW_MEMX_in_continuous936);  
-                    stream_MEMX.add(MEMX43);
-
-
-                    }
-                    break;
-                case 3 :
-                    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:293:15: SS
-                    {
-                    SS44=(Token)match(input,SS,FOLLOW_SS_in_continuous938);  
-                    stream_SS.add(SS44);
-
-
-                    }
-                    break;
-
-            }
-
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 293:19: ->
-            {
-                adaptor.addChild(root_0, new ParametrizedNode(((Token)retval.start), 3));
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end "continuous"
-
-    protected static class version_scope {
-        boolean simple;
-        String versionText;
-    }
-    protected Stack version_stack = new Stack();
-
-    public static class version_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "version"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:296:1: version : VERSION -> {$version::simple}? ->;
-    public final CommandLineParser.version_return version() throws RecognitionException {
-        version_stack.push(new version_scope());
-        CommandLineParser.version_return retval = new CommandLineParser.version_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token VERSION45=null;
-
-        CommonTree VERSION45_tree=null;
-        RewriteRuleTokenStream stream_VERSION=new RewriteRuleTokenStream(adaptor,"token VERSION");
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:301:1: ( VERSION -> {$version::simple}? ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:301:3: VERSION
-            {
-            VERSION45=(Token)match(input,VERSION,FOLLOW_VERSION_in_version959);  
-            stream_VERSION.add(VERSION45);
-
-
-            	((version_scope)version_stack.peek()).simple = !VERSION45.getText().contains(":");	
-            	
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 305:2: -> {$version::simple}?
-            if (((version_scope)version_stack.peek()).simple) {
-                adaptor.addChild(root_0, new SwitchNode(VERSION45));
-
-            }
-            else // 306:2: ->
-            {
-                adaptor.addChild(root_0, new ParametrizedNode(VERSION45, "version", ":", VERSION45.getText().substring(8)));
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-            version_stack.pop();
-        }
-        return retval;
-    }
-    // $ANTLR end "version"
-
-    public static class loosedParameter_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "loosedParameter"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:309:1: loosedParameter : CP Text ->;
-    public final CommandLineParser.loosedParameter_return loosedParameter() throws RecognitionException {
-        CommandLineParser.loosedParameter_return retval = new CommandLineParser.loosedParameter_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token CP46=null;
-        Token Text47=null;
-
-        CommonTree CP46_tree=null;
-        CommonTree Text47_tree=null;
-        RewriteRuleTokenStream stream_Text=new RewriteRuleTokenStream(adaptor,"token Text");
-        RewriteRuleTokenStream stream_CP=new RewriteRuleTokenStream(adaptor,"token CP");
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:310:2: ( CP Text ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:310:4: CP Text
-            {
-            CP46=(Token)match(input,CP,FOLLOW_CP_in_loosedParameter988);  
-            stream_CP.add(CP46);
-
-            Text47=(Token)match(input,Text,FOLLOW_Text_in_loosedParameter990);  
-            stream_Text.add(Text47);
-
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 310:12: ->
-            {
-                adaptor.addChild(root_0, new ParametrizedNode(CP46, " ", Text47, false));
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end "loosedParameter"
-
-    public static class classpath_return extends ParserRuleReturnScope {
-        public String cls;
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "classpath"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:314:1: classpath returns [String cls] : l= Letter (l= Letter | '-' | ':' )* ;
-    public final CommandLineParser.classpath_return classpath() throws RecognitionException {
-        CommandLineParser.classpath_return retval = new CommandLineParser.classpath_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token l=null;
-        Token char_literal48=null;
-        Token char_literal49=null;
-
-        CommonTree l_tree=null;
-        CommonTree char_literal48_tree=null;
-        CommonTree char_literal49_tree=null;
-
-         
-        	retval.cls = "";	
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:319:2: (l= Letter (l= Letter | '-' | ':' )* )
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:319:4: l= Letter (l= Letter | '-' | ':' )*
-            {
-            root_0 = (CommonTree)adaptor.nil();
-
-            l=(Token)match(input,Letter,FOLLOW_Letter_in_classpath1020); 
-            l_tree = (CommonTree)adaptor.create(l);
-            adaptor.addChild(root_0, l_tree);
-
-            retval.cls += (l!=null?l.getText():null);
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:320:3: (l= Letter | '-' | ':' )*
-            loop10:
-            do {
-                int alt10=4;
-                switch ( input.LA(1) ) {
-                case Letter:
-                    {
-                    alt10=1;
-                    }
-                    break;
-                case 40:
-                    {
-                    alt10=2;
-                    }
-                    break;
-                case 42:
-                    {
-                    alt10=3;
-                    }
-                    break;
-
-                }
-
-                switch (alt10) {
-            	case 1 :
-            	    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:320:4: l= Letter
-            	    {
-            	    l=(Token)match(input,Letter,FOLLOW_Letter_in_classpath1030); 
-            	    l_tree = (CommonTree)adaptor.create(l);
-            	    adaptor.addChild(root_0, l_tree);
-
-            	    retval.cls += (l!=null?l.getText():null);
-
-            	    }
-            	    break;
-            	case 2 :
-            	    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:321:6: '-'
-            	    {
-            	    char_literal48=(Token)match(input,40,FOLLOW_40_in_classpath1039); 
-            	    char_literal48_tree = (CommonTree)adaptor.create(char_literal48);
-            	    adaptor.addChild(root_0, char_literal48_tree);
-
-            	    retval.cls += "-";
-
-            	    }
-            	    break;
-            	case 3 :
-            	    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:322:6: ':'
-            	    {
-            	    char_literal49=(Token)match(input,42,FOLLOW_42_in_classpath1048); 
-            	    char_literal49_tree = (CommonTree)adaptor.create(char_literal49);
-            	    adaptor.addChild(root_0, char_literal49_tree);
-
-            	    retval.cls += ":";
-
-            	    }
-            	    break;
-
-            	default :
-            	    break loop10;
-                }
-            } while (true);
-
-
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end "classpath"
-
-    public static class looseTextualNode_return extends ParserRuleReturnScope {
-        CommonTree tree;
-        public Object getTree() { return tree; }
-    };
-
-    // $ANTLR start "looseTextualNode"
-    // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:327:1: looseTextualNode[boolean unresolved] : Text -> {$unresolved}? ->;
-    public final CommandLineParser.looseTextualNode_return looseTextualNode(boolean unresolved) throws RecognitionException {
-        CommandLineParser.looseTextualNode_return retval = new CommandLineParser.looseTextualNode_return();
-        retval.start = input.LT(1);
-
-        CommonTree root_0 = null;
-
-        Token Text50=null;
-
-        CommonTree Text50_tree=null;
-        RewriteRuleTokenStream stream_Text=new RewriteRuleTokenStream(adaptor,"token Text");
-
-        try {
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:328:2: ( Text -> {$unresolved}? ->)
-            // C:\\SunWork\\nb-jet\\main\\java.j2seproject\\src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:329:3: Text
-            {
-            Text50=(Token)match(input,Text,FOLLOW_Text_in_looseTextualNode1072);  
-            stream_Text.add(Text50);
-
-
-
-            // AST REWRITE
-            // elements: 
-            // token labels: 
-            // rule labels: retval
-            // token list labels: 
-            // rule list labels: 
-            // wildcard labels: 
-            retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-
-            root_0 = (CommonTree)adaptor.nil();
-            // 330:3: -> {$unresolved}?
-            if (unresolved) {
-                adaptor.addChild(root_0, new UnrecognizedOption(((Token)retval.start)));
-
-            }
-            else // 331:3: ->
-            {
-                adaptor.addChild(root_0, new UnknownOption(((Token)retval.start)));
-
-            }
-
-            retval.tree = root_0;
-            }
-
-            retval.stop = input.LT(-1);
-
-            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
-            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
-
-        }
-        finally {
-        }
-        return retval;
-    }
-    // $ANTLR end "looseTextualNode"
+    // $ANTLR end "nonSwitchOption"
 
     // Delegated rules
 
 
+    protected DFA5 dfa5 = new DFA5(this);
+    static final String DFA5_eotS =
+        "\14\uffff";
+    static final String DFA5_eofS =
+        "\14\uffff";
+    static final String DFA5_minS =
+        "\1\5\1\4\12\uffff";
+    static final String DFA5_maxS =
+        "\1\5\1\10\12\uffff";
+    static final String DFA5_acceptS =
+        "\2\uffff\1\6\1\11\1\1\1\2\1\3\1\4\1\5\1\7\1\10\1\12";
+    static final String DFA5_specialS =
+        "\1\uffff\1\0\12\uffff}>";
+    static final String[] DFA5_transitionS = {
+            "\1\1",
+            "\1\3\3\uffff\1\2",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+    };
+
+    static final short[] DFA5_eot = DFA.unpackEncodedString(DFA5_eotS);
+    static final short[] DFA5_eof = DFA.unpackEncodedString(DFA5_eofS);
+    static final char[] DFA5_min = DFA.unpackEncodedStringToUnsignedChars(DFA5_minS);
+    static final char[] DFA5_max = DFA.unpackEncodedStringToUnsignedChars(DFA5_maxS);
+    static final short[] DFA5_accept = DFA.unpackEncodedString(DFA5_acceptS);
+    static final short[] DFA5_special = DFA.unpackEncodedString(DFA5_specialS);
+    static final short[][] DFA5_transition;
+
+    static {
+        int numStates = DFA5_transitionS.length;
+        DFA5_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA5_transition[i] = DFA.unpackEncodedString(DFA5_transitionS[i]);
+        }
+    }
+
+    class DFA5 extends DFA {
+
+        public DFA5(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 5;
+            this.eot = DFA5_eot;
+            this.eof = DFA5_eof;
+            this.min = DFA5_min;
+            this.max = DFA5_max;
+            this.accept = DFA5_accept;
+            this.special = DFA5_special;
+            this.transition = DFA5_transition;
+        }
+        public String getDescription() {
+            return "255:1: switchOption : ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' t2= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS t2= TEXT -> | t= TEXT ->);";
+        }
+        public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
+            TokenStream input = (TokenStream)_input;
+        	int _s = s;
+            switch ( s ) {
+                    case 0 : 
+                        int LA5_1 = input.LA(1);
+
+                         
+                        int index5_1 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA5_1==8) && ((input.LT(1).getText().charAt(0) == 'D'))) {s = 2;}
+
+                        else if ( (LA5_1==WS) && ((CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText())))) {s = 3;}
+
+                        else if ( ((switchOptions.contains(input.LT(1).getText()))) ) {s = 4;}
+
+                        else if ( ((VERBOSE.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERBOSE+':'))) ) {s = 5;}
+
+                        else if ( ((VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':'))) ) {s = 6;}
+
+                        else if ( ((input.LT(1).getText().startsWith(XSHARE+':'))) ) {s = 7;}
+
+                        else if ( ((input.LT(1).getText().startsWith(XCJNI+':'))) ) {s = 8;}
+
+                        else if ( ((isParamOption(input.LT(1).getText()))) ) {s = 9;}
+
+                        else if ( ((memOptions.matcher(input.LT(1).getText()).matches())) ) {s = 10;}
+
+                        else if ( (true) ) {s = 11;}
+
+                         
+                        input.seek(index5_1);
+                        if ( s>=0 ) return s;
+                        break;
+            }
+            NoViableAltException nvae =
+                new NoViableAltException(getDescription(), 5, _s, input);
+            error(nvae);
+            throw nvae;
+        }
+    }
  
 
-    public static final BitSet FOLLOW_option_in_vmOptions700 = new BitSet(new long[]{0x0000010000000402L});
-    public static final BitSet FOLLOW_40_in_option712 = new BitSet(new long[]{0x0000017CFDFFFFE0L});
-    public static final BitSet FOLLOW_switchDef_in_option716 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_splash_in_option718 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_continuous_in_option720 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_version_in_option722 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_loosedParameter_in_option724 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_propertyDef_in_option726 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_looseTextualNode_in_option728 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_looseTextualNode_in_option734 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SERVER_in_switchDef749 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CLIENT_in_switchDef751 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ESA_in_switchDef753 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_DSA_in_switchDef755 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_VERBOSE_in_switchDef757 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SVERION_in_switchDef759 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_HELP_in_switchDef761 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_X_in_switchDef763 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XINT_in_switchDef765 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XBATCH_in_switchDef767 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XCJNI_in_switchDef769 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XFUTURE_in_switchDef771 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XNOCLSGC_in_switchDef773 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XINCGC_in_switchDef775 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XPROF_in_switchDef777 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XRS_in_switchDef779 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_XSHARE_in_switchDef781 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_JRE_SEARCH_in_switchDef783 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_JRE_NO_SEARCH_in_switchDef785 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CPROP_in_propertyDef813 = new BitSet(new long[]{0x0000020000000002L});
-    public static final BitSet FOLLOW_41_in_propertyDef816 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_Text_in_propertyDef818 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SPLASH_in_splash868 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_BOOTCP_in_splash870 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LOGGC_in_splash872 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_JAGENT_in_splash874 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_AGENT_in_splash876 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_EA_in_columnSeparatorOpt907 = new BitSet(new long[]{0x0000040000000002L});
-    public static final BitSet FOLLOW_DEA_in_columnSeparatorOpt909 = new BitSet(new long[]{0x0000040000000002L});
-    public static final BitSet FOLLOW_42_in_columnSeparatorOpt913 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_Text_in_columnSeparatorOpt915 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_MEMS_in_continuous934 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_MEMX_in_continuous936 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SS_in_continuous938 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_VERSION_in_version959 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_CP_in_loosedParameter988 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_Text_in_loosedParameter990 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_Letter_in_classpath1020 = new BitSet(new long[]{0x0000058000000002L});
-    public static final BitSet FOLLOW_Letter_in_classpath1030 = new BitSet(new long[]{0x0000058000000002L});
-    public static final BitSet FOLLOW_40_in_classpath1039 = new BitSet(new long[]{0x0000058000000002L});
-    public static final BitSet FOLLOW_42_in_classpath1048 = new BitSet(new long[]{0x0000058000000002L});
-    public static final BitSet FOLLOW_Text_in_looseTextualNode1072 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_WS_in_vmOptions75 = new BitSet(new long[]{0x00000000000000A0L});
+    public static final BitSet FOLLOW_option_in_vmOptions77 = new BitSet(new long[]{0x00000000000000B2L});
+    public static final BitSet FOLLOW_WS_in_vmOptions80 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_7_in_option95 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_switchOption_in_option97 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_nonSwitchOption_in_option107 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption135 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption166 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption186 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption203 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption218 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption235 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_8_in_switchOption237 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption241 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption259 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption276 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption293 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_WS_in_switchOption295 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption299 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption311 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_nonSwitchOption327 = new BitSet(new long[]{0x0000000000000002L});
 
 }

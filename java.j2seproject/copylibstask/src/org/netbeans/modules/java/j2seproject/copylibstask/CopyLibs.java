@@ -49,6 +49,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -85,16 +87,16 @@ public class CopyLibs extends Jar {
             throw new BuildException ("RuntimeClassPath must be set.");
         }
         final String[] pathElements = this.runtimePath.list();
-        File[] filesToCopy = new File[pathElements.length];
+        final List<File> filesToCopy = new ArrayList<File>(pathElements.length);
         for (int i=0; i< pathElements.length; i++) {
-            File f = new File (pathElements[i]);
-            if (f.isDirectory() || !f.canRead()) {
-                filesToCopy = null;
-                this.log(f.toString() + " is a directory or can't be read. Not copying the libraries.");
-                break;
+            final File f = new File (pathElements[i]);
+            if (!f.canRead()) {
+                this.log(String.format("Not copying library %s , it can't be read.", f.getAbsolutePath()), Project.MSG_WARN);
+            } else if (f.isDirectory()) {                
+                this.log(String.format("Not copying library %s , it's a directory.", f.getAbsolutePath()), Project.MSG_WARN);
             }
             else {
-                filesToCopy[i] = f;
+                filesToCopy.add(f);
             }
         }        
         final File destFile = this.getDestFile();
@@ -118,7 +120,7 @@ public class CopyLibs extends Jar {
             this.log("Cannot generate readme file.",Project.MSG_VERBOSE);
         }        
         
-        if (filesToCopy != null && filesToCopy.length>0) {            
+        if (!filesToCopy.isEmpty()) {
             final File libFolder = new File (destFolder,LIB);
             if (!libFolder.exists()) {
                 libFolder.mkdir ();
@@ -127,11 +129,11 @@ public class CopyLibs extends Jar {
             assert libFolder.canWrite();            
             FileUtils utils = FileUtils.getFileUtils();
             this.log("Copy libraries to " + libFolder.toString() + ".");
-            for (int i=0; i<filesToCopy.length; i++) {
-                this.log("Copy " + filesToCopy[i].getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);
+            for (final File fileToCopy : filesToCopy) {
+                this.log("Copy " + fileToCopy.getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);
                 try {
-                    File libFile = new File (libFolder,filesToCopy[i].getName());
-                    utils.copyFile(filesToCopy[i],libFile);
+                    File libFile = new File (libFolder,fileToCopy.getName());
+                    utils.copyFile(fileToCopy,libFile);
                 } catch (IOException ioe) {
                     throw new BuildException (ioe);
                 }
@@ -143,7 +145,7 @@ public class CopyLibs extends Jar {
             addConfiguredIndexJars(p);
         }
         else {
-            this.log("Not copying the libraries.");
+            this.log("Nothing to copy.");
         }
 
         super.execute();

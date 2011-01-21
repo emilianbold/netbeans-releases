@@ -239,7 +239,7 @@ public class MakeSources implements Sources, AntProjectListener {
             SourcesHelper h = new SourcesHelper(project, helper, project.evaluator());
             for (String name : sourceRootList) {
                 String displayName = CndPathUtilitities.toRelativePath(baseDir, name);
-                displayName = CndPathUtilitities.naturalize(displayName);
+                displayName = CndPathUtilitities.naturalizeSlashes(displayName);
                 h.sourceRoot(name).displayName(displayName).add();
                 h.sourceRoot(name).type(GENERIC).displayName(displayName).add(); // NOI18N
             }

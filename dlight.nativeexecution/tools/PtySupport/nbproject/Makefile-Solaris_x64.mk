@@ -19,7 +19,7 @@ FC=
 AS=gas
 
 # Macros
-CND_PLATFORM=GNU-Solaris-x86
+CND_PLATFORM=GNU-Solaris-x64
 CND_CONF=Solaris_x64
 CND_DISTDIR=dist
 
@@ -37,7 +37,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/error.o
 
 # C Compiler Flags
-CFLAGS=--std=c99
+CFLAGS=-m64 --std=c99
 
 # CC Compiler Flags
 CCFLAGS=
@@ -54,10 +54,10 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-Solaris_x64.mk dist/Solaris_x64/GNU-Solaris-x86/ptysupport
+	${MAKE}  -f nbproject/Makefile-Solaris_x64.mk dist/Solaris_x64/GNU-Solaris-x64/ptysupport
 
-dist/Solaris_x64/GNU-Solaris-x86/ptysupport: ${OBJECTFILES}
-	${MKDIR} -p dist/Solaris_x64/GNU-Solaris-x86
+dist/Solaris_x64/GNU-Solaris-x64/ptysupport: ${OBJECTFILES}
+	${MKDIR} -p dist/Solaris_x64/GNU-Solaris-x64
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/src/loop.o: nbproject/Makefile-${CND_CONF}.mk src/loop.c 
@@ -86,7 +86,7 @@ ${OBJECTDIR}/src/error.o: nbproject/Makefile-${CND_CONF}.mk src/error.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Solaris_x64
-	${RM} dist/Solaris_x64/GNU-Solaris-x86/ptysupport
+	${RM} dist/Solaris_x64/GNU-Solaris-x64/ptysupport
 
 # Subprojects
 .clean-subprojects:

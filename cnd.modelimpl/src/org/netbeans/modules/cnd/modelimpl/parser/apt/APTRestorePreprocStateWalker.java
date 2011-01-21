@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -99,7 +98,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             }
         }
         try {
-            csmFile = inclFileOwner.getFile(new File(inclPath.toString()), false);
+            csmFile = inclFileOwner.getFile(inclPath, false);
             if( csmFile == null ) {
 		// this might happen if the file has been just deleted from project
 		return null;

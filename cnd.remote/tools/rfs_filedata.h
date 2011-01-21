@@ -75,8 +75,7 @@ enum file_state {
 
 typedef struct file_data {
     volatile enum file_state state;
-    pthread_mutex_t cond_mutex;
-    pthread_cond_t cond;
+    pthread_mutex_t mutex;
     char filename[];
 } file_data;
 
@@ -111,9 +110,6 @@ void stop_adding_file_data();
  * In the case function returns 0, the tree traversal is stopped
  */
 void visit_file_data(int (*) (file_data*, void*), void*);
-
-void wait_on_file_data(file_data *fd);
-void signal_on_file_data(file_data *fd);
 
 #ifdef	__cplusplus
 }

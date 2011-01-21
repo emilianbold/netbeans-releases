@@ -59,13 +59,14 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.keyring.impl</friend>
                 <friend>org.netbeans.modules.masterfs</friend>
                 <friend>org.netbeans.modules.python.qshell</friend>
+                <friend>org.netbeans.libs.svnClientAdapter.svnkit</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
                 <package>com.sun.jna.win32</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jna-3.0.9.jar</runtime-relative-path>
-                <binary-origin>external/jna-3.0.9.jar</binary-origin>
+                <runtime-relative-path>ext/jna-3.2.7.jar</runtime-relative-path>
+                <binary-origin>external/jna-3.2.7.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -163,7 +163,16 @@ public class ConstructorGenerator implements CodeGenerator {
             ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-            dialog.setVisible(true);
+            try {
+                dialog.setVisible(true);
+            } catch (Throwable th) {
+                if (!(th.getCause() instanceof InterruptedException)) {
+                    throw new RuntimeException(th);
+                }
+                dialogDescriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+            } finally {
+                dialog.dispose();
+            }
             if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
                 return;
             }

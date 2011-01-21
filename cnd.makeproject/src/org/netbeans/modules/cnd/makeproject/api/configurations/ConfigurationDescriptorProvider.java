@@ -46,9 +46,12 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -65,6 +68,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
@@ -72,8 +76,9 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
     private static final String USG_CND_PROJECT_ACTION = "USG_CND_PROJECT_ACTION"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    private final static RequestProcessor RP = new RequestProcessor("Configuration Updater", 1); // NOI18N
 
-    private FileObject projectDirectory;
+    private final FileObject projectDirectory;
     private Project project = null;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
@@ -111,7 +116,7 @@ public class ConfigurationDescriptorProvider {
             synchronized (readLock) {
                 // check again that someone already havn't read
                 if (shouldBeLoaded()) {
-                    LOGGER.log(Level.FINE, "Start of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
+                    LOGGER.log(Level.FINE, "Start reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
                     // It's important to set needReload=false before calling
                     // projectDescriptor.assign(), otherwise there will be
                     // infinite recursion.
@@ -133,7 +138,7 @@ public class ConfigurationDescriptorProvider {
                             } else {
                                 if (first) {
                                     // prevent reading configurations before project cration
-                                    new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(); // NOI18N
+                                    new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(System.err); // NOI18N
                                     return null;
                                 }
                             }
@@ -169,7 +174,9 @@ public class ConfigurationDescriptorProvider {
                             if (newDescriptor != null) {
                                 newDescriptor.setProject(project);
                                 newDescriptor.waitInitTask();
+                                Delta delta = getDelta(newDescriptor);
                                 projectDescriptor.assign(newDescriptor);
+                                projectDescriptor.checkForChangedItems(delta);
                                 LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
                                         new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
                             } else {
@@ -178,7 +185,7 @@ public class ConfigurationDescriptorProvider {
                             }
                         }
                     } catch (java.io.IOException x) {
-                        x.printStackTrace();
+                        x.printStackTrace(System.err);
                         // most likely open failed
                     }
 
@@ -190,6 +197,46 @@ public class ConfigurationDescriptorProvider {
             projectDescriptor.waitInitTask();
         }
         return projectDescriptor;
+    }
+
+    private Delta getDelta(MakeConfigurationDescriptor newDescriptor) {
+        Item[] oldItems = projectDescriptor.getProjectItems();
+        Map<String,Item> oldMap = new HashMap<String,Item>();
+        Set<Item> oldSet = new HashSet<Item>();
+        for(Item item : oldItems) {
+            oldMap.put(item.getAbsolutePath(), item);
+            oldSet.add(item);
+        }
+        Delta delta = new Delta();
+        Item[] newItems = newDescriptor.getProjectItems();
+        for(Item item : newItems) {
+            Item oldItem = oldMap.get(item.getAbsolutePath());
+            if (oldItem == null) {
+                delta.added.add(item);
+            } else {
+                oldSet.remove(oldItem);
+                if (item.isExcluded() && oldItem.isExcluded()) {
+                    // no changes
+                    delta.replaced.add(item);
+                } else if (item.isExcluded() && !oldItem.isExcluded()) {
+                    delta.exluded.add(item);
+                } else  if (!item.isExcluded() && oldItem.isExcluded()) {
+                    delta.included.add(item);
+                } else {
+                    // compare item properties
+                    if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths()) &&
+                          item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
+                        delta.changed.add(item);
+                    } else {
+                        delta.replaced.add(item);
+                    }
+                }
+            }
+        }
+        for (Item item : oldSet) {
+            delta.deleted.add(item);
+        }
+        return delta;
     }
 
     public boolean gotDescriptor() {
@@ -397,14 +444,20 @@ public class ConfigurationDescriptorProvider {
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (projectDescriptor == null || !projectDescriptor.getModified()) {
+            if (projectDescriptor == null || !projectDescriptor.isModified()) {
                 synchronized (readLock) {
-                    if (projectDescriptor == null || !projectDescriptor.getModified()) {
+                    if (projectDescriptor == null || !projectDescriptor.isModified()) {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
                         LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
                         needReload = true;
                         hasTried = false;
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                getConfigurationDescriptor();
+                            }
+                        });
                     }
                 }
             }
@@ -442,4 +495,16 @@ public class ConfigurationDescriptorProvider {
 
     }
 
+    public static final class Delta {
+        public List<Item> included = new ArrayList<Item>(); // marked as included
+        public List<Item> added = new ArrayList<Item>(); // added in project
+        public List<Item> exluded = new ArrayList<Item>(); // marked as excluded
+        public List<Item> deleted = new ArrayList<Item>(); // deleted from project items
+        public List<Item> changed = new ArrayList<Item>(); // changed properties
+        public List<Item> replaced = new ArrayList<Item>(); // properties were not changed (from code model point of view) but instance was replaced
+
+        public boolean isEmpty(){
+            return included.isEmpty() && added.isEmpty() && exluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
+        }
+    }
 }

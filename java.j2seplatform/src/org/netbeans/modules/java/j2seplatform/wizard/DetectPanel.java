@@ -55,6 +55,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
@@ -101,6 +102,12 @@ public class DetectPanel extends javax.swing.JPanel {
 
     private NewJ2SEPlatform primaryPlatform;
     private final ChangeSupport cs = new ChangeSupport(this);
+    
+    private static final String HTTP = "http";              //NOI18N
+    private static final String HTTPS = "https";            //NOI18N
+    private static final String FILE = "file";              //NOI18N
+    private static final String INNER_SEPARATOR = "!/";     //NOI18N
+    private static final String PATH_SEPARATOR = ";";       //NOI18N
 
     /**
      * Creates a detect panel
@@ -118,6 +125,7 @@ public class DetectPanel extends javax.swing.JPanel {
         this.setName (NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"));
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();        
     }    
@@ -125,14 +133,17 @@ public class DetectPanel extends javax.swing.JPanel {
     private void postInitComponents () {
         this.jdkName.getDocument().addDocumentListener (new DocumentListener () {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 handleNameChange ();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 handleNameChange ();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 handleNameChange ();
             }
@@ -327,13 +338,77 @@ public class DetectPanel extends javax.swing.JPanel {
         this.sources.setText (sources == null ? "" : sources);      //NOI18N
     }
 
-    String getJavadoc () {
-        String val = this.javadoc.getText();
-        return val.length() == 0 ? null : val;
+    //todo: User friendly error handling
+    List<URL> getJavadoc () {
+        final String val = this.javadoc.getText();
+        final List<URL> result = new ArrayList<URL>();
+        final StringTokenizer tk = new StringTokenizer(val,PATH_SEPARATOR);
+        while (tk.hasMoreTokens()) {
+            try {
+                final String token =  tk.nextToken().trim();
+                if (token.startsWith(HTTP) || token.startsWith(HTTPS)) {
+                    //Http(s) URL add directly
+                    result.add(URI.create(token).toURL());                
+                } else {
+                    //File or folder
+                    //1st) /jdk/docs/
+                    //2nd) /jdk/docs.zip
+                    //3rd) /jdk/docs.zip!/docs/api/
+                    int index = token.lastIndexOf(INNER_SEPARATOR);
+                    if (index > 0) {
+                        final String outherPath = token.substring(0, index);
+                        final String innerPath = index+2 == token.length() ? "" : token.substring(index+2);
+                        final File f = new File (outherPath);
+                        result.add (new URL (FileUtil.getArchiveRoot(f.toURI().toURL()).toExternalForm() + innerPath));                    
+                    } else {
+                        final File f = new File(token);
+                        final URL url = FileUtil.urlForArchiveOrDir(f);
+                        if (url != null) {
+                            result.add(url);
+                        }
+                    }
+                }
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return result;
     }
 
-    void setJavadoc (String jdoc) {
-        this.javadoc.setText(jdoc == null ? "" : jdoc);             //NOI18N
+    void setJavadoc (final List<URL> jdoc) {
+        //Create "human" representation of URLs
+        final StringBuilder result = new StringBuilder();
+        for (final URL jdocRoot : jdoc) {
+            try {
+                final String extUrl = jdocRoot.toExternalForm(); 
+                URL url = FileUtil.getArchiveFile(jdocRoot);
+                String relative;
+                String userName;
+                if (url == null) {
+                    url = jdocRoot;
+                    relative = "";  //NOI18N
+                } else {                
+                    int index = extUrl.lastIndexOf(INNER_SEPARATOR);
+                    relative = index < 0 ? "" : extUrl.substring(index);    //NOI18N
+                }
+                final String protocol = url.getProtocol();
+                if (FILE.equals(protocol)){ //NOI18N
+                    userName = new File(url.toURI()).getAbsolutePath() + relative;
+                } else if (HTTP.equals(protocol) ||HTTPS.equals(protocol)) {
+                    userName = extUrl;
+                } else {
+                    //Other protocols are unsupported
+                    continue;
+                }
+                if (result.length() > 0) {
+                    result.append(PATH_SEPARATOR);
+                }
+                result.append(userName);
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        this.javadoc.setText(result.toString());
     }
 
     /**
@@ -364,10 +439,12 @@ public class DetectPanel extends javax.swing.JPanel {
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter (new FileFilter () {
+            @Override
             public boolean accept(File f) {
                 return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith(".zip") || f.getName().endsWith(".jar"))));
             }
 
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(DetectPanel.class,"TXT_ZipFilter");
             }
@@ -415,10 +492,12 @@ public class DetectPanel extends javax.swing.JPanel {
 	    this.iterator = iterator;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             cs.addChangeListener(l);
         }
 
+        @Override
         public java.awt.Component getComponent() {
             if (component == null) {
                 final NewJ2SEPlatform primaryPlatform = this.iterator.getPlatform();
@@ -427,6 +506,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 component.addChangeListener (this);
                 task = RP.create(
                     new Runnable() {
+                        @Override
                         public void run() {
                             primaryPlatform.run();
                             if (secondaryPlatform != null) {
@@ -446,14 +526,17 @@ public class DetectPanel extends javax.swing.JPanel {
             cs.fireChange();
         }
 
+        @Override
         public HelpCtx getHelp() {
             return new HelpCtx (DetectPanel.class);
         }
 
+        @Override
         public boolean isValid() {
             return valid;
         }
 
+        @Override
         public void readSettings(WizardDescriptor settings) {           
             this.wiz = settings;
             JavaPlatform platform = this.iterator.getPlatform();
@@ -504,6 +587,7 @@ public class DetectPanel extends javax.swing.JPanel {
             task.schedule(0);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             cs.removeChangeListener(l);
         }
@@ -512,11 +596,11 @@ public class DetectPanel extends javax.swing.JPanel {
 	 Updates the Platform's display name with the one the user
 	 has entered. Stores user-customized display name into the Platform.
 	 */
+        @Override
         public void storeSettings(WizardDescriptor settings) {
             if (isValid()) {                                
                 String name = component.getPlatformName();                
                 List<PathResourceImplementation> src = new ArrayList<PathResourceImplementation>();
-                List<URL> jdoc = null;
                 String srcPath = this.component.getSources();
                 if (srcPath!=null) {
                     File f = new File (srcPath);
@@ -541,32 +625,12 @@ public class DetectPanel extends javax.swing.JPanel {
                     } catch (FileStateInvalidException e) {
                     }
                 }
-                String jdocPath = this.component.getJavadoc();
-                if (jdocPath!=null) {
-                    try {
-                        jdoc = new ArrayList<URL>();
-                        if (jdocPath.startsWith("http")) {
-                            jdoc.add(new URL(jdocPath));
-                        } else {
-                            File f = new File(jdocPath);
-                            URL url = f.toURI().toURL();
-                            if (FileUtil.isArchiveFile(url)) {
-                                url = FileUtil.getArchiveRoot(url);
-                            }
-                            else if (!f.exists()){
-                                url = new URL (url.toExternalForm()+'/');
-                            }
-                            jdoc.add (url);
-                        }
-                    } catch (MalformedURLException mue) {
-                    }
-                }
-                
+                List<URL> jdoc = this.component.getJavadoc();                                
                 NewJ2SEPlatform platform = this.iterator.getPlatform();
                 platform.setDisplayName (name);
                 platform.setAntName (createAntName (name));
                 platform.setSourceFolders (ClassPathSupport.createClassPath(src));
-                if (jdoc != null) {
+                if (!jdoc.isEmpty()) {
                     platform.setJavadocFolders(jdoc);
                 }
                 
@@ -576,7 +640,7 @@ public class DetectPanel extends javax.swing.JPanel {
                     platform.setDisplayName (name);
                     platform.setAntName (createAntName(name));
                     platform.setSourceFolders (ClassPathSupport.createClassPath(src));
-                    if (jdoc != null) {
+                    if (!jdoc.isEmpty()) {
                         platform.setJavadocFolders(jdoc);
                     }
                 }                                
@@ -586,30 +650,17 @@ public class DetectPanel extends javax.swing.JPanel {
         /**
          * Revalidates the Wizard Panel
          */
+        @Override
         public void taskFinished(Task task) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run () {
                     JavaPlatform platform = iterator.getPlatform();
                     List<URL> jdoc = platform.getJavadocFolders();
-                    try {
-                        URL url = null;
-                        if (jdoc.size() > 0) {
-                            url = jdoc.get(0);
-                            if ("jar".equals(url.getProtocol())) {
-                                url = FileUtil.getArchiveFile(url);
-                            }
-                        } else {
-                            List<URL> urls = J2SEPlatformImpl.defaultJavadoc(platform);
-                            if (urls.size() == 1) {
-                                url = urls.iterator().next();
-                            }
-                        }
-                        if (url != null) {
-                            component.setJavadoc(url.getProtocol().equals("file") ? new File(url.toURI()).getAbsolutePath() : url.toString());
-                        }
-                    } catch (URISyntaxException ex) {
-                        Exceptions.printStackTrace(ex);
+                    if (jdoc.isEmpty()) {                            
+                        jdoc = J2SEPlatformImpl.defaultJavadoc(platform);                            
                     }
+                    component.setJavadoc(jdoc);
                     component.updateData ();
                     component.jdkName.setEditable(true);
                     assert progressHandle != null;
@@ -623,6 +674,7 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
 
+        @Override
         public void stateChanged(ChangeEvent e) {
              this.checkValid();
         }

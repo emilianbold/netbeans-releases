@@ -68,6 +68,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -307,22 +308,26 @@ public final class SingleModuleProperties extends ModuleProperties {
         return getHelper().resolveFile(getEvaluator().evaluate("${cluster}/${module.jar}")).getAbsolutePath(); // NOI18N
     }
 
-    String getSuiteDirectoryPath() {
-        return getSuiteDirectory() != null ? getSuiteDirectory().getPath() : null;
+    @CheckForNull String getSuiteDirectoryPath() {
+        File d = getSuiteDirectory();
+        return d != null ? d.getPath() : null;
     }
 
-    File getSuiteDirectory() {
+    @CheckForNull File getSuiteDirectory() {
         return suiteProvider != null ? suiteProvider.getSuiteDirectory() : null;
     }
 
     /** Call only for suite component modules. */
-    SuiteProject getSuite() {
+    @CheckForNull SuiteProject getSuite() {
         assert isSuiteComponent();
         SuiteProject suite = null;
         try {
-            FileObject suiteDir = FileUtil.toFileObject(getSuiteDirectory());
-            if (suiteDir != null) {
-                suite = (SuiteProject) ProjectManager.getDefault().findProject(suiteDir);
+            File dir = getSuiteDirectory();
+            if (dir != null) {
+                FileObject suiteDir = FileUtil.toFileObject(dir);
+                if (suiteDir != null) {
+                    suite = (SuiteProject) ProjectManager.getDefault().findProject(suiteDir);
+                }
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);

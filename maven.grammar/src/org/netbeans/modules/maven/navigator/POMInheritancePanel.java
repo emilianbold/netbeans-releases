@@ -56,6 +56,7 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
@@ -242,26 +243,24 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             if (version == null && mdl.getParent() != null) {
                 version = mdl.getParent().getVersion();
             }
-            if (fl == null && version != null) {
+            if (version == null) {
+                return null;
+            }
+            if (fl == null) {
                 ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
                 DefaultArtifactHandler handler = new DefaultArtifactHandler();
                 handler.setExtension("pom");
                 fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
             }
-            if (fl != null) {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
-                DataObject dobj = null;
-                if (fo != null) {
-                    try {
-                        dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
+            if (fo != null) {
+                try {
+                    return new POMNode(fl, mdl, DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl)), version);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                return new POMNode(fl, mdl, dobj, version);
-            } else {
-                return null;
             }
+            return null;
         }
     }
 
@@ -271,7 +270,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
         private final DataObject dobj;
-        private POMNode(File key, Model mdl, DataObject dobj, String version) {
+        private POMNode(@NonNull File key, @NonNull Model mdl, @NonNull DataObject dobj, @NonNull String version) {
             super(Children.LEAF);
             setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "TITLE_PomNode", mdl.getArtifactId(), version));
             if (!dobj.getPrimaryFile().canWrite()) {

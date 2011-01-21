@@ -48,6 +48,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -82,11 +83,15 @@ public final class ElementGrip {
         this.delegateElementHandle = delegateElementHandle;
         this.handle = elm == null ? null : ElementHandle.create(elm);
         if (elm != null) {
-            // workaround for issue 171692
-            this.toString = elm.getKind() != ElementKind.CONSTRUCTOR
-                    ? elm.getSimpleName().toString()
-                    : elm.getEnclosingElement().getSimpleName().toString();
+            if (elm.getKind() == ElementKind.CLASS && elm.getSimpleName().length() == 0) {
+                this.toString = ((TypeElement) elm).asType().toString();
+            } else {
+                // workaround for issue 171692
+                this.toString = elm.getKind() != ElementKind.CONSTRUCTOR
+                        ? elm.getSimpleName().toString()
+                        : elm.getEnclosingElement().getSimpleName().toString();
 //            this.toString = ElementHeaders.getHeader(treePath, info, ElementHeaders.NAME);
+            }
         }
         this.fileObject = info.getFileObject();
         if (elm != null) {

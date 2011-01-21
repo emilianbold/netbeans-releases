@@ -129,15 +129,12 @@ public class FeatureUncompleteTest extends NbTestCase {
             return getName ();
         }
 
+        @Override
         public Map<String, UpdateItem> getUpdateItems () throws IOException {
-            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault ().getUpdateItems ();
+            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault().getUpdateItems ();
             assertNotNull ("Installed modules must found.", items);
-            URL independentURL = TestUtils.class.getResource ("data/org-yourorghere-independent.nbm");
-            assertNotNull ("NBM data/org-yourorghere-independent.nbm found.", independentURL);
-            File independentFile = new File(independentURL.getFile());
-            assertTrue ("NBM data/org-yourorghere-independent.nbm exists.", independentFile.exists ());
 
-            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault ().getUpdateItems ();
+            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault().getUpdateItems ();
 
             Set<String> deps = new HashSet<String> (items.size ());
             for (String id : items.keySet ()) {

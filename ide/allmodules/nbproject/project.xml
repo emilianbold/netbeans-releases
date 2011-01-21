@@ -625,7 +625,6 @@ made subject to such option by the copyright holder.
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
                 <project>../../web.examples</project>
-                <project>../../web.flyingsaucer</project>
                 <project>../../web.freeform</project>
                 <project>../../web.helpset</project>
                 <project>../../web.jsf</project>

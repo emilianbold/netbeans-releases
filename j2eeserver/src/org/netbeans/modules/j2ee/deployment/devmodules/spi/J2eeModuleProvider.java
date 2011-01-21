@@ -763,6 +763,16 @@ public abstract class J2eeModuleProvider {
     }
     
     /**
+     * Allow J2EE module provider to indicate to server deployment infrastructure
+     * that only Compile on Save should be performed and not full Deploy on Save.
+     * 
+     * @since org.netbeans.modules.j2eeserver/4 1.73
+     */
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return false;
+    }
+    
+    /**
      * Return InstanceProperties of the server instance
      **/
     public InstanceProperties getInstanceProperties() {

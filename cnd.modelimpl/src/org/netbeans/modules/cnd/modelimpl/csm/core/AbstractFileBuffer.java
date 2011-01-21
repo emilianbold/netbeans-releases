@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,12 +55,16 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,13 +72,25 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
+    private final FileSystem fileSystem;
     private Charset encoding;
-    
-    protected AbstractFileBuffer(CharSequence absPath) {
+
+    protected AbstractFileBuffer(FileObject fileObject) {
+        this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
+        this.fileSystem = getFileSystem(fileObject);
         if (CndUtils.isDebugMode()) {
-            CndUtils.assertNormalized(new File(absPath.toString()));
+            FileObject fo2 = fileSystem.findResource(absPath.toString());
+            CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
         }
-        this.absPath = FilePathCache.getManager().getString(absPath);
+    }
+
+    private static FileSystem getFileSystem(FileObject fileObject) {
+        try {
+            return fileObject.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return InvalidFileObjectSupport.getDummyFileSystem();
+        }       
     }
 
     @Override
@@ -92,21 +107,28 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
 
     @Override
-    public File getFile() {
-        return new File(absPath.toString());
+    public CharSequence getUrl() {
+        return CndFileUtils.fileObjectToUrl(getFileObject());
     }
 
     @Override
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }    
+
+    @Override
     public FileObject getFileObject() {
-        return CndFileUtils.toFileObject(absPath); // XXX:FileObject conversion
+        FileObject result = fileSystem.findResource(absPath.toString());
+        if (result == null) {
+            CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
+        }
+        return result;
     }
 
     @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
-            File file = getFile();
-            // file must be normalized
-            FileObject fo = CndFileUtils.toFileObject(file);
+            FileObject fo = getFileObject();
             if (fo != null && fo.isValid()) {
                 encoding = FileEncodingQuery.getEncoding(fo);
             } else { // paranoia
@@ -118,23 +140,92 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return reader;
     }
     
-    public abstract InputStream getInputStream() throws IOException;
+        public abstract InputStream getInputStream() throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
-    protected void write(DataOutput output) throws IOException {
+
+    // final is important here - see PersistentUtils.writeBuffer/readBuffer
+    public final void write(DataOutput output) throws IOException {
         assert this.absPath != null;
         PersistentUtils.writeUTF(absPath, output);
+        PersistentUtils.writeFileSystem(fileSystem, output);
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {
         this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
+        this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
     }
 
     @Override
-    public int getLineByOffset(int offset) throws IOException {
+    public int[] getLineColumnByOffset(int offset) throws IOException {
+        int[] lineCol = new int[]{1, 1};
+        int line = _getLineByOffset(offset);
+        int start = _getStartLineOffset(line);
+        lineCol[0] = line;
+        // find line and column
+        String text = getText();
+        int TABSIZE = ModelSupport.getTabSize();
+        for (int curOffset = start; curOffset < offset; curOffset++) {
+            char curChar = text.charAt(curOffset);
+            switch (curChar) {
+                case '\n':
+                    // just increase line number
+                    lineCol[0] = lineCol[0] + 1;
+                    lineCol[1] = 1;
+                    break;
+                case '\t':
+                    int col = lineCol[1];
+                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
+                    lineCol[1] = newCol;
+                    break;
+                default:
+                    lineCol[1]++;
+                    break;
+            }
+        }
+        return lineCol;
+    }
+
+    @Override
+    public int getOffsetByLineColumn(int line, int column) throws IOException {
+        int startOffset = _getStartLineOffset(line);
+        String text = getText();
+        int TABSIZE = ModelSupport.getTabSize();
+        int currCol = 1;
+        int outOffset;
+        loop:for (outOffset = startOffset; outOffset < text.length(); outOffset++) {
+            if (currCol >= column) {
+                break;
+            }
+            char curChar = text.charAt(outOffset);
+            switch (curChar) {
+                case '\n':
+                    break loop;
+                case '\t':
+                    int col = currCol;
+                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
+                    currCol = newCol;
+                    break;
+                default:
+                    currCol++;
+                    break;
+            }
+        }
+        return outOffset;
+    }
+
+    private int _getStartLineOffset(int line) throws IOException {
+        line--;
+        int[] list = getLineOffsets();
+        if (line < list.length) {
+            return list[line];
+        }
+        return list[list.length-1];
+    }
+
+    private int _getLineByOffset(int offset) throws IOException {
         int[] list = getLineOffsets();
 	int low = 0;
 	int high = list.length - 1;
@@ -156,16 +247,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             }
 	}
 	return low;
-    }
-
-    @Override
-    public int getStartLineOffset(int line) throws IOException {
-        line--;
-        int[] list = getLineOffsets();
-        if (line < list.length) {
-            return list[line];
-        }
-        return list[list.length-1];
     }
     
     private WeakReference<Object> lines = new WeakReference<Object>(null);

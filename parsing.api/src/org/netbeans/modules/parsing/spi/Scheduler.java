@@ -137,53 +137,38 @@ public abstract class Scheduler {
     //tzezula: should set CHANGE_EXPECTED flag on the sources.
     protected final synchronized void schedule (
         final Source        source,
-        final SchedulerEvent
-                            event
-    ) {
-        if (task != null)
+        final SchedulerEvent event) {
+        if (task != null) {
             task.cancel ();
+        }
         task = null;
-        if (requestProcessor == null)
+        if (requestProcessor == null) {
             requestProcessor = new RequestProcessor ();
+        }        
         if (this.source != source && this.source != null) {
-            final Source orig = this.source;
-            requestProcessor.create(new Runnable() {
-                public void run() {
-                    SourceCache cache = SourceAccessor.getINSTANCE().getCache(orig);
-                    cache.unscheduleTasks(Scheduler.this.getClass());
-                }
-            }).schedule(0);
+            final SourceCache cache = SourceAccessor.getINSTANCE().getCache(this.source);
+            cache.unscheduleTasks(Scheduler.this.getClass());
         }
         if (source == null) {
             this.source = null;
             return ;
         }
         this.source = source;
-        //if (task == null) {
-            task = requestProcessor.create (new Runnable () {
-                public void run () {
-                    SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
-                    Map<Class<? extends Scheduler>,SchedulerEvent> events = new HashMap<Class<? extends Scheduler>,SchedulerEvent> ();
-                    events.put (Scheduler.this.getClass (), event);
-                    SourceAccessor.getINSTANCE ().setSchedulerEvents (source, events);
-                    //S ystem.out.println ("\nSchedule tasks (" + Scheduler.this + "):");
-                    cache.scheduleTasks (Scheduler.this.getClass ());
-                }
-            });
-        //}
+        task = requestProcessor.create (new Runnable () {
+            @Override
+            public void run () {
+                SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
+                Map<Class<? extends Scheduler>,SchedulerEvent> events = new HashMap<Class<? extends Scheduler>,SchedulerEvent> ();
+                events.put (Scheduler.this.getClass (), event);
+                SourceAccessor.getINSTANCE ().setSchedulerEvents (source, events);
+                //S ystem.out.println ("\nSchedule tasks (" + Scheduler.this + "):");
+                cache.scheduleTasks (Scheduler.this.getClass ());
+            }
+        });
         task.schedule (reparseDelay);
     }
 
     protected abstract SchedulerEvent createSchedulerEvent (SourceModificationEvent event);
-
-    private static boolean  notNull (final Iterable<?> it) {
-        for (Object o : it) {
-            if (o == null) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     static {
         SchedulerAccessor.set (new Accessor ());

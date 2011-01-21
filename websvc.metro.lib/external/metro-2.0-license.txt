@@ -4,7 +4,7 @@ Description: METRO
 License: CDDL-GPL-2-CP
 OSR: ?
 Origin: https://metro.dev.java.net/
-Files: metro.zip, metro-doc.zip
+Files: metro-2.0.zip, metro-1.4-doc.zip
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
