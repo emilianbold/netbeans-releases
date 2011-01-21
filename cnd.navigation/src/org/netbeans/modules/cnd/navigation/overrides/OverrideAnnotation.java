@@ -93,8 +93,16 @@ import org.openide.util.NbBundle;
                 return "OVERRIDES"; // NOI18N
             case IS_OVERRIDDEN:
                 return "OVERRIDDEN"; // NOI18N
-            case COMBINED:
+            case SPECIALIZES:
+                return "SPECIALIZES"; // NOI18N
+            case IS_SPECIALIZED:
+                return "IS_SPECIALIZED"; // NOI18N
+            case OVERRIDEN_COMBINED:
                 return "OVERRIDES_AND_OVERRIDDEN"; // NOI18N
+            case TEMPLATE_COMBINED:
+                return "SPECIALIZES_AND_SPECIALIZED_FUNCTION"; // NOI18N
+            case COMBINED:
+                return "OVERRIDE_TEMPLATE_COMBINED_FUNCTION"; // NOI18N
             default:
                 return "???"; // NOI18N
         }
