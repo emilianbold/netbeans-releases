@@ -50,6 +50,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,29 +66,44 @@ public abstract class Crawler {
      * @param root
      * @param checkTimeStamps
      * @param detectDeletedFiles 
-     * @param mimeTypesToCheck The set of mime types that the <code>Crawler</code> should check.
+     * @param supportsAllFiles if true all files are collected
+     * otherwise the {@link Crawler#getAllResources()} returns null
      *   Can be <code>null</code> in which case all mime types will be checked.
      *
      * @throws java.io.IOException
      */
-    protected Crawler(final URL root, boolean checkTimeStamps, boolean detectDeletedFiles, CancelRequest cancelRequest) throws IOException {
+    protected Crawler(
+            @NonNull final URL root,
+            final boolean checkTimeStamps,
+            final boolean detectDeletedFiles,
+            final boolean supportsAllFiles,            
+            @NonNull final CancelRequest cancelRequest) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
         this.timeStamps = TimeStamps.forRoot(root, detectDeletedFiles);
+        this.supportsAllFiles = supportsAllFiles;
         this.cancelRequest = cancelRequest;
     }
 
-    public final Collection<IndexableImpl> getResources() throws IOException {
+    public final @NonNull Collection<IndexableImpl> getResources() throws IOException {
         init ();        
-        return checkTimeStamps ? resources : allResources;
+        return resources;
     }
 
-    public final Collection<IndexableImpl> getAllResources() throws IOException {
+    /**
+     * Returns all resources within the root or null when all resources are hard to be
+     * computed. The resources are hard to be computed when the crawler was created with
+     * list of files (folders) which are inside the root. In case when Crawler does not
+     * do the time stamp check the resources == allResources.
+     * @return all resources within the root null
+     * @throws IOException 
+     */
+    public final @CheckForNull Collection<IndexableImpl> getAllResources() throws IOException {
         init ();        
-        return allResources;
+        return checkTimeStamps || !supportsAllFiles ? allResources : resources;
     }
 
-    public final Collection<IndexableImpl> getDeletedResources () throws IOException {
+    public final @NonNull Collection<IndexableImpl> getDeletedResources () throws IOException {
         init ();        
         return deleted;
     }
@@ -105,7 +123,7 @@ public abstract class Crawler {
         return finished;
     }
 
-    protected final boolean isUpToDate(FileObject f, String relativePath) {
+    protected final boolean isUpToDate(@NonNull FileObject f, @NullAllowed String relativePath) {
         // always call this in order to update the file's timestamp
         boolean upToDate = timeStamps.checkAndStoreTimestamp(f, relativePath);
         return checkTimeStamps ? upToDate : false;
@@ -115,7 +133,7 @@ public abstract class Crawler {
         return cancelRequest.isRaised();
     }
 
-    protected abstract boolean collectResources(Collection<IndexableImpl> resources, Collection<IndexableImpl> allResources);
+    protected abstract boolean collectResources(@NonNull Collection<IndexableImpl> resources, @NonNull Collection<IndexableImpl> allResources);
 
     // -----------------------------------------------------------------------
     // private implementation
@@ -123,6 +141,7 @@ public abstract class Crawler {
 
     private final URL root;
     private final boolean checkTimeStamps;
+    private final boolean supportsAllFiles;
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
 
@@ -136,11 +155,11 @@ public abstract class Crawler {
     private void init () throws IOException {
         if (!initialized) {
             try {
-                Collection<IndexableImpl> _resources = checkTimeStamps ? new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
-                Collection<IndexableImpl> _allResources = new LinkedHashSet<IndexableImpl>();
+                Collection<IndexableImpl> _resources = new LinkedHashSet<IndexableImpl>();
+                Collection<IndexableImpl> _allResources = checkTimeStamps && supportsAllFiles ? new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
                 this.finished = collectResources(_resources, _allResources);
-                this.resources = checkTimeStamps ? Collections.unmodifiableCollection(_resources) : null;
-                this.allResources = Collections.unmodifiableCollection(_allResources);
+                this.resources = Collections.unmodifiableCollection(_resources);
+                this.allResources = checkTimeStamps && supportsAllFiles ? Collections.unmodifiableCollection(_allResources) : null;
                 changed = !_resources.isEmpty();
 
                 final Set<String> unseen = timeStamps.getUnseenFiles();                
