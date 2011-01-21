@@ -101,8 +101,10 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
+            "ignore",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
             "log", //NOI18N
+            "unignore", //NOI18N
             "removeNotificationListener")); //NOI18N
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.

@@ -115,6 +115,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getRepositoryState",
                 "getStatus",
                 "getUser",
+                "ignore",
                 "init",
                 "listModifiedIndexEntries",
                 "log",
@@ -123,7 +124,8 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeNotificationListener",
                 "remove",
                 "rename",
-                "reset"));
+                "reset",
+                "unignore"));
         Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
                 "checkoutBranch",
@@ -176,6 +178,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getRepositoryState",
                 "getStatus",
                 "getUser",
+                "ignore",
                 "init",
                 "listModifiedIndexEntries",
                 "log",
@@ -184,7 +187,8 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeNotificationListener",
                 "remove",
                 "rename",
-                "reset"));
+                "reset",
+                "unignore"));
         Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
                 "catFile",
@@ -195,9 +199,11 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getRepositoryState",
                 "getStatus",
                 "getUser",
+                "ignore",
                 "listModifiedIndexEntries",
                 "log",
-                "removeNotificationListener"));
+                "removeNotificationListener",
+                "unignore"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
         f.setAccessible(true);
         Set<String> actualReadOnlyMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
@@ -243,6 +249,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getStatus",
                 "getUser",
                 "init",
+                "ignore",
                 "listModifiedIndexEntries",
                 "log",
                 "merge",
@@ -250,7 +257,8 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeNotificationListener",
                 "remove",
                 "rename",
-                "reset"));
+                "reset",
+                "unignore"));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
                 "checkoutBranch",
@@ -349,6 +357,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getStatus",
                 "getUser",
                 "init",
+                "ignore",
                 "listModifiedIndexEntries",
                 "log",
                 "merge",
@@ -356,7 +365,8 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "removeNotificationListener",
                 "remove",
                 "rename",
-                "reset"));
+                "reset",
+                "unignore"));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
                 "catFile",
