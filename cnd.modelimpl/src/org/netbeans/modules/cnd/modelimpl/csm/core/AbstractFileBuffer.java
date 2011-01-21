@@ -78,10 +78,11 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
-        if (CndUtils.isDebugMode()) {
-            FileObject fo2 = fileSystem.findResource(absPath.toString());
-            CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
-        }
+// remote link file objects are just lightweight delegating wrappers, so they have multiple instances
+//        if (CndUtils.isDebugMode()) {
+//            FileObject fo2 = fileSystem.findResource(absPath.toString());
+//            CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
+//        }
     }
 
     private static FileSystem getFileSystem(FileObject fileObject) {

@@ -107,7 +107,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject getFileObject(String name, String ext) {
+    public RemoteFileObjectBase getFileObject(String name, String ext) {
          return getFileObject(name + '.' + ext); // NOI18N
     }
 
@@ -234,7 +234,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (".".equals(relativePath)) { // NOI18N
             return this;
         } else if ("..".equals(relativePath)) { // NOI18N
-            RemoteDirectory parent = getParent();
+            RemoteFileObjectBase parent = getParent();
             return (parent == null) ? this : parent ;
         }
         RemoteLogger.assertTrue(slashPos == -1);
@@ -249,7 +249,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (entry.getFileType() == FileType.Directory) {
                 return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
             }  else if (entry.getFileType() == FileType.Symlink) {
-                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, childCache, entry.getLink());
+                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, entry.getLink());
             } else {
                 return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
             }
@@ -277,11 +277,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject[] getChildren() {
+    public RemoteFileObjectBase[] getChildren() {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
             List<DirectoryStorage.Entry> entries = storage.list();
-            FileObject[] childrenFO = new FileObject[entries.size()];
+            RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirectoryStorage.Entry entry = entries.get(i);
                 String childPath = remotePath + '/' + entry.getName(); //NOI18N
@@ -289,7 +289,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (entry.getFileType() == FileType.Directory) {
                     childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childCache);
                 } else if(entry.getFileType() == FileType.Symlink) {
-                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, childCache, entry.getLink());
+                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, entry.getLink());
                 } else {
                     childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, entry.getFileType());
                 }
@@ -313,7 +313,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // never report CancellationException
             RemoteLogger.finest(ex);
         }
-        return new FileObject[0];
+        return new RemoteFileObjectBase[0];
     }
 
     @Override

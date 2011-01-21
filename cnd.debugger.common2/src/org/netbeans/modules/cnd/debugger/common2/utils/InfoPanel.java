@@ -90,7 +90,6 @@ public class InfoPanel extends JPanel {
         textArea = new JTextArea(msg, // NOI18N
 				 rows, cols);
 	textArea.setEditable(false);
-	textArea.setFocusable(false);
 	textArea.setLineWrap(true);
 	textArea.setWrapStyleWord(true);
 

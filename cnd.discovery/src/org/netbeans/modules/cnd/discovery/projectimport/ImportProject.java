@@ -111,6 +111,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.remote.api.RfsListener;
+import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -549,9 +551,14 @@ public class ImportProject implements PropertyChangeListener {
             //}
             //final File configureLog = createTempFile("configure");
             ExecutionListener listener = new ExecutionListener() {
+                private RfsListenerImpl listener;
 
                 @Override
                 public void executionStarted(int pid) {
+                    if (executionEnvironment.isRemote()) {
+                        listener = new RfsListenerImpl(executionEnvironment);
+                        RfsListenerSupport.addListener(executionEnvironment, listener);
+                    }
                 }
 
                 @Override
@@ -560,6 +567,10 @@ public class ImportProject implements PropertyChangeListener {
                         importResult.put(Step.Configure, State.Successful);
                     } else {
                         importResult.put(Step.Configure, State.Fail);
+                    }
+                    if (listener != null) {
+                        listener.download();
+                        RfsListenerSupport.removeListener(executionEnvironment, listener);
                     }
                     if (runMake && rc == 0) {
                         //parseConfigureLog(configureLog);
@@ -799,13 +810,22 @@ public class ImportProject implements PropertyChangeListener {
             makeLog = createTempFile("make"); // NOI18N
         }
         ExecutionListener listener = new ExecutionListener() {
+            private RfsListenerImpl listener;
 
             @Override
             public void executionStarted(int pid) {
+                if (executionEnvironment.isRemote()) {
+                    listener = new RfsListenerImpl(executionEnvironment);
+                    RfsListenerSupport.addListener(executionEnvironment, listener);
+                }
             }
 
             @Override
             public void executionFinished(int rc) {
+                if (listener != null) {
+                    listener.download();
+                    RfsListenerSupport.removeListener(executionEnvironment, listener);
+                }
                 if (rc == 0) {
                     importResult.put(Step.Make, State.Successful);
                 } else {
@@ -1278,5 +1298,41 @@ public class ImportProject implements PropertyChangeListener {
     public static enum Step {
 
         Project, Configure, MakeClean, Make, DiscoveryDwarf, DiscoveryLog, FixMacros, DiscoveryModel, FixExcluded
+    }
+
+    private static final class RfsListenerImpl implements RfsListener {
+        private final Map<String, File> storage = new HashMap<String, File>();
+        private final ExecutionEnvironment execEnv;
+
+        private RfsListenerImpl(ExecutionEnvironment execEnv) {
+            this.execEnv = execEnv;
+        }
+
+        @Override
+        public void fileChanged(ExecutionEnvironment env, File localFile, String remotePath) {
+            if (env.equals(execEnv)) {
+                storage.put(remotePath, localFile);
+            }
+        }
+        private void download() {
+            Map<String, File> copy = new HashMap<String, File>(storage);
+            for(Map.Entry<String, File> entry : copy.entrySet()) {
+                downloadImpl(entry.getKey(),entry.getValue());
+            }
+        }
+
+        private void downloadImpl(String remoteFile, File localFile) {
+            try {
+                Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
+                if (TRACE) {
+                    logger.log(Level.INFO, "#download file {0}", localFile.getAbsolutePath()); // NOI18N
+                }
+                task.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }

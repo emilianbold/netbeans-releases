@@ -145,23 +145,6 @@ public final class Utils {
     }
 
     /**
-     * Returns true if any of the given filters denotes a path lying under the current file/folder specified by the given TreeWalk
-     * @param filters
-     * @param treeWalk
-     * @return
-     */
-    public static boolean isUnderOrEqual (Collection<PathFilter> filters, TreeWalk treeWalk) {
-        boolean retval = false;
-        for (PathFilter filter : filters) {
-            if (filter.include(treeWalk) && treeWalk.getPathString().length() <= filter.getPath().length()) {
-                retval = true;
-                break;
-            }
-        }
-        return retval;
-    }
-
-    /**
      * Returns true if the current file/folder specified by the given TreeWalk lies under any of the given filters
      * @param treeWalk
      * @param filters

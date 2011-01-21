@@ -52,6 +52,7 @@ import org.netbeans.libs.git.jgit.commands.CheckoutTest;
 import org.netbeans.libs.git.jgit.commands.CleanTest;
 import org.netbeans.libs.git.jgit.commands.CommitTest;
 import org.netbeans.libs.git.jgit.commands.CopyTest;
+import org.netbeans.libs.git.jgit.commands.IgnoreTest;
 import org.netbeans.libs.git.jgit.commands.InitTest;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
 import org.netbeans.libs.git.jgit.commands.LogTest;
@@ -60,6 +61,7 @@ import org.netbeans.libs.git.jgit.commands.RemoveTest;
 import org.netbeans.libs.git.jgit.commands.RenameTest;
 import org.netbeans.libs.git.jgit.commands.ResetTest;
 import org.netbeans.libs.git.jgit.commands.StatusTest;
+import org.netbeans.libs.git.jgit.commands.UnignoreTest;
 
 /**
  *
@@ -80,6 +82,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(CleanTest.class);
         suite.addTestSuite(CommitTest.class);
         suite.addTestSuite(CopyTest.class);
+        suite.addTestSuite(IgnoreTest.class);
         suite.addTestSuite(InitTest.class);
         suite.addTestSuite(ListModifiedIndexEntriesTest.class);
         suite.addTestSuite(LogTest.class);
@@ -88,6 +91,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(RenameTest.class);
         suite.addTestSuite(ResetTest.class);
         suite.addTestSuite(StatusTest.class);
+        suite.addTestSuite(UnignoreTest.class);
         return suite;
     }
 

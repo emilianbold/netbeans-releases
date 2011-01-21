@@ -171,6 +171,23 @@ public class ToolsPanelSupport {
         return res;
     }
 
+    private static Set<ChangeListener> codeAssistanceChanged = new WeakSet<ChangeListener>();
+
+    public static void addCodeAssistanceChangeListener(ChangeListener l) {
+        codeAssistanceChanged.add(l);
+    }
+
+    public static void removeCodeAssistanceChangeListener(ChangeListener l) {
+        codeAssistanceChanged.remove(l);
+    }
+
+    public static void fireCodeAssistanceChange(CompilerSetManager csm) {
+        ChangeEvent ev = new ChangeEvent(csm);
+        for (ChangeListener l : codeAssistanceChanged) {
+            l.stateChanged(ev);
+        }
+    }
+
     /**
      * returns toolchain manager component to be embedded in other containers
      * @param env execution environment for which manager is created
@@ -186,7 +203,7 @@ public class ToolsPanelSupport {
         if (selectedCompilerSetName != null && selectedCompilerSetName.length() > 0) {
             model.setSelectedCompilerSetName(selectedCompilerSetName);
         }
-        final ToolsPanel tp = new ToolsPanel(model);
+        final ToolsPanel tp = new ToolsPanel(model, "ConfiguringBuildTools"); // NOI18N
         tp.update();
         VetoableChangeListener okL = new VetoableChangeListener() {
             @Override

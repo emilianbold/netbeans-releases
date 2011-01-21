@@ -125,21 +125,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
-        while (fileObject instanceof RemoteLink) {
-            FileObject delegate = ((RemoteLink) fileObject).getDelegate();
-            if (delegate == null) {
-                RemoteLogger.getInstance().log(Level.INFO, "Null delegate for remote link {0}", fileObject); //NOI18N
-                break;
-            } else {
-                fileObject = delegate;
-            }
-        }
-        return fileObject;
+        return RemoteFileSystemUtils.getCanonicalFileObject(fileObject);
     }
 
     @Override
     public String getCanonicalPath(FileObject fileObject) throws IOException {
-        return getCanonicalFileObject(fileObject).getPath();
+        return RemoteFileSystemUtils.getCanonicalFileObject(fileObject).getPath();
     }
 
     public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {
@@ -228,7 +219,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public String toURL(FileSystem fileSystem, String absPath) {
-        RemoteLogger.assertTrue(absPath.startsWith("/"), "Path should be absolute: " + absPath); //NOPI18N
+        RemoteLogger.assertTrue(RemoteFileSystemUtils.isPathAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
         if (fileSystem instanceof RemoteFileSystem) {
             ExecutionEnvironment env =((RemoteFileSystem) fileSystem).getExecutionEnvironment();
             return getUrlPrefix(env) + absPath;
