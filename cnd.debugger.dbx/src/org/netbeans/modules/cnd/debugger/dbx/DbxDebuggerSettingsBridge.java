@@ -110,11 +110,6 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
 	RtcProfile newRtcProfile = dbxInfo.getRtcProfile();
         assert newRunProfile != null;
 
-        String[] arguments = dbxInfo.getArguments();
-        // SHOULD we just set argument w/o checking?
-        if (arguments != null) {
-            newRunProfile.setArgs(arguments);
-        }
         String exename = dbxInfo.getTarget();
         assignTentativeSettings(DbxDebuggerSettings.create(newRunProfile, newDbgProfile, newRtcProfile), exename);
     }
