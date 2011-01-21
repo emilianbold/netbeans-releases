@@ -121,11 +121,13 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
+import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -565,6 +567,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
     */
 
+    private static boolean warnUnsupported = false;
+    
+    private void warnVersionUnsupported(double gdbVersion) {
+        if (!warnUnsupported) {
+            InfoPanel panel = new InfoPanel(
+                    Catalog.format("ERR_UnsupportedVersion", gdbVersion),
+                    Catalog.get("MSG_Do_Not_Show_Again_In_Session"));
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                panel,
+                NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(descriptor);
+            warnUnsupported = panel.dontShowAgain();
+        }
+    }
+    
     void setGdbVersion(String version) {
         double gdbVersion = 6.8;
         try {
@@ -574,7 +591,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         peculiarity = GdbVersionPeculiarity.create(gdbVersion, getHost().getPlatform());
         if (!peculiarity.isSupported()) {
-            DebuggerManager.warning(Catalog.format("ERR_UnsupportedVersion", gdbVersion));
+            warnVersionUnsupported(gdbVersion);
         }
     }
 
