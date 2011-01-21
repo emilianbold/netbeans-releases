@@ -139,6 +139,36 @@ public class TinyTest extends TestBase {
                        "     private final long I = 0x100000000L;\n" +
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
+    
+    public void testConvertBaseNegative1() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private final long I = -42|94967296L;\n" +
+                       "}\n",
+                       "2:28-2:40:hint:ERR_convertToDifferentBase",
+                       "FIX_convertToDifferentBase_16",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private final long I = 0xffffffff00000000L;\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+    
+    public void testConvertBaseNegative2() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private final long I = 0xffffffff|00000000L;\n" +
+                       "}\n",
+                       "2:28-2:47:hint:ERR_convertToDifferentBase",
+                       "FIX_convertToDifferentBase_10",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private final long I = -4294967296L;\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {

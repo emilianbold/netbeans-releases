@@ -80,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -524,7 +525,7 @@ public final class GeneratorUtilities {
      *         them will be added during task commit.
      */
     public <T extends Tree> T importFQNs(T original) {
-        TranslateIdentifier translator = new TranslateIdentifier(copy, null, true, null);
+        TranslateIdentifier translator = new TranslateIdentifier(copy);
         return (T) translator.translate(original);
     }
 
@@ -538,9 +539,9 @@ public final class GeneratorUtilities {
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
-            TranslateIdentifier translator = new TranslateIdentifier(info, original, false, seq, unit);
+            AssignComments translator = new AssignComments(info, original, false, seq, unit);
             
-            translator.translate(toMap);
+            translator.scan(toMap, null);
 
             return original;
         } catch (IOException ex) {

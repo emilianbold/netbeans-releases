@@ -176,20 +176,32 @@ public class Tiny {
         @Override
         protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
             LiteralTree leaf = (LiteralTree) tp.getLeaf();
-            String target;
+            String suffix;
             
             if (leaf.getKind() == Tree.Kind.INT_LITERAL) {
-                int value = (Integer) leaf.getValue();
-                
-                target = prefix + Integer.toString(value, radix);
+                suffix = "";
             } else if (leaf.getKind() == Tree.Kind.LONG_LITERAL) {
-                long value = (Long) leaf.getValue();
                 int  end = (int) wc.getTrees().getSourcePositions().getEndPosition(wc.getCompilationUnit(), leaf);
                 
-                target = prefix + Long.toString(value, radix) + wc.getText().substring(end - 1, end);
+                suffix = wc.getText().substring(end - 1, end);
             } else {
                 throw new IllegalStateException();
             }
+            
+            long value = ((Number) leaf.getValue()).longValue();
+
+            String target;
+
+            switch (radix) {
+                case  2: target = Long.toBinaryString(value); break;
+                case  8: target = Long.toOctalString(value); break;
+                case 10: target = Long.toString(value); break;
+                case 16: target = Long.toHexString(value); break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            target = prefix + target + suffix;
 
             wc.rewrite(leaf, wc.getTreeMaker().Identifier(target));
         }
