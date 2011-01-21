@@ -44,11 +44,12 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -56,7 +57,7 @@ import org.openide.util.Utilities;
  * @author Vladimir Kvashin
  */
 public class RemoteFileSystemUtils {
-
+    
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
 
     private static boolean isWindows = Utilities.isWindows();
@@ -234,5 +235,51 @@ public class RemoteFileSystemUtils {
 
     /*pakage*/ static void testSetWindows(boolean isWin) {
         isWindows = isWin;
+    }
+    
+    public static String normalize(String absPath) {
+        return absPath; // TODO: implement! XXX:rfs XXX:fullRemote 
+    }
+    
+    public static FileObject getCanonicalFileObject(FileObject fileObject) {
+        while (fileObject instanceof RemoteLinkBase) {
+            FileObject delegate = ((RemoteLinkBase) fileObject).getDelegate();
+            if (delegate == null) {
+                RemoteLogger.getInstance().log(Level.INFO, "Null delegate for remote link {0}", fileObject); //NOI18N
+                break;
+            } else {
+                fileObject = delegate;
+            }
+        }
+        return fileObject;        
+    }
+
+    public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) {
+        RemoteFileObjectBase parent = fo.getParent();
+        if (parent == null) {
+            return null;
+        } else if (parent instanceof RemoteDirectory) {
+            return (RemoteDirectory) parent;
+        } else {
+            RemoteLogger.assertTrueInConsole(parent instanceof RemoteLinkBase, 
+                    "Unexpected parent class, should be RemoteLinkBase: " + parent.getClass().getName()); //NOI18N
+            FileObject canonical = getCanonicalFileObject(parent);
+            if (canonical instanceof RemoteDirectory) {
+                return (RemoteDirectory) canonical;
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private static class DummyInputStream extends InputStream {
+        @Override
+        public int read() throws IOException {
+            return -1;
+        }        
+    }
+    
+    public static InputStream createDummyInputStream() {
+        return new DummyInputStream();
     }
 }
