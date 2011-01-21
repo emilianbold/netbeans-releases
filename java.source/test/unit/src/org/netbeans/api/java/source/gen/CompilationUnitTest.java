@@ -773,7 +773,6 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
             "/*mark*/\n";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws Exception {
-                workingCopy.toPhase(JavaSource.Phase.PARSED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree newTree = make.CompilationUnit(
                         sourceRoot,

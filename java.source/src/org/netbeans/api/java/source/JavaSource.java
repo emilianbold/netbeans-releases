@@ -658,6 +658,11 @@ public final class JavaSource {
             public void run(CompilationController cc) throws Exception {
                 final WorkingCopy copy = new WorkingCopy(cc.impl, overlay);
                 copy.setJavaSource(JavaSource.this);
+                if (sources.isEmpty()) {
+                    //runUserActionTask for source-less JavaSources does not require toPhase
+                    //so automatically initializing also for runModificationTask:
+                    copy.toPhase(Phase.PARSED);
+                }
                 task.run(copy);
                 final JavacTaskImpl jt = copy.impl.getJavacTask();
                 Log.instance(jt.getContext()).nerrors = 0;
