@@ -186,7 +186,7 @@ public class ToolsPanelSupport {
         if (selectedCompilerSetName != null && selectedCompilerSetName.length() > 0) {
             model.setSelectedCompilerSetName(selectedCompilerSetName);
         }
-        final ToolsPanel tp = new ToolsPanel(model);
+        final ToolsPanel tp = new ToolsPanel(model, "ConfiguringBuildTools"); // NOI18N
         tp.update();
         VetoableChangeListener okL = new VetoableChangeListener() {
             @Override

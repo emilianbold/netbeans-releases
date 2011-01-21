@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.openide.filesystems.FileObject;
@@ -169,8 +170,8 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             LOG.log(Level.WARNING, "Going to recompute root={0}, files in error={1}.",
                     new Object[] {FileUtil.getFileDisplayName(root), ErrorsCache.getAllFilesInError(root.getURL())});
 
-// XXX:            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
-            IndexingManager.getDefault().refreshIndex(root.getURL(), null);
+// XXX:            Todo Create API!
+            RepositoryUpdater.getDefault().addIndexingJob(root.getURL(), null, false, true, false, true, true);
         } catch (IOException ex) {
             LOG.log(Level.FINE, null, ex);
         }
