@@ -271,7 +271,22 @@ public class RemoteFileSystemUtils {
             }
         }
     }
-    
+
+    // copy from CndPathUtilitis
+    public static boolean isPathAbsolute(String path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        } else if (path.charAt(0) == '/') {
+            return true;
+        } else if (path.charAt(0) == '\\') {
+            return true;
+        } else if (path.indexOf(':') == 1 && isWindows) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private static class DummyInputStream extends InputStream {
         @Override
         public int read() throws IOException {
