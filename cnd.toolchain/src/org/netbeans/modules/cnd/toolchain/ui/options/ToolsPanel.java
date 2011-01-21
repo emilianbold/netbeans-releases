@@ -120,7 +120,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
 
     /** Creates new form ToolsPanel */
-    public ToolsPanel() {
+    public ToolsPanel(String helpContext) {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
         changed = false;
@@ -135,11 +135,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
         // clean up previous caches
         tcm.clear();
-        HelpCtx.setHelpIDString(ToolsPanel.this, "ResolveBuildTools"); // NOI18N
+        HelpCtx.setHelpIDString(ToolsPanel.this, helpContext); // NOI18N
     }
 
-    public ToolsPanel(ToolsPanelModel model) {
-        this();
+    public ToolsPanel(ToolsPanelModel model, String heplContext) {
+        this(heplContext);
         this.model = model;
         ExecutionEnvironment env = model.getSelectedDevelopmentHost();
         if (env != null) {
