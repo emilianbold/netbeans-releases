@@ -295,7 +295,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.setFilesToRefresh(Collections.singleton(folderA));
         status = getCache().getStatus(folderA);
-        assertTrue(status.containsStatus(Status.UPTODATE)); // should be excluded actually
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -478,7 +478,7 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "subfolder");
         getCache().getStatus(file3);
-        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(subFolder)));
         getCache().getStatus(file3);
         Thread.sleep(500);
         newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
