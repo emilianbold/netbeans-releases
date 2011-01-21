@@ -3247,7 +3247,7 @@ asm_block
         literal_asm LCURLY (~RCURLY)*
         (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |RCURLY)
     |
-        literal_asm (literal_volatile)? ({LA(1)==LPAREN}? balanceParens) // (gcc_asm_expr)* (EOF|RPAREN)
+        literal_asm (literal_volatile | LITERAL_goto)? ({LA(1)==LPAREN}? balanceParens) // (gcc_asm_expr)* (EOF|RPAREN)
 //		{balanceBraces(CPPTokenTypes.LPAREN, CPPTokenTypes.RPAREN);}
     )
     {#asm_block = #(#[CSM_ASM_BLOCK, "CSM_ASM_BLOCK"], #asm_block);}
