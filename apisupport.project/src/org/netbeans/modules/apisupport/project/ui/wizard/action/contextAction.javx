@@ -13,6 +13,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionID;
+import org.openide.util.NbBundle.Messages;
 
 @ActionID(
     category="${CATEGORY}",
@@ -33,6 +34,7 @@ import org.openide.awt.ActionID;
   r.name()?length != 0>, name="${r.name()}"</#if>)<#if r_has_next>,</#if>
 </#list>
 })
+@Messages("${DISPLAY_NAME_KEY}=${DISPLAY_NAME}")
 </#if>
 public final class ${CLASS_NAME} implements ActionListener {
     private final ${CONTEXT_TYPE} context;

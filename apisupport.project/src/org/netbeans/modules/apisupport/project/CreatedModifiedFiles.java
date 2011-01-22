@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.Tree;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +79,7 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -1141,37 +1145,34 @@ public final class CreatedModifiedFiles {
     }
     private static class PackageInfo extends AbstractOperation {
         private final Map<String,Map<String,Object>> annotations;
-        private final String srcRootPath, folderRelPath, srcRelPath;
+        private final String srcRootPath, srcRelPath;
         PackageInfo(Project project, String packageName, Map<String,Map<String,Object>> annotations) {
             super(project);
             this.annotations = annotations;
             srcRootPath = getModuleInfo().getResourceDirectoryPath(false);
-            folderRelPath = packageName.replace('.', '/');
-            srcRelPath = folderRelPath + "/package-info.java"; // NOI18N
+            srcRelPath = packageName.replace('.', '/') + "/package-info.java"; // NOI18N
             addCreatedOrModifiedPath(srcRootPath + '/' + srcRelPath, true);
         }
         public @Override void run() throws IOException {
             final FileObject top = getProject().getProjectDirectory();
             top.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public @Override void run() throws IOException {
-                    FileObject srcRoot = FileUtil.createFolder(top, srcRootPath);
-                    FileObject srcFile = srcRoot.getFileObject(srcRelPath);
-                    if (srcFile == null) {
-                        // Cf. #119887; any better way to add license header? Otherwise could use:
-                        // nue = make.CompilationUnit(anns, srcRoot, srcRelPath, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList());
-                        srcFile = DataObject.find(FileUtil.getConfigFile("Templates/Classes/package-info.java")).createFromTemplate(DataFolder.findFolder(FileUtil.createFolder(srcRoot, folderRelPath))).getPrimaryFile(); // NOI18N
-                    }
-                    if (!annotations.isEmpty()) {
-                        JavaSource source = JavaSource.forFileObject(srcFile);
+                    final FileObject srcRoot = FileUtil.createFolder(top, srcRootPath);
+                    final FileObject srcFile = srcRoot.getFileObject(srcRelPath);
+                    JavaSource source;
+                    if (srcFile != null) {
+                        source = JavaSource.forFileObject(srcFile);
                         if (source == null) {
                             throw new IOException("unparsable: " + srcFile);
                         }
+                    } else {
+                        source = JavaSource.create(ClasspathInfo.create(srcRoot));
+                    }
                         source.runModificationTask(new Task<WorkingCopy>() {
                             public @Override void run(WorkingCopy wc) throws Exception {
                                 wc.toPhase(JavaSource.Phase.RESOLVED);
-                                CompilationUnitTree old = wc.getCompilationUnit();
-                                CompilationUnitTree nue = old;
                                 TreeMaker make = wc.getTreeMaker();
+                                List<AnnotationTree> anns = new ArrayList<AnnotationTree>();
                                 for (Map.Entry<String,Map<String,Object>> ann : annotations.entrySet()) {
                                     TypeElement annType = wc.getElements().getTypeElement(ann.getKey());
                                     if (annType == null) {
@@ -1182,17 +1183,26 @@ public final class CreatedModifiedFiles {
                                     for (Map.Entry<String,Object> attr : ann.getValue().entrySet()) {
                                         arguments.add(make.Assignment(make.Identifier(attr.getKey()), make.Literal(attr.getValue())));
                                     }
-                                    nue = make.addPackageAnnotation(nue, make.Annotation(annotationTypeTree, arguments));
+                                    anns.add(make.Annotation(annotationTypeTree, arguments));
+                                }
+                                CompilationUnitTree old, nue;
+                                if (srcFile != null) {
+                                    old = nue = wc.getCompilationUnit();
+                                    for (AnnotationTree ann : anns) {
+                                        nue = make.addPackageAnnotation(nue, ann);
+                                    }
+                                } else {
+                                    old = null;
+                                    nue = make.CompilationUnit(anns, srcRoot, srcRelPath, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList());
                                 }
                                 nue = GeneratorUtilities.get(wc).importFQNs(nue);
                                 wc.rewrite(old, nue);
                             }
                         }).commit();
-                        SaveCookie sc = DataObject.find(srcFile).getLookup().lookup(SaveCookie.class);
+                        SaveCookie sc = DataObject.find(srcFile != null ? srcFile : srcRoot.getFileObject(srcRelPath)).getLookup().lookup(SaveCookie.class);
                         if (sc != null) {
                             sc.save();
                         }
-                    }
                 }
             });
         }
