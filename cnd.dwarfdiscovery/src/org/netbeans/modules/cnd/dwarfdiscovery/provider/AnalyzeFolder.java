@@ -201,7 +201,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             i++;
             DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null);
             if (applicable.isApplicable()) {
-                return new ApplicableImpl(true, null, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null, null);
+                return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null, null);
             }
             if (i > 25) {
                 return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutableWithDebugInformation", root)));

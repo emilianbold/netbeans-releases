@@ -604,12 +604,14 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     @Override
     public void paintComponent(final Graphics g) {
         super.paintComponent(g);
-        document.render(new Runnable() {
-            @Override
-            public void run() {
-                paintComponentUnderLock(g);
+        Utilities.runViewHierarchyTransaction(textComponent, true,
+            new Runnable() {
+                @Override
+                public void run() {
+                    paintComponentUnderLock(g);
+                }
             }
-        });
+        );
     }
 
     private void paintComponentUnderLock (Graphics g) {
