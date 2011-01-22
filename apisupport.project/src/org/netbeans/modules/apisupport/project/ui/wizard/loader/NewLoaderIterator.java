@@ -288,11 +288,13 @@ final class NewLoaderIterator extends BasicWizardIterator {
         if (isEditable) {
             fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         }
-        
+
+        if (!loaderlessObject) {
         // 6. update/create bundle file
         String bundlePath = model.getDefaultPackagePath("Bundle.properties", true); // NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                 namePrefix + " Files")); //NOI18N
+        }
         
         if (loaderlessObject) {
             // 7. register in layer
