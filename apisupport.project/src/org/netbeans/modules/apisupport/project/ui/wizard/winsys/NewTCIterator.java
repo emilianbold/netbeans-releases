@@ -368,6 +368,7 @@ final class NewTCIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
                                                        Collections.<String>emptySet()));
         }
+        // XXX use @Messages where available
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
                                 name)); //NOI18N
         

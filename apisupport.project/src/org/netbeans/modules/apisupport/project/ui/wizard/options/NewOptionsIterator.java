@@ -414,6 +414,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             }
         }
         
+        // XXX use @Messages where available
         private void generateBundleKeys() {
             String[] bundleKeys = (isAdvanced()) ? ADVANCED_BUNDLE_KEYS : CATEGORY_BUNDLE_KEYS;
             for (int i = 0; i < bundleKeys.length; i++) {

@@ -209,6 +209,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         }
 
         fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
+        // XXX use @Messages where available
         String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties");//NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
