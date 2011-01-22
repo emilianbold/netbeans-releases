@@ -534,7 +534,6 @@ public final class ProjectSupport {
 		// IZ 114302
 		// re-get the actual conf object
                 seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
-
 		// OLD adjustDefaults(seed);
 
 		// IZ 114302
@@ -545,7 +544,8 @@ public final class ProjectSupport {
 
 	    case OLD_PROJECT:
 		assert seed.conf == null;
-		seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
+		/* CR 7000724 needs to make a clone, it won't override the orig one later on */
+		seed.conf = (MakeConfiguration)ConfigurationSupport.getProjectActiveConfiguration(seed.project).clone();
 
 		/* CR 7000724 don't override configuration of existing project
 		populateConfiguration(seed);
