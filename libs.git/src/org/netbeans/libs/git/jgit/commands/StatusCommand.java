@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -65,8 +66,12 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
+import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitException;
@@ -167,9 +172,21 @@ public class StatusCommand extends GitCommand {
                     DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
                     boolean isFolder = false;
                     if (treeWalk.isSubtree()) {
-                        if (mWorking == FileMode.TREE.getBits() && fti.isEntryIgnored() && !Utils.isUnderOrEqual(pathFilters, treeWalk)) { // root is under fti
-                            statusIndexWC = statusHeadWC = GitStatus.Status.STATUS_IGNORED;
-                            isFolder = true;
+                        if (mWorking == FileMode.TREE.getBits() && fti.isEntryIgnored()) {
+                            Collection<TreeFilter> subTreeFilters = getSubtreeFilters(pathFilters, path);
+                            if (!subTreeFilters.isEmpty()) {
+                                // caller requested a status for a file under an ignored folder
+                                treeWalk.setFilter(AndTreeFilter.create(treeWalk.getFilter(), OrTreeFilter.create(NotTreeFilter.create(PathFilter.create(path)), 
+                                        subTreeFilters.size() > 1 ? OrTreeFilter.create(subTreeFilters) : subTreeFilters.iterator().next())));
+                                treeWalk.enterSubtree();
+                            }
+                            if (includes(pathFilters, treeWalk)) {
+                                // ignored folder statu is requested by a caller
+                                statusIndexWC = statusHeadWC = GitStatus.Status.STATUS_IGNORED;
+                                isFolder = true;
+                            } else {
+                                continue;
+                            }
                         } else {
                             treeWalk.enterSubtree();
                             continue;
@@ -292,4 +309,31 @@ public class StatusCommand extends GitCommand {
         listener.notifyStatus(status);
     }
 
+    /**
+     * Any filter includes this path but only by denoting any of it's ancestors or the path itself
+     * Any filter that applies to a file/folder under the given path will not be taken into account
+     * @param filters
+     * @param treeWalk
+     * @return 
+     */
+    public static boolean includes (Collection<PathFilter> filters, TreeWalk treeWalk) {
+        boolean retval = filters.isEmpty();
+        for (PathFilter filter : filters) {
+            if (filter.include(treeWalk) && treeWalk.getPathString().length() >= filter.getPath().length()) {
+                retval = true;
+                break;
+            }
+        }
+        return retval;
+    }
+
+    private static Collection<TreeFilter> getSubtreeFilters(Collection<PathFilter> filters, String path) {
+        List<TreeFilter> subtreeFilters = new LinkedList<TreeFilter>();
+        for (PathFilter filter : filters) {
+            if (filter.getPath().startsWith(path + "/")) { //NOI18N
+                subtreeFilters.add(filter);
+            }
+        }
+        return subtreeFilters;
+    }
 }

@@ -64,9 +64,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
+import static org.netbeans.modules.apisupport.hints.Bundle.*;
 
 /**
  * #191236: {@code ActionRegistration} conversion.
@@ -82,7 +83,8 @@ public class ActionRegistrationHinter implements Hinter {
         "org.openide.awt.DynamicMenuContent"
     };
 
-    public @Override void process(final Context ctx) throws Exception {
+    @Messages({"# {0} - class or method return type", "ActionRegistrationHinter.not_presenter=You cannot use @ActionRegistration on the eager action {0} unless it is assignable to ContextAwareAction, DynamicMenuContent, or some Presenter.* interface."})
+     public @Override void process(final Context ctx) throws Exception {
         final Object instanceCreate = ctx.instanceFile().getAttribute("literal:instanceCreate");
         if ("method:org.openide.awt.Actions.alwaysEnabled".equals(instanceCreate)) {
             ctx.addStandardHint(new Callable<Void>() {
@@ -137,7 +139,7 @@ public class ActionRegistrationHinter implements Hinter {
                                 }
                             }
                             if (!ok) {
-                                DialogDisplayer.getDefault().notify(new Message(NbBundle.getMessage(ActionRegistrationHinter.class, "ActionRegistrationHinter.not_presenter", type), NotifyDescriptor.WARNING_MESSAGE));
+                                DialogDisplayer.getDefault().notify(new Message(ActionRegistrationHinter_not_presenter(type), NotifyDescriptor.WARNING_MESSAGE));
                                 return;
                             }
                             super.run(wc, declaration, modifiers);
@@ -149,11 +151,12 @@ public class ActionRegistrationHinter implements Hinter {
         }
     }
 
+    @Messages("ActionRegistrationHinter.missing_org.openide.awt=You must add a dependency on org.openide.awt (7.27+) before using this fix.")
     private boolean annotationsAvailable(Context ctx) {
         if (ctx.canAccess("org.openide.awt.ActionReferences")) {
             return true;
         } else {
-            DialogDisplayer.getDefault().notify(new Message(NbBundle.getMessage(ActionRegistrationHinter.class, "ActionRegistrationHinter.missing_org.openide.awt"), NotifyDescriptor.WARNING_MESSAGE));
+            DialogDisplayer.getDefault().notify(new Message(ActionRegistrationHinter_missing_org_openide_awt(), NotifyDescriptor.WARNING_MESSAGE));
             return false;
         }
     }

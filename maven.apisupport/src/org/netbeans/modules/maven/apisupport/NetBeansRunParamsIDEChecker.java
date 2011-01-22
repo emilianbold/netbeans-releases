@@ -65,7 +65,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 
 /**
  * Ensures that {@code netbeans.run.params.ide} will be interpolated into {@code netbeans.run.params}.
@@ -110,8 +111,12 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
         return true;
     }
 
+    @Messages({
+        "# {0} - property name", "# {1} - pom.xml file", "NetBeansRunParamsIDEChecker.msg_confirm=<html>The IDE needs to define <code>$'{'{0}}</code> in order to run this action.<br>Currently your project''s plugin configuration does not interpret this variable.<br>Adjust <code>{1}</code> to use it if defined?",
+        "NetBeansRunParamsIDEChecker.title_confirm=Missing Variable in POM"
+    })
     private static void missingInterpolation(File pom) {
-        if (DialogDisplayer.getDefault().notify(new Confirmation(NbBundle.getMessage(NetBeansRunParamsIDEChecker.class, "NetBeansRunParamsIDEChecker.msg_confirm", PROPERTY, pom), NbBundle.getMessage(NetBeansRunParamsIDEChecker.class, "NetBeansRunParamsIDEChecker.title_confirm"), NotifyDescriptor.OK_CANCEL_OPTION)) != NotifyDescriptor.OK_OPTION) {
+        if (DialogDisplayer.getDefault().notify(new Confirmation(NetBeansRunParamsIDEChecker_msg_confirm(PROPERTY, pom), NetBeansRunParamsIDEChecker_title_confirm(), NotifyDescriptor.OK_CANCEL_OPTION)) != NotifyDescriptor.OK_OPTION) {
             return;
         }
         Utilities.performPOMModelOperations(FileUtil.toFileObject(pom), Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {

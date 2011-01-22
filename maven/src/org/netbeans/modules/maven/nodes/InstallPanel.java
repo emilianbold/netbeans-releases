@@ -89,6 +89,7 @@ public class InstallPanel extends javax.swing.JPanel {
         btnFile = new javax.swing.JButton();
         lblHint = new javax.swing.JLabel();
 
+        lblFile.setLabelFor(txtFile);
         org.openide.awt.Mnemonics.setLocalizedText(lblFile, org.openide.util.NbBundle.getMessage(InstallPanel.class, "InstallPanel.lblFile.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnFile, org.openide.util.NbBundle.getMessage(InstallPanel.class, "InstallPanel.btnFile.text")); // NOI18N
@@ -128,6 +129,12 @@ public class InstallPanel extends javax.swing.JPanel {
                 .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(72, Short.MAX_VALUE))
         );
+
+        txtFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InstallPanel.class, "InstallPanel.txtFile.accessiblename")); // NOI18N
+        txtFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallPanel.class, "InstallPanel.txtFile.accessibledesc")); // NOI18N
+        btnFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallPanel.class, "InstallPanel.btnFile.accessibledesc")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallPanel.class, "InstallPanel.panel.accessibledesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFileActionPerformed

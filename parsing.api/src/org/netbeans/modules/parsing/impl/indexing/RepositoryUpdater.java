@@ -1800,7 +1800,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                         for(String mimeType : cifInfo.getMimeTypes()) {
-                            if ((cifIsChanged || forceReindex) && resources != allResources) {
+                            if ((cifIsChanged || forceReindex) && allResources != null && resources != allResources) {
                                 if (allCi == null) {
                                     allCi = new ClusteredIndexables(allResources);
                                 }

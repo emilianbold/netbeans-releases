@@ -256,7 +256,7 @@ public final class DocumentIndexImpl implements DocumentIndex {
         }
     }
     
-    private Reference getDataRef() {
+    private Reference<List[]> getDataRef() {
         assert Thread.holdsLock(this);
         if (toAdd.isEmpty() && toRemove.isEmpty()) {
             assert dataRef == null;

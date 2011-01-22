@@ -73,6 +73,7 @@ public final class GitModuleConfig {
     private static final String REVERT_WT               = "revertWT";           // NOI18N
     private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
     private static final String PROP_LAST_USED_COMMIT_VIEW_MODE = "lastUsedCommitViewMode"; //NOI18N
+    private static final String AUTO_IGNORE_FILES        = "autoIgnoreFiles"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -252,5 +253,12 @@ public final class GitModuleConfig {
     public boolean getRemoveAllNew() {
         return getPreferences().getBoolean(REMOVE_ALL_NEW, false);                
     }
-    
+
+    public boolean getAutoIgnoreFiles () {
+        return getPreferences().getBoolean(AUTO_IGNORE_FILES, true);
+    }
+
+    public void setAutoIgnoreFiles (boolean flag) {
+        getPreferences().putBoolean(AUTO_IGNORE_FILES, flag);
+    }
 }

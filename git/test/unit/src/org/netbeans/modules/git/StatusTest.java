@@ -295,7 +295,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.setFilesToRefresh(Collections.singleton(folderA));
         status = getCache().getStatus(folderA);
-        assertTrue(status.containsStatus(Status.UPTODATE)); // should be excluded actually
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -377,7 +377,7 @@ public class StatusTest extends AbstractGitTestCase {
         } else {
             assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
-        assertTrue(handler.waitForFilesToRefresh());
+        handler.waitForFilesToRefresh();
         status = getCache().getStatus(file2);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
 
@@ -392,7 +392,7 @@ public class StatusTest extends AbstractGitTestCase {
         } else {
             assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
-        assertTrue(handler.waitForFilesToRefresh());
+        handler.waitForFilesToRefresh();
         status = getCache().getStatus(folder);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         status = getCache().getStatus(file1);
@@ -478,7 +478,7 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "subfolder");
         getCache().getStatus(file3);
-        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(subFolder)));
         getCache().getStatus(file3);
         Thread.sleep(500);
         newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
@@ -669,25 +669,25 @@ public class StatusTest extends AbstractGitTestCase {
         f.createNewFile();
         getCache().refreshAllRoots(files);
         assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [-/A]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, context, "<font color=\"#008000\">-/New</font>");
+        assertIconTooltip(annotator, context, "<font color=\"#008000\">-/Added</font>");
 
         // file is added to index and not modified
         add();
         getCache().refreshAllRoots(files);
         assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [A/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, context, "<font color=\"#008000\">New/-</font>");
+        assertIconTooltip(annotator, context, "<font color=\"#008000\">Added/-</font>");
 
         // file is added to index and modified
         write(f, "blabla");
         getCache().refreshAllRoots(files);
         assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [A/M]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, context, "<font color=\"#008000\">New/Modified</font>");
+        assertIconTooltip(annotator, context, "<font color=\"#008000\">Added/Modified</font>");
 
         // file is added to index and deleted in WT, so NO CHANGE between head and WT
         f.delete();
         getCache().refreshAllRoots(files);
         assertEquals("file<font color=\"#999999\"> [A/D]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, context, "New/Deleted");
+        assertIconTooltip(annotator, context, "Added/Deleted");
 
         // file is up-to-date
         f.createNewFile();
@@ -736,13 +736,13 @@ public class StatusTest extends AbstractGitTestCase {
         f.createNewFile();
         getCache().refreshAllRoots(files);
         assertEquals("file<font color=\"#999999\"> [D/A]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, context, "Deleted/New");
+        assertIconTooltip(annotator, context, "Deleted/Added");
 
         // file is removed in index, but modified HEAD/WT
         write(f, "blabla");
         getCache().refreshAllRoots(files);
         assertEquals("<font color=\"#0000ff\">file</font><font color=\"#999999\"> [D/A]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
-        assertIconTooltip(annotator, context, "<font color=\"#0000ff\">Deleted/New</font>");
+        assertIconTooltip(annotator, context, "<font color=\"#0000ff\">Deleted/Added</font>");
 
 
         // rename

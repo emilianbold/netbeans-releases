@@ -64,11 +64,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.store.FSDirectory;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 
@@ -87,8 +87,7 @@ public class LucenePerformanceTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
 	this.clearWorkDir();
-        //jlahoda: disabling Lucene locks for tests (hopefully correct):
-        FSDirectory.setDisableLocks(true);
+        IndexManagerTestUtilities.setDisabledLocks(true);
         //Prepare indeces        
         File workDir = getWorkDir();
         File cacheFolder = new File (workDir, "cache"); //NOI18N
