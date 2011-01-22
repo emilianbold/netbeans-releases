@@ -73,8 +73,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 
 /**
  *
@@ -133,6 +134,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /**
      * Show node "Important Files" with various config and docs files beneath it.
      */
+    @Messages("LBL_important_files=Important Files")
     static final class ImportantFilesNode extends AnnotatedNode {
         
         public ImportantFilesNode(Project project) {
@@ -153,16 +155,14 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
         }
         
-        private static final String DISPLAY_NAME = NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_important_files");
-        
         @Override
         public String getDisplayName() {
-            return annotateName(DISPLAY_NAME);
+            return annotateName(LBL_important_files());
         }
         
         @Override
         public String getHtmlDisplayName() {
-            return computeAnnotatedHtmlDisplayName(DISPLAY_NAME, getFiles());
+            return computeAnnotatedHtmlDisplayName(LBL_important_files(), getFiles());
         }
         
         @Override
@@ -180,6 +180,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /**
      * Actual list of important files.
      */
+    @Messages({"LBL_module_manifest=Module Manifest", "LBL_module.xml=Module Descriptor"})
     private static final class ImportantFilesChildren extends Children.Keys<String> {
         
         private List<String> visibleFiles = new ArrayList<String>();
@@ -197,8 +198,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         /** Abstract location to display name. */
         private static final java.util.Map<String,String> FILES = new LinkedHashMap<String,String>();
         static {
-            FILES.put("src/main/nbm/manifest.mf", NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_module_manifest")); //NOI18N
-            FILES.put("src/main/nbm/module.xml", NbBundle.getMessage(ImportantFilesNodeFactory.class, "LBL_module.xml")); //NOI18N
+            FILES.put("src/main/nbm/manifest.mf", LBL_module_manifest()); //NOI18N
+            FILES.put("src/main/nbm/module.xml", LBL_module_xml()); //NOI18N
         }
         
         private final Project project;

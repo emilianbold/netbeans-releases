@@ -69,7 +69,8 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -119,8 +120,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReload", category = "Project")
     @ActionRegistration(displayName = "#ACT_NBM_Reload")
     @ActionReference(position = 1250, path = "Projects/org-netbeans-modules-maven/Actions")
+    @Messages("ACT_NBM_Reload=Install/Reload in Development IDE")
     public static ContextAwareAction createReloadAction() {
-        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
+        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(NBMRELOAD, ACT_NBM_Reload(), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }
@@ -128,8 +130,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReloadTarget", category = "Project")
     @ActionRegistration(displayName = "#ACT_NBM_Reload_Target")
     @ActionReference(position = 1225, path = "Projects/org-netbeans-modules-maven/Actions")
+    @Messages("ACT_NBM_Reload_Target=Reload in Target Platform")
     public static ContextAwareAction createReloadTargetAction() {
-        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload_Target"), null);
+        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, ACT_NBM_Reload_Target(), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }
@@ -144,6 +147,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return false;
     }
 
+    @Messages("NbmActionGoalProvider.target_platform_not_running=You can only reload a module while running the application.")
     public @Override RunConfig createConfigForDefaultAction(String actionName,
             Project project,
             Lookup lookup) {
@@ -157,7 +161,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
             }
             if (app != null) {
                 if (!FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile()) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(NbmActionGoalProvider.class, "NbmActionGoalProvider.target_platform_not_running"), NotifyDescriptor.WARNING_MESSAGE));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbmActionGoalProvider_target_platform_not_running(), NotifyDescriptor.WARNING_MESSAGE));
                     return null;
                 }
                 RunConfig rc = createConfig(actionName, app, lookup, platformDelegate);

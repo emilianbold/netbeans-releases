@@ -62,6 +62,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.ElementScanner6;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
@@ -83,6 +84,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -118,7 +120,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private static final Logger LOG = Logger.getLogger(InstantRenamePerformer.class.getName());
-    
+
     private SyncDocumentRegion region;
     private int span;
     private Document doc;
@@ -329,7 +331,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             el = el.getEnclosingElement();
         }
         
-        if (allowInstantRename(el)) {
+        if (allowInstantRename(el, info.getElementUtilities())) {
             final Set<Token> points = new HashSet<Token>(new FindLocalUsagesQuery(true).findUsages(el, info, doc));
             
             if (el.getKind().isClass()) {
@@ -369,12 +371,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return null;
     }
 
-    private static boolean allowInstantRename(Element e) {
+    private static boolean allowInstantRename(Element e, ElementUtilities eu) {
         if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
             return true;
         }
         
-        if (isInaccessibleOutsideOuterClass(e)) {
+        if (isInaccessibleOutsideOuterClass(e, eu)) {
             return true;
         }
         
@@ -408,26 +410,22 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
      * @return {@code true} if the member cannot be accessed outside the outer class
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=169377">169377</a>
      */
-    private static boolean isInaccessibleOutsideOuterClass(Element e) {
+    private static boolean isInaccessibleOutsideOuterClass(Element e, ElementUtilities eu) {
         Element enclosing = e.getEnclosingElement();
         boolean isStatic = e.getModifiers().contains(Modifier.STATIC);
         ElementKind kind = e.getKind();
-        if (isStatic || kind == ElementKind.CLASS) {
+        if (isStatic || kind.isClass() || kind.isInterface() || kind.isField()) {
             // static declaration of nested class, interface, enum, ann type, method, field
             // or inner class
             return isAnyEncloserPrivate(e);
-        } else if (enclosing != null) {
+        } else if (enclosing != null && kind == ElementKind.METHOD) {
             // final is enum, ann type and some classes
             ElementKind enclosingKind = enclosing.getKind();
             boolean isEnclosingFinal = enclosing.getModifiers().contains(Modifier.FINAL)
                     // ann type is not final even if it cannot be subclassed
                     || enclosingKind == ElementKind.ANNOTATION_TYPE;
-            // do not try to rename members of class that extends or implements anything
-            // it would require deeper analyze
-            boolean isSubclass = enclosingKind == ElementKind.CLASS
-                    && ( !"java.lang.Object".equals(((TypeElement) enclosing).getSuperclass().toString())
-                            || !((TypeElement) enclosing).getInterfaces().isEmpty() );
-            return isEnclosingFinal && !isSubclass && isAnyEncloserPrivate(e);
+            return isAnyEncloserPrivate(e) && !eu.overridesMethod((ExecutableElement) e) && !eu.implementsMethod((ExecutableElement)e) &&
+                    (isEnclosingFinal || !isOverridenInsideOutermostEnclosingClass((ExecutableElement)e, eu));
         }
         return false;
     }
@@ -442,6 +440,21 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             enclosing = enclosing.getEnclosingElement();
         }
         return false;
+    }
+    
+    private static boolean isOverridenInsideOutermostEnclosingClass(final ExecutableElement ee, final ElementUtilities eu) {
+        final boolean[] ret = new boolean[] {false};
+        new ElementScanner6<Void, Void>() {
+            @Override
+            public Void visitType(TypeElement te, Void p) {
+                if (ret[0])
+                    return null;
+                if (te != ee.getEnclosingElement() && eu.getImplementationOf(ee, te) != null && !isAnyEncloserPrivate(te))
+                    ret[0] = true;
+                return super.visitType(te, p);
+            }            
+        }.scan(eu.outermostTypeElement(ee));
+        return ret[0];
     }
     
     private static boolean overlapsWithGuardedBlocks(Document doc, Set<Token> highlights) {

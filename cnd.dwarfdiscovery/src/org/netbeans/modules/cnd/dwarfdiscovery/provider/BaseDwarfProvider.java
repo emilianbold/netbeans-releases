@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -333,14 +332,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "IOException", objFileName, ex.toString()));  // NOI18N
             if (TRACE_READ_EXCEPTIONS) {
                 System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         } catch (Exception ex) {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "Exception", objFileName, ex.toString()));  // NOI18N
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
-                ex.printStackTrace();
-            }
+            //if (TRACE_READ_EXCEPTIONS) {
+            System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            ex.printStackTrace(System.err);
+            //}
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -364,7 +363,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
         String commonRoot = getRoot(roots);
         if (res > 0) {
-            return new ApplicableImpl(true, null, top, res, sunStudio > res/2, dllResult, pathsResult, commonRoot, position);
+            return new ApplicableImpl(true, errors, top, res, sunStudio > res/2, dllResult, pathsResult, commonRoot, position);
         } else {
             if (errors.isEmpty()) {
                 if (foundDebug > 0) {
@@ -559,12 +558,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS) {
                 System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         } catch (Exception ex) {
             if (TRACE_READ_EXCEPTIONS) {
                 System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         } finally {
             if (dump != null) {

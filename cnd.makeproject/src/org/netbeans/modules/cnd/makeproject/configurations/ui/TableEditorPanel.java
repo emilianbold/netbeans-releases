@@ -44,6 +44,8 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Image;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -111,14 +113,24 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         getTargetList().getSelectionModel().setSelectionInterval(i, i);
     }
 
+    private int calculateColumnWidth(String txt) {
+        Font font = getTargetList().getFont();
+        FontMetrics fontMetrics = getTargetList().getFontMetrics(font);
+        int width = fontMetrics.stringWidth(txt);
+        return width;
+    }
+
     @Override
     protected void setData(List<LibraryItem> data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
-        getTargetList().getColumnModel().getColumn(1).setPreferredWidth(100);
-        getTargetList().getColumnModel().getColumn(1).setMaxWidth(200);
-        getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
-        getTargetList().getColumnModel().getColumn(2).setMaxWidth(100);
+        getTargetList().getColumnModel().getColumn(0).setPreferredWidth(1000);
+        int w1 = calculateColumnWidth(getString("CONFIGURATION")) + 10;
+        getTargetList().getColumnModel().getColumn(1).setPreferredWidth(w1);
+        getTargetList().getColumnModel().getColumn(1).setMinWidth(w1);
+        int w2 = calculateColumnWidth(getString("BUILD")) + 10;
+        getTargetList().getColumnModel().getColumn(2).setPreferredWidth(w2);
+        getTargetList().getColumnModel().getColumn(2).setMinWidth(w2);
         //
         getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
@@ -162,9 +174,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
         public MyTable() {
             //setTableHeader(null); // Hides table headers
-            if (getRowHeight() < 19) {
-                setRowHeight(19);
-            }
+//            if (getRowHeight() < 19) {
+//                setRowHeight(19);
+//            }
             getAccessibleContext().setAccessibleDescription(""); // NOI18N
             getAccessibleContext().setAccessibleName(""); // NOI18N
         }

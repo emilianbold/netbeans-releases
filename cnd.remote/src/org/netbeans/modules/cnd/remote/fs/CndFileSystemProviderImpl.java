@@ -188,11 +188,15 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
             if (cachePrefix == null) {
                 // XXX: FullRemote
                 String prefix = new File(FileSystemCacheProvider.getCacheRoot(ExecutionEnvironmentFactory.getLocal())).getParent();
-                prefix= prefix.replace("\\", "/"); //NOI18N
-                if (!prefix.endsWith("/")) { //NOI18N
-                    prefix += '/';
+                if (prefix != null) {
+                    prefix= prefix.replace("\\", "/"); //NOI18N
+                    if (!prefix.endsWith("/")) { //NOI18N
+                        prefix += '/';
+                    }
+                    cachePrefix = prefix;
+                } else {
+                    new Exception("Not expected NPE").printStackTrace(System.err);
                 }
-                cachePrefix = prefix;
             }
         }
         return cachePrefix;
