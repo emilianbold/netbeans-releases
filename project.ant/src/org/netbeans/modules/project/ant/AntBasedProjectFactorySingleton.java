@@ -121,16 +121,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         antBasedProjectTypes = Lookup.getDefault().lookupResult(AntBasedProjectType.class);
         antBasedProjectTypes.addLookupListener(new LookupListener() {
             public @Override void resultChanged(LookupEvent ev) {
+                Set<AntBasedProjectType> removed;
                 synchronized (AntBasedProjectFactorySingleton.class) {
                     Set<AntBasedProjectType> oldTypes = type2Projects.keySet();
-                    Set<AntBasedProjectType> removed  = new HashSet<AntBasedProjectType>(oldTypes);
-                    
+                    removed  = new HashSet<AntBasedProjectType>(oldTypes);
                     removed.removeAll(antBasedProjectTypes.allInstances());
-                    
-                    antBasedProjectTypesRemoved(removed);
-                    
                     antBasedProjectTypesByType = null;
                 }
+                antBasedProjectTypesRemoved(removed);
             }
         });
     }
