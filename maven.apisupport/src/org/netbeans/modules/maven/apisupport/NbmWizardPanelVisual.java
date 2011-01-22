@@ -58,15 +58,18 @@ import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  */
+@Messages("NbmWizardPanelVisual.wait=Searching...")
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
-    private static final String SEARCHING = NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.wait");
+    private static final String SEARCHING = NbmWizardPanelVisual_wait();
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
     boolean isApp = false;

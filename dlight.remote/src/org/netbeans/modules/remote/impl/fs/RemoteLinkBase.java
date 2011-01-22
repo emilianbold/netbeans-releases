@@ -91,7 +91,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
         } else {
             relativePath = RemoteFileSystemUtils.normalize(remotePath + '/' + relativePath);
         }
-        return new RemoteLinkChild(fileSystem, execEnv, this, remotePath + '/' + fo.getNameExt(), (RemoteFileObjectBase) fo);
+        return new RemoteLinkChild(fileSystem, execEnv, this, remotePath + '/' + fo.getNameExt(), fo);
     }
     
     // ------------ delegating methods -------------------

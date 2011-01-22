@@ -56,7 +56,8 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Opens branding editor window for 'branding' sub-project of a Maven app suite.
@@ -66,6 +67,7 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.maven.apisupport.OpenBrandingEditorAction", category = "Project")
 @ActionRegistration(displayName = "#LBL_OpenBrandingEditor")
 @ActionReference(position = 3150, path = "Projects/org-netbeans-modules-maven/Actions")
+@Messages("LBL_OpenBrandingEditor=Branding...")
 public class OpenBrandingEditorAction extends AbstractAction implements ContextAwareAction {
 
     private final Lookup context;
@@ -75,7 +77,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
     }
 
     private OpenBrandingEditorAction( Lookup context ) {
-        super( NbBundle.getMessage(OpenBrandingEditorAction.class, "LBL_OpenBrandingEditor") ); //NOI18N
+        super( LBL_OpenBrandingEditor() ); //NOI18N
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         this.context = context;
     }

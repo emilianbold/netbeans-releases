@@ -49,7 +49,8 @@ import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 
 /**
  * Panel just asking for nb platform relatd information.
@@ -75,10 +76,11 @@ public class NbmWizardPanel implements WizardDescriptor.FinishablePanel<WizardDe
     }
     
     @Override
+    @Messages("LBL_CreateProjectStepNbm=Module Options")
     public Component getComponent() {
         if (component == null) {
             component = new NbmWizardPanelVisual(this);
-            component.setName(NbBundle.getMessage(NbmWizardPanel.class, "LBL_CreateProjectStepNbm"));
+            component.setName(LBL_CreateProjectStepNbm());
         }
         return component;
     }

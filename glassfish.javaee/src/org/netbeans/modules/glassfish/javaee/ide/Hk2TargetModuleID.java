@@ -92,6 +92,8 @@ public class Hk2TargetModuleID implements TargetModuleID {
             if (null == retVal) {
                 retVal = new Hk2TargetModuleID(target, docBaseURI, contextPath, location);
                 knownModules.put(key,retVal);
+            } else {
+                retVal.setPath(contextPath);
             }
             if (clearChildren) {
                 retVal.children.clear();

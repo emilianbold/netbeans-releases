@@ -49,6 +49,8 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Registrator for public packages customizer panel
@@ -59,13 +61,14 @@ import org.openide.util.Lookup;
 public class PackagesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     @Override
+    @Messages("TIT_Packages=Public Packages")
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
         if (NbMavenProject.TYPE_NBM.equalsIgnoreCase(watcher.getPackagingType())) {
             return ProjectCustomizer.Category.create(
                     ModelHandle.PANEL_COMPILE,
-                    org.openide.util.NbBundle.getMessage(PackagesPanelProvider.class, "TIT_Packages"),
+                    TIT_Packages(),
                     null);
         }
         return null;
