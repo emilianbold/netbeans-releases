@@ -50,8 +50,6 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.junit.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
