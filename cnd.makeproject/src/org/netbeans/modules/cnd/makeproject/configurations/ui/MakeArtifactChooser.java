@@ -60,6 +60,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -213,12 +214,14 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         MakeArtifactChooser accessory = new MakeArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
-        //chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
+        if (FileChooser.getCurrentChooserFile() != null && FileChooser.getCurrentChooserFile().exists() && FileChooser.getCurrentChooserFile().isDirectory()) {
+            chooser.setCurrentDirectory(FileChooser.getCurrentChooserFile());
+        }
 
         int option = chooser.showOpenDialog( parent ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
-
+            FileChooser.setCurrentChooserFile(chooser.getCurrentDirectory());
             MyDefaultListModel model = (MyDefaultListModel) accessory.listArtifacts.getModel();
             Project selectedProject = model.getProject();
 
