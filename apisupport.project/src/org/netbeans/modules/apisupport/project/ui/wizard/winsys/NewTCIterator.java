@@ -63,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
@@ -370,12 +369,12 @@ final class NewTCIterator extends BasicWizardIterator {
                                                        Collections.<String>emptySet()));
         }
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
-                                NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name))); //NOI18N
+                                name)); //NOI18N
         
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "TopComponent",  // NOI18N
-                                NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateTCName", name))); //NOI18N
+                                name + " Window")); //NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "HINT_" + name + "TopComponent",  // NOI18N
-                                NbBundle.getMessage(NewTCIterator.class, "HINT_TemplateTCName", name))); //NOI18N
+                                "This is a " + name + " window")); //NOI18N
         
         model.setCreatedModifiedFiles(fileChanges);
     }
