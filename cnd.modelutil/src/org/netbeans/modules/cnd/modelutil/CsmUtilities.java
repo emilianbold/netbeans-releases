@@ -94,7 +94,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -371,9 +370,8 @@ public class CsmUtilities {
      *      or <code>null</code> if there is no such project
      */
     public static CsmProject getCsmProject(FileObject fo) {
-        File file = FileUtil.toFile(fo);
-        if (file != null) {
-            String path = file.getPath();
+        if (fo != null && fo.isValid()) {
+            String path = fo.getPath();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 Object platformProject = csmProject.getPlatformProject();
                 if (platformProject instanceof NativeProject) {
@@ -423,15 +421,11 @@ public class CsmUtilities {
                 }
                 if (files.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();
-                    if (fo != null) {
-                        File file = FileUtil.toFile(fo);
-                        // the file can null, for example, when we edit templates
-                        if (file != null) {
-                            String normPath = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
-                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
-                            if (csmFile != null) {
-                                files.add(csmFile);
-                            }
+                    if (fo != null && fo.isValid()) {
+                        String normPath = fo.getPath();
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
+                        if (csmFile != null) {
+                            files.add(csmFile);
                         }
                     }
                 }
