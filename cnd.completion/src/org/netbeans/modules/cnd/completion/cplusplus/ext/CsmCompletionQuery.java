@@ -853,6 +853,7 @@ abstract public class CsmCompletionQuery {
                         int ind = 0;
                         for (CsmObject obj : visibleObject) {
                             System.err.printf("[%d] %s\n", ind++, obj); // NOI18N
+                            System.err.flush(); // to prevent OOM when calls on System.err are interposed and flushed by System.err.println by defaul
                         }
                     }            
                 }
