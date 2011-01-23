@@ -160,9 +160,23 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
                 } catch (IOException ex) { }
             }
             if (!tmpFile.renameTo(gitIgnore)) {
-                tmpFile.delete();
-                throw new IOException("Cannot write to " + gitIgnore.getAbsolutePath());
+                // cannot rename directly, try backup and delete te original .gitignore
+                File tmpCopy = File.createTempFile(Constants.DOT_GIT_IGNORE, "tmp", gitIgnore.getParentFile()); //NOI18N
+                boolean success = false;
+                if (gitIgnore.renameTo(tmpCopy)) {
+                    // and try to rename again
+                    success = tmpFile.renameTo(gitIgnore);
+                    if (!success) {
+                        // restore te original .gitignore file
+                        tmpCopy.renameTo(gitIgnore);
+                    }
+                }
+                if (!success) {
+                    tmpFile.delete();
+                    throw new IOException("Cannot write to " + gitIgnore.getAbsolutePath());
+                }
             }
+
         }
         ignoreFiles.add(gitIgnore);
     }
