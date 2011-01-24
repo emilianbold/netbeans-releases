@@ -236,10 +236,12 @@ public class JspLexerTest extends CslTestBase {
                 JspTokenId.language());
     }
 
+	/* Commented out - see bug 194639.
     public void testHashedEL() throws Exception {
         testSyntaxTree("testHashedEL.jspx.txt");
 
     }
+	 */
 
     @Override
     protected String getPreferredMimeType() {

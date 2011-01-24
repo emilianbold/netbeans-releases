@@ -261,6 +261,7 @@ public class CacheTest extends NbTestCase {
     }
 
     // #133702: Editor ignores web.xml <include-prelude> tag
+	/* Commented out - see bug 194639.
     public void testIssue133702() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
@@ -284,6 +285,7 @@ public class CacheTest extends NbTestCase {
         includePrelude = result.getPageInfo().getIncludePrelude();
         assertEquals(0, includePrelude.size());
     }
+	 */
 
     private static JspParserImpl getJspParser() {
         return (JspParserImpl) JspParserFactory.getJspParser();
