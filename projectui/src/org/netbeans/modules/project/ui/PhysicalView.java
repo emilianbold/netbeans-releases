@@ -44,20 +44,24 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -74,6 +78,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
@@ -90,9 +95,17 @@ public class PhysicalView {
     private PhysicalView() {}
 
     private static final Logger LOG = Logger.getLogger(PhysicalView.class.getName());
+
+    private static final class GroupNodeInfo {
+        public final boolean isProjectDir;
+        public GroupNodeInfo(boolean isProjectDir) {
+            this.isProjectDir = isProjectDir;
+        }
+    }
         
     public static boolean isProjectDirNode( Node n ) {
-        return n instanceof GroupNode && ((GroupNode)n).isProjectDir;
+        GroupNodeInfo i = n.getLookup().lookup(GroupNodeInfo.class);
+        return i != null && i.isProjectDir;
     }
     
     public static Node[] createNodesForProject( Project p ) {
@@ -131,7 +144,7 @@ public class PhysicalView {
         
         // Create the nodes
         ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
-        nodesList.add(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)));
+        nodesList.add(new ProjectIconNode(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)), true));
         
         for (SourceGroup group : groups) {
             if (group == projectDirGroup) {
@@ -145,7 +158,7 @@ public class PhysicalView {
             if (!rootFolder.isValid() || !rootFolder.isFolder()) {
                 continue;
             }
-            nodesList.add(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)));
+            nodesList.add(new ProjectIconNode(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)), true));
         }
         
         Node nodes[] = new Node[ nodesList.size() ];
@@ -199,7 +212,7 @@ public class PhysicalView {
         public GroupNode(Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(),
                    dataFolder.createNodeChildren( VISIBILITY_QUERY_FILTER ),                       
-                   createLookup( project, group, dataFolder ) );
+                   createLookup(project, group, dataFolder, isProjectDir));
 
             this.pi = ProjectUtils.getInformation( project );
             this.group = group;
@@ -345,14 +358,68 @@ public class PhysicalView {
             SwingUtilities.invokeLater(r);            
         }
         
-        private static Lookup createLookup( Project p, SourceGroup group, DataFolder dataFolder ) {
-            return new ProxyLookup(new Lookup[] {
+        private static Lookup createLookup(Project p, SourceGroup group, DataFolder dataFolder, boolean isProjectDir) {
+            return new ProxyLookup(
                 dataFolder.getNodeDelegate().getLookup(),
-                Lookups.fixed( new Object[] { p, new PathFinder( group ) } ),
-                p.getLookup(),
-            });
+                Lookups.fixed(p, new PathFinder(group), new GroupNodeInfo(isProjectDir)),
+                p.getLookup());
         }
 
+    }
+
+    private static final class ProjectIconNode extends FilterNode { // #194068
+        private final boolean root;
+        public ProjectIconNode(Node orig, boolean root) {
+            super(orig, new ProjectBadgingChildren(orig));
+            this.root = root;
+        }
+        public @Override Image getIcon(int type) {
+            return swap(super.getIcon(type));
+        }
+        public @Override Image getOpenedIcon(int type) {
+            return swap(super.getOpenedIcon(type));
+        }
+        private Image swap(Image base) {
+            if (!root) { // do not use icon on root node in Files tab
+                DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
+                if (folder != null) {
+                    ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder.getPrimaryFile());
+                    if (r != null) {
+                        Icon icon = r.getIcon();
+                        if (icon != null) {
+                            return ImageUtilities.icon2Image(icon);
+                        }
+                    }
+                }
+            }
+            return base;
+        }
+        public @Override String getShortDescription() {
+            DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
+            if (folder != null) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject(folder.getPrimaryFile());
+                    if (p != null) {
+                        return ProjectUtils.getInformation(p).getDisplayName();
+                    }
+                } catch (IOException x) {
+                    LOG.log(Level.FINE, null, x);
+                }
+            }
+            return super.getShortDescription();
+        }
+    }
+    private static final class ProjectBadgingChildren extends FilterNode.Children {
+        public ProjectBadgingChildren(Node orig) {
+            super(orig);
+        }
+        protected @Override Node copyNode(Node orig) {
+            if (original.getLookup().lookup(DataFolder.class) != null) {
+                return new ProjectIconNode(orig, false);
+            } else {
+                return super.copyNode(orig);
+            }
+        }
     }
     
     public static class PathFinder {
