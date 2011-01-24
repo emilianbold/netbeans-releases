@@ -187,7 +187,10 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     public void open() {
         String encoding = ((HtmlDataObject) getDataObject()).getFileEncoding();
         String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
-        if (encoding != null && !isSupportedEncoding(encoding) && showConfirmationDialog) {
+        if (encoding != null && !isSupportedEncoding(encoding)) {
+            if(!showConfirmationDialog) {
+                return ; //simulate "No" pressed in the dialog if opened
+            }
 //            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
 //                feqEncoding = UTF_8_ENCODING;
 //            }
