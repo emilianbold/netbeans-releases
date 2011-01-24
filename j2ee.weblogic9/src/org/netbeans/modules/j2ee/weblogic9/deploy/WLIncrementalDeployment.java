@@ -214,9 +214,9 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
             // pass through
         }
         if (url != null) {
-            return url.startsWith("/") ? url : "/" + url;
+            return url.startsWith("/") ? url : "/" + url; // NOI18N
         }
         // will fail probably
-        return module.getModuleID();
+        return id.startsWith("/") ? id : "/" + id; // NOI18N
     }
 }
