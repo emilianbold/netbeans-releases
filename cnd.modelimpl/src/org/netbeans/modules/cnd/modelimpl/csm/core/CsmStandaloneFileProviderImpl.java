@@ -140,12 +140,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     @Override
     public CsmFile getCsmFile(FileObject fo) {
-        try {
-            FileSystem fs = fo.getFileSystem();
-            if (fs.getClass().getSimpleName().equals("SystemFileSystem")) { //NOI18N
-                return null;
-            }
-        } catch (FileStateInvalidException ex) {
+        if (!CndPathUtilitities.isPathAbsolute(fo.getPath())) { 
+            // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
+            // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
             return null;
         }
         CsmModelState modelState = CsmModelAccessor.getModelState();
