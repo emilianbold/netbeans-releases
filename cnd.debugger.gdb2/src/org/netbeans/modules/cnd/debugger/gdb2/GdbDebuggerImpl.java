@@ -4185,12 +4185,26 @@ import org.openide.util.Exceptions;
         sendSilent("-gdb-set environment " + envVar); // NOI18N
     }
     
+    private static String quoteValue(String value) {
+        int length = value.length();
+	if (length > 1 
+                && (value.charAt(0) == '"') &&
+                (value.charAt(length-1) == '"')) {
+            StringBuilder res = new StringBuilder("\\"); //NOI18N
+            res.append(value.substring(0, length-1));
+            res.append("\\\""); //NOI18N
+	    return res.toString();
+	}
+        return value;
+    }
+    
     void assignVar(final GdbVariable var, final String value, final boolean miVar) {
         String cmdString;
         if (miVar) {
             cmdString = "-var-assign " + var.getMIName() + " " + value; // NOI18N
         } else {
-            cmdString = "-data-evaluate-expression " + var.getVariableName() + '=' + value; // NOI18N
+            cmdString = "-data-evaluate-expression \"" +  //NOI18N
+                    var.getVariableName() + '=' + quoteValue(value) + '"'; // NOI18N
         }
         MICommand cmd =
             new MiCommandImpl(cmdString) {
