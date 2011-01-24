@@ -459,6 +459,12 @@ public class CreateElementTest extends HintsTestBase {
         )));
     }
 
+    public void test194625() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.CreateConstructor", 160, new HashSet<String>(Arrays.asList(
+                "CreateConstructorFix:(java.lang.String string):org.netbeans.test.java.hints.CreateConstructor"
+        )));
+    }
+    
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
 
