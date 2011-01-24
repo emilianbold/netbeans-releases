@@ -513,4 +513,23 @@ public class IgnoreTest extends AbstractGitTestCase {
 //        ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
 //        assertEquals("/fi[\\[]le", read(gitIgnore));
     }
+    
+    public void testDoNotIgnoreExcludedFile () throws Exception {
+        File f = new File(new File(new File(workDir, "sf1"), "sf2"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        File excludeFile = new File(workDir, ".git/info/exclude");
+        excludeFile.getParentFile().mkdirs();
+        write(excludeFile, "/sf1/sf2/file");
+        File[] ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(excludeFile.exists());
+        assertEquals("/sf1/sf2/file", read(excludeFile));
+        assertEquals(0, ignores.length);
+        
+        write(excludeFile, "file");
+        ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(excludeFile.exists());
+        assertEquals("file", read(excludeFile));
+        assertEquals(0, ignores.length);
+    }
 }
