@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
@@ -81,8 +82,9 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.actions.Bundle.*;
 
 /**
  *
@@ -92,9 +94,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     private Lookup lookup;
     private Lookup.Result<DependencyNode> result;
 
+    @Messages("ACT_Library=Create Library")
     public CreateLibraryAction(Lookup lkp) {
         this.lookup = lkp;
-        putValue(NAME, NbBundle.getMessage(CreateLibraryAction.class, "ACT_Library"));
+        putValue(NAME, ACT_Library());
         //TODO proper icon
         putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/actions/libraries.gif", true))); //NOI18N
         putValue("iconBase", "org/netbeans/modules/maven/actions/libraries.gif"); //NOI18N
@@ -104,7 +107,8 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
 
     }
 
-    public void actionPerformed(ActionEvent e) {
+    @Messages("LBL_CreateLibrary=Create a NetBeans Library from Maven metadata")
+    public @Override void actionPerformed(ActionEvent e) {
         Iterator<? extends DependencyNode> roots = result.allInstances().iterator();
         if (!roots.hasNext()) {
             return;
@@ -112,12 +116,12 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         final DependencyNode root = roots.next();
         final MavenProject project = lookup.lookup(MavenProject.class);
         final CreateLibraryPanel pnl = new CreateLibraryPanel(root);
-        DialogDescriptor dd = new DialogDescriptor(pnl,  NbBundle.getMessage(CreateLibraryPanel.class, "LBL_CreateLibrary"));
+        DialogDescriptor dd = new DialogDescriptor(pnl,  LBL_CreateLibrary());
         pnl.createValidations(dd);
 
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     Library lib = createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project, pnl.getCopyDirectory());
                     if (lib != null) {
                         LibrariesCustomizer.showCustomizer(lib, pnl.getLibraryManager());
@@ -127,16 +131,23 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         }
     }
 
-    public void resultChanged(LookupEvent ev) {
+    public @Override void resultChanged(LookupEvent ev) {
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 setEnabled(result.allInstances().size() > 0);
             }
         });
     }
 
+    @Messages({
+        "MSG_Create_Library=Create Library",
+        "MSG_Downloading=Maven: downloading {0}",
+        "MSG_Downloading_javadoc=Maven: downloading Javadoc {0}",
+        "MSG_Downloading_sources=Maven: downloading sources {0}"
+    })
+    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // baseFolder.mkdirs; will throw IOE later from getJarUri
     private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Create_Library"),
+        ProgressHandle handle = ProgressHandleFactory.createHandle(MSG_Create_Library(),
                 ProgressTransferListener.cancellable());
         int count = includeArtifacts.size() * (allSourceAndJavadoc ? 3 : 1) + 5;
         handle.start(count);
@@ -177,13 +188,13 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 volumes.put("src", sourceVolume); //NOI18N
             }
             for (Artifact a : includeArtifacts) {
-                handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading", a.getId()), index);
+                handle.progress(MSG_Downloading(a.getId()), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                     classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase, TYPE_BINARY));
                     try {
                         if (allSourceAndJavadoc) {
-                            handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_javadoc", a.getId()), index + 1);
+                            handle.progress(MSG_Downloading_javadoc(a.getId()), index + 1);
                             Artifact javadoc = online.createArtifactWithClassifier(
                                     a.getGroupId(),
                                     a.getArtifactId(),
@@ -196,7 +207,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                 javadocVolume.add(javadocUri);
                             }
 
-                            handle.progress(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Downloading_sources", a.getId()), index + 2);
+                            handle.progress(MSG_Downloading_sources(a.getId()), index + 2);
                             Artifact sources = online.createArtifactWithClassifier(
                                     a.getGroupId(),
                                     a.getArtifactId(),
