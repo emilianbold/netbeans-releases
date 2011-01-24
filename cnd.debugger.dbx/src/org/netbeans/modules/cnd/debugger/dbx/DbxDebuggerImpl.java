@@ -2493,8 +2493,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
-    protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
-        super.setCurrentLine(l, visited, srcOOD, andShow);
+    protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, ShowMode showMode) {
+        super.setCurrentLine(l, visited, srcOOD, showMode);
         RtcMarker.getDefaultError().clearLine(this);
         RtcMarker.getDefaultFrame().clearLine(this);
     }

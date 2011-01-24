@@ -209,7 +209,7 @@ public final class Dbx extends CommonDbx {
 
 	private GlueLocation(String src, int line, String func, long pc,
 			     int flags) {
-	    super(src, line, func, pc, flags);
+	    super(src, line, func, pc, flags, null);
 	}
 
     }
