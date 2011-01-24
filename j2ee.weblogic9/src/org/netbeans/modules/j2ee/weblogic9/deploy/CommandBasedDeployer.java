@@ -93,6 +93,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -779,21 +781,28 @@ public final class CommandBasedDeployer {
             
             FileObject appXml = root.getFileObject("META-INF/application.xml"); // NOI18N
             if (appXml != null) {
-                Application ear = DDProvider.getDefault().getDDRoot(appXml);
-                Module[] modules = ear.getModule();
-                for (int i = 0; i < modules.length; i++) {
-                    WLTargetModuleID childModuleId = null;
-                    Web web = modules[i].getWeb();
-                    if (web != null) {
-                        childModuleId = new WLTargetModuleID(moduleId.getTarget(), web.getWebUri());
-                    } else {
-                        childModuleId = new WLTargetModuleID(moduleId.getTarget());
+                InputStream is = new BufferedInputStream(appXml.getInputStream());
+                try {
+                    // we used getDDRoot(FO), but the caching has been returning
+                    // old model - see #194656
+                    Application ear = DDProvider.getDefault().getDDRoot(new InputSource(is));
+                    Module[] modules = ear.getModule();
+                    for (int i = 0; i < modules.length; i++) {
+                        WLTargetModuleID childModuleId = null;
+                        Web web = modules[i].getWeb();
+                        if (web != null) {
+                            childModuleId = new WLTargetModuleID(moduleId.getTarget(), web.getWebUri());
+                        } else {
+                            childModuleId = new WLTargetModuleID(moduleId.getTarget());
+                        }
+
+                        if (modules[i].getWeb() != null) {
+                            childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                        }
+                        moduleId.addChild(childModuleId);
                     }
-                    
-                    if (modules[i].getWeb() != null) {
-                        childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
-                    }
-                    moduleId.addChild(childModuleId);
+                } finally {
+                    is.close();
                 }
             } else {
                 // Java EE 5
@@ -813,6 +822,8 @@ public final class CommandBasedDeployer {
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (PropertyVetoException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (SAXException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
     }
