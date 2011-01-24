@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -490,6 +491,10 @@ public class CsmUtilities {
     public static CsmFile getCsmFile(FileObject fo, boolean waitParsing, boolean snapShot) {
         if (fo == null) {
             return null;
+        } else if (!CndPathUtilitities.isPathAbsolute(fo.getPath())) { 
+            // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
+            // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
+            return null;
         } else {
             try {
                 return getCsmFile(DataObject.find(fo), waitParsing, snapShot);
@@ -498,7 +503,7 @@ public class CsmUtilities {
             }
         }
     }
-
+    
     public static FileObject getFileObject(CsmFile csmFile) {
         return (csmFile == null) ? null : csmFile.getFileObject();
 //        FileObject fo = null;
