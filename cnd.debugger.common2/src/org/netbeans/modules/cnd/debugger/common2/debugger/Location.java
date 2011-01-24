@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 /**
@@ -71,7 +72,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 public class Location {
 
     public static final Location EMPTY = 
-	new Location(null, 0, null, 0, 0);
+	new Location(null, 0, null, 0, 0, null);
 
     public static final int UPDATE	= 1<<0;
     public static final int VISITED	= 1<<1;
@@ -87,20 +88,24 @@ public class Location {
     private final String func;
     private final long pc;
     private int flags;
+    
+    // breakpoint hit if any
+    private final NativeBreakpoint breakpoint;
 
-    protected Location(String src, int line, String func, long pc, int flags) {
+    protected Location(String src, int line, String func, long pc, int flags, NativeBreakpoint breakpoint) {
 	this.src = src;
 	this.line = line;
 	this.func = func;
 	this.pc = pc;
 	this.flags = flags;
+        this.breakpoint = breakpoint;
     }
 
     /*
      * Immutable-style setter for 'line'.
      */
     public Location line(int line) {
-	return new Location(src, line, func, pc, flags);
+	return new Location(src, line, func, pc, flags, breakpoint);
     }
 
     public final void setVisited(boolean v) {
@@ -153,6 +158,10 @@ public class Location {
 
     public final boolean hasSource() {
 	return src != null && line > 0;
+    }
+
+    public NativeBreakpoint getBreakpoint() {
+        return breakpoint;
     }
 
     public String toString() {

@@ -441,14 +441,19 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (TRACE) {
             System.err.println("Model has "+col.size()+" files");
         }
+        boolean hasInvalidFiles = false;
         for (CsmFile file : col) {
             if (TRACE) {
                 //System.err.println("\t"+file.getAbsolutePath());
             }
             for(CsmInclude include : file.getIncludes()){
-                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
+                if (include.getIncludeFile() == null) {
+                    hasInvalidFiles = true;
+                    System.err.println("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath());
+                }
             }
         }
+        assertFalse("Model has unresolved include directives", hasInvalidFiles);
     }
 
     private String download(String urlName, List<String> additionalScripts, Map<String, String> tools) throws IOException {

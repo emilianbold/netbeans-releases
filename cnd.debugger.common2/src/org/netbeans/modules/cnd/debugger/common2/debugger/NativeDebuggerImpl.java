@@ -100,8 +100,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerW
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.StateModel;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
@@ -109,6 +107,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
@@ -766,7 +765,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected final void deleteMarkLocations() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setCurrentLine(null, false, false, true);
+                setCurrentLine(null, false, false, ShowMode.NONE);
             }
         });
     }
@@ -774,7 +773,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected final void resetCurrentLine() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                setCurrentLine(null, false, false, true);
+                setCurrentLine(null, false, false, ShowMode.NONE);
             }
         });
     }
@@ -783,10 +782,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return visitedLocation;
     }
     
-    public void annotateDis() {
+    public void annotateDis(boolean andShow) {
         DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         if (disProvider != null && visitedLocation != null) {
-            disProvider.movePC(visitedLocation.pc(), currentDisPCMarker);
+            disProvider.movePC(visitedLocation.pc(), currentDisPCMarker, andShow);
         }
     }
    
@@ -794,11 +793,19 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         return disProvider != null && disProvider.isInDis();
     }
+    
+    protected static enum ShowMode {
+        SOURCE, // show source
+        DIS,    // show disassembly
+        AUTO,   // decide based on where we are now
+        NONE;   // do not show at all
+    }
 
-    protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, boolean andShow) {
+    
+    protected void setCurrentLine(Line l, boolean visited, boolean srcOOD, ShowMode showMode) {
 
         if (l != null) {
-	    if (andShow && !isInDis()) {
+	    if (showMode == ShowMode.SOURCE || (showMode == ShowMode.AUTO && !isInDis())) {
 		EditorBridge.showInEditor(l);
             }
 
@@ -820,7 +827,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         
         if (!visited) {
             // Annotate dis
-            annotateDis();
+            annotateDis(showMode == ShowMode.DIS || (showMode == ShowMode.AUTO && isInDis()));
         }
 
         // Arrange for DebuggerManager.error_sourceModified()
@@ -867,10 +874,23 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                     // Locations should already be in local path form.
 		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
 		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
-		    if (l != null)
-			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), andShow);
+		    if (l != null) {
+                        ShowMode showMode = ShowMode.NONE;
+                        if (andShow) {
+                            showMode = ShowMode.AUTO;
+                            NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
+                            if (breakpoint != null) {
+                                if (breakpoint instanceof InstructionBreakpoint) {
+                                    showMode = ShowMode.DIS;
+                                } else {
+                                    showMode = ShowMode.SOURCE;
+                                }
+                            }
+                        }
+			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode);
+                    }
 	    } else {
-		    setCurrentLine(null, false, false, andShow);
+		    setCurrentLine(null, false, false, ShowMode.NONE);
 
                     if (getVisitedLocation() != null) {
                         disStateModel().updateStateModel(getVisitedLocation(), true);
@@ -923,7 +943,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	updateLocation(andShow);
     }
 
-    public void setVisitedLocation(Location loc) {
+    public final void setVisitedLocation(Location loc) {
 	this.visitedLocation = loc;
 	requestAutos();
 	updateLocation(true);

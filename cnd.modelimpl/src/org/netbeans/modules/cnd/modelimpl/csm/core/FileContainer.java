@@ -802,7 +802,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                                     pair.state.isValid(), pair.state.isCompileContext(), pair.pcState));
                         }
                     }
-                    Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception());                
+                    Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception(sb.toString()));                
                 }
             }
         }

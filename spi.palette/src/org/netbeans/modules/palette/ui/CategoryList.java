@@ -579,7 +579,7 @@ public class CategoryList extends JList implements Autoscroll {
             if( selIndexBefore != selIndexCurrent )
                 return;
             
-            if( focusNext && 0 == selIndexCurrent && getModel().getSize() > 1 )
+            if( focusNext && 0 == selIndexCurrent && getModel().getSize() > 1 && getModel().getSize() > getColumnCount() )
                 return;
             
             KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();

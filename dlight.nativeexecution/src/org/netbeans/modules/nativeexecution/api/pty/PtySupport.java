@@ -138,6 +138,10 @@ public final class PtySupport {
         SttySupport.apply(exEnv, tty, "-echo"); //NOI18N
     }
 
+    public static void setBackspaceAsEraseChar(ExecutionEnvironment exEnv, String tty) {
+        SttySupport.apply(exEnv, tty, "erase \\^H"); // NOI18N
+    }
+
     public static boolean isSupportedFor(ExecutionEnvironment executionEnvironment) {
         if (!HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
             return false;

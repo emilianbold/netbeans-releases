@@ -115,7 +115,7 @@ public class GdbDisassemblyService implements DisassemblyService {
         return showLine(getAddressLine(address));
     }
 
-    public void movePC(long address, DebuggerAnnotation pcMarker) {
+    public void movePC(long address, DebuggerAnnotation pcMarker, boolean andShow) {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return;
@@ -127,7 +127,7 @@ public class GdbDisassemblyService implements DisassemblyService {
                 try {
                     DataObject dobj = DataObject.find(fo);
                     Line disLine = EditorBridge.lineNumberToLine(dobj, line);
-                    if (isInDis()) {
+                    if (andShow) {
                         EditorBridge.showInEditor(disLine);
                     }
                     pcMarker.setLine(disLine, true);
