@@ -167,7 +167,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private FileObject create(String name, boolean directory) throws IOException {
-        RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
+        // Have to comment this out since NB does lots of stuff in the UI thread and I have no way to control this :(
+        // RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
         String path = remotePath + '/' + name;
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             throw new ConnectException("Can not create " + getUrlToReport(path) + ": connection required"); //NOI18N
