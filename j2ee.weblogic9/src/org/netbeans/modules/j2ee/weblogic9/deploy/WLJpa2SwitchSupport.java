@@ -48,12 +48,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,9 +68,11 @@ import org.openide.util.Exceptions;
  */
 public final class WLJpa2SwitchSupport {
 
-    private static final String OEPECONTRIBUTIONSJAR = "oepe-contributions.jar";//NO18N
-    private static final String JPAJAR1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
-    private static final String JPAJAR2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
+    private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar";//NO18N
+    
+    private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
+    
+    private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
     
     private final WLDeploymentManager deploymentManager;
 
@@ -87,7 +92,7 @@ public final class WLJpa2SwitchSupport {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        File oepeJarFile = new File(libDir, OEPECONTRIBUTIONSJAR);
+        File oepeJarFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
         FileObject oepeFO = FileUtil.toFileObject(oepeJarFile);
         JarFile oepeJar = null;
         if (oepeFO != null) {
@@ -106,10 +111,18 @@ public final class WLJpa2SwitchSupport {
             boolean override = true;
             if(manifest != null){
                 String cp = manifest.getMainAttributes().getValue(Name.CLASS_PATH);
-                if(cp.indexOf(JPAJAR1)>-1 && cp.indexOf(JPAJAR2)>-1) override = false;//should ful path be checked?
+                if (cp != null) {
+                    if (cp.indexOf(JPA_JAR_1) > -1 && cp.indexOf(JPA_JAR_2) > -1) {
+                        override = false;
+                    }//should ful path be checked?
+                }
             }
             if(override){
-                backup(oepeJarFile);
+                try {
+                    backup(oepeJarFile);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 oepeFO = null;
             }
         }
@@ -119,28 +132,55 @@ public final class WLJpa2SwitchSupport {
             if (path.length() > 0) {
                 path = path + "/"; // NOI18N
             }
-            oepeFO = createOEPEJar(oepeJarFile, path + JPAJAR1 + " " // NOI18N
-                    + path + JPAJAR2);//NOI18N
+            oepeFO = createOEPEJar(oepeJarFile, path + JPA_JAR_1 + " " // NOI18N
+                    + path + JPA_JAR_2);//NOI18N
         }
-        Manifest wlManifest = null;
         try {
-            wlManifest = webLogicJar.getManifest();
+            Manifest wlManifest = webLogicJar.getManifest();
+            String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
+            if (cp.indexOf(OEPE_CONTRIBUTIONS_JAR) == -1) {
+                wlManifest.getMainAttributes().putValue(Name.CLASS_PATH.toString(), OEPE_CONTRIBUTIONS_JAR + " " + cp);
+                replaceManifest(webLogicJarFile, wlManifest);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }
-        String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
-        if (cp.indexOf(OEPECONTRIBUTIONSJAR) == -1) {
-            wlManifest.getMainAttributes().putValue(Name.CLASS_PATH.toString(), OEPECONTRIBUTIONSJAR + " " + cp);
-            replaceManifest(webLogicJarFile, wlManifest);
-        }
+        }        
     }
 
     public void disable() {
-        // delete referneces to jars in oepe-contributions.jar
-        File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
-        File oepeJarFile = new File(libDir, OEPECONTRIBUTIONSJAR);
-        backup(oepeJarFile);
-        createOEPEJar(oepeJarFile, "");
+        try {
+            File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+            File oepeJarFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
+            if (!oepeJarFile.exists() || !oepeJarFile.isFile()) {
+                return;
+            }
+            JarFile file = new JarFile(oepeJarFile);
+            try {
+                Manifest mf = file.getManifest();
+                String cp = mf.getMainAttributes().getValue(Name.CLASS_PATH);
+                if (cp == null) {
+                    return;
+                }
+
+                StringBuilder builder = new StringBuilder();
+                for (String element : cp.split("\\s+")) { // NOI18N
+                    if (!element.contains(JPA_JAR_1) && !element.contains(JPA_JAR_2)) {
+                        builder.append(element).append(" "); // NOI18N
+                    }
+                }
+                if (builder.length() > 0) {
+                    mf.getMainAttributes().put(Name.CLASS_PATH,
+                            builder.substring(0, builder.length() - 1));
+                } else {
+                    mf.getMainAttributes().remove(Name.CLASS_PATH);
+                }
+                replaceManifest(oepeJarFile, mf);
+            } finally {
+                file.close();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public boolean isEnabled() {
@@ -152,82 +192,63 @@ public final class WLJpa2SwitchSupport {
         return false;
     }
 
-    private FileObject backup(File jarFile){
+    private FileObject backup(File jarFile) throws IOException {
         FileObject fo = FileUtil.toFileObject(jarFile);
-        String bakName = FileUtil.findFreeFileName(fo.getParent(), jarFile.getName(), "bak");//NOI18N
-        try {
-            return FileUtil.copyFile(fo, fo.getParent(), bakName, "bak"); //NOI18N
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        String bakName = FileUtil.findFreeFileName(fo.getParent(),
+                jarFile.getName(), "bak"); // NOI18N
+        return FileUtil.copyFile(fo, fo.getParent(), bakName, "bak"); // NOI18N
     }
 
-    private void replaceManifest(File webLogicJarFile, Manifest wlManifest) {
-        FileObject bakJar = backup(webLogicJarFile);
-        //need replace
-        FileOutputStream dest = null;
+    private void replaceManifest(File jarFile, Manifest manifest) throws IOException {
+        FileObject bakJar = backup(jarFile);
         try {
-            dest = new FileOutputStream(webLogicJarFile);
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        FileInputStream source = null;
-        try {
-            source = new FileInputStream(FileUtil.toFile(bakJar));
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        JarInputStream in = null;
-        try {
-            in = new JarInputStream(new BufferedInputStream(source));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        JarOutputStream out = null;
-        try {
-            out = new JarOutputStream(new BufferedOutputStream(dest), wlManifest);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        JarEntry entry = null;
-        byte[] temp = new byte[32768];
-        try {
-            while ((entry = in.getNextJarEntry()) != null) {
-                String name = entry.getName();
-                if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) {//NOI18N
-                    continue;
+            InputStream is = new BufferedInputStream(
+                    new FileInputStream(FileUtil.toFile(bakJar)));
+            try {
+                OutputStream os = new BufferedOutputStream(
+                        new FileOutputStream(jarFile));
+                try {
+                    replaceManifest(is, os, manifest);
+                } finally {
+                    os.close();
                 }
-                out.putNextEntry(entry);
-                while (in.available() != 0) {
-                    int read = in.read(temp);
-                    if (read != -1) {
-                        out.write(temp, 0, read);
-                    }
-                }
-                out.closeEntry();
+            } finally {
+                is.close();
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } finally {
+            bakJar.delete();
         }
+    }
+
+    private void replaceManifest(InputStream is, OutputStream os, Manifest manifest) throws IOException {
+        JarInputStream in = new JarInputStream(is);
         try {
-            if (out != null) {
+            JarOutputStream out = new JarOutputStream(os, manifest);
+            try {
+                JarEntry entry = null;
+                byte[] temp = new byte[32768];
+                while ((entry = in.getNextJarEntry()) != null) {
+                    String name = entry.getName();
+                    if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) { // NOI18N
+                        continue;
+                    }
+                    out.putNextEntry(entry);
+                    while (in.available() != 0) {
+                        int read = in.read(temp);
+                        if (read != -1) {
+                            out.write(temp, 0, read);
+                        }
+                    }
+                    out.closeEntry();
+                }
+            } finally {
                 out.close();
             }
-            if (in != null) {
-                in.close();
-            }
-            if (dest != null) {
-                dest.close();
-            }
-            if (source != null) {
-                source.close();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        } finally {
+            in.close();
+        }        
     }
-
+    
     private FileObject createOEPEJar(File oepeJarFile, String classpath)
             {
             //need to create zip file
