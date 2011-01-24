@@ -71,7 +71,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.java.project.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 public final class BrokenReferencesModel extends AbstractListModel {
 
@@ -101,68 +102,36 @@ public final class BrokenReferencesModel extends AbstractListModel {
         this.fireContentsChanged(this, 0, getSize());
     }
 
+    @Messages({
+        "LBL_BrokenLinksCustomizer_BrokenLibrary=\"{0}\" library could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenLibraryContent=\"{0}\" library has missing items",
+        "LBL_BrokenLinksCustomizer_BrokenProjectReference=\"{0}\" project could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenFileReference=\"{0}\" file/folder could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenVariable=\"{0}\" variable could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenVariableContent=\"{0}\" variable based file/folder could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found"
+    })
     public @Override Object getElementAt(int index) {
         OneReference or = getOneReference(index);
-        String bundleID;
         switch (or.type) {
             case LIBRARY:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibrary"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenLibrary(or.getDisplayID());
             case LIBRARY_CONTENT:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryContent"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenLibraryContent(or.getDisplayID());
             case PROJECT:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReference"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenProjectReference(or.getDisplayID());
             case FILE:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReference"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenFileReference(or.getDisplayID());
             case VARIABLE:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariable"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenVariable(or.getDisplayID());
             case VARIABLE_CONTENT:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariableContent"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenVariableContent(or.getDisplayID());
             case PLATFORM:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatform"; // NOI18N
-                break;
+                return LBL_BrokenLinksCustomizer_BrokenPlatform(or.getDisplayID());
             default:
                 assert false;
                 return null;
         }
-        return NbBundle.getMessage(BrokenReferencesCustomizer.class, bundleID, or.getDisplayID());
-    }
-
-    public String getDesciption(int index) {
-        OneReference or = getOneReference(index);
-        String bundleID;
-        switch (or.type) {
-            case LIBRARY:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryDesc"; // NOI18N
-                break;
-            case LIBRARY_CONTENT:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryContentDesc"; // NOI18N
-                break;
-            case PROJECT:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc"; // NOI18N
-                break;
-            case FILE:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc"; // NOI18N
-                break;
-            case VARIABLE:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariableReferenceDesc"; // NOI18N
-                break;
-            case VARIABLE_CONTENT:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariableContentDesc"; // NOI18N
-                break;
-            case PLATFORM:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatformDesc"; // NOI18N
-                break;
-            default:
-                assert false;
-                return null;
-        }
-        return NbBundle.getMessage(BrokenReferencesCustomizer.class, bundleID, or.getDisplayID());
     }
 
     public OneReference getOneReference(int index) {

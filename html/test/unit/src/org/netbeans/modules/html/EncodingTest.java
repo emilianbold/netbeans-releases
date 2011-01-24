@@ -53,6 +53,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -73,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.util.UserQuestionException;
 
 public class EncodingTest extends NbTestCase {
     /** the fs to work on */
@@ -121,7 +123,12 @@ public class EncodingTest extends NbTestCase {
      */
     public void testLoadOfWrongEncoding () throws Exception {
         HtmlEditorSupport.showConfirmationDialog = false;
-        checkEncoding (null, "wrongencoding.html", false);
+        try {
+            checkEncoding (null, "wrongencoding.html", false);
+            assertTrue(false); //fail
+        } catch (UserQuestionException e) {
+            //OK
+        }
     }
     
     /** Test load of UTF-8 encoding.

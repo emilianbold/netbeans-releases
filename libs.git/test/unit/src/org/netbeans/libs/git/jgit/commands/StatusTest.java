@@ -452,6 +452,16 @@ public class StatusTest extends AbstractGitTestCase {
         conflicts = client.getConflicts(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, conflicts.size());
     }
+    
+    public void testIgnoredInExlude () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "hi, i am ignored");
+        File exclude = new File(workDir, ".git/info/exclude");
+        exclude.getParentFile().mkdirs();
+        write(exclude, "f");
+        GitStatus st = getClient(workDir).getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f);
+        assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
+    }
 
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);

@@ -322,10 +322,12 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
 
                 Node result = removeClass(ch, item);
 
+                /* Can't remove completely otherwise the system forgets we are listening to this class
                 // If the children node was emptied, remove it if possible.
                 if (((ch.items == null) || ch.items.isEmpty()) && ((ch.children == null) || ch.children.isEmpty())) {
                     it.remove();
                 }
+                 */
 
                 if (result != null) {
                     // it is in subclass, in case of classes, it cannot

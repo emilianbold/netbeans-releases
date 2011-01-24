@@ -63,7 +63,6 @@ import org.openide.filesystems.FileObject;
  */
 public final class RemotePlainFile extends RemoteFileObjectBase {
 
-    private FileLock lock;
     private final char fileTypeChar;
     private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
 
@@ -154,21 +153,6 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     public FileObject createFolder(String name) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
-
-    @Override
-    public FileLock lock() throws IOException {
-        synchronized (this) {
-            if (lock == null) {
-                lock = new FileLock();
-            }
-        }
-        return lock;
-    }
-
-//    @Override
-//    public boolean isLocked() {
-//        return super.isLocked();
-//    }
 
     @Override
     public OutputStream getOutputStream(FileLock lock) throws IOException {

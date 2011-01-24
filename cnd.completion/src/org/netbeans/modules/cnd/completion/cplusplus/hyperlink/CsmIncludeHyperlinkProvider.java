@@ -307,7 +307,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             buf.append("<i>").append(title).append("</i>\n");  // NOI18N
             for (FSPath path : includePaths) {
                 FileObject fo = path.getFileObject();
-                if (fo.isValid() && fo.isFolder()) {
+                if (fo !=  null && fo.isValid() && fo.isFolder()) {
                     buf.append(path.getPath());
                 } else {
                     buf.append("<font color='red'>");  // NOI18N

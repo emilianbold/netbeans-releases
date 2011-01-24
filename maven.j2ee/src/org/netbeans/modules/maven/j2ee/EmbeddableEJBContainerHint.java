@@ -54,10 +54,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -73,6 +70,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -91,6 +89,8 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
 
     private static final Set<Tree.Kind> TREE_KINDS =
             EnumSet.<Tree.Kind>of(Tree.Kind.METHOD_INVOCATION);
+    
+    private static final String PROP_GF_EMBEDDED_JAR = "glassfish.embedded-static-shell.jar";
     
     public EmbeddableEJBContainerHint() {
         super(true, true, AbstractHint.HintSeverity.ERROR);
@@ -260,7 +260,11 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     dep.setClassifier(result.getClassifier());
                 }
                 if (systemDep != null) {
-                    dep.setSystemPath(systemDep.getAbsolutePath());
+                    Properties props = model.getProject().getProperties();
+                    if (props.getProperty(PROP_GF_EMBEDDED_JAR) == null) {
+                        props.setProperty(PROP_GF_EMBEDDED_JAR, systemDep.getAbsolutePath());
+                    }
+                    dep.setSystemPath("${"+PROP_GF_EMBEDDED_JAR+ "}");
                 }
                 //set repository
                 NbMavenProject mavenPrj = prj.getLookup().lookup(NbMavenProject.class);

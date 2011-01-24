@@ -391,7 +391,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
     private final List<DebuggerAnnotation> annotations = new ArrayList<DebuggerAnnotation>();
     
     private void updateAnnotations(boolean open) {
-        debugger.annotateDis();
+        debugger.annotateDis(false);
         for (DebuggerAnnotation debuggerAnnotation : annotations) {
             debuggerAnnotation.detach();
         }
