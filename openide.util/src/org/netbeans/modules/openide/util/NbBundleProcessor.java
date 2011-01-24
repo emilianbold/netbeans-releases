@@ -111,7 +111,11 @@ public class NbBundleProcessor extends AbstractProcessor {
                 comments.put(pkg, commentsByPackage);
             }
             List<String> runningComments = new ArrayList<String>();
-            for (String keyValue : e.getAnnotation(NbBundle.Messages.class).value()) {
+            NbBundle.Messages messages = e.getAnnotation(NbBundle.Messages.class);
+            if (messages == null) {
+                continue;
+            }
+            for (String keyValue : messages.value()) {
                 if (keyValue.startsWith("#")) {
                     runningComments.add(keyValue);
                     continue;
