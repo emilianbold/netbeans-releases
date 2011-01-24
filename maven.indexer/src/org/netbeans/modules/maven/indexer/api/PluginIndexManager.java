@@ -52,8 +52,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +67,10 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Hit;
-import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 import org.openide.filesystems.FileUtil;
@@ -125,7 +125,7 @@ public class PluginIndexManager {
 
     private static synchronized IndexSearcher getIndexSearcher() throws Exception {
         if (indexReader == null) {
-            FSDirectory dir = FSDirectory.getDirectory(getDefaultIndexLocation());
+            FSDirectory dir = FSDirectory.open(getDefaultIndexLocation());
             indexReader = IndexReader.open(dir);
         }
         //TODO shall the searcher be stored as field??
@@ -144,12 +144,12 @@ public class PluginIndexManager {
             PrefixQuery pq = new PrefixQuery(new Term(FIELD_ID, grp));
             bq.add(new BooleanClause(pq, BooleanClause.Occur.SHOULD));
         }
-        Hits hits = searcher.search(bq);
-        Iterator it = hits.iterator();
+        final BitSetCollector searchRes = new BitSetCollector();
+        searcher.search(bq, searchRes);
+        final BitSet bitSet = searchRes.getMatchedDocs();
         TreeSet<String> toRet = new TreeSet<String>();
-        while (it.hasNext()) {
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
+        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
+            Document doc = searcher.getIndexReader().document(docNum);
             //TODO shall we somehow pick just one version fom a given plugin here? how?
             String prefix = doc.getField(FIELD_PREFIX).stringValue();
             String goals = doc.getField(FIELD_GOALS).stringValue();
@@ -173,15 +173,15 @@ public class PluginIndexManager {
         IndexSearcher searcher = getIndexSearcher();
         String id = groupId + "|" + artifactId + "|" + version; //NOI18N
         TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
-        Hits hits = searcher.search(tq);
-        if (hits.length() == 0) {
+        final BitSetCollector searchRes = new BitSetCollector();
+        searcher.search(tq, searchRes);
+        final BitSet bitSet = searchRes.getMatchedDocs();
+        if (bitSet.isEmpty()) {
             return null;
         }
-        Iterator it = hits.iterator();
         TreeSet<String> toRet = new TreeSet<String>();
-        while (it.hasNext()) { //well should be just one anyway..
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
+        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
+            Document doc = searcher.getIndexReader().document(docNum);
             String goals = doc.getField(FIELD_GOALS).stringValue();
             String[] gls = StringUtils.split(goals, " "); //NOI18N
             for (String goal : gls) {
@@ -204,15 +204,15 @@ public class PluginIndexManager {
         IndexSearcher searcher = getIndexSearcher();
         String id = groupId + "|" + artifactId + "|" + version; //NOI18N
         TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
-        Hits hits = searcher.search(tq);
-        if (hits.length() == 0) {
+        final BitSetCollector searchRes = new BitSetCollector();
+        searcher.search(tq, searchRes);
+        final BitSet bitSet = searchRes.getMatchedDocs();
+        if (bitSet.isEmpty()) {
             return null;
-        }
-        Iterator it = hits.iterator();
+        }        
         TreeSet<ParameterDetail> toRet = new TreeSet<ParameterDetail>(new PComparator());
-        while (it.hasNext()) { //well should be just one anyway..
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
+        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
+            Document doc = searcher.getIndexReader().document(docNum);
             String goals = doc.getField(FIELD_GOALS).stringValue();
             String[] gls = StringUtils.split(goals, " "); //NOI18N
             for (String goal : gls) {
@@ -263,15 +263,15 @@ public class PluginIndexManager {
         assert prefix != null;
         IndexSearcher searcher = getIndexSearcher();
         TermQuery tq = new TermQuery(new Term(FIELD_PREFIX, prefix));
-        Hits hits = searcher.search(tq);
-        if (hits.length() == 0) {
+        final BitSetCollector searchRes = new BitSetCollector();
+        searcher.search(tq, searchRes);
+        final BitSet bitSet = searchRes.getMatchedDocs();
+        if (bitSet.isEmpty()) {
             return null;
         }
-        Iterator it = hits.iterator();
         TreeSet<String> toRet = new TreeSet<String>();
-        while (it.hasNext()) { //well should be just one anyway..
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
+        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
+            Document doc = searcher.getIndexReader().document(docNum);
             String id = doc.getField(FIELD_ID).stringValue();
             toRet.add(id);
         }
@@ -304,15 +304,15 @@ public class PluginIndexManager {
         }
         bq.add(bq2, BooleanClause.Occur.SHOULD); //why doesn't MUST work?
 
-        Hits hits = searcher.search(bq);
-        if (hits.length() == 0) {
+        final BitSetCollector searchRes = new BitSetCollector();
+        searcher.search(bq, searchRes);
+        final BitSet bitSet = searchRes.getMatchedDocs();
+        if (bitSet.isEmpty()) {
             return null;
         }
-        Iterator it = hits.iterator();
         LinkedHashMap<String, List<String>> toRet = new LinkedHashMap<String, List<String>>();
-        while (it.hasNext()) { //well should be just one anyway..
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
+        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
+            Document doc = searcher.getIndexReader().document(docNum);
             Field prefixed = doc.getField(PREFIX_FIELD_CYCLE + packaging);
             if (prefixed != null) {
                 String mapping = prefixed.stringValue();
@@ -502,6 +502,41 @@ public class PluginIndexManager {
 
         public @Override String toString() {
             return "<" + name + ">" + (expression != null ? "${" + expression + "}" : "") + (defaultValue != null ? "=" + defaultValue : "") + "</>"; // NOI18N
+        }
+
+    }
+
+
+    private static final class BitSetCollector extends Collector {
+
+        private int docBase;
+        private final BitSet bits = new BitSet();
+
+        public BitSet getMatchedDocs() {
+            return this.bits;
+        }
+
+        
+        @Override
+        public void setScorer(Scorer scorer) {
+            //Todo: ignoring scorer for now, if ordering accoring to score needed
+            // this will need to be implemented
+        }
+
+        // accept docs out of order (for a BitSet it doesn't matter)
+        @Override
+        public boolean acceptsDocsOutOfOrder() {
+          return true;
+        }
+
+        @Override
+        public void collect(int doc) {
+          bits.set(doc + docBase);
+        }
+
+        @Override
+        public void setNextReader(IndexReader reader, int docBase) {
+          this.docBase = docBase;
         }
 
     }
