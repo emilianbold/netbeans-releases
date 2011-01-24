@@ -74,7 +74,7 @@ public class ShellEmbeddingHighlightContainer extends AbstractHighlightsContaine
     }
 
     private final Document doc;
-    private List<HighlightItem> highlights;
+    private volatile List<HighlightItem> highlights;
 
     private ShellEmbeddingHighlightContainer(Document doc) {
         this.doc = doc;
@@ -88,7 +88,7 @@ public class ShellEmbeddingHighlightContainer extends AbstractHighlightsContaine
     }
 
     /*package*/ void setHighlights(final List<HighlightItem> newHighlights) {
-        NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
+        doc.render(new Runnable() {
             @Override
             public void run() {
                 int[] changedInterval = changedInterval(ShellEmbeddingHighlightContainer.this.highlights, newHighlights);
