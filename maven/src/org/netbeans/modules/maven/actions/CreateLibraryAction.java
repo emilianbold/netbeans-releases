@@ -63,6 +63,7 @@ import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
@@ -146,7 +147,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         "MSG_Downloading_sources=Maven: downloading sources {0}"
     })
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // baseFolder.mkdirs; will throw IOE later from getJarUri
-    private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
+    private static @CheckForNull Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(MSG_Create_Library(),
                 ProgressTransferListener.cancellable());
         int count = includeArtifacts.size() * (allSourceAndJavadoc ? 3 : 1) + 5;
@@ -191,7 +192,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 handle.progress(MSG_Downloading(a.getId()), index);
                 try {
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
-                    classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase, TYPE_BINARY));
+                    classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase, ClassifierType.BINARY));
                     try {
                         if (allSourceAndJavadoc) {
                             handle.progress(MSG_Downloading_javadoc(a.getId()), index + 1);
@@ -203,7 +204,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "javadoc"); //NOI18N
                             online.resolve(javadoc, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (javadoc.getFile().exists()) {
-                                URI javadocUri = getJarUri(javadoc, baseFolder, nonDefaultLibBase, TYPE_JAVADOC);
+                                URI javadocUri = getJarUri(javadoc, baseFolder, nonDefaultLibBase, ClassifierType.JAVADOC);
                                 javadocVolume.add(javadocUri);
                             }
 
@@ -216,7 +217,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                                     "sources"); //NOI18N
                             online.resolve(sources, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                             if (sources.getFile().exists()) {
-                                sourceVolume.add(getJarUri(sources, baseFolder, nonDefaultLibBase, TYPE_SOURCE));
+                                sourceVolume.add(getJarUri(sources, baseFolder, nonDefaultLibBase, ClassifierType.SOURCES));
                             }
                         }
                     } catch (Exception ex) {
@@ -255,12 +256,9 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         }
     }
 
+    private enum ClassifierType {BINARY, JAVADOC, SOURCES}
 
-    private int TYPE_BINARY = 0;
-    private int TYPE_JAVADOC = 1;
-    private int TYPE_SOURCE = 2;
-
-    URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase, int type) throws IOException {
+    private static URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase, ClassifierType type) throws IOException {
         File res = a.getFile();
         URI uri = res.toURI();
         String jarPath = null;
@@ -276,13 +274,13 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         }
         FileUtil.refreshFor(res);
         FileObject fo = FileUtil.toFileObject(res);
-        if (type == TYPE_JAVADOC && FileUtil.isArchiveFile(fo)) {
+        if (type == ClassifierType.JAVADOC && FileUtil.isArchiveFile(fo)) {
             fo = FileUtil.getArchiveRoot(fo);
             FileObject docRoot = JavadocAndSourceRootDetection.findJavadocRoot(fo);
             if (docRoot != null) {
                 jarPath = FileUtil.getRelativePath(fo, docRoot);
             }
-        } else if (type == TYPE_SOURCE && FileUtil.isArchiveFile(fo)) {
+        } else if (type == ClassifierType.SOURCES && FileUtil.isArchiveFile(fo)) {
             fo = FileUtil.getArchiveRoot(fo);
             FileObject srcRoot = JavadocAndSourceRootDetection.findSourceRoot(fo);
             if (srcRoot != null) {
