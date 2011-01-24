@@ -802,6 +802,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 188305 - c++ parser complains about struct instance declaration
         performTest("bug188305.cpp", 6, 16, "bug188305.cpp", 6, 7);
     }
+
+    public void testBug76172() throws Exception {
+        // Bug 76172 - parser failed on forward function declaration without explicit return type
+        performTest("bug76172.cpp", 2, 2, "bug76172.cpp", 2, 1);
+        performTest("bug76172.cpp", 3, 2, "bug76172.cpp", 3, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
