@@ -243,4 +243,29 @@ public class UnignoreTest extends AbstractGitTestCase {
         assertEquals("!/sf1/sf2/folder/", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
     }
+    
+    public void testUnignoreExcludedFile () throws Exception {
+        File f = new File(new File(new File(workDir, "sf1"), "sf2"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        File excludeFile = new File(workDir, ".git/info/exclude");
+        excludeFile.getParentFile().mkdirs();
+        write(excludeFile, "/sf1/sf2/file");
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(excludeFile.exists());
+        assertEquals("", read(excludeFile));
+        assertEquals(Arrays.asList(excludeFile), Arrays.asList(ignores));
+        
+        write(excludeFile, "file");
+        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(excludeFile.exists());
+        assertEquals("file\n!/sf1/sf2/file", read(excludeFile));
+        assertEquals(Arrays.asList(excludeFile), Arrays.asList(ignores));
+        
+        write(excludeFile, "");
+        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(excludeFile.exists());
+        assertEquals("", read(excludeFile));
+        assertEquals(0, ignores.length);
+    }
 }

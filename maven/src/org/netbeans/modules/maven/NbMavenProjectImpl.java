@@ -557,14 +557,14 @@ public final class NbMavenProjectImpl implements Project {
     private static Map<String, String> pkg2Icon = Collections.unmodifiableMap(new HashMap<String, String>() {
 
         {
-            put("jar", "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
-            put("war", "org/netbeans/modules/maven/resources/maven_web_application_16.png"); //NOI18N
-            put("ejb", "org/netbeans/modules/maven/resources/maven_ejb_module_16.png"); //NOI18N
-            put("ear", "org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"); //NOI18N
-            put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
-            put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
-            put("bundle", "org/netbeans/modules/maven/resources/maven_osgi_16.png"); //NOI18N
-            put("nbm-application", "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
+            put(NbMavenProject.TYPE_JAR, "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
+            put(NbMavenProject.TYPE_WAR, "org/netbeans/modules/maven/resources/maven_web_application_16.png"); //NOI18N
+            put(NbMavenProject.TYPE_EJB, "org/netbeans/modules/maven/resources/maven_ejb_module_16.png"); //NOI18N
+            put(NbMavenProject.TYPE_EAR, "org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"); //NOI18N
+            put(NbMavenProject.TYPE_POM, "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
+            put(NbMavenProject.TYPE_NBM, "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+            put(NbMavenProject.TYPE_OSGI, "org/netbeans/modules/maven/resources/maven_osgi_16.png"); //NOI18N
+            put(NbMavenProject.TYPE_NBM_APPLICATION, "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
         }
     });
 

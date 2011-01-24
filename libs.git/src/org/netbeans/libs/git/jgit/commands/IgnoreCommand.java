@@ -72,7 +72,7 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
     }
 
     @Override
-    protected MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory) throws IOException {
+    protected MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory, boolean rootIgnore) throws IOException {
         MatchResult result = MatchResult.CHECK_PARENT;
         boolean changed = false;
         String escapedPath = escapeChars(path);
@@ -97,7 +97,7 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
                 }
             }
         }
-        if (!result.equals(MatchResult.IGNORED) && (result.equals(MatchResult.NOT_IGNORED) || gitIgnore.getParentFile().equals(getRepository().getWorkTree()))) {
+        if (!result.equals(MatchResult.IGNORED) && (result.equals(MatchResult.NOT_IGNORED) || rootIgnore)) {
             if (escapedPath.startsWith("!")) { //NOI18N
                 escapedPath = "\\" + escapedPath; //NOI18N
             }
