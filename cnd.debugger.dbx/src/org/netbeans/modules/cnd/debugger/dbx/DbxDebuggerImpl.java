@@ -74,7 +74,6 @@ import com.sun.tools.swdev.glue.dbx.*;
 import java.util.LinkedList;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
@@ -145,6 +144,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * A "service" for DebuggerEngine
@@ -381,7 +381,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
      */
     String shortname(String path) {
         if (isShortName()) {
-            return IpeUtils.getBaseName(path);
+            return CndPathUtilitities.getBaseName(path);
         } else {
             return path;
         }

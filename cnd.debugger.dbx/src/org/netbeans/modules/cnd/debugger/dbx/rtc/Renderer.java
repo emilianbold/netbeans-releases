@@ -52,6 +52,7 @@ import org.netbeans.lib.terminalemulator.*;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * Knows how to render stuff into a term and/or a stream for SaveAstext
@@ -256,7 +257,7 @@ abstract class Renderer {
 				      frame.frameno(),
 				      func,
 				      frame.lineno(),
-				      IpeUtils.getBaseName(frame.source()));
+				      CndPathUtilitities.getBaseName(frame.source()));
 	    }
 	    append(text);
 
@@ -366,7 +367,7 @@ abstract class Renderer {
 		   item.location().lineno() + ":error";		// NOI18N
 	    beginRegion(url);
 
-	    String fileName = IpeUtils.getBaseName(item.location().source());
+	    String fileName = CndPathUtilitities.getBaseName(item.location().source());
 
 	    String text = Catalog.format("FMT_RtcFileLine",
 					 fileName,

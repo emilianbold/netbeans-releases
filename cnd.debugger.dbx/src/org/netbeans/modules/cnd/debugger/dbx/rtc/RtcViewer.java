@@ -45,13 +45,13 @@
 
 package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.ImageUtilities;
 
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.Mode;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 public class RtcViewer extends TopComponent {
 
@@ -95,7 +95,7 @@ public class RtcViewer extends TopComponent {
 	this.view = view;
 	add(view, java.awt.BorderLayout.CENTER);
 
-	setName(IpeUtils.getBaseName(view.getName()));
+	setName(CndPathUtilitities.getBaseName(view.getName()));
 	setToolTipText(view.getName());
     }
 
