@@ -121,7 +121,6 @@ public class EncodingTest extends NbTestCase {
     
     /** Loades a file that does not specify an encoding.
      */
-	/** Commented out - see bug 194636.
     public void testLoadOfWrongEncoding () throws Exception {
         HtmlEditorSupport.showConfirmationDialog = false;
         try {
@@ -131,7 +130,6 @@ public class EncodingTest extends NbTestCase {
             //OK
         }
     }
-	 */
     
     /** Test load of UTF-8 encoding.
      */
