@@ -114,7 +114,7 @@ public class DwarfSource implements SourceFileProperties{
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
         //File file = new File(fullName);
-        fullName = CndFileUtils.normalizeAbsolutePath(fullName);
+        fullName = DiscoveryUtils.normalizeAbsolutePath(fullName);
         fullName = linkSupport(fullName);
         if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');

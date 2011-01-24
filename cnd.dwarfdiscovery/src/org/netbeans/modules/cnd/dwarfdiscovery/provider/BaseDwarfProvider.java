@@ -236,11 +236,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
-                    path = CndFileUtils.normalizeAbsolutePath(path);
+                    path = DiscoveryUtils.normalizeAbsolutePath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
                         if (fileFinder != null) {
-                            fileFinder = CndFileUtils.normalizeAbsolutePath(fileFinder);
+                            fileFinder = DiscoveryUtils.normalizeAbsolutePath(fileFinder);
                             if (!CndFileUtils.isExistingFile(fileFinder)) {
                                 continue;
                             } else {
@@ -642,7 +642,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
 
         protected String normalizePath(String path){
-            path = CndFileUtils.normalizeAbsolutePath(path);
+            path = DiscoveryUtils.normalizeAbsolutePath(path);
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
