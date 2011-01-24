@@ -75,7 +75,7 @@ public class CreateBranch implements DocumentListener {
     private JButton okButton;
     private DialogDescriptor dd;
     private boolean revisionValid = true;
-    private boolean nameValid;
+    private Boolean nameValid = false;
     private final Task branchCheckTask;
     private String branchName;
     private final File repository;
@@ -125,8 +125,8 @@ public class CreateBranch implements DocumentListener {
     }
 
     private void validate () {
-        boolean flag = revisionValid & nameValid;
-        if (revisionValid && !nameValid) {
+        boolean flag = revisionValid & Boolean.TRUE.equals(nameValid);
+        if (revisionValid && Boolean.FALSE.equals(nameValid)) {
             if (panel.branchNameField.getText().isEmpty()) {
                 setErrorMessage(NbBundle.getMessage(CreateBranch.class, "MSG_CreateBranch.errorBranchNameEmpty")); //NOI18N
             } else {
@@ -156,11 +156,12 @@ public class CreateBranch implements DocumentListener {
     private void validateName () {
         nameValid = false;
         branchName = panel.branchNameField.getText();
-        validate();
         if (!branchName.isEmpty()) {
+            nameValid = null;
             branchCheckTask.cancel();
             branchCheckTask.schedule(500);
         }
+        validate();
     }
     
     private class BranchNameCheckWorker implements Runnable {
@@ -169,18 +170,16 @@ public class CreateBranch implements DocumentListener {
             final String branchName = CreateBranch.this.branchName;
             try {
                 GitClient client = Git.getInstance().getClient(repository);
-                Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-                if (!branches.containsKey(branchName)) {
-                    EventQueue.invokeLater(new Runnable () {
-                        @Override
-                        public void run () {
-                            if (branchName.equals(panel.branchNameField.getText())) {
-                                nameValid = true;
-                                validate();
-                            }
+                final Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                EventQueue.invokeLater(new Runnable () {
+                    @Override
+                    public void run () {
+                        if (branchName.equals(panel.branchNameField.getText())) {
+                            nameValid = !branches.containsKey(branchName);
+                            validate();
                         }
-                    });
-                }
+                    }
+                });
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
             }
