@@ -140,6 +140,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     @Override
     public CsmFile getCsmFile(FileObject fo) {
+        try {
+            FileSystem fs = fo.getFileSystem();
+            if (fs.getClass().getSimpleName().equals("SystemFileSystem")) { //NOI18N
+                return null;
+            }
+        } catch (FileStateInvalidException ex) {
+            return null;
+        }
         CsmModelState modelState = CsmModelAccessor.getModelState();
         if (modelState != CsmModelState.ON) {
             if (TRACE) {
