@@ -47,6 +47,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
@@ -101,7 +103,7 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndex(URL root, Collection<? extends URL> files) {
-        refreshIndex(root, files, true);
+        refreshIndex(root, files, true, false);
     }
 
     /**
@@ -131,7 +133,47 @@ public final class IndexingManager {
      * @since 1.16
      */
     public void refreshIndex(URL root, Collection<? extends URL> files, boolean fullRescan) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false, fullRescan, true);
+        refreshIndex(root, files, fullRescan, false);
+    }
+    
+    /**
+     * Schedules new files for indexing. The set of files passed to this method
+     * will be scheduled for reindexing. That means that all the indexers appropriate
+     * for each file will have a chance to update their index.
+     * 
+     * <p>If <code>forceRefresh</code> parameter is set to <code>true</code>
+     * no timestamp checks will be done for the files passed to this method.
+     * This means that even files that have not been changed since their last indexing
+     * will be reindexed again. On the other hand if <code>forceRefresh</code> is
+     * <code>false</code> the infrastructure will check timestamps and will reindex
+     * only files that have been changed since the last time they were indexed.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     * 
+     * <p> If <code>checkEditor</code> is true the indexers will use unsaved content
+     * of editor documents. Scan is using the file content rather than editor content,
+     * the editor content is needed only in special cases like error badge recovery.
+     * Simpler version {@link IndexingManager#refreshIndex(java.net.URL, java.util.Collection, boolean)}
+     * should be preferred.
+     *
+     * @param root The common parent folder of the files that should be reindexed.
+     * @param filesOrFolders The files to reindex. Can be <code>null</code> or an empty
+     *   collection in which case <b>all</b> files under the <code>root</code> will
+     *   be reindexed.
+     * @param fullRescan If <code>true</code> no timestamps check will be done
+     *   on the <code>files</code> passed in and they all will be reindexed. If
+     *   <code>false</code> only changed files will be reindexed.
+     * @param checkEditor when true the indexers will use content of modified editor
+     * documents rather than saved files. For scans the indexers should prefer
+     * content of files. the document content may be useful for example for error badge
+     * recovery.
+     *
+     * @since 1.37
+     */
+    public void refreshIndex(@NonNull URL root, @NullAllowed Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) {
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, checkEditor, false, fullRescan, true);
     }
 
     /**

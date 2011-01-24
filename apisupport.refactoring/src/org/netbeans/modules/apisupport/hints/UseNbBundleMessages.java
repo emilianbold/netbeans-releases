@@ -285,6 +285,9 @@ public class UseNbBundleMessages extends AbstractHint {
                         Kind kind = leaf.getKind();
                         switch (kind) {
                         case CLASS:
+                        case ENUM:
+                        case INTERFACE:
+                        case ANNOTATION_TYPE:
                         case METHOD: // (or constructor)
                             Element e = wc.getTrees().getElement(treePath);
                             if (e != null) {
