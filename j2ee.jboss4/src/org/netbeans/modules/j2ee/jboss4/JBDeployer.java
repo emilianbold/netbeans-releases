@@ -127,6 +127,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                     for (int i = 0; i < modules.length; i++) {
                         JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
                         if (modules[i].getWeb() != null) {
+                            mod_id.setJARName(modules[i].getWeb().getWebUri());
                             mod_id.setContextURL(server_url + modules[i].getWeb().getContextRoot());
                         }
                         mainModuleID.addChild(mod_id);
@@ -135,7 +136,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                     // Java EE 5
                     for (FileObject child : jfs.getRoot().getChildren()) {
                         if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
-                            JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
+                            JBTargetModuleID mod_id = new JBTargetModuleID(target[0], child.getNameExt());
 
                             if (child.hasExt("war")) { // NOI18N
                                 String contextRoot = child.getName();

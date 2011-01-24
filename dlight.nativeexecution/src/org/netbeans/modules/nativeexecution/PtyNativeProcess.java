@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
@@ -59,8 +60,10 @@ import org.netbeans.modules.nativeexecution.pty.PtyUtility;
  */
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
+    private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
     private String tty;
     private AbstractNativeProcess delegate = null;
+    
 
     public PtyNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -96,7 +99,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         // TODO: Clone Info!!!!
         info.setExecutable(executable);
         info.setArguments(newArgs.toArray(new String[0]));
-        
+
         // no need to preload unbuffer in case of running in internal terminal
         info.setUnbuffer(false);
 
@@ -152,6 +155,10 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
+
+        if (fixEraseKeyInTerminal) {
+            PtySupport.setBackspaceAsEraseChar(env, tty);
+        }
     }
 
     @Override

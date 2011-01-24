@@ -60,8 +60,10 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -510,6 +512,24 @@ public final class CompletionSupport implements DocumentListener {
             // probably in initializer of variable, like
             // struct AAA a[] = { { .field = 1}, { .field = 2}};
             CsmVariable varObj = (CsmVariable) context.getLastObject();
+            String expr = varObj.getInitialValue().getText().toString();
+            if(findLCurlsNumberBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset()) > 1) {
+                int pos2 = findLastAssignmentBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset());
+                if(pos2 != -1) {
+                    CsmType type = findExactVarType(file, var, varObj.getInitialValue().getStartOffset() + pos2, refContext);
+                    if(type != null) { 
+                        String varName = expr.substring(pos2).replaceAll("\\.(\\w*)(\\s)*=.*", "$1"); // NOI18N
+                        CsmClassifier cls = type.getClassifier();
+                        if (CsmKindUtilities.isClass(cls)) {
+                            for (CsmMember csmMember : ((CsmClass)cls).getMembers()) {
+                                if(CsmKindUtilities.isField(csmMember) && csmMember.getName().toString().equals(varName)) {
+                                    return ((CsmField)csmMember).getType();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if (CsmOffsetUtilities.isInObject(varObj.getInitialValue(), pos)) {
                 CsmType type = varObj.getType();
                 if (type.getArrayDepth() > 0) {
@@ -561,6 +581,42 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return null;
+    }
+    
+    private int findLCurlsNumberBeforPosition(String s, int pos) {
+        int cursor = -1;
+        int cursNumber = 0;
+        while(true) {
+            cursor = s.indexOf('{', cursor + 1); // NOI18N
+            if(cursor != -1 && cursor < pos) {
+                cursNumber++;
+            } else {
+                break;
+            }
+        }
+        return cursNumber;
+    }
+
+    private int findLastAssignmentBeforPosition(String s, int pos) {
+        int cursor = pos;
+        int level = 0;
+        while(true) {
+            if(cursor == -1) {
+                return -1;
+            }            
+            if(s.charAt(cursor) == '}') { // NOI18N
+                level++;
+            }
+            if(s.charAt(cursor) == '{') { // NOI18N
+                level--;
+            }
+            if(level == -1) {
+                if(s.charAt(cursor) == '.') { // NOI18N
+                    return cursor;
+                }
+            }
+            cursor--;
+        }
     }
 
     public void insertUpdate(DocumentEvent e) {

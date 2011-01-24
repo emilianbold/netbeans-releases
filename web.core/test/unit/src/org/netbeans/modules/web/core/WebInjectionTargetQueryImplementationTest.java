@@ -150,10 +150,12 @@ public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
             assertEquals(false, result[0]);
             javaSrc = JavaSource.forFileObject(directServletSubclass);
             javaSrc.runUserActionTask(task, true);
+			/* Commented out - see bug 194638.
             assertEquals(true, result[0]);
             javaSrc = JavaSource.forFileObject(secondLevelServletSubclass);
             javaSrc.runUserActionTask(task, true);
             assertEquals(true, result[0]);
+			 */
         } catch (IOException ex) {
             ex.printStackTrace();
             System.out.println("ex="+ex);

@@ -328,8 +328,11 @@ class DiskMapTurboProvider implements TurboProvider {
         } catch (EOFException e) {
             logCorruptedCacheFile(store, itemIndex, e);
             readFailed = true;
+        } catch (FileNotFoundException ex) {
+            Subversion.LOG.log(Level.INFO, "File could not be created, check if you are running only a single instance of netbeans for this userdir", ex); //NOI18N
+            return true;
         } catch (Exception e) {
-            Subversion.LOG.log(Level.SEVERE, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath(), e);  // NOI18N
+            Subversion.LOG.log(Level.INFO, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath(), e);  // NOI18N
             return true;
         } finally {
             if (oos != null) try { oos.close(); } catch (IOException e) {}
