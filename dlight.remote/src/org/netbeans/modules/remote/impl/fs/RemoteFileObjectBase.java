@@ -70,6 +70,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final File cache;
     private boolean valid;
     private volatile EventListenerList eventSupport;
+    private final FileLock lock = new FileLock();
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -240,7 +241,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public FileLock lock() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return lock;
     }
 
     @Override
