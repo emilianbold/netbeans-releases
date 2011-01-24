@@ -225,7 +225,7 @@ public abstract class GlassfishConfiguration implements
         // target server, use that, otherwise, use 9.0.
         ASDDVersion result = getTargetAppServerVersion();
         if (result == null) {
-            result = ASDDVersion.SUN_APPSERVER_9_0;
+            result = ASDDVersion.SUN_APPSERVER_10_1;
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
                     GlassfishConfiguration.class, "ERR_UnidentifiedTargetServer", result.toString())); // NOI18N
         }
@@ -314,6 +314,9 @@ public abstract class GlassfishConfiguration implements
     protected ASDDVersion getTargetAppServerVersion() {
         ASDDVersion result = null;
         J2eeModuleProvider provider = getProvider(primarySunDD.getParentFile());
+        if (null == provider) {
+            return result;
+        }
         String serverType = Utils.getInstanceReleaseID(provider); // provider.getServerInstanceID();
 // [/tools/as81ur2]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/as82]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
