@@ -45,14 +45,15 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="LibraryTypeProviders">
-            <file name="j2eeshared_library_provider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.common.sharability.impl.ServerLibraryTypeProvider"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.common.sharability.impl.ServerLibraryTypeProvider.create"/>
-                <attr name="position" intvalue="500"/>
-            </file>
+    
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="rules">
+            <folder name="hints">
+                <folder name="api">
+                    <file name="org-netbeans-modules-j2ee-common-project-hints-OptionalEE7APIsHint.instance"/>
+                </folder>
+            </folder>
         </folder>
     </folder>
+    
 </filesystem>

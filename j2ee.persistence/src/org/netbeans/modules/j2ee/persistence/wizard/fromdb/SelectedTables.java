@@ -218,8 +218,15 @@ public final class SelectedTables {
 
         String className = table2ClassName.get(table);
         if (className == null) {
-            className = EntityMember.makeClassName(table.getName());
-            className = persistenceGen.generateEntityName(className);
+            String exClassName = persistenceGen.getFQClassName(table.getName());
+            if(exClassName != null) {
+                int i = exClassName.lastIndexOf('.');
+                if(i>-1)exClassName = exClassName.substring(i+1);
+                className = persistenceGen.generateEntityName(exClassName);
+            } else {
+                className = EntityMember.makeClassName(table.getName());
+                className = persistenceGen.generateEntityName(className);
+            }
         }
         return className;
     }
