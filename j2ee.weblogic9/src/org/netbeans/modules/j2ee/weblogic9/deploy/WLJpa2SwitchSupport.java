@@ -77,6 +77,9 @@ public final class WLJpa2SwitchSupport {
 
     public void enable() {
         File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+        if (libDir != null) {
+            libDir = FileUtil.normalizeFile(libDir);
+        }
         File webLogicJarFile = WLPluginProperties.getWeblogicJar(deploymentManager);
         JarFile webLogicJar = null;
         try {
@@ -112,7 +115,12 @@ public final class WLJpa2SwitchSupport {
         }
         if (oepeFO == null) {
             //need to create zip file
-            oepeFO = createOEPEJar(oepeJarFile, "../../../modules/" + JPAJAR1 + " ../../../modules/" + JPAJAR2);//NOI18N
+            String path = getPathToModules(libDir);
+            if (path.length() > 0) {
+                path = path + "/"; // NOI18N
+            }
+            oepeFO = createOEPEJar(oepeJarFile, path + JPAJAR1 + " " // NOI18N
+                    + path + JPAJAR2);//NOI18N
         }
         Manifest wlManifest = null;
         try {
@@ -244,16 +252,66 @@ public final class WLJpa2SwitchSupport {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (dest != null) {
-                    dest.close();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        try {
+            if (out != null) {
+                out.close();
             }
-            return FileUtil.toFileObject(oepeJarFile);
+            if (dest != null) {
+                dest.close();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        return FileUtil.toFileObject(oepeJarFile);
+    }
+    
+    private String getPathToModules(File from) {
+        File mwHomeFile = null;
+        String mwHome = deploymentManager.getProductProperties().getMiddlewareHome();
+        if (mwHome == null) {
+            File root = WLPluginProperties.getServerRoot(deploymentManager, false);
+            if (root != null && root.getParentFile() != null) {
+                mwHomeFile = root.getParentFile();
+            }
+        } else {
+            mwHomeFile = new File(mwHome);
+        }
+        if (mwHomeFile != null) {
+            File modules = FileUtil.normalizeFile(new File(mwHomeFile, "modules")); // NOI18N
+            String relativePath = getRelativePath(from, modules);
+            if (relativePath == null) {
+                // FIXME forward slashes
+                return modules.getAbsolutePath();
+            }
+            return relativePath;
+        }
+        // just improbable fallback :(
+        return "../../../modules"; // NOI18N
+    }
+    
+    // package for testing only
+    static String getRelativePath(File from, File to) {
+        String toPath = to.getAbsolutePath();
+        String fromPath = from.getAbsolutePath();
+        if (toPath.startsWith(fromPath)) {
+            if (toPath.length() == fromPath.length()) {
+                return "";
+            }
+            StringBuilder builder = new StringBuilder();
+            File currentPath = to;
+            while (!currentPath.equals(from)) {
+                builder.insert(0, currentPath.getName());
+                builder.insert(0, "/"); // NOI18N
+                currentPath = currentPath.getParentFile();
+            }
+            return builder.substring(1);
+        } else {
+            File parent = from.getParentFile();
+            if (parent == null) {
+                return null;
+            } else {
+                return "../" + getRelativePath(parent, to); // NOI18N
+            }
+        }
+    }
 }
