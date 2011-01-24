@@ -213,6 +213,9 @@ public class NbBundleProcessor extends AbstractProcessor {
                             Matcher m = Pattern.compile("# [{](\\d+)[}] - (.+)").matcher(comment);
                             if (m.matches()) {
                                 i = Integer.parseInt(m.group(1));
+                                while (i >= params.size()) {
+                                    params.add("arg" + params.size());
+                                }
                                 String desc = m.group(2);
                                 params.set(i, toIdentifier(desc));
                                 method.append("     * @param ").append(params.get(i)).append(" ").append(toJavadoc(desc)).append("\n");
