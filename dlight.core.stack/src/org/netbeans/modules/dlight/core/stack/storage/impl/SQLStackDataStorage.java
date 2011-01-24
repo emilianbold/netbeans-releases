@@ -142,6 +142,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         } else {
             demangler = null;
         }
+        //exec Env?
     }
 
     @Override
@@ -256,7 +257,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     String sql = buf.toString();
                     buf.setLength(0);
                     String sqlToExecute = sql.substring(0, sql.length() - 1);
-                    sqlStorage.executeUpdate(sqlToExecute);
+                    try{
+                        sqlStorage.executeUpdate(sqlToExecute);
+                    }catch(SQLException e){
+
+                    }
                 }
             }
         } finally {

@@ -808,6 +808,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug76172.cpp", 2, 2, "bug76172.cpp", 2, 1);
         performTest("bug76172.cpp", 3, 2, "bug76172.cpp", 3, 1);
     }
+
+    public void testBug194453() throws Exception {
+        // Bug 194453 - Static C Structure initialization incorrectly reports as erroneous syntax
+        performTest("bug194453.cpp", 9, 62, "bug194453.cpp", 7, 6);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

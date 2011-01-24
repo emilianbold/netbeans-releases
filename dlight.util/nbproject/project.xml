@@ -81,6 +81,7 @@
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.analytics.previse</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.analytics.uncover</friend>                
                 <friend>com.sun.tools.analytics.coverage</friend>
