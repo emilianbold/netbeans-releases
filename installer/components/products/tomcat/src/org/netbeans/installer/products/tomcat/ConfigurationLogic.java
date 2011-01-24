@@ -276,7 +276,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     @Override
     public String getIcon() {
         if (SystemUtils.isWindows()) {
-            return "bin/tomcat6.exe";
+            return "bin/tomcat7.exe";
         } else {
             return null;
         }
