@@ -273,7 +273,10 @@ public final class GitUtils {
             notSharableFile = parent;
         }
         addNotSharable(topFile, notSharableFile.getAbsolutePath());
-        SystemAction.get(IgnoreAction.class).ignore(topFile, new File[] { notSharableFile });
+        // ignore only folders
+        if (notSharableFile.isDirectory()) {
+            SystemAction.get(IgnoreAction.class).ignoreFolders(topFile, new File[] { notSharableFile });
+        }
     }
 
     /**

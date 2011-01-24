@@ -72,7 +72,7 @@ public interface DisassemblyService {
      */
     Annotation annotateAddress(String address, String annotationType);
     
-    void movePC(long address, DebuggerAnnotation pcMarket);
+    void movePC(long address, DebuggerAnnotation pcMarket, boolean andShow);
 
     /**
      * Returns line number of the instruction with the address specified, -1 if not found

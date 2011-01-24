@@ -130,7 +130,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
-public final class GdbDebuggerImpl extends NativeDebuggerImpl 
+    public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
 
     private GdbEngineProvider engineProvider;
@@ -140,7 +140,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
     private final GdbHandlerExpert handlerExpert;
-    private Location homeLoc;
+    private MILocation homeLoc;
     private boolean dynamicType;
 
     private DisModel disModel = new DisModel();
@@ -164,11 +164,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
          *
          * use 'frameTuple' information first, if null, then use 'srcTuple'
          */
-        public static Location make(NativeDebugger debugger,
+        public static MILocation make(NativeDebugger debugger,
 		                    MITList frameTuple,
 				    MITList srcTuple,
 				    boolean visited,
-                                    int stackSize) {
+                                    int stackSize,
+                                    NativeBreakpoint breakpoint) {
 
 	    String src = null;
 	    int line = 0;
@@ -232,10 +233,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  Location.UPDATE |
 				  (visited ? Location.VISITED: 0) |
                                   (level == 0 ? Location.TOPFRAME : 0) |
-                                  (level >= stackSize-1 ? Location.BOTTOMFRAME : 0));
+                                  (level >= stackSize-1 ? Location.BOTTOMFRAME : 0),
+                                  breakpoint);
         }
 
-        public static Location make(Location h, boolean visited) {
+        public static MILocation make(MILocation h, boolean visited) {
 	    return new MILocation(h.src(),
 				  h.line(),
 				  h.func(),
@@ -243,12 +245,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  Location.UPDATE |
 				  (visited ? Location.VISITED: 0) |
                                   (h.topframe() ? Location.TOPFRAME: 0) |
-                                  (h.bottomframe() ? Location.BOTTOMFRAME: 0));
+                                  (h.bottomframe() ? Location.BOTTOMFRAME: 0),
+                                  h.getBreakpoint());
 	}
 
 	private MILocation(String src, int line, String func, long pc,
-			   int flags) {
-	    super(src, line, func, pc, flags);
+			   int flags, NativeBreakpoint breakpoint) {
+	    super(src, line, func, pc, flags, breakpoint);
 	}
     }
 
@@ -572,8 +575,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void warnVersionUnsupported(double gdbVersion) {
         if (!warnUnsupported) {
             InfoPanel panel = new InfoPanel(
-                    Catalog.format("ERR_UnsupportedVersion", gdbVersion),
-                    Catalog.get("MSG_Do_Not_Show_Again_In_Session"));
+                    Catalog.format("ERR_UnsupportedVersion", gdbVersion), //NOI18N
+                    Catalog.get("MSG_Do_Not_Show_Again_In_Session")); //NOI18N
             NotifyDescriptor descriptor = new NotifyDescriptor.Message(
                 panel,
                 NotifyDescriptor.WARNING_MESSAGE);
@@ -1750,7 +1753,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// create a non-visited location because it may be assigned to
 	// homeLoc
 
-        Location l = MILocation.make(this, f.getMIframe(), srcTuple, false, getStack().length);
+        MILocation l = MILocation.make(this, f.getMIframe(), srcTuple, false, getStack().length, null);
 
 	// We really SHOULD not be setting homeLoc in a method called
 	// visitBlahBlah
@@ -2743,12 +2746,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    // update our views
 
+            NativeBreakpoint breakpoint = null;
             MIValue bkptnoValue = (results != null) ? results.valueOf("bkptno") : null; // NOI18N
             if (bkptnoValue != null) {
 		// It's a breakpoint event
                 String bkptnoString = bkptnoValue.asConst().value();
                 int bkptno = Integer.parseInt(bkptnoString);
-                updateFiredEvent(bkptno);
+                Handler handler = bm().findHandler(bkptno);
+                if (handler != null) {
+                    handler.setFired(true);
+                    breakpoint = handler.breakpoint();
+                }
                 // updateFiredEvent will set status
             }
 
@@ -2773,12 +2781,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    MITList frameTuple = null;
 		    if (frameValue != null)
 			frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size());
+		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size(), breakpoint);
 
 		} else {
                     frameValue = ((MIResult)stack.asList().get(0)).value();
 		    MITList frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size());
+		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
 		}
 
 		visitedLocation = MILocation.make(homeLoc, false);
@@ -3070,13 +3078,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	if (sd.shouldContinue()) {
 	    go();
 	}
-    }
-
-    private void updateFiredEvent(int hid) {
-        Handler handler = bm().findHandler(hid);
-        if (handler != null) {
-            handler.setFired(true);
-        }
     }
 
     private void explainStop(String reason, MIRecord record) {
@@ -4184,12 +4185,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendSilent("-gdb-set environment " + envVar); // NOI18N
     }
     
+    private static String quoteValue(String value) {
+        int length = value.length();
+	if (length > 1 
+                && (value.charAt(0) == '"') &&
+                (value.charAt(length-1) == '"')) {
+            StringBuilder res = new StringBuilder("\\"); //NOI18N
+            res.append(value.substring(0, length-1));
+            res.append("\\\""); //NOI18N
+	    return res.toString();
+	}
+        return value;
+    }
+    
     void assignVar(final GdbVariable var, final String value, final boolean miVar) {
         String cmdString;
         if (miVar) {
             cmdString = "-var-assign " + var.getMIName() + " " + value; // NOI18N
         } else {
-            cmdString = "-data-evaluate-expression " + var.getVariableName() + '=' + value; // NOI18N
+            cmdString = "-data-evaluate-expression \"" +  //NOI18N
+                    var.getVariableName() + '=' + quoteValue(value) + '"'; // NOI18N
         }
         MICommand cmd =
             new MiCommandImpl(cmdString) {

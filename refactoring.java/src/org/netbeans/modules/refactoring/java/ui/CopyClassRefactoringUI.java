@@ -125,7 +125,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         if (rootFolder != null) {
             try {
                 URL url = URLMapper.findURL(rootFolder, URLMapper.EXTERNAL);
-                URL targetURL = new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.', '/')); // NOI18N
+                URL targetURL = new URL(url.toExternalForm() + panel.getPackageName().replace('.', '/')); // NOI18N
                 target = Lookups.singleton(targetURL);
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);

@@ -44,6 +44,8 @@
 package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -65,6 +67,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -98,6 +101,11 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             return createProblem(null, true, msg);
         }
         URL target = refactoring.getTarget().lookup(URL.class);
+        try {
+            target.toURI();
+        } catch (URISyntaxException ex) {
+            return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage",RetoucheUtils.getPackageName(target)));
+        }
         FileObject fo = target != null ? URLMapper.findFileObject(target) : null;
         if (fo == null) {
             return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotSet"));

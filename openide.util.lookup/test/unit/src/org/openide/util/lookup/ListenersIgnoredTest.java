@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.impl;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+package org.openide.util.lookup;
 
-/**
- *
- * @author mt154047
- */
-public class ServiceInfoDataStorageImpl implements ServiceInfoDataStorage {
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
-    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
+public class ListenersIgnoredTest {
+    private static final Logger LOG = Logger.getLogger(ListenersIgnoredTest.class.getName());
+    
+    @Test
+    public void lookupBugTest() {
+        class C0 {
+        }
+        class C1 {
+        }
+        InstanceContent content = new InstanceContent();
+        AbstractLookup lookup = new AbstractLookup(content);
+//force lookup to use InheritanceTree as Storage
+        for (int i = 0; i < 12; i++) {
+            content.add(i);
+        }
 
-    @Override
-    public final Map<String, String> getInfo() {
-        return serviceInfoMap;
+        Result<C0> r0 = lookup.lookupResult(C0.class);
+
+        final AtomicInteger cnt = new AtomicInteger();
+        r0.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                cnt.incrementAndGet();
+                LOG.info("r0 notified");
+            }
+        });
+        
+        C0 o0 = new C0();
+        C1 o1 = new C1();
+
+        LOG.info("Add o0");
+        content.add(o0);
+        assertEquals("One change", 1, cnt.getAndSet(0));
+
+        LOG.info(
+                "Remove o0");
+        content.remove(o0);
+        assertEquals("Another change change", 1, cnt.getAndSet(0));
+
+        LOG.info(
+                "Add o1");
+        content.add(o1);
+        assertEquals("No change", 0, cnt.getAndSet(0));
+
+        LOG.info(
+                "Remove o1");
+        content.remove(o1);
+        assertEquals("No change", 0, cnt.getAndSet(0));
+
+        LOG.info(
+                "Add o0");
+        content.add(o0);
+        assertEquals("One change", 1, cnt.getAndSet(0));
+
+        LOG.info("Line before should read 'r0 notified' ?");
     }
 
-    @Override
-    public final String getValue(String name) {
-        return serviceInfoMap.get(name);
-    }
-
-    @Override
-    public final String put( String name, String value) {
-        return serviceInfoMap.put(name, value);
-    }
 }

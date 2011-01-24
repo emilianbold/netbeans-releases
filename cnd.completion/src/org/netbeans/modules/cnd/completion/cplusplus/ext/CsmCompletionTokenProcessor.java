@@ -663,7 +663,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         CppTokenId tokenID = (CppTokenId)token.id();
         if (!isMacroExpansion() && tokenID != null) {
             String category = tokenID.primaryCategory();
-            if (CppTokenId.KEYWORD_CATEGORY.equals(category)) {
+            if (CppTokenId.KEYWORD_CATEGORY.equals(category) || CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(category)) {
                 if (tokenOffset + tokenLen == endScanOffset) {
                     tokenID = CppTokenId.IDENTIFIER;
                 }
