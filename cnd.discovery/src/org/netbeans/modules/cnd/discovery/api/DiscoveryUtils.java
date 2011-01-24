@@ -55,7 +55,9 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -207,6 +209,22 @@ public class DiscoveryUtils {
             }
             return s.toString();
         }
+    }
+
+    public static String normalizeAbsolutePath(String path) {
+        boolean caseSensitive = CndFileUtils.isSystemCaseSensitive();
+        if (!caseSensitive) {
+            // with case sensitive "path"s returned by remote compilers
+            path = CndFileSystemProvider.getCaseInsensitivePath(path);
+        }
+        String normalized;
+        // small optimization for true case sensitive OSs
+        if (!caseSensitive || (path.endsWith("/.") || path.endsWith("\\.") || path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
+            normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        } else {
+            normalized = path;
+        }
+        return normalized;
     }
 
     /**

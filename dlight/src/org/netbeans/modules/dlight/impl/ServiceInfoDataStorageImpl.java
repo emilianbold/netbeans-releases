@@ -53,14 +53,17 @@ public class ServiceInfoDataStorageImpl implements ServiceInfoDataStorage {
 
     private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
 
+    @Override
     public final Map<String, String> getInfo() {
         return serviceInfoMap;
     }
 
+    @Override
     public final String getValue(String name) {
         return serviceInfoMap.get(name);
     }
 
+    @Override
     public final String put( String name, String value) {
         return serviceInfoMap.put(name, value);
     }

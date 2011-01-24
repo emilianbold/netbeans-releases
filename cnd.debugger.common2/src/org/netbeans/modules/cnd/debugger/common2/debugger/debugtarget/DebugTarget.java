@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Lookup;
 
 /**
@@ -445,7 +446,7 @@ public final class DebugTarget implements Record {
 
 	    String executable = getExecutable();
 	    if (executable != null) 
-		newdir = IpeUtils.getDirName(executable);
+		newdir = CndPathUtilitities.getDirName(executable);
 
 	}
 	/* OLD

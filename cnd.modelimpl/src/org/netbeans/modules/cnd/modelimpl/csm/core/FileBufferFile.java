@@ -183,8 +183,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     public InputStream getInputStream() throws IOException {
         InputStream is;
         FileObject fo = getFileObject();
-        CndUtils.assertNotNull(fo, "Null file object for " + this.getAbsolutePath()); // NOI18N
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             is = fo.getInputStream();
         } else {
             throw new FileNotFoundException("Null file object for " + this.getAbsolutePath()); // NOI18N

@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * Help manage project and configuration creation for debug/attach/core.
@@ -199,7 +200,7 @@ public final class ProjectSupport {
 	    if (IpeUtils.isEmpty(executable) || isAuto(executable) ) {
 		projectName = "Project"; // NOI18N
 	    } else {
-		projectName = IpeUtils.getBaseName(executable);
+		projectName = CndPathUtilitities.getBaseName(executable);
 	    }
 
 
