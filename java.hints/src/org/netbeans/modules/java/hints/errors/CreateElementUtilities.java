@@ -800,7 +800,7 @@ public final class CreateElementUtilities {
         }
 
         if (id == error) {
-            return resolveType(types, info, parent.getParentPath(), nct, offset, null, null);
+            return resolveType(EnumSet.noneOf(ElementKind.class), info, parent.getParentPath(), nct, offset, null, null);
         }
         
         return null;

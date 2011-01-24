@@ -159,6 +159,14 @@ public class UtilityClassTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
 
+    public void testMultipleConstructors() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Te|st {" +
+                            "    public Test() { }" +
+                            "    public Test(int i) { }" +
+                            "}");
+    }
+    
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return UtilityClass.withoutConstructor().run(info, path);

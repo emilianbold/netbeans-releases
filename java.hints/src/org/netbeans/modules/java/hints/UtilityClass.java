@@ -41,6 +41,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -153,9 +154,14 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 return null;
             }
             ExecutableElement x = (ExecutableElement)e;
-
-            List<? extends Element> enclosedElements = x.getEnclosingElement().getEnclosedElements();
-            if(enclosedElements.size() == 1 && enclosedElements.get(0).equals(x))
+            List<? extends Element> allElements = x.getEnclosingElement().getEnclosedElements();
+            List<Element> enclosedElements = new ArrayList<Element>(allElements.size());
+            
+            for (Element el : allElements) {
+                if (el.getKind() != ElementKind.CONSTRUCTOR) enclosedElements.add(el);
+            }
+            
+            if(enclosedElements.isEmpty())
                 return null; //class contains the ctor only
 
             for (Element m : enclosedElements) {
