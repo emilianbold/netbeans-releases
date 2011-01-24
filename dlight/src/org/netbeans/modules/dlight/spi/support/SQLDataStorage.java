@@ -263,7 +263,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 if (!tables.containsKey(metadata.getName())) {
                     createTable(referenceTable);
                 }
-                sb.append(createForeignKeyConstraint(fKey)).append(", ");//NOI18N
+                sb.append(", ").append(createForeignKeyConstraint(fKey));//NOI18N
             }
         }
         sb.append(")").append(getSQLQueriesDelimeter()); // NOI18N
