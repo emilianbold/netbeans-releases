@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
 
@@ -483,7 +484,7 @@ public abstract class NativeBreakpoint
 	return null;
     }
 
-    private final int findByBreakpoint(NativeBreakpoint subBpt) {
+    private int findByBreakpoint(NativeBreakpoint subBpt) {
 	// Vector.indexOf uses equals() which is overkill for us
 	for (int bx = 0; bx < children.size(); bx++) {
 	    NativeBreakpoint candidate = children.get(bx);
@@ -502,7 +503,7 @@ public abstract class NativeBreakpoint
      * the given debugger. May be null.
      */
 
-    private final void removeChild(NativeBreakpoint child,
+    private void removeChild(NativeBreakpoint child,
 				  NativeDebugger debugger) {
 	assert isToplevel() || isMidlevel();
 	assert child != null : "removeChild(): null child";
@@ -2457,7 +2458,7 @@ public abstract class NativeBreakpoint
 	    return null;
 	if (Log.Bpt.embellish)
 	    System.out.printf("embellishedContext(%s)\n", contextPropertyValue); // NOI18N
-	String basename = IpeUtils.getBaseName(contextPropertyValue);
+	String basename = CndPathUtilitities.getBaseName(contextPropertyValue);
 	long pid = getPid();
 	if (pid != -1)
 	    return "[" + pid + "] " + basename; // NOI18N
