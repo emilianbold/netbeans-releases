@@ -49,7 +49,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.text.MessageFormat;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -67,7 +66,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.project.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -78,9 +78,6 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     /** preferred dimension of the panels */
     private static final Dimension PREF_DIM = new Dimension(500, 340);
     
-    private static final String NEW_FILE_PREFIX = 
-        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
-    
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
         
     private Project project;
@@ -90,8 +87,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private boolean isFolder;
     private boolean freeFileExtension;
     
-    /** Creates new form SimpleTargetChooserGUI */
     @SuppressWarnings("LeakingThisInConstructor")
+    @Messages("LBL_SimpleTargetChooserPanel_Name=Name and Location")
     public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.project = project;
         this.folders = folders.clone();
@@ -113,9 +110,17 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         documentNameTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
         
-        setName (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
+        setName(LBL_SimpleTargetChooserPanel_Name());
     }
     
+    @Messages({
+        "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix=new",
+        "LBL_TargetChooser_FolderName_Label=Folder &Name:",
+        "LBL_TargetChooser_ParentFolder_Label=Pa&rent Folder:",
+        "LBL_TargetChooser_CreatedFolder_Label=&Created Folder:",
+        "LBL_TargetChooser_FileName_Label=File &Name:",
+        "LBL_TargetChooser_Folder_Label=Fo&lder:",
+        "LBL_TargetChooser_CreatedFile_Label=&Created File:"})
     final void initValues(FileObject template, FileObject preselectedFolder, String documentName) {
         assert project != null;
         
@@ -166,7 +171,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         if (template != null) {
-            final String baseName = NEW_FILE_PREFIX + template.getName ();
+            final String baseName = LBL_SimpleTargetChooserPanelGUI_NewFilePrefix() + template.getName ();
             if (documentName == null) {
                 documentName = baseName;
             }
@@ -186,13 +191,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         }
         
         if (isFolder) {
-            Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label")); // NOI18N
-            Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_ParentFolder_Label")); // NOI18N
-            Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFolder_Label")); // NOI18N
+            Mnemonics.setLocalizedText(jLabel3, LBL_TargetChooser_FolderName_Label());
+            Mnemonics.setLocalizedText(jLabel2, LBL_TargetChooser_ParentFolder_Label());
+            Mnemonics.setLocalizedText(jLabel4, LBL_TargetChooser_CreatedFolder_Label());
         } else {
-            Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
-            Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
-            Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
+            Mnemonics.setLocalizedText(jLabel3, LBL_TargetChooser_FileName_Label());
+            Mnemonics.setLocalizedText(jLabel2, LBL_TargetChooser_Folder_Label());
+            Mnemonics.setLocalizedText(jLabel4, LBL_TargetChooser_CreatedFile_Label());
         }
     }
     
@@ -496,7 +501,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                     setText( groupDisplayName );
                 }
                 else {
-                    setText(MessageFormat.format(PhysicalView.GroupNode.GROUP_NAME_PATTERN,
+                    setText(FMT_PhysicalView_GroupName(
                             groupDisplayName, projectDisplayName, group.getRootFolder().getName()));
                 }
                 
