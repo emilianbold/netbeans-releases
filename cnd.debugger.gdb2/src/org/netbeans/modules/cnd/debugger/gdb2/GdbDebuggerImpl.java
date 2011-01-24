@@ -572,8 +572,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void warnVersionUnsupported(double gdbVersion) {
         if (!warnUnsupported) {
             InfoPanel panel = new InfoPanel(
-                    Catalog.format("ERR_UnsupportedVersion", gdbVersion),
-                    Catalog.get("MSG_Do_Not_Show_Again_In_Session"));
+                    Catalog.format("ERR_UnsupportedVersion", gdbVersion), //NOI18N
+                    Catalog.get("MSG_Do_Not_Show_Again_In_Session")); //NOI18N
             NotifyDescriptor descriptor = new NotifyDescriptor.Message(
                 panel,
                 NotifyDescriptor.WARNING_MESSAGE);
