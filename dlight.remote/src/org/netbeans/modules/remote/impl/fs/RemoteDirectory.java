@@ -148,8 +148,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
+    public FileObject createData(String name) throws IOException {
+        return create(name, false);
+    }
+    
+    @Override
     public FileObject createData(String name, String ext) throws IOException {
-        return create(name + '.' + ext, false);
+        if (ext == null || ext.length() == 0) {
+            return create(name, false);
+        } else {
+            return create(name + '.' + ext, false);
+        }
     }
 
     @Override
@@ -167,10 +176,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (directory) {
             res = ProcessUtils.execute(execEnv, "mkdir", path); //NOI18N
         } else {
-            String keyword = "exists"; // NOI18N
-            String script = String.format("test -e %s && echo \"%s\" || touch %s", name, keyword, name); // NOI18N
+            String script = String.format("ls \"%s\" || touch \"%s\"", name, name); // NOI18N
             res = ProcessUtils.executeInDir(remotePath, execEnv, "sh", "-c", script); // NOI18N
-            if (res.isOK() && keyword.equals(res.output)) {
+            if (res.isOK() && res.error.length() == 0) {
                 throw new IOException("Already exists: " + getUrlToReport(path)); // NOI18N
             }
         }

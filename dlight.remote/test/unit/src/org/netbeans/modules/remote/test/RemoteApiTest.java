@@ -47,6 +47,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
 import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
+import org.netbeans.modules.remote.impl.fs.CreateDataAndFolderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryReaderTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageTestCase;
 import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
@@ -76,6 +77,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            DirectoryReaderTestCase.class,
            RefreshTestCase.class,
            CanonicalTestCase.class,
+           CreateDataAndFolderTestCase.class,
            RemoteFileSystemOffilneTestCase.class);
     }
 
