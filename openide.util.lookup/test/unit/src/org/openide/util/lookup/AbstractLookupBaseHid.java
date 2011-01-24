@@ -221,7 +221,6 @@ public class AbstractLookupBaseHid extends NbTestCase {
         Lookup.Result<C0> r0 = lookup.lookupResult(C0.class);
 
         final AtomicInteger cnt = new AtomicInteger();
-        r0.allItems();
         r0.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
@@ -1546,13 +1545,14 @@ public class AbstractLookupBaseHid extends NbTestCase {
         LL ll = new LL();
         res.addLookupListener(ll);
 
+        assertEquals("No changes yet", 0, ll.getCount());
         Collection c = res.allInstances();
         assertFalse("Has next", c.isEmpty());
+        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         ActionMap am1 = (ActionMap)c.iterator().next();
         assertEquals("Am is there", am, am1);
         
-        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         Object m1 = new InputMap();
         Object m2 = new InputMap();
@@ -1879,7 +1879,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     /** Counting listener */
     protected static class LL implements LookupListener {
-        private int count = 0;
+        private int count;
         public Object source;
         public Thread changesIn;
         
