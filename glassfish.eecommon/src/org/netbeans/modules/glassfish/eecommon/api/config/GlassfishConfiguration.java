@@ -314,6 +314,9 @@ public abstract class GlassfishConfiguration implements
     protected ASDDVersion getTargetAppServerVersion() {
         ASDDVersion result = null;
         J2eeModuleProvider provider = getProvider(primarySunDD.getParentFile());
+        if (null == provider) {
+            return result;
+        }
         String serverType = Utils.getInstanceReleaseID(provider); // provider.getServerInstanceID();
 // [/tools/as81ur2]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/as82]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
