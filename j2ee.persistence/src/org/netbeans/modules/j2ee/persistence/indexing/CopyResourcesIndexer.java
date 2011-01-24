@@ -43,8 +43,10 @@
 package org.netbeans.modules.j2ee.persistence.indexing;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
@@ -94,36 +96,40 @@ public class CopyResourcesIndexer extends CustomIndexer {
             if (root != null) {
                 final Project owner = FileOwnerQuery.getOwner(root);
                 if (owner != null) {
-                    FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
-                    if( persistenceXmlLocation!=null ) {
-                        final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
-                        if (persistenceXML != null) {
-                            final Date cts = persistenceXML.lastModified();
-                            final long cl = persistenceXML.getSize();
-                            synchronized (Factory.this) {
-                                if (root == activeRoot && cts.equals(timestamp) && length == cl) {
-                                    //Nothing changed.
-                                    return super.scanStarted(context);
-                                }
-                                activeRoot = root;
-                                timestamp = cts;
-                                length = cl;
-                            }
-                            try {
-                                final String path = getCachePath();
-                                if (path != null) {
-                                    final FileObject cacheRoot = context.getIndexFolder().getParent().getParent();
-                                    final FileObject cacheDir = FileUtil.createFolder(cacheRoot,path);
-                                    if (cacheDir != null) {
-                                        final FileObject toDelete = cacheDir.getFileObject(persistenceXML.getName(), persistenceXML.getExt());
-                                        if (toDelete != null) {
-                                            toDelete.delete();
-                                        }
-                                        FileUtil.copyFile(persistenceXML, cacheDir, persistenceXML.getName());
+                    URL[] tests = UnitTestForSourceQuery.findSources(root);//prevent copy to tests root as it's not used in build and cause also 193828
+                    if(tests == null || tests.length==0) {
+                        FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
+                        if( persistenceXmlLocation!=null ) {
+                            final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
+                            if (persistenceXML != null) {
+                                final Date cts = persistenceXML.lastModified();
+                                final long cl = persistenceXML.getSize();
+                                synchronized (Factory.this) {
+                                    if (root == activeRoot && cts.equals(timestamp) && length == cl) {
+                                        //Nothing changed.
+                                        return super.scanStarted(context);
                                     }
+                                    activeRoot = root;
+                                    timestamp = cts;
+                                    length = cl;
                                 }
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                try {
+                                    final String path = getCachePath();
+
+                                    if (path != null) {
+                                        final FileObject cacheRoot = context.getIndexFolder().getParent().getParent();
+                                        final FileObject cacheDir = FileUtil.createFolder(cacheRoot,path);
+                                        if (cacheDir != null) {
+                                            final FileObject toDelete = cacheDir.getFileObject(persistenceXML.getName(), persistenceXML.getExt());
+                                            if (toDelete != null) {
+                                                toDelete.delete();
+                                            }
+                                            FileUtil.copyFile(persistenceXML, cacheDir, persistenceXML.getName());
+                                        }
+                                    }
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
                         }
                     }
