@@ -59,13 +59,11 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
@@ -137,18 +135,18 @@ public class CndRemote {
      * Once everything is ready continuation is called.
      * See IZ 147560.
      */
-    public static void validate(String name, final Runnable continuation) {
+    public static void validate(final String name, final Runnable continuation) {
 	if (name != null && name.equals("localhost")) { // NOI18N
 	    continuation.run();
 	    return;
 	}
         
-        Host host = Host.byName(name);
-
-	final ServerRecord serverRecord = ServerList.get(host.executionEnvironment());
-
 	Runnable validator = new Runnable() {
 	    public void run() {
+                Host host = Host.byName(name);
+
+                final ServerRecord serverRecord = ServerList.get(host.executionEnvironment());
+
 		serverRecord.validate(true);
                 // No need to continue if connection is not available
                 if (!serverRecord.isOnline()) {
