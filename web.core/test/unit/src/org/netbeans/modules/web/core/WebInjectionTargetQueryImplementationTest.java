@@ -46,12 +46,22 @@ package org.netbeans.modules.web.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import static org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+
+
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,7 +74,7 @@ import org.netbeans.modules.web.core.test.TestUtil;
  *
  * @author Radko Najman
  */
-public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
+public class WebInjectionTargetQueryImplementationTest extends JavaSourceTestCase {
     
     private String serverID;
     private FileObject ordinaryClass;
@@ -75,15 +85,90 @@ public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
     public WebInjectionTargetQueryImplementationTest(String testName) {
         super(testName);
     }
-
-    protected void setUp() throws Exception {
-        super.setUp();
+    
+    public void testIsInjectionTargetJee14() throws Exception  {
+        System.out.println("isInjectionTarget for JEE 1.4 profile");
         
-        TestUtil.makeScratchDir(this);
-        serverID = TestUtil.registerSunAppServer(this);
+        isInjectionTarget( Profile.J2EE_14, false);
+    }
+    
+    public void testIsInjectionTargetJee5() throws Exception {
+        System.out.println("isInjectionTarget for JEE 5 profile");
+        
+        isInjectionTarget( Profile.JAVA_EE_5, true);
+    }
+    
+    private void isInjectionTarget( Profile profile , boolean jee5Profile ) throws Exception {
+        final WebInjectionTargetQueryImplementation instance = new WebInjectionTargetQueryImplementation();
+        
+        createClasses();
+        TestWebModuleImplementation.getInstance().setJeeProfile( profile);
+        final List<String> source = new ArrayList<String>(1);
+        final boolean[] result = {false};  
+        
+        CancellableTask task = new CancellableTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeElement thisTypeEl = controller.getElements().getTypeElement(source.get(0));
+                result[0] = instance.isInjectionTarget(controller, thisTypeEl);
+            }
+            public void cancel() {}
+        };
+        
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        
+        JavaSource javaSrc;
+        ordinaryClass = srcFO.getFileObject("org/test/NewClass.java");
+        source.add("org.test.NewClass");
+        javaSrc = JavaSource.create(cpi, ordinaryClass);
+        javaSrc.runUserActionTask(task, true);
+        assertEquals(false, result[0]);
+        
+        fileSubclass = srcFO.getFileObject("org/test/FileSubclass.java");
+        source.clear();
+        source.add("org.test.FileSubclass");
+        javaSrc = JavaSource.create(cpi, fileSubclass);
+        javaSrc.runUserActionTask(task, true);
+        assertEquals(false, result[0]);
+        
+        directServletSubclass = srcFO.getFileObject("org/test/NewServlet.java");
+        source.clear();
+        source.add("org.test.NewServlet");
+        javaSrc = JavaSource.create(cpi, directServletSubclass);
+        javaSrc.runUserActionTask(task, true);
+        assertEquals(jee5Profile, result[0]);
+        
+        secondLevelServletSubclass = srcFO.getFileObject("org/test/NewServletSubclass.java");
+        source.clear();
+        source.add("org.test.NewServletSubclass");
+        javaSrc = JavaSource.create(cpi, secondLevelServletSubclass);
+        javaSrc.runUserActionTask(task, true);
+        assertEquals(jee5Profile, result[0]);
     }
 
-    protected void tearDown() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtilities.copyStringToFileObject(srcFO, 
+                "javax/servlet/Servlet.java",
+                "package javax.servlet; " +
+                "public interface Servlet  {" +
+                " void destroy(); "+
+                " String getServletInfo(); "+
+                "} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, 
+                "javax/servlet/http/HttpServlet.java",
+                "package javax.servlet.http; " +
+                "public class HttpServlet  implements javax.servlet.Servlet{" +
+                " public void destroy() {}  "+
+                " public String getServletInfo() { return null;} "+
+                "} ");
+        
+    }
+
+    protected void tearDown()  {
         serverID = null;
         ordinaryClass = null;
         fileSubclass = null;
@@ -92,73 +177,32 @@ public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
         
         super.tearDown();
     }
-
-    /**
-     * Test of isInjectionTarget method, of class org.netbeans.modules.web.core.WebInjectionTargetQueryImplementation.
-     */
-    public void testIsInjectionTarget() {
-        System.out.println("isInjectionTarget");
-        
-        final boolean[] result = {false};        
-        final WebInjectionTargetQueryImplementation instance = new WebInjectionTargetQueryImplementation();
-
-        //J2EE 1.4 project
-        File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication_j2ee14");
-        FileObject projdir = FileUtil.toFileObject(f);
-
-        ordinaryClass = projdir.getFileObject("src/java/org/test/NewClass.java");
-        fileSubclass = projdir.getFileObject("src/java/org/test/FileSubclass.java");
-        directServletSubclass = projdir.getFileObject("src/java/org/test/NewServlet.java");
-        secondLevelServletSubclass = projdir.getFileObject("src/java/org/test/NewServletSubclass.java");
-        
-        CancellableTask task = new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement thisTypeEl = SourceUtils.getPublicTopLevelElement(controller);
-                    result[0] = instance.isInjectionTarget(controller, thisTypeEl);
-                }
-                public void cancel() {}
-        };
-        try {
-            JavaSource javaSrc = JavaSource.forFileObject(ordinaryClass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(false, result[0]);
-            javaSrc = JavaSource.forFileObject(fileSubclass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(false, result[0]);
-            javaSrc = JavaSource.forFileObject(directServletSubclass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(false, result[0]);
-            javaSrc = JavaSource.forFileObject(secondLevelServletSubclass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(false, result[0]);
-
-            //Java EE 5 project
-            f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication_jee5");
-            projdir = FileUtil.toFileObject(f);
-
-            ordinaryClass = projdir.getFileObject("src/java/org/test/NewClass.java");
-            fileSubclass = projdir.getFileObject("src/java/org/test/FileSubclass.java");
-            directServletSubclass = projdir.getFileObject("src/java/org/test/NewServlet.java");
-            secondLevelServletSubclass = projdir.getFileObject("src/java/org/test/NewServletSubclass.java");
-
-            javaSrc = JavaSource.forFileObject(ordinaryClass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(false, result[0]);
-            javaSrc = JavaSource.forFileObject(fileSubclass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(false, result[0]);
-            javaSrc = JavaSource.forFileObject(directServletSubclass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(true, result[0]);
-            javaSrc = JavaSource.forFileObject(secondLevelServletSubclass);
-            javaSrc.runUserActionTask(task, true);
-            assertEquals(true, result[0]);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            System.out.println("ex="+ex);
-            throw new AssertionError(ex);
-        }
-    } 
     
+    private void createClasses() throws Exception {
+        TestUtilities.copyStringToFileObject(srcFO, 
+                "org/test/FileSubclass.java",
+                "package org.test; " +
+                "public class FileSubclass extends java.io.File {" +
+                " public FileSubclass(String pathname) { "+
+                "super(pathname); "+
+                "} } ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, 
+                "org/test/NewClass.java",
+                "package org.test; " +
+                "public class NewClass {" +
+                " } ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, 
+                "org/test/NewServlet.java",
+                "package org.test; " +
+                "public class NewServlet extends  javax.servlet.http.HttpServlet {" +
+                " } ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, 
+                "org/test/NewServletSubclass.java",
+                "package org.test; " +
+                "public class NewServletSubclass extends  NewServlet {" +
+                " } ");
+    }
 }

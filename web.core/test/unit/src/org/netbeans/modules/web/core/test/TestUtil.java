@@ -82,7 +82,9 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
+
 
 /**
  * Help set up org.netbeans.api.project.*Test.
