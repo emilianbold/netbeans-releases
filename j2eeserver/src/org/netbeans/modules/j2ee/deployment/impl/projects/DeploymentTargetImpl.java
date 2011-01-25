@@ -50,6 +50,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import org.openide.filesystems.FileUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
@@ -70,7 +71,8 @@ import org.openide.util.NbBundle;
 
 /** 
  *
- * @author  George FinKlang
+ * @author George FinKlang
+ * @author Petr Hejl
  */
 public final class DeploymentTargetImpl implements DeploymentTarget {
     
@@ -160,6 +162,17 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
                 }
                 child = jap.getChildModuleProvider(uri);
             }
+            // see issue #160406
+            if (child == null) {
+                Pattern pattern = Pattern.compile(
+                        Pattern.quote(normalizeUri(uri) + ".") + "(war|jar)"); // NOI18N
+                for(J2eeModuleProvider prov : jap.getChildModuleProviders()) {
+                    String childUri = prov.getJ2eeModule().getUrl();
+                    if (childUri != null && pattern.matcher(childUri).matches()) {
+                        return prov;
+                    }
+                }
+            }
         }
         return child;
     }
@@ -194,11 +207,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
         
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(module.getInstanceUrl());
-        IncrementalDeployment mur = instance.getIncrementalDeployment ();
-        String clientModuleUri = client == null ? "" : client.getUrl();
-        if (clientModuleUri.startsWith("/")) { //NOI18N
-                clientModuleUri = clientModuleUri.substring(1);
-        }
+        IncrementalDeployment mur = instance.getIncrementalDeployment();
+        String clientModuleUri = client == null ? "" : client.getUrl();        
+        clientModuleUri = normalizeUri(clientModuleUri);
+
         TargetModuleID[] children = module.getChildTargetModuleID();
         String urlString = null;
         TargetModuleID tmid = null;
@@ -218,7 +230,8 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
                 }
             }
             
-            if (mur != null && clientModuleUri.equalsIgnoreCase(uri)) {
+            uri = normalizeUri(uri);
+            if (clientModuleUri.equalsIgnoreCase(uri)) {
                 tmid = children[i];
                 break;
             }
@@ -229,6 +242,13 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
         
         return urlString;
+    }
+    
+    private String normalizeUri(String uri) {
+        if (!uri.startsWith("/")) { // NOI18N
+            return "/" + uri; // NOI18N
+        }
+        return uri;
     }
     
     public File getConfigurationFile() {

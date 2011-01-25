@@ -132,13 +132,19 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
             sb.insert(0, parent.getName()).insert(0, '/');
             parent = parent.getParentFile();
             String path = sb.toString();
-            cont = addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory);
+            if (parent.equals(getRepository().getWorkTree())) {
+                cont = addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false)
+                        && checkExcludeFile(path, isDirectory) 
+                        && addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, true);
+            } else {
+                cont = addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false);
+            }
         }
     }
     
-    private boolean addStatement (File gitIgnore, String path, boolean isDirectory) throws IOException {
+    private boolean addStatement (File gitIgnore, String path, boolean isDirectory, boolean rootIgnore) throws IOException {
         List<IgnoreRule> ignoreRules = parse(gitIgnore);
-        return addStatement(ignoreRules, gitIgnore, path, isDirectory) == MatchResult.CHECK_PARENT;
+        return addStatement(ignoreRules, gitIgnore, path, isDirectory, rootIgnore) == MatchResult.CHECK_PARENT && !rootIgnore;
     }
 
     protected final void save (File gitIgnore, List<IgnoreRule> ignoreRules) throws IOException {
@@ -206,9 +212,15 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
         return ignoreFiles.toArray(new File[ignoreFiles.size()]);
     }
 
-    protected abstract MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory) throws IOException;
+    protected abstract MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory, boolean rootIgnore) throws IOException;
 
     protected static String escapeChars (String path) {
         return path.replace("[", "[[]").replace("*", "[*]").replace("?", "[?]"); //NOI18N
+    }
+
+    private boolean checkExcludeFile (String path, boolean isDirectory) throws IOException {
+        File excludeFile = new File(getRepository().getDirectory(), "info/exclude");
+        List<IgnoreRule> ignoreRules = parse(excludeFile);
+        return addStatement(ignoreRules, excludeFile, path, isDirectory, false) == MatchResult.CHECK_PARENT;
     }
 }

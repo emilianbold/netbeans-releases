@@ -61,6 +61,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import org.netbeans.junit.NbTestCase;
@@ -72,6 +74,7 @@ import org.openide.util.LookupListener;
 @SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class AbstractLookupBaseHid extends NbTestCase {
     private static AbstractLookupBaseHid running;
+    private Logger LOG;
 
     /** instance content to work with */
     InstanceContent ic;
@@ -91,6 +94,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
     }
     
     protected @Override void setUp() {
+        LOG = Logger.getLogger("test." + getName());
+        
         this.ic = new InstanceContent ();
         
         beforeActualTest(getName());
@@ -205,6 +210,54 @@ public class AbstractLookupBaseHid extends NbTestCase {
 
         Iterator<?> all = lookup.lookupAll(Object.class).iterator();
         checkIterator ("Difference between instances added and found", all, Arrays.asList (INSTANCES));
+    }
+    
+    public void testLookupListenerRemoved() {
+        class C0 {
+        }
+        class C1 {
+        }
+
+        Lookup.Result<C0> r0 = lookup.lookupResult(C0.class);
+
+        final AtomicInteger cnt = new AtomicInteger();
+        r0.allItems();
+        r0.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                cnt.incrementAndGet();
+                LOG.info("r0 notified");
+            }
+        });
+        
+        C0 o0 = new C0();
+        C1 o1 = new C1();
+
+        LOG.info("Add o0");
+        ic.add(o0);
+        assertEquals("One change", 1, cnt.getAndSet(0));
+
+        LOG.info(
+                "Remove o0");
+        ic.remove(o0);
+        assertEquals("Another change change", 1, cnt.getAndSet(0));
+
+        LOG.info(
+                "Add o1");
+        ic.add(o1);
+        assertEquals("No change", 0, cnt.getAndSet(0));
+
+        LOG.info(
+                "Remove o1");
+        ic.remove(o1);
+        assertEquals("No change", 0, cnt.getAndSet(0));
+
+        LOG.info(
+                "Add o0");
+        ic.add(o0);
+        assertEquals("One change", 1, cnt.getAndSet(0));
+
+        LOG.info("Line before should read 'r0 notified' ?");
     }
     
     /** Checks the reorder of items in lookup reflects the result.

@@ -92,6 +92,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -173,6 +174,11 @@ public final class SearchBar extends JPanel {
         component.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
+                if (e.getOppositeComponent() instanceof JRootPane) {
+                    // Hack for linux where invoking Find from main menu caused focus gained on editor
+                    // evein when openning quick search
+                    return;
+                }
                 looseFocus();
             }
         });

@@ -566,9 +566,14 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                         "Unable to save attribute " + name + " in " + instanceFO.getPath() + " for " + getDeployerUri(), ex); // NOI18N
             }
         } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, 
-                    "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
-                    new Object[]{name, getDeployerUri(), instanceFO.canWrite(), instanceFO.getPath()}); // NOI18N
+            if (null == instanceFO)
+                Logger.getLogger("glassfish").log(Level.WARNING,
+                        "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
+                        new Object[]{name, getDeployerUri(), false, "null"}); // NOI18N
+            else
+                Logger.getLogger("glassfish").log(Level.WARNING,
+                        "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
+                        new Object[]{name, getDeployerUri(), instanceFO.canWrite(), instanceFO.getPath()}); // NOI18N
         }
         return retVal;
     }

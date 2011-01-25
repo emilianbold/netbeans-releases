@@ -43,6 +43,7 @@
 package org.netbeans.libs.git;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -211,6 +212,15 @@ public interface GitClient {
      * @throws GitException when an error occurs
      */
     public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Returns branches in a given remote repository
+     * @param remoteRepositoryUrl url of the remote repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException;
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.

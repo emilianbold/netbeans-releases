@@ -107,8 +107,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>2.9</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -486,6 +486,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.web.beans</friend>
+                <friend>org.netbeans.modules.j2ee.common</friend>
                 <package>org.netbeans.modules.java.hints.spi</package>
             </friend-packages>
         </data>

@@ -100,9 +100,11 @@ public class ParseTest extends NbTestCase {
         parserTestInProject("project2", "/outside/outsidewm.jsp");
     }
 
+	/* Commented out - see bug 194639.
     public void testAnalysisFunction() throws Exception {
         parserTestInProject("project3", "/web/jsp2/el/functions.jsp");
     }
+	 */
 
     public void testAnalysisXMLTextRotate_1_6() throws Exception {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");

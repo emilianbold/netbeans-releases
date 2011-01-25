@@ -379,14 +379,17 @@ public class TableUISupport {
             return selectedTables.getProblemDisplayNameForTable(table);
         }
 
+        @Override
         public int getRowCount() {
             return tables.size();
         }
 
+        @Override
         public int getColumnCount() {
             return 3;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -406,6 +409,7 @@ public class TableUISupport {
             return null;
         }
 
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             Table table = tables.get(rowIndex);
             switch(columnIndex){
@@ -421,11 +425,14 @@ public class TableUISupport {
             }
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             Table table = tables.get(rowIndex);
-            return !table.isJoin() && (columnIndex == 1 || columnIndex == 2);
+            UpdateType ut = selectedTables.getUpdateType(tables.get(rowIndex));
+            return !table.isJoin() && (columnIndex == 1 || columnIndex == 2) && (UpdateType.NEW.equals(ut) || columnIndex == 2);
         }
 
+        @Override
         public String getColumnName(int column) {
             switch (column) {
                 case 0:
@@ -481,6 +488,7 @@ public class TableUISupport {
         public Component getTableCellRendererComponent(JTable jTable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             boolean joinTable = false;
             boolean validClass = true;
+            boolean existentUpdate = false;
             String problemDisplayName = null;
 
             if (jTable.getModel() instanceof TableClassNamesModel) {
@@ -488,6 +496,7 @@ public class TableUISupport {
                 Table table = model.getTableAt(row);
                 joinTable = table.isJoin();
                 if (column == 1) {
+                    existentUpdate = table.getDisabledReason() instanceof Table.ExistingDisabledReason;
                     validClass = model.isValidClass(table);
                     if (!validClass) {
                         problemDisplayName = model.getProblemDisplayName(table);
@@ -502,7 +511,7 @@ public class TableUISupport {
                 realValue = value;
             }
             JComponent component = (JComponent)super.getTableCellRendererComponent(jTable, realValue, isSelected, hasFocus, row, column);
-            component.setEnabled(!joinTable);
+            component.setEnabled(!joinTable && !existentUpdate);
             component.setToolTipText(joinTable ? NbBundle.getMessage(TableUISupport.class, "LBL_JoinTableDescription") : problemDisplayName);
             component.setForeground((validClass) ? nonErrorForeground : errorForeground);
            

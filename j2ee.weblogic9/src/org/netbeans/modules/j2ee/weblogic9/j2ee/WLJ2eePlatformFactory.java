@@ -451,6 +451,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     for (URL cpElem : cp) {
                         if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
                             oepe = cpElem;
+                            list.add(oepe);
                             break;
                         }
                     }
@@ -652,7 +653,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return url;
         }
         
-        private static List<URL> getJarClassPath(URL url) {
+        // package for tests only
+        static List<URL> getJarClassPath(URL url) {
             URL fileUrl = FileUtil.getArchiveFile(url);
             if (fileUrl != null) {
                 FileObject fo = URLMapper.findFileObject(fileUrl);
@@ -666,7 +668,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return Collections.emptyList();
         }
         
-        private static List<URL> getJarClassPath(File jarFile) {
+        // package for tests only
+        static List<URL> getJarClassPath(File jarFile) {
             List<URL> urls = new ArrayList<URL>();
 
             try {
@@ -679,19 +682,17 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                         String[] values = value.split("\\s+"); // NOI18N
                         File parent = FileUtil.normalizeFile(jarFile).getParentFile();
                         if (parent != null) {
-                            FileObject baseDir = FileUtil.toFileObject(parent);
-                            if (baseDir != null) {
-                                for (String cpElement : values) {
-                                    if (!"".equals(cpElement.trim())) { // NOI18N
-                                        FileObject fo = baseDir.getFileObject(cpElement);
-                                        if (fo == null) {
-                                            continue;
-                                        }
-                                        File fileElem = FileUtil.normalizeFile(FileUtil.toFile(fo));
-                                        if (fileElem != null) {
-                                            urls.add(fileToUrl(fileElem));
-                                        }
+                            for (String cpElement : values) {
+                                if (!"".equals(cpElement.trim())) { // NOI18N
+                                    File f = new File(cpElement);
+                                    if (!f.isAbsolute()) {
+                                        f = new File(parent, cpElement);
                                     }
+                                    f = FileUtil.normalizeFile(f);
+                                    if (!f.exists()) {
+                                        continue;
+                                    }
+                                    urls.add(fileToUrl(f));
                                 }
                             }
                         }

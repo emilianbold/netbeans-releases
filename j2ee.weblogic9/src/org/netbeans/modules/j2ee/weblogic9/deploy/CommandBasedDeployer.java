@@ -77,6 +77,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
+import org.netbeans.modules.j2ee.dd.api.application.Web;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
@@ -92,6 +93,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -695,6 +698,9 @@ public final class CommandBasedDeployer {
     private static void waitForUrlReady(TargetModuleID moduleID,
             WLProgressObject progressObject) throws InterruptedException, TimeoutException {
 
+        // prevent hitting the old content
+        Thread.sleep(3000);
+        long start = System.currentTimeMillis();
         String webUrl = moduleID.getWebURL();
         if (webUrl == null) {
             TargetModuleID[] ch = moduleID.getChildTargetModuleID();
@@ -702,17 +708,17 @@ public final class CommandBasedDeployer {
                 for (int i = 0; i < ch.length; i++) {
                     webUrl = ch[i].getWebURL();
                     if (webUrl != null) {
-                        break;
+                        waitForUrlReady(webUrl, progressObject, start);
                     }
                 }
             }
-
+        } else {
+            waitForUrlReady(webUrl, progressObject, start);
         }
-        waitForUrlReady(webUrl, progressObject);
     }
 
-    private static void waitForUrlReady(String webUrl,
-            WLProgressObject progressObject) throws InterruptedException, TimeoutException {
+    private static void waitForUrlReady(String webUrl, WLProgressObject progressObject,
+            long start) throws InterruptedException, TimeoutException {
 
         if (webUrl != null) {
             try {
@@ -721,11 +727,7 @@ public final class CommandBasedDeployer {
 
                 progressObject.fireProgressEvent(null,
                         new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-                //delay to prevent hitting the old content before reload
-                for (int i = 0; i < 3; i++) {
-                    Thread.sleep(1000);
-                }
-                long start = System.currentTimeMillis();
+
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     if (URLWait.waitForUrlReady(URL_WAIT_RP, url, 1000)) {
                         break;
@@ -779,21 +781,36 @@ public final class CommandBasedDeployer {
             
             FileObject appXml = root.getFileObject("META-INF/application.xml"); // NOI18N
             if (appXml != null) {
-                Application ear = DDProvider.getDefault().getDDRoot(appXml);
-                Module[] modules = ear.getModule();
-                for (int i = 0; i < modules.length; i++) {
-                    WLTargetModuleID childModuleId = new WLTargetModuleID(moduleId.getTarget());
-                    if (modules[i].getWeb() != null) {
-                        childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                InputStream is = new BufferedInputStream(appXml.getInputStream());
+                try {
+                    // we used getDDRoot(FO), but the caching has been returning
+                    // old model - see #194656
+                    Application ear = DDProvider.getDefault().getDDRoot(new InputSource(is));
+                    Module[] modules = ear.getModule();
+                    for (int i = 0; i < modules.length; i++) {
+                        WLTargetModuleID childModuleId = null;
+                        Web web = modules[i].getWeb();
+                        if (web != null) {
+                            childModuleId = new WLTargetModuleID(moduleId.getTarget(), web.getWebUri());
+                        } else {
+                            childModuleId = new WLTargetModuleID(moduleId.getTarget());
+                        }
+
+                        if (modules[i].getWeb() != null) {
+                            childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                        }
+                        moduleId.addChild(childModuleId);
                     }
-                    moduleId.addChild(childModuleId);
+                } finally {
+                    is.close();
                 }
             } else {
                 // Java EE 5
                 for (FileObject child : root.getChildren()) {
                     // this should work for exploded directory as well
                     if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
-                        WLTargetModuleID childModuleId = new WLTargetModuleID(moduleId.getTarget());
+                        WLTargetModuleID childModuleId =
+                                new WLTargetModuleID(moduleId.getTarget(), child.getNameExt());
 
                         if (child.hasExt("war")) { // NOI18N
                             configureWarModuleId(childModuleId, child, serverUrl);
@@ -805,6 +822,8 @@ public final class CommandBasedDeployer {
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (PropertyVetoException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (SAXException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
     }

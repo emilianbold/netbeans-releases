@@ -50,10 +50,15 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
@@ -78,6 +83,8 @@ import org.openide.util.RequestProcessor.Task;
 @ActionRegistration(displayName = "#LBL_IgnoreAction_Name")
 public class IgnoreAction extends MultipleRepositoryAction {
 
+    private static final Logger LOG = Logger.getLogger(IgnoreAction.class.getName());
+    
     @Override
     protected Task performAction (File repository, File[] roots, VCSContext context) {
         return ignore(repository, roots);
@@ -103,7 +110,17 @@ public class IgnoreAction extends MultipleRepositoryAction {
         return enabled;
     }
 
-    public Task ignore (File repository, File[] roots) {
+    /**
+     * Ignores those files from the given roots that are not yet ignored. So those already ignored are skipped.
+     * @param repository
+     * @param roots 
+     */
+    public void ignoreFolders (File repository, File[] roots) {
+        final File[] toIgnore = filterFolders(repository, roots);
+        ignore(repository, toIgnore);
+    }
+    
+    private Task ignore (File repository, File[] roots) {
         final File[] toIgnore = filterRoots(roots);
         if (toIgnore.length == 0) {
             return null;
@@ -152,5 +169,26 @@ public class IgnoreAction extends MultipleRepositoryAction {
             }
         }
         return toIgnore.toArray(new File[toIgnore.size()]);
+    }
+
+    private File[] filterFolders (File repository, File[] roots) {
+        List<File> unignoredFolders = new LinkedList<File>();
+        Map<File, GitStatus> statuses;
+        try {
+            GitClient client = Git.getInstance().getClient(repository);
+            statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        } catch (GitException ex) {
+            LOG.log(Level.INFO, null, ex);
+            statuses = Collections.<File, GitStatus>emptyMap();
+        }
+        for (File f : roots) {
+            GitStatus st = statuses.get(f);
+            if (st == null || st.getStatusIndexWC() != GitStatus.Status.STATUS_IGNORED) {
+                unignoredFolders.add(f);
+            } else {
+                LOG.log(Level.FINE, "File {0} already ignored", f);
+            }
+        }
+        return unignoredFolders.toArray(new File[unignoredFolders.size()]);
     }
 }

@@ -1474,7 +1474,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 point = i;
 
             } else {
-                if (limitedpstart == pidx) {
+                if (limitedpstart == pidx + 1) {
                     break; //match, reached start of prefix
                 }
                 if (pidx == 0) {
