@@ -180,11 +180,6 @@ public class TryGetTest extends CndBaseTestCase {
     private class Factory implements PersistentFactory {
 
         @Override
-        public boolean canWrite(Persistent obj) {
-            return true;
-        }
-
-        @Override
         public void write(DataOutput out, Persistent obj) throws IOException {
             assert obj instanceof Value;
             out.writeUTF(((Value) obj).value);

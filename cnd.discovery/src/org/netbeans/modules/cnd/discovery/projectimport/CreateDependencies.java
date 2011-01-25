@@ -109,7 +109,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 return;
             }
             Map<String,String> dllPaths = new HashMap<String, String>();
-            String root = ImportExecutable.findFolderPath(ImportExecutable.getRoot(mainConfigurationDescriptor));
+            String root = ImportExecutable.findFolderPath(mainConfigurationDescriptor, ImportExecutable.getRoot(mainConfigurationDescriptor));
             if (root != null) {
                 MakeConfiguration activeConfiguration = mainConfigurationDescriptor.getActiveConfiguration();
                 String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);

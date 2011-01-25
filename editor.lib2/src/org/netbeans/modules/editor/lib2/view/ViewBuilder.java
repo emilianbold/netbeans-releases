@@ -194,8 +194,11 @@ final class ViewBuilder {
             // Round start offset to child's start offset
             int childStartOffset = childView.getStartOffset();
             // Re-check updated startOffset
-            assert (childStartOffset <= startOffset) : "childStartOffset=" + childStartOffset + // NOI18N
-                    " > startOffset=" + startOffset; // NOI18N
+            if (childStartOffset > startOffset && !wrongStartOffsetReported) {
+                wrongStartOffsetReported = true;
+                throw new IllegalStateException("childStartOffset=" + childStartOffset + // NOI18N
+                    " > startOffset=" + startOffset + "\ndocumentView:\n" + documentView.toStringDetail());
+            }
             startOffset = childStartOffset;
             // Get paragraph end offset in original offset coordinates
             paragraphViewEndOffset = paragraphViewStartOffset + paragraphView.getLength();

@@ -92,9 +92,10 @@ public class NewKenaiProjectTest extends PerformanceTestCase {
     public void prepare(){
     }
     
-    public void testNewKenaiProject() {
-        doMeasurement();
-    }
+    // Not part of IDE since 7
+//    public void testNewKenaiProject() {
+//        doMeasurement();
+//    }
     
     public ComponentOperator open(){
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(menu,"|");

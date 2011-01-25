@@ -119,15 +119,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     }
 
     @Override
-    public boolean canWrite(Persistent obj) {
-        if (obj instanceof FileImpl) {
-            return ((FileImpl) obj).getBuffer().isFileBased();
-        } else {
-            return true;
-        }
-    }
-
-    @Override
     protected int getHandler(Object object) {
         assert object != null;
         int aHandler;

@@ -100,4 +100,11 @@ public class FormInspectorNodePopupMenuTest extends ValidatePopupMenuOnNodes {
         super.prepare();
     }
 
+    @Override
+    public void close(){
+        if (dataObjectNode == null) {
+            Thread.dumpStack();
+        }
+        super.close();
+    }
 }

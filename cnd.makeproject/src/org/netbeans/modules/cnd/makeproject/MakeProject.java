@@ -128,6 +128,7 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -157,7 +158,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
-//    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
@@ -908,36 +908,48 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public Icon getIcon() {
             Icon icon = null;
             icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
-            // First 'projectType' (from project.xml)
-            /*
-            switch (projectType) {
-            case ProjectDescriptor.TYPE_APPLICATION :
-            icon = NeoProjectDescriptor.MAKE_NEW_APP_ICON;
-            break;
-            case ProjectDescriptor.TYPE_DYNAMIC_LIB :
-            icon = NeoProjectDescriptor.MAKE_NEW_LIB_ICON;
-            break;
-            case ProjectDescriptor.TYPE_MAKEFILE :
-            icon = MakeProjectDescriptor.MAKE_EXT_APP_ICON;
-            break;
-            case ProjectDescriptor.TYPE_STATIC_LIB :
-            icon = MakeProjectDescriptor.MAKE_EXT_LIB_ICON;
-            break;
-            };
-            // Then lookup the projectDescriptor and get it from there
-            if (icon == null) {
-            ProjectDescriptorProvider pdp = (ProjectDescriptorProvider)getLookup().lookup(ProjectDescriptorProvider.class);
-            if (pdp != null) {
-            icon = pdp.getProjectDescriptor().getIcon();
-            projectType = pdp.getProjectDescriptor().getProjectType();
+            MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
+            if (activeConfiguration != null) {
+                int type = activeConfiguration.getConfigurationType().getValue();
+                switch (type) {
+                    case MakeConfiguration.TYPE_MAKEFILE:
+                    {
+                        String outputValue = activeConfiguration.getOutputValue();
+                        if (outputValue != null) {
+                            if (outputValue.endsWith(".so") || // NOI18N
+                                outputValue.endsWith(".dll") || // NOI18N
+                                outputValue.endsWith(".dylib")) { // NOI18N
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-dynamic.png", false); // NOI18N
+                            } else if (outputValue.endsWith(".a")) { // NOI18N
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-static.png", false); // NOI18N
+                            } else {
+                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
+                            }
+                        } else {
+                            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
+                        }
+                        break;
+                    }
+                    case MakeConfiguration.TYPE_APPLICATION:
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_STATIC_LIB:
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_APPLICATION:
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
+                        break;
+                }
             }
-            }
-            // Then ...
-            if (icon == null) {
-            icon = MAKE_PROJECT_ICON;
-            System.err.println("Cannot recognize make project type!"); // NOI18N
-            }
-             */
             return icon;
         }
 

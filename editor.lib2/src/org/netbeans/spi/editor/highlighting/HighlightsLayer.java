@@ -201,6 +201,12 @@ public final class HighlightsLayer {
     /* package */ HighlightsContainer getContainer() {
         return container;
     }
+
+    @Override
+    public String toString() {
+        return "HighlightsLayer@" + System.identityHashCode(this) + // NOI18N
+                (isFixedSize() ? "(F)" : "") + ":typeId=" + layerTypeId; // NOI18N
+    }
     
     static {
         HighlightingSpiPackageAccessor.register(new PackageAccessor());

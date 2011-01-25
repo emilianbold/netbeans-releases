@@ -45,8 +45,6 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.io.IOException;
-import java.io.Reader;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -54,13 +52,8 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public interface APTFileBuffer {
-    public FileObject getFileObject();
     /** Gets normalized absolute path */
     public CharSequence getAbsolutePath();
     public FileSystem getFileSystem();
-    public CharSequence getUrl();
-    public Reader getReader() throws IOException;    
     public char[] getCharBuffer() throws IOException;
-    public int getLength();
-    public boolean isFileBased();
 }

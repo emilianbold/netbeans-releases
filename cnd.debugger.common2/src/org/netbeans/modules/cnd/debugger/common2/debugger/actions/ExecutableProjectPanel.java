@@ -50,7 +50,6 @@ import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.event.DocumentListener;
 import javax.swing.JButton;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
@@ -67,6 +66,8 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
@@ -115,15 +116,12 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         // Validate that project toolchain family is the same as debugger type
         Project selectedProject = getSelectedProject();
         if (selectedProject != null) {
-            ConfigurationDescriptorProvider cdp = selectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (cdp != null) {
-                MakeConfigurationDescriptor configurationDescriptor = cdp.getConfigurationDescriptor();
-                if (configurationDescriptor != null) {
-                    EngineType projectDebuggerType = DebuggerManager.debuggerType(configurationDescriptor.getActiveConfiguration());
-                    if (debuggerType.getType() != projectDebuggerType) {
-                        setError("ERROR_WRONG_FAMILY", false); // NOI18N
-                        return;
-                    }
+            final MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(selectedProject);
+            if (conf != null) {
+                EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
+                if (debuggerType.getType() != projectDebuggerType) {
+                    setError("ERROR_WRONG_FAMILY", false); // NOI18N
+                    return;
                 }
             }
         }

@@ -57,7 +57,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public abstract class ValidatePopupMenuOnNodes extends PerformanceTestCase {
 
-    protected static Node dataObjectNode;
+    protected Node dataObjectNode;
 
 
     /** Creates a new instance of ValidatePopupMenuOnNodes */

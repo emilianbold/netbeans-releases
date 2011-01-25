@@ -92,9 +92,10 @@ public class KenaiLoginTest extends PerformanceTestCase {
     public void prepare(){
     }
     
-    public void testKenaiLogin() {
-        doMeasurement();
-    }
+    // not a part of IDE since 7
+//    public void testKenaiLogin() {
+//        doMeasurement();
+//    }
     
     public ComponentOperator open(){
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(menu,"|");

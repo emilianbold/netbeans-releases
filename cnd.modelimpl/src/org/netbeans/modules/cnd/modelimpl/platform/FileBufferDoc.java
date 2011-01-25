@@ -45,9 +45,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.EventListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -237,34 +235,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
-        final Object[] res = new Object[]{null, null};
-        doc.render(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    res[0] = doc.getText(0, doc.getLength());
-                    if (lastChangedSegment == null || changedSegmentTaken != lastModified) {
-                        lastChangedSegment = new ChangedSegment(changedSegment);
-                        changedSegment.reset(doc);
-                        changedSegmentTaken = lastModified;
-                        if (TRACE) {
-                            System.err.println("Take last changed segment: "+lastChangedSegment.toString());
-                            new Exception().printStackTrace(System.err);
-                        }
-                    }
-                } catch( BadLocationException e ) {
-                    res[1] = convert(e);
-                }
-            }
-        });
-        if (res[1] != null) {
-            throw (IOException)res[1];
-        }
-        return new ByteArrayInputStream(((String)res[0]).getBytes());
-    }
-    
-    @Override
     public String getText() throws IOException {
         final String out[] = new String[] { null };
         final BadLocationException exc[] = new BadLocationException[] { null };
@@ -294,11 +264,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
     }
     
-    @Override
-    public int getLength() {
-        return doc.getLength();
-    }
-
     @Override
     public boolean isFileBased() {
         return false;

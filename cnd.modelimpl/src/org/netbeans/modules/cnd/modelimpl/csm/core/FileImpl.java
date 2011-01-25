@@ -1783,7 +1783,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileType = FileType.values()[input.readByte()];
 
         assert fileBuffer != null;
-        assert fileBuffer.isFileBased();
         lastParsed = input.readLong();
         lastParseTime = input.readInt();
         state = State.values()[input.readByte()];

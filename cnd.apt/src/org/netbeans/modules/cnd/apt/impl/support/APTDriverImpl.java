@@ -126,30 +126,10 @@ public class APTDriverImpl {
         }
 
         private TokenStream getTokenStream(APTFileBuffer buffer, String lang, boolean isLight) throws IOException {
-            if (buffer.isFileBased()) {
-                Reader reader = null;
-                try {
-                    reader = buffer.getReader();
-                    if (isLight) {
-                        return APTTokenStreamBuilder.buildLightTokenStream(buffer.getAbsolutePath().toString(), reader, lang);
-                    } else {
-                        return APTTokenStreamBuilder.buildTokenStream(buffer.getAbsolutePath().toString(), reader, lang);
-                    }
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream\n{0}", new Object[]{ex}); // NOI18N
-                        }
-                    }
-                }
+            if (isLight) {
+                return APTTokenStreamBuilder.buildLightTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
             } else {
-                if (isLight) {
-                    return APTTokenStreamBuilder.buildLightTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
-                } else {
-                    return APTTokenStreamBuilder.buildTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
-                }
+                return APTTokenStreamBuilder.buildTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
             }
         }
 

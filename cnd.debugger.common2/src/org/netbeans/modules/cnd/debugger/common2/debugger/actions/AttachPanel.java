@@ -666,12 +666,8 @@ public final class AttachPanel extends TopComponent {
             dt.setHostName(seed.getHostName());
             dt.setEngine(engine.getType());
 
-            if (project != null) // choosed existing project
-            {
-                dt.assignProject(project);
-            } else {
-                if (noproject) // < no project>
-                {
+            if (project == null) {
+                if (noproject) { // < no project>
                     dt.createProject(false);
                 } else { // <new project>
                     dt.setBuildFirst(false);
