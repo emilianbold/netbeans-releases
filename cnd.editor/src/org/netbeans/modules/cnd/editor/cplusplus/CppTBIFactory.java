@@ -68,9 +68,9 @@ import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor.MutableContext;
     @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
     @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
     @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
-    @MimeRegistration(mimeType = "text/x-doxygen", service = TypedBreakInterceptor.Factory.class),
-    @MimeRegistration(mimeType = "text/x-cpp-string-double", service = TypedBreakInterceptor.Factory.class),
-    @MimeRegistration(mimeType = "text/x-cpp-string-single", service = TypedBreakInterceptor.Factory.class)
+    @MimeRegistration(mimeType = MIMENames.DOXYGEN_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.STRING_DOUBLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.STRING_SINGLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
 })
 public class CppTBIFactory implements TypedBreakInterceptor.Factory {
 
@@ -125,7 +125,7 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
                         || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos - 2) == '\\')) {
                     // not line continuation
                     if (context != null) {
-                        context.setText("\"\n\"", 1, 3);
+                        context.setText("\"\n\"", 1, 3); //NOI18N
                         return true;
                     } else {
                         doc.insertString(dotPos, "\"\"", null); //NOI18N
@@ -176,7 +176,7 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
                         }
                     }
                     if (context != null) {
-                        context.setText("\n\n" + insString, 0, 1, 2,2+insString.length(), 1,2);
+                        context.setText("\n\n" + insString, 0, 1, 2,2+insString.length(), 1,2); //NOI18N
                     } else {
                         doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.

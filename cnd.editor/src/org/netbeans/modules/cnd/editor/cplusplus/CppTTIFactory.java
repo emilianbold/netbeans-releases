@@ -109,7 +109,7 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
             } else {
                 Caret caret = context.getComponent().getCaret();
                 boolean blockCommentStart = false;
-                if (offset > 0 && typedText.charAt(0) == '*') {
+                if (offset > 0 && typedText.charAt(0) == '*') { //NOI18N
                     TokenItem<TokenId> tokenAtDot = CndTokenUtilities.getToken(doc, offset - 1, true);
                     if (tokenAtDot.id() == CppTokenId.SLASH) {
                         // this is begin of block comment
