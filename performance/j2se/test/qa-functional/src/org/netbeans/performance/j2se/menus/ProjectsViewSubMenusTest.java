@@ -93,7 +93,9 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
  
     
     public void testProjectNodeMercurialSubmenu() {
-        testedSubmenu = "Versioning"; //CVS
+        // in NB 7 the submenu is titled "Mercurial"
+        testedSubmenu = "Mercurial"; //CVS
+//        testedSubmenu = "Versioning"; //CVS
         testNode(getProjectNode("PerformanceTestData"));
     }
 
