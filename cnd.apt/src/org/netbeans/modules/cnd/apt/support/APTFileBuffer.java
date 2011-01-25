@@ -58,7 +58,6 @@ public interface APTFileBuffer {
     /** Gets normalized absolute path */
     public CharSequence getAbsolutePath();
     public FileSystem getFileSystem();
-    public CharSequence getUrl();
     public Reader getReader() throws IOException;    
     public char[] getCharBuffer() throws IOException;
     public int getLength();
