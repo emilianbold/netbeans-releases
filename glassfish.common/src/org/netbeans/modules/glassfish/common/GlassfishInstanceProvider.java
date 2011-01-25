@@ -77,6 +77,7 @@ import org.openide.util.NbBundle;
  * @author vince kraemer
  */
 public final class GlassfishInstanceProvider implements ServerInstanceProvider {
+    public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
     private volatile static GlassfishInstanceProvider preludeProvider;
@@ -396,7 +397,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     for(int i = 0; i < instanceFOs.length; i++) {
                         try {
                             GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
-                            if ("glassfish_autoregistered_instance".equals(instanceFOs[i].getName())) {
+                            if (GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
                                 installedInstance = si;
                                 continue;
                             }
@@ -411,18 +412,18 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             getLogger().log(Level.INFO, null, ex);
                         }
                     }
-                    if (null != installedInstance) {
-                        GlassfishInstance si = instanceMap.get(installedInstance.getDeployerUri());
-                        if (null == si) {
-                            try {
-                                writeInstanceToFile(installedInstance,false);
-                            } catch (IOException ioe) {
-                            }
-                            instanceMap.put(installedInstance.getDeployerUri(), installedInstance);
-                            activeDisplayNames.add(installedInstance.getDisplayName());
-                        }
-                    }
                 }
+            }
+        }
+        if (null != installedInstance) {
+            GlassfishInstance si = instanceMap.get(installedInstance.getDeployerUri());
+            if (null == si) {
+                try {
+                    writeInstanceToFile(installedInstance,false);
+                } catch (IOException ioe) {
+                }
+                instanceMap.put(installedInstance.getDeployerUri(), installedInstance);
+                activeDisplayNames.add(installedInstance.getDisplayName());
             }
         }
         for (GlassfishInstance gi : instanceMap.values()) {

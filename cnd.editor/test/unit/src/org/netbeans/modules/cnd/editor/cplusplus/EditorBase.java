@@ -39,7 +39,6 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -218,10 +217,14 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         Indent indent = Indent.get(getDocument());
         indent.lock();
         try {
-            CCKit.CCInsertBreakAction action = new CCKit.CCInsertBreakAction();
-            Object out = action.beforeBreak(null, getDocument(), getCaret());
+            Object doWork = CppTBIFactory.doWork(getDocument(), getCaret().getDot(), getCaret());
+            //CCKit.CCInsertBreakAction action = new CCKit.CCInsertBreakAction();
+            //Object out = action.beforeBreak(null, getDocument(), getCaret());
             indentNewLine();
-            action.afterBreak(null, getDocument(), getCaret(), out);
+            if (doWork instanceof Integer) {
+                getCaret().setDot(getCaret().getDot()+1);
+                //action.afterBreak(null, getDocument(), getCaret(), out);
+            }
         } finally {
             indent.unlock();
             DocumentUtilities.setTypingModification(getDocument(), false);
