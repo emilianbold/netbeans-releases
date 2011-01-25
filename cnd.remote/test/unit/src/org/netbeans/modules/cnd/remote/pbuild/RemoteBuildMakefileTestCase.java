@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.remote.pbuild;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -70,31 +71,37 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testBuildMakefileWithExt_rfs_gnu() throws Exception {
         doTest(Sync.RFS, Toolchain.GNU);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testBuildMakefileWithExt_scp_gnu() throws Exception {
         doTest(Sync.ZIP, Toolchain.GNU);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testBuildMakefileWithExt_ftp_gnu() throws Exception {
         doTest(Sync.FTP, Toolchain.GNU);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testBuildMakefileWithExt_rfs_sunstudio() throws Exception {
         doTest(Sync.RFS, Toolchain.SUN);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testBuildMakefileWithExt_scp_sunstudio() throws Exception {
         doTest(Sync.ZIP, Toolchain.SUN);
     }
 
+    @RandomlyFails
     @ForAllEnvironments
     public void testBuildMakefileWithExt_ftp_sunstudio() throws Exception {
         doTest(Sync.FTP, Toolchain.SUN);
