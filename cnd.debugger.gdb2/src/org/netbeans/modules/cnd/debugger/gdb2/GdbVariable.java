@@ -107,10 +107,15 @@ class GdbVariable extends Variable {
     @Override
     public String getAsText() {
 	String prefix = org.netbeans.modules.cnd.debugger.common2.debugger.Log.Watch.varprefix? mi_name + ": ": ""; // NOI18N
-	if (inScope)
-	    return prefix + super.getAsText();
-	else
+	if (inScope) {
+            String res = super.getAsText();
+            if (res != null) {
+                res = res.replace("\\\"", "\""); //NOI18N
+            }
+	    return prefix + res;
+        } else {
 	    return prefix + "<OUT_OF_SCOPE>"; // NOI18N
+        }
     }
 
     protected void setEditable(String attr) {
@@ -129,11 +134,6 @@ class GdbVariable extends Variable {
 	this.mi_name = mi_name;
     }
 
-    public String getValue() {
-	//return value;
-	return getAsText();
-    }
-    
     public void setValue(String v) {
         //value = v;
 	setAsText(v);

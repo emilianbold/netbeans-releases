@@ -4185,10 +4185,7 @@ import org.openide.util.Exceptions;
 	if (length > 1 
                 && (value.charAt(0) == '"') &&
                 (value.charAt(length-1) == '"')) {
-            StringBuilder res = new StringBuilder("\\"); //NOI18N
-            res.append(value.substring(0, length-1));
-            res.append("\\\""); //NOI18N
-	    return res.toString();
+            return value.replace("\"", "\\\""); //NOI18N
 	}
         return value;
     }
