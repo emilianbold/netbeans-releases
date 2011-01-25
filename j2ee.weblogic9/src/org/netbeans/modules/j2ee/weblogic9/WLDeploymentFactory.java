@@ -161,13 +161,13 @@ public class WLDeploymentFactory implements DeploymentFactory {
                 return dm;
             }
 
-            WLSharedState mutableState = getMutableState(props);
+            WLSharedState shared = getSharedState(props);
 
             String[] parts = uri.split(":"); // NOI18N
             String host = parts[3].substring(2);
             String port = parts[4] != null ? parts[4].trim() : parts[4];
 
-            dm = new WLDeploymentManager(uri, host, port, false, mutableState);
+            dm = new WLDeploymentManager(uri, host, port, false, shared);
             managerCache.put(props, dm);
             return dm;
         }
@@ -181,18 +181,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
             LOGGER.log(Level.FINER, "getDisconnectedDeploymentManager, uri: {0}", uri);
         }
 
-        InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        if (props == null) {
-            throw new DeploymentManagerCreationException("Could not create deployment manager for " + uri);
-        }
-
-        WLSharedState mutableState = getMutableState(props);
-
-        // FIXME optimize (can we use singleton disconnected manager ?)
-        String[] parts = uri.split(":"); // NOI18N
-        String host = parts[3].substring(2);
-        String port = parts[4] != null ? parts[4].trim() : parts[4];
-        WLDeploymentManager dm = new WLDeploymentManager(uri, host, port, true, mutableState);
+        // TODO should we decorate it somehow ?
+        WLDeploymentManager dm = (WLDeploymentManager) getDeploymentManager(uri, null, null);
         return dm;
     }
 
@@ -237,7 +227,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
         }
     }
 
-    private static synchronized WLSharedState getMutableState(InstanceProperties props) {
+    private static synchronized WLSharedState getSharedState(InstanceProperties props) {
         WLSharedState mutableState = stateCache.get(props);
         if (mutableState == null) {
             mutableState = new WLSharedState(props);

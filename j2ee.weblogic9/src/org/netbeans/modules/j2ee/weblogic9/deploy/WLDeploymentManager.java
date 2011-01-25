@@ -637,11 +637,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
             ProgressObjectSupport.waitFor(po);
         }
     }
-    
-
-    
-    
-    
 
     // XXX these are just temporary methods - should be replaced once we will
     // use our own TargetModuleID populated via JMX
@@ -866,6 +861,5 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 }
             }
         }
-
     }
 }
