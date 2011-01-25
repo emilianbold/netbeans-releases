@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
+package org.netbeans.modules.web.core;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author den
  */
-@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemCacheProvider.class, position=100)
-public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
+public class TestWebModuleImplementation implements WebModuleImplementation{
+    
+    private TestWebModuleImplementation(){
+    }
+    
+    public static TestWebModuleImplementation getInstance(){
+        return INSTANCE;
+    }
 
     @Override
-    protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
-        String hostId = EnvUtils.toHostID(executionEnvironment);
-        String userId = executionEnvironment.getUser();
-        String root = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/remote-files/"; //NOI18N;
-        return (root == null) ? null : root + hostId + '_' + userId + '/';
+    public FileObject getDocumentBase() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public String getContextPath() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getJ2eePlatformVersion() {
+        return profile.toString();
+    }
+
+    @Override
+    public FileObject getWebInf() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public FileObject getDeploymentDescriptor() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public FileObject[] getJavaSources() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public MetadataModel<WebAppMetadata> getMetadataModel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    void setJeeProfile( Profile profile){
+        this.profile = profile;
+    }
+    
+    private static final TestWebModuleImplementation INSTANCE = new TestWebModuleImplementation();
+    private Profile profile;
+    
 }

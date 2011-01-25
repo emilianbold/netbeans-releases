@@ -217,6 +217,8 @@ made subject to such option by the copyright holder.
                 <package>org.sonatype.aether.transfer</package>
                 <package>org.sonatype.aether.util</package>
                 <package>org.sonatype.aether.util.repository</package>
+                <package>org.sonatype.aether.util.version</package>
+                <package>org.sonatype.aether.version</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/maven-dependency-tree-1.2.jar</runtime-relative-path>

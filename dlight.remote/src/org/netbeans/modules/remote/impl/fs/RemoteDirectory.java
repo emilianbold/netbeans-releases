@@ -191,6 +191,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (fo == null) {
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
                 }
+                if (directory) {
+                    fireFolderCreated(fo);
+                } else {
+                    fireDataCreated(fo);
+                }
                 return fo;
             } catch (ConnectException ex) {
                 throw new IOException("Can not create " + path + ": not connected", ex); // NOI18N

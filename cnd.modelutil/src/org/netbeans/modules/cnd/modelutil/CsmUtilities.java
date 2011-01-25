@@ -395,6 +395,12 @@ public class CsmUtilities {
         }
         return false;
     }
+    
+    public static boolean isCsmSuitable(FileObject fo) {
+        // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
+        // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
+        return CndPathUtilitities.isPathAbsolute(fo.getPath());
+    }
 
     public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
@@ -422,7 +428,7 @@ public class CsmUtilities {
                 }
                 if (files.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();
-                    if (fo != null && fo.isValid()) {
+                    if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
                         String normPath = fo.getPath();
                         CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
                         if (csmFile != null) {
@@ -489,11 +495,7 @@ public class CsmUtilities {
     }
 
     public static CsmFile getCsmFile(FileObject fo, boolean waitParsing, boolean snapShot) {
-        if (fo == null) {
-            return null;
-        } else if (!CndPathUtilitities.isPathAbsolute(fo.getPath())) { 
-            // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
-            // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
+        if (fo == null || ! fo.isValid() || ! isCsmSuitable(fo)) { // #194431 Path should be absolute: Templates/cFiles/CSimpleTest.c
             return null;
         } else {
             try {
