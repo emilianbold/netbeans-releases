@@ -304,7 +304,7 @@ public class MakeProjectGenerator {
         } else {
             task.run();
         }
-        if (!prjParams.getFullRemote() && !prjParams.isMakefileProject()) {
+        if (!prjParams.getFullRemote()) {
             // create Makefile
             copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
                     projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
