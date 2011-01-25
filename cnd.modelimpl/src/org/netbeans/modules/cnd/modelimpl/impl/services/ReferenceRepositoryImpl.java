@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -351,31 +350,17 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private TokenStream getTokenStream(FileImpl file) {
         // build token stream for file
-        Reader reader = null;
         TokenStream ts = null;
         try {
             if (file.isValid()) {
                 FileBuffer buffer = file.getBuffer();
                 if (buffer != null){
-                    if (buffer.isFileBased()) {
-                        reader = buffer.getReader();
-                        ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, file.getFileLanguage());
-                    } else {
-                        ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getFileLanguage());
-                    }
+                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getFileLanguage());
                 }
             }
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             ts = null;
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
-                    DiagnosticExceptoins.register(ex);
-                }
-            }
         }
         if (ts == null || !file.isValid()) {
             return null;

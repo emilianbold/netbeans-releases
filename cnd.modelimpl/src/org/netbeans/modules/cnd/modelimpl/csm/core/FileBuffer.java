@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.openide.filesystems.FileObject;
 
 /**
  * Represents the file state change event.
@@ -59,7 +60,9 @@ public interface FileBuffer extends APTFileBuffer {
 
     public void addChangeListener(ChangeListener listener);
     public void removeChangeListener(ChangeListener listener);
-    
+
+    public boolean isFileBased();
+
     public FileObject getFileObject();
     public CharSequence getUrl();
     

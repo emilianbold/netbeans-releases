@@ -126,22 +126,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return result;
     }
 
-    @Override
-    public final Reader getReader() throws IOException {
-        if (encoding == null) {
-            FileObject fo = getFileObject();
-            if (fo != null && fo.isValid()) {
-                encoding = FileEncodingQuery.getEncoding(fo);
-            } else { // paranoia
-                encoding = FileEncodingQuery.getDefaultEncoding();
-            }
-        }
-        InputStream is = getInputStream();
-        Reader reader = new InputStreamReader(is, encoding);
-        return reader;
-    }
-    
-        public abstract InputStream getInputStream() throws IOException;
+    public abstract InputStream getInputStream() throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
