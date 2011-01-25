@@ -81,6 +81,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V75 - NB 7.0
+ *    backed out V74
  * V74 - NB 7.0
  *    No longer generation makefiles for unmanaged projects. Calling projects make directly
  * V73 - NB 7.0
@@ -215,7 +217,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 74;
+    public final static int CURRENT_VERSION = 75;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
