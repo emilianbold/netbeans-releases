@@ -47,9 +47,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -193,5 +196,33 @@ public class BranchTest extends AbstractGitTestCase {
         assertEquals(4, branches.size());
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME)));
+    }
+    
+    public void testFileProtocolFails () throws Exception {
+        try {
+            Transport.open(repository, new URIish(workDir.toURI().toURL()));
+            fail("Workaround not needed, fix ListRemoteBranchesCommand - Transport.open(String) to Transport.open(URL)");
+        } catch (NotSupportedException ex) {
+            
+        }
+    }
+    
+    public void testListRemoteBranches () throws Exception {
+        File otherWT = new File(workDir.getParentFile(), "repo2");
+        GitClient client = getClient(otherWT);
+        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File f = new File(otherWT, "f");
+        write(f, "init");
+        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitBranch branch = client.createBranch(BRANCH_NAME, "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(f, "change on master");
+        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo master = client.commit(new File[] { f }, "change on master", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(otherWT.toURI().toURL(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, remoteBranches.size());
+        assertEquals(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
+        assertEquals(master.getRevision(), remoteBranches.get("master").getId());
     }
 }
