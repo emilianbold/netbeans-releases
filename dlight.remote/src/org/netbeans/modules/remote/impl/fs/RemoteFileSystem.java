@@ -114,6 +114,9 @@ public class RemoteFileSystem extends FileSystem {
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
         this.filePrefix = FileSystemCacheProvider.getCacheRoot(execEnv);
+        if (filePrefix == null) {
+            throw new IllegalStateException("Can not find cache root for remote file system at " + execEnv); //NOI18N
+        }
         cache = new File(filePrefix);
         if (!cache.exists() && !cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
