@@ -102,7 +102,11 @@ public class WLServerLibraryManager implements ServerLibraryManager {
             throw new ConfigurationException(NbBundle.getMessage(WLServerLibraryManager.class, "MSG_DidNotFindServerLibraries"));
         }
 
-        deployFiles(toDeploy);
+        try {
+            deployFiles(toDeploy);
+        } finally {
+            WLPluginProperties.getDomainConfigFileObject(manager).refresh();
+        }
     }
 
     // this handles only archives
