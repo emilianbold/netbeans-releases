@@ -374,7 +374,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	    Variable v = (Variable) node;
 	    if (columnID == Constants.PROP_LOCAL_VALUE ||
 		columnID == Constants.PROP_WATCH_VALUE ) 
-		return !v.isLeaf() && !v.isPtr();
+		return !v.isEditable();
 	    else
 		// 6500791 Type column is read only
 		return true;
