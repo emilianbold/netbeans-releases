@@ -33,13 +33,21 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.FKit;
+import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
+import org.netbeans.modules.cnd.editor.indent.CppIndentFactory;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.Exceptions;
@@ -61,6 +69,35 @@ public class EditorBase extends BaseDocumentUnitTestCase {
             return new CCKit();
         } else {
             return new CKit();
+        }
+    }
+    private MimePath mimePath1;
+    private MimePath mimePath2;
+    private MimePath mimePath3;
+    private MimePath mimePath4;
+    private MimePath mimePath5;
+
+    @Override
+    protected void setUpMime() {
+        mimePath1 = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath1, new CCKit(), new Reformatter.Factory(), new CppIndentFactory(),
+                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
+        mimePath2 = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath2, new HKit(), new Reformatter.Factory(), new CppIndentFactory(),
+                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
+        mimePath3 = MimePath.parse(MIMENames.C_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath3, new CKit(), new Reformatter.Factory(), new CppIndentFactory(),
+                new CppDTIFactory(), new CppTBIFactory(), new CppTTIFactory());
+        mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath4, new FKit(), new FortranReformatter.Factory());
+        mimePath5 = MimePath.parse(MIMENames.ASM_MIME_TYPE);
+        // TODO: add needed dependency in all dependant test cases to use real asm editor kit
+        //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
+        MockMimeLookup.setInstances(mimePath5, new AsmStub());
+    }
+
+    private static final class AsmStub extends NbEditorKit {
+        private AsmStub(){
         }
     }
 
@@ -217,7 +254,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         Indent indent = Indent.get(getDocument());
         indent.lock();
         try {
-            Object doWork = CppTBIFactory.doWork(getDocument(), getCaret().getDot(), getCaret());
+            Object doWork = CppTBIFactory.doWork(getDocument(), getCaret().getDot(), getCaret(), null);
             //CCKit.CCInsertBreakAction action = new CCKit.CCInsertBreakAction();
             //Object out = action.beforeBreak(null, getDocument(), getCaret());
             indentNewLine();

@@ -64,6 +64,15 @@ public final class MIMENames {
 
     /** Preprocessor */
     public static final String PREPROC_MIME_TYPE = "text/x-cpp+preprocessor";// NOI18N
+    
+    /** Doxygen embedded */
+    public static final String DOXYGEN_MIME_TYPE = "text/x-doxygen"; // NOI18N
+
+    /** Double quoted string embedded */
+    public static final String STRING_DOUBLE_MIME_TYPE = "text/x-cpp-string-double"; // NOI18N
+
+    /** Single quoted string embedded */
+    public static final String STRING_SINGLE_MIME_TYPE = "text/x-cpp-string-single"; // NOI18N
 
     /** C++ */
     public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++"; //NOI18N

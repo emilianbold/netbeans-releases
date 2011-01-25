@@ -72,9 +72,6 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
 
     @Override
     public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
-        assert mimePath.getPath().equals(MIMENames.CPLUSPLUS_MIME_TYPE) ||
-               mimePath.getPath().equals(MIMENames.C_MIME_TYPE) ||
-               mimePath.getPath().equals(MIMENames.HEADER_MIME_TYPE);
         return new TypedTextInterceptorImpl();
     }
 

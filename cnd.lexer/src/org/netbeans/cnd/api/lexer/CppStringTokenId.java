@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.cnd.lexer.CppStringLexer;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -98,6 +99,7 @@ public enum CppStringTokenId implements TokenId {
         return fixedText;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -141,7 +143,7 @@ public enum CppStringTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return this.dblQuoted ? "text/x-cpp-string-double" : "text/x-cpp-string-single"; //NOI18N
+            return this.dblQuoted ? MIMENames.STRING_DOUBLE_MIME_TYPE : MIMENames.STRING_SINGLE_MIME_TYPE;
         }
     }
 }
