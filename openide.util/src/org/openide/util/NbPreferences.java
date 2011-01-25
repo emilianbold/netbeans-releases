@@ -44,8 +44,6 @@
 
 package org.openide.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -107,10 +105,8 @@ public final class NbPreferences {
              String prefsFactory = System.getProperty("java.util.prefs.PreferencesFactory");//NOI18N
              if (!"org.netbeans.junit.internal.MemoryPreferencesFactory".equals(prefsFactory)) {//NOI18N
                  Logger logger = Logger.getLogger(NbPreferences.class.getName());
-                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                 new Exception().printStackTrace(new PrintStream(bos));
                  logger.log(prefsFactory == null ? Level.WARNING : Level.FINE,
-                         "NetBeans implementation of Preferences not found: " + bos.toString() );//NOI18N
+                         "NetBeans implementation of Preferences not found");//NOI18N
              } 
         }
         return retval;
