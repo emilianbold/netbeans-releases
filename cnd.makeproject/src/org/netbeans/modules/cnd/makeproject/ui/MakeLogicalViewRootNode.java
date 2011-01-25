@@ -326,12 +326,13 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     @Override
     public Image getIcon(int type) {
-        return mergeBadge(annotateIcon(super.getIcon(type), type));
+        ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
+        return mergeBadge(annotateIcon(ImageUtilities.icon2Image(pi.getIcon()), type));
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return mergeBadge(annotateIcon(super.getOpenedIcon(type), type));
+        return getIcon(type);
     }
 
     private Image mergeBadge(Image original) {
