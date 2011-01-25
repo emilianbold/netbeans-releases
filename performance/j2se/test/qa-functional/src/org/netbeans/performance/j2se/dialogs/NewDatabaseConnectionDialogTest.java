@@ -95,7 +95,11 @@ public class NewDatabaseConnectionDialogTest extends PerformanceTestCase {
     public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";
         MENU = "New Connection";
-        TITLE = "New Database Connection";
+        
+        // valid since 7 (hopefuly)
+        TITLE = "New Connection Wizard";
+        // valid for 6.9 (probably)
+        // TITLE = "New Database Connection";
         
         String NODE = "Databases"; //NOI18N impossible
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), NODE);
