@@ -45,7 +45,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +55,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,77 +79,88 @@ public final class WLJpa2SwitchSupport {
     }
 
     public void enable() {
-        File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
-        if (libDir != null) {
-            libDir = FileUtil.normalizeFile(libDir);
-        }
-        File webLogicJarFile = WLPluginProperties.getWeblogicJar(deploymentManager);
-        JarFile webLogicJar = null;
         try {
-            webLogicJar = new JarFile(webLogicJarFile);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        File oepeJarFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
-        FileObject oepeFO = FileUtil.toFileObject(oepeJarFile);
-        JarFile oepeJar = null;
-        if (oepeFO != null) {
-            //check if paths are correct
-            try {
-                oepeJar = new JarFile(oepeJarFile);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+            if (libDir != null) {
+                libDir = FileUtil.normalizeFile(libDir);
             }
-            Manifest manifest = null;
-            try {
-                manifest = oepeJar.getManifest();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            boolean override = true;
-            if(manifest != null){
-                String cp = manifest.getMainAttributes().getValue(Name.CLASS_PATH);
-                if (cp != null) {
-                    if (cp.indexOf(JPA_JAR_1) > -1 && cp.indexOf(JPA_JAR_2) > -1) {
-                        override = false;
-                    }//should ful path be checked?
-                }
-            }
-            if(override){
-                try {
-                    backup(oepeJarFile);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                oepeFO = null;
-            }
-        }
-        if (oepeFO == null) {
-            //need to create zip file
+
             String path = getPathToModules(libDir);
             if (path.length() > 0) {
                 path = path + "/"; // NOI18N
             }
-            oepeFO = createOEPEJar(oepeJarFile, path + JPA_JAR_1 + " " // NOI18N
-                    + path + JPA_JAR_2);//NOI18N
-        }
-        try {
-            Manifest wlManifest = webLogicJar.getManifest();
-            String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
-            if (cp.indexOf(OEPE_CONTRIBUTIONS_JAR) == -1) {
-                wlManifest.getMainAttributes().putValue(Name.CLASS_PATH.toString(), OEPE_CONTRIBUTIONS_JAR + " " + cp);
-                replaceManifest(webLogicJarFile, wlManifest);
+            File oepeFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
+
+            // oepe does not exist
+            if (!oepeFile.exists()) {
+                createContributionsJar(oepeFile, path + JPA_JAR_1 + " " // NOI18N
+                        + path + JPA_JAR_2);
+            // exists so update cp
+            } else {
+                JarFile oepeJarFile = new JarFile(oepeFile);
+                try {
+                    Manifest mf = oepeJarFile.getManifest();
+                    String cp = mf.getMainAttributes().getValue(Name.CLASS_PATH);
+                    if (cp == null) {
+                        cp = ""; // NOI18N
+                    }
+                    if (!cp.contains(JPA_JAR_1) || !cp.contains(JPA_JAR_2)) {
+                        StringBuilder updated = new StringBuilder(cp);
+                        if (cp != null) {
+                            // TODO full path check
+                            if (!cp.contains(JPA_JAR_2)) {
+                                updated.insert(0, " ").insert(0, JPA_JAR_2).insert(0, path);
+                            }
+                            if (!cp.contains(JPA_JAR_1)) {
+                                updated.insert(0, " ").insert(0, JPA_JAR_1).insert(0, path);
+                            }                
+                        }
+                        if (cp.length() == 0) {
+                            updated.deleteCharAt(updated.length() - 1);
+                        }
+                        mf.getMainAttributes().put(Name.CLASS_PATH, updated.toString());
+                        replaceManifest(oepeFile, mf);
+                    }
+                } finally {
+                    oepeJarFile.close();
+                }
             }
+
+            // update weblogic.jar
+            File weblogicFile = WLPluginProperties.getWeblogicJar(deploymentManager);
+            JarFile weblogicJarFile = new JarFile(weblogicFile);
+            try {
+                Manifest wlManifest = weblogicJarFile.getManifest();
+                String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
+                if (cp == null) {
+                    cp = ""; // NOI18N
+                }
+                if (!cp.contains(OEPE_CONTRIBUTIONS_JAR)) {
+                    if (cp.length() == 0) {
+                        cp = OEPE_CONTRIBUTIONS_JAR;
+                    } else {
+                        cp = OEPE_CONTRIBUTIONS_JAR + " " + cp; // NOI18N
+                    }
+                    wlManifest.getMainAttributes().put(Name.CLASS_PATH, cp);
+                    replaceManifest(weblogicFile, wlManifest);
+                }
+            } finally {
+                weblogicJarFile.close();
+            } 
         } catch (IOException ex) {
+            // TODO some exception/message to the user
             Exceptions.printStackTrace(ex);
         } finally {
             deploymentManager.getJ2eePlatformImpl().notifyLibrariesChange();
-        }       
+        }
     }
 
     public void disable() {
         try {
             File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+            if (libDir != null) {
+                libDir = FileUtil.normalizeFile(libDir);
+            }            
             File oepeJarFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
             if (!oepeJarFile.exists() || !oepeJarFile.isFile()) {
                 return;
@@ -181,6 +190,7 @@ public final class WLJpa2SwitchSupport {
                 file.close();
             }
         } catch (IOException ex) {
+            // TODO some exception/message to the user
             Exceptions.printStackTrace(ex);
         } finally {
             deploymentManager.getJ2eePlatformImpl().notifyLibrariesChange();
@@ -253,41 +263,23 @@ public final class WLJpa2SwitchSupport {
         }        
     }
     
-    private FileObject createOEPEJar(File oepeJarFile, String classpath)
-            {
-            //need to create zip file
-            FileOutputStream dest = null;
-            try {
-                dest = new FileOutputStream(oepeJarFile);
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+    private void createContributionsJar(File jarFile, String classpath) throws IOException {
+        //need to create zip file
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(jarFile));
+        try {
             Manifest manifest = new Manifest();
-            manifest.getMainAttributes().putValue(Name.MANIFEST_VERSION.toString(), "1.0");
-            manifest.getMainAttributes().putValue(Name.CLASS_PATH.toString(), classpath);//NOI18N
-            JarOutputStream out = null;
+            manifest.getMainAttributes().put(Name.MANIFEST_VERSION, "1.0"); // NOI18N
+            manifest.getMainAttributes().put(Name.CLASS_PATH, classpath);
+            JarOutputStream dest  = new JarOutputStream(new BufferedOutputStream(os), manifest);
             try {
-                out = new JarOutputStream(new BufferedOutputStream(dest), manifest);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        try {
-            out.closeEntry();
-            out.finish();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        try {
-            if (out != null) {
-                out.close();
-            }
-            if (dest != null) {
+                dest.closeEntry();
+                dest.finish();
+            } finally {
                 dest.close();
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } finally {
+            os.close();
         }
-        return FileUtil.toFileObject(oepeJarFile);
     }
     
     private String getPathToModules(File from) {
