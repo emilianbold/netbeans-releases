@@ -58,6 +58,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -76,15 +78,23 @@ public final class WLJpa2SwitchSupport {
 
     private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
     
-    private final WLDeploymentManager deploymentManager;
+    private final File serverRoot;
+    
+    private final WLDeploymentManager dm;
 
-    public WLJpa2SwitchSupport(WLDeploymentManager deploymentManager) {
-        this.deploymentManager = deploymentManager;
+    public WLJpa2SwitchSupport(File serverRoot) {
+        this.dm = null;
+        this.serverRoot = serverRoot;
+    }
+    
+    public WLJpa2SwitchSupport(WLDeploymentManager dm) {
+        this.dm = dm;
+        this.serverRoot = WLPluginProperties.getServerRoot(dm, true);
     }
 
     public void enable() {
         try {
-            File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+            File libDir = WLPluginProperties.getServerLibDirectory(serverRoot);
             if (libDir != null) {
                 libDir = FileUtil.normalizeFile(libDir);
             }
@@ -131,7 +141,7 @@ public final class WLJpa2SwitchSupport {
             }
 
             // update weblogic.jar
-            File weblogicFile = WLPluginProperties.getWeblogicJar(deploymentManager);
+            File weblogicFile = WLPluginProperties.getWeblogicJar(serverRoot);
             JarFile weblogicJarFile = new JarFile(weblogicFile);
             try {
                 Manifest wlManifest = weblogicJarFile.getManifest();
@@ -155,13 +165,15 @@ public final class WLJpa2SwitchSupport {
             // TODO some exception/message to the user
             Exceptions.printStackTrace(ex);
         } finally {
-            deploymentManager.getJ2eePlatformImpl().notifyLibrariesChange();
+            if (dm != null) {
+                dm.getJ2eePlatformImpl().notifyLibrariesChange();
+            }
         }
     }
 
     public void disable() {
         try {
-            File libDir = WLPluginProperties.getServerLibDirectory(deploymentManager, true);
+            File libDir = WLPluginProperties.getServerLibDirectory(serverRoot);
             if (libDir != null) {
                 libDir = FileUtil.normalizeFile(libDir);
             }            
@@ -197,12 +209,19 @@ public final class WLJpa2SwitchSupport {
             // TODO some exception/message to the user
             Exceptions.printStackTrace(ex);
         } finally {
-            deploymentManager.getJ2eePlatformImpl().notifyLibrariesChange();
+            if (dm != null) {
+                dm.getJ2eePlatformImpl().notifyLibrariesChange();
+            }
         }
     }
 
     public boolean isEnabled() {
-        return deploymentManager.getJ2eePlatformImpl().isJpa2Available();
+        if (dm != null) {
+            return dm.getJ2eePlatformImpl().isJpa2Available();
+        } else {
+            // TODO parse jar cp
+            return false;
+        }
     }
 
     public boolean isEnabledViaSmartUpdate() {
@@ -305,11 +324,12 @@ public final class WLJpa2SwitchSupport {
 
     private String getPathToModules(File from) {
         File mwHomeFile = null;
-        String mwHome = deploymentManager.getProductProperties().getMiddlewareHome();
+        String mwHome = (dm != null)
+                ? dm.getProductProperties().getMiddlewareHome()
+                : WLProductProperties.getMiddlewareHome(serverRoot);
         if (mwHome == null) {
-            File root = WLPluginProperties.getServerRoot(deploymentManager, false);
-            if (root != null && root.getParentFile() != null) {
-                mwHomeFile = root.getParentFile();
+            if (serverRoot != null && serverRoot.getParentFile() != null) {
+                mwHomeFile = serverRoot.getParentFile();
             }
         } else {
             mwHomeFile = new File(mwHome);
