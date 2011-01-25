@@ -955,19 +955,35 @@ public final class TreeUtilities {
     }
     
     private void copyInnerClassIndexes(Tree from, Tree to) {
-        final int[] fromIdx = {-2};
+        final int[] fromIdx = {-3};
         TreeScanner<Void, Void> scanner = new TreeScanner<Void, Void>() {
             @Override
             public Void scan(Tree node, Void p) {
-                if (fromIdx[0] < -1)
-                    super.scan(node, p);
-                return null;
+                return fromIdx[0] < -1 ? super.scan(node, p) : null;
             }            
             @Override
             public Void visitClass(ClassTree node, Void p) {
+                if (fromIdx[0] < -2)
+                    return super.visitClass(node, p);
                 fromIdx[0] = ((JCClassDecl)node).index;
                 return null;
             }
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                return fromIdx[0] < -2 ? super.visitMethod(node, p) : null;
+            }
+
+            @Override
+            public Void visitBlock(BlockTree node, Void p) {
+                int old = fromIdx[0];
+                fromIdx[0] = -2;
+                try {
+                    return super.visitBlock(node, p);
+                } finally {
+                    if (fromIdx[0] < -1)
+                        fromIdx[0] = old;
+                }
+            }            
         };
         scanner.scan(from, null);
         if (fromIdx[0] < -1)
