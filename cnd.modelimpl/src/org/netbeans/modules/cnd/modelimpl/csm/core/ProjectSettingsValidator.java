@@ -240,6 +240,7 @@ public class ProjectSettingsValidator {
 	    }
 	}
 	
+        @Override
 	public void write(DataOutput stream ) throws IOException {
 	    stream.writeInt(map.size());
 	    for( Map.Entry<CharSequence, Long> entry : map.entrySet()) {
@@ -250,17 +251,14 @@ public class ProjectSettingsValidator {
     }
     
     private static class ValidatorPersistentFactory implements PersistentFactory {
-	
-	public boolean canWrite(Persistent obj) {
-	    assert obj instanceof Data;
-	    return true;
-	}
 
+        @Override
 	public void write(DataOutput out, Persistent obj) throws IOException {
 	    assert obj instanceof Data;
 	    ((Data) obj).write(out);
 	}
 
+        @Override
 	public Persistent read(DataInput in) throws IOException {
 	    return new Data(in);
 	}

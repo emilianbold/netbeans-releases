@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,132 +34,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public abstract class AbstractFileBuffer implements FileBuffer {
+public final class FileBufferSnapshot implements APTFileBuffer {
+    
     private final CharSequence absPath;
     private final FileSystem fileSystem;
-
-    protected AbstractFileBuffer(FileObject fileObject) {
-        this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
-        this.fileSystem = getFileSystem(fileObject);
-// remote link file objects are just lightweight delegating wrappers, so they have multiple instances
-//        if (CndUtils.isDebugMode()) {
-//            FileObject fo2 = fileSystem.findResource(absPath.toString());
-//            CndUtils.assertTrue(fileObject == fo2, "File objects differ: " + fileObject + " vs " + fo2); //NOI18N
-//        }
+    private final char[] buffer;
+    private final long timeStamp;
+    private Reference<int[]> linesRef;
+    
+    public FileBufferSnapshot(FileSystem fileSystem, CharSequence absPath, char[] buffer, int[] linesCache, long timeStamp) {
+        this.absPath = absPath;
+        this.fileSystem = fileSystem;
+        this.buffer = buffer;
+        this.timeStamp = timeStamp;
+        cacheLines(linesCache);
     }
 
-    protected final String getEncoding() {
-        FileObject fo = getFileObject();
-        Charset cs = null;
-        if (fo != null && fo.isValid()) {
-            cs = FileEncodingQuery.getEncoding(fo);
-        }
-        if (cs == null) {
-            cs = FileEncodingQuery.getDefaultEncoding();
-        }
-        return cs.name();
+    public long getTimeStamp() {
+        return timeStamp;
     }
     
-    private static FileSystem getFileSystem(FileObject fileObject) {
-        try {
-            return fileObject.getFileSystem();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return InvalidFileObjectSupport.getDummyFileSystem();
-        }       
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-    }
-
     @Override
     public CharSequence getAbsolutePath() {
         return absPath;
     }
 
     @Override
-    public CharSequence getUrl() {
-        return CndFileUtils.fileObjectToUrl(getFileObject());
-    }
-
-    @Override
     public FileSystem getFileSystem() {
         return fileSystem;
-    }    
-
-    @Override
-    public FileObject getFileObject() {
-        FileObject result = fileSystem.findResource(absPath.toString());
-        if (result == null) {
-            CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
-        }
-        return result;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // impl of SelfPersistent
-
-    // final is important here - see PersistentUtils.writeBuffer/readBuffer
-    public final void write(DataOutput output) throws IOException {
-        assert this.absPath != null;
-        PersistentUtils.writeUTF(absPath, output);
-        PersistentUtils.writeFileSystem(fileSystem, output);
-    }  
-    
-    protected AbstractFileBuffer(DataInput input) throws IOException {
-        this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        this.fileSystem = PersistentUtils.readFileSystem(input);
-        assert this.absPath != null;
     }
 
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public char[] getCharBuffer() throws IOException {
+        return buffer;
+    }
+
     public int[] getLineColumnByOffset(int offset) throws IOException {
         int[] lineCol = new int[]{1, 1};
         int line = _getLineByOffset(offset);
         int start = _getStartLineOffset(line);
         lineCol[0] = line;
         // find line and column
-        String text = getText();
         int TABSIZE = ModelSupport.getTabSize();
         for (int curOffset = start; curOffset < offset; curOffset++) {
-            char curChar = text.charAt(curOffset);
+            char curChar = buffer[curOffset];
             switch (curChar) {
                 case '\n':
                     // just increase line number
-                    lineCol[0] = lineCol[0] + 1;
+                    lineCol[0] += 1;
                     lineCol[1] = 1;
                     break;
                 case '\t':
@@ -174,25 +111,24 @@ public abstract class AbstractFileBuffer implements FileBuffer {
                     lineCol[1] = newCol;
                     break;
                 default:
-                    lineCol[1]++;
+                    lineCol[1] += 1;
                     break;
             }
         }
         return lineCol;
     }
 
-    @Override
     public int getOffsetByLineColumn(int line, int column) throws IOException {
         int startOffset = _getStartLineOffset(line);
-        String text = getText();
         int TABSIZE = ModelSupport.getTabSize();
         int currCol = 1;
         int outOffset;
-        loop:for (outOffset = startOffset; outOffset < text.length(); outOffset++) {
+        loop:
+        for (outOffset = startOffset; outOffset < buffer.length; outOffset++) {
             if (currCol >= column) {
                 break;
             }
-            char curChar = text.charAt(outOffset);
+            char curChar = buffer[outOffset];
             switch (curChar) {
                 case '\n':
                     break loop;
@@ -215,17 +151,17 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         if (line < list.length) {
             return list[line];
         }
-        return list[list.length-1];
+        return list[list.length - 1];
     }
 
     private int _getLineByOffset(int offset) throws IOException {
         int[] list = getLineOffsets();
-	int low = 0;
-	int high = list.length - 1;
-	while (low <= high) {
-	    int mid = (low + high) >>> 1;
-	    int midVal = list[mid];
-	    if (midVal < offset) {
+        int low = 0;
+        int high = list.length - 1;
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int midVal = list[mid];
+            if (midVal < offset) {
                 if (low == high) {
                     return low + 1;
                 }
@@ -238,42 +174,46 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             } else {
                 return mid + 1;
             }
-	}
-	return low;
+        }
+        return low;
     }
-    
-    private WeakReference<Object> lines = new WeakReference<Object>(null);
+
     private int[] getLineOffsets() throws IOException {
-        WeakReference<Object> aLines = lines;
+        Reference<int[]> aLines = linesRef;
         int[] res = null;
         if (aLines != null) {
-            res = (int[]) aLines.get();
+            res = aLines.get();
         }
         if (res == null) {
-            String text = getText();
-            int length = text.length();
-            ArrayList<Integer> list = new ArrayList<Integer>(length/10);
+            char[] charBuffer = getCharBuffer();
+            int length = charBuffer.length;
+            ArrayList<Integer> list = new ArrayList<Integer>(length / 10);
             // find line and column
             list.add(Integer.valueOf(0));
             for (int curOffset = 0; curOffset < length; curOffset++) {
-                char curChar = text.charAt(curOffset);
+                char curChar = charBuffer[curOffset];
                 if (curChar == '\n') {
-                    list.add(Integer.valueOf(curOffset+1));
+                    list.add(Integer.valueOf(curOffset + 1));
                 }
             }
             res = new int[list.size()];
-            for (int i = 0; i < list.size(); i++){
+            for (int i = 0; i < list.size(); i++) {
                 res[i] = list.get(i);
             }
-            lines = new WeakReference<Object>(res);
+            cacheLines(res);
         }
         return res;
+    }    
+    
+    private void cacheLines(int[] lines) {
+        this.linesRef = new WeakReference<int[]>(lines);
     }
 
-    protected void clearLineCache() {
-        WeakReference<Object> aLines = lines;
-        if (aLines != null) {
-            aLines.clear();
-        }
+    public String getText(int start, int end) {
+        return new String(buffer, start, end - start);
+    }
+    
+    public String getText() {
+        return new String(buffer);
     }
 }
