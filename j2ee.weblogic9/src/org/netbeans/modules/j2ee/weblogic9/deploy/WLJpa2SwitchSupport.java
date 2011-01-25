@@ -55,6 +55,8 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,6 +73,8 @@ public final class WLJpa2SwitchSupport {
     private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
     
     private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
+
+    private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
     
     private final WLDeploymentManager deploymentManager;
 
@@ -205,22 +209,18 @@ public final class WLJpa2SwitchSupport {
         // TODO check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
         return false;
     }
-
-    private FileObject backup(File jarFile) throws IOException {
-        FileObject fo = FileUtil.toFileObject(jarFile);
-        String bakName = FileUtil.findFreeFileName(fo.getParent(),
-                jarFile.getName(), "bak"); // NOI18N
-        return FileUtil.copyFile(fo, fo.getParent(), bakName, "bak"); // NOI18N
-    }
-
+    
     private void replaceManifest(File jarFile, Manifest manifest) throws IOException {
-        FileObject bakJar = backup(jarFile);
+        FileObject fo = FileUtil.toFileObject(jarFile);
+        String tmpName = FileUtil.findFreeFileName(fo.getParent(),
+                jarFile.getName(), "tmp"); // NOI18N
+        File tmpJar = new File(jarFile.getParentFile(), tmpName + ".tmp"); // NOI18N
         try {
             InputStream is = new BufferedInputStream(
-                    new FileInputStream(FileUtil.toFile(bakJar)));
+                    new FileInputStream(jarFile));
             try {
                 OutputStream os = new BufferedOutputStream(
-                        new FileOutputStream(jarFile));
+                        new FileOutputStream(tmpJar));
                 try {
                     replaceManifest(is, os, manifest);
                 } finally {
@@ -229,11 +229,18 @@ public final class WLJpa2SwitchSupport {
             } finally {
                 is.close();
             }
+            
+            if (tmpJar.renameTo(jarFile)) {
+                LOGGER.log(Level.FINE, "Successfully moved {0}", tmpJar);
+                return;
+            }
+            LOGGER.log(Level.FINE, "Byte to byte copy {0}", tmpJar);
+            copy(tmpJar, jarFile);
         } finally {
-            bakJar.delete();
+            tmpJar.delete();
         }
     }
-
+    
     private void replaceManifest(InputStream is, OutputStream os, Manifest manifest) throws IOException {
         JarInputStream in = new JarInputStream(is);
         try {
@@ -282,6 +289,20 @@ public final class WLJpa2SwitchSupport {
         }
     }
     
+    private void copy(File source, File dest) throws IOException {
+        InputStream is = new BufferedInputStream(new FileInputStream(source));
+        try {
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(dest));
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+    }
+
     private String getPathToModules(File from) {
         File mwHomeFile = null;
         String mwHome = deploymentManager.getProductProperties().getMiddlewareHome();
