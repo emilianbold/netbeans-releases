@@ -547,6 +547,12 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        DocumentTesting.insert(context, 50, "x\nab\n");
 //        EditorPaneTesting.setCaretOffset(context, 20);
     }
+    
+    private static final String PROP_HL_EXCLUDES = "HighlightsLayerExcludes"; //NOI18N
+    private static void excludeHighlights(JEditorPane pane) {
+        // Exclude certain highlights to test intra-line view rebuilds
+        pane.putClientProperty(PROP_HL_EXCLUDES, ".*CaretRowHighlighting$");
+    }
 
     public void testRandomModsPlainText() throws Exception {
         loggingOn();
@@ -567,6 +573,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        DocumentTesting.undo(context, 2);
 //        DocumentTesting.redo(context, 2);
         container.run(0L); // Test random ops
+        // Exclude caret row highlighting
+        excludeHighlights(pane);
+        container.run(0L); // Re-run test
     }
 
     public void testRandomModsJava() throws Exception {
@@ -582,6 +591,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         container.run(1271946202898L);
         container.run(1290550667174L);
         container.run(0L); // Test random ops
+        // Exclude caret row highlighting
+        excludeHighlights(pane);
+        container.run(0L); // Re-run test
     }
 
     public void testRandomModsJavaSeed1() throws Exception {
@@ -594,6 +606,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
+        container.run(1286796912276L);
+        // Exclude caret row highlighting
+        excludeHighlights(pane);
         container.run(1286796912276L);
     }
     
