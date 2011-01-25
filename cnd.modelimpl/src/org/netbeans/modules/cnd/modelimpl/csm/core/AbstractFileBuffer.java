@@ -48,8 +48,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -73,7 +71,6 @@ import org.openide.util.Exceptions;
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
-    private Charset encoding;
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
@@ -85,6 +82,18 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 //        }
     }
 
+    protected final String getEncoding() {
+        FileObject fo = getFileObject();
+        Charset cs = null;
+        if (fo != null && fo.isValid()) {
+            cs = FileEncodingQuery.getEncoding(fo);
+        }
+        if (cs == null) {
+            cs = FileEncodingQuery.getDefaultEncoding();
+        }
+        return cs.name();
+    }
+    
     private static FileSystem getFileSystem(FileObject fileObject) {
         try {
             return fileObject.getFileSystem();
@@ -126,8 +135,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return result;
     }
 
-    public abstract InputStream getInputStream() throws IOException;
-    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
