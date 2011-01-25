@@ -111,7 +111,11 @@ public class NbBundleProcessor extends AbstractProcessor {
                 comments.put(pkg, commentsByPackage);
             }
             List<String> runningComments = new ArrayList<String>();
-            for (String keyValue : e.getAnnotation(NbBundle.Messages.class).value()) {
+            NbBundle.Messages messages = e.getAnnotation(NbBundle.Messages.class);
+            if (messages == null) {
+                continue;
+            }
+            for (String keyValue : messages.value()) {
                 if (keyValue.startsWith("#")) {
                     runningComments.add(keyValue);
                     continue;
@@ -213,6 +217,9 @@ public class NbBundleProcessor extends AbstractProcessor {
                             Matcher m = Pattern.compile("# [{](\\d+)[}] - (.+)").matcher(comment);
                             if (m.matches()) {
                                 i = Integer.parseInt(m.group(1));
+                                while (i >= params.size()) {
+                                    params.add("arg" + params.size());
+                                }
                                 String desc = m.group(2);
                                 params.set(i, toIdentifier(desc));
                                 method.append("     * @param ").append(params.get(i)).append(" ").append(toJavadoc(desc)).append("\n");

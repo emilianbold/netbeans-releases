@@ -161,6 +161,15 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertTrue(err.toString(), err.toString().contains("="));
     }
 
+    @Messages({
+        "# {0} - in use", "# {1} - not in use", "unused_param_1=please remember {0}",
+        "# {0} - not in use", "# {1} - in use", "unused_param_2=I will remember {1}"
+    })
+    public void testNonexistentParameter() throws Exception {
+        assertEquals("please remember me", unused_param_1("me", "you"));
+        assertEquals("I will remember you", unused_param_2("me", "you"));
+    }
+
     public void testExistingBundle() throws Exception {
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages(\"k=v\")", "class C {}");
         TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "# original comment\nold=stuff\n");
