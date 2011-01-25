@@ -53,6 +53,7 @@ import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,6 +78,7 @@ import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
+import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
@@ -287,6 +289,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         ListModifiedIndexEntriesCommand cmd = new ListModifiedIndexEntriesCommand(repository, roots, monitor, this);
         cmd.execute();
         return cmd.getFiles();
+    }
+
+    @Override
+    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListRemoteBranchesCommand cmd = new ListRemoteBranchesCommand(repository, remoteRepositoryUrl, monitor);
+        cmd.execute();
+        return cmd.getBranches();
     }
 
     @Override

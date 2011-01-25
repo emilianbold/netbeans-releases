@@ -77,6 +77,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
+            "listRemoteBranches", //NOI18N
             "log", //NOI18N
             "removeNotificationListener")); //NOI18N
     /**
@@ -103,6 +104,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getUser",  //NOI18N
             "ignore",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
+            "listRemoteBranches", //NOI18N
             "log", //NOI18N
             "unignore", //NOI18N
             "removeNotificationListener")); //NOI18N
