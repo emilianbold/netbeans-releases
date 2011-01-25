@@ -85,8 +85,8 @@ import java.awt.event.ItemEvent;
 import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -171,14 +171,11 @@ final class DebugCorePanel extends javax.swing.JPanel {
         // Validate that project toolchain family is the same as debugger type
         Project selectedProject = getSelectedProject();
         if (selectedProject != null) {
-            ConfigurationDescriptorProvider cdp = selectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (cdp != null) {
-                MakeConfigurationDescriptor configurationDescriptor = cdp.getConfigurationDescriptor();
-                if (configurationDescriptor != null) {
-                    EngineType projectDebuggerType = DebuggerManager.debuggerType(configurationDescriptor.getActiveConfiguration());
-                    if (getEngine() != projectDebuggerType) {
-                        setError("ERROR_WRONG_FAMILY", false); // NOI18N
-                    }
+            final MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(selectedProject);
+            if (conf != null) {
+                EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
+                if (getEngine() != projectDebuggerType) {
+                    setError("ERROR_WRONG_FAMILY", false); // NOI18N
                 }
             }
         }

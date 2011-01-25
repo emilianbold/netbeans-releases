@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.discovery.project.cases;
 
+import java.io.File;
 import org.junit.Test;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 
 /**
  *
- * @author Alexander Simon
+ * @author as204739
  */
-public class RemotePkgConfigTestCase extends MakeProjectTestBase {
+public class SimpleTestCase extends MakeProjectTestBase {
 
-    private ExecutionEnvironment env;
-
-    public RemotePkgConfigTestCase() {
-        super("RemotePkgConfig");
+    public SimpleTestCase() {
+        super("SimpleTestCase");
     }
 
     @Override
@@ -67,26 +61,11 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
         return false;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        env = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2");
-        ConnectionManager.getInstance().connectTo(env);
-        ServerRecord record = ServerList.get(env);
-        record.setUp();
-        ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), true, true);
-        CompilerSetManager.get(env).initialize(true, true, null);
-        CompilerSetManager.get(env).finishInitialization();
-    }
-
-    @Override
-    protected ExecutionEnvironment getEE() {
-        return env;
-    }
-
     @Test
-    public void testPkgConfig() {
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, true, "");
+    public void testSimple(){
+        File dataDir = getDataDir();
+        String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/discovery/project/DiscoveryTestApplication.tar.gz";
+        assert new File(zip).exists() : "Not  found file "+zip;
+        performTestProject(zip, null, false, "");
     }
-
 }

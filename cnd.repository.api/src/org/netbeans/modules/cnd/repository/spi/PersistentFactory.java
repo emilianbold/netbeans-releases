@@ -55,13 +55,6 @@ import java.io.IOException;
 public interface PersistentFactory
 {
     /**
-     * returns true if factory can actually write objects
-     * @param obj object to test
-     * @return true if factory supports such objects
-     */
-    boolean canWrite(Persistent obj);
-
-    /**
      * Repository Serialization 
      * @param out DataOutput to write to
      * @param obj object to write

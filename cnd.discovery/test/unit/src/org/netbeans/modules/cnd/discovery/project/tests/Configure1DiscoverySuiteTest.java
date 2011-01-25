@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.discovery.project.tests;
 import org.netbeans.modules.cnd.discovery.project.cases.PkgConfigTestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.discovery.project.cases.SimpleTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
@@ -56,6 +57,7 @@ public class Configure1DiscoverySuiteTest extends CndBaseTestSuite {
     public Configure1DiscoverySuiteTest() {
         super("C/C++ Configure Discovery Test"); // NOI18N
 
+        addTestSuite(SimpleTestCase.class);
         addTestSuite(PkgConfigTestCase.class);
     }
 

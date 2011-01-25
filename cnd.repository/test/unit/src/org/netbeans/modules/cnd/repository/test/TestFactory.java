@@ -63,19 +63,16 @@ public class TestFactory implements PersistentFactory {
 	return instance;
     }
     
+    @Override
     public void write(DataOutput out, Persistent obj) throws IOException {
 	if( obj instanceof TestObject ) {
 	    ((TestObject) obj).write(out);
 	}
     }
     
+    @Override
     public Persistent read(DataInput in) throws IOException {
 	TestObject obj = new TestObject(in);
 	return obj;
     }    
-
-    public boolean canWrite(Persistent obj) {
-	return obj instanceof TestObject;
-    }
-    
 }
