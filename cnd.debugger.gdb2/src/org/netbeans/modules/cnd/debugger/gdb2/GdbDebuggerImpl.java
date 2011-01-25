@@ -2140,19 +2140,18 @@ import org.openide.util.Exceptions;
         updateMIVar();
     }
 
-    private void updateVarAttr(Variable v, MIRecord attr) {
+    private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
         MITList attr_results = attr.results();
         String value = attr_results.valueOf("attr").asConst().value(); // NOI18N
-	GdbVariable gv = (GdbVariable) v;
-        gv.setEditable(value);
-        if (gv.isEditable()) {
+        v.setEditable(value);
+        if (v.isEditable() && evalValue) {
             evalMIVar(v);
         }
     }
     
     public static final String STRUCT_VALUE = "{...}"; // NOI18N
 
-    private void updateValue(Variable v, MIRecord varvalue) {
+    private void updateValue(GdbVariable v, MIRecord varvalue) {
         MITList value_results = varvalue.results();
         MIValue miValue = value_results.valueOf("value"); //NOI18N
         String value = null;
@@ -2161,11 +2160,10 @@ import org.openide.util.Exceptions;
         }
         value = processValue(value);
         v.setAsText(value);
-        GdbVariable gv = (GdbVariable) v;
-        if (gv.isWatch()) {
-            watchUpdater().treeNodeChanged((Object) v); // just update this node
+        if (v.isWatch()) {
+            watchUpdater().treeNodeChanged(v); // just update this node
         } else {
-            localUpdater.treeNodeChanged((Object) v); // just update this node
+            localUpdater.treeNodeChanged(v); // just update this node
         }
     }
     
@@ -2179,7 +2177,7 @@ import org.openide.util.Exceptions;
         return value;
     }
 
-    private void interpMIChildren(Variable parent,
+    private void interpMIChildren(GdbVariable parent,
 				  MIRecord miRecord,
 				  int level) {
         MITList results = miRecord.results();
@@ -2220,7 +2218,7 @@ import org.openide.util.Exceptions;
                     // do nothing
                 }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
-                        parent, exp, null, null, ((GdbVariable)parent).isWatch());
+                        parent, exp, null, null, parent.isWatch());
                 value = processValue(value);
                 childvar.setAsText(value);
                 childvar.setType(type);
@@ -2228,7 +2226,7 @@ import org.openide.util.Exceptions;
                 childvar.setNumChild(numchild);
                 variableBag.add(childvar);
 		children.add(childvar);
-
+                attrMIVar(childvar, false);
             }
 	}
 
@@ -2372,33 +2370,31 @@ import org.openide.util.Exceptions;
         gdb.sendCommand(cmd);
     }
 
-    private void interpVar(Variable v, MIRecord var) {
+    private void interpVar(GdbVariable v, MIRecord var) {
         MITList results = var.results();
         String mi_name = results.valueOf("name").asConst().value(); // NOI18N
         String type = results.valueOf("type").asConst().value(); // NOI18N
         String numchild = results.valueOf("numchild").asConst().value(); // NOI18N
 
-	GdbVariable gv = (GdbVariable) v;
-        gv.setMIName(mi_name);
-        gv.setType(type);
-        gv.setNumChild(numchild); // also set children if there is any
+        v.setMIName(mi_name);
+        v.setType(type);
+        v.setNumChild(numchild); // also set children if there is any
 	Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
         if (wv == null) {
             variableBag.add(v);
         }
-        attrMIVar(v);
+        attrMIVar(v, true);
     }
 
-    private void attrMIVar(final Variable v) {
-	GdbVariable gv = (GdbVariable) v;
-        String expr = gv.getMIName();
+    private void attrMIVar(final GdbVariable v, final boolean evalValue) {
+        String expr = v.getMIName();
 	// editable ?
         String cmdString = "-var-show-attributes " + expr; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
             @Override
                     protected void onDone(MIRecord record) {
-                        updateVarAttr(v, record);
+                        updateVarAttr(v, record, evalValue);
                         finish();
                     }
                 };
@@ -2438,9 +2434,8 @@ import org.openide.util.Exceptions;
         gdb.sendCommand(cmd);
     }
 
-    private void evalMIVar(final Variable v) {
-	GdbVariable gv = (GdbVariable) v;
-        String mi_name = gv.getMIName();
+    private void evalMIVar(final GdbVariable v) {
+        String mi_name = v.getMIName();
 	// value of mi_name
         String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
         final MICommand cmd =
@@ -2486,7 +2481,7 @@ import org.openide.util.Exceptions;
     /*
      * this MI call would create MI Vars for each child automatically by gdb
      */
-    public void getMIChildren(final Variable parent,
+    void getMIChildren(final GdbVariable parent,
 			      String expr,
 			      final int level) {
 
@@ -4204,7 +4199,7 @@ import org.openide.util.Exceptions;
             cmdString = "-var-assign " + var.getMIName() + " " + value; // NOI18N
         } else {
             cmdString = "-data-evaluate-expression \"" +  //NOI18N
-                    var.getVariableName() + '=' + quoteValue(value) + '"'; // NOI18N
+                    var.getFullName() + '=' + quoteValue(value) + '"'; // NOI18N
         }
         MICommand cmd =
             new MiCommandImpl(cmdString) {

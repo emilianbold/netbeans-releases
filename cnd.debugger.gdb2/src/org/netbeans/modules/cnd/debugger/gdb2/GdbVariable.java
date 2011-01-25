@@ -104,6 +104,7 @@ class GdbVariable extends Variable {
     }
 
     // override Variable
+    @Override
     public String getAsText() {
 	String prefix = org.netbeans.modules.cnd.debugger.common2.debugger.Log.Watch.varprefix? mi_name + ": ": ""; // NOI18N
 	if (inScope)
@@ -119,8 +120,9 @@ class GdbVariable extends Variable {
 	}
     }
 
-    protected boolean isEditable() {
-	return this.editable;
+    @Override
+    public boolean isEditable() {
+	return editable;
     }
 
     protected void setMIName(String mi_name) {
@@ -155,11 +157,13 @@ class GdbVariable extends Variable {
     }
 
     // override Variable
+    @Override
     public int getNumChild() {
 	return this.numchild;
     }
 
     // override Variable
+    @Override
     public Variable[] getChildren() {
         if (isLeaf())
             return new Variable[0];
@@ -209,8 +213,9 @@ class GdbVariable extends Variable {
     public void setVariableValue(String assigned_v) {
         // no need to update to the same value
         if (!assigned_v.equals(value)) {
-            // always assign in non-mi form, IZ 193500
-            debugger.assignVar(this, assigned_v, false);
+            // always assign char* in non-mi form, IZ 193500
+            boolean miName = !"char *".equals(type); //NOI18N
+            debugger.assignVar(this, assigned_v, miName);
         }
     }
 
