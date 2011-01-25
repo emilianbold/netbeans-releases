@@ -57,6 +57,7 @@ import org.openide.util.ChangeSupport;
  * <i>ThreadSafe</i>
  *
  * @author Petr Hejl
+ * TODO perhaps this could be merged into WLDeploymentManager
  */
 public class WLSharedState {
 

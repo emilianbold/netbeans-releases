@@ -144,7 +144,9 @@ public final class WLJpa2SwitchSupport {
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }        
+        } finally {
+            deploymentManager.getJ2eePlatformImpl().notifyLibrariesChange();
+        }       
     }
 
     public void disable() {
@@ -180,6 +182,8 @@ public final class WLJpa2SwitchSupport {
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            deploymentManager.getJ2eePlatformImpl().notifyLibrariesChange();
         }
     }
 
