@@ -102,10 +102,10 @@ class VariableBag {
 	return localvariables.toArray(vars);
     } 
 
-    public void add(Variable newVar) {
+    public void add(GdbVariable newVar) {
 	//System.out.println("VariableBag add " + ((GdbVariable)newVar).getMIName());
 	variables.add(newVar);
-	if (((GdbVariable)newVar).isWatch())
+	if (newVar.isWatch())
 	    watchvariables.add(newVar);
 	else
 	    localvariables.add(newVar);
@@ -182,10 +182,11 @@ class VariableBag {
 		    remove(children[vx]);
 	    }
 	}
-	if (((GdbVariable)oldVar).isWatch())
+	if (((GdbVariable)oldVar).isWatch()) {
 	    watchvariables.remove(oldVar);
-	else
+        } else {
 	    localvariables.remove(oldVar);
+        }
     }
 
     public void removeWatch(Variable oldVar) {
