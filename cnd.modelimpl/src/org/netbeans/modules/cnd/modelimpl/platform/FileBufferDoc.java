@@ -295,11 +295,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
     
     @Override
-    public int getLength() {
-        return doc.getLength();
-    }
-
-    @Override
     public boolean isFileBased() {
         return false;
     }

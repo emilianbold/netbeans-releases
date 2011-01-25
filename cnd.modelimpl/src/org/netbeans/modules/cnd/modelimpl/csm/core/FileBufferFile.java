@@ -192,11 +192,6 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
     
     @Override
-    public int getLength() {
-        return (int) getFileObject().getSize();
-    }
-    
-    @Override
     public boolean isFileBased() {
         return true;
     }
