@@ -297,10 +297,6 @@ public class ProjectGenerator {
             return databaseConnection;
         }
 
-        public boolean isMakefileProject() {
-            return configurations[0].isMakefileConfiguration();
-        }
-
     }
     
     public static String getDefaultProjectFolder() {

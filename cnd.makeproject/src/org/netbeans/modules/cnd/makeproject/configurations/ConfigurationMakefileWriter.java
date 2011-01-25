@@ -119,28 +119,12 @@ public class ConfigurationMakefileWriter {
     public void write() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(true);
         cleanup(okConfs);
-        if (isMakefileProject()) {
-            for (MakeConfiguration conf : okConfs) {
-                writePackagingScript(conf);
-            }
-        } else {
-            writeMakefileImpl();
-            for (MakeConfiguration conf : okConfs) {
-                writeMakefileConf(conf);
-                writePackagingScript(conf);
-            }
-            writeMakefileVariables(projectDescriptor);
+        writeMakefileImpl();
+        for (MakeConfiguration conf : okConfs) {
+            writeMakefileConf(conf);
+            writePackagingScript(conf);
         }
-    }
-
-    private boolean isMakefileProject() {
-        for (Configuration conf : projectDescriptor.getConfs().getConfigurations()) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration)conf;
-            if (makeConfiguration.isMakefileConfiguration()) {
-                return true;
-            }
-        }
-        return false;
+        writeMakefileVariables(projectDescriptor);
     }
 
     public void writeMissingMakefiles() {
@@ -150,10 +134,8 @@ public class ConfigurationMakefileWriter {
                 MakeConfiguration.CONFIGURATIONS_XML).lastModified();
         for (MakeConfiguration conf : okConfs) {
             File file = CndFileUtils.createLocalFile(getMakefilePath(conf));
-            if (!conf.isMakefileConfiguration()) {
-                if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
-                    writeMakefileConf(conf);
-                }
+            if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
+                writeMakefileConf(conf);
             }
             file = CndFileUtils.createLocalFile(getPackageScriptPath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {

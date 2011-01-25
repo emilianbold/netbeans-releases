@@ -81,10 +81,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
- * V74 - NB 7.0
- *    No longer generation makefiles for unmanaged projects. Calling projects make directly
  * V73 - NB 7.0
- *    add C/C++ flag USE_LINKER_PKG_CONFIG_LIBRARIES
+ * add C/C++ flag USE_LINKER_PKG_CONFIG_LIBRARIES
  * Without changing version
  *    added REMOTE_FILESYSTEM_BASE_DIR tag in project.xml
  * V72 - NB 7.0
@@ -215,7 +213,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 74;
+    public final static int CURRENT_VERSION = 73;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
