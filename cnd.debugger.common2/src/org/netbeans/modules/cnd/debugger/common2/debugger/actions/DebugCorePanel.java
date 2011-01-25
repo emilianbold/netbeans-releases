@@ -453,17 +453,20 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = gridy;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 0);
+	/* CR 7013811
         String engine = System.getProperty("debug.engine");
         if (engine != null && engine.equals("on")) // NOI18N
-	    add(engineLabel, gridBagConstraints);
+	 *
+	 */
+	add(engineLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = gridy++;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 12);
-        if (engine != null && engine.equals("on")) // NOI18N
-            add(engineComboBox, gridBagConstraints);
+        // CR 7013811 if (engine != null && engine.equals("on")) // NOI18N
+	add(engineComboBox, gridBagConstraints);
 
         engineComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
