@@ -64,9 +64,6 @@ public class CppDTIFactory implements DeletedTextInterceptor.Factory {
 
     @Override
     public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
-        assert mimePath.getPath().equals(MIMENames.CPLUSPLUS_MIME_TYPE) ||
-               mimePath.getPath().equals(MIMENames.C_MIME_TYPE) ||
-               mimePath.getPath().equals(MIMENames.HEADER_MIME_TYPE);
         return new DeletedTextInterceptorImpl();
     }
 

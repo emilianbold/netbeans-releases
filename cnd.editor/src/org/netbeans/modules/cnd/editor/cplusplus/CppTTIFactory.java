@@ -72,9 +72,6 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
 
     @Override
     public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
-        assert mimePath.getPath().equals(MIMENames.CPLUSPLUS_MIME_TYPE) ||
-               mimePath.getPath().equals(MIMENames.C_MIME_TYPE) ||
-               mimePath.getPath().equals(MIMENames.HEADER_MIME_TYPE);
         return new TypedTextInterceptorImpl();
     }
 
@@ -112,7 +109,7 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
             } else {
                 Caret caret = context.getComponent().getCaret();
                 boolean blockCommentStart = false;
-                if (offset > 0 && typedText.charAt(0) == '*') {
+                if (offset > 0 && typedText.charAt(0) == '*') { //NOI18N
                     TokenItem<TokenId> tokenAtDot = CndTokenUtilities.getToken(doc, offset - 1, true);
                     if (tokenAtDot.id() == CppTokenId.SLASH) {
                         // this is begin of block comment

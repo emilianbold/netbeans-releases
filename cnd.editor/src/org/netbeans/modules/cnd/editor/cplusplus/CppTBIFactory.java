@@ -57,6 +57,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor.MutableContext;
 
 /**
  *
@@ -66,15 +67,15 @@ import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
     // cnd source files
     @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
     @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
-    @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.DOXYGEN_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.STRING_DOUBLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.STRING_SINGLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
 })
 public class CppTBIFactory implements TypedBreakInterceptor.Factory {
 
     @Override
     public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-        assert mimePath.getPath().equals(MIMENames.CPLUSPLUS_MIME_TYPE)
-                || mimePath.getPath().equals(MIMENames.C_MIME_TYPE)
-                || mimePath.getPath().equals(MIMENames.HEADER_MIME_TYPE);
         return new TypedBreakInterceptorImpl();
     }
 
@@ -89,19 +90,19 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
-            BaseDocument doc = (BaseDocument) context.getDocument();
-            int dotPos = context.getCaretOffset();
-            Caret caret = context.getComponent().getCaret();
-            postShift = false;
-            Object doWork = doWork(doc, dotPos, caret);
-            if (doWork instanceof Integer) {
-                postShift = true;
-            }
             return false;
         }
 
         @Override
         public void insert(MutableContext context) throws BadLocationException {
+            BaseDocument doc = (BaseDocument) context.getDocument();
+            int dotPos = context.getCaretOffset();
+            Caret caret = context.getComponent().getCaret();
+            postShift = false;
+            Object doWork = doWork(doc, dotPos, caret, context);
+            if (doWork instanceof Integer) {
+                postShift = true;
+            }
         }
 
         @Override
@@ -117,16 +118,21 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
         }
     }
 
-    public static Object doWork(BaseDocument doc, int dotPos, Caret caret) {
+    public static Object doWork(BaseDocument doc, int dotPos, Caret caret, MutableContext context) {
         if (BracketCompletion.posWithinString(doc, dotPos)) {
             try {
                 if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos - 1) != '\\')
                         || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos - 2) == '\\')) {
                     // not line continuation
-                    doc.insertString(dotPos, "\"\"", null); //NOI18N
-                    dotPos += 1;
-                    caret.setDot(dotPos);
-                    return Integer.valueOf(1);
+                    if (context != null) {
+                        context.setText("\"\n\"", 1, 3); //NOI18N
+                        return true;
+                    } else {
+                        doc.insertString(dotPos, "\"\"", null); //NOI18N
+                        dotPos += 1;
+                        caret.setDot(dotPos);
+                        return Integer.valueOf(1);
+                    }
                 }
             } catch (BadLocationException ex) {
             }
@@ -169,18 +175,22 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
                             }
                         }
                     }
-                    doc.insertString(end, "\n" + insString, null); // NOI18N
-                    // Lock does not need because method is invoked from BaseKit that already lock indent.
-                    // NOI18N
-                    // Lock does not need because method is invoked from BaseKit that already lock indent.
-                    Indent indent = Indent.get(doc);
-                    indent.lock();
-                    try {
-                        indent.reindent(end + 1);
-                    } finally {
-                        indent.unlock();
+                    if (context != null) {
+                        context.setText("\n\n" + insString, 0, 1, 2,2+insString.length(), 1,2); //NOI18N
+                    } else {
+                        doc.insertString(end, "\n" + insString, null); // NOI18N
+                        // Lock does not need because method is invoked from BaseKit that already lock indent.
+                        // NOI18N
+                        // Lock does not need because method is invoked from BaseKit that already lock indent.
+                        Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
+                            indent.reindent(end + 1);
+                        } finally {
+                            indent.unlock();
+                        }
+                        caret.setDot(dotPos);
                     }
-                    caret.setDot(dotPos);
                     return true;
                 }
             } catch (BadLocationException ex) {

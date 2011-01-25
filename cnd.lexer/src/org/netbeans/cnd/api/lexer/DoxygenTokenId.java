@@ -49,6 +49,7 @@ import java.util.EnumSet;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.cnd.lexer.DoxygenLexer;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -80,6 +81,7 @@ public enum DoxygenTokenId implements TokenId {
         this.primaryCategory = primaryCategory;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -106,7 +108,7 @@ public enum DoxygenTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/x-doxygen"; // NOI18N
+            return MIMENames.DOXYGEN_MIME_TYPE;
         }
     };    
 }

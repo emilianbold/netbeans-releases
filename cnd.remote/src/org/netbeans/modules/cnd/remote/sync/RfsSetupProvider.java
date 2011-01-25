@@ -204,7 +204,7 @@ public class RfsSetupProvider implements SetupProvider {
     }
 
     private static int getSolarisOSVersionNumber(String versionString) {
-        String prefixToStrip = "Oracle ";
+        String prefixToStrip = "Oracle "; // NOI18N
         if (versionString.startsWith(prefixToStrip)) {
             versionString = versionString.substring(prefixToStrip.length());
         }

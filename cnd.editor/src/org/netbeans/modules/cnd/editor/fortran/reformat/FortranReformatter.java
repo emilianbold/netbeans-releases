@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
@@ -84,7 +85,7 @@ public class FortranReformatter implements ReformatTask {
         expandTabToSpaces = codeStyle.expandTabToSpaces();
         tabSize = codeStyle.getTabSize();
         if (context != null) {
-            if ("text/x-fortran".equals(context.mimePath())) { //NOI18N
+            if (MIMENames.FORTRAN_MIME_TYPE.equals(context.mimePath())) {
                 for (Context.Region region : context.indentRegions()) {
                     TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, 0);
                     reformatImpl(ts, region.getStartOffset(), region.getEndOffset());

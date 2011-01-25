@@ -121,7 +121,7 @@ class VariableBag {
 	for (Variable v : iter) {
             if (v instanceof GdbVariable) {
                 GdbVariable gv = (GdbVariable)v;
-                if (exp.equals(gv.getVariableName()) && addr.equals(gv.getValue()))
+                if (exp.equals(gv.getVariableName()) && addr.equals(gv.getAsText()))
                     return (GdbVariable)v;
             }
         }
