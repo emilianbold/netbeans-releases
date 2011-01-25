@@ -546,7 +546,7 @@ public final class ProjectSupport {
 	    case OLD_PROJECT:
 		assert seed.conf == null;
 		/* CR 7000724 needs to make a clone, it won't override the orig one later on */
-		seed.conf = (MakeConfiguration)ConfigurationSupport.getProjectActiveConfiguration(seed.project).clone();
+		seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project).clone();
 
 		/* CR 7000724 don't override configuration of existing project
 		populateConfiguration(seed);
