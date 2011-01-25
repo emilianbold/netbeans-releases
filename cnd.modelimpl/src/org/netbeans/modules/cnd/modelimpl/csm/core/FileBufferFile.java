@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.filesystems.FileObject;
@@ -94,8 +95,9 @@ public class FileBufferFile extends AbstractFileBuffer {
             }
         }
         // either bytes == null or bytes.get() == null
-        b = doGetBytes();
-        String str = new String(b, getEncoding());
+        AtomicReference<Integer> realLen = new AtomicReference<Integer>(0);
+        b = doGetBytes(realLen);
+        String str = new String(b, 0, realLen.get().intValue(), getEncoding());
         if (lastModifiedWhenCachedString != newLastModified) {
             clearLineCache();
         }
@@ -104,7 +106,7 @@ public class FileBufferFile extends AbstractFileBuffer {
         return str;
     }
 
-    private byte[] doGetBytes() throws IOException {
+    private byte[] doGetBytes(AtomicReference<Integer> outLen) throws IOException {
         FileObject fo = getFileObject();
         long length = fo.getSize();
         if (length > Integer.MAX_VALUE) {
@@ -121,7 +123,7 @@ public class FileBufferFile extends AbstractFileBuffer {
         } finally {
             is.close();
         }
-        convertLSToLF(readBytes);
+        outLen.set(Integer.valueOf(convertLSToLF(readBytes)));
         return readBytes;
     }
     
