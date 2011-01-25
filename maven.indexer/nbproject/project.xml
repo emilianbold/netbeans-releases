@@ -81,8 +81,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>2.4</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.4</specification-version>
+                        <specification-version>2.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -181,12 +181,12 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/indexer-core-3.1.0.jar</runtime-relative-path>
-                <binary-origin>external/indexer-core-3.1.0.jar</binary-origin>
+                <runtime-relative-path>ext/maven/indexer-core-4.0.0.jar</runtime-relative-path>
+                <binary-origin>external/indexer-core-4.0.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/indexer-artifact-3.1.0.jar</runtime-relative-path>
-                <binary-origin>external/indexer-artifact-3.1.0.jar</binary-origin>
+                <runtime-relative-path>ext/maven/indexer-artifact-4.0.0.jar</runtime-relative-path>
+                <binary-origin>external/indexer-artifact-4.0.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

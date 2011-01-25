@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.indexer;
 
 import java.io.FileNotFoundException;
+import org.apache.maven.index.expr.StringSearchExpression;
 import org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
@@ -98,6 +99,7 @@ import org.apache.maven.index.search.grouping.GGrouping;
 import org.apache.maven.index.GroupedSearchRequest;
 import org.apache.maven.index.GroupedSearchResponse;
 import org.apache.maven.index.IndexerFieldVersion;
+import org.apache.maven.index.MAVEN;
 import org.apache.maven.index.NexusIndexer;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.creator.AbstractIndexCreator;
@@ -883,7 +885,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         String clsname = className.replace(".", "/");
-                        FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase())),
+                        FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(
+                                indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()))),
                                 ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
@@ -941,7 +944,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
-                        bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(ArtifactInfo.SHA1, sha1))), BooleanClause.Occur.SHOULD));
+                        bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(MAVEN.SHA1, new StringSearchExpression(sha1)))), BooleanClause.Occur.SHOULD));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
@@ -1101,9 +1104,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                                 Query q;
                                 if (ArtifactInfo.NAMES.equals(fieldName)) {
                                     String clsname = field.getValue().replace(".", "/"); //NOI18N
-                                    q = indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase());
+                                    q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
                                 } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
-                                    q = indexer.constructQuery(fieldName, field.getValue());
+                                    q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(field.getValue()));
                                 } else {
                                     if (field.getMatch() == QueryField.MATCH_EXACT) {
                                         q = new TermQuery(new Term(fieldName, field.getValue()));
