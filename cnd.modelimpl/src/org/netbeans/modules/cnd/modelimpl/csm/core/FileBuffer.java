@@ -60,6 +60,8 @@ public interface FileBuffer extends APTFileBuffer {
     public void addChangeListener(ChangeListener listener);
     public void removeChangeListener(ChangeListener listener);
     
+    public CharSequence getUrl();
+    
     public String getText(int start, int end) throws IOException;
     
     public String getText() throws IOException;
