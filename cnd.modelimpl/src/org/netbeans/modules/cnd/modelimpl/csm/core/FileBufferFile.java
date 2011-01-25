@@ -192,11 +192,6 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
     
     @Override
-    public int getLength() {
-        return (int) getFileObject().getSize();
-    }
-    
-    @Override
     public boolean isFileBased() {
         return true;
     }
@@ -215,6 +210,6 @@ public class FileBufferFile extends AbstractFileBuffer {
 
     @Override
     public char[] getCharBuffer() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return asString().toCharArray();
     }
 }
