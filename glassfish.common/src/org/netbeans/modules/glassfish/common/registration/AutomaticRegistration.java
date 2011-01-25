@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -194,7 +195,8 @@ public class AutomaticRegistration {
      * @param displayName display name
      */
     private static boolean registerServerInstanceFO(FileObject serverInstanceDir, String url, String displayName, File glassfishRoot) {
-        String name = FileUtil.findFreeFileName(serverInstanceDir, "glassfish_autoregistered_instance", null); // NOI18N
+        String name = FileUtil.findFreeFileName(serverInstanceDir, 
+                GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE, null);
         FileObject instanceFO;
         try {
             instanceFO = serverInstanceDir.createData(name);
