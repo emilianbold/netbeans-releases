@@ -92,9 +92,10 @@ public class GetKenaiSourcesTest extends PerformanceTestCase {
     public void prepare(){
     }
     
-    public void testGetKenaiSources() {
-        doMeasurement();
-    }
+    // Not part of IDE since 7
+//    public void testGetKenaiSources() {
+//        doMeasurement();
+//    }
     
     public ComponentOperator open(){
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(menu,"|");
