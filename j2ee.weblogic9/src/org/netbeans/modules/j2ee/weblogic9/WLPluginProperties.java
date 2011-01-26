@@ -255,6 +255,15 @@ public final class WLPluginProperties {
     }
 
     @CheckForNull
+    public static File getServerLibDirectory(File serverFile) {
+        File serverLib = new File(serverFile, "server" + File.separator + "lib"); // NOI18N
+        if (serverLib.exists() && serverLib.isDirectory()) {
+            return serverLib;
+        }
+        return null;
+    }
+    
+    @CheckForNull
     public static File getServerRoot(WLDeploymentManager manager, boolean fallback) {
         String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         // if serverRoot is null, then we are in a server instance registration process, thus this call

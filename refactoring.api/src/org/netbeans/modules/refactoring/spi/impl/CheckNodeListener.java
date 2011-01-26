@@ -172,23 +172,6 @@ class CheckNodeListener implements MouseListener, KeyListener {
     }
 
     public void keyReleased(KeyEvent e) {
-        // Enter key was pressed, find the reference in document
-        int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_ENTER) {
-            JTree tree = (JTree) e.getSource();
-            TreePath path = tree.getSelectionPath();
-            if (path != null) {
-                CheckNode node = (CheckNode) path.getLastPathComponent();
-                findInSource(node);
-            }
-        } else if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
-            JTree tree = (JTree) e.getSource();
-            TreePath path = tree.getSelectionPath();
-            if (path != null) {
-                CheckNode node = (CheckNode) path.getLastPathComponent();
-                openDiff(node);
-            }
-        }
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -242,7 +225,8 @@ class CheckNodeListener implements MouseListener, KeyListener {
     }
     
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyChar() == ' ') {
+        int keyCode = e.getKeyCode();
+        if (keyCode == KeyEvent.VK_SPACE) {
             JTree tree = (JTree) e.getSource();
             TreePath path = tree.getSelectionPath();
             if (path != null) {
@@ -251,7 +235,25 @@ class CheckNodeListener implements MouseListener, KeyListener {
                 tree.repaint();
                 e.consume();
             }
+        } else {
+            // Enter key was pressed, find the reference in document
+            if (keyCode == KeyEvent.VK_ENTER) {
+                JTree tree = (JTree) e.getSource();
+                TreePath path = tree.getSelectionPath();
+                if (path != null) {
+                    CheckNode node = (CheckNode) path.getLastPathComponent();
+                    findInSource(node);
+                }
+            } else if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
+                JTree tree = (JTree) e.getSource();
+                TreePath path = tree.getSelectionPath();
+                if (path != null) {
+                    CheckNode node = (CheckNode) path.getLastPathComponent();
+                    openDiff(node);
+                }
+            }
         }
+
     }
 
     static void findInSource(CheckNode node) {
