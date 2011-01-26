@@ -449,7 +449,7 @@ public class HighlightsViewUtils {
 
     static TextHitInfo x2Index(TextLayout textLayout, float x) {
         TextHitInfo hit;
-        if (x >= textLayout.getAdvance()) {
+        if (x >= TextLayoutUtils.getWidth(textLayout)) {
             hit = TextHitInfo.trailing(textLayout.getCharacterCount());
         } else {
             hit = textLayout.hitTestChar(x, 0);

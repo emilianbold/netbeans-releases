@@ -353,6 +353,11 @@ final class DocumentContent implements AbstractDocument.Content, CharSeq, GapSta
             );
 	}
     }
+
+    @Override
+    public String toString() {
+        return "charArray.length=" + charArray.length + ", " + markVector.toString();
+    }
     
     private final class CharSequenceImpl extends AbstractCharSequence.StringLike {
 

@@ -1583,6 +1583,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         };
         private final String progressTitle;
         private ProgressHandle progressHandle = null;
+        private int progress = -1;
 
 //        private int allLanguagesParsersCount = -1;
 //        private int allLanguagesTasksCount = -1;
@@ -1623,24 +1624,24 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             progressHandle.progress(message);
         }
 
-        protected final void updateProgress(URL currentlyScannedRoot) {
+        protected final void updateProgress(URL currentlyScannedRoot, boolean increment) {
             assert currentlyScannedRoot != null;
             if (progressHandle == null) {
                 return;
             }
-            progressHandle.progress(urlForMessage(currentlyScannedRoot));
+            if (increment && progress != -1) {
+                progressHandle.progress(urlForMessage(currentlyScannedRoot), ++progress);
+            } else {
+                progressHandle.progress(urlForMessage(currentlyScannedRoot));
+            }
         }
 
-        protected final void updateProgress(URL currentlyScannedRoot, int scannedFiles, int totalFiles) {
-            assert currentlyScannedRoot != null;
+        protected final void switchProgressToDeterminate(final int workunits) {
             if (progressHandle == null) {
                 return;
             }
-
-            StringBuilder sb = new StringBuilder();
-            sb.append(urlForMessage(currentlyScannedRoot));
-            sb.append(" (").append(scannedFiles).append(" of ").append(totalFiles).append(")"); //NOI18N
-            progressHandle.progress(sb.toString());
+            progress = 0;
+            progressHandle.switchToDeterminate(workunits);
         }
 
         protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
@@ -2294,7 +2295,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected @Override boolean getDone() {
-            updateProgress(root);
+            updateProgress(root, false);
             if (scanFiles(root, files, forceRefresh, sourceForBinaryRoot)) {
                 // if we are refreshing a specific set of files, try to update
                 // their document versions
@@ -2453,13 +2454,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected @Override boolean getDone() {
+            switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getShuttdownRequest().isRaised()) {
                     // XXX: this only happens when the IDE is shutting down
                     return true;
                 }
 
-                this.updateProgress(root);
+                this.updateProgress(root, true);
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
@@ -2560,13 +2562,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected @Override boolean getDone() {
+            switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getShuttdownRequest().isRaised()) {
                     // XXX: this only happens when the IDE is shutting down
                     return true;
                 }
 
-                this.updateProgress(root);
+                this.updateProgress(root, true);
                 try {
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
@@ -3065,7 +3068,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Running " + this + " on \n" + depCtx.toString()); //NOI18N
             }
-
+            switchProgressToDeterminate(depCtx.newBinariesToScan.size() + depCtx.newRootsToScan.size());
             boolean finished = scanBinaries(depCtx);
             if (finished) {
                 finished = scanSources(depCtx, indexers, scannedRoots2Dependencies);
@@ -3265,7 +3268,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             try {
                 binaryScanStarted(root, binaryIndexers, contexts, votes);
                 try {
-                    updateProgress(root);
+                    updateProgress(root, true);
                     indexBinary(root, binaryIndexers, votes);
                     return true;
                 } catch (IOException ioe) {
@@ -3317,7 +3320,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final int [] deletedFiles = new int [] { 0 };
                 final long [] recursiveListenersTime = new long [] { 0 };
                 try {
-                    updateProgress(source);
+                    updateProgress(source, true);
                     boolean preregistered = false;
                     boolean success = false;
                     if (preregisterIn != null && !preregisterIn.containsKey(source)) {

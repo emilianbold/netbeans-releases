@@ -85,7 +85,7 @@ final class TextLayoutUtils {
             // Ceil the last part to whole number to prevent horizontal white lines inside selection.
             // The individual parts should be fine since they are computed by getVisualHighlightShape().
             float endX = part.isLast()
-                    ? (float) Math.ceil(textLayout.getAdvance())
+                    ? getWidth(textLayout)
                     : index2X(textLayout, part.offsetShift() + textLength);
             return endX - part.xShift();
         } else {
@@ -93,9 +93,13 @@ final class TextLayoutUtils {
         }
     }
     
-    public static float getWidth(TextLayout layout) {
+    public static float getWidth(TextLayout textLayout) {
         // Ceil the width to whole number to prevent horizontal white lines inside selection.
-        return (float) Math.ceil(((TextLayout)layout).getAdvance());
+//        float width = (float) Math.ceil(textLayout.getAdvance());
+        // Since textLayout.getAdvance() includes some extra blank space for italic fonts
+        // we instead use getCaretInfo() which seems to produce more appropriate result.
+        float width = (float) Math.ceil(index2X(textLayout, textLayout.getCharacterCount()));
+        return width;
     }
     
     public static float index2X(TextLayout textLayout, int index) {
@@ -162,8 +166,7 @@ final class TextLayoutUtils {
     }
     
     public static String toStringShort(TextLayout textLayout) {
-        return "c[]:" + textLayout.getCharacterCount() + ";A=" + // NOI18N
-                ViewUtils.toStringPrec1(textLayout.getAdvance());
+        return "c[]:" + textLayout.getCharacterCount() + ";W=" + getWidth(textLayout); // NOI18N
     }
 
     public static String toString(TextLayout textLayout) {
