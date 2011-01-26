@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 public abstract class AbstractCompiler extends Tool {
 
@@ -186,7 +187,7 @@ public abstract class AbstractCompiler extends Tool {
     protected String normalizePath(String path) {
         // this call also fixes inambiguties at case insensitive systems when work
         // with case sensitive "path"s returned by remote compilers
-        return CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
+        return CndFileUtils.normalizeAbsolutePath(FileSystemProvider.getFileSystem(getExecutionEnvironment()), path);
     }
 
     protected final String applyPathPrefix(String path) {
