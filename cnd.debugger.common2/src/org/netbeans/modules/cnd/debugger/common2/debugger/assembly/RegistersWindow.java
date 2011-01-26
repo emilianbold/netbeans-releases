@@ -162,6 +162,12 @@ public final class RegistersWindow extends TopComponent
 	if (debugger == null) return;
 	debugger.registerRegistersWindow(this);
     }
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        tab.requestFocusInWindow();
+    }
     
     protected void updateWindow () {
         //int hsbv, vsbv;
