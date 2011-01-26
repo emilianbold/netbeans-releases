@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -82,6 +84,8 @@ import org.openide.util.Lookup;
  */
 //@ThreadSafe
 public final class SourceCache {
+
+    private static final Logger LOG = Logger.getLogger(SourceCache.class.getName());
     
     private final Source    source;
     //@GuardedBy(this)
@@ -237,36 +241,73 @@ public final class SourceCache {
     }
                 
     //@GuardedBy(this)
-    private Collection<Embedding> 
+    private volatile Collection<Embedding>
                             embeddings;
     //@GuardedBy(this)
     private final Map<EmbeddingProvider,List<Embedding>>
                             embeddingProviderToEmbedings = new HashMap<EmbeddingProvider,List<Embedding>> ();
     
     public Iterable<Embedding> getAllEmbeddings () {
-        Collection<SchedulerTask> tsks = createTasks();
-        Snapshot snpsht = getSnapshot();
-        synchronized (TaskProcessor.INTERNAL_LOCK) {
-            if (this.embeddings == null) {
-                this.embeddings = new ArrayList<Embedding> ();
-                for (SchedulerTask schedulerTask : tsks) {
-                    if (schedulerTask instanceof EmbeddingProvider) {
-                        EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
-                        if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
-                            List<Embedding> _embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                            this.embeddings.addAll (_embeddings);
-                        } else {
-                            List<Embedding> _embeddings = embeddingProvider.getEmbeddings (snpsht);
-                            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                            updateEmbeddings (_embeddings, oldEmbeddings, false, null);
-                            embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
-                            upToDateEmbeddingProviders.add (embeddingProvider);
-                            this.embeddings.addAll (_embeddings);
+        Collection<Embedding> result = this.embeddings;
+        if (result != null) {
+            return result;
+        }
+
+retry:  while (true) {
+            final Snapshot snpsht = getSnapshot();
+            final Collection<SchedulerTask> tsks = createTasks();
+            final Set<EmbeddingProvider> currentUpToDateProviders;
+
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                //BEGIN
+                currentUpToDateProviders = new HashSet<EmbeddingProvider>(upToDateEmbeddingProviders);
+            }
+
+            final Map<EmbeddingProvider,List<Embedding>> newEmbeddings = new HashMap<EmbeddingProvider, List<Embedding>> ();
+            for (SchedulerTask schedulerTask : tsks) {
+                if (schedulerTask instanceof EmbeddingProvider) {
+                    final EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
+                    if (newEmbeddings.containsKey(embeddingProvider)) {
+                        LOG.log(Level.WARNING, "EmbeddingProvider: {0} is registered several time.", embeddingProvider);    //NOI18N
+                    }
+                    else if (currentUpToDateProviders.contains(embeddingProvider)) {
+                        newEmbeddings.put(embeddingProvider,null);
+                    } else {
+                        final List<Embedding> embForProv = embeddingProvider.getEmbeddings(snpsht);
+                        if (embForProv == null) {
+                            throw new NullPointerException(String.format("The %s returned null embeddings!", embeddingProvider));
                         }
+                        newEmbeddings.put(embeddingProvider, embForProv);
                     }
                 }
             }
-            return this.embeddings;
+
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                if (this.embeddings == null) {
+                    if (!upToDateEmbeddingProviders.equals(currentUpToDateProviders)) {
+                        //ROLLBACK and RETRY
+                        continue retry;
+                    }
+                    result = new ArrayList<Embedding> ();
+                    for (Map.Entry<EmbeddingProvider,List<Embedding>> entry : newEmbeddings.entrySet()) {
+                        final EmbeddingProvider embeddingProvider = entry.getKey();
+                        final List<Embedding> embeddingsForProvider = entry.getValue();
+                        if (embeddingsForProvider == null) {
+                            List<Embedding> _embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                            result.addAll (_embeddings);
+                        } else {
+                            List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                            updateEmbeddings (embeddingsForProvider, oldEmbeddings, false, null);
+                            embeddingProviderToEmbedings.put (embeddingProvider, embeddingsForProvider);
+                            upToDateEmbeddingProviders.add (embeddingProvider);
+                            result.addAll (embeddingsForProvider);
+                        }
+                    }
+                    //COMMIT
+                    this.embeddings = result;
+                }
+                return this.embeddings;
+            }
         }
     }
 
