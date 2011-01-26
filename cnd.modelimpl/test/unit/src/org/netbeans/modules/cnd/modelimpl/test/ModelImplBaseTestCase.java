@@ -118,6 +118,13 @@ public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
         }
     }
     
+    protected void overwriteFile(File file, String text) throws IOException, InterruptedException {
+        // to be sure that timestamps are different between quick writes from tests into the same file
+        // we introduce delay to be sure that on systems with 1sec granularity they will work as well
+        Thread.sleep(1001);
+        writeFile(file, text);
+    }
+
     protected void writeFile(File file, String text) throws IOException {
         PrintWriter writer = new PrintWriter(new FileOutputStream(file));
         writer.append(text);

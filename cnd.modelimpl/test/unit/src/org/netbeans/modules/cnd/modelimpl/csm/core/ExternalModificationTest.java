@@ -98,7 +98,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         project.waitParse();
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
 
-        writeFile(sourceFile, "void " + newName + "() {};");
+        overwriteFile(sourceFile, "void " + newName + "() {};");
         fireFileChanged(project, FileUtil.toFileObject(FileUtil.normalizeFile(sourceFile)));
 
         project.waitParse();
@@ -123,7 +123,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
-        writeFile(headerFile, "void foo();\n");
+        overwriteFile(headerFile, "void foo();\n");
         fireFileAdded(project, FileUtil.toFileObject(FileUtil.normalizeFile(headerFile)));
 
         project.waitParse();
@@ -196,7 +196,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNull(hiddenFunction + " should not be found", findDeclaration(hiddenFunction, project));
         CsmFile fileImpl = getCsmFile(sourceFile);
         checkDeadBlocks(project, fileImpl, "File must have one dead code block ", new int[][] {{4, 13, 5, 22}, {10, 13, 12, 2}});
-        writeFile(sourceFile, newText);
+        overwriteFile(sourceFile, newText);
         fireFileChanged(project, FileUtil.toFileObject(FileUtil.normalizeFile(sourceFile)));
 
         project.waitParse();
