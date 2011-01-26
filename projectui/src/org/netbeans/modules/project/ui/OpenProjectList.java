@@ -310,7 +310,7 @@ public final class OpenProjectList {
                         progress.finish();
                     }
                     updateGlobalState();
-                    ProjectsRootNode.checkNoLazyNode(null);
+                    ProjectsRootNode.checkNoLazyNode();
                     return;
                 case 2:
                     // finished, oK
