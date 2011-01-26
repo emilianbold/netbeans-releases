@@ -245,6 +245,9 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             return null;
         }
         FileObject rootfo = helper.getAntProjectHelper().resolveFileObject(prop);
+        if (rootfo == null) {
+            return null;
+        }
         String relPath = FileUtil.getRelativePath(rootfo, fo);
         if (relPath == null) {
             return null;
