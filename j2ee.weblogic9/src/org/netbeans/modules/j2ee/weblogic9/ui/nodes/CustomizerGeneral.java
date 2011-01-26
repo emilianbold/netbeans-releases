@@ -111,6 +111,11 @@ class CustomizerGeneral extends javax.swing.JPanel {
         if ( port!= null){
             serverPort.setText( port );
         }
+        updateJPA20Button();
+
+    }
+
+    private void updateJPA20Button(){
         if (support.isEnabledViaSmartUpdate()) {
             jpa2Button.setEnabled(false);
         } else {
@@ -304,6 +309,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
         } else {
             support.enable();
         }
+        updateJPA20Button();
     }//GEN-LAST:event_jpa2ButtonActionPerformed
     
 
