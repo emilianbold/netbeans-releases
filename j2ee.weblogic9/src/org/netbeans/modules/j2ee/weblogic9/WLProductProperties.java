@@ -100,6 +100,35 @@ public final class WLProductProperties {
         }
     }
 
+    /**
+     * Use this method only when DeploymentManager is not available (ie. from
+     * registration wizard). It is slow and does not cache anything.
+     * 
+     * @param serverRoot
+     * @return 
+     */
+    @CheckForNull
+    public static String getMiddlewareHome(File serverRoot) {
+        Properties ret = new Properties();
+        File productProps = new File(serverRoot, ".product.properties"); // NOI18N
+
+        if (!productProps.exists() || !productProps.canRead()) {
+            return null;
+        }
+        try {
+            InputStream is = new BufferedInputStream(new FileInputStream(productProps));
+            try {
+                ret.load(is);
+            } finally {
+                is.close();
+            }
+            return ret.getProperty("MW_HOME");
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
+        }        
+    }
+    
     private synchronized Properties parse() {
         Properties ret = new Properties();
         InstanceProperties ip = dm.getInstanceProperties();
