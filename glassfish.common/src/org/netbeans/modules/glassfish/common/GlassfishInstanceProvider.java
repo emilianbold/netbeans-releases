@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -388,7 +388,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // Persistence for server instances.
     // ------------------------------------------------------------------------
     private void loadServerInstances() {
-        GlassfishInstance installedInstance = null;
+        FileObject installedInstance = null;
+        int savedj = -1;
         for (int j = 0; j < instancesDirNames.length ; j++ ) {
             FileObject dir = getRepositoryDir(instancesDirNames[j], false);
             if(dir != null) {
@@ -396,11 +397,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 if(instanceFOs != null && instanceFOs.length > 0) {
                     for(int i = 0; i < instanceFOs.length; i++) {
                         try {
-                            GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
                             if (GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
-                                installedInstance = si;
+                                installedInstance = instanceFOs[i];
+                                savedj = j;
                                 continue;
                             }
+                            GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
                             if(si != null) {
                                 instanceMap.put(si.getDeployerUri(), si);
                                 activeDisplayNames.add(si.getDisplayName());
@@ -416,14 +418,19 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             }
         }
         if (null != installedInstance) {
-            GlassfishInstance si = instanceMap.get(installedInstance.getDeployerUri());
-            if (null == si) {
-                try {
-                    writeInstanceToFile(installedInstance,false);
-                } catch (IOException ioe) {
+            try {
+                GlassfishInstance igi = readInstanceFromFile(installedInstance, uriFragments[savedj]);
+                GlassfishInstance si = instanceMap.get(igi.getDeployerUri());
+                if (null == si) {
+                    try {
+                        writeInstanceToFile(igi, false);
+                    } catch (IOException ioe) {
+                    }
+                    instanceMap.put(igi.getDeployerUri(), igi);
+                    activeDisplayNames.add(igi.getDisplayName());
                 }
-                instanceMap.put(installedInstance.getDeployerUri(), installedInstance);
-                activeDisplayNames.add(installedInstance.getDisplayName());
+            } catch (IOException ex) {
+                getLogger().log(Level.INFO, null, ex);
             }
         }
         for (GlassfishInstance gi : instanceMap.values()) {
