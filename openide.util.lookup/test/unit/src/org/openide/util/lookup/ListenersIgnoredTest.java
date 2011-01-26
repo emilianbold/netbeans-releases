@@ -43,18 +43,26 @@
 package org.openide.util.lookup;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
-public class ListenersIgnoredTest {
+public class ListenersIgnoredTest extends NbTestCase {
     private static final Logger LOG = Logger.getLogger(ListenersIgnoredTest.class.getName());
+
+    public ListenersIgnoredTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
-    @Test
-    public void lookupBugTest() {
+    public void testLookupBugTest() {
         class C0 {
         }
         class C1 {
@@ -73,38 +81,34 @@ public class ListenersIgnoredTest {
             @Override
             public void resultChanged(LookupEvent ev) {
                 cnt.incrementAndGet();
-                LOG.info("r0 notified");
+                LOG.fine("r0 notified");
             }
         });
         
         C0 o0 = new C0();
         C1 o1 = new C1();
 
-        LOG.info("Add o0");
+        LOG.fine("Add o0");
         content.add(o0);
         assertEquals("One change", 1, cnt.getAndSet(0));
 
-        LOG.info(
-                "Remove o0");
+        LOG.fine("Remove o0");
         content.remove(o0);
         assertEquals("Another change change", 1, cnt.getAndSet(0));
 
-        LOG.info(
-                "Add o1");
+        LOG.fine("Add o1");
         content.add(o1);
         assertEquals("No change", 0, cnt.getAndSet(0));
 
-        LOG.info(
-                "Remove o1");
+        LOG.fine("Remove o1");
         content.remove(o1);
         assertEquals("No change", 0, cnt.getAndSet(0));
 
-        LOG.info(
-                "Add o0");
+        LOG.fine("Add o0");
         content.add(o0);
+        LOG.fine("Line before should read 'r0 notified' ?");
         assertEquals("One change", 1, cnt.getAndSet(0));
 
-        LOG.info("Line before should read 'r0 notified' ?");
     }
 
 }

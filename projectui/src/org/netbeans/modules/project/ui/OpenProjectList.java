@@ -153,35 +153,14 @@ public final class OpenProjectList {
     public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
-    static StringBuffer details;
-    static {
-        boolean ea = false;
-        assert ea = true;
-        if (ea) {
-            details = new StringBuffer();
-        }
-    }
     static void log(LogRecord r) {
         LOGGER.log(r);
-        printMsg(r.getMessage(), r.getParameters());
     }
     static void log(Level l, String msg, Object... params) {
         LOGGER.log(l, msg, params);
-        printMsg(msg, params);
     }
     static void log(Level l, String msg, Throwable e) {
         LOGGER.log(l, msg, e);
-        printMsg(msg, e);
-    }
-    private static void printMsg(String msg, Object... params) {
-        StringBuffer sb = details;
-        if (sb != null) {
-            sb.append(msg);
-            for (Object p : params) {
-                sb.append("\n  ").append(p);
-            }
-            sb.append("\n");
-        }
     }
 
 
@@ -331,15 +310,7 @@ public final class OpenProjectList {
                         progress.finish();
                     }
                     updateGlobalState();
-                    StringBuffer os = null;
-                    boolean verify = false;
-                    assert verify = true;
-                    if (verify) {
-                        os = details;
-                    }
-                    ProjectsRootNode.checkNoLazyNode(os);
-                    details = null;
-                    os = null;
+                    ProjectsRootNode.checkNoLazyNode(null);
                     return;
                 case 2:
                     // finished, oK

@@ -70,7 +70,8 @@ import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor.MutableContext;
     @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
     @MimeRegistration(mimeType = MIMENames.DOXYGEN_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
     @MimeRegistration(mimeType = MIMENames.STRING_DOUBLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
-    @MimeRegistration(mimeType = MIMENames.STRING_SINGLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    @MimeRegistration(mimeType = MIMENames.STRING_SINGLE_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.PREPROC_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
 })
 public class CppTBIFactory implements TypedBreakInterceptor.Factory {
 
@@ -83,7 +84,6 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
 
         static final boolean DEBUG = false;
         private boolean postShift = false;
-
 
         public TypedBreakInterceptorImpl() {
         }
@@ -109,7 +109,7 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
         public void afterInsert(Context context) throws BadLocationException {
             if (postShift) {
                 Caret caret = context.getComponent().getCaret();
-                caret.setDot(context.getCaretOffset()+1);
+                caret.setDot(context.getCaretOffset() + 1);
             }
         }
 
@@ -176,7 +176,7 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
                         }
                     }
                     if (context != null) {
-                        context.setText("\n\n" + insString, 0, 1, 2,2+insString.length(), 1,2); //NOI18N
+                        context.setText("\n\n" + insString, 0, 1, 2, 2 + insString.length(), 1, 2); //NOI18N
                     } else {
                         doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -82,5 +83,15 @@ public final class RemoteLink extends RemoteLinkBase {
         
     /*package*/ final void setLink(String link, FileObject parent) {
         this.link = normalize(link, parent);
+    }
+
+    @Override
+    protected void postDeleteChild(FileObject child) {
+        getDelegate().postDeleteChild(child);
+    }
+
+    @Override
+    protected void deleteImpl() throws IOException {
+        RemoteFileSystemUtils.delete(execEnv, remotePath, false);
     }
 }

@@ -64,9 +64,13 @@ import org.openide.util.Exceptions;
  */
 @MimeRegistrations({
     // cnd source files
-    @MimeRegistration(mimeType=MIMENames.HEADER_MIME_TYPE, service=TypedTextInterceptor.Factory.class),
-    @MimeRegistration(mimeType=MIMENames.CPLUSPLUS_MIME_TYPE, service=TypedTextInterceptor.Factory.class),
-    @MimeRegistration(mimeType=MIMENames.C_MIME_TYPE, service=TypedTextInterceptor.Factory.class)
+    @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.DOXYGEN_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.STRING_DOUBLE_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.STRING_SINGLE_MIME_TYPE, service = TypedTextInterceptor.Factory.class),
+    @MimeRegistration(mimeType = MIMENames.PREPROC_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
 })
 public class CppTTIFactory implements TypedTextInterceptor.Factory {
 

@@ -126,6 +126,8 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -1775,7 +1777,7 @@ import org.openide.util.Exceptions;
     }
 
     private void getFullPath(final GdbFrame f) {
-        MICommand cmd =
+        MiCommandImpl cmd =
             new MiCommandImpl("-file-list-exec-source-file") { // NOI18N
             @Override
 		protected void onDone(MIRecord record) {
@@ -1783,6 +1785,7 @@ import org.openide.util.Exceptions;
 		    finish();
 		}
 	    };
+        cmd.dontReportError();
         gdb.sendCommand(cmd);
     }
 
@@ -2958,10 +2961,12 @@ import org.openide.util.Exceptions;
                             (getHost().getPlatform() == Platform.Windows_x86 ||
                             getHost().getPlatform() == Platform.MacOSX_x86)) {
                         // see IZ 172855 (On windows we need to skip SIGTRAP)
-                        gdb.resetSignalled();
-                        // silent stop
-                        state().isRunning = false;
-                        return;
+                        if (gdb.isSilentStop()) {
+                            gdb.resetSignalled();
+                            // silent stop
+                            state().isRunning = false;
+                            return;
+                        }
                     } else {
                         gdb.resetSignalled();
                     }
@@ -3172,6 +3177,12 @@ import org.openide.util.Exceptions;
             }
 
         // load program
+        }
+        
+        String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        if (!CndPathUtilitities.sameString(program, outputFile)) {
+            // load symbol file separately, IZ 194531
+            send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
         }
 
         String tmp_cmd;
