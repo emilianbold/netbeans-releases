@@ -456,11 +456,6 @@ public final class CompletionLayout {
             return true; // lets have documentation popup focusable, for copying
         }
         
-        @Override
-        protected JComponent getFocusListeningComponent() {
-            return (JComponent) getDocumentationScrollPane().getViewport().getView();
-        }
-        
         public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
                 Object actionMapKey = getDocumentationScrollPane().getInputMap().get(
