@@ -69,7 +69,6 @@ import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
@@ -118,7 +117,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         JButton[] extraButtons = new JButton[]{addProjectButton, addStandardLibraryButton, addPkgConfigLibraryButton,
                                                addLibraryButton, addLibraryFileButton, addLibraryOption};
-        myListEditorPanel = new MyListEditorPanel(data, extraButtons);
+        myListEditorPanel = new MyListEditorPanel(conf, data, extraButtons);
         addProjectButton.addActionListener(new AddProjectButtonAction());
         addStandardLibraryButton.addActionListener(new AddStandardLibraryButtonAction());
         addPkgConfigLibraryButton.addActionListener(new AddPkgCongigLibraryButtonAction());
@@ -208,8 +207,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
     private class MyListEditorPanel extends TableEditorPanel {
 
-        public MyListEditorPanel(List<LibraryItem> objects, JButton[] extraButtons) {
-            super(objects, extraButtons, baseDir);
+        public MyListEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons) {
+            super(conf, objects, extraButtons, baseDir);
             getAddButton().setVisible(false);
             //getCopyButton().setVisible(false);
             getEditButton().setVisible(false);
