@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
@@ -271,7 +273,31 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 int previousVersion = projectDescriptor.getVersion();
                 int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
                 if (previousVersion < currentVersion) {
-                    String txt = getString("UPGRADE_TXT");
+                    // Check
+                    boolean issueRequiredProjectBuildWarning = false;
+                    if (previousVersion < 76) {
+                        for (Configuration configuration : projectDescriptor.getConfs().getConfigurations()) {
+                            MakeConfiguration makeConfiguration = (MakeConfiguration)configuration;
+                            if (!makeConfiguration.isMakefileConfiguration()) {
+                                continue;
+                            }
+                            List<ProjectItem> projectLinkItems = makeConfiguration.getRequiredProjectsConfiguration().getValue();
+                            for (ProjectItem projectItem : projectLinkItems) {
+                                if (projectItem.getMakeArtifact().getBuild()) {
+                                    issueRequiredProjectBuildWarning = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    String txt;
+
+                    if (issueRequiredProjectBuildWarning) {
+                        txt = getString("UPGRADE_RQ_TXT");
+                    } else {
+                        txt = getString("UPGRADE_TXT");
+                    }
                     NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
                     if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
                         return;
