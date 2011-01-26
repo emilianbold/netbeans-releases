@@ -199,8 +199,6 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             return;
         }
         
-        logger.println ("NetBeans: Classes to be reloaded:");
-        
         Map<String, byte[]> map = new HashMap<String, byte[]>();
         EditorContext editorContext = DebuggerManager.
             getDebuggerManager ().lookupFirst (null, EditorContext.class);
@@ -217,21 +215,24 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         }
         if (fo2 != null) {
             try {
-                String url = classToSourceURL (fo2, logger);
-                if (url != null) {
-                    editorContext.updateTimeStamp (debugger, url);
+                String basename = fo2.getName();
+                for (FileObject classfile : fo2.getParent().getChildren()) {
+                    String basename2 = classfile.getName();
+                    if (!basename2.equals(basename) && !basename2.startsWith(basename + '$')) {
+                        continue;
+                    }
+                    String url = classToSourceURL(classfile, logger);
+                    if (url != null) {
+                        editorContext.updateTimeStamp(debugger, url);
+                    }
+                    map.put(classname + basename2.substring(basename.length()), classfile.asBytes());
                 }
-                map.put (
-                    classname, 
-                    fo2.asBytes()
-                );
-                logger.println(" " + classname);
             } catch (IOException ex) {
                 ex.printStackTrace ();
             }
         }
         
-        logger.println("NetBeans: Reloaded classes: "+map.keySet());
+        logger.println("NetBeans: classes to reload: "+map.keySet());
         if (map.isEmpty()) {
             logger.println("NetBeans: No class to reload");
             return;
