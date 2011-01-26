@@ -75,51 +75,28 @@ public final class Resolver3 implements Resolver {
     private final ProjectBase project;
     private final CsmFile file;
     private final CsmFile startFile;
-    private int offset;
     private final int origOffset;
     private Resolver parentResolver;
 
     private final List<CharSequence> usedNamespaces = new ArrayList<CharSequence>();
     private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
     private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
+    private final Map<CharSequence, CsmClassifier> currUsedClassifiers = new HashMap<CharSequence, CsmClassifier>();
 
     private CsmTypedef currTypedef;
     private CsmClassifier currLocalClassifier;
+    private boolean currDone = false;
 
     private CharSequence[] names;
     private int currNamIdx;
     private int interestedKind;
     private boolean resolveInBaseClass;
-    private boolean inLocalContext = false;
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
     }
 
-    private CsmNamespace containingNamespace;
-    private CsmClass containingClass;
-    private boolean contextFound = false;
-
-    private CsmNamespace getContainingNamespace() {
-        if( ! contextFound ) {
-            findContext();
-        }
-        return containingNamespace;
-    }
-
-    private CsmClass getContainingClass() {
-        if( ! contextFound ) {
-            findContext();
-        }
-        return containingClass;
-    }
-
-    private void findContext() {
-        contextFound = true;
-        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
-        findContext(CsmSelect.getDeclarations(file, filter), filter);
-    }
-
+    private final Context context;
     private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
 
     //private CsmNamespace currentNamespace;
@@ -133,11 +110,11 @@ public final class Resolver3 implements Resolver {
      */
     /*package*/ Resolver3(CsmFile file, int offset, Resolver parent, CsmFile startFile) {
         this.file = file;
-        this.offset = offset;
         this.origOffset = offset;
         parentResolver = parent;
         this.project = (ProjectBase) file.getProject();
         this.startFile = startFile;
+        context = new Context(file, origOffset, this);
     }
 
     private Resolver3(CsmFile file, int offset, Resolver parent) {
@@ -158,9 +135,12 @@ public final class Resolver3 implements Resolver {
         // try to find visible classifier
         CsmClassifier result = null;
         // first of all - check local context
-        currTypedef = null;
-        currLocalClassifier = null;
-        gatherMaps(file, false);
+        if (!currDone) {
+            currTypedef = null;
+            currLocalClassifier = null;
+            gatherMaps(file, false, origOffset);
+            currDone = true;
+        }
         if (currLocalClassifier != null && needClassifiers()) {
             result = currLocalClassifier;
         }
@@ -168,7 +148,13 @@ public final class Resolver3 implements Resolver {
             result = currTypedef;
         }
         if (result == null) {
-            result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
+            CharSequence id = CharSequences.create(qualifiedName);
+            if (currUsedClassifiers.containsKey(id)) {
+                result = currUsedClassifiers.get(id);
+            } else {
+                result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(id, getStartFile(), needClasses());
+                currUsedClassifiers.put(id, result);
+            }
         }
         return result;
     }
@@ -248,7 +234,7 @@ public final class Resolver3 implements Resolver {
                 }
             } else if (ForwardClass.isForwardClass(orig)) {
                 // try to find another class
-                resovedClassifier = this.findClassifierUsedInFile(orig.getQualifiedName());
+                resovedClassifier = findClassifierUsedInFile(orig.getQualifiedName());
             } else {
                 break;
             }
@@ -293,53 +279,6 @@ public final class Resolver3 implements Resolver {
         }
         return cls;
     }
-
-    private void findContext(Iterator<?> it, CsmFilter filter) {
-        while(it.hasNext()) {
-            CsmDeclaration decl = (CsmDeclaration) it.next();
-            if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
-                CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
-                if( nd.getStartOffset() < this.offset && this.offset < nd.getEndOffset()  ) {
-                    containingNamespace = nd.getNamespace();
-                    findContext(CsmSelect.getDeclarations(nd, filter), filter);
-                }
-            } else if(   decl.getKind() == CsmDeclaration.Kind.CLASS
-                    || decl.getKind() == CsmDeclaration.Kind.STRUCT
-                    || decl.getKind() == CsmDeclaration.Kind.UNION ) {
-
-                CsmClass cls = (CsmClass) decl;
-                if( cls.getStartOffset() < this.offset && this.offset < cls.getEndOffset()  ) {
-                    containingClass = cls;
-                    findContext(CsmSelect.getClassMembers(containingClass, filter), filter);
-                }
-            } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
-                    decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
-                CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
-                if( fd.getStartOffset() < this.offset && this.offset < fd.getEndOffset()  ) {
-                    CsmNamespace ns = BaseUtilitiesProviderImpl.getImpl()._getFunctionNamespace(fd);
-                    if( ns != null && ! ns.isGlobal() ) {
-                        containingNamespace = ns;
-                    }
-                    CsmFunction fun = getFunctionDeclaration(fd);
-                    if( fun != null && CsmKindUtilities.isMethodDeclaration(fun) ) {
-                        containingClass = getMethodContainingClass((CsmMethod) fun);
-                    }
-                }
-            }
-        }
-    }
-
-    private CsmFunction getFunctionDeclaration(CsmFunctionDefinition fd){
-        if (isRecursionOnResolving(INFINITE_RECURSION)) {
-            return null;
-        }
-        return fd.getDeclaration();
-    }
-    
-    private CsmClass getMethodContainingClass(CsmMethod m){
-        return m.getContainingClass();
-    }
-    
 
     @Override
     public boolean isRecursionOnResolving(int maxRecursion) {
@@ -427,11 +366,11 @@ public final class Resolver3 implements Resolver {
             buf.append(names[i]); // NOI18N
         }
 
-        if (containingClass != null) {
-            buf.append(":Class=").append(containingClass.getName()); // NOI18N
+        if (context.getContainingClass() != null) {
+            buf.append(":Class=").append(context.getContainingClass().getName()); // NOI18N
         }
-        if (containingNamespace != null) {
-            buf.append(":NS=").append(containingNamespace.getName()); // NOI18N
+        if (context.getContainingNamespace() != null) {
+            buf.append(":NS=").append(context.getContainingNamespace().getName()); // NOI18N
         }
         return buf.toString();
     }
@@ -455,7 +394,7 @@ public final class Resolver3 implements Resolver {
                        , CsmDeclaration.Kind.UNION
                        );
 
-    private void gatherMaps(CsmFile file, boolean visitIncludedFiles) {
+    private void gatherMaps(CsmFile file, boolean visitIncludedFiles, int offset) {
         if( file == null || visitedFiles.contains(file) ) {
             return;
         }
@@ -472,10 +411,7 @@ public final class Resolver3 implements Resolver {
                 CsmInclude inc = iter.next();
                 CsmFile incFile = inc.getIncludeFile();
                 if( incFile != null ) {
-                    int oldOffset = offset;
-                    offset = Integer.MAX_VALUE;
-                    gatherMaps(incFile, true);
-                    offset = oldOffset;
+                    gatherMaps(incFile, true, Integer.MAX_VALUE);
                 }
             }
         }
@@ -486,36 +422,33 @@ public final class Resolver3 implements Resolver {
                 filter = NAMESPACE_FILTER;
             }
         }
-        gatherMaps(CsmSelect.getDeclarations(file, filter));
+        gatherMaps(CsmSelect.getDeclarations(file, filter), false, offset);
         if (!visitIncludedFiles) {
             visitedFiles.remove(file);
         }
     }
 
-    private void gatherMaps(Iterable<? extends CsmObject> declarations) {
-        gatherMaps(declarations.iterator());
+    private void gatherMaps(Iterable<? extends CsmObject> declarations, boolean inLocalContext, int offset) {
+        gatherMaps(declarations.iterator(), inLocalContext, offset);
     }
 
-    private void gatherMaps(Iterator<? extends CsmObject> it) {
+    private void gatherMaps(Iterator<? extends CsmObject> it, boolean inLocalContext, int offset) {
         while(it.hasNext()) {
             CsmObject o = it.next();
             assert o instanceof CsmOffsetable;
             try {
                 int start = ((CsmOffsetable) o).getStartOffset();
                 int end = ((CsmOffsetable) o).getEndOffset();
-                if( start >= this.offset ) {
+                if( start >= offset ) {
                     break;
                 }
                 //assert o instanceof CsmScopeElement;
                 if( o instanceof CsmScopeElement ) {
-
-                    // not yet in local context, but jumping into it
-                    boolean oldValue = inLocalContext;
                     if (!inLocalContext && CsmKindUtilities.isFunctionDefinition(o)) {
-                        inLocalContext = true;
+                        gatherMaps((CsmScopeElement) o, end, true, offset);
+                    } else {
+                        gatherMaps((CsmScopeElement) o, end, inLocalContext, offset);
                     }
-                    gatherMaps((CsmScopeElement) o, end);
-                    inLocalContext = oldValue;
                 } else {
                     if( FileImpl.reportErrors ) {
                         System.err.println("Expected CsmScopeElement, got " + o);
@@ -569,7 +502,7 @@ public final class Resolver3 implements Resolver {
             currNamIdx++;
             doProcessTypedefsInUpperNamespaces(nsd);
         } else {
-            CsmNamespace cns = getContainingNamespace();
+            CsmNamespace cns = context.getContainingNamespace();
             if( cns != null ) {
                 if( cns.equals(nsd.getNamespace())) {
                     doProcessTypedefsInUpperNamespaces(nsd);
@@ -581,7 +514,7 @@ public final class Resolver3 implements Resolver {
     /**
      * It is guaranteed that element.getStartOffset < this.offset
      */
-    private void gatherMaps(CsmScopeElement element, int end) {
+    private void gatherMaps(CsmScopeElement element, int end, boolean inLocalContext, int offset) {
 
         CsmDeclaration.Kind kind = (element instanceof CsmDeclaration) ? ((CsmDeclaration) element).getKind() : null;
         if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
@@ -591,9 +524,9 @@ public final class Resolver3 implements Resolver {
                 // it declares using itself
                 usedNamespaces.add(nsd.getQualifiedName());
             }
-            if (this.offset < end || isInContext(nsd)) {
+            if (offset < end || isInContext(nsd)) {
                 //currentNamespace = nsd.getNamespace();
-                gatherMaps(nsd.getDeclarations());
+                gatherMaps(nsd.getDeclarations(), inLocalContext, offset);
             } else if (needClassifiers()){
                 processTypedefsInUpperNamespaces(nsd);
             }
@@ -621,25 +554,25 @@ public final class Resolver3 implements Resolver {
             }
         } else if( element instanceof CsmDeclarationStatement ) {
             CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
-            if( ds.getStartOffset() < this.offset ) {
-                gatherMaps( ((CsmDeclarationStatement) element).getDeclarators());
+            if( ds.getStartOffset() < offset ) {
+                gatherMaps( ((CsmDeclarationStatement) element).getDeclarators(), inLocalContext, offset);
             }
         } else if (CsmKindUtilities.isScope(element)) {
             if (inLocalContext && needClassifiers() && CsmKindUtilities.isClassifier(element)) {
                 // don't want forward to find itself
-                if (!CsmKindUtilities.isClassForwardDeclaration(element) || (this.offset > end)) {
+                if (!CsmKindUtilities.isClassForwardDeclaration(element) || (offset > end)) {
                     if (CharSequences.comparator().compare(currName(), ((CsmClassifier)element).getName()) == 0) {
                         currLocalClassifier = (CsmClassifier)element;
                     }
                 }
             }
-            if (this.offset < end || isInContext((CsmScope) element)) {
-                gatherMaps( ((CsmScope) element).getScopeElements());
+            if (offset < end || isInContext((CsmScope) element)) {
+                gatherMaps( ((CsmScope) element).getScopeElements(), inLocalContext, offset);
             }
         } else if( kind == CsmDeclaration.Kind.TYPEDEF && needClassifiers()){
             CsmTypedef typedef = (CsmTypedef) element;
             // don't want typedef to find itself
-            if( this.offset > end && CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
+            if( offset > end && CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
                 currTypedef = typedef;
             }
         }
@@ -650,11 +583,11 @@ public final class Resolver3 implements Resolver {
             return false;
         }
         CsmQualifiedNamedElement el = (CsmQualifiedNamedElement)scope;
-        CsmNamespace ns = getContainingNamespace();
+        CsmNamespace ns = context.getContainingNamespace();
         if (ns != null && startsWith(ns.getQualifiedName(), el.getQualifiedName())) {
             return true;
         }
-        CsmClass cls = getContainingClass();
+        CsmClass cls = context.getContainingClass();
         if (cls != null && startsWith(cls.getQualifiedName(), el.getQualifiedName())) {
             return true;
         }
@@ -707,7 +640,7 @@ public final class Resolver3 implements Resolver {
 
         if( nameTokens.length == 1 ) {
             if( result == null && needClassifiers()) {
-                CsmClass cls = getContainingClass();
+                CsmClass cls = context.getContainingClass();
                 result = resolveInClass(cls, nameTokens[0]);
                 if( result == null ) {
                     if (parentResolver == null || !((Resolver3)parentResolver).resolveInBaseClass) {
@@ -716,21 +649,21 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null && needClassifiers()) {
-                containingNS = getContainingNamespace();
+                containingNS = context.getContainingNamespace();
                 result = findClassifier(containingNS, nameTokens[0]);
                 if (result == null && containingNS != null) {
                     result = resolveInUsings(containingNS, nameTokens[0]);
                 }
             }
             if( result == null  && needNamespaces()) {
-                containingNS = getContainingNamespace();
+                containingNS = context.getContainingNamespace();
                 result = findNamespace(containingNS, nameTokens[0]);
             }
             if (result == null  && needClassifiers()){
                 result = findClassifierUsedInFile(nameTokens[0]);
             }
             if( result == null ) {
-                gatherMaps(file, true);
+                gatherMaps(file, true, origOffset);
                 if( currLocalClassifier != null && needClassifiers()) {
                     result = currLocalClassifier;
                 }
@@ -785,7 +718,7 @@ public final class Resolver3 implements Resolver {
             }
             if( result == null ) {
                 if(TemplateUtils.isTemplateQualifiedName(nameTokens[0].toString())) {
-                    Resolver aResolver = ResolverFactory.createResolver(file, offset);
+                    Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
                     try {
                         result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString())), interestedKind);
                     } finally {
@@ -803,15 +736,15 @@ public final class Resolver3 implements Resolver {
                 result = findClassifierUsedInFile(sb.toString());
             }
             if( result == null && needClassifiers()) {
-                containingNS = getContainingNamespace();
+                containingNS = context.getContainingNamespace();
                 result = findClassifier(containingNS, sb.toString());
             }
             if( result == null && needNamespaces()) {
-                containingNS = getContainingNamespace();
+                containingNS = context.getContainingNamespace();
                 result = findNamespace(containingNS, sb.toString());
             }
             if( result == null && needClassifiers()) {
-                gatherMaps(file, true);
+                gatherMaps(file, true, origOffset);
                 if( currTypedef != null) {
                     CsmType type = currTypedef.getType();
                     if( type != null ) {
@@ -916,7 +849,7 @@ public final class Resolver3 implements Resolver {
                         sb2.append("::"); // NOI18N
                         sb2.append(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[i].toString()));
                     }
-                    Resolver aResolver = ResolverFactory.createResolver(file, offset);
+                    Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
                     try {
                         result = aResolver.resolve(Utils.splitQualifiedName(sb2.toString()), interestedKind);
                     } finally {

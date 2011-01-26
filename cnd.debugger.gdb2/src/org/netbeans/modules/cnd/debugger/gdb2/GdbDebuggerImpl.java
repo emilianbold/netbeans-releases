@@ -2961,10 +2961,12 @@ import org.openide.util.Exceptions;
                             (getHost().getPlatform() == Platform.Windows_x86 ||
                             getHost().getPlatform() == Platform.MacOSX_x86)) {
                         // see IZ 172855 (On windows we need to skip SIGTRAP)
-                        gdb.resetSignalled();
-                        // silent stop
-                        state().isRunning = false;
-                        return;
+                        if (gdb.isSilentStop()) {
+                            gdb.resetSignalled();
+                            // silent stop
+                            state().isRunning = false;
+                            return;
+                        }
                     } else {
                         gdb.resetSignalled();
                     }

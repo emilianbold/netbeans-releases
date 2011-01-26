@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -68,6 +69,8 @@ import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /* package */ class ExecutorCND extends Executor {
     private NativeProcess engineProc;
@@ -100,10 +103,18 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
      * Interrupt an arbitrary process with SIGINT
      */
     public void interrupt(int pid) throws IOException {
-        try {
-            CommonTasksSupport.sendSignal(exEnv, pid, Signal.SIGINT, null).get();
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
+        // use DebugBreakProcess on windows
+        if (exEnv.isLocal() && Utilities.isWindows()) {
+            File f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", "org.netbeans.modules.cnd.debugger.common2", false); // NOI18N
+            if (f.exists()) {
+                ProcessUtils.execute(exEnv, f.getAbsolutePath(), "-s", "INT", Long.toString(pid)); //NOI18N
+            }
+        } else {
+            try {
+                CommonTasksSupport.sendSignal(exEnv, pid, Signal.SIGINT, null).get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
         }
     }
 
