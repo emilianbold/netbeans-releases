@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.ref.SoftReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.netbeans.modules.remote.support.RemoteLogger;
 
 /**
  * A cache that holds soft references to its values and
@@ -76,7 +76,7 @@ public class WeakCache<K, V> {
     }
 
     public void put(K key, V value) {
-        Ref ref = new Ref<K, V>(key, value, referenceQueue);
+        Ref<K, V> ref = new Ref<K, V>(key, value, referenceQueue);
         map.put(key, ref);
     }
 

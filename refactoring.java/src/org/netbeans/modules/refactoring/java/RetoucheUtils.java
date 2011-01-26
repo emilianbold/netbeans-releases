@@ -380,7 +380,11 @@ public class RetoucheUtils {
     
     public static String getPackageName(URL url) {
         File f = null;
-        f = FileUtil.normalizeFile(new File(url.getPath()));
+        try {
+            f = FileUtil.normalizeFile(new File(url.toURI()));
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
         String suffix = "";
         
         do {
@@ -421,7 +425,12 @@ public class RetoucheUtils {
     
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
-        File f = result != null ? null : FileUtil.normalizeFile(new File(url.getPath())); //NOI18N
+        File f;
+        try {
+            f = result != null ? null : FileUtil.normalizeFile(new File(url.toURI())); //NOI18N
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
         while (result==null) {
             result = FileUtil.toFileObject(f);
             f = f.getParentFile();

@@ -481,6 +481,12 @@ public class DirectoryStorage {
             return entries.get(fileName);
         }
     }
+    
+    public  Entry removeEntry(String fileName) {
+        synchronized (this) {
+            return entries.remove(fileName);
+        }
+    }
 
     void setEntries(Collection<Entry> newEntries) {
         synchronized (this) {

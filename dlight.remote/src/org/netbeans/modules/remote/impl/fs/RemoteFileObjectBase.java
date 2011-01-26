@@ -127,10 +127,18 @@ public abstract class RemoteFileObjectBase extends FileObject {
 //            fcl.fileRenamed(new FileRenameEvent(this, fo, name, ext));
 //        }
 //    }
+    
+    protected abstract void deleteImpl() throws IOException;
 
+    protected abstract void postDeleteChild(FileObject child);
+    
     @Override
     public void delete(FileLock lock) throws IOException {
-        RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
+        deleteImpl();
+        RemoteFileObjectBase parent = getParent();
+        if (parent != null) {
+            parent.postDeleteChild(this);
+        }
     }
 
     @Override

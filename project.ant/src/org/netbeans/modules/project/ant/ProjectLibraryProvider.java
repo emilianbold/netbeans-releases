@@ -758,7 +758,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     entry = LibrariesSupport.getArchiveFile(entry);
                 } else if (entry.isAbsolute() && !"file".equals(entry.getScheme())) { // NOI18N
                     verifyAbsoluteURI(entry);
-                    value.add(entry.toString());
+                    final StringBuilder sb = new StringBuilder(entry.toString());
+                    if (value.size()+1 != path.size()) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                    value.add(sb.toString());
                     Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting uri=" + entry + " as content for library volume type: " + volumeType);
                     continue;
                 }
