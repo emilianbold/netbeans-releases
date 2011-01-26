@@ -179,6 +179,12 @@ public final class MemoryWindow extends TopComponent
 	}
         super.componentClosed();
     }
+    
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        controlAddressCombo.requestFocusInWindow();
+    }
 
     public void setControlPanelData (String start, String length, int index) {
 	memory_start = start;
