@@ -80,9 +80,9 @@ public class ListBranchCommand extends GitCommand {
                 allBranches.put(name, new JGitBranch(name, false, true, head.getLeaf().getObjectId()));
             }
             allBranches.putAll(getRefs(refs.values(), Constants.R_HEADS, false, current));
-            if (all) {
-                allBranches.putAll(getRefs(refs.values(), Constants.R_REMOTES, true, current));
-            }
+        }
+        if (all) {
+            allBranches.putAll(getRefs(refs.values(), Constants.R_REMOTES, true, null));
         }
     }
 
