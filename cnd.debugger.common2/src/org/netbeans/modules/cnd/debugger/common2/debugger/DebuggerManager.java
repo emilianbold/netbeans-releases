@@ -842,7 +842,8 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             return ret;
         }
         EngineProfile engineProfile = (EngineProfile) configuration.getAuxObject(EngineProfile.PROFILE_ID);
-        if (engineProfile == null || !DebuggerManager.isChoosableEngine()) {
+        // if (engineProfile == null || !DebuggerManager.isChoosableEngine()) {
+        if (engineProfile == null) {
             ret = EngineTypeManager.getInherited();
         } else {
             ret = engineProfile.getEngineType();

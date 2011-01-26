@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -799,10 +800,10 @@ public class ConfigurationMakefileWriter {
                 if(fileObject != null) {
                     if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
                         if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                            MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                            MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
                             file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
                         } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
                             file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                         }
                     }
@@ -921,10 +922,10 @@ public class ConfigurationMakefileWriter {
                         if(fileObject != null) {
                             if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
                                 if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                    MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                    MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
                                     file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
                                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                    MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
                                     file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                                 }
                             }
@@ -1038,10 +1039,10 @@ public class ConfigurationMakefileWriter {
                 if(fileObject != null) {
                     if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
                         if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                            MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                            MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
                             file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
                         } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
                             file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                         }
                     }
@@ -1181,10 +1182,10 @@ public class ConfigurationMakefileWriter {
                             command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
                             command += " oname="; // NOI18N
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
                                 target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
                             } else {
-                                MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
                                 target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                             }
                             command += target;
@@ -1354,10 +1355,10 @@ public class ConfigurationMakefileWriter {
                                     String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                                     String target = file;
                                     if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                        MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                        MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
                                         target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
                                     } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                                        MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                        MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
                                         target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                                     }
                                     bw.write("\t${RM} " + target + "\n"); // NOI18N

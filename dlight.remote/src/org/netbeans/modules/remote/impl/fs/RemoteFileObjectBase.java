@@ -49,11 +49,12 @@ import java.net.ConnectException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import javax.swing.event.EventListenerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -69,9 +70,9 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final String remotePath;
     protected final File cache;
     private boolean valid;
-    private volatile EventListenerList eventSupport;
+    private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
-
+    
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -87,13 +88,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
         return execEnv;
     }
 
-    private synchronized EventListenerList getEventSupport() {
-        if (eventSupport == null) {
-            eventSupport = new EventListenerList();
-        }
-        return eventSupport;
-    }
-
     @Override
     public String getPath() {
         return this.remotePath;
@@ -101,8 +95,38 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public void addFileChangeListener(FileChangeListener fcl) {
-        getEventSupport().add(FileChangeListener.class, fcl);
+        listeners.add(fcl);
     }
+    
+    @Override
+    public void removeFileChangeListener(FileChangeListener fcl) {
+        listeners.remove(fcl);
+    }
+
+    
+    protected void fireDataCreated(FileObject fo) {
+        for (FileChangeListener fcl : listeners) {
+            fcl.fileDataCreated(new FileEvent(this, fo));
+        }
+    }
+
+    protected void fireFolderCreated(FileObject fo) {
+        for (FileChangeListener fcl : listeners) {
+            fcl.fileFolderCreated(new FileEvent(this, fo));
+        }
+    }
+
+    protected void fireDeleted(FileObject fo) {
+        for (FileChangeListener fcl : listeners) {
+            fcl.fileDeleted(new FileEvent(this, fo));
+        }
+    }
+    
+//    protected void fireRenamed(FileObject fo, String name, String ext) {
+//        for (FileChangeListener fcl : listeners) {
+//            fcl.fileRenamed(new FileRenameEvent(this, fo, name, ext));
+//        }
+//    }
 
     @Override
     public void delete(FileLock lock) throws IOException {
@@ -242,11 +266,6 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public FileLock lock() throws IOException {
         return lock;
-    }
-
-    @Override
-    public void removeFileChangeListener(FileChangeListener fcl) {
-        getEventSupport().remove(FileChangeListener.class, fcl);
     }
 
     @Override

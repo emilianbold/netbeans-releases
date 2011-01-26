@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
@@ -341,7 +342,7 @@ public class ImportExecutable implements PropertyChangeListener {
         if (activeConfiguration == null) {
             return;
         }
-        String root = findFolderPath(getRoot(configurationDescriptor));
+        String root = findFolderPath(configurationDescriptor, getRoot(configurationDescriptor));
         if (root == null) {
             return;
         }
@@ -798,12 +799,13 @@ public class ImportExecutable implements PropertyChangeListener {
         return folder;
     }
 
-    static String findFolderPath(Folder root) {
+    static String findFolderPath(MakeConfigurationDescriptor configurationDescriptor, Folder root) {
         if (root == null) {
             return null;
         }
         if (root.isDiskFolder()) {
-            return root.getRoot();
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), root.getRoot());
+            return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
         List<String> candidates = new ArrayList<String>();
         for (Object o : root.getElements()) {

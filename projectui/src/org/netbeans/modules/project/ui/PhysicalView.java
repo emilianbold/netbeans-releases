@@ -44,24 +44,28 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
@@ -74,20 +78,34 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import static org.netbeans.modules.project.ui.Bundle.*;
 
 /**
  * Support for creating logical views.
  * @author Jesse Glick, Petr Hrebejk
  */
 public class PhysicalView {
+
+    private PhysicalView() {}
+
+    private static final Logger LOG = Logger.getLogger(PhysicalView.class.getName());
+
+    private static final class GroupNodeInfo {
+        public final boolean isProjectDir;
+        public GroupNodeInfo(boolean isProjectDir) {
+            this.isProjectDir = isProjectDir;
+        }
+    }
         
     public static boolean isProjectDirNode( Node n ) {
-        return n instanceof GroupNode && ((GroupNode)n).isProjectDir;
+        GroupNodeInfo i = n.getLookup().lookup(GroupNodeInfo.class);
+        return i != null && i.isProjectDir;
     }
     
     public static Node[] createNodesForProject( Project p ) {
@@ -115,11 +133,7 @@ public class PhysicalView {
         
         if ( projectDirGroup == null ) {
             // Illegal project
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Project " + p +                                                // NOI18N
-                    "either does not contain it's project directory under the " +   // NOI18N
-                    "Generic source groups or the project directory is under " +     // NOI18N
-                    "more than one source group");                                  // NOI18N
+            LOG.log(Level.WARNING,"Project {0} either does not contain it''s project directory under generic source groups or the directory is under more than one source group", p);
             return new Node[0];
         }
 
@@ -130,7 +144,7 @@ public class PhysicalView {
         
         // Create the nodes
         ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
-        nodesList.add(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)));
+        nodesList.add(new ProjectIconNode(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)), true));
         
         for (SourceGroup group : groups) {
             if (group == projectDirGroup) {
@@ -144,7 +158,7 @@ public class PhysicalView {
             if (!rootFolder.isValid() || !rootFolder.isFolder()) {
                 continue;
             }
-            nodesList.add(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)));
+            nodesList.add(new ProjectIconNode(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)), true));
         }
         
         Node nodes[] = new Node[ nodesList.size() ];
@@ -160,28 +174,28 @@ public class PhysicalView {
             VisibilityQuery.getDefault().addChangeListener( this );
         }
                 
-        public boolean acceptDataObject(DataObject obj) {
+        public @Override boolean acceptDataObject(DataObject obj) {
             return acceptFileObject(obj.getPrimaryFile());
         }
         
-        public void stateChanged( ChangeEvent e) {            
+        public @Override void stateChanged(ChangeEvent e) {
             final Runnable r = new Runnable () {
-                public void run () {
+                public @Override void run() {
                     changeSupport.fireChange();
                 }
             };            
             SwingUtilities.invokeLater(r);            
         }        
     
-        public void addChangeListener( ChangeListener listener ) {
+        public @Override void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener( listener );
         }        
                         
-        public void removeChangeListener( ChangeListener listener ) {
+        public @Override void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener( listener );
         }
 
-        public boolean acceptFileObject(FileObject fo) {
+        public @Override boolean acceptFileObject(FileObject fo) {
             return VisibilityQuery.getDefault().isVisible(fo);
         }
         
@@ -191,9 +205,6 @@ public class PhysicalView {
         
         private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
         
-        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
-            PhysicalView.class, "FMT_PhysicalView_GroupName" ); // NOI18N
-
         private ProjectInformation pi;
         private SourceGroup group;
         private boolean isProjectDir;
@@ -201,7 +212,7 @@ public class PhysicalView {
         public GroupNode(Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(),
                    dataFolder.createNodeChildren( VISIBILITY_QUERY_FILTER ),                       
-                   createLookup( project, group, dataFolder ) );
+                   createLookup(project, group, dataFolder, isProjectDir));
 
             this.pi = ProjectUtils.getInformation( project );
             this.group = group;
@@ -212,7 +223,7 @@ public class PhysicalView {
 
         // XXX May need to change icons as well
         
-        public String getName() {
+        public @Override String getName() {
             if ( isProjectDir ) {
                 return pi.getName();
             }
@@ -220,48 +231,47 @@ public class PhysicalView {
                 String n = group.getName();
                 if (n == null) {
                     n = "???"; // NOI18N
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "SourceGroup impl of type " + group.getClass().getName() + " specified a null getName(); this is illegal");
+                    LOG.log(Level.WARNING, "SourceGroup impl of type {0} specified a null getName(); this is illegal", group.getClass().getName());
                 }
                 return n;
             }
         }
 
-        public String getDisplayName() {
+        @Messages({"# {0} - display name of the group", "# {1} - display name of the project", "# {2} - original name of the folder", "FMT_PhysicalView_GroupName={1} - {0}"})
+        public @Override String getDisplayName() {
             if ( isProjectDir ) {
                 return pi.getDisplayName();
             }
             else {
-                return MessageFormat.format( GROUP_NAME_PATTERN,
-                    new Object[] { group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName() } );                    
+                return FMT_PhysicalView_GroupName(group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName());
             }
         }
 
-        public String getShortDescription() {
+        @Messages({"HINT_project=Project in {0}", "HINT_group=Source folder in {0}"})
+        public @Override String getShortDescription() {
             FileObject gdir = group.getRootFolder();
             String dir = FileUtil.getFileDisplayName(gdir);
-            return NbBundle.getMessage(PhysicalView.class, 
-                                       isProjectDir ? "HINT_project" : "HINT_group", // NOI18N
-                                       dir); 
+            return isProjectDir ? HINT_project(dir) : HINT_group(dir);
         }
 
-        public boolean canRename() {
+        public @Override boolean canRename() {
             return false;
         }
 
-        public boolean canCut() {
+        public @Override boolean canCut() {
             return false;
         }
 
-        public boolean canCopy() {
+        public @Override boolean canCopy() {
             // At least for now.
             return false;
         }
 
-        public boolean canDestroy() {
+        public @Override boolean canDestroy() {
             return false;
         }
 
-        public Action[] getActions( boolean context ) {
+        public @Override Action[] getActions(boolean context) {
 
             if ( context ) {
                 return super.getActions( true );
@@ -293,9 +303,9 @@ public class PhysicalView {
 
         // Private methods -------------------------------------------------    
 
-        public void propertyChange(final PropertyChangeEvent evt) {
+        public @Override void propertyChange(final PropertyChangeEvent evt) {
             final Runnable r = new Runnable () {
-                public void run () {
+                public @Override void run() {
                     String prop = evt.getPropertyName();
                     boolean ok = false;
                     if (prop == null || ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
@@ -348,72 +358,69 @@ public class PhysicalView {
             SwingUtilities.invokeLater(r);            
         }
         
-        private static Lookup createLookup( Project p, SourceGroup group, DataFolder dataFolder ) {
-            return new ProxyLookup(new Lookup[] {
+        private static Lookup createLookup(Project p, SourceGroup group, DataFolder dataFolder, boolean isProjectDir) {
+            return new ProxyLookup(
                 dataFolder.getNodeDelegate().getLookup(),
-                Lookups.fixed( new Object[] { p, new PathFinder( group ) } ),
-                p.getLookup(),
-            });
+                Lookups.fixed(p, new PathFinder(group), new GroupNodeInfo(isProjectDir)),
+                p.getLookup());
         }
 
     }
-    
-    /* XXX disabled for now pending resolution of interaction with planned VCS annotations (color only):
-    /**
-     * Specially displays nodes corresponding to files which are not contained in this source group.
-     * /
-    private static final class GroupContainmentFilterNode extends FilterNode {
-        
-        private final SourceGroup g;
-        
-        public GroupContainmentFilterNode(Node orig, SourceGroup g) {
-            super(orig, orig.isLeaf() ? Children.LEAF : new GroupContainmentFilterChildren(orig, g));
-            this.g = g;
+
+    private static final class ProjectIconNode extends FilterNode { // #194068
+        private final boolean root;
+        public ProjectIconNode(Node orig, boolean root) {
+            super(orig, new ProjectBadgingChildren(orig));
+            this.root = root;
         }
-        
-        public String getHtmlDisplayName() {
-            Node orig = getOriginal();
-            DataObject d = (DataObject) orig.getCookie(DataObject.class);
-            assert d != null : orig;
-            FileObject f = d.getPrimaryFile();
-            String barename = orig.getHtmlDisplayName();
-            if (!FileUtil.isParentOf(g.getRootFolder(), f) || g.contains(f)) {
-                // Leave it alone.
-                return barename;
+        public @Override Image getIcon(int type) {
+            return swap(super.getIcon(type));
+        }
+        public @Override Image getOpenedIcon(int type) {
+            return swap(super.getOpenedIcon(type));
+        }
+        private Image swap(Image base) {
+            if (!root) { // do not use icon on root node in Files tab
+                DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
+                if (folder != null) {
+                    ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder.getPrimaryFile());
+                    if (r != null) {
+                        Icon icon = r.getIcon();
+                        if (icon != null) {
+                            return ImageUtilities.icon2Image(icon);
+                        }
+                    }
+                }
             }
-            // Try to grey it out.
-            if (barename == null) {
+            return base;
+        }
+        public @Override String getShortDescription() {
+            DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
+            if (folder != null) {
                 try {
-                    barename = XMLUtil.toElementContent(orig.getDisplayName());
-                } catch (CharConversionException e) {
-                    // Never mind.
-                    return null;
+                    Project p = ProjectManager.getDefault().findProject(folder.getPrimaryFile());
+                    if (p != null) {
+                        return ProjectUtils.getInformation(p).getDisplayName();
+                    }
+                } catch (IOException x) {
+                    LOG.log(Level.FINE, null, x);
                 }
             }
-            return "<font color='!Label.disabledForeground'>" + barename + "</font>"; // NOI18N
+            return super.getShortDescription();
         }
-        
-        private static final class GroupContainmentFilterChildren extends FilterNode.Children {
-            
-            private final SourceGroup g;
-            
-            public GroupContainmentFilterChildren(Node orig, SourceGroup g) {
-                super(orig);
-                this.g = g;
-            }
-            
-            protected Node copyNode(Node node) {
-                if (original.getCookie(DataFolder.class) != null && node.getCookie(DataObject.class) != null) {
-                    return new GroupContainmentFilterNode(node, g);
-                } else {
-                    return super.copyNode(node);
-                }
-            }
-            
-        }
-        
     }
-     */
+    private static final class ProjectBadgingChildren extends FilterNode.Children {
+        public ProjectBadgingChildren(Node orig) {
+            super(orig);
+        }
+        protected @Override Node copyNode(Node orig) {
+            if (original.getLookup().lookup(DataFolder.class) != null) {
+                return new ProjectIconNode(orig, false);
+            } else {
+                return super.copyNode(orig);
+            }
+        }
+    }
     
     public static class PathFinder {
         

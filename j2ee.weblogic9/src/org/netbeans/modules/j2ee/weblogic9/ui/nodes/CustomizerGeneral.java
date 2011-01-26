@@ -67,8 +67,10 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 748111929912200475L;
     
+    private final WLJpa2SwitchSupport support;
     CustomizerGeneral(WLDeploymentManager manager) {
         this.manager = manager;
+        this.support = new WLJpa2SwitchSupport(manager);
         initComponents();
         
         initValues();
@@ -109,7 +111,6 @@ class CustomizerGeneral extends javax.swing.JPanel {
         if ( port!= null){
             serverPort.setText( port );
         }
-        WLJpa2SwitchSupport support = manager.getJpa2SwitchSupport();
         if (support.isEnabledViaSmartUpdate()) {
             jpa2Button.setEnabled(false);
         } else {
@@ -298,7 +299,6 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
     private void jpa2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2ButtonActionPerformed
         // TODO add your handling code here:
-        WLJpa2SwitchSupport support = manager.getJpa2SwitchSupport();
         if (support.isEnabled()) {
             support.disable();
         } else {

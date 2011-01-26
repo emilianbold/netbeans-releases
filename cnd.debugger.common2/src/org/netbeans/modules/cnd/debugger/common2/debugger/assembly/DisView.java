@@ -1335,9 +1335,17 @@ public class DisView {
 	    fileText.setToolTipText(null);
             functionText.setText(null);
         } else {
-            fileText.setText(CndPathUtilitities.getBaseName(stateModel.getFile()));
-	    fileText.setToolTipText(stateModel.getFile());
-            functionText.setText(stateModel.getFunction());
+	    if (stateModel.getFile() != null) {
+		fileText.setText(CndPathUtilitities.getBaseName(stateModel.getFile()));
+		fileText.setToolTipText(stateModel.getFile());
+	    } else {
+		fileText.setText(null);
+		fileText.setToolTipText(null);
+	    }
+	    if (stateModel.getFunction() != null) 
+		functionText.setText(stateModel.getFunction());
+	    else
+		functionText.setText(null);
         }
 
 	try {

@@ -118,6 +118,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "ignore",
                 "init",
                 "listModifiedIndexEntries",
+                "listRemoteBranches",
                 "log",
                 "merge",
                 "remove",
@@ -181,6 +182,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "ignore",
                 "init",
                 "listModifiedIndexEntries",
+                "listRemoteBranches",
                 "log",
                 "merge",
                 "remove",
@@ -201,6 +203,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getUser",
                 "ignore",
                 "listModifiedIndexEntries",
+                "listRemoteBranches",
                 "log",
                 "removeNotificationListener",
                 "unignore"));
@@ -251,6 +254,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "init",
                 "ignore",
                 "listModifiedIndexEntries",
+                "listRemoteBranches",
                 "log",
                 "merge",
                 "remove",
@@ -359,6 +363,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "init",
                 "ignore",
                 "listModifiedIndexEntries",
+                "listRemoteBranches",
                 "log",
                 "merge",
                 "remove",
@@ -377,6 +382,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getStatus",
                 "getUser",
                 "listModifiedIndexEntries",
+                "listRemoteBranches",
                 "log",
                 "removeNotificationListener"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");

@@ -228,7 +228,6 @@ public class BracketCompletion {
      */
     static void charBackspaced(BaseDocument doc,
             int dotPos,
-            Caret caret,
             char ch) throws BadLocationException {
         if (completionSettingEnabled(doc)) {
             if (doc.getLength() == 0) {

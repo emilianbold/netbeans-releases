@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -125,21 +125,22 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             lookup = new AbstractLookup(ic);
             this.instanceProvider = instanceProvider;
             commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
-            ic.add(this); // Server instance in lookup (to find instance from node lookup)
-
-            ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
             // Flag this server URI as under construction
             deployerUri = commonSupport.getDeployerUri();
             GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
+            if (null == instanceProvider.getInstance(deployerUri)) {
+                ic.add(this); // Server instance in lookup (to find instance from node lookup)
 
-            commonInstance = ServerInstanceFactory.createServerInstance(this);
-            if (updateNow) {
-                updateModuleSupport();
+                ic.add(commonSupport); // Common action support, e.g start/stop, etc.
+                commonInstance = ServerInstanceFactory.createServerInstance(this);
+                if (updateNow) {
+                    updateModuleSupport();
+                }
+
+                // make this instance publicly accessible
+                instanceProvider.addServerInstance(this);
             }
-            
-            // make this instance publicly accessible
-            instanceProvider.addServerInstance(this);
         } finally {
             if(deployerUri != null) {
                 GlassfishInstanceProvider.activeRegistrationSet.remove(deployerUri);

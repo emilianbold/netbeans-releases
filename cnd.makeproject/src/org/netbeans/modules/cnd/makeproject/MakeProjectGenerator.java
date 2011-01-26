@@ -129,7 +129,7 @@ public class MakeProjectGenerator {
         // work in a copy of confs
         MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
-            copyConfs[i] = (MakeConfiguration) confs[i].clone();
+            copyConfs[i] = confs[i].clone();
             copyConfs[i].setBaseDir(projectFolder.getPath());
             RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);

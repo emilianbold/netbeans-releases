@@ -395,6 +395,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return serverImpl.toArray(new LibraryImplementation[serverImpl.size()]);
         }
         
+        public void notifyLibrariesChange() {
+            synchronized (this) {
+                libraries = null;
+            }
+            firePropertyChange(PROP_LIBRARIES, null, getLibraries());
+        }
+        
         private void initLibrariesForWLS() {
             LibraryImplementation library = new J2eeLibraryTypeProvider().
                     createLibrary();
@@ -451,7 +458,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     for (URL cpElem : cp) {
                         if (OEPE_CONTRIBUTIONS_PATTERN.matcher(cpElem.getPath()).matches()) {
                             oepe = cpElem;
-                            list.add(oepe);
+                            //list.add(oepe);
                             break;
                         }
                     }
@@ -601,19 +608,27 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
         // method checks whether there is already persistence API present in the list
         private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
+            boolean foundJpa2 = false;
+            boolean foundJpa1 = false;
             for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
                 URL archiveUrl = FileUtil.getArchiveFile(it.next());
                 if (archiveUrl != null) {
                     if (JAVAX_PERSISTENCE_2_PATTERN.matcher(archiveUrl.getPath()).matches()) {
-                        synchronized (this) {
-                            jpa2Available = true;
-                        }
-                        return;
+                        foundJpa2 = true;
+                        break;
                     } else if (JAVAX_PERSISTENCE_PATTERN.matcher(archiveUrl.getPath()).matches()) {
-                        return;
+                        foundJpa1 = true;
+                        break;
                     }
                 }
             }  
+            
+            synchronized (this) {
+                jpa2Available = foundJpa2;
+            }
+            if (foundJpa2 || foundJpa1) {
+                return;
+            }
             
             File middleware = getMiddlewareHome();
             if (middleware != null) {

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -61,7 +60,11 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
 
     public RemotePkgConfigTestCase() {
         super("RemotePkgConfig");
-        OPTIMIZE_SIMPLE_PROJECTS = false;
+    }
+
+    @Override
+    protected boolean optimizeSimpleProjects() {
+        return false;
     }
 
     @Override

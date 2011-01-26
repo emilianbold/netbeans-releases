@@ -132,8 +132,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private final String port;
 
     private final WLProductProperties productProperties = new WLProductProperties(this);
-
-    private final WLJpa2SwitchSupport jpa2SwitchSupport = new WLJpa2SwitchSupport(this);
     
     private final WLSharedState mutableState;
 
@@ -251,10 +249,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     public WLProductProperties getProductProperties() {
         return productProperties;
-    }
-    
-    public WLJpa2SwitchSupport getJpa2SwitchSupport() {
-        return jpa2SwitchSupport;
     }
 
     private synchronized void init() {
@@ -637,11 +631,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
             ProgressObjectSupport.waitFor(po);
         }
     }
-    
-
-    
-    
-    
 
     // XXX these are just temporary methods - should be replaced once we will
     // use our own TargetModuleID populated via JMX
@@ -866,6 +855,5 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 }
             }
         }
-
     }
 }

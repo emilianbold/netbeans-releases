@@ -140,9 +140,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     @Override
     public CsmFile getCsmFile(FileObject fo) {
-        if (!CndPathUtilitities.isPathAbsolute(fo.getPath())) { 
-            // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
-            // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
+        if (fo == null || ! fo.isValid() || ! CsmUtilities.isCsmSuitable(fo)) {  // #194431 Path should be absolute: Templates/cFiles/CSimpleTest.c
             return null;
         }
         CsmModelState modelState = CsmModelAccessor.getModelState();

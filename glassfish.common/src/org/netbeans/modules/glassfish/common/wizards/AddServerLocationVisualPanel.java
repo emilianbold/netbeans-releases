@@ -373,10 +373,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                         .addGap(2, 2, 2)
                         .addComponent(readlicenseButton))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(hk2HomeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                        .addComponent(hk2HomeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
-                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE))
+                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -396,6 +396,11 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                 .addComponent(downloadStatusLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        hk2HomeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "AddServerLocationVisualPanel.hk2HomeTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "AddServerLocationVisualPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        agreeCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "AddServerLocationVisualPanel.agreeCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        readlicenseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "AddServerLocationVisualPanel.readlicenseButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readlicenseButtonActionPerformed
