@@ -45,11 +45,19 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
+import javax.imageio.IIOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -269,6 +277,26 @@ public class RemoteFileSystemUtils {
             } else {
                 return null;
             }
+        }
+    }
+    
+    public static void delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
+        StringWriter writer = new StringWriter();
+        Future<Integer> task;
+        if (directory) {
+            task = CommonTasksSupport.rmDir(execEnv, path, true, writer);
+        } else {
+            task = CommonTasksSupport.rmFile(execEnv, path, writer);
+        }
+        try {
+            if (task.get().intValue() != 0) {
+                
+            }
+        } catch (InterruptedException ex) {
+            throw new InterruptedIOException();
+        } catch (ExecutionException ex) {
+            final String errorText = writer.getBuffer().toString();
+            throw new IOException("Error removing " + path + ": " + errorText, ex); //NOI18N
         }
     }
 
