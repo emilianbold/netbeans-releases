@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -109,7 +110,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public CharSequence getUrl() {
-        return CndFileUtils.fileObjectToUrl(getFileObject());
+        return CndFileSystemProvider.toUrl(fileSystem, absPath);
     }
 
     @Override
@@ -121,7 +122,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public FileObject getFileObject() {
         FileObject result = fileSystem.findResource(absPath.toString());
         if (result == null) {
-            CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
+            result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
         }
         return result;
     }
