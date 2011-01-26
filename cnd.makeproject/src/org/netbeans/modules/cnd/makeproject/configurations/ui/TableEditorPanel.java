@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -79,6 +80,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
     private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"); // NOI18N
     private String baseDir;
+    private MakeConfiguration conf;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
 
@@ -92,8 +94,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
     this(objects, null, null);
     }
      */
-    public TableEditorPanel(List<LibraryItem> objects, JButton[] extraButtons, String baseDir) {
+    public TableEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons, String baseDir) {
         super(objects, extraButtons);
+        this.conf = conf;
         this.baseDir = baseDir;
     }
 
@@ -285,6 +288,10 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                     JCheckBox checkBox = new JCheckBox();
                     checkBox.setSelected(((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().getBuild());
                     checkBox.setBackground(label.getBackground());
+                    if (conf.isMakefileConfiguration()) {
+                        checkBox.setEnabled(false);
+                        checkBox.setSelected(false);
+                    }
                     return checkBox;
                 } else {
                     label.setText(""); // NOI18N
@@ -344,7 +351,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 }
             } else {
                 // col 2
-                if (libraryItem instanceof LibraryItem.ProjectItem) {
+                if (!conf.isMakefileConfiguration() && libraryItem instanceof LibraryItem.ProjectItem) {
                     return true;
                 } else {
                     return false;
