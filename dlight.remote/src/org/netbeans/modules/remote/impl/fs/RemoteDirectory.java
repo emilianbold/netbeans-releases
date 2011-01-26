@@ -166,6 +166,29 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return create(name, true);
     }
 
+    @Override
+    protected void postDeleteChild(FileObject child) {
+        try {
+            DirectoryStorage ds = getDirectoryStorage(false);
+            ds.removeEntry(child.getNameExt());
+            ds.store();
+            fireDeleted(child);
+        } catch (ConnectException ex) {
+            RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            // too late
+        }
+    }
+    
+    @Override
+    protected void deleteImpl() throws IOException {
+        RemoteFileSystemUtils.delete(execEnv, remotePath, true);
+    }
+
     private FileObject create(String name, boolean directory) throws IOException {
         // Have to comment this out since NB does lots of stuff in the UI thread and I have no way to control this :(
         // RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");

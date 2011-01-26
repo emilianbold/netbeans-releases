@@ -53,7 +53,10 @@ import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
@@ -152,6 +155,16 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     @Override
     public FileObject createFolder(String name) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
+    }
+
+    @Override
+    protected void postDeleteChild(FileObject child) {
+        RemoteLogger.getInstance().log(Level.WARNING, "postDeleteChild is called on {0}", getClass().getSimpleName());
+    }
+    
+    @Override
+    protected void deleteImpl() throws IOException {
+        RemoteFileSystemUtils.delete(execEnv, remotePath, false);
     }
 
     @Override
