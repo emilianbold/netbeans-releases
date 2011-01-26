@@ -81,7 +81,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
@@ -562,7 +562,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 @Override
                 public void run() {
                     if (e.getSource() == panel.btnRevert) {
-                        SystemAction.get(CheckoutPathsAction.class).performAction(context);
+                        SystemAction.get(RevertChangesAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnCommit) {
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
