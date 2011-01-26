@@ -272,19 +272,23 @@ made subject to such option by the copyright holder.
         <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
 
-    <target name="run" depends="netbeans">
+    <target name="-hide-excluded-modules" if="suite.dir"> <!-- #194563 -->
+        <ant dir="${suite.dir}" inheritall="false" target="-hide-excluded-modules"/>
+    </target>
+
+    <target name="run" depends="netbeans,-hide-excluded-modules">
         <ant antfile="${harness.dir}/run.xml" target="run">
             <reference refid="cluster.path.id"/>
         </ant>
     </target>
 
-    <target name="profile" depends="netbeans,-jdk-presetdef-nbprofiledirect">
+    <target name="profile" depends="netbeans,-hide-excluded-modules,-jdk-presetdef-nbprofiledirect">
         <ant antfile="${harness.dir}/run.xml" target="profile">
             <reference refid="cluster.path.id"/>
         </ant>
     </target>
 
-    <target name="debug" depends="netbeans,-jdk-presetdef-nbjpdastart">
+    <target name="debug" depends="netbeans,-hide-excluded-modules,-jdk-presetdef-nbjpdastart">
         <ant antfile="${harness.dir}/run.xml" target="debug">
             <reference refid="cluster.path.id"/>
         </ant>
