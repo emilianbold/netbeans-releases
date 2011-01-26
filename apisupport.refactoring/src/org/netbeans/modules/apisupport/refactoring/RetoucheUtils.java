@@ -45,6 +45,7 @@
 package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -99,7 +101,12 @@ public class RetoucheUtils {
         if (result != null)
             return getPackageName(result);
         
-        File f = new File(url.getPath());
+        File f;
+        try {
+            f = new File(url.toURI());
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
         
         do {
             FileObject fo = FileUtil.toFileObject(f);
