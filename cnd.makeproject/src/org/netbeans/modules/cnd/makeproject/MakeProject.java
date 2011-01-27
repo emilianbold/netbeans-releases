@@ -666,6 +666,32 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         this.sourceEncoding = sourceEncoding;
     }
 
+    /**
+     * @return active configuration type (doesn't force reading configuration metadata)
+     * If metadata already read, get typw from the active configuration ((it may have changed)
+     * If not read, get type from project.xml file. This works only for >= V77
+     * If < V77 return -1.
+     */
+    public int getActiveConfigurationType() {
+        // If configurations already read, get it from active configuration (it may have changed)
+        MakeConfiguration makeConfiguration = getActiveConfiguration();
+        if (makeConfiguration != null) {
+            return makeConfiguration.getConfigurationType().getValue();
+        }
+        // Get it from xml (version >= V77)
+        Element data = helper.getPrimaryConfigurationData(true);
+
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                return new Integer(node.getTextContent()).intValue();
+            }
+        }
+
+        return -1;
+    }
+
     /** NPE-safe method for getting active configuration */
     public MakeConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.gotDescriptor()) {
