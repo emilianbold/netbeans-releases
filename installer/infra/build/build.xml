@@ -786,14 +786,14 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbmysql-components" if="do.build.mysql">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-javaee nb-ruby runtimes-group glassfish mysql mysql-connector"/>
+	    <param name="build.list" value="nb-base nb-javase nb-javaee runtimes-group glassfish mysql mysql-connector"/>
         </antcall>
     </target>
 
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javaee nb-javacard nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
+	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
         </antcall>
      </target>
 
@@ -816,7 +816,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase java ruby cpp php javafx full javafx-full" separator=" " property="bundle.type">
+        <for-each list="javase javaee cpp php javafx full javafx-full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1331,6 +1331,27 @@ jarsigner.storepass=${jarsigner.storepass}
 	</if>
 	<antcall target="convert-netbeans-bundle"/>
     </target>
+    
+    <target name="generate-netbeans-javaee-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-${bundle.platform}"/>
+     	
+        <create-bundle root="${output.dir}/registry-temp" 
+                   platform="${bundle.platform}" 
+                   target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>            
+            <!--<component uid="nb-webcommon"  version="${nb.full.version}"/>-->
+            <component uid="nb-javaee"     version="${nb.full.version}"/>            
+            <!--component uid="nb-ergonomics" version="${nb.full.version}"/-->
+            <!--component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/-->
+            <!--<component uid="${server-uid}" version="${server.version}.${server.milestone.number}.${server.build.number}"/>-->
+            <component uid="glassfish-mod" version="${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+            <bundleProperty name="${welcome.type}" value="javaee"/>
+        </create-bundle>	
+	<antcall target="convert-netbeans-bundle"/>
+    </target>    
 
     <target name="generate-netbeans-javame-bundle">
 	<property name="bundle.prefix" 
@@ -1423,7 +1444,7 @@ jarsigner.storepass=${jarsigner.storepass}
                    <component uid="nb-javame"      version="${nb.full.version}"/>
                    <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                    <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                   <component uid="nb-ruby"        version="${nb.full.version}"/>
+                   <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
                    <component uid="nb-groovy"     version="${nb.full.version}"/>
                    <component uid="nb-cnd"         version="${nb.full.version}"/>
                    <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1448,7 +1469,7 @@ jarsigner.storepass=${jarsigner.storepass}
                    <component uid="nb-javame"      version="${nb.full.version}"/>
                    <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                    <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                   <component uid="nb-ruby"        version="${nb.full.version}"/>
+                   <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
                    <component uid="nb-groovy"     version="${nb.full.version}"/>
                    <component uid="nb-cnd"         version="${nb.full.version}"/>
                    <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1472,7 +1493,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <!--<component uid="nb-javame"      version="${nb.full.version}"/>-->
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                        <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                       <component uid="nb-ruby"        version="${nb.full.version}"/>
+                       <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
 		       <component uid="nb-groovy"     version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1496,7 +1517,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-javame"     version="${nb.full.version}"/>-->
             <!--<component uid="nb-soa"        version="${nb.full.version}"/>-->
             <!--<component uid="nb-uml"    version="${nb.full.version}"/>-->
-            <component uid="nb-ruby"       version="${nb.full.version}"/>
+            <!--<component uid="nb-ruby"       version="${nb.full.version}"/>-->
             <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-cnd"        version="${nb.full.version}"/>
             <component uid="nb-php"        version="${nb.full.version}"/>
@@ -1869,7 +1890,7 @@ jarsigner.storepass=${jarsigner.storepass}
                    <component uid="nb-javame"      version="${nb.full.version}"/>
                    <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                    <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                   <component uid="nb-ruby"        version="${nb.full.version}"/>
+                   <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
 	           <component uid="nb-groovy"     version="${nb.full.version}"/>
                    <component uid="nb-cnd"         version="${nb.full.version}"/>
                    <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1894,7 +1915,7 @@ jarsigner.storepass=${jarsigner.storepass}
                   <component uid="nb-javame"      version="${nb.full.version}"/>
                   <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                   <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                  <component uid="nb-ruby"        version="${nb.full.version}"/>
+                  <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
                   <component uid="nb-groovy"      version="${nb.full.version}"/>
                   <component uid="nb-cnd"         version="${nb.full.version}"/>
                   <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1918,7 +1939,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <!--<component uid="nb-javame"      version="${nb.full.version}"/>-->
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                        <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                       <component uid="nb-ruby"        version="${nb.full.version}"/>
+                       <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
 		       <component uid="nb-groovy"     version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1941,7 +1962,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <!--<component uid="nb-javame"      version="${nb.full.version}"/>-->
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                        <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
-                       <component uid="nb-ruby"        version="${nb.full.version}"/>
+                       <!--<component uid="nb-ruby"        version="${nb.full.version}"/>-->
 		       <component uid="nb-groovy"     version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
@@ -1966,7 +1987,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-javame"     version="${nb.full.version}"/>-->
             <!--<component uid="nb-soa"        version="${nb.full.version}"/>-->
             <!--<component uid="nb-uml"    version="${nb.full.version}"/>-->
-            <component uid="nb-ruby"       version="${nb.full.version}"/>
+            <!--<component uid="nb-ruby"       version="${nb.full.version}"/>-->
             <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-cnd"        version="${nb.full.version}"/>
             <component uid="nb-php"        version="${nb.full.version}"/>
@@ -2078,7 +2099,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"       version="${nb.full.version}"/>
             <!--<component uid="nb-webcommon"    version="${nb.full.version}"/>-->
             <component uid="nb-javaee"       version="${nb.full.version}"/>
-            <component uid="nb-ruby"         version="${nb.full.version}"/>
+            <!--<component uid="nb-ruby"         version="${nb.full.version}"/>-->
             <component uid="glassfish"       version="2.1.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="mysql"           version="5.0.67.0.0"/>
             <component uid="mysql-connector" version="5.1.6.0.0"/>

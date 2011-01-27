@@ -42,8 +42,6 @@
 package org.netbeans.modules.maven.debug;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -71,6 +69,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.NbCollections;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -80,9 +79,9 @@ import org.openide.windows.OutputWriter;
 public class DebuggerChecker implements LateBoundPrerequisitesChecker, ExecutionResultChecker, PrerequisitesChecker {
     private static final String ARGLINE = "argLine"; //NOI18N
     private static final String MAVENSUREFIREDEBUG = "maven.surefire.debug"; //NOI18N
-    private Logger LOGGER = Logger.getLogger(DebuggerChecker.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DebuggerChecker.class.getName());
 
-    public boolean checkRunConfig(RunConfig config) {
+    public @Override boolean checkRunConfig(RunConfig config) {
         if (config.getProject() == null) {
             //cannot act on execution without a project instance..
             return true;
@@ -97,8 +96,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             // in terms of property definitions.
 
             if (ver == null) {
-                ver = "2.4"; //assume 2.4+, will be true for 2.0.9+ where //NOI18N
-            //defined explicitly, in older versions it will be the latest version.
+                ver = "2.4"; //assume 2.4+, will be true for 2.0.9+ where defined explicitly, in older versions it will be the latest version.
             }
             ArtifactVersion twopointfour = new DefaultArtifactVersion("2.4"); //NOI18N
             ArtifactVersion current = new DefaultArtifactVersion(ver); //NOI18N
@@ -123,7 +121,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         return true;
     }
 
-    public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
+    public @Override boolean checkRunConfig(RunConfig config, ExecutionContext context) {
         if (config.getProject() == null) {
             //cannot act on execution without a project instance..
             return true;
@@ -141,11 +139,8 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 start.setName(prj.getMavenProject().getArtifactId());
                 start.setStopClassName(config.getProperties().getProperty("jpda.stopclass")); //NOI18N
                 String val = start.execute(config.getProject());
-                Enumeration en = config.getProperties().propertyNames();
-                while (en.hasMoreElements()) {
-                    String key = (String) en.nextElement();
-                    String value = config.getProperties().getProperty(key);
-                    StringBuffer buf = new StringBuffer(value);
+                for (Map.Entry<String,String> entry : NbCollections.checkedMapByFilter(config.getProperties(), String.class, String.class, true).entrySet()) {
+                    StringBuilder buf = new StringBuilder(entry.getValue());
                     String replaceItem = "${jpda.address}"; //NOI18N
                     int index = buf.indexOf(replaceItem);
                     while (index > -1) {
@@ -155,7 +150,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                         index = buf.indexOf(replaceItem);
                     }
                     //                System.out.println("setting property=" + key + "=" + buf.toString());
-                    config.setProperty(key, buf.toString());
+                    config.setProperty(entry.getKey(), buf.toString());
                 }
                 config.setProperty("jpda.address", val); //NOI18N
             } catch (Throwable th) {
@@ -169,7 +164,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         return true;
     }
 
-    public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
+    public @Override void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
         if (config.getProject() != null && resultCode == 0 && "debug.fix".equals(config.getActionName())) { //NOI18N
             String cname = config.getProperties().getProperty("jpda.stopclass"); //NOI18N
             if (cname != null) {
@@ -204,8 +199,6 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             return;
         }
         
-        logger.println ("NetBeans: Classes to be reloaded:");
-        
         Map<String, byte[]> map = new HashMap<String, byte[]>();
         EditorContext editorContext = DebuggerManager.
             getDebuggerManager ().lookupFirst (null, EditorContext.class);
@@ -222,25 +215,25 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         }
         if (fo2 != null) {
             try {
-                String url = classToSourceURL (fo2, logger);
-                if (url != null)
-                    editorContext.updateTimeStamp (debugger, url);
-                InputStream is = fo2.getInputStream ();
-                long fileSize = fo2.getSize ();
-                byte[] bytecode = new byte [(int) fileSize];
-                is.read (bytecode);
-                map.put (
-                    classname, 
-                    bytecode
-                );
-                logger.println(" " + classname);
+                String basename = fo2.getName();
+                for (FileObject classfile : fo2.getParent().getChildren()) {
+                    String basename2 = classfile.getName();
+                    if (!basename2.equals(basename) && !basename2.startsWith(basename + '$')) {
+                        continue;
+                    }
+                    String url = classToSourceURL(classfile, logger);
+                    if (url != null) {
+                        editorContext.updateTimeStamp(debugger, url);
+                    }
+                    map.put(classname + basename2.substring(basename.length()), classfile.asBytes());
+                }
             } catch (IOException ex) {
                 ex.printStackTrace ();
             }
         }
         
-        logger.println("NetBeans: Reloaded classes: "+map.keySet());
-        if (map.size () == 0) {
+        logger.println("NetBeans: classes to reload: "+map.keySet());
+        if (map.isEmpty()) {
             logger.println("NetBeans: No class to reload");
             return;
         }
@@ -275,13 +268,16 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 return null;
             }
             int i = resourceName.indexOf ('$');
-            if (i > 0)
+            if (i > 0) {
                 resourceName = resourceName.substring (0, i);
+            }
             FileObject[] sRoots = SourceForBinaryQuery.findSourceRoots 
                 (root.getURL ()).getRoots ();
             ClassPath sourcePath = ClassPathSupport.createClassPath (sRoots);
             FileObject rfo = sourcePath.findResource (resourceName + ".java");
-            if (rfo == null) return null;
+            if (rfo == null) {
+                return null;
+            }
             return rfo.getURL ().toExternalForm ();
         } catch (FileStateInvalidException ex) {
             ex.printStackTrace ();

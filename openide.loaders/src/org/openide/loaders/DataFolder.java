@@ -1421,7 +1421,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
                     }
                 } catch( IOException ioE ) {
-                    Logger.getLogger(DataFolder.class.getName()).log(Level.WARNING, null, ioE);
+                    Logger.getLogger(DataFolder.class.getName()).log(Level.INFO, null, ioE);
                 }
             }
             return result;

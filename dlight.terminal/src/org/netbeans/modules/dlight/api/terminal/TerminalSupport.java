@@ -40,75 +40,42 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.openide.util.lookup;
+package org.netbeans.modules.dlight.api.terminal;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import java.awt.Component;
+import javax.swing.Action;
+import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.windows.IOContainer;
 
-public class ListenersIgnoredTest extends NbTestCase {
-    private static final Logger LOG = Logger.getLogger(ListenersIgnoredTest.class.getName());
-
-    public ListenersIgnoredTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.FINE;
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public final class TerminalSupport {
+    
+    private TerminalSupport() {
     }
     
-    public void testLookupBugTest() {
-        class C0 {
-        }
-        class C1 {
-        }
-        InstanceContent content = new InstanceContent();
-        AbstractLookup lookup = new AbstractLookup(content);
-//force lookup to use InheritanceTree as Storage
-        for (int i = 0; i < 12; i++) {
-            content.add(i);
-        }
-
-        Result<C0> r0 = lookup.lookupResult(C0.class);
-
-        final AtomicInteger cnt = new AtomicInteger();
-        r0.addLookupListener(new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                cnt.incrementAndGet();
-                LOG.fine("r0 notified");
-            }
-        });
-        
-        C0 o0 = new C0();
-        C1 o1 = new C1();
-
-        LOG.fine("Add o0");
-        content.add(o0);
-        assertEquals("One change", 1, cnt.getAndSet(0));
-
-        LOG.fine("Remove o0");
-        content.remove(o0);
-        assertEquals("Another change change", 1, cnt.getAndSet(0));
-
-        LOG.fine("Add o1");
-        content.add(o1);
-        assertEquals("No change", 0, cnt.getAndSet(0));
-
-        LOG.fine("Remove o1");
-        content.remove(o1);
-        assertEquals("No change", 0, cnt.getAndSet(0));
-
-        LOG.fine("Add o0");
-        content.add(o0);
-        LOG.fine("Line before should read 'r0 notified' ?");
-        assertEquals("One change", 1, cnt.getAndSet(0));
-
+    /**
+     * opens terminal tab in tab container for specified host in default location
+     * @param ioContainer
+     * @param env 
+     */
+    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, false);
+    }
+    
+    /**
+     * opens terminal tab in tab container and change dir into specified directory
+     * @param ioContainer
+     * @param env 
+     */
+    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env, String dir) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, env, dir, false);
     }
 
+    public static Component getToolbarPresenter(Action action) {
+        return TerminalSupportImpl.getToolbarPresenter(action);
+    }
 }

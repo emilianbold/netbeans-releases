@@ -40,75 +40,39 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.openide.util.lookup;
+package org.netbeans.modules.glassfish.common;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+/**
+ *
+ * @author vkraemer
+ */
+public class PortCollection {
 
-public class ListenersIgnoredTest extends NbTestCase {
-    private static final Logger LOG = Logger.getLogger(ListenersIgnoredTest.class.getName());
+    private int adminPort;
 
-    public ListenersIgnoredTest(String name) {
-        super(name);
+    public int getAdminPort() {
+        return adminPort;
     }
 
-    @Override
-    protected Level logLevel() {
-        return Level.FINE;
-    }
-    
-    public void testLookupBugTest() {
-        class C0 {
-        }
-        class C1 {
-        }
-        InstanceContent content = new InstanceContent();
-        AbstractLookup lookup = new AbstractLookup(content);
-//force lookup to use InheritanceTree as Storage
-        for (int i = 0; i < 12; i++) {
-            content.add(i);
-        }
-
-        Result<C0> r0 = lookup.lookupResult(C0.class);
-
-        final AtomicInteger cnt = new AtomicInteger();
-        r0.addLookupListener(new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                cnt.incrementAndGet();
-                LOG.fine("r0 notified");
-            }
-        });
-        
-        C0 o0 = new C0();
-        C1 o1 = new C1();
-
-        LOG.fine("Add o0");
-        content.add(o0);
-        assertEquals("One change", 1, cnt.getAndSet(0));
-
-        LOG.fine("Remove o0");
-        content.remove(o0);
-        assertEquals("Another change change", 1, cnt.getAndSet(0));
-
-        LOG.fine("Add o1");
-        content.add(o1);
-        assertEquals("No change", 0, cnt.getAndSet(0));
-
-        LOG.fine("Remove o1");
-        content.remove(o1);
-        assertEquals("No change", 0, cnt.getAndSet(0));
-
-        LOG.fine("Add o0");
-        content.add(o0);
-        LOG.fine("Line before should read 'r0 notified' ?");
-        assertEquals("One change", 1, cnt.getAndSet(0));
-
+    public void setAdminPort(int adminPort) {
+        this.adminPort = adminPort;
     }
 
+    public int getHttpPort() {
+        return httpPort;
+    }
+
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+    }
+    private int httpPort;
+
+    public int getHttpsPort() {
+        return httpsPort;
+    }
+
+    public void setHttpsPort(int httpsPort) {
+        this.httpsPort = httpPort;
+    }
+    private int httpsPort;
 }

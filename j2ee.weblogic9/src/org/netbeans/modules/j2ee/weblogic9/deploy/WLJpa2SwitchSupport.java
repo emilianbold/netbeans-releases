@@ -49,6 +49,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.util.List;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -60,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -71,22 +74,17 @@ import org.openide.util.Exceptions;
 public final class WLJpa2SwitchSupport {
 
     private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar";//NO18N
-    
     private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
-    
     private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
-
     private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
-    
     private final File serverRoot;
-    
     private final WLDeploymentManager dm;
 
     public WLJpa2SwitchSupport(File serverRoot) {
         this.dm = null;
         this.serverRoot = serverRoot;
     }
-    
+
     public WLJpa2SwitchSupport(WLDeploymentManager dm) {
         this.dm = dm;
         this.serverRoot = WLPluginProperties.getServerRoot(dm, true);
@@ -109,7 +107,7 @@ public final class WLJpa2SwitchSupport {
             if (!oepeFile.exists()) {
                 createContributionsJar(oepeFile, path + JPA_JAR_1 + " " // NOI18N
                         + path + JPA_JAR_2);
-            // exists so update cp
+                // exists so update cp
             } else {
                 JarFile oepeJarFile = new JarFile(oepeFile);
                 try {
@@ -127,7 +125,7 @@ public final class WLJpa2SwitchSupport {
                             }
                             if (!cp.contains(JPA_JAR_1)) {
                                 updated.insert(0, " ").insert(0, JPA_JAR_1).insert(0, path);
-                            }                
+                            }
                         }
                         if (cp.length() == 0) {
                             updated.deleteCharAt(updated.length() - 1);
@@ -160,7 +158,7 @@ public final class WLJpa2SwitchSupport {
                 }
             } finally {
                 weblogicJarFile.close();
-            } 
+            }
         } catch (IOException ex) {
             // TODO some exception/message to the user
             Exceptions.printStackTrace(ex);
@@ -176,7 +174,7 @@ public final class WLJpa2SwitchSupport {
             File libDir = WLPluginProperties.getServerLibDirectory(serverRoot);
             if (libDir != null) {
                 libDir = FileUtil.normalizeFile(libDir);
-            }            
+            }
             File oepeJarFile = new File(libDir, OEPE_CONTRIBUTIONS_JAR);
             if (!oepeJarFile.exists() || !oepeJarFile.isFile()) {
                 return;
@@ -225,10 +223,21 @@ public final class WLJpa2SwitchSupport {
     }
 
     public boolean isEnabledViaSmartUpdate() {
-        // TODO check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
+        //check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
+        if (dm != null) {
+            for (LibraryImplementation lib : dm.getJ2eePlatformImpl().getLibraries()) {
+                List<URL> urls = lib.getContent("classpath"); //NOI18N
+                if (urls != null) {
+                    for (URL url : urls) {
+                        String file = url.getFile();
+                        if(file.endsWith("BUG9923849_WLS103MP4.jar!/")) return true;//NOI18N
+                    }
+                }
+            }
+        }
         return false;
     }
-    
+
     private void replaceManifest(File jarFile, Manifest manifest) throws IOException {
         FileObject fo = FileUtil.toFileObject(jarFile);
         String tmpName = FileUtil.findFreeFileName(fo.getParent(),
@@ -248,7 +257,7 @@ public final class WLJpa2SwitchSupport {
             } finally {
                 is.close();
             }
-            
+
             if (tmpJar.renameTo(jarFile)) {
                 LOGGER.log(Level.FINE, "Successfully moved {0}", tmpJar);
                 return;
@@ -259,7 +268,7 @@ public final class WLJpa2SwitchSupport {
             tmpJar.delete();
         }
     }
-    
+
     private void replaceManifest(InputStream is, OutputStream os, Manifest manifest) throws IOException {
         JarInputStream in = new JarInputStream(is);
         try {
@@ -286,9 +295,9 @@ public final class WLJpa2SwitchSupport {
             }
         } finally {
             in.close();
-        }        
+        }
     }
-    
+
     private void createContributionsJar(File jarFile, String classpath) throws IOException {
         //need to create zip file
         OutputStream os = new BufferedOutputStream(new FileOutputStream(jarFile));
@@ -296,7 +305,7 @@ public final class WLJpa2SwitchSupport {
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Name.MANIFEST_VERSION, "1.0"); // NOI18N
             manifest.getMainAttributes().put(Name.CLASS_PATH, classpath);
-            JarOutputStream dest  = new JarOutputStream(new BufferedOutputStream(os), manifest);
+            JarOutputStream dest = new JarOutputStream(new BufferedOutputStream(os), manifest);
             try {
                 dest.closeEntry();
                 dest.finish();
@@ -307,7 +316,7 @@ public final class WLJpa2SwitchSupport {
             os.close();
         }
     }
-    
+
     private void copy(File source, File dest) throws IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(source));
         try {
@@ -346,7 +355,7 @@ public final class WLJpa2SwitchSupport {
         // just improbable fallback :(
         return "../../../modules"; // NOI18N
     }
-    
+
     // package for testing only
     static String getRelativePath(File from, File to) {
         String toPath = to.getAbsolutePath();

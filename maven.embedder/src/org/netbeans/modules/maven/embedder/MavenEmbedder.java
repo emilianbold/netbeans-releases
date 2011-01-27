@@ -207,17 +207,13 @@ public final class MavenEmbedder {
 
 
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
-
         ArtifactResolutionRequest req = new ArtifactResolutionRequest();
         req.setLocalRepository(localRepository);
         req.setRemoteRepositories(remoteRepositories);
         req.setArtifact(sources);
-        //TODO
-//        req.setTransferListener(createArtifactTransferListener(monitor));
-
-        /*ArtifactResolutionResult result = */repositorySystem.resolve(req);
-
-//        setLastUpdated(localRepository, req.getRemoteRepositories(), sources);
+        // XXX need to somehow use ProgressTransferListener.activeListener() here; CreateLibraryAction's use of ProgressTransferListener.cancellable() also probably a no-op until setAggregateHandle called
+        repositorySystem.resolve(req);
+        // XXX check result for exceptions and throw them now?
     }
 
     //TODO possibly rename.. build sounds like something else..

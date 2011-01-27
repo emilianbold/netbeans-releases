@@ -244,7 +244,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             String suffix = "";
             if (handle != null) {
                 ElementKind kind = RetoucheUtils.getElementKind(handle);
-                if (kind.isClass() || kind.isInterface()) {
+                if (kind!=null && (kind.isClass() || kind.isInterface())) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
                 } else if (kind == ElementKind.METHOD) {
                     suffix = getString("LBL_Method");

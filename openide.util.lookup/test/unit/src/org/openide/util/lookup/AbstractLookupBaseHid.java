@@ -62,6 +62,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -107,6 +108,11 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     protected @Override void tearDown() {
         running = null;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     /** The methods to influence test behaviour */
@@ -221,43 +227,37 @@ public class AbstractLookupBaseHid extends NbTestCase {
         Lookup.Result<C0> r0 = lookup.lookupResult(C0.class);
 
         final AtomicInteger cnt = new AtomicInteger();
-        r0.allItems();
         r0.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 cnt.incrementAndGet();
-                LOG.info("r0 notified");
+                LOG.fine("r0 notified");
             }
         });
         
         C0 o0 = new C0();
         C1 o1 = new C1();
 
-        LOG.info("Add o0");
+        LOG.fine("Add o0");
         ic.add(o0);
         assertEquals("One change", 1, cnt.getAndSet(0));
 
-        LOG.info(
-                "Remove o0");
+        LOG.fine("Remove o0");
         ic.remove(o0);
         assertEquals("Another change change", 1, cnt.getAndSet(0));
 
-        LOG.info(
-                "Add o1");
+        LOG.fine("Add o1");
         ic.add(o1);
         assertEquals("No change", 0, cnt.getAndSet(0));
 
-        LOG.info(
-                "Remove o1");
+        LOG.fine("Remove o1");
         ic.remove(o1);
         assertEquals("No change", 0, cnt.getAndSet(0));
 
-        LOG.info(
-                "Add o0");
+        LOG.fine("Add o0");
         ic.add(o0);
+        LOG.fine("Line before should read 'r0 notified' ?");
         assertEquals("One change", 1, cnt.getAndSet(0));
-
-        LOG.info("Line before should read 'r0 notified' ?");
     }
     
     /** Checks the reorder of items in lookup reflects the result.
@@ -1546,13 +1546,14 @@ public class AbstractLookupBaseHid extends NbTestCase {
         LL ll = new LL();
         res.addLookupListener(ll);
 
+        assertEquals("No changes yet", 0, ll.getCount());
         Collection c = res.allInstances();
         assertFalse("Has next", c.isEmpty());
+        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         ActionMap am1 = (ActionMap)c.iterator().next();
         assertEquals("Am is there", am, am1);
         
-        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         Object m1 = new InputMap();
         Object m2 = new InputMap();
@@ -1879,7 +1880,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     /** Counting listener */
     protected static class LL implements LookupListener {
-        private int count = 0;
+        private int count;
         public Object source;
         public Thread changesIn;
         

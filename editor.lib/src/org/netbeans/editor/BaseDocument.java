@@ -2195,7 +2195,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Detailed debug info about the document */
     public String toStringDetail() {
-        return toString();
+        return toString() + ", content:\n  " + getContent().toString();
     }
 
     /* package */ void incrementDocVersion() {

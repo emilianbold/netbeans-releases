@@ -103,7 +103,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
 
                 ProxyResult<?> p = ref.get();
 
-                if (p != null && p.updateLookup(l)) {
+                if (p != null && p.updateLookup(p.delegate, l)) {
                     p.collectFires(evAndListeners);
                 }
             }
@@ -124,6 +124,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
     }
 
     public <T> Result<T> lookup(Template<T> template) {
+        ProxyResult<T> newP;
         synchronized (this) {
             if (results == null) {
                 results = new WeakHashMap<Template<?>,Reference<ProxyResult<?>>>();
@@ -139,12 +140,12 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
                 }
             }
 
-            ProxyResult<T> p = new ProxyResult<T>(template);
-            Reference<ProxyResult<?>> ref = new WeakReference<ProxyResult<?>>(p);
+            newP = new ProxyResult<T>(template);
+            Reference<ProxyResult<?>> ref = new WeakReference<ProxyResult<?>>(newP);
             results.put(template, ref);
-
-            return p;
         }
+        newP.checkResult();
+        return newP;
     }
 
     public <T> T lookup(Class<T> clazz) {
@@ -183,38 +184,46 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         /** Checks state of the result
          */
         private Result<T> checkResult() {
-            updateLookup(checkLookup());
-
+            Lookup.Result lkp = delegate;
+            updateLookup(lkp, checkLookup());
             return this.delegate;
         }
 
         /** Updates the state of the lookup.
          * @return true if the lookup really changed
          */
-        public boolean updateLookup(Lookup l) {
-            Collection<? extends Item<T>> oldPairs = (delegate != null) ? delegate.allItems() : null;
-
-            LookupListener removedListener;
-
-            synchronized (this) {
-                if ((delegate != null) && (lastListener != null)) {
-                    removedListener = lastListener;
-                    delegate.removeLookupListener(lastListener);
-                } else {
-                    removedListener = null;
-                }
+        public boolean updateLookup(Lookup.Result prev, Lookup l) {
+            Collection<? extends Item<T>> oldPairs = null;
+            if (prev != null) {
+                oldPairs = prev.allItems();
             }
 
-            // cannot call to foreign code 
-            Lookup.Result<T> res = l.lookup(template);
-
-            synchronized (this) {
-                if (removedListener == lastListener) {
-                    delegate = res;
-                    lastListener = new WeakResult<T>(this, delegate);
-                    delegate.addLookupListener(lastListener);
+            LookupListener prevListener;
+            Result<T> toAdd;
+            for (;;) {
+                
+                synchronized (this) {
+                    if ((delegate != null) && (lastListener != null)) {
+                        prevListener = lastListener;
+                        delegate.removeLookupListener(lastListener);
+                    } else {
+                        prevListener = null;
+                    }
+                }
+                
+                // cannot call to foreign code 
+                Lookup.Result<T> res = l.lookup(template);
+                
+                synchronized (this) {
+                    if (prevListener == lastListener) {
+                        delegate = res;
+                        lastListener = new WeakResult<T>(this, delegate);
+                        toAdd = delegate;
+                        break;
+                    }
                 }
             }
+            toAdd.addLookupListener(lastListener);
 
             if (oldPairs == null) {
                 // nobody knows about a change

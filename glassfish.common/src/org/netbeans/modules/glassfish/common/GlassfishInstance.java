@@ -124,6 +124,16 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
             this.instanceProvider = instanceProvider;
+            String domainDirPath = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+            String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
+            if (null != domainDirPath && null != domainName) {
+                File domainDir = new File(domainDirPath,domainName);
+                PortCollection pc = new PortCollection();
+                if (Util.readServerConfiguration(domainDir, pc)) {
+                    ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(pc.getAdminPort()));
+                    ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(pc.getHttpPort()));
+                }
+            }
             commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
 
             // Flag this server URI as under construction

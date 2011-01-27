@@ -96,7 +96,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <package>org.netbeans.modules.dlight.api.terminal</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
