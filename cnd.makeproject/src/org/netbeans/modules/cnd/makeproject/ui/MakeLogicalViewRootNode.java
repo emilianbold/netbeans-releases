@@ -275,6 +275,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             fireDisplayNameChange(null, null);
         } else if (ProjectInformation.PROP_NAME.equals(prop)) {
             fireNameChange(null, null);
+        } else if (ProjectInformation.PROP_ICON.equals(prop)) {
+            fireIconChange();
         }
     }
 

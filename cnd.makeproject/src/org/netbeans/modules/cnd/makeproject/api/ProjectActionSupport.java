@@ -789,7 +789,7 @@ public class ProjectActionSupport {
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
                 break;
             }
-            TerminalSupport.openTerminal(IOContainer.getDefault(), env, dir);
+            TerminalSupport.openTerminal(IOContainer.getDefault(), getString("TargetExecutor.TermAction.tabTitle", handleEvents.tabNameSeq), env, dir); // NOI18N
         }
     }
     

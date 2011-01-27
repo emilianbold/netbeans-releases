@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.Date;
 import junit.framework.Test;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -238,6 +239,26 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             }
         }
     }
+    
+    @ForAllEnvironments
+    public void testDate() throws Exception {
+        String path = mkTemp();
+        Date localDate = new Date();
+        FileObject fo = getFileObject(path);
+        assertTrue("Invalid file object " + path, fo.isValid());
+        Date lastMod = fo.lastModified();
+        assertNotNull("getDate() returned null for " + fo, lastMod);
+        System.out.println("local file creation date:  " + localDate);
+        System.out.println("remote last modified date: " + lastMod);
+        // time can differ, so I can't compare it; make sure it's not differ in many days :)
+        assertTrue("Dates differ to much: " + localDate + " vs " + lastMod, Math.abs(localDate.getTime() - lastMod.getTime()) < 1000*60*60*24);        
+        fo.delete();
+        assertTrue("isValid should return false for " + fo, !fo.isValid());
+        Date lastMod2 = fo.lastModified();
+        System.out.println("remote date after deletion: " + lastMod2);
+        assertNotNull("getDate() should never return null", lastMod2);
+    }
+
     
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteFileSystemTestCase.class);
