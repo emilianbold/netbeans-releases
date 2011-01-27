@@ -7,7 +7,6 @@ cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
 export BUILD_DESC=trunk-nightly
 source init.sh
-export JAVAFX_PATH=/net/smetiste.czech/space/${BASE_FOR_JAVAFX}
 
 rm -rf $DIST
 
@@ -104,10 +103,6 @@ if [ $UPLOAD_ML == 1 ]; then
     mv $DIST/jnlp $DIST/ml/
     mv $DIST/javadoc $DIST/ml/
 fi
-
-#XXX Remove any javafx related files before upload to public site
-#cd $DIST
-#find . -name "*javafx*" -exec rm {} \;
 
 if [ -z $DIST_SERVER ]; then
     exit 0;
