@@ -135,6 +135,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public void delete(FileLock lock) throws IOException {
         deleteImpl();
+        invalidate();
         RemoteFileObjectBase parent = getParent();
         if (parent != null) {
             parent.postDeleteChild(this);
@@ -268,7 +269,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
         if (parent != null) {
             return parent.lastModified(this);
         }
-        return new Date(cache.lastModified());
+        return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
     }
 
     @Override
