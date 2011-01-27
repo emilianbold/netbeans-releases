@@ -50,7 +50,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-/**
+/** Useful static methods for getting Network Proxy required for make network
+ * connection for specified resource.
  *
  * @since 8.13
  * @author Jiri Rechtacek
@@ -61,6 +62,13 @@ public final class NetworkSettings {
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication";
     private static final Logger LOGGER = Logger.getLogger(NetworkSettings.class.getName());
 
+    /** Returns the <code>hostname</code> part of network proxy address 
+     * based on given URI to access the resource at.
+     * Returns <code>null</code> for direct connection.
+     * 
+     * @param u The URI that a connection is required to
+     * @return the hostname part of the Proxy address
+     */
     public static String getProxyHost(URI u) {
         if (getPreferences() == null) {
             return null;
@@ -69,6 +77,13 @@ public final class NetworkSettings {
         return sa == null ? null : sa.getHostName();
     }
 
+    /** Returns the <code>port</code> part of network proxy address 
+     * based on given URI to access the resource at.
+     * Returns <code>null</code> for direct connection.
+     * 
+     * @param u The URI that a connection is required to
+     * @return the port part of the Proxy address
+     */
     public static String getProxyPort(URI u) {
         if (getPreferences() == null) {
             return null;
@@ -77,12 +92,35 @@ public final class NetworkSettings {
         return sa == null ? null : Integer.toString(sa.getPort());
     }
 
-    public static String getAuthenticationUsername() {
+    /** Returns the <code>username</code> for Proxy Authentication.
+     * Returns <code>null</code> if no authentication required.
+     * 
+     * @param u The URI that a connection is required to
+     * @return username for Proxy Authentication
+     */
+    public static String getAuthenticationUsername(URI u) {
         if (getPreferences() == null) {
             return null;
         }
         if (getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false)) {
             return getPreferences().get(PROXY_AUTHENTICATION_USERNAME, "");
+        }
+        return null;
+    }
+    
+    /** Returns the <code>key</code> for reading password for Proxy Authentication.
+     * Use {@link Keyring} for reading the password from the ring.
+     * Returns <code>null</code> if no authentication required.
+     * 
+     * @param u The URI that a connection is required to
+     * @return the key for reading password for Proxy Authentication from the ring
+     */
+    public static String getKeyForAuthenticationPassword(URI u) {
+        if (getPreferences() == null) {
+            return null;
+        }
+        if (getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false)) {
+            return PROXY_AUTHENTICATION_USERNAME;
         }
         return null;
     }
@@ -96,8 +134,6 @@ public final class NetworkSettings {
         assert proxies != null : "ProxySelector cannot return null for " + u;
         assert ! proxies.isEmpty() : "ProxySelector cannot return empty list for " + u;
         Proxy p = proxies.get(0);
-        p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress ("webcache", 8080));
-        System.out.println("--> " + p);
         if (Proxy.Type.DIRECT == p.type()) {
             // return null for DIRECT proxy
             return null;

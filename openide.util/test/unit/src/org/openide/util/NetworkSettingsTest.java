@@ -43,6 +43,7 @@
 package org.openide.util;
 
 import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.io.IOException;
 import java.net.Proxy;
@@ -50,34 +51,24 @@ import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import junit.framework.TestCase;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class NetworkSettingsTest {
+public class NetworkSettingsTest extends TestCase {
     private static ProxySelector defaultPS;
 
-    public NetworkSettingsTest() {
+    public NetworkSettingsTest(String name) {
+        super(name);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        defaultPS = ProxySelector.getDefault();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        ProxySelector.setDefault(defaultPS);
-    }
-
-    @Before
+    @Override
     public void setUp() {
+        if (defaultPS == null) {
+            defaultPS = ProxySelector.getDefault();
+        }
         ProxySelector ps = new ProxySelector() {
 
             @Override
@@ -85,12 +76,12 @@ public class NetworkSettingsTest {
                 if (uri == null) {
                     return Collections.singletonList(Proxy.NO_PROXY);
                 }
-                if (uri.toString().equals("localhost")) {
+                if (uri.toString().equals("http://localhost")) {
                     return Collections.singletonList(Proxy.NO_PROXY);
-                } else if (uri.toString().startsWith("inner")) {
+                } else if (uri.toString().startsWith("http://inner")) {
                     return Collections.singletonList(Proxy.NO_PROXY);
                 } else {
-                    return Collections.singletonList(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("corpcache", 80)));
+                    return Collections.singletonList(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("corpcache.cache", 1234)));
                 }
             }
 
@@ -102,22 +93,27 @@ public class NetworkSettingsTest {
         ProxySelector.setDefault(ps);
     }
 
-    @After
+    @Override
     public void tearDown() {
+        ProxySelector.setDefault(defaultPS);
     }
 
-    /**
-     * Test of getProxyHost method, of class NetworkSettings.
-     */
-    @Test
-    public void testGetProxyForLocalhost() {
+    public void testGetProxyForLocalhost() throws URISyntaxException {
+        URI u = new URI("http://localhost");
+        assertNull("NetworkSettings.getProxyHost() returns null for " + u, NetworkSettings.getProxyHost(u));
+        assertNull("NetworkSettings.getProxyPort() returns null for " + u, NetworkSettings.getProxyPort(u));
     }
 
-    /**
-     * Test of getProxyPort method, of class NetworkSettings.
-     */
-    @Test
-    public void testGetProxyForRemote() {
+    public void testGetProxyForRemote() throws URISyntaxException {
+        URI u = new URI("http://remove.org");
+        assertEquals("Check NetworkSettings.getProxyHost() for " + u, "corpcache.cache", NetworkSettings.getProxyHost(u));
+        assertEquals("Check NetworkSettings.getProxyPort() for " + u, "1234", NetworkSettings.getProxyPort(u));
+    }
+
+    public void testGetProxyForIntra() throws URISyntaxException {
+        URI u = new URI("http://inner.private.web");
+        assertNull("NetworkSettings.getProxyHost() returns null for " + u, NetworkSettings.getProxyHost(u));
+        assertNull("NetworkSettings.getProxyPort() returns null for " + u, NetworkSettings.getProxyPort(u));
     }
 
 }
