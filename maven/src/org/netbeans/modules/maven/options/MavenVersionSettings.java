@@ -54,9 +54,6 @@ public final class MavenVersionSettings {
     
     public static final String VERSION_COMPILER = "maven-compiler-plugin"; //NOI18N
     public static final String VERSION_RESOURCES = "maven-resources-plugin"; //NOI18N
-    public static final String VERSION_ASSEMBLY = "maven-assembly-plugin"; //NOI18N
-    public static final String VERSION_JAR = "maven-jar-plugin"; //NOI18N
-    public static final String VERSION_FELIX = "felix-bundle-plugin"; //NOI18N
     
     public static MavenVersionSettings getDefault() {
         return INSTANCE;
@@ -92,15 +89,6 @@ public final class MavenVersionSettings {
             }
             else if (VERSION_COMPILER.equals(plugin)) {
                 toRet = "2.0.2"; //NOI18N
-            }
-            else if (VERSION_ASSEMBLY.equals(plugin)) {
-                toRet = "2.2-beta-1"; //NOI18N
-            } 
-            else if (VERSION_JAR.equals(plugin)) {
-                toRet = "2.2"; //NOI18N
-            }
-            else if (VERSION_FELIX.equals(plugin)) {
-                toRet = "2.0.1"; //NOI18N
             }
         }
         if (toRet == null) {
