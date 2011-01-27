@@ -81,7 +81,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
- * V76 - NB7.0
+ * V77 - NB 7.0
+ *    Store configuration type in project.xml
+ * V76 - NB 7.0
  *    reintroducing No longer generation makefiles for unmanaged projects. Calling projects make directly
  * V75 - NB 7.0
  *    backed out V74
