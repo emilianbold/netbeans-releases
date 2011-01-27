@@ -31,7 +31,11 @@
 package org.netbeans.modules.csl.api;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * Wrapper around org.netbeans.spi.editor.hints.ErrorDescription
@@ -46,7 +50,12 @@ public class Hint {
     private final Rule rule;
     private int priority;
     
-    public Hint(Rule rule, String description, FileObject file, OffsetRange range, List<HintFix> fixes, int priority) {
+    //TODO: unclear whether range is @NonNull or @NullAllowed
+    public Hint(@NonNull Rule rule, @NonNull String description, @NonNull FileObject file, OffsetRange range, @NullAllowed List<HintFix> fixes, int priority) {
+        Parameters.notNull("rule", rule);
+        Parameters.notNull("description", description);
+        Parameters.notNull("file", file);
+        
         this.rule = rule;
         this.description = description;
         this.file = file;
@@ -55,19 +64,19 @@ public class Hint {
         this.priority = priority;
     }
     
-    public Rule getRule() {
+    public @NonNull Rule getRule() {
         return this.rule;
     }
 
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return description;
     }
 
-    public FileObject getFile() {
+    public @NonNull FileObject getFile() {
         return file;
     }
 
-    public List<HintFix> getFixes() {
+    public @CheckForNull List<HintFix> getFixes() {
         return fixes;
     }
 
