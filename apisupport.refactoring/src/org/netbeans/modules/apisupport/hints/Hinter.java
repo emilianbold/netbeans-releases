@@ -249,6 +249,14 @@ public interface Hinter {
         }
 
         /**
+         * Saves the layer after some modifications to {@link #file()}.
+         * @throws IOException if the layer could not be saved
+         */
+        public void saveLayer() throws IOException {
+            layer.save();
+        }
+
+        /**
          * Task to be used from {@link #findAndModifyDeclaration}.
          */
         interface ModifyDeclarationTask {
@@ -294,7 +302,7 @@ public interface Hinter {
                         mods = wc.getTrees().getTree((ExecutableElement) decl).getModifiers();
                     }
                     task.run(wc, decl, mods);
-                    layer.save();
+                    saveLayer();
                 }
             }).commit();
             SaveCookie sc = DataObject.find(java).getLookup().lookup(SaveCookie.class);
