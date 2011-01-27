@@ -66,8 +66,8 @@ class ValueResultItem extends XMLResultItem {
 
     private final String replacementText;
 
-    public ValueResultItem(GrammarResult res) {
-        super(res.getDisplayName(), res.getDisplayName());
+    public ValueResultItem(int position, GrammarResult res) {
+        super(position, res.getDisplayName(), res.getDisplayName());
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
         replacementText = res.getNodeValue();

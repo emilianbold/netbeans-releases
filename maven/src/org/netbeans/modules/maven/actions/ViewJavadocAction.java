@@ -53,7 +53,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.filesystems.URLMapper;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.actions.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -63,9 +64,10 @@ public class ViewJavadocAction extends AbstractAction {
 
     private Artifact artifact;
 
+    @Messages("LBL_View_Javadoc=View Javadoc")
     public ViewJavadocAction(Artifact artifact) {
         this.artifact = artifact;
-        putValue(Action.NAME, NbBundle.getMessage(ViewJavadocAction.class, "LBL_View_Javadoc"));
+        putValue(Action.NAME, LBL_View_Javadoc());
 
     }
 

@@ -434,18 +434,24 @@ class DiffViewManager implements ChangeListener {
         decorationsCached = decorations;
     }
 
-    private Rectangle getRectForView (JTextComponent comp, View rootView, int lineNumber, boolean endOffset) {
-        if (lineNumber == -1 || lineNumber >= rootView.getViewCount()) {
-            return new Rectangle();
-        }
-        Rectangle rect = null;
-        View view = rootView.getView(lineNumber);
-        try {
-            rect = view == null ? null : comp.modelToView(endOffset ? view.getEndOffset() - 1 : view.getStartOffset());
-        } catch (BadLocationException ex) {
-            //
-        }
-        return rect;
+    private Rectangle getRectForView (final JTextComponent comp, final View rootView, final int lineNumber, final boolean endOffset) {
+        final Rectangle[] rect = new Rectangle[1];
+        Utilities.runViewHierarchyTransaction(comp, true, new Runnable() {
+            @Override
+            public void run() {
+                if (lineNumber == -1 || lineNumber >= rootView.getViewCount()) {
+                    rect[0] = new Rectangle();
+                    return;
+                }
+                View view = rootView.getView(lineNumber);
+                try {
+                    rect[0] = view == null ? null : comp.modelToView(endOffset ? view.getEndOffset() - 1 : view.getStartOffset());
+                } catch (BadLocationException ex) {
+                    //
+                }
+            }
+        });
+        return rect[0];
     }
 
     private boolean canRollback(Document doc, Difference diff) {
@@ -564,21 +570,22 @@ class DiffViewManager implements ChangeListener {
         }
     }
 
-    private int getHeight (DecoratedEditorPane editorPane) {
-        int height = 0;
-        try {
-            View rootView = Utilities.getDocumentView(editorPane);
-            int lineNumber = Utilities.getLineOffset((BaseDocument) editorPane.getDocument(), editorPane.getDocument().getLength());
-            if (lineNumber > 0) --lineNumber;
-            View view = rootView.getView(lineNumber);
-            Rectangle rec;
-            if (view != null && (rec = editorPane.modelToView(view.getEndOffset() - 1)) != null) {
-                height = (int) (rec.getY() + rec.getHeight());
+    private int getHeight (final DecoratedEditorPane editorPane) {
+        final int height[] = new int[1];
+        editorPane.getDocument().render(new Runnable () {
+            @Override
+            public void run() {
+                try {
+                    Rectangle rec = editorPane.modelToView(editorPane.getDocument().getLength());
+                    if (rec != null) {
+                        height[0] = (int) (rec.getY() + rec.getHeight());
+                    }
+                } catch (BadLocationException ex) {
+                    //
+                }
             }
-        } catch (BadLocationException ex) {
-            //
-        }
-        return height;
+        });
+        return height[0];
     }
     
     public static class DifferencePosition {

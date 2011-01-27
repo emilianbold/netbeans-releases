@@ -61,6 +61,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -507,7 +508,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 } else if (k.equals("description")) { // NOI18N
                     description = subentry.getValue();
                 } else {
-                    String[] path = PropertyUtils.tokenizePath(subentry.getValue());
+                    final String[] path = sanitizeHttp(subentry.getKey(), PropertyUtils.tokenizePath(subentry.getValue()));
                     List<URI> volume = new ArrayList<URI>(path.length);
                     for (String component : path) {
                         String jarFolder = null;
@@ -615,6 +616,32 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Fixes the http(s) javadoc URLs stored in the libraries property file.
+     * For non javadoc volume types it does nothing. For javadoc volume types
+     * it appends http(s) protocol and path if the path starts with //.
+     * @param type
+     * @param entries
+     * @return
+     */
+    private static String[] sanitizeHttp(final String type, final String... entries) {
+        //Only javadoc may contain http(s)
+        if (!"javadoc".equals(type)) {  //NOI18N
+            return entries;
+        }
+        final Collection<String> result = new ArrayList<String>();
+        for (int i=0; i< entries.length; i++) {
+            if (("http".equals(entries[i]) || "https".equals(entries[i])) &&  //NOI18N
+                (i+1) < entries.length &&
+                entries[i+1].startsWith("//")) {  //NOI18N
+                    result.add(String.format("%s:%s",entries[i],entries[++i])); //NOI18N
+            } else {
+                result.add(entries[i]);
+            }
+        }
+        return result.toArray(new String[result.size()]);
     }
     
     static final class ProjectLibraryImplementation implements LibraryImplementation2 {
@@ -731,7 +758,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     entry = LibrariesSupport.getArchiveFile(entry);
                 } else if (entry.isAbsolute() && !"file".equals(entry.getScheme())) { // NOI18N
                     verifyAbsoluteURI(entry);
-                    value.add(entry.toString());
+                    final StringBuilder sb = new StringBuilder(entry.toString());
+                    if (value.size()+1 != path.size()) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                    value.add(sb.toString());
                     Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting uri=" + entry + " as content for library volume type: " + volumeType);
                     continue;
                 }

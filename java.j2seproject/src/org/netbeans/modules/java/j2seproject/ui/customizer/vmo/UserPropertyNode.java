@@ -8,16 +8,17 @@ import java.util.Map;
  * @author Rastislav Komara
  */
 public class UserPropertyNode extends JavaVMOption<OptionValue<Map.Entry<String, String>>> {
-    private int start = -1;
+    
+    public static final String NAME = "D";
 
     public UserPropertyNode(Token name, Token value, int start) {
-        super("D");
-        this.start = start;        
+        super(name);
+        setName(NAME);
         setValue(new OptionValue.StringPair(name.getText(), (value != null ? value.getText() : null)));
     }
 
     public UserPropertyNode() {
-        super("D");
+        super(NAME);
         setValue(new OptionValue.StringPair());        
     }
 
@@ -30,7 +31,7 @@ public class UserPropertyNode extends JavaVMOption<OptionValue<Map.Entry<String,
         StringBuilder sb = super.print(builder);
         OptionValue<Map.Entry<String, String>> val = getValue();
         if (val.isPresent()) {
-            sb.append(SPACE).append(HYPHEN).append(getName());
+            sb.append(SPACE).append(HYPHEN);
             Map.Entry<String, String> entry = val.getValue();
             sb.append(entry.getKey());
             if (entry.getValue() != null) {
@@ -38,13 +39,5 @@ public class UserPropertyNode extends JavaVMOption<OptionValue<Map.Entry<String,
             }
         }
         return sb;
-    }
-
-    /*@Override
-    public int compareTo(JavaVMOption<?> o) {
-        if (o instanceof UserPropertyNode) {
-            return super.compareTo(o);
-        }
-        return 1;
-    }*/
+    }    
 }

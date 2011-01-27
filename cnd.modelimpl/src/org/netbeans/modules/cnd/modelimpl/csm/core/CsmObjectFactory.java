@@ -50,6 +50,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImplFunctionSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
@@ -73,9 +74,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.MethodImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -116,15 +119,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     }
 
     @Override
-    public boolean canWrite(Persistent obj) {
-        if (obj instanceof FileImpl) {
-            return ((FileImpl) obj).getBuffer().isFileBased();
-        } else {
-            return true;
-        }
-    }
-
-    @Override
     protected int getHandler(Object object) {
         assert object != null;
         int aHandler;
@@ -146,6 +140,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = FILE_INCLUDES;
         } else if (object instanceof FileComponentReferences) {
             aHandler = FILE_REFERENCES;
+        } else if (object instanceof FileComponentInstantiations) {
+            aHandler = FILE_INSTANTIATIONS;
 //        } else if (object instanceof Unresolved.UnresolvedFile) {
 //            aHandler = UNRESOLVED_FILE;
 //        } else if (object instanceof Unresolved.UnresolvedClass) {
@@ -153,7 +149,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof EnumImpl) {
             aHandler = ENUM_IMPL;
         } else if (object instanceof ClassImpl) {
-            if (object instanceof ClassImplSpecialization) {
+            if (object instanceof ClassImplFunctionSpecialization) {
+                aHandler = CLASS_IMPL_FUNCTION_SPECIALIZATION;
+            } else if (object instanceof ClassImplSpecialization) {
                 aHandler = CLASS_IMPL_SPECIALIZATION;
             } else if (object instanceof ForwardClass) {
                 aHandler = FORWARD_CLASS;
@@ -220,6 +218,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     aHandler = CONSTRUCTOR_IMPL;
                 } else if (object instanceof DestructorImpl) {
                     aHandler = DESTRUCTOR_IMPL;
+                } else if (object instanceof MethodImplSpecialization<?>) {
+                    aHandler = METHOD_IMPL_SPECIALIZATION;
                 } else {
                     aHandler = METHOD_IMPL;
                 }
@@ -275,6 +275,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
+        } else if (object instanceof Instantiation) {
+            if (object instanceof Instantiation.Class) {
+                aHandler = INSTANTIATION_CLASS;
+            } else {
+                throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N            
+            }
         } else if (object instanceof ProgramImpl<?>) {
             aHandler = PROGRAM_IMPL;
         } else if (object instanceof SubroutineImpl<?>) {
@@ -327,6 +333,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case FILE_REFERENCES:
                 obj = new FileComponentReferences(stream);
                 break;
+                
+            case FILE_INSTANTIATIONS:
+                obj = new FileComponentInstantiations(stream);
+                break;
 
                 //            case UNRESOLVED_FILE:
 //                obj = new Unresolved.UnresolvedFile(stream);
@@ -346,6 +356,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case CLASS_IMPL_SPECIALIZATION:
                 obj = new ClassImplSpecialization(stream);
+                break;
+
+            case CLASS_IMPL_FUNCTION_SPECIALIZATION:
+                obj = new ClassImplFunctionSpecialization(stream);
                 break;
 
             case FORWARD_CLASS:
@@ -430,6 +444,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case METHOD_IMPL:
                 obj = new MethodImpl(stream);
+                break;
+
+            case METHOD_IMPL_SPECIALIZATION:
+                obj = new MethodImplSpecialization(stream);
                 break;
 
             case FUNCTION_DEF_DECL_IMPL:
@@ -520,6 +538,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new TemplateParameterImpl(stream);
                 break;
 
+            case INSTANTIATION_CLASS:
+                obj = new Instantiation.Class(stream);
+                break;
+                
             case PROGRAM_IMPL:
                 obj = new ProgramImpl(stream);
                 break;
@@ -567,9 +589,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FILE_MACROS                    = FILE_DECLARATIONS + 1;
     private static final int FILE_INCLUDES                  = FILE_MACROS + 1;
     private static final int FILE_REFERENCES                = FILE_INCLUDES + 1;
-    private static final int ENUM_IMPL                      = FILE_REFERENCES + 1;
+    private static final int FILE_INSTANTIATIONS            = FILE_REFERENCES + 1;
+    private static final int ENUM_IMPL                      = FILE_INSTANTIATIONS + 1;
     private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
-    private static final int FORWARD_CLASS                  = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final int CLASS_IMPL_FUNCTION_SPECIALIZATION = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final int FORWARD_CLASS                  = CLASS_IMPL_FUNCTION_SPECIALIZATION + 1;
     private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;
 //    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
 //    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
@@ -607,8 +631,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int CONSTRUCTOR_IMPL               = METHOD_DEF_DECL_IMPL + 1;
     private static final int DESTRUCTOR_IMPL                = CONSTRUCTOR_IMPL + 1;
     private static final int METHOD_IMPL                    = DESTRUCTOR_IMPL + 1;
+    private static final int METHOD_IMPL_SPECIALIZATION     = METHOD_IMPL + 1;
     
-    private static final int FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL + 1;
+    private static final int FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL_SPECIALIZATION + 1;
     // end of functions
     
     // variables
@@ -628,10 +653,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
+    // instantiations
+    private static final int INSTANTIATION_CLASS            = TEMPLATE_PARAMETER_IMPL + 1;
 
     // fortran
 
-    private static final int PROGRAM_IMPL                  = TEMPLATE_PARAMETER_IMPL + 1;
+    private static final int PROGRAM_IMPL                  = INSTANTIATION_CLASS + 1;
     private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
     private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
 

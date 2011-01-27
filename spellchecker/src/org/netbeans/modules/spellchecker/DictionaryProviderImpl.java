@@ -101,7 +101,9 @@ public class DictionaryProviderImpl implements DictionaryProvider {
     }
     
     public static synchronized Locale[] getInstalledDictionariesLocales() {
-        Collection<Locale> locales = new HashSet<Locale>();
+        Collection<Locale> hardcoded = new HashSet<Locale>();
+        Collection<Locale> maskedHardcoded = new HashSet<Locale>();
+        Collection<Locale> user = new HashSet<Locale>();
         
         for (File dictDir : InstalledFileLocator.getDefault().locateAll("modules/dict", null, false)) {
             File[] children = dictDir.listFiles(new FileFilter() {
@@ -117,16 +119,31 @@ public class DictionaryProviderImpl implements DictionaryProvider {
                 String name = children[cntr].getName();
                 
                 name = name.substring("dictionary_".length());
+
+                Collection<Locale> target;
+
+                if (name.endsWith("_hidden")) {
+                    target = maskedHardcoded;
+                } else {
+                    if (name.endsWith(".description")) {
+                        target = hardcoded;
+                    } else {
+                        target = user;
+                    }
+                }
                 
                 int dot = name.indexOf('.');
                 
                 if (dot != (-1))
                     name = name.substring(0, dot);
                 
-                locales.add(Utilities.name2Locale(name));
+                target.add(Utilities.name2Locale(name));
             }
         }
-        return locales.toArray(new Locale[locales.size()]);
+
+        hardcoded.removeAll(maskedHardcoded);
+        hardcoded.addAll(user);
+        return hardcoded.toArray(new Locale[hardcoded.size()]);
     }
     
     private synchronized Dictionary createDictionary(Locale locale) {
@@ -165,7 +182,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
 
             file = InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description", null, false);
 
-            if (file != null) {
+            if (file != null && InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description_hidden", null, false) == null) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
                 try {

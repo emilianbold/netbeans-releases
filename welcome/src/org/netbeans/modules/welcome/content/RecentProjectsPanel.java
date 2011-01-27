@@ -53,10 +53,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -72,7 +74,7 @@ import org.openide.filesystems.URLMapper;
  * 
  * @author S. Aubrecht
  */
-public class RecentProjectsPanel extends JPanel implements Constants {
+public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
     
     private static final int MAX_PROJECTS = 10;
     private PropertyChangeListener changeListener;
@@ -103,23 +105,28 @@ public class RecentProjectsPanel extends JPanel implements Constants {
                 @Override
                 public void propertyChange(PropertyChangeEvent e) {
                     if( RecentProjects.PROP_RECENT_PROJECT_INFO.equals( e.getPropertyName() ) ) {
-                        removeAll();
-                        add( rebuildContent(), BorderLayout.CENTER );
-                        invalidate();
-                        revalidate();
-                        repaint();
+                        SwingUtilities.invokeLater(RecentProjectsPanel.this);
                     }
                 }
             };
         }
         return changeListener;
     }
+
+    @Override
+    public void run() {
+        removeAll();
+        add( rebuildContent(), BorderLayout.CENTER );
+        invalidate();
+        revalidate();
+        repaint();
+    }
     
     private JPanel rebuildContent() {
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );
         int row = 0;
-        List<UnloadedProjectInformation> projects = RecentProjects.getDefault().getRecentProjectInformation();
+        List<UnloadedProjectInformation> projects = new ArrayList<UnloadedProjectInformation>(RecentProjects.getDefault().getRecentProjectInformation());
         for( UnloadedProjectInformation p : projects ) {
             addProject( panel, row++, p );
             if( row >= MAX_PROJECTS )
@@ -157,6 +164,7 @@ public class RecentProjectsPanel extends JPanel implements Constants {
             this.project = project;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             URL url = project.getURL();
             Project prj = null;

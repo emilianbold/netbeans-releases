@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JList;
+import javax.swing.event.AncestorEvent;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -57,6 +58,7 @@ import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
@@ -65,7 +67,9 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
@@ -77,6 +81,7 @@ import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -107,6 +112,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private String oldContextPath;
     private ComboBoxUpdater<Wrapper> listener;
     
+    private CheckBoxUpdater deployOnSaveUpdater;
+    
     /** Creates new form WebRunCustomizerPanel */
     public WebRunCustomizerPanel(final ModelHandle handle, Project project) {
         initComponents();
@@ -130,7 +137,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         });
 
         Profile p = module.getJ2eeProfile();
-        String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.toPropertiesString() : p.toPropertiesString();
+        String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.getDisplayName() : p.getDisplayName();
         txtJ2EEVersion.setText(version);
         WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
         if (Profile.JAVA_EE_6_WEB.equals(impl.getDescriptorJ2eeProfile())) {
@@ -214,14 +221,56 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             }
         });
 
+        deployOnSaveUpdater = new CheckBoxUpdater(jCheckBoxDeployOnSave) {
+            @Override
+            public Boolean getValue() {
+                String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+                if (s != null) {
+                    return Boolean.valueOf(s);
+                } else {
+                    return null;
+                }
+            }
+
+            @Override
+            public void setValue(Boolean value) {
+                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
+                        value == null ? null : Boolean.toString(value), true);
+            }
+
+            @Override
+            public boolean getDefaultValue() {
+                return true;
+            }
+        };
         
         String browser = (String)project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
         boolean bool = browser != null ? Boolean.parseBoolean(browser) : true;
         cbBrowser.setSelected(bool);
         updateContextPathEnablement();
+        addAncestorListener(new AncestorListener() {
+
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                updateDoSEnablement();
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+            }
+        });
     }
     
-    
+    private void updateDoSEnablement() {
+        String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+        boolean enabled = cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos)); // NOI18N
+        jCheckBoxDeployOnSave.setEnabled(enabled);
+        dosDescription.setEnabled(enabled);
+    }
     
     private void loadComboModel() {
         String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(J2eeModule.Type.WAR), module.getJ2eeProfile());
@@ -269,6 +318,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         lblHint2 = new javax.swing.JLabel();
         lblProfile = new javax.swing.JLabel();
         comProfile = new javax.swing.JComboBox();
+        jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
+        dosDescription = new javax.swing.JLabel();
 
         lblServer.setLabelFor(comServer);
         org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Server")); // NOI18N
@@ -300,6 +351,10 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
 
         comProfile.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.jCheckBoxDeployOnSave.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.dosDescription.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -307,32 +362,40 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbBrowser)
-                    .add(lblHint1)
                     .add(layout.createSequentialGroup()
-                        .add(lblRelativeUrl)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jCheckBoxDeployOnSave)
+                        .addContainerGap(364, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(lblHint2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE))
-                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblContextPath)
-                            .add(lblJ2EEVersion)
-                            .add(lblServer))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 374, Short.MAX_VALUE)
-                            .add(txtContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, cbBrowser)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, lblHint1)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(lblRelativeUrl)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(lblProfile)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(lblHint2)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE))
+                                    .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lblContextPath)
+                                    .add(lblJ2EEVersion)
+                                    .add(lblServer))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(comProfile, 0, 159, Short.MAX_VALUE)))))
-                .add(0, 0, 0))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 384, Short.MAX_VALUE)
+                                    .add(txtContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(lblProfile)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(comProfile, 0, 160, Short.MAX_VALUE)))))
+                        .add(0, 0, 0))))
+            .add(layout.createSequentialGroup()
+                .add(24, 24, 24)
+                .add(dosDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -361,7 +424,11 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                     .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblHint2)
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxDeployOnSave)
+                .add(5, 5, 5)
+                .add(dosDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
@@ -432,7 +499,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
-    String applyChangesInAWT() {
+    void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
         try {
@@ -449,16 +516,16 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             record.setParameters(new Object[] { obj.toString() });
             POHImpl.USG_LOGGER.log(record);
         }
-        if (txtContextPath.isEnabled()) {
-            return txtContextPath.getText().trim();
-        } else {
-            return null;
-        }
     }
 
     //this megod is called after the model was saved.
-    void applyChanges(String contextPath) {
+    void applyChanges() {
         assert !SwingUtilities.isEventDispatchThread();
+
+        String contextPath = "";
+        if (txtContextPath.isEnabled()) {
+            contextPath = txtContextPath.getText().trim();
+        }
 
         //#109507 workaround
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
@@ -477,6 +544,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbBrowser;
     private javax.swing.JComboBox comProfile;
     private javax.swing.JComboBox comServer;
+    private javax.swing.JLabel dosDescription;
+    private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JLabel lblContextPath;
     private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
@@ -498,4 +567,15 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
+    public static boolean isDeployOnSave(Project project) {
+        //try to apply the hint if it exists.
+        AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
+        String deployOnSave = prop.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+        if (deployOnSave != null) {
+            return Boolean.parseBoolean(deployOnSave);
+        } else {
+            return true;
+        }
+    }
+    
 }

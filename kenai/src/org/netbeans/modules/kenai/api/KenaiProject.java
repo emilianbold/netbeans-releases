@@ -94,6 +94,7 @@ public final class KenaiProject {
     
     private KenaiFeature[] features;
     private KenaiProjectMember[] members;
+    private static final Object MEMBERS_LOCK = new Object();
     private KenaiLicense[] licenses;
     private Kenai kenai;
     private boolean deleted = false;
@@ -127,7 +128,7 @@ public final class KenaiProject {
     /**
      * getProject from cache
      * @param name
-     * @return returns null if project does not exist in cachce
+     * @return returns null if project does not exist in cache
      */
     static KenaiProject get(Kenai kenai, String name) {
         synchronized (kenai.projectsCache) {
@@ -368,13 +369,15 @@ public final class KenaiProject {
      * @return
      * @throws KenaiException
      */
-    public synchronized KenaiProjectMember[] getMembers() throws KenaiException {
-        checkDeleted();
-        if (members==null) {
-            Collection<KenaiProjectMember> projectMembers = kenai.getProjectMembers(getName());
-            members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
+    public KenaiProjectMember[] getMembers() throws KenaiException {
+        synchronized(MEMBERS_LOCK) {
+            checkDeleted();
+            if (members==null) {
+                Collection<KenaiProjectMember> projectMembers = kenai.getProjectMembers(getName());
+                members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
+            }
+            return members;
         }
-        return members;
     }
 
     /**
@@ -383,10 +386,12 @@ public final class KenaiProject {
      * @param role
      * @throws KenaiException
      */
-    public synchronized void addMember(KenaiUser user, KenaiProjectMember.Role role) throws KenaiException {
-        checkDeleted();
-        members = null;
-        kenai.addMember(this, user, role);
+    public void addMember(KenaiUser user, KenaiProjectMember.Role role) throws KenaiException {
+        synchronized(MEMBERS_LOCK) {
+            checkDeleted();
+            members = null;
+            kenai.addMember(this, user, role);
+        }
         firePropertyChange(PROP_PROJECT_CHANGED, null, user);
     }
 
@@ -395,13 +400,15 @@ public final class KenaiProject {
      * @param user
      * @throws KenaiException
      */
-    public synchronized void deleteMember(KenaiUser user) throws KenaiException {
-        checkDeleted();
-        members = null;
-        //if (user.data.href==null) {
-            getMembers();
-        //}
-        kenai.deleteMember(this, user);
+    public void deleteMember(KenaiUser user) throws KenaiException {
+        synchronized(MEMBERS_LOCK) {
+            checkDeleted();
+            members = null;
+            //if (user.data.href==null) {
+                getMembers();
+            //}
+            kenai.deleteMember(this, user);
+        }
         firePropertyChange(PROP_PROJECT_CHANGED, user, null);
     }
 
@@ -505,7 +512,9 @@ public final class KenaiProject {
             }
             this.data = prj;
             features = null;
-            members = null;
+            synchronized(MEMBERS_LOCK) {
+                members = null;
+            }
             licenses = null;
             projectIcon = null;
         }

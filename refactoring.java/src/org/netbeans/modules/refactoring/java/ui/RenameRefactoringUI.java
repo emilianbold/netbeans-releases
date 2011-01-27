@@ -63,6 +63,8 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -242,7 +244,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             String suffix = "";
             if (handle != null) {
                 ElementKind kind = RetoucheUtils.getElementKind(handle);
-                if (kind.isClass() || kind.isInterface()) {
+                if (kind!=null && (kind.isClass() || kind.isInterface())) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
                 } else if (kind == ElementKind.METHOD) {
                     suffix = getString("LBL_Method");
@@ -346,14 +348,21 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
                             dob = DataObject.find(refactoring.getRefactoringSource().lookup(FileObject.class));
                         }
                     }
-                    if (dob != null) {
-                        dob.rename(panel.getNameValue());
-                    } else {
-                        NonRecursiveFolder pack = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
-                        if (pack != null) {
-                            renamePackage(pack.getFolder(), panel.getNameValue());
+                    final DataObject dobFin = dob;
+                    FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                        @Override
+                        public void run() throws IOException {
+                            if (dobFin != null) {
+                                dobFin.rename(panel.getNameValue());
+                            } else {
+                                NonRecursiveFolder pack = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+                                if (pack != null) {
+                                    renamePackage(pack.getFolder(), panel.getNameValue());
+                                }
+                            }
                         }
-                    }
+                    });
+                    
                 } catch (IOException iOException) {
                     Exceptions.printStackTrace(iOException);
                 }

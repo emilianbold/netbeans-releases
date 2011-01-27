@@ -1,8 +1,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-            String c =
-                    "" + System.currentTimeMillis();
+    String c =
+            "" + System.currentTimeMillis();
 %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -34,8 +34,8 @@
             <jsp:setProperty name="foo" property="bar">
                 <jsp:attribute name="value">
                     <%
-                                String x =
-                                        "" + System.currentTimeMillis();
+                        String x =
+                                "" + System.currentTimeMillis();
                     %>
                 </jsp:attribute>
             </jsp:setProperty>

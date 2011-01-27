@@ -55,8 +55,9 @@ import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.hudson.ui.notification.Bundle.*;
 
 /**
  * Build failed or was unstable.
@@ -76,14 +77,25 @@ class ProblemNotification {
         this.failed = failed;
     }
 
+    @Messages({
+        "# {0} - job name",
+        "# {1} - build number",
+        "ProblemNotification.title.failed={0} #{1,number,#} failed",
+        "# {0} - job name",
+        "# {1} - build number",
+        "ProblemNotification.title.unstable={0} #{1,number,#} is unstable"
+    })
     private String getTitle() {
         // XXX use HudsonJobBuild.getDisplayName
-        return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.title.failed" : "ProblemNotification.title.unstable",
-                job.getDisplayName(), build);
+        return failed ? ProblemNotification_title_failed(job.getDisplayName(), build) : ProblemNotification_title_unstable(job.getDisplayName(), build);
     }
 
+    @Messages({
+        "ProblemNotification.description.failed=The build failed.",
+        "ProblemNotification.description.unstable=Some tests failed."
+    })
     String showFailureText() {
-        return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.description.failed" : "ProblemNotification.description.unstable");
+        return failed ? ProblemNotification_description_failed() : ProblemNotification_description_unstable();
     }
 
     void showFailure() {
@@ -113,10 +125,17 @@ class ProblemNotification {
         });
     }
 
+    @Messages({
+        "# {0} - job name",
+        "# {1} - server name",
+        "ProblemNotification.ignore.question=Do you wish to cease to receive notifications of failures in {0}? If you change your mind, use Services > Hudson Builders > {1} > {0} > Properties > Watched.",
+        "# {0} - job name",
+        "ProblemNotification.ignore.title=Ignore Failures in {0}"
+    })
     void ignore() { // #161601
         if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(ProblemNotification.class, "ProblemNotification.ignore.question", job.getDisplayName(), job.getInstance().getName()),
-                NbBundle.getMessage(ProblemNotification.class, "ProblemNotification.ignore.title", job.getDisplayName()),
+                ProblemNotification_ignore_question(job.getDisplayName(), job.getInstance().getName()),
+                ProblemNotification_ignore_title(job.getDisplayName()),
                 NotifyDescriptor.OK_CANCEL_OPTION)) == NotifyDescriptor.OK_OPTION) {
             job.setSalient(false);
         }

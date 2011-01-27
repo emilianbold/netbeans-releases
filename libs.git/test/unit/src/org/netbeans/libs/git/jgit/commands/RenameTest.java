@@ -83,13 +83,13 @@ public class RenameTest extends AbstractGitTestCase {
             client.rename(folder, target, false, m);
             fail();
         } catch (GitException ex) {
-            assertEquals("folder/subFolder lies under folder", ex.getMessage());
+            assertEquals("Target folder [folder/subFolder] lies under the source [folder]", ex.getMessage());
         }
         try {
             client.rename(target, folder, false, m);
             fail();
         } catch (GitException ex) {
-            assertEquals("folder/subFolder lies under folder", ex.getMessage());
+            assertEquals("Source folder [folder/subFolder] lies under the target [folder]", ex.getMessage());
         }
     }
 

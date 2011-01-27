@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -162,10 +163,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     @Override
     public String getSourceName (final String binaryName) throws IOException, InterruptedException {
-        final Query q = DocumentUtil.binaryNameQuery(binaryName);        
-        Set<String> names = new HashSet<String>();
-        index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
-        return names.isEmpty() ? null : names.iterator().next();
+        try {
+            final Query q = DocumentUtil.binaryNameQuery(binaryName);        
+            Set<String> names = new HashSet<String>();
+            index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
+            return names.isEmpty() ? null : names.iterator().next();
+        } catch (IOException e) {
+            return this.<String,IOException>handleException(null,e);
+        }
     }
     
 
@@ -180,100 +185,116 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public <T> void search (final String binaryName, final Set<UsageType> usageType, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
-        if (BinaryAnalyser.OBJECT.equals(binaryName)) {
-            this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
-            return;
-        }
-        
-        IndexManager.readAccess(new IndexManager.Action<Void> () {
-            @Override
-            public Void run () throws IOException, InterruptedException {
-                usages(binaryName, usageType, convertor, result);
-                return null;
+        try {
+            if (BinaryAnalyser.OBJECT.equals(binaryName)) {
+                this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
+                return;
             }
-        });        
+
+            IndexManager.readAccess(new IndexManager.Action<Void> () {
+                @Override
+                public Void run () throws IOException, InterruptedException {
+                    usages(binaryName, usageType, convertor, result);
+                    return null;
+                }
+            });
+        } catch (IOException ioe) {
+            this.<Void,IOException>handleException(null, ioe);
+        }
     }
     
                        
     @Override
     public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
-        IndexManager.readAccess(new IndexManager.Action<Void> () {
-            @Override
-            public Void run () throws IOException, InterruptedException {
-                final Query query =  Queries.createQuery(
-                        DocumentUtil.FIELD_SIMPLE_NAME,
-                        DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,
-                        simpleName,
-                        DocumentUtil.translateQueryKind(kind));
-                index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
-                return null;
-            }
-        });
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void> () {
+                @Override
+                public Void run () throws IOException, InterruptedException {
+                    final Query query =  Queries.createQuery(
+                            DocumentUtil.FIELD_SIMPLE_NAME,
+                            DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,
+                            simpleName,
+                            DocumentUtil.translateQueryKind(kind));
+                    index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                    return null;
+                }
+            });
+        } catch (IOException ioe) {
+            this.<Void,IOException>handleException(null,ioe);
+        }
     }
     
     @Override
     public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
-        IndexManager.readAccess(new IndexManager.Action<Void>() {
-            @Override
-            public Void run () throws IOException, InterruptedException {
-                final Query query = Queries.createTermCollectingQuery(
-                        DocumentUtil.FIELD_FEATURE_IDENTS,
-                        DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS,
-                        ident,
-                        DocumentUtil.translateQueryKind(kind));
-                index.queryDocTerms(
-                        result,
-                        convertor,
-                        new Convertor<Term, String>(){
-                            @Override
-                            public String convert(Term p) {
-                                return p.text();
-                            }
-                        },
-                        DocumentUtil.declaredTypesFieldSelector(),
-                        cancel.get(),
-                        query);
-                return null;
-            }
-        });                            
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void>() {
+                @Override
+                public Void run () throws IOException, InterruptedException {
+                    final Query query = Queries.createTermCollectingQuery(
+                            DocumentUtil.FIELD_FEATURE_IDENTS,
+                            DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS,
+                            ident,
+                            DocumentUtil.translateQueryKind(kind));
+                    index.queryDocTerms(
+                            result,
+                            convertor,
+                            new Convertor<Term, String>(){
+                                @Override
+                                public String convert(Term p) {
+                                    return p.text();
+                                }
+                            },
+                            DocumentUtil.declaredTypesFieldSelector(),
+                            cancel.get(),
+                            query);
+                    return null;
+                }
+            });
+        } catch (IOException ioe) {
+            this.<Void,IOException>handleException(null, ioe);
+        }
     }
     
     
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
-        IndexManager.readAccess(new IndexManager.Action<Void>() {
-            @Override
-            public Void run () throws IOException, InterruptedException {
-                final boolean cacheOp = directOnly && prefix.length() == 0;
-                Set<String> myPkgs = null;
-                Collection<String> collectInto;
-                if (cacheOp) {
-                    synchronized (PersistentClassIndex.this) {
-                        if (rootPkgCache != null) {
-                            result.addAll(rootPkgCache);
-                            return null;
+        try {
+            IndexManager.readAccess(new IndexManager.Action<Void>() {
+                @Override
+                public Void run () throws IOException, InterruptedException {
+                    final boolean cacheOp = directOnly && prefix.length() == 0;
+                    Set<String> myPkgs = null;
+                    Collection<String> collectInto;
+                    if (cacheOp) {
+                        synchronized (PersistentClassIndex.this) {
+                            if (rootPkgCache != null) {
+                                result.addAll(rootPkgCache);
+                                return null;
+                            }
+                        }
+                        myPkgs = new HashSet<String>();
+                        collectInto = new TeeCollection(myPkgs,result);
+                    } else {
+                        collectInto = result;
+                    }
+                    final Pair<StoppableConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
+                    index.queryTerms(collectInto, filter.second, filter.first, cancel.get());
+                    if (cacheOp) {
+                        synchronized (PersistentClassIndex.this) {
+                            if (rootPkgCache == null) {
+                                assert myPkgs != null;
+                                rootPkgCache = myPkgs;
+                            }
                         }
                     }
-                    myPkgs = new HashSet<String>();
-                    collectInto = new TeeCollection(myPkgs,result);
-                } else {
-                    collectInto = result;
+                    return null;
                 }
-                final Pair<StoppableConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
-                index.queryTerms(collectInto, filter.second, filter.first, cancel.get());
-                if (cacheOp) {
-                    synchronized (PersistentClassIndex.this) {
-                        if (rootPkgCache == null) {
-                            assert myPkgs != null;
-                            rootPkgCache = myPkgs;
-                        }
-                    }
-                }
-                return null;
-            }
-        });        
+            });
+        } catch (IOException ioe) {
+            this.<Void,IOException>handleException(null, ioe);
+        }
     }
         
     @Override
@@ -309,9 +330,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
             final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
             if (js != null) {
                 final long startTime = System.currentTimeMillis();
-                Iterator<FileObject> files = js.getFileObjects().iterator();
-                FileObject fo = files.hasNext() ? files.next() : null;
-                if (fo != null && fo.isValid()) {                                        
+                final ClassPath scp = js.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                if (scp != null && scp.contains(file)) {                    
                     try {
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
@@ -358,6 +378,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }
+                } else {
+                    LOGGER.log(
+                            Level.INFO,
+                            "Not updating cache for file {0}, does not belong to classpath {1}",    //NOI18N
+                            new Object[] {
+                                FileUtil.getFileDisplayName(file),
+                                scp
+                            });
                 }
                 this.dirty = null;
                 final long endTime = System.currentTimeMillis();

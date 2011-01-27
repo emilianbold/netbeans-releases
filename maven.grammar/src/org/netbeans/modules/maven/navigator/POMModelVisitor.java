@@ -1468,14 +1468,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 Method m = POMModelVisitor.class.getMethod("visit", type); //NOI18N
                 POMModel[] models = parentHolder.getSource();
                 Object[] cuts = parentHolder.getCutValues();
-                for (int i = 0; i < parentHolder.getCutsSize(); i++) {
+                for (int i = 0; i < cuts.length; i++) {
                     Object cut = cuts[i];
                     // prevent deadlock 185923
                     if (cut != null && !type.isInstance(cut)) {
                         LOG.log(Level.WARNING, "#185428: {0} is not assignable to {1}", new Object[] {cut, type});
                         continue;
                     }
-                    synchronized (models[i]) {
+                    synchronized (i < models.length ? models[i] : /*#192042*/new Object()) {
                         m.invoke(visitor, cut);
                     }
                 }
@@ -1537,6 +1537,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 @SuppressWarnings("unchecked")
                 List<T> lst = (List<T>) comp;
                 for (T c : lst) {
+                    if (c.getModel() == null) {
+                        LOG.log(Level.WARNING, "#177548: null model for {0}", c);
+                        continue;
+                    }
                     Object keyGen = keyGenerator.generate(c);
                     List<T> currentCut = cut.get(keyGen);
                     if (currentCut == null) {

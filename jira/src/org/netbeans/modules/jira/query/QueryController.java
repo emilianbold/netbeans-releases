@@ -1286,12 +1286,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         private void finnishQuery() {
             task = null;
-            if(handle != null) {
-                handle.finish();
-                handle = null;
-            }
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
+                    if(handle != null) {
+                        handle.finish();
+                        handle = null;
+                    }
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
                     panel.showNoContentPanel(false);

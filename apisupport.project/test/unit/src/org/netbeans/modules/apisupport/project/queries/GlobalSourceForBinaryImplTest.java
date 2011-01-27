@@ -49,9 +49,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.junit.Log;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
@@ -148,6 +150,12 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         URL loadersURL = FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"));
         URL loadersSrcURL = new URL(FileUtil.urlForArchiveOrDir(nbSrcZip), "openide.loaders/src/");
         assertRoot(loadersURL, URLMapper.findFileObject(loadersSrcURL));
+    }
+
+    public void testNonNormalizedFile() throws Exception { // #192343
+        CharSequence log = Log.enable("org.openide.filesystems.FileUtil", Level.WARNING);
+        assertEquals(Collections.emptyList(), Arrays.asList(SourceForBinaryQuery.findSourceRoots(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "something/../else.jar"))).getRoots()));
+        assertEquals("", log.toString());
     }
 
     private File generateNbSrcZip(String topLevelEntry) throws IOException {

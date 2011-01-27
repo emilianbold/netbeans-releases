@@ -45,9 +45,12 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -58,10 +61,12 @@ import org.openide.windows.InputOutput;
 public class IOPack {
     private final TermComponent console;
     protected final ExecutionEnvironment exEnv;
+    private final boolean external;
 
-    protected IOPack(TermComponent console, ExecutionEnvironment exEnv) {
+    protected IOPack(TermComponent console, ExecutionEnvironment exEnv, boolean external) {
         this.console = console;
         this.exEnv = exEnv;
+        this.external = external;
     }
 
     public TermComponent console() {
@@ -99,18 +104,22 @@ public class IOPack {
     public String getSlaveName() {
         return null;
     }
+    
+    public MacroMap updateEnv(MacroMap macroMap) {
+        return macroMap;
+    }
+    
+    public boolean isExternal() {
+        return external;
+    }
 
     public void close() {
     }
 
     public static IOPack create(boolean remote,
-                                InputOutput io,
-                                RunProfile runProfile,
+                                NativeDebuggerInfo ndi,
                                 Executor executor) {
-        int consoleType = runProfile.getConsoleType().getValue();
-        if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-            consoleType = RunProfile.getDefaultConsoleType();
-        }
+        int consoleType = ndi.getConsoleType(remote);
 
         TermComponent console;
         if (remote || Utilities.isWindows()) {
@@ -119,24 +128,42 @@ public class IOPack {
             console = IOPack.makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
         }
 
+        InputOutput io = ndi.getInputOutput();
         IOPack res;
+        final ExecutionEnvironment exEnv = executor.getExecutionEnvironment();
 
-        if (io == null) { // Attach or other non-start mode
-            res = new IOPack(console, executor.getExecutionEnvironment());
-        } else if (DebuggerManager.isStandalone()) {
+        if (DebuggerManager.isStandalone()) {
             TermComponent pio;
             if (remote || Utilities.isWindows()) {
                 pio = PioPack.makePio(0);
             } else {
                 pio = PioPack.makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
             }
-            res = new PioPack(console, pio, executor.getExecutionEnvironment());
+            res = new PioPack(console, pio, exEnv);
+        } else if (io == null) { // Attach or other non-start mode
+            res = new IOPack(console, exEnv, false);
         } else if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-            res = new ExternalTerminalPack(console, runProfile.getTerminalPath(), executor.getExecutionEnvironment());
+            if (!remote && Utilities.isWindows()) {
+                res = new IOPack(console, exEnv, true);
+            } else {
+                res = new ExternalTerminalPack(console, ndi.getProfile().getTerminalPath(), exEnv);
+            }
         } else if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-            res = new OutputPack(console, io, executor.getExecutionEnvironment());
+            // no support on windows, IZ 193740, switch to external
+            if (Utilities.isWindows() && !remote) {
+                DebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+                res = new IOPack(console, exEnv, true);
+            } else {
+                res = new OutputPack(console, io, exEnv);
+            }
         } else {
-            res = new InternalTerminalPack(console, io, executor.getExecutionEnvironment());
+            // switch to external if no pty on windows
+            if (Utilities.isWindows() && !remote && !PtySupport.isSupportedFor(exEnv)) {
+                DebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+                res = new IOPack(console, exEnv, true);
+            } else {
+                res = new InternalTerminalPack(console, io, exEnv);
+            }
         }
 
 	res.bringUp();

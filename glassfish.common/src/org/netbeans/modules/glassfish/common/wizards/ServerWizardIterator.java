@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,6 +64,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.CreateDomain;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.common.PortCollection;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
@@ -81,7 +82,7 @@ import org.openide.util.Utilities;
 /**
  * @author Ludo
  */
-public class ServerWizardIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+public class ServerWizardIterator extends PortCollection implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
     private transient AddServerLocationPanel locationPanel = null;
     private transient AddDomainLocationPanel locationPanel2 = null;
@@ -93,15 +94,14 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private String domainsDir;
     private String domainName;
+    private ServerDetails sd;
     private GlassfishInstanceProvider gip;
+    ServerDetails[] possibleValues;
 
-    public ServerWizardIterator(GlassfishInstanceProvider gip) {
-        assert null != gip;
-        this.gip = gip;
-        this.hostName = "localhost";
-    }
-
-    private ServerWizardIterator() {
+    public ServerWizardIterator(ServerDetails[] possibleValues) {
+        this.possibleValues = possibleValues;
+        this.gip = GlassfishInstanceProvider.getEe6();
+        this.hostName = "localhost"; // NOI18N
     }
     
     @Override
@@ -136,7 +136,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     @Override
     public String name() {
-        return gip.getDisplayName() + " AddInstanceIterator";  // NOI18N
+        return "GlassFish Server AddInstanceIterator"; // NOI18N
     }
     
     public static void showInformation(final String msg,  final String title){
@@ -168,7 +168,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                 db.initialize(f.getAbsolutePath());
             }
         }
-        NbPreferences.forModule(this.getClass()).put(gip.getInstallRootKey(), installRoot);
+        NbPreferences.forModule(this.getClass()).put("INSTALL_ROOT_KEY", installRoot); // NOI18N
         return result;
     }
     
@@ -247,9 +247,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
     
-    private int httpPort = -1; // GlassfishInstance.DEFAULT_HTTP_PORT;
-    private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
-    private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
 //    private String userName;
 //    private String password;
     private String installRoot;
@@ -265,41 +262,10 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         this.useDefaultPorts = useDefaultPorts;
     }
 
-    public String formatUri(String glassfishRoot, String host, int port) {
-        return gip.formatUri(glassfishRoot, host, port);
+    public String formatUri(String host, int port) {
+        return null != sd ? "[" + glassfishRoot + "]" + sd.uriFragment + ":" + host + ":" + port // NOI18N
+                : "[" + glassfishRoot + "]null:" + host + ":" + port; // NOI18N
     }
-
-    String getDefaultInstallDirectoryName() {
-        return gip.getDefaultInstallName(); // "GlassFish_v3_Prelude"; // NOI18N
-    }
-
-    int getHttpPort() {
-        return httpPort;
-    }
-
-    public void setHttpPort(int httpPort) {
-        this.httpPort = httpPort;
-    }
-    
-    int getAdminPort() {
-        return this.adminPort;
-    }
-
-    public void setAdminPort(int adminPort) {
-        this.adminPort = adminPort;
-    }
-   
-    public void setHttpsPort(int httpsPort) {
-        this.httpsPort = httpsPort;
-    }
-    
-//    public void setUserName(String userName) {
-//        this.userName = userName;
-//    }
-//    
-//    public void setPassword(String password) {
-//        this.password = password;
-//    }
     
     public void setInstallRoot(String installRoot) {
         this.installRoot = installRoot;
@@ -313,54 +279,45 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         this.glassfishRoot = glassfishRoot;
     }
 
-    String getInstallRootProperty() {
-        return gip.getInstallRootProperty();
-    }
-
-    String getNameOfBits() {
-        return gip.getDisplayName(); // NbBundle.getMessage(ServerWizardIterator.class, "V3_PRELUDE_NAME"); // NOI18N
-    }
-
     boolean hasServer(String uri) {
         return gip.hasServer(uri);
     }
 
-    boolean isValidInstall(File installDir, File glassfishDir, WizardDescriptor wizard) {
-        String errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_InstallationInvalid",   //NOI18N
+    ServerDetails isValidInstall(File installDir, File glassfishDir, WizardDescriptor wizard) {
+        String errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_InstallationInvalid", // NOI18N
                 FileUtil.normalizeFile(installDir).getPath());
-        if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.PRELUDE_DEFAULT_NAME)) {
-            errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_PreludeInstallationInvalid",  //NOI18N
-                FileUtil.normalizeFile(installDir).getPath());
-        }
-        if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.EE6WC_DEFAULT_NAME)) {
-            errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_EE6WCInstallationInvalid",  //NOI18N
-                FileUtil.normalizeFile(installDir).getPath());
-        }
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); // getSanitizedPath(installDir)));
         File jar = ServerUtilities.getJarName(glassfishDir.getAbsolutePath(), ServerUtilities.GFV3_JAR_MATCHER);
-        if(jar == null || !jar.exists()) {
-            return false;
+        if (jar == null || !jar.exists()) {
+            return null;
         }
 
         File containerRef = new File(glassfishDir, "config" + File.separator + "glassfish.container");
-        if(!containerRef.exists()) {
-            return false;
+        if (!containerRef.exists()) {
+            return null;
         }
-        for (String s : gip.getRequiredFiles()) {
-            containerRef = new File(glassfishDir, s);
-            if (!containerRef.exists()) {
-                return false;
+        for (ServerDetails candidate : possibleValues) {
+            boolean badFile = false;
+            for (String s : candidate.requiredFiles) {
+                containerRef = new File(glassfishDir, s);
+                if (!containerRef.exists()) {
+                    badFile = true;
+                }
+            }
+            for (String s : candidate.excludedFiles) {
+                containerRef = new File(glassfishDir, s);
+                if (containerRef.exists()) {
+                    badFile = true;
+                }
+            }
+            if (!badFile) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
+                this.sd = candidate;
+                return candidate;
             }
         }
-        for (String s : gip.getExcludedFiles()) {
-            containerRef = new File(glassfishDir, s);
-            if (containerRef.exists()) {
-                return false;
-            }
-        }
+        return null;
 
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "   ");
-        return true;
     }
 
     // expose for qa-functional tests
@@ -449,18 +406,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
 
-    String getIndirect() {
-        return gip.getIndirectDownloadUrl(); //"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt"; // NOI18N
-    }
-
-    String getDirect() {
-        return gip.getDirectDownloadUrl(); //"http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip"; // NOI18N
-    }
-
-    String getInstallRootKey() {
-        return gip.getInstallRootKey(); // "last-install-root"; // NOI18N
-    }
-
     private void handleLocalDomains(Set<ServerInstance> result, File ir) {
         File domainDir = new File(domainsDir, domainName);
         String canonicalPath = null;
@@ -481,26 +426,41 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip,false,useDefaultPorts);
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip, gip,false, // NOI18N
+                    useDefaultPorts,"INSTALL_ROOT_KEY"); // NOI18N
             int newHttpPort = cd.getHttpPort();
             int newAdminPort = cd.getAdminPort();
             cd.start();
-            GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, newHttpPort, newAdminPort, formatUri(glassfishRoot, "localhost", newAdminPort), gip.getUriFragment(), gip);
+            GlassfishInstance instance = GlassfishInstance.create(
+                    (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
+                    installRoot, glassfishRoot, domainsDir, domainName, 
+                    newHttpPort, newAdminPort, 
+                    formatUri("localhost", newAdminPort), 
+                    sd.uriFragment, 
+                    gip);
             result.add(instance.getCommonInstance());
         } else {
-            GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort, formatUri(glassfishRoot, "localhost", adminPort), gip.getUriFragment(), gip);
+            GlassfishInstance instance = GlassfishInstance.create(
+                    (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
+                    installRoot, glassfishRoot, domainsDir, domainName, getHttpPort(),
+                    getAdminPort(), formatUri("localhost", getAdminPort()),
+                    sd.uriFragment, 
+                    gip);
             result.add(instance.getCommonInstance());
         }
     }
 
     private void handleRemoteDomains(Set<ServerInstance> result, File ir) {
         // TODO - vbk : get the real port from the server. Doable, but hard to do right.
-        httpPort = 8080;
+        setHttpPort(8080);
         String hn = getHostName();
         if ("localhost".equals(hn)) {
             hn = "127.0.0.1";
         }
-        GlassfishInstance instance = GlassfishInstance.create((String) wizard.getProperty("ServInstWizard_displayName"), installRoot, glassfishRoot, null, null, httpPort, adminPort, formatUri(glassfishRoot, hn, adminPort), gip.getUriFragment(), gip);
+        GlassfishInstance instance = GlassfishInstance.create(
+                (String) wizard.getProperty("ServInstWizard_displayName"),   // NOI18N
+                installRoot, glassfishRoot, null, null, getHttpPort(), getAdminPort(),
+                formatUri(hn, getAdminPort()), sd.uriFragment, gip);
         result.add(instance.getCommonInstance());
     }
 

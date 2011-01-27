@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Setting up a JDBC Resource on the GlassFish Application Server</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+<body>
+    <h2>Setting up a JDBC Resource on the GlassFish Application Server</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>A JDBC resource (data source) provides applications with a means of connecting
+    to a database through a connection pool. Typically, there is at least one JDBC
+    resource for each database accessed by an application deployed in a
+    domain. It is possible to have more than one JDBC resource for a
+    database.</p>
+    <ul class="note">
+        <li>A JDBC resource connects to a JDBC connection pool. If you have not already
+        created the JDBC connection pool, you can create it in the wizard while you are creating the
+        resource.</li>
+    </ul>
+    <p>When you <a href="../../../ejb/editing/generate_cmp_beans.html">generate CMP entity beans from a database</a> 
+    or use the Enterprise Resources &gt; Use Database command 
+    to generate lookup code for a database, the JDBC data sources are generated automatically.</p>
+    <p><b>To create a JDBC resource:</b></p>
+    <ol>
+        <li>Ensure the GlassFish application server is running.</li>
+        <li>Go to File &gt; New (Ctrl-N).</li>
+        <li>In the Project drop-down list, choose either your EJB module or Web module.</li>
+        <li>Select GlassFish in the Categories pane, JDBC Resource in the File Types pane, and click Next.</li>
+        <li>Select an existing connection pool or create a new one.</li>
+        <li>(required) Enter a JNDI name for the resource.</li>
+        <li>Enable or disable the resource by choosing True or False.</li>
+        <li>Enter a description and click Next.</li>
+        <li>Enter any properties for the resource.</li>
+        <li>Click Finish.</li>
+    </ol>
+    
+    <p><b>To prepare to use a data source:</b></p>
+    <ol>
+        <li>Ensure the GlassFish application server is running.</li>
+        <li>Create a web application and select the GlassFish Application Server as the target server.</li>
+        <li>Access the data source in, for example, a <a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html">JSP page</a>.</li>
+    </ol>
+    <p>The resource is automatically registered when the project is deployed. 
+    When you register the resource, the resource is available to all applications and resources.</p>
+
+    <p>For more on working with datasources,
+    see Chapter 5 Data Sources in the Oracle Containers for J2EE Services Guide:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://download.oracle.com/docs/cd/B32110_01/web.1013/b28958/datasrc.htm">
+        <param name="text" value="<html><u>http://download.oracle.com/docs/cd/B32110_01/web.1013/b28958/datasrc.htm</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object>
+    
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd> <a href="register_resource.html">Registering a Resource with the GlassFish Application Server</a> </dd>
+        <dd>    <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> </dd>
+        <dd>    <a href="../../../server/server_aboutdbconnect.html">About Connection Pools</a></dd>
+    </dl>
+
+    <hr>
+
+    <small><a href="../../../credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

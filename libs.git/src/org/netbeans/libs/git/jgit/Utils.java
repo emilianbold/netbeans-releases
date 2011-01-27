@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -64,6 +66,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -142,23 +145,6 @@ public final class Utils {
     }
 
     /**
-     * Returns true if any of the given filters denotes a path lying under the current file/folder specified by the given TreeWalk
-     * @param filters
-     * @param treeWalk
-     * @return
-     */
-    public static boolean isUnderOrEqual (Collection<PathFilter> filters, TreeWalk treeWalk) {
-        boolean retval = false;
-        for (PathFilter filter : filters) {
-            if (filter.include(treeWalk) && treeWalk.getPathString().length() <= filter.getPath().length()) {
-                retval = true;
-                break;
-            }
-        }
-        return retval;
-    }
-
-    /**
      * Returns true if the current file/folder specified by the given TreeWalk lies under any of the given filters
      * @param treeWalk
      * @param filters
@@ -193,7 +179,7 @@ public final class Utils {
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
         } catch (IncorrectObjectTypeException ex) {
-            throw new GitException("The given id [" + revision + "] is not a commit or an annotated tag.");
+            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", revision)); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -203,7 +189,7 @@ public final class Utils {
         try {
             return repository.resolve(objectId);
         } catch (AmbiguousObjectException ex) {
-            throw new GitException("Given objectId [" + objectId + "] is not unique.", ex);
+            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -222,5 +208,20 @@ public final class Utils {
             }
         }
         file.delete();
+    }
+    
+    /**
+     * Eliminates part of the ref's name that equals knon prefixes such as refs/heads/, refs/remotes/ etc.
+     * @param ref
+     * @return 
+     */
+    public static String getRefName (Ref ref) {
+        String name = ref.getName();
+        for (String prefix : Arrays.asList(Constants.R_HEADS, Constants.R_REMOTES, Constants.R_TAGS, Constants.R_REFS)) {
+            if (name.startsWith(prefix)) {
+                name = name.substring(prefix.length());
+            }
+        }
+        return name;
     }
 }

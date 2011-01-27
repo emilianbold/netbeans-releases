@@ -44,7 +44,7 @@ package org.netbeans.libs.git.jgit;
 
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
-import org.netbeans.libs.git.jgit.commands.BranchCommand;
+import org.netbeans.libs.git.jgit.commands.ListBranchCommand;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.jgit.commands.CatCommand;
 import java.io.OutputStream;
@@ -53,6 +53,8 @@ import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
+import java.net.URL;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,23 +65,39 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
+import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
+import org.netbeans.libs.git.jgit.commands.CheckoutBranchCommand;
+import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.ConflictCommand;
+import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.FetchCommand;
+import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
+import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
+import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
+import org.netbeans.libs.git.jgit.commands.LogCommand;
+import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
+import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
 import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
  * @author ondra
+ * @author Tomas Stupka
  */
-public class JGitClient implements GitClient, StatusListener, FileListener {
+public class JGitClient implements GitClient, StatusListener, FileListener, RevisionInfoListener {
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
 
@@ -117,9 +135,9 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public boolean catIndexEntry (File file, OutputStream out, ProgressMonitor monitor) throws GitException {
+    public boolean catIndexEntry (File file, int stage, OutputStream out, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        CatCommand cmd = new CatCommand(repository, file, out, monitor);
+        CatCommand cmd = new CatCommand(repository, file, stage, out, monitor);
         cmd.execute();
         return cmd.foundInRevision();
     }
@@ -135,6 +153,23 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
             CheckoutIndexCommand cmd = new CheckoutIndexCommand(repository, roots, monitor, this);
             cmd.execute();
         }
+    }
+    
+    @Override
+    public void checkoutBranch (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        if (!failOnConflict) {
+            throw new IllegalArgumentException("Currently unsupported. failOnConflict must be set to true. JGit lib is buggy."); //NOI18N
+        }
+        Repository repository = gitRepository.getRepository();
+        CheckoutBranchCommand cmd = new CheckoutBranchCommand(repository, revision, failOnConflict, monitor, this);
+        cmd.execute();
+    }
+   
+    @Override
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CleanCommand cmd = new CleanCommand(repository, roots, monitor, this);
+        cmd.execute();        
     }
 
     /**
@@ -167,10 +202,42 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
+    public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException {
+        CreateBranchCommand cmd = new CreateBranchCommand(gitRepository.getRepository(), branchName, revision, monitor);
+        cmd.execute();
+        return cmd.getBranch();
+    }
+
+    @Override
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, monitor);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
+
+    @Override
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, fetchRefSpecifications, monitor);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
+    
+    @Override
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException {
-        BranchCommand cmd = new BranchCommand(gitRepository.getRepository(), all, monitor);
+        ListBranchCommand cmd = new ListBranchCommand(gitRepository.getRepository(), all, monitor);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    /**
+     * Much faster then an equivalent call to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor) }
+     */
+    @Override
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ConflictCommand cmd = new ConflictCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getStatuses();
     }
 
     @Override
@@ -215,6 +282,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
+    public File[] ignore (File[] files, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        IgnoreCommand cmd = new IgnoreCommand(repository, files, monitor, this);
+        cmd.execute();
+        return cmd.getModifiedIgnoreFiles();
+    }
+    
+    @Override
     /**
      * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
@@ -223,6 +298,47 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         Repository repository = gitRepository.getRepository();
         InitRepositoryCommand cmd = new InitRepositoryCommand(repository, monitor);
         cmd.execute();
+    }
+
+    @Override
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListModifiedIndexEntriesCommand cmd = new ListModifiedIndexEntriesCommand(repository, roots, monitor, this);
+        cmd.execute();
+        return cmd.getFiles();
+    }
+
+    @Override
+    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListRemoteBranchesCommand cmd = new ListRemoteBranchesCommand(repository, remoteRepositoryUrl, monitor);
+        cmd.execute();
+        return cmd.getBranches();
+    }
+
+    @Override
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, revision, monitor, this);
+        cmd.execute();
+        GitRevisionInfo[] revisions = cmd.getRevisions();
+        return revisions.length == 0 ? null : revisions[0];
+    }
+
+    @Override
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, searchCriteria, monitor, this);
+        cmd.execute();
+        return cmd.getRevisions();
+    }
+
+    @Override
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        MergeCommand cmd = new MergeCommand(repository, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     /**
@@ -276,7 +392,15 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     @Override
     public GitUser getUser() throws GitException {        
         return new JGitUserInfo(new PersonIdent(gitRepository.getRepository()));
-    }    
+    }
+    
+    @Override
+    public File[] unignore (File[] files, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        UnignoreCommand cmd = new UnignoreCommand(repository, files, monitor, this);
+        cmd.execute();
+        return cmd.getModifiedIgnoreFiles();
+    }
 
     // <editor-fold defaultstate="collapsed" desc="listener methods">
     @Override
@@ -301,6 +425,19 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         for (NotificationListener list : lists) {
             if (list instanceof StatusListener) {
                 ((StatusListener) list).notifyStatus(status);
+            }
+        }
+    }
+
+    @Override
+    public void notifyRevisionInfo (GitRevisionInfo info) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof RevisionInfoListener) {
+                ((RevisionInfoListener) list).notifyRevisionInfo(info);
             }
         }
     }// </editor-fold>

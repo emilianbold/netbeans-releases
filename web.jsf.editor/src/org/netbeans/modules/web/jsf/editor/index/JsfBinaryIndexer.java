@@ -64,30 +64,24 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
-import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
+ * Looks for .taglib.xml and .tld descriptors and composite component libraries in binary files
  *
  * @author marekfukala
  */
 public class JsfBinaryIndexer extends BinaryIndexer {
 
     static final String INDEXER_NAME = "jsfBinary"; //NOI18N
-    static final int INDEX_VERSION = 5;
-    static final String TLD_LIBRARY_MARK_KEY = "tagLibraryDescriptor"; //NOI18N
-    static final String FACELETS_LIBRARY_MARK_KEY = "faceletsLibraryDescriptor"; //NOI18N
-    static final String LIBRARY_NAMESPACE_KEY = "namespace"; //NOI18N
-
-    private static final String TLD_LIB_SUFFIX = ".tld"; //NOI18N
-    private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
+    static final int INDEX_VERSION = 8;
 
     private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
 
     @Override
     protected void index(Context context) {
-        LOGGER.log(Level.FINE, "indexing " + context.getRoot()); //NOI18N
+        LOGGER.log(Level.FINE, "indexing {0}", context.getRoot()); //NOI18N
 
         if (context.getRoot() == null) {
             return;
@@ -100,21 +94,16 @@ public class JsfBinaryIndexer extends BinaryIndexer {
         processFaceletsCompositeLibraries(context);
 
     }
-
+    
     private void processTlds(Context context) {
         FileObject root = context.getRoot();
         //find all TLDs in the jar file
-        for (FileObject file : findLibraryDescriptors(root, TLD_LIB_SUFFIX)) {
+        for (FileObject file : findLibraryDescriptors(root, JsfIndexSupport.TLD_LIB_SUFFIX)) {
             try {
-                String namespace = TldLibrary.parseNamespace(file.getInputStream());
+                String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream(), "taglib", "uri");
                 if (namespace != null) {
-                    IndexingSupport sup = IndexingSupport.getInstance(context);
-                    IndexDocument doc = sup.createDocument(file);
-                    doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
-                    doc.addPair(TLD_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
-                    sup.addDocument(doc);
-
-                    LOGGER.log(Level.FINE, "The file " + file + " indexed as a TLD (namespace=" + namespace + ")"); //NOI18N
+                    JsfIndexSupport.indexTagLibraryDescriptor(context, file, namespace);
+                    LOGGER.log(Level.FINE, "The file {0} indexed as a TLD (namespace={1})", new Object[]{file, namespace}); //NOI18N
                 }
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -127,17 +116,12 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     private void processFaceletsLibraryDescriptors(Context context) {
         FileObject root = context.getRoot();
-        for (FileObject file : findLibraryDescriptors(root, FACELETS_LIB_SUFFIX)) {
+        for (FileObject file : findLibraryDescriptors(root, JsfIndexSupport.FACELETS_LIB_SUFFIX)) {
             try {
                 String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
                 if(namespace != null) {
-                    IndexingSupport sup = IndexingSupport.getInstance(context);
-                    IndexDocument doc = sup.createDocument(file);
-                    doc.addPair(LIBRARY_NAMESPACE_KEY, namespace, true, true);
-                    doc.addPair(FACELETS_LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
-                    sup.addDocument(doc);
-
-                    LOGGER.log(Level.FINE, "The file " + file + " indexed as a Facelets Library Descriptor"); //NOI18N
+                    JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
+                    LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                 }
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -165,7 +149,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                         if (file.getExt().equalsIgnoreCase("xhtml")) {
                             //NOI18N
                             //parse && index the html content of the file
-                            LOGGER.log(Level.FINE, "Composite Libraries Scan: found " + file); //NOI18N
+                            LOGGER.log(Level.FINE, "Composite Libraries Scan: found {0}", file); //NOI18N
                             Source source = Source.create(file);
                             try {
                                 ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -182,7 +166,7 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                                                     ccmodel.storeToIndex(doc);
                                                     sup.addDocument(doc);
 
-                                                    LOGGER.log(Level.FINE, "Composite Libraries Scan: Model created for file " + file); //NOI18N
+                                                    LOGGER.log(Level.FINE, "Composite Libraries Scan: Model created for file {0}", file); //NOI18N
                                                 }
                                             }
                                         }
@@ -223,8 +207,18 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
         @Override
         public void rootsRemoved(Iterable<? extends URL> removedRoots) {
-//            System.out.println("JsfBinaryIndexer: roots removed");
+            //no-op
         }
+
+        @Override
+	public boolean scanStarted(Context context) {
+            try {
+                return IndexingSupport.getInstance(context).isValid();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+	}
 
         @Override
         public String getIndexerName() {
@@ -236,14 +230,5 @@ public class JsfBinaryIndexer extends BinaryIndexer {
             return INDEX_VERSION;
         }
 
-        @Override
-        public boolean scanStarted(Context context) {
-            try {
-                return IndexingSupport.getInstance(context).isValid();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return false;
-            }
-        }
     }
 }

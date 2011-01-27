@@ -37,7 +37,6 @@
     <conf name="Default" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
-        <platform>X-PLATFORM-INDEX-X</platform>
       </toolsSet>
       <compileType>
         <linkerTool>

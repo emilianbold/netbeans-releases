@@ -138,4 +138,9 @@ public class TestModuleDependency implements Comparable {
 //        if(compile) hash*=11;
         return hash;
     }
+
+    public @Override String toString() {
+        return module.getCodeNameBase() + (test ? ";test" : "") + (recursive ? ";recursive" : "") + (compile ? ";compile" : ""); // NOI18N
+    }
+
 }

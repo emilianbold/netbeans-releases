@@ -44,13 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.remote;
 
-import java.util.*;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
-import org.openide.ErrorManager;
-
 public enum Platform {
 
 //  name()		 variant()      variant64       isLinux    isSolaris
@@ -83,23 +76,6 @@ public enum Platform {
 	} catch (IllegalArgumentException x) {
 	    return Unknown;
 	}
-    }
-
-    public static Platform byVariant(String variant) {
-	if (variant == null)
-	    return Unknown;
-	for (Platform p : Platform.values()) {
-	    if (p.variant.equals(variant) || p.variant64.equals(variant))
-		return p;
-	}
-	return Unknown;
-    }
-
-    /* 
-     * "CNDId" is one of org.netbeans.modules.cnd.api.compilers.PlatformTypes
-     */
-    public static Platform byCNDId(int id) {
-	return CndRemote.platformByCNDId(id);
     }
 
     /*8
@@ -146,33 +122,33 @@ public enum Platform {
     /*
      * only apply to local
      */
-    public boolean is64() {
-            String uname = null;
-            try {
-                Runtime rt = Runtime.getRuntime();
-                String[] args = new String[2];
-                args[0] = "/bin/uname"; // NOI18N
-                args[1] = "-m"; // NOI18N
-
-                Process proc = rt.exec(args);
-                InputStream procIn = proc.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(procIn));
-                uname = br.readLine();
-                br.close();
-            } catch (Exception e) {
-                ErrorManager.getDefault().annotate(e, "Failed to /bin/uname -m "); // NOI18N
-                ErrorManager.getDefault().notify(e);
-                return false;
-            }
-            if (uname == null)
-                return false;
-
-            int found = uname.indexOf("64"); // NOI18N
-            if (found == -1)
-                return false;
-            else
-                return true;
-    }
+//    public boolean is64() {
+//            String uname = null;
+//            try {
+//                Runtime rt = Runtime.getRuntime();
+//                String[] args = new String[2];
+//                args[0] = "/bin/uname"; // NOI18N
+//                args[1] = "-m"; // NOI18N
+//
+//                Process proc = rt.exec(args);
+//                InputStream procIn = proc.getInputStream();
+//                BufferedReader br = new BufferedReader(new InputStreamReader(procIn));
+//                uname = br.readLine();
+//                br.close();
+//            } catch (Exception e) {
+//                ErrorManager.getDefault().annotate(e, "Failed to /bin/uname -m "); // NOI18N
+//                ErrorManager.getDefault().notify(e);
+//                return false;
+//            }
+//            if (uname == null)
+//                return false;
+//
+//            int found = uname.indexOf("64"); // NOI18N
+//            if (found == -1)
+//                return false;
+//            else
+//                return true;
+//    }
 
     public boolean isSolaris() {
 	return isSolaris;

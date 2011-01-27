@@ -47,13 +47,10 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.nio.charset.Charset;
-import org.netbeans.api.queries.FileEncodingQuery;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -64,8 +61,8 @@ public class FileBufferFile extends AbstractFileBuffer {
     private volatile SoftReference<String> cachedString;
     private volatile long lastModifiedWhenCachedString;
 
-    public FileBufferFile(CharSequence absPath) {
-        super(absPath);
+    public FileBufferFile(FileObject fileObject) {
+        super(fileObject);
     }
     
     @Override
@@ -88,18 +85,6 @@ public class FileBufferFile extends AbstractFileBuffer {
         }
     }
 
-    private String getEncoding() {
-        FileObject fo = CndFileUtils.toFileObject(getAbsolutePath());
-        Charset cs = null;
-        if (fo != null && fo.isValid()) {
-            cs = FileEncodingQuery.getEncoding(fo);
-        }
-        if (cs == null) {
-            cs = FileEncodingQuery.getDefaultEncoding();
-        }
-        return cs.name();
-    }
-    
     private synchronized String asString() throws IOException {
         byte[] b;
         long newLastModified = lastModified();
@@ -110,8 +95,9 @@ public class FileBufferFile extends AbstractFileBuffer {
             }
         }
         // either bytes == null or bytes.get() == null
-        b = doGetBytes();
-        String str = new String(b, getEncoding());
+        AtomicReference<Integer> realLen = new AtomicReference<Integer>(0);
+        b = doGetBytes(realLen);
+        String str = new String(b, 0, realLen.get().intValue(), getEncoding());
         if (lastModifiedWhenCachedString != newLastModified) {
             clearLineCache();
         }
@@ -120,11 +106,11 @@ public class FileBufferFile extends AbstractFileBuffer {
         return str;
     }
 
-    private byte[] doGetBytes() throws IOException {
-        File file = getFile();
-        long length = file.length();
+    private byte[] doGetBytes(AtomicReference<Integer> outLen) throws IOException {
+        FileObject fo = getFileObject();
+        long length = fo.getSize();
         if (length > Integer.MAX_VALUE) {
-            new IllegalArgumentException("File is too large: " + file.getAbsolutePath()).printStackTrace(System.err); // NOI18N
+            new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
         }
         byte[] readBytes = new byte[(int)length];
         InputStream is = getInputStream();
@@ -137,7 +123,7 @@ public class FileBufferFile extends AbstractFileBuffer {
         } finally {
             is.close();
         }
-        convertLSToLF(readBytes);
+        outLen.set(Integer.valueOf(convertLSToLF(readBytes)));
         return readBytes;
     }
     
@@ -179,14 +165,15 @@ public class FileBufferFile extends AbstractFileBuffer {
         return tgtOffset;
     }
     
-    @Override
-    public InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(CndFileUtils.getInputStream(getAbsolutePath()), TraceFlags.BUF_SIZE);
-    }
-    
-    @Override
-    public int getLength() {
-        return (int) getFile().length();
+    private InputStream getInputStream() throws IOException {
+        InputStream is;
+        FileObject fo = getFileObject();
+        if (fo != null && fo.isValid()) {
+            is = fo.getInputStream();
+        } else {
+            throw new FileNotFoundException("Null file object for " + this.getAbsolutePath()); // NOI18N
+        }
+        return new BufferedInputStream(is, TraceFlags.BUF_SIZE);
     }
     
     @Override
@@ -196,16 +183,11 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     @Override
     public long lastModified() {
-	return getFile().lastModified();
+	return getFileObject().lastModified().getTime();
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
     
     public FileBufferFile(DataInput input) throws IOException {
         super(input);
@@ -213,6 +195,6 @@ public class FileBufferFile extends AbstractFileBuffer {
 
     @Override
     public char[] getCharBuffer() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return asString().toCharArray();
     }
 }

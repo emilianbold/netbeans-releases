@@ -255,6 +255,27 @@ public class ReturnEncapsulationTest extends TestBase {
                         "}").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testSortedSetFix192445() throws Exception {
+        performFixTest("test/Test.java",
+                        "package test;\n" +
+                        "public class Test {\n" +
+                        "    private java.util.SortedSet l;\n"+
+                        "    public java.util.SortedSet getCollection() {\n"+
+                        "        return l;\n"+
+                        "    }\n"+
+                        "}",
+                        "4:8-4:17:verifier:Return of Collection Field",
+                        "Replace with java.util.Collections.unmodifiableSortedSet(l)",
+                        ("package test;\n" +
+                        "import java.util.Collections;\n"+
+                        "public class Test {\n" +
+                        "    private java.util.SortedSet l;\n"+
+                        "    public java.util.SortedSet getCollection() {\n"+
+                        "        return Collections.unmodifiableSortedSet(l);\n"+
+                        "    }\n"+
+                        "}").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

@@ -47,8 +47,6 @@ package org.netbeans.modules.editor.completion;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -66,7 +64,7 @@ import org.openide.util.Utilities;
  *
  *  @author Dusan Balek, Miloslav Metelka
  */
-abstract class CompletionLayoutPopup implements FocusListener {
+abstract class CompletionLayoutPopup {
     
     private CompletionLayout layout;
     
@@ -87,8 +85,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
     
     private boolean showRetainedPreferredSize;
     
-    private JComponent focusListeningComponent;
-    
     public final boolean isVisible() {
         return (popup != null);
     }
@@ -102,10 +98,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
             popup.hide();
             popup = null;
             popupBounds = null;
-            if(focusListeningComponent != null) {
-                focusListeningComponent.removeFocusListener(this);
-                focusListeningComponent = null;
-            }
             contentComponent = null;
             anchorOffset = -1;
             // Reset screen bounds as well to not cache too long
@@ -120,13 +112,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
      */
     protected boolean isFocusable() {
         return false; // By default not focusable
-    }
-    
-    /**
-     * Get the component to which the focus 
-     */
-    protected JComponent getFocusListeningComponent() {
-        return null;
     }
     
     public final boolean isDisplayAboveCaret() {
@@ -310,11 +295,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
         contComp.setPreferredSize(newPrefSize);
         showRetainedPreferredSize = newPrefSize.equals(origPrefSize);
         
-        focusListeningComponent = getFocusListeningComponent();
-        if(focusListeningComponent != null) {
-            focusListeningComponent.addFocusListener(this);
-        }
-
         PopupFactory factory = PopupFactory.getSharedInstance();
         // Lightweight completion popups don't work well on the Mac - trying
         // to click on its scrollbars etc. will cause the window to be hidden,
@@ -471,11 +451,4 @@ abstract class CompletionLayoutPopup implements FocusListener {
     }
 
     public abstract void processKeyEvent(KeyEvent evt);
-
-    public void focusGained(FocusEvent e) {
-    }
-
-    public void focusLost(FocusEvent e) {
-    }
-    
 }

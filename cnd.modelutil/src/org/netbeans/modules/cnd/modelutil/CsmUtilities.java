@@ -93,8 +93,8 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -371,9 +371,8 @@ public class CsmUtilities {
      *      or <code>null</code> if there is no such project
      */
     public static CsmProject getCsmProject(FileObject fo) {
-        File file = FileUtil.toFile(fo);
-        if (file != null) {
-            String path = file.getPath();
+        if (fo != null && fo.isValid()) {
+            String path = fo.getPath();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
                 Object platformProject = csmProject.getPlatformProject();
                 if (platformProject instanceof NativeProject) {
@@ -395,6 +394,12 @@ public class CsmUtilities {
             }
         }
         return false;
+    }
+    
+    public static boolean isCsmSuitable(FileObject fo) {
+        // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
+        // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
+        return CndPathUtilitities.isPathAbsolute(fo.getPath());
     }
 
     public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
@@ -423,15 +428,11 @@ public class CsmUtilities {
                 }
                 if (files.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();
-                    if (fo != null) {
-                        File file = FileUtil.toFile(fo);
-                        // the file can null, for example, when we edit templates
-                        if (file != null) {
-                            String normPath = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
-                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
-                            if (csmFile != null) {
-                                files.add(csmFile);
-                            }
+                    if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
+                        String normPath = fo.getPath();
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
+                        if (csmFile != null) {
+                            files.add(csmFile);
                         }
                     }
                 }
@@ -494,7 +495,7 @@ public class CsmUtilities {
     }
 
     public static CsmFile getCsmFile(FileObject fo, boolean waitParsing, boolean snapShot) {
-        if (fo == null) {
+        if (fo == null || ! fo.isValid() || ! isCsmSuitable(fo)) { // #194431 Path should be absolute: Templates/cFiles/CSimpleTest.c
             return null;
         } else {
             try {
@@ -504,25 +505,27 @@ public class CsmUtilities {
             }
         }
     }
-
+    
     public static FileObject getFileObject(CsmFile csmFile) {
-        FileObject fo = null;
-        if (csmFile != null) {
-            try {
-                try {                    
-                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
-                    if (fo == null /*paranoia*/ || !fo.isValid()) {
-                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
-                        fo = CndFileUtils.toFileObject(file.getCanonicalFile());
-                    }
-                } catch (IOException e) {
-                    fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(csmFile.getAbsolutePath().toString()));
-                }
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
-        return fo;
+        return (csmFile == null) ? null : csmFile.getFileObject();
+//        FileObject fo = null;
+//        if (csmFile != null) {
+//            
+//            try {
+//                try {                    
+//                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
+//                    if (fo == null /*paranoia*/ || !fo.isValid()) {
+//                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
+//                        fo = CndFileUtils.toFileObject(file.getCanonicalFile());
+//                    }
+//                } catch (IOException e) {
+//                    fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(csmFile.getAbsolutePath().toString()));
+//                }
+//            } catch (IllegalArgumentException ex) {
+//                ex.printStackTrace(System.err);
+//            }
+//        }
+//        return fo;
     }
 
     public static FileObject getFileObject(Document doc) {

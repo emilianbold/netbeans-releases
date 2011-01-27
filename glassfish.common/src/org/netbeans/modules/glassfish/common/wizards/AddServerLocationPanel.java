@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -75,8 +75,6 @@ import org.xml.sax.SAXException;
  */
 public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     
-    private static final String DOMAIN_XML_PATH = "config/domain.xml";
-    
     private final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
     private final String PROP_WARNING_MESSAGE = WizardDescriptor.PROP_WARNING_MESSAGE;
     private final String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
@@ -99,6 +97,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @param ev 
      */
+    @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
@@ -113,6 +112,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @return 
      */
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new AddServerLocationVisualPanel(wizardIterator);
@@ -125,6 +125,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @return 
      */
+    @Override
     public HelpCtx getHelp() {
         // !PW FIXME correct help context
         return new HelpCtx("registering_app_server_hk2_location"); //NOI18N
@@ -136,21 +137,22 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @return 
      */
+    @Override
     public boolean isValid() {
-        if(isValidating.compareAndSet(false, true)) {
+        if (isValidating.compareAndSet(false, true)) {
             try {
                 wizardIterator.setHttpPort(-1);
                 AddServerLocationVisualPanel panel = (AddServerLocationVisualPanel) getComponent();
 
                 AddServerLocationVisualPanel.DownloadState downloadState = panel.getDownloadState();
-                if(downloadState == AddServerLocationVisualPanel.DownloadState.DOWNLOADING) {
+                if (downloadState == AddServerLocationVisualPanel.DownloadState.DOWNLOADING) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                     return false;
                 }
 
                 String locationStr = panel.getHk2HomeLocation();
                 locationStr = (locationStr != null) ? locationStr.trim() : null;
-                if(locationStr == null || locationStr.length() == 0) {
+                if (locationStr == null || locationStr.length() == 0) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "ERR_BlankInstallDir"));
                     return false;
@@ -163,16 +165,15 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 File installDir = new File(locationStr).getAbsoluteFile();
                 File glassfishDir = getGlassfishRoot(installDir);
                 File domainDir = getDefaultDomain(glassfishDir);
-                if(!installDir.exists()) {
-                    if(!isLegalFolder(installDir)) {
+                if (!installDir.exists()) {
+                    if (!isLegalFolder(installDir)) {
                         wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                                 AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
                         return false;
-                    } else if(canCreate(installDir)) {
-                        if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
-                            panel.updateMessageText(NbBundle.getMessage(
-                                    AddServerLocationPanel.class, "LBL_PreludeInstallDirWillBeUsed", getSanitizedPath(installDir),
-                                    wizardIterator.getNameOfBits()));
+                    } else if (canCreate(installDir)) {
+                        if (downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
+                            panel.updateMessageText(NbBundle.getMessage(AddServerLocationPanel.class,
+                                    "LBL_NewInstallDirCanBeUsed", getSanitizedPath(installDir)));  // NOI18N
                             wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                             return false;
                         } else {
@@ -185,45 +186,49 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                                 AddServerLocationPanel.class, "ERR_CannotCreate", getSanitizedPath(installDir)));
                         return false;
                     }
-                } else if(!wizardIterator.isValidInstall(installDir, glassfishDir,wizard)) {
-                    return false;
-                } else if(!isRegisterableDomain(domainDir)) {
-                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                 } else {
-                    readServerConfiguration(domainDir, wizardIterator);
-                    String uri = wizardIterator.formatUri(glassfishDir.getAbsolutePath(),
-                            GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
-                    if (-1 == wizardIterator.getHttpPort()) {
-                        wizard.putProperty(PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
+                    ServerDetails candidate = wizardIterator.isValidInstall(installDir, glassfishDir, wizard);
+                    if (null == candidate) {
+                        String errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_InstallationInvalid", // NOI18N
+                                FileUtil.normalizeFile(installDir).getPath());
+                        wizard.putProperty(PROP_ERROR_MESSAGE, errMsg);
                         return false;
-                    }
-                    if (-1 == wizardIterator.getAdminPort()) {
-                        wizard.putProperty(PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
-                        return false;
-                    }
-                    if(wizardIterator.hasServer(uri)) {
-                        wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "MSG_DefaultDomainExists",
-                            getSanitizedPath(installDir), GlassfishInstance.DEFAULT_DOMAIN_NAME));
-                        wizardIterator.setHttpPort(-1); // FIXME this is a hack - disables finish button
+                    } else if (!isRegisterableDomain(domainDir)) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                                AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                     } else {
-                        String statusText = panel.getStatusText();
-                        if(statusText != null && statusText.length() > 0) {
-                            wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
+                        org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDir, wizardIterator);
+                        String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
+                        if (-1 == wizardIterator.getHttpPort()) {
+                            wizard.putProperty(PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
                             return false;
-                        } else {
-                            wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                        }
+                        if (-1 == wizardIterator.getAdminPort()) {
+                            wizard.putProperty(PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
+                            return false;
+                        }
+                        if (wizardIterator.hasServer(uri)) {
                             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
-                                AddServerLocationPanel.class, "MSG_NextForSpecial"));
+                                    AddServerLocationPanel.class, "MSG_DefaultDomainExists",
+                                    getSanitizedPath(installDir), GlassfishInstance.DEFAULT_DOMAIN_NAME));
+                            wizardIterator.setHttpPort(-1); // FIXME this is a hack - disables finish button
+                        } else {
+                            String statusText = panel.getStatusText();
+                            if (statusText != null && statusText.length() > 0) {
+                                wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
+                                return false;
+                            } else {
+                                wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                                wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
+                                        AddServerLocationPanel.class, "MSG_NextForSpecial", candidate)); // NOI18N
+                            }
                         }
                     }
                 }
-
                 // message has already been set, do not clear it here (see above).
-                
+
                 // finish initializing the registration data
                 if (installDir.equals(glassfishDir)) {
                     installDir = glassfishDir.getParentFile();
@@ -272,10 +277,12 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         return dir != null ? dir.canRead() && Utils.canWrite(dir) : false;
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
@@ -284,6 +291,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @param settings 
      */
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
@@ -294,9 +302,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      * 
      * @param settings 
      */
+    @Override
     public void storeSettings(Object settings) {
     }
     
+    @Override
     public boolean isFinishPanel() {
         return wizardIterator.getHttpPort() != -1;
     }
@@ -306,7 +316,8 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         if (!testFile.exists()) {
             testFile = domainDir;
         }
-        return Utils.canWrite(testFile) && readServerConfiguration(domainDir, null);
+        return Utils.canWrite(testFile) &&
+                org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDir, null);
     }
     
     private File getGlassfishRoot(File installDir) {
@@ -337,157 +348,4 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         return retVal;
     }
     
-    static boolean readServerConfiguration(File domainDir, ServerWizardIterator wi) {
-        boolean result = false;
-        File domainXml = new File(domainDir, DOMAIN_XML_PATH);
-        final Map<String, HttpData> httpMap = new LinkedHashMap<String, HttpData>();
-        
-        if (domainXml.exists()) {
-            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
-            pathList.add(new TreeParser.Path("/domain/configs/config/http-service/http-listener",
-                    new TreeParser.NodeReader() {
-                @Override
-                public void readAttributes(String qname, Attributes attributes) throws SAXException {
-                    // <http-listener 
-                    //   id="http-listener-1" port="8080" xpowered-by="true" 
-                    //   enabled="true" address="0.0.0.0" security-enabled="false" 
-                    //   family="inet" default-virtual-server="server" 
-                    //   server-name="" blocking-enabled="false" acceptor-threads="1">
-                    try {
-                        String id = attributes.getValue("id");
-                        if(id != null && id.length() > 0) {
-                            int port = Integer.parseInt(attributes.getValue("port"));
-                            boolean secure = "true".equals(attributes.getValue("security-enabled"));
-                            boolean enabled = !"false".equals(attributes.getValue("enabled"));
-                            if(enabled) {
-                                HttpData data = new HttpData(id, port, secure);
-                                Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
-                                httpMap.put(id, data);
-                            } else {
-                                Logger.getLogger("glassfish").log(Level.FINER, "http-listener " + id + " is not enabled and won't be used.");
-                            }
-                        } else {
-                            Logger.getLogger("glassfish").log(Level.FINEST, "http-listener found with no name");
-                        }
-                    } catch(NumberFormatException ex) {
-                        throw new SAXException(ex);
-                    }
-                }
-            }));
-            
-            pathList.add(new TreeParser.Path("/domain/configs/config/network-config/network-listeners/network-listener",
-                    new TreeParser.NodeReader() {
-                @Override
-                public void readAttributes(String qname, Attributes attributes) throws SAXException {
-                    // <http-listener
-                    //   id="http-listener-1" port="8080" xpowered-by="true"
-                    //   enabled="true" address="0.0.0.0" security-enabled="false"
-                    //   family="inet" default-virtual-server="server"
-                    //   server-name="" blocking-enabled="false" acceptor-threads="1">
-                    try {
-                        String id = attributes.getValue("name");
-                        if(id != null && id.length() > 0) {
-                            String portAttr = attributes.getValue("port");
-                            if (null == portAttr || portAttr.startsWith("$")) {
-                                return;
-                            }
-                            int port = Integer.parseInt(portAttr);
-                            boolean secure = "true".equals(attributes.getValue("security-enabled"));
-                            boolean enabled = !"false".equals(attributes.getValue("enabled"));
-                            if(enabled) {
-                                HttpData data = new HttpData(id, port, secure);
-                                Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
-                                httpMap.put(id, data);
-                            } else {
-                                Logger.getLogger("glassfish").log(Level.FINER, "http-listener " + id + " is not enabled and won't be used.");
-                            }
-                        } else {
-                            Logger.getLogger("glassfish").log(Level.FINEST, "http-listener found with no name");
-                        }
-                    } catch(NumberFormatException ex) {
-                        throw new SAXException(ex);
-                    }
-                }
-            }));
-
-            try {
-                TreeParser.readXml(domainXml, pathList);
-                
-                // !PW This probably more convoluted than it had to be, but while
-                // http-listeners are usually named "http-listener-1", "http-listener-2", ...
-                // technically they could be named anything.
-                // 
-                // For now, the logic is as follows:
-                //   admin port is the one named "admin-listener"
-                //   http port is the first non-secure enabled port - typically http-listener-1
-                //   https port is the first secure enabled port - typically http-listener-2
-                // disabled ports are ignored.
-                //
-                HttpData adminData = httpMap.remove("admin-listener");
-                if (null != wi) {
-                    wi.setAdminPort(adminData != null ? adminData.getPort() : -1);
-                }
-                
-                HttpData httpData = null;
-                HttpData httpsData = null;
-                
-                for(HttpData data: httpMap.values()) {
-                    if(data.isSecure()) {
-                        if(httpsData == null) {
-                            httpsData = data;
-                        }
-                    } else {
-                        if(httpData == null) {
-                            httpData = data;
-                        }
-                    }
-                    if(httpData != null && httpsData != null) {
-                        break;
-                    }
-                }
-                
-                int httpPort = httpData != null ? httpData.getPort() : -1;
-                int adminPort = null!=adminData ? adminData.getPort() : -1;
-                if (null != wi) {
-                    wi.setHttpPort(httpPort);
-                    wi.setHttpsPort(httpsData != null ? httpsData.getPort() : -1);
-                }
-                result = httpPort != -1 && adminPort != -1;
-            } catch(IllegalStateException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
-        return result;
-    }
-    
-    private static class HttpData {
-
-        private final String id;
-        private final int port;
-        private final boolean secure;
-        
-        public HttpData(String id, int port, boolean secure) {
-            this.id = id;
-            this.port = port;
-            this.secure = secure;
-        }
-        
-        public String getId() {
-            return id;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public boolean isSecure() {
-            return secure;
-        }
-        
-        @Override
-        public String toString() {
-            return "{ " + id + ", " + port + ", " + secure + " }";
-        }
-
-    }
 }

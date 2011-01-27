@@ -406,12 +406,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
     VersioningSystem getLocalHistory(File file, Boolean isFile) {
-        if (localHistory == null) return null;
+        VersioningSystem lh = localHistory;
+        if (lh == null) return null;
 
         synchronized(localHistoryFiles) {
             Boolean isManagedByLocalHistory = localHistoryFiles.get(file);
             if (isManagedByLocalHistory != null && isManagedByLocalHistory) {
-                return localHistory;
+                return lh;
             }
         }
         File folder = file;
@@ -426,16 +427,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         synchronized(localHistoryFiles) {
             Boolean isManagedByLocalHistory = localHistoryFiles.get(folder);
             if (isManagedByLocalHistory != null) {
-                return isManagedByLocalHistory ? localHistory : null;
+                return isManagedByLocalHistory ? lh : null;
             }
         }
 
-        boolean isManaged = localHistory.getTopmostManagedAncestor(folder) != null;            
+        boolean isManaged = lh.getTopmostManagedAncestor(folder) != null;
         if (isManaged) {
             putLocalHistoryFile(Boolean.TRUE, folder);
-            return localHistory;
+            return lh;
         } else {
-            isManaged = localHistory.getTopmostManagedAncestor(file) != null;
+            isManaged = lh.getTopmostManagedAncestor(file) != null;
             putLocalHistoryFile(isManaged, file, folder);
             return null;
         }        

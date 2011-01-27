@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -70,10 +71,10 @@ public final class CompilerLineConvertor implements LineConvertor {
 
     private final List<ErrorParser> parsers = new ArrayList<ErrorParser>();
 
-    public CompilerLineConvertor(CompilerSet set, ExecutionEnvironment execEnv, FileObject relativeTo) {
+    public CompilerLineConvertor(Project project, CompilerSet set, ExecutionEnvironment execEnv, FileObject relativeTo) {
 	List<CompilerFlavor> flavors = getCompilerSet(set, execEnv);
 	for(CompilerFlavor flavor : flavors) {
-	    ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(flavor, execEnv, relativeTo);
+	    ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(project, flavor, execEnv, relativeTo);
 	    if (parser != null) {
 		parsers.add(parser);
 	    }

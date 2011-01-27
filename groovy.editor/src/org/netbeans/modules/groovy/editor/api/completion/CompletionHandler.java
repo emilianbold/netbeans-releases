@@ -2834,7 +2834,8 @@ public class CompletionHandler implements CodeCompletionHandler {
         return null;
     }
 
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    @Override
+    public Set<String> getApplicableTemplates(Document d, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 

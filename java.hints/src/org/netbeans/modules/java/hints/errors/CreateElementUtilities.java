@@ -93,6 +93,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.openide.ErrorManager;
@@ -637,8 +638,15 @@ public final class CreateElementUtilities {
         ParameterizedTypeTree ptt = (ParameterizedTypeTree) parent.getLeaf();
         
         if (ptt.getType() == error) {
-            types.add(ElementKind.CLASS);
-            types.add(ElementKind.INTERFACE);
+            Tree gpt = parent.getParentPath().getLeaf();
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(gpt.getKind()) && ((ClassTree)gpt).getExtendsClause() == ptt) {
+                types.add(ElementKind.CLASS);
+            } else if (TreeUtilities.CLASS_TREE_KINDS.contains(gpt.getKind()) && ((ClassTree)gpt).getImplementsClause().contains(ptt)) {
+                types.add(ElementKind.INTERFACE);
+            } else {
+                types.add(ElementKind.CLASS);
+                types.add(ElementKind.INTERFACE);
+            }
             
             if (numTypeParameters != null) {
                 numTypeParameters[0] = ptt.getTypeArguments().size();
@@ -783,6 +791,16 @@ public final class CreateElementUtilities {
             types.add(ElementKind.FIELD);
             
             return Collections.singletonList(proposedType[0]);
+        }
+
+        Tree id = nct.getIdentifier();
+
+        if (id.getKind() == Kind.PARAMETERIZED_TYPE) {
+            id = ((ParameterizedTypeTree) id).getType();
+        }
+
+        if (id == error) {
+            return resolveType(EnumSet.noneOf(ElementKind.class), info, parent.getParentPath(), nct, offset, null, null);
         }
         
         return null;

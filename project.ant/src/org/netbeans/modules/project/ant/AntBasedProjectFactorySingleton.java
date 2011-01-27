@@ -121,16 +121,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         antBasedProjectTypes = Lookup.getDefault().lookupResult(AntBasedProjectType.class);
         antBasedProjectTypes.addLookupListener(new LookupListener() {
             public @Override void resultChanged(LookupEvent ev) {
+                Set<AntBasedProjectType> removed;
                 synchronized (AntBasedProjectFactorySingleton.class) {
                     Set<AntBasedProjectType> oldTypes = type2Projects.keySet();
-                    Set<AntBasedProjectType> removed  = new HashSet<AntBasedProjectType>(oldTypes);
-                    
+                    removed  = new HashSet<AntBasedProjectType>(oldTypes);
                     removed.removeAll(antBasedProjectTypes.allInstances());
-                    
-                    antBasedProjectTypesRemoved(removed);
-                    
                     antBasedProjectTypesByType = null;
                 }
+                antBasedProjectTypesRemoved(removed);
             }
         });
     }
@@ -424,14 +422,16 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     public @Override void saveProject(Project project) throws IOException, ClassCastException {
         Reference<AntProjectHelper> helperRef = project2Helper.get(project);
         if (helperRef == null) {
-            StringBuilder sBuff = new StringBuilder();
+            StringBuilder sBuff = new StringBuilder("#191029: no project helper for a ");
             sBuff.append(project.getClass().getName()).append('\n'); // NOI18N
             sBuff.append("argument project: ").append(project).append(" => ").append(project.hashCode()).append('\n'); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
             for (Project prj : project2Helper.keySet()) {
                 sBuff.append("    project: ").append(prj).append(" => ").append(prj.hashCode()).append('\n'); // NOI18N
             }
-            throw new ClassCastException(sBuff.toString());
+            // Happens occasionally, no clue why. Maybe someone saving project before ctor has finished?
+            LOG.warning(sBuff.toString());
+            return;
         }
         AntProjectHelper helper = helperRef.get();
         assert helper != null : "AntProjectHelper collected for " + project;

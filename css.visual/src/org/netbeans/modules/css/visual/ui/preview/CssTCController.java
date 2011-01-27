@@ -48,9 +48,11 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
+import org.openide.text.CloneableEditor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 /**
@@ -92,8 +94,10 @@ public class CssTCController implements PropertyChangeListener {
             //a TC activated -
             //check if the TC is editor TC and if so close the CSS preview and style builder
             TopComponent activated = (TopComponent) evt.getNewValue();
+            boolean isEditor = WindowManager.getDefault().isOpenedEditorTopComponent(activated);
 
-            if (isCSSTC(activated)) {
+            if (isEditor && isCssFileBound(activated)) {
+                //editor with css file has been opened
                 previewableActivated(activated);
             } else {
                 //issue 104603 workaround
@@ -102,7 +106,7 @@ public class CssTCController implements PropertyChangeListener {
                 }
 
                 //A non - CSS previewable activated in editor - close the CSS windows
-                if (WindowManager.getDefault().isOpenedEditorTopComponent(activated) && lastCSSTC != null) {
+                if (isEditor && lastCSSTC != null) {
                     notPreviewableActivated();
                 }
             }
@@ -120,14 +124,13 @@ public class CssTCController implements PropertyChangeListener {
         }
     }
 
-    private boolean isCSSTC(TopComponent tc) {
+    private boolean isCssFileBound(TopComponent tc) {
         if(tc == null) {
             return false;
         }
         FileObject fob = tc.getLookup().lookup(FileObject.class);
         if (fob != null) {
-            String mimeType = fob.getMIMEType();
-            if (mimeType != null && "text/x-css".equals(mimeType)) {
+            if ("text/x-css".equals(fob.getMIMEType())) { //NOI18N
                 return true;
             }
         }
@@ -136,13 +139,17 @@ public class CssTCController implements PropertyChangeListener {
 
     private void previewableActivated(TopComponent tc) {
         this.lastCSSTC = tc;
-        WindowManager.getDefault().findTopComponentGroup("Csswsgrp").open();
-//        CssEditorSupport.getDefault().cssTCActivated(tc);
+        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup("Csswsgrp"); //NOI18N
+        if(tcg != null) {
+            tcg.open();
+        }
     }
 
     private void notPreviewableActivated() {
         this.lastCSSTC = null;
-        WindowManager.getDefault().findTopComponentGroup("Csswsgrp").close();
-//        CssEditorSupport.getDefault().cssTCDeactivated();
+        TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup("Csswsgrp"); //NOI18N
+        if(tcg != null) {
+            tcg.close();
+        }
     }
 }

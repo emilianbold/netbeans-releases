@@ -169,9 +169,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         boolean annotations;
         try {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
+            SpecificationVersion currentUtil = getModuleInfo().getDependencyVersion("org.openide.util");
             actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
             actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
-            annotations = current == null || current.compareTo(new SpecificationVersion("7.28")) >= 0; // NOI18N
+            annotations = (current == null || current.compareTo(new SpecificationVersion("7.28")) >= 0) &&
+                    // For simplicity, conflate use of @Messages with annotations; both available in NB 7.0.
+                    (currentUtil == null || currentUtil.compareTo(new SpecificationVersion("8.10")) >= 0); // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
@@ -201,6 +204,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("CLASS_NAME", className); // NOI18N
         replaceTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         replaceTokens.put("DISPLAY_NAME_KEY", actionNameKey); // NOI18N
+        replaceTokens.put("DISPLAY_NAME", displayName); // NOI18N
         replaceTokens.put("MODE", getSelectionMode()); // NOI18N
         assert category.startsWith("Actions/");
         replaceTokens.put("CATEGORY", category.substring("Actions/".length())); // NOI18N
@@ -333,9 +337,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
+        if (!annotations) {
         // Bundle.properties for localized action name
         String bundlePath = getDefaultPackagePath("Bundle.properties", true);
         cmf.add(cmf.bundleKey(bundlePath, actionNameKey, displayName)); // NOI18N
+        }
         
         if (isToolbarEnabled() && largeIconPath != null) {
             addCreateIconOperation(cmf, largeIconPath);
@@ -433,6 +439,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             }
         }
         // create editor context menu item
+        // XXX why is this not also done using @ActionReference?
         if (edContextEnabled) {
             generateShadowWithOrderAndSeparator(edContextType, shadow,
                     dashedFqClassName, instanceFullPath, edContextSeparatorBefore,

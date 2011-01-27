@@ -30,12 +30,14 @@
  */
 package org.netbeans.modules.websvc.rest.model.api;
 
+import java.util.Map;
+
 /**
  *
  * @author Peter Liu
  */
 public interface HttpMethod extends RestMethodDescription {
-
+    
     public String getType();
 
     public String getConsumeMime();
@@ -43,5 +45,11 @@ public interface HttpMethod extends RestMethodDescription {
     public String getProduceMime();
     
     public String getPath();
+    
+    /**
+     * @return pair name of parameter annotated @QueryParam and its 
+     * @DefaultValue if any  
+     */
+    public Map<String,String> getQueryParams();
     
 }

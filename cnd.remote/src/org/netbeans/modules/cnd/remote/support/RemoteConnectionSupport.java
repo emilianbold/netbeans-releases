@@ -60,6 +60,7 @@ public abstract class RemoteConnectionSupport {
     private int exit_status;
     private boolean cancelled = false;
     private boolean failed = false;
+    private boolean connected = true;
     private String failureReason;
 
     public RemoteConnectionSupport(ExecutionEnvironment env) {
@@ -69,8 +70,10 @@ public abstract class RemoteConnectionSupport {
         RemoteUtil.LOGGER.log(Level.FINEST, "RCS<Init>: Starting {0} on {1}", new Object[]{getClass().getName(), executionEnvironment});
 
         if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            connected = false;
             try {
                 ConnectionManager.getInstance().connectTo(executionEnvironment);
+                connected = true;
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.log(Level.WARNING, "RCS<Init>: Got {0} [{1}]", new Object[]{ex.getClass().getSimpleName(), ex.getMessage()});
                 RemoteUtil.LOGGER.log(Level.FINE, "Caused by:", ex);
@@ -109,6 +112,10 @@ public abstract class RemoteConnectionSupport {
     //TODO (execution): ???
     public boolean isCancelled() {
         return cancelled;
+    }
+    
+    public boolean isConnected(){
+        return connected;
     }
     
     //TODO (execution): IMPLEMENT

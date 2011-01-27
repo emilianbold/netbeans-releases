@@ -349,8 +349,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         File baseFolder = null;
         File libFolder = null;
         if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
-            baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
-            libFolder = new File(baseFolder, impl.getName());
+            baseFolder = FileUtil.normalizeFile(new File(URI.create(area.getLocation().toExternalForm())).getParentFile());
+            libFolder = FileUtil.normalizeFile(new File(baseFolder, impl.getName()));
         }
         FileChooser chooser = new FileChooser(baseFolder, libFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
@@ -409,15 +409,28 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 NbBundle.getMessage(J2SEVolumeCustomizer.class, "CTL_AddJavadocURLMessage"),
                 NbBundle.getMessage(J2SEVolumeCustomizer.class, "CTL_AddJavadocURLTitle"));
         if (DialogDisplayer.getDefault().notify(input) == DialogDescriptor.OK_OPTION) {
-            try {
-                String value = input.getInputText();
-                URL url = new URL(value);
-                model.addResource(url);
-                content.setSelectedIndex(model.getSize() - 1);
-            } catch (MalformedURLException mue) {
-                DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                        NbBundle.getMessage(J2SEVolumeCustomizer.class, "CTL_InvalidURLFormat"),
-                        DialogDescriptor.ERROR_MESSAGE));
+
+            final String value = input.getInputText();
+            if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
+                try {
+                    final URI uri = new URI(value);
+                    model.addResource(uri);
+                    content.setSelectedIndex(model.getSize() - 1);
+                } catch (URISyntaxException use) {
+                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                    NbBundle.getMessage(J2SEVolumeCustomizer.class, "CTL_InvalidURLFormat"),
+                    DialogDescriptor.ERROR_MESSAGE));
+                }
+            } else {
+                try {
+                    final URL url = new URL(value);
+                    model.addResource(url);
+                    content.setSelectedIndex(model.getSize() - 1);
+                } catch (MalformedURLException mue) {
+                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                    NbBundle.getMessage(J2SEVolumeCustomizer.class, "CTL_InvalidURLFormat"),
+                    DialogDescriptor.ERROR_MESSAGE));
+                }
             }
         }
     }//GEN-LAST:event_addURLButtonActionPerformed

@@ -100,6 +100,22 @@ public class ImportClassTest extends HintsTestBase {
     public void testImportHint86932() throws Exception {
         performTestDoNotPerform("ImportTest86932", 6, 25);
     }
+
+    public void testImportHint194018a() throws Exception {
+        performTest("ImportInImport", "java.util.Map", 3, 8);
+    }
+
+    public void testImportHint194018b() throws Exception {
+        performTest("ImportInImport", "java.util.Map", 4, 8);
+    }
+
+    public void testImportHint194018c() throws Exception {
+        performTest("ImportInImport", "java.util.Collections", 5, 8);
+    }
+
+    public void testImportHint194018d() throws Exception {
+        performTest("ImportInImport", "java.util.Collections", 6, 8);
+    }
     
     @Override
     protected String testDataExtension() {

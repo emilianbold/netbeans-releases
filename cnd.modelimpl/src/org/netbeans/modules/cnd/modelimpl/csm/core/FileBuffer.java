@@ -48,10 +48,11 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.openide.filesystems.FileObject;
 
 /**
  * Represents the file state change event.
- * This event occures when file is changed it's state
+ * This event occurs when file is changed it's state
  * from saved to edited or vice versa.
  * @author Vladimir Kvashin
  */
@@ -59,6 +60,11 @@ public interface FileBuffer extends APTFileBuffer {
 
     public void addChangeListener(ChangeListener listener);
     public void removeChangeListener(ChangeListener listener);
+
+    public boolean isFileBased();
+
+    public FileObject getFileObject();
+    public CharSequence getUrl();
     
     public String getText(int start, int end) throws IOException;
     
@@ -66,7 +72,7 @@ public interface FileBuffer extends APTFileBuffer {
     
     public long lastModified();
 
-    public int getLineByOffset(int offset) throws IOException;
+    int[] getLineColumnByOffset(int offset) throws IOException;
 
-    public int getStartLineOffset(int line) throws IOException;
+    int getOffsetByLineColumn(int line, int column) throws IOException;
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -85,6 +85,7 @@ const char *PlatformLauncher::REG_PROXY_KEY = "Software\\Microsoft\\Windows\\Cur
 const char *PlatformLauncher::REG_PROXY_ENABLED_NAME = "ProxyEnable";
 const char *PlatformLauncher::REG_PROXY_SERVER_NAME = "ProxyServer";
 const char *PlatformLauncher::REG_PROXY_OVERRIDE_NAME = "ProxyOverride";
+const char *PlatformLauncher::REG_PAC_FILE = "AutoConfigURL";
 const char *PlatformLauncher::PROXY_DIRECT = "DIRECT";
 const char *PlatformLauncher::HEAP_DUMP_PATH =  "\\var\\log\\heapdump.hprof";
 const char *PlatformLauncher::RESTART_FILE_PATH =  "\\var\\restart";
@@ -604,11 +605,17 @@ bool PlatformLauncher::findProxiesFromRegistry(string &proxy, string &nonProxy, 
     }
 
     if (!proxyEnable) {
-        logMsg("Proxy disabled");
-        proxy = PROXY_DIRECT;
+        logMsg("Manual Proxy disabled");
+        string pacFile;
+        if (getStringFromRegistry(HKEY_CURRENT_USER, REG_PROXY_KEY, REG_PAC_FILE, pacFile)) {
+            logMsg("AutoConfigURL found.");
+            proxy = "PAC " + pacFile;
+        } else {
+            proxy = PROXY_DIRECT;
+        }
         return true;
     }
-
+    
     string proxyServer;
     if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_PROXY_KEY, REG_PROXY_SERVER_NAME, proxyServer)) {
         return false;

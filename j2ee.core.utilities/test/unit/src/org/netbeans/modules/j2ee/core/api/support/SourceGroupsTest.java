@@ -50,8 +50,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.core.api.support.java.TestUtilities;
+import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -69,6 +71,7 @@ public class SourceGroupsTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        MockLookup.setLayersAndInstances(new J2SEProjectType());
         super.setUp();
         TestUtilities.setCacheFolder(getWorkDir());
         FileObject projectPath = FileUtil.toFileObject(new File(getDataDir(), JAVA_APP_NAME));

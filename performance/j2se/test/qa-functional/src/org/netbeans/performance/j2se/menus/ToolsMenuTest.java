@@ -97,7 +97,9 @@ public class ToolsMenuTest extends MainMenuTest {
     
     @Override
     public void prepare() {
-        dataObjectNode.select();
+        if (dataObjectNode != null) {
+            dataObjectNode.select();
+        }
     }
     
     private void testToolsMenu(String file) {

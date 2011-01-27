@@ -55,7 +55,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 public final class MakeProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
-    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
+    public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project-private/1"; // NOI18N
@@ -66,6 +66,7 @@ public final class MakeProjectType implements AntBasedProjectType {
     public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
     public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
+    public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
     
     /**
      * Do nothing, just a service.

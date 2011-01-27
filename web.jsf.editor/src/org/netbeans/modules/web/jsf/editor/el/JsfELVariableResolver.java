@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.web.jsf.editor.el;
 
-import com.sun.jmx.remote.internal.ArrayQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -142,7 +141,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
                     //one level - works only if xhtml is top level
                     Result parseResult = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if (parseResult instanceof HtmlParserResult) {
-                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) parseResult);
+                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) parseResult, resultIterator.getSnapshot());
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(offset, false);
                         result.addAll(contexts);
                     }

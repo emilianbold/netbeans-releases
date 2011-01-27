@@ -69,7 +69,7 @@ public class HeaderSourceFileFilter extends SourceFileFilter {
                 return true;
             }
             // headers could be without extensions
-            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+            if (FileUtil.getExtension(f.getName()).length() == 0) {
                 return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(f));
             } else {
                 return super.accept(f);

@@ -46,6 +46,7 @@ package org.netbeans.lib.editor.hyperlink;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -379,7 +380,22 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
 
     public void keyPressed(KeyEvent e) {
-       //ignored
+        HyperlinkType type = getHyperlinkType(e);
+        Point mousePos = component.getMousePosition();
+
+        if (type != null && mousePos != null) {
+            int position = component.viewToModel(mousePos);
+
+            if (position < 0) {
+                unHyperlink(true);
+
+                return;
+            }
+
+            performHyperlinking(position, type);
+        } else {
+            unHyperlink(true);
+        }
     }
 
     public void mouseReleased(MouseEvent e) {

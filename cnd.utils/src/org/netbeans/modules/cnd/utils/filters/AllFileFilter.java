@@ -63,7 +63,7 @@ public class AllFileFilter extends SourceFileFilter {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_FILEFILTER"); // NOI18N
     }
 
 

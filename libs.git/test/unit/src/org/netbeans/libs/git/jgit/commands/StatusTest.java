@@ -45,6 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuilder;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -292,6 +295,40 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, subFolder2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(subFolder2).isFolder());
         assertNull(statuses.get(file6));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file2));
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+        
+        statuses = getClient(workDir).getStatus(new File[] { file2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertNull(statuses.get(folder));
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder, file2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder, file2, file3 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file4));
+
+        statuses = getClient(workDir).getStatus(new File[] { folder, file2, file3, file4 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file3, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file4, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
     }
 
     public void testIgnoredFilesAreNotTracked () throws Exception {
@@ -367,6 +404,63 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(m.isCanceled());
         assertEquals(1, m.count);
         assertEquals(null, exs[0]);
+    }
+
+    public void testConflictScan () throws Exception {
+        GitClient client = getClient(workDir);
+        File f = new File(workDir, "f");
+        f.createNewFile();
+        File f2 = new File(workDir, "f2");
+        f2.createNewFile();
+        File[] roots = new File[] { f, f2 };
+        add(roots);
+        commit(roots);
+        Map<File, GitStatus> conflicts = client.getConflicts(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(0, conflicts.size());
+
+        DirCache cache = repository.lockDirCache();
+        try {
+            DirCacheEntry e = cache.getEntry("f");
+            DirCacheBuilder builder = cache.builder();
+            DirCacheEntry toAdd = new DirCacheEntry("f", 1);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+            toAdd = new DirCacheEntry("f", 2);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+
+            e = cache.getEntry("f2");
+            toAdd = new DirCacheEntry("f2", 1);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+            toAdd = new DirCacheEntry("f2", 2);
+            toAdd.setFileMode(e.getFileMode());
+            toAdd.setObjectId(e.getObjectId());
+            builder.add(toAdd);
+            builder.finish();
+            builder.commit();
+        } finally {
+            cache.unlock();
+        }
+        conflicts = client.getConflicts(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, conflicts.size());
+        conflicts = client.getConflicts(new File[] { f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, conflicts.size());
+        conflicts = client.getConflicts(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, conflicts.size());
+    }
+    
+    public void testIgnoredInExlude () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "hi, i am ignored");
+        File exclude = new File(workDir, ".git/info/exclude");
+        exclude.getParentFile().mkdirs();
+        write(exclude, "f");
+        GitStatus st = getClient(workDir).getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f);
+        assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
     }
 
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {

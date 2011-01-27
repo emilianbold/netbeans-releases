@@ -296,22 +296,37 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     private List<CsmUID<CsmOffsetableDeclaration>> getDeclarationsByOffset(int offset){
         List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         OffsetSortedKey key = new OffsetSortedKey(offset+1,0); // NOI18N
-        while(true) {
+        outer : while(true) {
             SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
             if (head.isEmpty()) {
                 break;
             }
             OffsetSortedKey last = head.lastKey();
-            if (last == null) {
-                break;
-            }
-            CsmUID<CsmOffsetableDeclaration> aUid = declarations.get(last);
-            int from = UIDUtilities.getStartOffset(aUid);
-            int to = UIDUtilities.getEndOffset(aUid);
-            if (from <= offset && offset <= to) {
-                res.add(0, aUid);
-                key = last;
-            } else {
+            while(true) {
+                if (last == null) {
+                    break outer;
+                }
+                CsmUID<CsmOffsetableDeclaration> aUid = declarations.get(last);
+                int from = UIDUtilities.getStartOffset(aUid);
+                int to = UIDUtilities.getEndOffset(aUid);
+                if (from <= offset && offset <= to) {
+                    res.add(0, aUid);
+                    key = last;
+                } else {
+                    SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> headMap = head.headMap(last);
+                    if(!headMap.isEmpty()) {
+                        OffsetSortedKey higherKey = headMap.lastKey();
+                        if(higherKey != null) {
+                            CsmUID<CsmOffsetableDeclaration> higher = head.get(higherKey);
+                            int higherTo = UIDUtilities.getEndOffset(higher);
+                            if(higherTo >= to) {
+                                last = higherKey;
+                                continue;
+                            }
+                        }
+                    }
+                    break outer;
+                }
                 break;
             }
         }

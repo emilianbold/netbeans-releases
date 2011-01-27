@@ -156,7 +156,7 @@ public class TaskCache {
             PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8")); //NOI18N
             
             for (T err : errors) {
-                pw.print(convertor.getKind(err));
+                pw.print(convertor.getKind(err).name());
                 pw.print(':'); //NOI18N
                 pw.print(convertor.getLineNumber(err));
                 pw.print(':'); //NOI18N
@@ -260,8 +260,13 @@ public class TaskCache {
         while ((line = pw.readLine()) != null) {
             String[] parts = line.split(":"); //NOI18N
 
-            ErrorKind kind = ErrorKind.valueOf(parts[0]);
-
+            ErrorKind kind = null;
+            try {
+                kind = ErrorKind.valueOf(parts[0]);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(Level.FINE, "Invalid ErrorKind: {0}", line);    //NOI18N
+            }
+            
             if (kind == null) {
                 continue;
             }

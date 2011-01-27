@@ -44,9 +44,6 @@
 
 package org.netbeans.api.java.source;
 
-import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.util.Log;
@@ -73,6 +70,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -221,7 +219,7 @@ public final class JavaSource {
     }
     
     private static Map<FileObject, Reference<JavaSource>> file2JavaSource = new WeakHashMap<FileObject, Reference<JavaSource>>();
-    private static final String[] supportedMIMETypes = new String[] {"application/x-class-file", "text/x-java"};
+    private static final String[] supportedMIMETypes = new String[] {ClassParser.MIME_TYPE, JavacParser.MIME_TYPE};
     
     /**
      * Returns a {@link JavaSource} instance associated to given {@link org.openide.filesystems.FileObject},
@@ -471,7 +469,8 @@ public final class JavaSource {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             final Snapshot snapshot = resultIterator.getSnapshot();
-            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
+            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType()) ||
+                ClassParser.MIME_TYPE.equals(snapshot.getMimeType())) {
                 Parser.Result result = resultIterator.getParserResult();
                 if (result == null) {
                     //Deleted file of other parser critical issue
@@ -649,67 +648,43 @@ public final class JavaSource {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
-        if (sources.isEmpty()) {
-            throw new IllegalStateException ("Cannot run modification task without  file.");    //NOI18N
-        }        
-        else {
-            final ModificationResult result = new ModificationResult(this);
-            final ElementOverlay overlay = new ElementOverlay();
-            long start = System.currentTimeMillis();
-            try {
-                final JavacParser[] theParser = new JavacParser[1];
-                final UserTask _task = new ClasspathInfoTask(this.classpathInfo) {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        final Snapshot snapshot = resultIterator.getSnapshot();
-                        if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
-                            Parser.Result parserResult = resultIterator.getParserResult();
-                            final CompilationController cc = CompilationController.get(parserResult);
-                            assert cc != null;
-                            final WorkingCopy copy = new WorkingCopy (cc.impl, overlay);
-                            copy.setJavaSource(JavaSource.this);
-                            task.run (copy);
-                            final JavacTaskImpl jt = copy.impl.getJavacTask();
-                            Log.instance(jt.getContext()).nerrors = 0;
-                            theParser[0] = copy.impl.getParser();
-                            final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
-                            if (diffs != null && diffs.size() > 0) {
-                                result.diffs.put(copy.getFileObject(), diffs);
-                            }
-                        }
-                    }
-                    
-                    @Override 
-                    public String toString () {
-                        return this.getClass().getName()+"["+task.getClass().getName()+"]";     //NOI18N
-                    }
-                };                
-                ParserManager.parse(sources, _task);
-                if (theParser[0] != null) {
-                    theParser[0].invalidate();
+        final ModificationResult result = new ModificationResult(this);
+        final ElementOverlay overlay = new ElementOverlay();
+        long start = System.currentTimeMillis();
+        final JavacParser[] theParser = new JavacParser[1];
+
+        Task<CompilationController> inner = new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController cc) throws Exception {
+                final WorkingCopy copy = new WorkingCopy(cc.impl, overlay);
+                copy.setJavaSource(JavaSource.this);
+                if (sources.isEmpty()) {
+                    //runUserActionTask for source-less JavaSources does not require toPhase
+                    //so automatically initializing also for runModificationTask:
+                    copy.toPhase(Phase.PARSED);
                 }
-            } catch (final ParseException pe) {
-                final Throwable rootCase = pe.getCause();
-                if (rootCase instanceof CompletionFailure) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(rootCase);
-                    throw ioe;
+                task.run(copy);
+                final JavacTaskImpl jt = copy.impl.getJavacTask();
+                Log.instance(jt.getContext()).nerrors = 0;
+                theParser[0] = copy.impl.getParser();
+                final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
+                if (diffs != null && diffs.size() > 0) {
+                    final FileObject file = copy.getFileObject();
+                    result.diffs.put(file != null ? file : FileUtil.createMemoryFileSystem().getRoot().createData("temp", "java"), diffs);
                 }
-                else if (rootCase instanceof RuntimeException) {
-                    throw (RuntimeException) rootCase;
-                }
-                else {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(rootCase);
-                    throw ioe;
-                }                
             }
-            if (sources.size() == 1) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
-                    new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
-            }            
-            return result;
-        }        
+        };
+        
+        runUserActionTask(inner, true);
+        
+        if (theParser[0] != null) {
+            theParser[0].invalidate();
+        }
+        if (sources.size() == 1) {
+            Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
+                new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
+        }            
+        return result;
     }
 
     /**
@@ -821,16 +796,6 @@ public final class JavaSource {
         @Override
         public @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used) {
             return SourceUtils.generateReadableParameterName(typeName, used);
-        }
-
-        @Override
-        public AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type) {
-            return make.AnnotatedType(annotations, type);
-        }
-
-        @Override
-        public AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t) {
-            return make.TypeAnnotation(t);
         }
 
         @Override

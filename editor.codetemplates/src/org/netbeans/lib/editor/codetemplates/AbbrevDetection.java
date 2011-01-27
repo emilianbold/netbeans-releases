@@ -66,10 +66,14 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Acceptor;
@@ -83,6 +87,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -111,7 +116,6 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
             = "abbrev-ignore-modification"; // NOI18N
 
-    private static final String COMPLETION_VISIBLE = "completion-visible"; // NOI18N
     private static final String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; //NOI18N
 
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
@@ -304,7 +308,7 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     }
     
     private boolean isAbbrevDisabled() {
-        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component) || Boolean.TRUE.equals(component.getClientProperty(COMPLETION_VISIBLE));
+        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component);
     }
     
     private void checkExpansionKeystroke(KeyEvent evt) {
@@ -512,13 +516,16 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
         CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
         if (ct != null) {
             if (ct.getContexts() == null || ct.getContexts().isEmpty() || accept(ct, CodeTemplateManagerOperation.getTemplateFilters(component, abbrevStartOffset))) {
+                Document doc = component.getDocument();
+                sendUndoableEdit(doc, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
                 try {
                     // Remove the abbrev text
-                    Document doc = component.getDocument();
                     doc.remove(abbrevStartOffset, abbrev.length());
+                    ct.insert(component);
                 } catch (BadLocationException ble) {
+                } finally {
+                    sendUndoableEdit(doc, CloneableEditorSupport.END_COMMIT_GROUP);
                 }
-                ct.insert(component);
                 return true;
             }
         }
@@ -532,5 +539,15 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
             }
         }
         return true;
+    }
+
+    private static void sendUndoableEdit(Document d, UndoableEdit ue) {
+        if(d instanceof AbstractDocument) {
+            UndoableEditListener[] uels = ((AbstractDocument)d).getUndoableEditListeners();
+            UndoableEditEvent ev = new UndoableEditEvent(d, ue);
+            for(UndoableEditListener uel : uels) {
+                uel.undoableEditHappened(ev);
+            }
+        }
     }
 }

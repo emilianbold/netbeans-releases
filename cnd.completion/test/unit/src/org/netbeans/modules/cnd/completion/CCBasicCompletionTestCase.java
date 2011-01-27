@@ -343,4 +343,14 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         // IZ#173049 : Incorrect type resolution for template class functions
         performTest("iz173049.cc", 16, 16);
     }
+
+    public void testBug188804() throws Exception {
+        // Bug 188804 - No completion after for
+        performTest("bug188804.cpp", 6, 5, "for");
+    }
+    
+    public void testBug188804_2() throws Exception {
+        // Bug 188804 - No completion after for
+        performTest("bug188804.cpp", 6, 5, "if");
+    }
 }

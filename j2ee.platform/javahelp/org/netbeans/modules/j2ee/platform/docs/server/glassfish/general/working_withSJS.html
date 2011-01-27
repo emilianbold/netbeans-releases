@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Working with the GlassFish Server</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+<body>
+    <h2>Working with the GlassFish Server</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>The following table shows how to work with the GlassFish Server.</p>
+    <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+        process step. The right column contains detail information to accomplish that process.">
+        <tr valign="top"> 
+            <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
+            <b>Start the server</b></td>
+            <td> 
+                <ol>
+                    <li><a href="register_appserver.html">Register</a> the GlassFish application server with the IDE.</li>
+                    <li>In the Services window, right-click the server instance and select Start.</li>
+                </ol>
+            </td>
+        </tr>
+        <tr> 
+            <td colspan="2"> 
+                <hr align="center" width="80%">
+            </td>
+        </tr>
+        <tr valign="top"> 
+            <td align="center"><img src="../images/circle2.gif" alt="Number one"><br>
+            <b>Creating and deploying enterprise applications </b></td>
+            <td> 
+                <ol>
+                    <li>Create the project for the <a href="../../../enterprise/general/ent_app_creating.html">enterprise application</a>.</li>
+                    <li>Create the projects for any <a href="../../../ejb/editing/create_ejb_project.html">EJB modules</a>.</li>
+                    <li>Create the projects for any <a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/create/about/create_webapps_proj.html">web modules</a>.</li>
+                    <li><a href="../../../enterprise/general/add_modules_to_ent_app.html">Add the modules to the enterprise application</a>.</li>
+                    <li><a href="../../../enterprise/general/ent_app_deploy.html">Deploy the enterprise application</a>.</li>
+                    <li><a href="../../../server/server_remove.html">Remove the application</a> from the GlassFish application server.</li>
+                </ol>
+            </td>
+        </tr>
+        <tr> 
+            <td colspan="2"> 
+                <hr align="center" width="80%">
+            </td>
+        </tr>
+        <tr valign="top"> 
+            <td align="center"><img src="../images/circle3.gif" alt="Number one"><br>
+            <b>Configuring the server</b></td>
+            <td> 
+                <ol>
+                    <!--<li><a href="JVM.html">Modify the JVM properties</a> of the Sun Java System Application Server.</li>-->
+                    <li>Add your <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/adddriver.html">database drivers</a>.</li>
+                    <li>Create a <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">connection to a database</a>.</li>
+                    <li>Set up a <a href="def_connpool.html">connection pool</a> for the database.</li>
+                    <li><a href="register_resource.html">Register</a> the connection pool.</li>
+                    <li>Create a <a href="def_jdbcresource.html">JDBC resource</a> for the connection pool.</li>
+                    <li><a href="register_resource.html">Register</a> the JDBC resource.</li>
+                </ol>
+            </td>
+        </tr>
+        <tr> 
+            <td colspan="2"> 
+                <hr align="center" width="80%">
+            </td>
+        </tr>
+        
+    </table>
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>    <a href="sjs_quickref.html">GlassFish Application Server Tasks: Quick Reference</a> </dd>
+        <dd>    <a href="JVM.html">Modifying JVM Properties of the Sun Java System Application Server</a> </dd>
+        <dd>    <a href="../../../server/server_remove.html">Removing an Application from a Server</a></dd>
+    </dl>
+
+    <hr>
+
+    <small><a href="../../../credits.html">Legal Notices</a></small> 
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table>
+
+    </body>
+
+</html>

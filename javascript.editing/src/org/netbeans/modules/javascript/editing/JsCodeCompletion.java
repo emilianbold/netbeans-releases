@@ -2064,7 +2064,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         return html;
     }
 
-    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
+    @Override
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 

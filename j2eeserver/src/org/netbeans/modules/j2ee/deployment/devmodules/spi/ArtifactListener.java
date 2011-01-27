@@ -70,18 +70,21 @@ public interface ArtifactListener {
          * data sources, message queues etc.
          */
         private final boolean serverResource;
+        
+        private final String relocation;
 
-        public Artifact(File file, File distributionPath, boolean library,
-                boolean relocatable, boolean resource) {
+        private Artifact(File file, File distributionPath, boolean library,
+                boolean relocatable, boolean resource, String relocation) {
             this.file = file;
             this.distributionPath = distributionPath;
             this.library = library;
             this.relocatable = relocatable;
             this.serverResource = resource;
+            this.relocation = relocation;
         }
 
         public static Artifact forFile(File file) {
-            return new Artifact(FileUtil.normalizeFile(file), null, false, false, false);
+            return new Artifact(FileUtil.normalizeFile(file), null, false, false, false, null);
         }
 
         public File getFile() {
@@ -90,7 +93,7 @@ public interface ArtifactListener {
 
         public Artifact referencedLibrary() {
             return new Artifact(this.file, this.distributionPath, true,
-                    this.relocatable, this.isServerResource());
+                    this.relocatable, this.isServerResource(), this.relocation);
         }
 
         public boolean isReferencedLibrary() {
@@ -99,7 +102,7 @@ public interface ArtifactListener {
 
         public Artifact distributionPath(File distributionPath) {
             return new Artifact(this.file, distributionPath, this.library,
-                    this.relocatable, this.isServerResource());
+                    this.relocatable, this.isServerResource(), this.relocation);
         }
 
         public File getDistributionPath() {
@@ -108,16 +111,31 @@ public interface ArtifactListener {
 
         public Artifact relocatable() {
             return new Artifact(this.file, this.distributionPath, this.library,
-                    true, this.isServerResource());
+                    true, this.isServerResource(), null);
         }
+        
+        /**
+         * 
+         * @param path
+         * @return 
+         * @since 1.75
+         */
+        public Artifact relocatable(String path) {
+            return new Artifact(this.file, this.distributionPath, this.library,
+                    true, this.isServerResource(), path);
+        }        
 
         public boolean isRelocatable() {
             return relocatable;
         }
+        
+        public String getRelocation() {
+            return relocation;
+        }
 
         public Artifact serverResource() {
             return new Artifact(this.file, this.distributionPath, this.library,
-                    this.relocatable, true);
+                    this.relocatable, true, this.relocation);
         }
 
         public boolean isServerResource() {

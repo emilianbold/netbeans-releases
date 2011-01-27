@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 /**
  * Service that provides UI for macro expansion.
  *
- * @author Nick Krasilnikov
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider.class)
 public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProvider {

@@ -47,6 +47,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import nu.validator.htmlparser.common.TransitionHandler;
 import nu.validator.htmlparser.impl.CoalescingTreeBuilder;
 import nu.validator.htmlparser.impl.ElementName;
@@ -67,8 +71,18 @@ import org.xml.sax.SAXException;
  */
 public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TransitionHandler {
 
-    public static boolean DEBUG = false;
-    public static boolean DEBUG_STATES = false;
+    static final Logger LOGGER = Logger.getLogger(AstNodeTreeBuilder.class.getName());
+    static boolean LOG, LOG_FINER;
+
+    static {
+        initLogLevels();
+    }
+
+    private static void initLogLevels() {
+        LOG = LOGGER.isLoggable(Level.FINE);
+        LOG_FINER = LOGGER.isLoggable(Level.FINER);
+    }
+
     private final AstNodeFactory factory;
     private AstNode root;
     //element's internall offsets
@@ -100,8 +114,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected void elementPopped(String namespace, String name, AstNode t) throws SAXException {
-        if (DEBUG) {
-            System.out.println("-" + t + (t.isVirtual() ? "[virtual]" : "") + "; stack:" + dumpStack()); //NOI18N
+        if (LOG) {
+            LOGGER.fine(String.format("- %s %s; stack: %s", t, t.isVirtual() ? "[virtual]" : "", dumpStack())); //NOI18N
         }
 
 
@@ -109,17 +123,24 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         //this doesn't need to be true. In such case drop all the nodes from top
         //of the stack until we find t node.
         AstNode top = null;
+        Stack<AstNode> removedFromStack = new Stack<AstNode>();
         while(!stack.isEmpty()) {
             top = stack.pop();
+            removedFromStack.push(top);
             if(top == t) {
                 break;
             }
-            //if we got here the parse tree is broken, so just try not to throw exceptions :-)
         }
-        if(top != t) {
-            throw new IllegalStateException("Stack's top " + top + " is not the same as " + t);//NOI18N
+        if(t != top) {
+            //weird, there doesn't seem to be the 't' node pushed
+            //better put all the removed nodes back to the stack
+            LOGGER.info(String.format("The node %s has been popped but not previously pushed!", t));
+            while(!removedFromStack.isEmpty()) {
+                stack.push(removedFromStack.pop());
+            }
         }
-        
+
+        assert !stack.isEmpty();
 
         AstNode match = null;
         for (AstNode n : physicalEndTagsQueue) {
@@ -171,8 +192,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
         if (stack.size() == 1 /* only root tag in the stack */ && !physicalEndTagsQueue.isEmpty()) {
             //there are no nodes on the stack, but there are some physical endtags left
-            if (DEBUG) {
-                System.out.println("LEFT in stack of end tags: " + dumpEndTags());//NOI18N
+            if (LOG) {
+                LOGGER.fine(String.format("LEFT in stack of end tags: %s", dumpEndTags()));//NOI18N
             }
             //attach all the stray end tags to the currently popped node
             for (ListIterator<AstNode> leftEndTags = physicalEndTagsQueue.listIterator(); leftEndTags.hasNext();) {
@@ -190,8 +211,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     @Override
     protected void elementPushed(String namespace, String name, AstNode t) throws SAXException {
 
-        if (DEBUG) {
-            System.out.println("+" + t + "; stack:" + dumpStack());//NOI18N
+        if (LOG) {
+            LOGGER.fine(String.format("+ %s %s; stack: %s", t, t.isVirtual() ? "[virtual]" : "", dumpStack())); //NOI18N
         }
 
         stack.push(t);
@@ -227,8 +248,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     }
 
     public void transition(int from, int to, boolean reconsume, int offset) throws SAXException {
-        if (DEBUG_STATES) {
-            System.out.println(Util.TOKENIZER_STATE_NAMES[from] + " -> " + Util.TOKENIZER_STATE_NAMES[to] + " at " + offset);//NOI18N
+        if (LOG_FINER) {
+            LOGGER.finer(String.format("%s -> %s at %s", Util.TOKENIZER_STATE_NAMES[from], Util.TOKENIZER_STATE_NAMES[to], offset));//NOI18N
         }
         this.offset = offset;
         int tag_gt_offset = -1;
@@ -238,7 +259,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case NON_DATA_END_TAG_NAME:
-                if(from == RAWTEXT_RCDATA_LESS_THAN_SIGN) {
+                if(from == RAWTEXT_RCDATA_LESS_THAN_SIGN
+                        || from == SCRIPT_DATA_LESS_THAN_SIGN) {
                     //end tag in RAW text (like <title> content)
                     tag_lt_offset = offset - 1; //-1 is here because we are already at the tag name just after the &lt; char
                 }
@@ -253,6 +275,7 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
             case RCDATA:
+            case SCRIPT_DATA:
             case DATA:
                 switch (from) {
                     case SELF_CLOSING_START_TAG:
@@ -329,8 +352,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     public void startTag(ElementName en, HtmlAttributes ha, boolean bln) throws SAXException {
-        if (DEBUG) {
-            System.out.println("startTag " + en.name + "(" + tag_lt_offset + " - ?)");//NOI18N
+        if (LOG) {
+            LOGGER.fine(String.format("open tag %s at %s", en.name, tag_lt_offset));//NOI18N
         }
         
         startTag = en;
@@ -340,14 +363,14 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     public void endTag(ElementName en) throws SAXException {
-        if (DEBUG) {
-            System.out.print("endTag " + en.name + "(" + tag_lt_offset + " - ?)");//NOI18N
+        if (LOG) {
+            LOGGER.fine(String.format("close tag %s at %s", en.name, tag_lt_offset));//NOI18N
         }
 
         physicalEndTagsQueue.add(currentTag = factory.createEndTag(en.name, tag_lt_offset, -1));
 
-        if (DEBUG) {
-            System.out.println("end tags: " + dumpEndTags());//NOI18N
+        if (LOG) {
+            LOGGER.fine(String.format("end tags: %s", dumpEndTags()));//NOI18N
         }
 
         super.endTag(en);
@@ -381,8 +404,14 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected AstNode createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
-        if(DEBUG) {
-            System.out.println("createElement(" + name + ")");//NOI18N
+        if(name == null) {
+            //Bug 194537 - [70cat] NullPointerException at org.netbeans.editor.ext.html.parser.api.AstNode.getNameWithoutPrefi
+            //just log the context, the NPE will be thrown at the original location so the exception reporter will reopen the issue
+            LOGGER.log(Level.INFO, "null name argument passed to createElement(...), current stack: " + dumpStack(), new IllegalArgumentException());
+        }
+
+        if(LOG) {
+            LOGGER.fine(String.format("createElement(%s)", name));//NOI18N
         }
 
         AstNode node;
@@ -402,8 +431,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected AstNode createHtmlElementSetAsRoot(HtmlAttributes attributes) throws SAXException {
-        if (DEBUG) {
-            System.out.println("+HTML ROOT");//NOI18N
+        if (LOG) {
+            LOGGER.fine("createHtmlElementSetAsRoot()");//NOI18N
         }
 
         AstNode rootTag = createElement("http://www.w3.org/1999/xhtml", "html", attributes);//NOI18N
@@ -466,6 +495,28 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
             node.setAttribute(attr);
         }
+    }
+
+    //for unit tests
+    static void setLoggerLevel(Level level) {
+        LOGGER.setLevel(level);
+        LOGGER.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                System.err.println(record.getMessage());
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+
+        });
+        initLogLevels();
     }
 
     private static class AttrInfo {

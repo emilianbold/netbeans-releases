@@ -102,7 +102,9 @@ public class RemoteProjectSupport {
         }
         // the project itself
         Set<File> sourceFilesAndDirs = new HashSet<File>();
-        sourceFilesAndDirs.add(baseDir);
+        if (!conf.isMakefileConfiguration()) {
+            sourceFilesAndDirs.add(baseDir);
+        }
 
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         if (mcs == null) {

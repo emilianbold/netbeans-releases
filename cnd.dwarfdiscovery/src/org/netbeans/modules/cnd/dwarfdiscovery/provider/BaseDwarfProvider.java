@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,6 +75,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
@@ -213,9 +215,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         int res = 0;
         int sunStudio = 0;
         Dwarf dump = null;
-        String commonRoot = null;
         Position position = null;
         List<String> errors = new ArrayList<String>();
+        List<String> searchPaths = new ArrayList<String>();
+        TreeMap<String,AtomicInteger> roots = new TreeMap<String,AtomicInteger>();
         int foundDebug = 0;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
@@ -233,11 +236,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
-                    path = CndFileUtils.normalizeAbsolutePath(path);
+                    path = DiscoveryUtils.normalizeAbsolutePath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
                         if (fileFinder != null) {
-                            fileFinder = CndFileUtils.normalizeAbsolutePath(fileFinder);
+                            fileFinder = DiscoveryUtils.normalizeAbsolutePath(fileFinder);
                             if (!CndFileUtils.isExistingFile(fileFinder)) {
                                 continue;
                             } else {
@@ -265,28 +268,16 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         continue;
                     }
                     path = path.replace('\\', '/');
-                    if (commonRoot == null) {
+                    {
                         int i = path.lastIndexOf('/');
                         if (i >= 0) {
-                            commonRoot = path.substring(0, i+1);
-                        }
-                    } else {
-                        if (!path.startsWith(commonRoot)) {
-                            while(true) {
-                                int i = commonRoot.lastIndexOf('/');
-                                if (i < 0) {
-                                    break;
-                                }
-                                commonRoot = commonRoot.substring(0, i);
-                                i = commonRoot.lastIndexOf('/');
-                                if (i < 0) {
-                                    break;
-                                }
-                                commonRoot = commonRoot.substring(0, i+1);
-                                if (path.startsWith(commonRoot)) {
-                                    break;
-                                }
+                            String folder = path.substring(0, i);
+                            AtomicInteger val = roots.get(folder);
+                            if (val == null) {
+                                val = new AtomicInteger();
+                                roots.put(folder, val);
                             }
+                            val.incrementAndGet();
                         }
                     }
                     String compilerName = DwarfSource.extractCompilerName(cu, language);
@@ -319,12 +310,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
             if (dlls != null) {
-                List<String> pubNames = dump.readPubNames();
+                SharedLibraries pubNames = dump.readPubNames();
                 synchronized (dlls) {
-                    for (String dll : pubNames) {
+                    for (String dll : pubNames.getDlls()) {
                         dlls.add(dll);
                     }
-
+                    searchPaths.addAll(pubNames.getPaths());
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -341,14 +332,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "IOException", objFileName, ex.toString()));  // NOI18N
             if (TRACE_READ_EXCEPTIONS) {
                 System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         } catch (Exception ex) {
             errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "Exception", objFileName, ex.toString()));  // NOI18N
-            if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
-                ex.printStackTrace();
-            }
+            //if (TRACE_READ_EXCEPTIONS) {
+            System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            ex.printStackTrace(System.err);
+            //}
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -366,8 +357,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         if (dlls != null) {
             dllResult = new ArrayList<String>(dlls);
         }
+        ArrayList<String> pathsResult = null;
+        if (dlls != null) {
+            pathsResult = new ArrayList<String>(searchPaths);
+        }
+        String commonRoot = getRoot(roots);
         if (res > 0) {
-            return new ApplicableImpl(true, null, top, res, sunStudio > res/2, dllResult, commonRoot, position);
+            return new ApplicableImpl(true, errors, top, res, sunStudio > res/2, dllResult, pathsResult, commonRoot, position);
         } else {
             if (errors.isEmpty()) {
                 if (foundDebug > 0) {
@@ -376,8 +372,99 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "NotFoundDebugInformation", objFileName));  // NOI18N
                 }
             }
-            return new ApplicableImpl(false, errors, top, res, sunStudio > res/2, dllResult, commonRoot, position);
+            return new ApplicableImpl(false, errors, top, res, sunStudio > res/2, dllResult, pathsResult, commonRoot, position);
         }
+    }
+
+    private String getCommonPart(String path, String commonRoot) {
+        String[] splitPath = path.split("/"); // NOI18N
+        ArrayList<String> list1 = new ArrayList<String>();
+        boolean isUnixPath = false;
+        for (int i = 0; i < splitPath.length; i++) {
+            if (!splitPath[i].isEmpty()) {
+                list1.add(splitPath[i]);
+            } else {
+                if (i == 0) {
+                    isUnixPath = true;
+                }
+            }
+        }
+        String[] splitRoot = commonRoot.split("/"); // NOI18N
+        ArrayList<String> list2 = new ArrayList<String>();
+        boolean isUnixRoot = false;
+        for (int i = 0; i < splitRoot.length; i++) {
+            if (!splitRoot[i].isEmpty()) {
+                list2.add(splitRoot[i]);
+            } else {
+                if (i == 0) {
+                    isUnixRoot = true;
+                }
+            }
+        }
+        if (isUnixPath != isUnixRoot) {
+            return "";
+        }
+        StringBuilder buf = new StringBuilder();
+        if (isUnixPath) {
+            buf.append('/');
+        }
+        for (int i = 0; i < Math.min(list1.size(), list2.size()); i++) {
+            if (list1.get(i).equals(list2.get(i))) {
+                if (i > 0) {
+                    buf.append('/');
+                }
+                buf.append(list1.get(i));
+            } else {
+                break;
+            }
+        }
+        return buf.toString();
+    }
+
+    private String getRoot(TreeMap<String,AtomicInteger> roots) {
+        ArrayList<String> res = new ArrayList<String>();
+        ArrayList<AtomicInteger> resCount = new ArrayList<AtomicInteger>();
+        String current = null;
+        AtomicInteger currentCount = null;
+        for(Map.Entry<String,AtomicInteger> entry : roots.entrySet()) {
+            if (current == null) {
+                current = entry.getKey();
+                currentCount = new AtomicInteger(entry.getValue().get());
+                continue;
+            }
+            String s = getCommonPart(entry.getKey(), current);
+            String[] split = s.split("/"); // NOI18N
+            int length = (split.length > 0 && split[0].isEmpty()) ? split.length - 1 : split.length;
+            if (length >= 2) {
+                current = s;
+                currentCount.addAndGet(entry.getValue().get());
+            } else {
+                res.add(current);
+                resCount.add(currentCount);
+                current = entry.getKey();
+                currentCount = new AtomicInteger(entry.getValue().get());
+            }
+        }
+        if (current != null) {
+            res.add(current);
+            resCount.add(currentCount);
+        }
+        TreeMap<String,AtomicInteger> newRoots = new TreeMap<String, AtomicInteger>();
+        String bestRoot = null;
+        int bestCount = 0;
+        for(int i = 0; i < res.size(); i++) {
+            newRoots.put(res.get(i), resCount.get(i));
+            if (bestRoot == null) {
+                bestRoot = res.get(i);
+                bestCount = resCount.get(i).get();
+            } else {
+                if (bestCount < resCount.get(i).get()) {
+                    bestRoot = res.get(i);
+                    bestCount = resCount.get(i).get();
+                }
+            }
+        }
+        return bestRoot;
     }
 
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
@@ -451,9 +538,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
             if (dlls != null) {
-                List<String> pubNames = dump.readPubNames();
+                SharedLibraries pubNames = dump.readPubNames();
                 synchronized(dlls) {
-                    for(String dll : pubNames) {
+                    for(String dll : pubNames.getDlls()) {
                         dlls.add(dll);
                     }
 
@@ -471,12 +558,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS) {
                 System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         } catch (Exception ex) {
             if (TRACE_READ_EXCEPTIONS) {
                 System.err.println("Exception in file " + objFileName);  // NOI18N
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         } finally {
             if (dump != null) {
@@ -555,7 +642,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
 
         protected String normalizePath(String path){
-            path = CndFileUtils.normalizeAbsolutePath(path);
+            path = DiscoveryUtils.normalizeAbsolutePath(path);
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }

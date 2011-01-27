@@ -260,7 +260,7 @@ public class ServerFileDistributor extends ServerProgress {
         return mc;
     }
 
-    // files are already there
+    // files are already there - this assumption is not valid for maven
     private AppChanges _distributeOnSave(TargetModuleID target, Iterable<Artifact> artifacts) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
         setStatusDistributeRunning(NbBundle.getMessage(
@@ -271,6 +271,18 @@ public class ServerFileDistributor extends ServerProgress {
         File destDir = FileUtil.toFile(contentDirectory);
         assert destDir != null;
 
+        boolean fullMachinery = false;
+        for (Artifact artifact : artifacts) {
+            if (artifact.getDistributionPath() != null) {
+                fullMachinery = true;
+                break;
+            }
+        }
+        
+        if (fullMachinery) {
+            return _distributeOnSave(destDir, target, artifacts);
+        }
+        
         for (Artifact artifact : artifacts) {
             File fsFile = artifact.getFile();
             FileObject file = FileUtil.toFileObject(FileUtil.normalizeFile(fsFile));

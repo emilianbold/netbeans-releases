@@ -112,10 +112,8 @@ import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -187,6 +185,9 @@ import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -1510,9 +1511,10 @@ public abstract class CslTestBase extends NbTestCase {
                 }
             });
         } finally {
-            IndexImpl index = SPIAccessor.getInstance().getIndexFactory(context).getIndex(context.getIndexFolder());
+            DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(context).getIndex(context.getIndexFolder());
             if (index != null) {
-                index.store(true, Collections.singleton(indexable));
+                index.removeDirtyKeys(Collections.singleton(indexable.getRelativePath()));
+                index.store(true);
             }
         }
 
@@ -4216,12 +4218,12 @@ public abstract class CslTestBase extends NbTestCase {
         // IndexFactoryImpl implementation
         // --------------------------------------------------------------------
 
-        public @Override IndexDocumentImpl createDocument(Indexable indexable) {
+        public @Override IndexDocument createDocument(Indexable indexable) {
             return new TestIndexDocumentImpl(indexable, super.createDocument(indexable));
         }
 
-        public @Override IndexImpl createIndex(Context ctx) throws IOException {
-            IndexImpl ii = super.createIndex(ctx);
+        public @Override DocumentIndex createIndex(Context ctx) throws IOException {
+            DocumentIndex ii = super.createIndex(ctx);
             Reference<TestIndexImpl> ttiRef = indexImpls.get(ii);
             TestIndexImpl tii = ttiRef != null ? ttiRef.get() : null;
             if (tii == null) {
@@ -4231,22 +4233,23 @@ public abstract class CslTestBase extends NbTestCase {
             return tii;
         }
 
-        public @Override IndexImpl getIndex(FileObject indexFolder) throws IOException {
-            IndexImpl ii = super.getIndex(indexFolder);
+        public @Override DocumentIndex getIndex(FileObject indexFolder) throws IOException {
+            DocumentIndex ii = super.getIndex(indexFolder);
             Reference<TestIndexImpl> ttiRef = indexImpls.get(ii);
             return ttiRef != null ? ttiRef.get() : null;
         }
 
-        private final Map<IndexImpl, Reference<TestIndexImpl>> indexImpls = new WeakHashMap<IndexImpl, Reference<TestIndexImpl>>();
+        private final Map<DocumentIndex, Reference<TestIndexImpl>> indexImpls = new WeakHashMap<DocumentIndex, Reference<TestIndexImpl>>();
 
     } // End of TestIndexFactoryImpl class
 
-    private static final class TestIndexImpl implements IndexImpl {
+    private static final class TestIndexImpl implements DocumentIndex {
 
-        public TestIndexImpl(IndexImpl original) {
+        public TestIndexImpl(DocumentIndex original) {
             this.original = original;
         }
 
+        @Override
         public boolean isValid() throws IOException {
             return true;
         }
@@ -4255,7 +4258,8 @@ public abstract class CslTestBase extends NbTestCase {
         // IndexImpl implementation
         // --------------------------------------------------------------------
 
-        public void addDocument(IndexDocumentImpl document) {
+        @Override
+        public void addDocument(IndexDocument document) {
             assert document instanceof TestIndexDocumentImpl;
 
             original.addDocument(((TestIndexDocumentImpl) document).getOriginal());
@@ -4269,6 +4273,7 @@ public abstract class CslTestBase extends NbTestCase {
             list.add(tidi);
         }
 
+        @Override
         public void removeDocument(String relativePath) {
             original.removeDocument(relativePath);
 
@@ -4281,33 +4286,49 @@ public abstract class CslTestBase extends NbTestCase {
             documents.keySet().removeAll(toRemove);
         }
 
-        public void store(boolean optimize, Iterable<Indexable> indexedIndexables) throws IOException {
-            original.store(optimize, indexedIndexables);
+        @Override
+        public void store(boolean optimize) throws IOException {
+            original.store(optimize);
         }
 
         @Override
-        public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException, InterruptedException {
+        public Collection<? extends IndexDocument> query(String fieldName, String value, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.query(fieldName, value, kind, fieldsToLoad);
         }
 
-        public void fileModified(String relativePath) {
-            // no-op
+        @Override
+        public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
+            return original.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
+        }                
+        
+        @Override
+        public void close() throws IOException {
+            original.close();
         }
 
-        public Collection<? extends String> getStaleFiles() {
+        @Override
+        public void markKeyDirty(String primaryKey) {            
+        }
+
+        @Override
+        public void removeDirtyKeys(Collection<? extends String> dirtyKeys) {
+        }
+
+        @Override
+        public Collection<? extends String> getDirtyKeys() {
             return Collections.<String>emptySet();
         }
-
+        
         // --------------------------------------------------------------------
         // private implementation
         // --------------------------------------------------------------------
 
-        private final IndexImpl original;
+        private final DocumentIndex original;
         private Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
-
+        
     } // End of TestIndexImpl class
 
-    private static final class TestIndexDocumentImpl implements IndexDocumentImpl {
+    private static final class TestIndexDocumentImpl implements IndexDocument {
 
         public final List<String> indexedKeys = new ArrayList<String>();
         public final List<String> indexedValues = new ArrayList<String>();
@@ -4315,9 +4336,9 @@ public abstract class CslTestBase extends NbTestCase {
         public final List<String> unindexedValues = new ArrayList<String>();
 
         private final Indexable indexable;
-        private final IndexDocumentImpl original;
+        private final IndexDocument original;
 
-        public TestIndexDocumentImpl(Indexable indexable, IndexDocumentImpl original) {
+        public TestIndexDocumentImpl(Indexable indexable, IndexDocument original) {
             this.indexable = indexable;
             this.original = original;
         }
@@ -4326,7 +4347,7 @@ public abstract class CslTestBase extends NbTestCase {
             return indexable;
         }
 
-        public IndexDocumentImpl getOriginal() {
+        public IndexDocument getOriginal() {
             return original;
         }
 
@@ -4350,8 +4371,8 @@ public abstract class CslTestBase extends NbTestCase {
             return original.getValues(key);
         }
 
-        public String getSourceName() {
-            return original.getSourceName();
+        public String getPrimaryKey() {
+            return original.getPrimaryKey();
         }
 
     } // End of TestIndexFactoryImpl class

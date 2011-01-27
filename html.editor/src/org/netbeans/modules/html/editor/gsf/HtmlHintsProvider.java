@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
@@ -74,9 +75,12 @@ import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -92,15 +96,15 @@ public class HtmlHintsProvider implements HintsProvider {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         HtmlVersion version = result.getDetectedHtmlVersion();
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        Project project = FileOwnerQuery.getOwner(file);
-
+        Project project = file != null ? FileOwnerQuery.getOwner(file) : null;
+        boolean xhtml = result.getSyntaxAnalyzerResult().mayBeXhtml();
         if (version == null) {
             //the version can be determined
             
             if (project == null) {
                 //we cannot set the default anywhere, just show a warning message
 
-                hints.add(new Hint(getRule(Severity.WARNING),
+                hints.add(new Hint(getRule(Severity.INFO),
                         NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION_NO_PROJECT"),
                         file,
                         new OffsetRange(0, 0),
@@ -109,16 +113,16 @@ public class HtmlHintsProvider implements HintsProvider {
                 });
             } else {
                 //no doctype declaration found, generate the set default project html version hint
-                HtmlVersion defaulted = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
+                HtmlVersion defaulted = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project, xhtml);
                 String msg =  defaulted == null ?
-                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION") :
-                    NbBundle.getMessage(HtmlHintsProvider.class, "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
+                    NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION" : "MSG_CANNOT_DETERMINE_HTML_VERSION") :
+                    NbBundle.getMessage(HtmlHintsProvider.class, xhtml ? "MSG_CANNOT_DETERMINE_XHTML_VERSION_DEFAULTED_ALREADY" : "MSG_CANNOT_DETERMINE_HTML_VERSION_DEFAULTED_ALREADY", defaulted.getDisplayName());
 
-                hints.add(new Hint(getRule(Severity.WARNING),
+                hints.add(new Hint(getRule(Severity.INFO),
                         msg,
                         file,
                         new OffsetRange(0, 0),
-                        generateSetDefaultHtmlVersionHints(project, result.getSnapshot().getSource().getDocument(false)),
+                        generateSetDefaultHtmlVersionHints(project, result.getSnapshot().getSource().getDocument(false), xhtml),
                         100) {
                 });
             }
@@ -126,11 +130,13 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
-    private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc) {
+    private static List<HintFix> generateSetDefaultHtmlVersionHints(Project project, Document doc, boolean xhtml) {
         List<HintFix> fixes = new LinkedList<HintFix>();
         if(project != null) {
             for(HtmlVersion v : HtmlVersion.values()) {
-                fixes.add(new SetDefaultHtmlVersionHintFix(v, project, doc));
+                if(xhtml == v.isXhtml()) {
+                    fixes.add(new SetDefaultHtmlVersionHintFix(v, project, doc, xhtml));
+                }
             }
         }
 
@@ -165,18 +171,21 @@ public class HtmlHintsProvider implements HintsProvider {
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         Snapshot snapshot = context.parserResult.getSnapshot();
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        SyntaxAnalyzerResult saresult = result.getSyntaxAnalyzerResult();
+
         FileObject fo = snapshot.getSource().getFileObject();
-        if (isErrorCheckingEnabled(fo)) {
+        if (isErrorCheckingEnabled(saresult)) {
             for (Error e : context.parserResult.getDiagnostics()) {
                     assert e.getDescription() != null;
                     List<HintFix> fixes = new ArrayList<HintFix>(3);
 
-                    if(!isErrorCheckingDisabledForFile(fo)) {
+                    if(!isErrorCheckingDisabledForFile(saresult)) {
                         fixes.add(new DisableErrorChecksFix(snapshot));
                     }
 
-                    if(isErrorCheckingEnabledForMimetype(fo)) {
-                        fixes.add(new DisableErrorChecksForMimetypeFix(snapshot));
+                    if(isErrorCheckingEnabledForMimetype(saresult)) {
+                        fixes.add(new DisableErrorChecksForMimetypeFix(saresult));
                     }
 
                     //tweak the error position if close to embedding boundary
@@ -196,7 +205,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     }
 
                     //add custom hint fixes
-                    fixes.addAll(getCustomHintFixesForError(context, e));
+//                    fixes.addAll(getCustomHintFixesForError(context, e));
                     
                     Hint h = new Hint(getRule(e.getSeverity()),
                             e.getDescription(),
@@ -210,14 +219,14 @@ public class HtmlHintsProvider implements HintsProvider {
         } else {
             //add a special hint for reenabling disabled error checks
             List<HintFix> fixes = new ArrayList<HintFix>(3);
-            if(isErrorCheckingDisabledForFile(fo)) {
+            if(isErrorCheckingDisabledForFile(saresult)) {
                 fixes.add(new EnableErrorChecksFix(snapshot));
             }
-            if(!isErrorCheckingEnabledForMimetype(fo)) {
-                fixes.add(new EnableErrorChecksForMimetypeFix(snapshot));
+            if(!isErrorCheckingEnabledForMimetype(saresult)) {
+                fixes.add(new EnableErrorChecksForMimetypeFix(saresult));
             }
 
-            Hint h = new Hint(new HtmlRule(HintSeverity.WARNING, false),
+            Hint h = new Hint(new HtmlRule(HintSeverity.INFO, false),
                     NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
                     fo,
                     new OffsetRange(0, 0),
@@ -234,6 +243,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
+    //possibly reenable later once hint fixes are implementd for validator.nu errors
     private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
         List<HintFix> fixes = new ArrayList<HintFix>();
         if(e.getKey().equals(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES)) {
@@ -338,9 +348,12 @@ public class HtmlHintsProvider implements HintsProvider {
     }
     private static final HtmlRule ERROR_RULE = new HtmlRule(HintSeverity.ERROR, true);
     private static final HtmlRule WARNING_RULE = new HtmlRule(HintSeverity.WARNING, true);
+    private static final HtmlRule INFO_RULE = new HtmlRule(HintSeverity.INFO, true);
 
     private static HtmlRule getRule(Severity s) {
         switch (s) {
+            case INFO:
+                return INFO_RULE;
             case WARNING:
                 return WARNING_RULE;
             case ERROR:
@@ -387,16 +400,17 @@ public class HtmlHintsProvider implements HintsProvider {
     }
     static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
 
-    public static boolean isErrorCheckingEnabled(FileObject fo) {
-        return !isErrorCheckingDisabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
+    private static boolean isErrorCheckingEnabled(SyntaxAnalyzerResult result) {
+        return !isErrorCheckingDisabledForFile(result) && isErrorCheckingEnabledForMimetype(result);
     }
 
-    public static boolean isErrorCheckingDisabledForFile(FileObject fo) {
-        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) != null;
+    private static boolean isErrorCheckingDisabledForFile(SyntaxAnalyzerResult result) {
+        FileObject fo = result.getSource().getSourceFileObject();
+        return fo != null && fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) != null;
     }
 
-    public static boolean isErrorCheckingEnabledForMimetype(FileObject fo) {
-        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(fo.getMIMEType());
+    private static boolean isErrorCheckingEnabledForMimetype(SyntaxAnalyzerResult result) {
+        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(getWebPageMimeType(result));
     }
 
     private static final class DisableErrorChecksFix implements HintFix {
@@ -475,30 +489,12 @@ public class HtmlHintsProvider implements HintsProvider {
         }
     }
 
-    private static final class DisableErrorChecksForMimetypeFix implements HintFix {
+    private static abstract class AbstractErrorChecksForMimetypeFix implements HintFix {
 
-        private Snapshot snapshot;
-        private String mime;
+        private SyntaxAnalyzerResult result;
 
-        public DisableErrorChecksForMimetypeFix(Snapshot snapshot) {
-            this.snapshot = snapshot;
-            this.mime = snapshot.getSource().getFileObject().getMIMEType();
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_MIMETYPE", mime); //NOI18N
-        }
-
-        @Override
-        public void implement() throws Exception {
-            HtmlPreferences.setHtmlErrorChecking(mime, false);
-
-            //force reparse of *THIS document only* => hints update
-            Document doc = snapshot.getSource().getDocument(false);
-            if (doc != null) {
-                forceReparse(doc);
-            }
+        public AbstractErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
+            this.result = result;
         }
 
         @Override
@@ -510,55 +506,110 @@ public class HtmlHintsProvider implements HintsProvider {
         public boolean isInteractive() {
             return false;
         }
+
+        protected String getMimeType() {
+            return getWebPageMimeType(result);
+        }
+
+        protected Snapshot getSnapshot() {
+            return result.getSource().getSnapshot();
+        }
+
     }
 
-    private static final class EnableErrorChecksForMimetypeFix implements HintFix {
+    //and now the magic...
+    //the method returns an artificial mimetype so the user can enable/disable the error checks
+    //for particular content. For example the text/facelets+xhtml mimetype is returned for
+    //.xhtml pages with facelets content. This allows to normally verify the plain xhtml file
+    //even if their mimetype is text/html
+    //sure the correct solution would be to let the mimeresolver to create different mimetype,
+    //but since the resolution can be pretty complex it is not done this way
+    private static String getWebPageMimeType(SyntaxAnalyzerResult result) {
+        InstanceContent ic = new InstanceContent();
+        ic.add(result);
+        WebPageMetadata wpmeta = WebPageMetadata.getMetadata(new AbstractLookup(ic));
 
-        private Snapshot snapshot;
-        private String mime;
+        if (wpmeta != null) {
+            //get an artificial mimetype for the web page, this doesn't have to be equal
+            //to the fileObjects mimetype.
+            String mimeType = (String) wpmeta.value(WebPageMetadata.MIMETYPE);
+            if (mimeType != null) {
+                return mimeType;
+            }
+        }
 
-        public EnableErrorChecksForMimetypeFix(Snapshot snapshot) {
-            this.snapshot = snapshot;
-            this.mime = snapshot.getSource().getFileObject().getMIMEType();
+        FileObject fo = result.getSource().getSourceFileObject();
+        if(fo != null) {
+            return fo.getMIMEType();
+        } else {
+            //no fileobject?
+            return result.getSource().getSnapshot().getMimeType();
+        }
+
+    }
+
+    private static final class DisableErrorChecksForMimetypeFix extends AbstractErrorChecksForMimetypeFix {
+
+        public DisableErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
+            super(result);
         }
 
         @Override
         public String getDescription() {
-            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_MIMETYPE", mime); //NOI18N
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_MIMETYPE", getMimeType()); //NOI18N
         }
 
         @Override
         public void implement() throws Exception {
-            HtmlPreferences.setHtmlErrorChecking(mime, true);
+            HtmlPreferences.setHtmlErrorChecking(getMimeType(), false);
 
             //force reparse of *THIS document only* => hints update
-            Document doc = snapshot.getSource().getDocument(false);
+            Document doc = getSnapshot().getSource().getDocument(false);
             if (doc != null) {
                 forceReparse(doc);
             }
         }
 
-        @Override
-        public boolean isSafe() {
-            return true;
+       
+    }
+
+    private static final class EnableErrorChecksForMimetypeFix extends AbstractErrorChecksForMimetypeFix {
+
+        public EnableErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
+            super(result);
         }
 
         @Override
-        public boolean isInteractive() {
-            return false;
+        public String getDescription() {
+            return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_MIMETYPE", getMimeType()); //NOI18N
         }
+
+        @Override
+        public void implement() throws Exception {
+            HtmlPreferences.setHtmlErrorChecking(getMimeType(), true);
+
+            //force reparse of *THIS document only* => hints update
+            Document doc = getSnapshot().getSource().getDocument(false);
+            if (doc != null) {
+                forceReparse(doc);
+            }
+        }
+
     }
+
 
     private static class SetDefaultHtmlVersionHintFix implements HintFix {
 
         private HtmlVersion version;
         private Document doc;
         private Project project;
+        private boolean xhtml;
 
-        public SetDefaultHtmlVersionHintFix(HtmlVersion version, Project project, Document doc) {
+        public SetDefaultHtmlVersionHintFix(HtmlVersion version, Project project, Document doc, boolean xhtml) {
             this.version = version;
             this.project = project;
             this.doc = doc; //to be able to force reparse the hinted document
+            this.xhtml = xhtml;
         }
 
         @Override
@@ -568,7 +619,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
         @Override
         public void implement() throws Exception {
-            ProjectDefaultHtmlSourceVersionController.setDefaultHtmlVersion(project, version);
+            ProjectDefaultHtmlSourceVersionController.setDefaultHtmlVersion(project, version, xhtml);
             forceReparse(doc);
         }
 

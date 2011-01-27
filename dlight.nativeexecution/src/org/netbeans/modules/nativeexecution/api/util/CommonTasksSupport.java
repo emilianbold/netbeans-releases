@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -50,9 +51,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.SignalSupport;
+import org.openide.util.Exceptions;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
@@ -122,6 +126,103 @@ public final class CommonTasksSupport {
             final Writer error) {
 
         return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFile.getAbsolutePath(), error);
+    }
+
+    /**
+     * Read remote file content
+     *
+     * @param srcFileName full path to the source file with file name
+     * @param srcExecEnv execution environment that describes the host to copy file from
+     * @param offset in source file
+     * @param count number of reading bytes
+     * @param error if not <tt>NULL</tt> and some error occurs during reading,
+     *        an error message will be written to this <tt>Writer</tt>.
+     * @return byte array with file content. Returns byte[0] in case error. Result can be less of count in case end of file.
+     */
+    public static byte[] readFile(
+            final String srcFileName,
+            final ExecutionEnvironment srcExecEnv,
+            final long offset, final int count,
+            final Writer error) {
+
+        int bs = 512;
+        long iseek = offset / bs;
+        long endOffset = offset + count;
+        long cnt = (endOffset / bs);
+        if (endOffset%bs > 0) {
+            cnt++;
+        }
+        cnt -= iseek;
+        byte[] buffer = new byte[(int)cnt * bs];
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(srcExecEnv);
+        if (iseek > 0) {
+            // iseek paremeter is Solaris and Mac OS X only.
+            //npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "iseek=" + iseek, "count=" + cnt); // NOI18N
+            npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "skip=" + iseek, "count=" + cnt); // NOI18N
+        } else {
+            npb.setExecutable("/bin/dd").setArguments("if=" + srcFileName, "ibs=" + bs, "count=" + cnt); // NOI18N
+        }
+
+        int actual = -1;
+
+        try {
+            NativeProcess process = npb.call();
+            if (process.getState() == State.ERROR) {
+                String err = ProcessUtils.readProcessErrorLine(process);
+                if (iseek > 0) {
+                    throw new IOException("Cannot start /bin/dd if=" + srcFileName + " ibs=" + bs + " skip=" + iseek + " count=" + cnt + ": " + err); // NOI18N
+                } else {
+                    throw new IOException("Cannot start /bin/dd if=" + srcFileName + " ibs=" + bs + " count=" + cnt + ": " + err); // NOI18N
+                }
+            }
+
+            int start = 0;
+            int rest = buffer.length;
+            actual = 0;
+            while(true) {
+                int readed = process.getInputStream().read(buffer, start, rest);
+                if (readed <= 0) {
+                    break;
+                }
+                start += readed;
+                rest -= readed;
+                actual += readed;
+                if (rest <= 0) {
+                    break;
+                }
+            }
+            int rc = 0;
+
+            try {
+                rc = process.waitFor();
+            } catch (InterruptedException ex) {
+                throw new IOException("/bin/dd was interrupted"); // NOI18N
+            }
+
+            if (rc != 0) {
+                String err = ProcessUtils.readProcessErrorLine(process);
+                throw new IOException("Error while reading " + srcFileName + ": " + err); // NOI18N
+            }
+        } catch (IOException ex) {
+            if (error != null) {
+                try {
+                    error.write(ex.getMessage());
+                    error.flush();
+                } catch (IOException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+            }
+            return new byte[0];
+        }
+        int extra = (int) (offset % bs);
+        if (actual - extra < 0) {
+            return new byte[0];
+        }
+        int res_size = Math.min(actual - extra, count);
+        byte[] result = new byte[res_size];
+        System.arraycopy(buffer, extra, result, 0, res_size);
+        return result;
     }
 
     public static Future<Integer> uploadFile(UploadParameters parameters) {

@@ -120,7 +120,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
 
     /** Creates new form ToolsPanel */
-    public ToolsPanel() {
+    public ToolsPanel(String helpContext) {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
         changed = false;
@@ -135,11 +135,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
         // clean up previous caches
         tcm.clear();
-        HelpCtx.setHelpIDString(ToolsPanel.this, "ResolveBuildTools"); // NOI18N
+        HelpCtx.setHelpIDString(ToolsPanel.this, helpContext); // NOI18N
     }
 
-    public ToolsPanel(ToolsPanelModel model) {
-        this();
+    public ToolsPanel(ToolsPanelModel model, String heplContext) {
+        this(heplContext);
         this.model = model;
         ExecutionEnvironment env = model.getSelectedDevelopmentHost();
         if (env != null) {
@@ -505,7 +505,12 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     /** Apply changes */
     public void applyChanges() {
-        if (changed || ToolsPanelSupport.isChangedInOtherPanels()) {
+        boolean changedInOtherPanels = ToolsPanelSupport.isChangedInOtherPanels();
+        if (changed || changedInOtherPanels) {
+            List<Runnable> fireChanges = null;
+            if (changedInOtherPanels) {
+                fireChanges = ToolsPanelSupport.saveChangesInOtherPanels();
+            }
 
             CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
             changed = false;
@@ -516,6 +521,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             }
             currentCompilerSet = cs;
             tcm.applyChanges((ServerRecord) cbDevHost.getSelectedItem());
+            if (fireChanges != null) {
+                for(Runnable fire : fireChanges) {
+                    fire.run();
+                }
+            }
         }
         getToolCollectionPanel().applyChanges();
     }

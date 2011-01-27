@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -188,8 +188,8 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         }
         int dex = domainField.indexOf(File.separator);
         if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
-            AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
-            String uri = wizardIterator.formatUri(gfRoot, GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
+            org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
+            String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
             if (-1 == wizardIterator.getHttpPort()) {
                 wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainField)); // NOI18N
                 return false;
@@ -225,7 +225,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setDomainLocation(domainLoc);
             wizardIterator.setHostName("localhost");
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
-            AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
+            org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
             return true;
         }
         if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {

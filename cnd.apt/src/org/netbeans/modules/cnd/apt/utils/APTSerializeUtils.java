@@ -69,7 +69,9 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -161,7 +163,7 @@ public class APTSerializeUtils {
     private static final boolean TRACE = true;
     @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     static public APT testAPTSerialization(APTFileBuffer buffer, APT apt) {
-        FileObject file = buffer.getFileObject();
+        FileObject file = CndFileUtils.toFileObject(buffer.getFileSystem(), buffer.getAbsolutePath());
         APT aptRead = null;
         // testing caching ast
         String prefix = "cnd_apt_"+(fileIndex++); // NOI18N
@@ -240,8 +242,8 @@ public class APTSerializeUtils {
         ((APTIncludeHandlerImpl.StateImpl)state).write(output);
     }
     
-    public static APTIncludeHandler.State readIncludeState(DataInput input) throws IOException {
-        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(input);
+    public static APTIncludeHandler.State readIncludeState(FileSystem fs, DataInput input) throws IOException {
+        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(fs, input);
         return state;
     }    
 
@@ -255,12 +257,12 @@ public class APTSerializeUtils {
         }        
     }
     
-    public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, DataInput input) throws IOException {
         int handler = input.readInt();
         APTPreprocHandler.State out;
         switch (handler) {
             case PREPROC_STATE_STATE_IMPL:
-                out = new APTPreprocHandlerImpl.StateImpl(input);
+                out = new APTPreprocHandlerImpl.StateImpl(fs, input);
                 break;
             default:
                 throw new IllegalArgumentException("unknown preprocessor state handler" + handler);  //NOI18N

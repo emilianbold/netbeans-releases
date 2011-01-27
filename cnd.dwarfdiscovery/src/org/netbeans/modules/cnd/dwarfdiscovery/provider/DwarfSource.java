@@ -114,7 +114,7 @@ public class DwarfSource implements SourceFileProperties{
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
         //File file = new File(fullName);
-        fullName = CndFileUtils.normalizeAbsolutePath(fullName);
+        fullName = DiscoveryUtils.normalizeAbsolutePath(fullName);
         fullName = linkSupport(fullName);
         if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');
@@ -742,19 +742,22 @@ public class DwarfSource implements SourceFileProperties{
         res = new GrepEntry();
         File folder = new File(path);
         if (folder.exists() && folder.canRead() && folder.isDirectory()) {
-            for(File f: folder.listFiles()){
-                if (f.exists() && f.canRead() && !f.isDirectory()){
-                    List<String> l = grepSourceFile(f.getAbsolutePath()).includes;
-                    for (String i : l){
-                        if (i.indexOf("..")>0 || i.startsWith("/") || i.indexOf(":")>0) { // NOI18N
-                            continue;
-                        }
-                        if (i.indexOf('/')>0){ // NOI18N
-                            int n = i.lastIndexOf('/'); // NOI18N
-                            String relativeDir = i.substring(0,n);
-                            String dir = "/"+relativeDir; // NOI18N
-                            if (!res.includes.contains(dir)){
-                                res.includes.add(PathCache.getString(dir));
+            File[] ff = folder.listFiles();
+            if (ff != null) {
+                for(File f: ff){
+                    if (f.exists() && f.canRead() && !f.isDirectory()){
+                        List<String> l = grepSourceFile(f.getAbsolutePath()).includes;
+                        for (String i : l){
+                            if (i.indexOf("..")>0 || i.startsWith("/") || i.indexOf(":")>0) { // NOI18N
+                                continue;
+                            }
+                            if (i.indexOf('/')>0){ // NOI18N
+                                int n = i.lastIndexOf('/'); // NOI18N
+                                String relativeDir = i.substring(0,n);
+                                String dir = "/"+relativeDir; // NOI18N
+                                if (!res.includes.contains(dir)){
+                                    res.includes.add(PathCache.getString(dir));
+                                }
                             }
                         }
                     }

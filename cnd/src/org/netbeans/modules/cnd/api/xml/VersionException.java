@@ -50,14 +50,16 @@ package org.netbeans.modules.cnd.api.xml;
  */
 public final class VersionException extends Exception {
 
-    private String element;
-    private int expectedVersion;
-    private int actualVersion;
+    private final String element;
+    private final int expectedVersion;
+    private final int actualVersion;
+    private final boolean showDetails;
 
-    VersionException(String element,
+    VersionException(String element, boolean showDetails,
 			    int expectedVersion, int actualVersion) {
 	super();
 	this.element = element;
+        this.showDetails = showDetails;
 	this.expectedVersion = expectedVersion;
 	this.actualVersion = actualVersion;
     }
@@ -73,4 +75,8 @@ public final class VersionException extends Exception {
     int actualVersion() {
 	return actualVersion;
     } 
+    
+    boolean showDetails() {
+        return showDetails;
+    }
 }

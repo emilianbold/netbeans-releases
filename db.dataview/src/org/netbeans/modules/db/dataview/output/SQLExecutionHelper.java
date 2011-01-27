@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -79,8 +79,8 @@ class SQLExecutionHelper {
     private final DataView dataView;
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 20, true); // NOI18N
-    private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
-    public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
+    private static final String LIMIT_CLAUSE = "LIMIT "; // NOI18N
+    public static final String OFFSET_CLAUSE = "OFFSET "; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
 
     SQLExecutionHelper(DataView dataView) {
@@ -552,8 +552,8 @@ class SQLExecutionHelper {
     private String appendLimitIfRequired(String sql) {
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
             if (!isLimitUsedInSelect(sql)) {
-                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
-                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
+                sql += ' ' + LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
+                sql += ' ' + OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
             }
         }
 
@@ -577,7 +577,7 @@ class SQLExecutionHelper {
             }
 
             try {
-                if (dataView.isLimitSupported() && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
+                if (dataView.isLimitSupported() && ! isLimitUsedInSelect(sql)) {
                     stmt.setMaxRows(pageSize);
                 } else {
                     stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
@@ -602,6 +602,9 @@ class SQLExecutionHelper {
         } else {
             try {
                 isResultSet = stmt.execute(appendLimitIfRequired(sql));
+            } catch (NullPointerException ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + ex);
+                    throw new SQLException(ex);
             } catch (SQLException sqlExc) {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);
@@ -636,9 +639,13 @@ class SQLExecutionHelper {
     }
 
     private void getTotalCount(boolean isSelect, String sql, Statement stmt) {
+        if (! isSelect) {
+            setTotalCount(null);
+            return ;
+        }
 
         // Case for LIMIT n OFFSET m
-        if (isSelect && isLimitUsedInSelect(sql)) {
+        if (isLimitUsedInSelect(sql)) {
             try {
                 String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
                 int rCnt = Integer.parseInt(lmtStr.split(" ")[0]);
@@ -650,19 +657,17 @@ class SQLExecutionHelper {
 
         // SELECT COUNT(*) FROM (sqlquery) alias
         ResultSet cntResultSet = null;
-        if (isSelect) {
-            try {
-                cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountAsSubQuery(sql));
-                setTotalCount(cntResultSet);
-                return;
-            } catch (SQLException e) {
-            } finally {
-                DataViewUtils.closeResources(cntResultSet);
-            }
+        try {
+            cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountAsSubQuery(sql));
+            setTotalCount(cntResultSet);
+            return;
+        } catch (SQLException e) {
+        } finally {
+            DataViewUtils.closeResources(cntResultSet);
         }
 
         // Try spliting the query by FROM and use "SELECT COUNT(*) FROM"  + "2nd part sql"
-        if (isSelect && !isGroupByUsedInSelect(sql)) {
+        if (!isGroupByUsedInSelect(sql)) {
             cntResultSet = null;
             try {
                 cntResultSet = stmt.executeQuery(SQLStatementGenerator.getCountSQLQuery(sql));

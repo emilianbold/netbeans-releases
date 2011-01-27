@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -101,6 +102,31 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         } else {
             return getName();
         }
+    }
+
+    protected CharSequence toStringName() {
+        CharSequence name;
+        if (CsmKindUtilities.isTemplate(this)) {
+            name = ((CsmTemplate)this).getDisplayName();
+        } else {
+            name = getName();
+        }
+        if (this instanceof RawNamable) {
+            StringBuilder out = new StringBuilder(name);
+            out.append('(');
+            boolean first = true;
+            for (CharSequence part : ((RawNamable)this).getRawName()) {
+                if (first) {
+                    first = false;
+                } else {
+                    out.append("::"); //NOI18N
+                }
+                out.append(part);
+            }
+            out.append(')');
+            name = out.toString();
+        }
+        return name;
     }
     
     private String getOffsetBasedName() {
@@ -219,7 +245,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 }
             }            
             return new TemplateDescriptor(
-                templateParams, templateSuffix, inheritedTemplateParametersNumber, global);
+                templateParams, templateSuffix, inheritedTemplateParametersNumber, specialization, global);
         }
         return null;
     }
@@ -238,23 +264,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public String toString() {
-        return "" + getKind() + ' ' + getName()  + getOffsetString() + getPositionString(); // NOI18N
-    }
-
-    protected CharSequence getPositionString() {
-        StringBuilder sb = new StringBuilder("["); // NOI18N
-        Position pos;
-        pos = getStartPosition();
-        sb.append(pos.getLine());
-        sb.append(':');
-        sb.append(pos.getColumn());
-        sb.append('-');
-        pos = getEndPosition();
-        sb.append(pos.getLine());
-        sb.append(':');
-        sb.append(pos.getColumn());
-        sb.append(']');
-        return sb;
+        CharSequence name = toStringName();
+        return "" + getKind() + ' ' + name  + getOffsetString() + getPositionString(); // NOI18N
     }
 
     @Override

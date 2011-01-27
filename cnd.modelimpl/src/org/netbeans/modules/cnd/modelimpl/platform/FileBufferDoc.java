@@ -45,9 +45,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.EventListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -56,9 +54,17 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenChange;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
+import org.openide.filesystems.FileObject;
 
 /**
  * FileBuffer implementation
@@ -71,13 +77,15 @@ public class FileBufferDoc extends AbstractFileBuffer {
     private final Document doc;
     private final EventListenerList listeners = new EventListenerList();
     private DocumentListener docListener;
+    private TokenHierarchyListener tokensListener;
     private long lastModified;
     private final ChangedSegment changedSegment;
     private ChangedSegment lastChangedSegment;
     private long changedSegmentTaken;
+    private volatile boolean preprocessorBlockChanged = false;
     
-    public FileBufferDoc(CharSequence absPath, Document doc) {
-        super(absPath);
+    public FileBufferDoc(FileObject fileObject, Document doc) {
+        super(fileObject);
         this.doc = doc;
         changedSegment = new ChangedSegment(doc);
         resetLastModified();
@@ -103,8 +111,8 @@ public class FileBufferDoc extends AbstractFileBuffer {
                 }
             }
             // TODO: think over when do invalidate? before informing listeners or after
-            APTDriver.getInstance().invalidateAPT(this);
-            APTFileCacheManager.invalidate(this);
+            APTDriver.invalidateAPT(this);
+            APTFileCacheManager.getInstance(getFileSystem()).invalidate(getAbsolutePath());
         }
     }
 
@@ -129,8 +137,78 @@ public class FileBufferDoc extends AbstractFileBuffer {
                 }
             };
             doc.addDocumentListener(docListener);
+            final TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+            if (th != null) {
+                tokensListener = new TokenHierarchyListener() {
+                    @Override
+                    public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+                        preprocessorBlockChanged |= checkTokensEvent(evt);
+                        if (preprocessorBlockChanged) {
+                            th.removeTokenHierarchyListener(this);
+                        }
+                    }
+                };
+                th.addTokenHierarchyListener(tokensListener);
+            }
         }
         listeners.add(ChangeListener.class, listener);
+    }
+    
+    private static boolean checkTokensEvent(TokenHierarchyEvent evt) {
+        if (TRACE) {
+            System.err.println("THE: " + evt + "\ntype=" + evt.type() + "\nchange=" + evt.tokenChange()+// NOI18N
+                    "\nremoved="+evt.tokenChange().removedTokenSequence()); // NOI18N
+        }
+        
+        @SuppressWarnings("unchecked")
+        TokenChange<CppTokenId> tokenChange = (TokenChange<CppTokenId>) evt.tokenChange();
+        if (tokenChange == null) {
+            return false;
+        }
+        TokenSequence<?> removedTokenSequence = tokenChange.removedTokenSequence();
+        if (removedTokenSequence != null && !removedTokenSequence.isEmpty()) {
+            while (removedTokenSequence.moveNext()) {
+                Token<?> curToken = removedTokenSequence.token();
+                if (CppTokenId.PREPROCESSOR_DIRECTIVE == curToken.id()) {
+                    if (TRACE) {
+                        System.err.println("we have deleted preprocessor token " + curToken);
+                    }
+                    return true;
+                }
+            }
+        }
+        int startIndex = tokenChange.index();
+        if (startIndex >= 0) {
+            TokenSequence<CppTokenId> currentTokenSequence = tokenChange.currentTokenSequence();
+            currentTokenSequence.moveIndex(startIndex++);
+            if (currentTokenSequence.moveNext()) {
+                Token<CppTokenId> curToken = currentTokenSequence.token();
+                if (tokenChange.isBoundsChange()) {
+                    if (CppTokenId.PREPROCESSOR_DIRECTIVE == curToken.id()) {
+                        if (TRACE) {
+                            System.err.println("we have changed preprocessor token " + curToken);// NOI18N
+                        }
+                        return true;
+                    }
+                } else {
+                    int addedTokenCount = tokenChange.addedTokenCount();
+                    while ((addedTokenCount-- > 0)) {
+                        currentTokenSequence.moveIndex(startIndex++);
+                        if (currentTokenSequence.moveNext()) {
+                            curToken = currentTokenSequence.token();
+                            if (CppTokenId.PREPROCESSOR_DIRECTIVE == curToken.id()) {
+                                if (TRACE) {
+                                    System.err.println("we have changed preprocessor token " + curToken + // NOI18N
+                                            " with index " + currentTokenSequence.index());// NOI18N
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     @Override
@@ -139,6 +217,11 @@ public class FileBufferDoc extends AbstractFileBuffer {
         if (listeners.getListenerCount() == 0) {
             doc.removeDocumentListener(docListener);
             docListener = null;
+            TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+            if (th != null && tokensListener != null) {
+                th.removeTokenHierarchyListener(tokensListener);
+            }         
+            tokensListener = null;
         }
     }
     
@@ -151,34 +234,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
         return ioe;
     }
 
-    @Override
-    public InputStream getInputStream() throws IOException {
-        final Object[] res = new Object[]{null, null};
-        doc.render(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    res[0] = doc.getText(0, doc.getLength());
-                    if (lastChangedSegment == null || changedSegmentTaken != lastModified) {
-                        lastChangedSegment = new ChangedSegment(changedSegment);
-                        changedSegment.reset(doc);
-                        changedSegmentTaken = lastModified;
-                        if (TRACE) {
-                            System.err.println("Take last changed segment: "+lastChangedSegment.toString());
-                            new Exception().printStackTrace(System.err);
-                        }
-                    }
-                } catch( BadLocationException e ) {
-                    res[1] = convert(e);
-                }
-            }
-        });
-        if (res[1] != null) {
-            throw (IOException)res[1];
-        }
-        return new ByteArrayInputStream(((String)res[0]).getBytes());
-    }
-    
     @Override
     public String getText() throws IOException {
         final String out[] = new String[] { null };
@@ -209,11 +264,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
     }
     
-    @Override
-    public int getLength() {
-        return doc.getLength();
-    }
-
     @Override
     public boolean isFileBased() {
         return false;

@@ -292,7 +292,7 @@ public final class SharabilityUtility {
      * @since org.netbeans.modules.java.api.common/1 1.5
      */
     public static void makeSureProjectHasCopyLibsLibrary(final AntProjectHelper helper, final ReferenceHelper refHelper) {
-        if (!helper.isSharableProject()) {
+        if (!helper.isSharableProject() || refHelper.getProjectLibraryManager() == null) {
             return;
         }
         ProjectManager.mutex().writeAccess(new Runnable() {

@@ -236,7 +236,7 @@ made subject to such option by the copyright holder.
 
         <replace dir="${netbeans.javadoc.dir}">
             <include name="*.html"/>
-            <replacefilter token="@JDK@" value="http://java.sun.com/javase/6/docs/api/"/>
+            <replacefilter token="@JDK@" value="http://download.oracle.com/javase/6/docs/api/"/>
             &replaces;   
             <replacefilter token="http://root/" value="."/>
             <replacefilter token="$${javadoc.web.root}" value="."/>

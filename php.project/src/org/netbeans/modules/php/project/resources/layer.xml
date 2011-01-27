@@ -283,13 +283,15 @@ made subject to such option by the copyright holder.
                         </file>
                     </folder>
                 </folder>
-            </folder>
-        </folder>
-    </folder>
-    <folder name="GsfPlugins">
-        <folder name="text">
-            <folder name="x-php5">
-                <file name="codecoverage"/>
+                <!-- XXX no longer automatic; cf. GsfJar.registerCodeCoverage -->
+                <file name="org-netbeans-modules-gsf-codecoverage-CoverageHighlightsLayerFactory.instance"/>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-gsf-codecoverage-CoverageSideBar$Factory.instance">
+                        <attr name="position" intvalue="1308"/>
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

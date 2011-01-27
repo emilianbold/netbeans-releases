@@ -53,8 +53,6 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
@@ -75,6 +73,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Lookup;
 
 /**
@@ -246,19 +246,12 @@ public final class DebugTarget implements Record {
      * Make this absorb the information from 'project'.
      */
     public boolean assignProject(Project project) {
-
-	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-
-	if (pdp == null)
-	    return false;
-
-	createProject(false);
-
-	MakeConfigurationDescriptor projectDescriptor =
-	    pdp.getConfigurationDescriptor();
-
-	configuration =
-	    (MakeConfiguration) projectDescriptor.getConfs().getActive();
+        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+        if (conf == null) {
+            return false;
+        }
+	configuration = conf.clone();
+        createProject(false);
 
 	return true;
     }
@@ -445,7 +438,7 @@ public final class DebugTarget implements Record {
 
 	    String executable = getExecutable();
 	    if (executable != null) 
-		newdir = IpeUtils.getDirName(executable);
+		newdir = CndPathUtilitities.getDirName(executable);
 
 	}
 	/* OLD
@@ -467,14 +460,15 @@ public final class DebugTarget implements Record {
     }
 
     /**
-     * Set the flat argument list for this program. 
-     */
+     * Set the flat argument list for this program.
+     * unused
     public void setArgs(String newargs) {
 	getRunProfile().setArgs(newargs);
     }
     public String getArgsFlat() {
 	return getRunProfile().getArgsFlat();
     }
+     */
 
     public String [] getArgs() {
 	return getRunProfile().getArgsArray();

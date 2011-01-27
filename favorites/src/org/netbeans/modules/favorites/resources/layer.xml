@@ -45,19 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <!-- default workspaces, frames and their layout defined by core-->
-    <folder name="Windows2">
-        <folder name="Modes">
-            <folder name="explorer">
-                <file name="favorites.wstcref" url="favorites.wstcref">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="Components">
-            <file name="favorites.settings" url="component.settings"/>
-        </folder>
-    </folder>
     <folder name="Favorites">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
         <file name="Home.shadow">

@@ -44,25 +44,20 @@
 package org.netbeans.modules.cnd.api.toolchain;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 public abstract class AbstractCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
     protected AbstractCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
-        if (!env.isLocal()) {
-            includeFilePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(env));
-        } else {
-            includeFilePrefix = null;
-        }
+        includeFilePrefix = null;
     }
     private String includeFilePrefix;
 
@@ -162,11 +157,11 @@ public abstract class AbstractCompiler extends Tool {
     }
     
     public List<String> getSystemPreprocessorSymbols() {
-        return new Vector<String>();
+        return Collections.<String>emptyList();
     }
 
     public List<String> getSystemIncludeDirectories() {
-        return new Vector<String>();
+        return Collections.<String>emptyList();
     }
 
     /**
@@ -192,7 +187,7 @@ public abstract class AbstractCompiler extends Tool {
     protected String normalizePath(String path) {
         // this call also fixes inambiguties at case insensitive systems when work
         // with case sensitive "path"s returned by remote compilers
-        return CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
+        return CndFileUtils.normalizeAbsolutePath(FileSystemProvider.getFileSystem(getExecutionEnvironment()), path);
     }
 
     protected final String applyPathPrefix(String path) {

@@ -47,9 +47,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
@@ -59,6 +62,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -97,10 +101,13 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         }
         
         List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
+        final Set<? extends URL> aptBuildGenerated = apt ? null : getAptBuildGeneratedFolders(delegate);
         for (ClassPath.Entry entry : delegate.entries()) {
             if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
                 if (!apt) {
-                    res.add(new FR (entry));
+                    if (!aptBuildGenerated.contains(entry.getURL())) {
+                        res.add(new FR (entry));
+                    }
                 } else {
                     final URL aptRoot = AptCacheForSourceQuery.getAptFolder(entry.getURL());
                     if (aptRoot != null) {
@@ -169,6 +176,22 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
             this.eventId++;
         }
         listeners.firePropertyChange(PROP_RESOURCES, null, null);
+    }
+    
+    @NonNull
+    private static Set<? extends URL> getAptBuildGeneratedFolders(@NonNull final ClassPath cp) {
+        final Set<URL> roots = new HashSet<URL>();
+        final Set<URL> aptRoots = new HashSet<URL>();
+        for (ClassPath.Entry entry : cp.entries()) {
+            roots.add(entry.getURL());
+        }
+        for (FileObject fo : cp.getRoots()) {
+            final URL aptRoot = AnnotationProcessingQuery.getAnnotationProcessingOptions(fo).sourceOutputDirectory();
+            if (roots.contains(aptRoot)) {
+                aptRoots.add(aptRoot);
+            }
+        }
+        return aptRoots;
     }
     
     private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener {

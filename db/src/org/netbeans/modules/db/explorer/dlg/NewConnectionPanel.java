@@ -389,7 +389,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         directUrlLabel.setLabelFor(urlField);
         org.openide.awt.Mnemonics.setLocalizedText(directUrlLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionDirectURL")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bTestConnection, "&Test Connection");
+        org.openide.awt.Mnemonics.setLocalizedText(bTestConnection, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.bTestConnection")); // NOI18N
         bTestConnection.addActionListener(formListener);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -416,25 +416,25 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                                 .addComponent(userLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGap(8, 8, 8)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(userField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(sidField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(serviceField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(tnsField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(dsnField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(serverNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(instanceField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                            .addComponent(userField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(sidField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(serviceField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(tnsField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(dsnField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(serverNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(instanceField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(portLabel)
                                 .addGap(2, 2, 2)
                                 .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                            .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                             .addComponent(bTestConnection)
                             .addComponent(passwordCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(urlField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                            .addComponent(templateComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 379, Short.MAX_VALUE)))
+                            .addComponent(urlField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .addComponent(templateComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 383, Short.MAX_VALUE)))
                     .addComponent(directUrlLabel, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
         );
@@ -499,6 +499,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                     .addComponent(directUrlLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        bTestConnection.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionWizard.bTestConnection.ACD")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "ACD_NewConnectionPanel")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.

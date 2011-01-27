@@ -63,7 +63,7 @@ public enum ElementDescriptor {
     //>>>>>>>>>>>>>>>>>>>>>>>>
 
     //NOI18N
-    A(
+A(
         HtmlTagType.HTML,
         new Link("a", "text-level-semantics.html#the-a-element"),
          "Hyperlink",
@@ -71,7 +71,7 @@ public enum ElementDescriptor {
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{},
         EnumSet.of(Attribute.ATTR_HYPERLINK_HREF, Attribute.ATTR_HYPERLINK_TARGET, Attribute.ATTR_HYPERLINK_PING, Attribute.ATTR_HYPERLINK_REL, Attribute.ATTR_HYPERLINK_MEDIA, Attribute.ATTR_HYPERLINK_HREFLANG, Attribute.ATTR_HYPERLINK_TYPE),
         new Link("HTMLAnchorElement", "text-level-semantics.html#htmlanchorelement")
@@ -155,7 +155,7 @@ AUDIO(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{"source"},
         EnumSet.of(Attribute.ATTR_MEDIA_SRC, Attribute.ATTR_MEDIA_PRELOAD, Attribute.ATTR_MEDIA_AUTOPLAY, Attribute.ATTR_MEDIA_LOOP, Attribute.ATTR_MEDIA_CONTROLS),
         new Link("HTMLAudioElement", "video.html#htmlaudioelement")
@@ -267,7 +267,7 @@ CANVAS(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{},
         EnumSet.of(Attribute.ATTR_CANVAS_WIDTH, Attribute.ATTR_CANVAS_HEIGHT),
         new Link("HTMLCanvasElement", "the-canvas-element.html#htmlcanvaselement")
@@ -393,7 +393,7 @@ DEL(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{},
         EnumSet.of(Attribute.ATTR_MOD_CITE, Attribute.ATTR_MOD_DATETIME),
         new Link("HTMLModElement", "edits.html#htmlmodelement")
@@ -785,7 +785,7 @@ INS(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{},
         EnumSet.of(Attribute.ATTR_MOD_CITE, Attribute.ATTR_MOD_DATETIME),
         new Link("HTMLModElement", "edits.html#htmlmodelement")
@@ -883,7 +883,7 @@ MAP(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{"area"},
         EnumSet.of(Attribute.ATTR_MAP_NAME),
         new Link("HTMLMapElement", "the-map-element.html#htmlmapelement")
@@ -981,7 +981,7 @@ OBJECT(
         EnumSet.of(FormAssociatedElementsCategory.LISTED, FormAssociatedElementsCategory.SUBMITTABLE),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{"param"},
         EnumSet.of(Attribute.ATTR_OBJECT_DATA, Attribute.ATTR_OBJECT_TYPE, Attribute.ATTR_OBJECT_NAME, Attribute.ATTR_HYPERLINK_USEMAP, Attribute.ATTR_FAE_FORM, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLObjectElement", "the-iframe-element.html#htmlobjectelement")
@@ -1513,7 +1513,7 @@ VIDEO(
         EnumSet.noneOf(FormAssociatedElementsCategory.class),
         EnumSet.of(ContentType.PHRASING),
         new String[]{},
-        EnumSet.noneOf(ContentType.class),
+        EnumSet.of(ContentType.TRANSPARENT),
         new String[]{"source"},
         EnumSet.of(Attribute.ATTR_MEDIA_SRC, Attribute.ATTR_VIDEO_POSTER, Attribute.ATTR_MEDIA_PRELOAD, Attribute.ATTR_MEDIA_AUTOPLAY, Attribute.ATTR_MEDIA_LOOP, Attribute.ATTR_MEDIA_CONTROLS, Attribute.ATTR_DIM_WIDTH, Attribute.ATTR_DIM_HEIGHT),
         new Link("HTMLVideoElement", "video.html#htmlvideoelement")
@@ -4726,7 +4726,7 @@ HANDLER(
     }
 
     public boolean hasOptionalEndTag() {
-        return ElementDescriptorRules.OPTIONAL_END_TAGS.contains(this);
+        return ElementDescriptorRules.OPTIONAL_END_TAGS.contains(this) || isEmpty();
     }
 
     public boolean isEmpty() {

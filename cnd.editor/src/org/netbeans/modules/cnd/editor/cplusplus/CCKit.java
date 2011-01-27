@@ -53,31 +53,20 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 
-import org.netbeans.cnd.api.lexer.TokenItem;
-import org.openide.util.Exceptions;
 
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
-import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** C++ editor kit with appropriate document */
@@ -149,11 +138,7 @@ public class CCKit extends NbEditorKit {
     Action[] createActions() {
         Action[] superActions = super.createActions();
         Action[] ccActions = new Action[]{
-            new CCDefaultKeyTypedAction(),
             new CCFormatAction(),
-            //	    new CppFoldTestAction(),
-            new CCInsertBreakAction(),
-            new CCDeleteCharAction(deletePrevCharAction, false),
             getToggleCommentAction(),
             getCommentAction(),
             getUncommentAction(),
@@ -182,26 +167,6 @@ public class CCKit extends NbEditorKit {
         return null;
     }
 
-//    public static class CppFoldTestAction extends BaseAction {
-//	public CppFoldTestAction() {
-//	    super("cpp-fold-test-action"); // NOI18N
-//            String sdesc = NbBundle.getBundle(CCKit.class).getString("CppFoldTest"); //NOI18N
-//            String menutext = NbBundle.getBundle(CCKit.class).getString("menu_CppFoldTest"); //NOI18N
-//
-//	    putValue(SHORT_DESCRIPTION, sdesc);
-//	    putValue(BaseAction.POPUP_MENU_TEXT, menutext);
-//	}
-//
-//	public void actionPerformed(ActionEvent evt, JTextComponent target) {
-//	    FoldHierarchy hierarchy = FoldHierarchy.get(target);
-//
-//	    // Hierarchy locking done in the utility method
-//            List types = new ArrayList();
-//            types.add(CppFoldManagerBase.CODE_BLOCK_FOLD_TYPE);
-//            types.add(CppFoldManagerBase.INCLUDES_FOLD_TYPE);
-//            FoldUtilities.expand(hierarchy, types);
-//	}
-//    }
     /** Holds action classes to be created as part of createAction.
     This allows dependent modules to add editor actions to this
     kit on startup.
@@ -220,6 +185,7 @@ public class CCKit extends NbEditorKit {
             putValue("helpID", CCFormatAction.class.getName()); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, final JTextComponent target) {
             if (target != null) {
 
@@ -239,6 +205,7 @@ public class CCKit extends NbEditorKit {
                 try {
                     doc.runAtomic(new Runnable() {
 
+                        @Override
                         public void run() {
                             try {
                                 Caret caret = target.getCaret();
@@ -276,137 +243,4 @@ public class CCKit extends NbEditorKit {
 	}
     }
 
-    public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-
-        @Override
-        protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            BaseDocument doc = Utilities.getDocument(target);
-            int offset = target.getCaretPosition();
-            if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
-                Indent indent = Indent.get(doc);
-                indent.lock();
-                try {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                    indent.reindent(offset);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally{
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                    indent.unlock();
-                }
-            }
-        }
-
-        @Override
-        protected void insertString(BaseDocument doc, int dotPos,
-                Caret caret, String str,
-                boolean overwrite) throws BadLocationException {
-            boolean blockCommentStart = false;
-            if (dotPos > 0 && str.charAt(0) == '*') {
-                TokenItem<TokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos-1, true);
-                if (tokenAtDot.id() == CppTokenId.SLASH) {
-                    // this is begin of block comment
-                    blockCommentStart = true;
-                }
-            }
-            super.insertString(doc, dotPos, caret, str, overwrite);
-            BracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0), blockCommentStart);
-        }
-    } // end class CCDefaultKeyTypedAction
-
-    public static class CCInsertBreakAction extends InsertBreakAction {
-
-        static final long serialVersionUID = -1506173310438326380L;
-        static final boolean DEBUG = false;
-
-        @Override
-        protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
-            int dotPos = caret.getDot();
-            if (BracketCompletion.posWithinString(doc, dotPos)) {
-                try {
-                    if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
-                        || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
-                        // not line continuation
-                        doc.insertString(dotPos, "\"\"", null); //NOI18N
-                        dotPos += 1;
-                        caret.setDot(dotPos);
-                        return dotPos;
-                    }
-                } catch (BadLocationException ex) {
-                }
-            } else {
-                try {
-                    if (BracketCompletion.isAddRightBrace(doc, dotPos)) {
-                        int end = BracketCompletion.getRowOrBlockEnd(doc, dotPos);
-                        String insString = "}"; // NOI18N
-                        // XXX: vv159170 simplest hack
-                        // insert "};" for "{" when in "enum", "class", "struct" and union completion
-                        // NOI18N
-                        // XXX: vv159170 simplest hack
-                        // insert "};" for "{" when in "enum", "class", "struct" and union completion
-                        TokenItem<TokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
-                        if (firstNonWhiteBwd == null || firstNonWhiteBwd.id() != CppTokenId.LBRACE) {
-                            return Boolean.FALSE;
-                        }
-                        int lBracePos = firstNonWhiteBwd.offset();
-                        int lastSepOffset = CndTokenUtilities.getLastCommandSeparator(doc, lBracePos - 1);
-                        if (lastSepOffset == -1 && lBracePos > 0) {
-                            lastSepOffset = 0;
-                        }
-                        if (lastSepOffset != -1 && lastSepOffset < dotPos) {
-                            TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos, false, false);
-                            loop:
-                            while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
-                                TokenId id = cppTokenSequence.token().id();
-                                if(id instanceof CppTokenId) {
-                                    switch ((CppTokenId)id) {
-                                        case RPAREN:
-                                        case RBRACKET:
-                                            break loop;
-                                        case CLASS:
-                                        case UNION:
-                                        case STRUCT:
-                                        case ENUM:
-                                            insString = "};"; // NOI18N
-                                            break loop;
-                                    }
-                                }
-                            }
-                        }
-                        doc.insertString(end, "\n" + insString, null); // NOI18N
-                        // Lock does not need because method is invoked from BaseKit that already lock indent.
-                        Indent.get(doc).reindent(end + 1);
-                        caret.setDot(dotPos);
-                        return Boolean.TRUE;
-                    }
-                } catch (BadLocationException ex) {
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object cookie) {
-            if (cookie != null) {
-                if (cookie instanceof Integer) {
-                    // integer
-                    int nowDotPos = caret.getDot();
-                    caret.setDot(nowDotPos + 1);
-                }
-            }
-        }
-    } // end class CCInsertBreakAction
-
-    public static class CCDeleteCharAction extends ExtDeleteCharAction {
-
-        public CCDeleteCharAction(String nm, boolean nextChar) {
-            super(nm, nextChar);
-        }
-
-        @Override
-        protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
-                throws BadLocationException {
-            BracketCompletion.charBackspaced(doc, dotPos, caret, ch);
-        }
-    } // end class CCDeleteCharAction    
 }

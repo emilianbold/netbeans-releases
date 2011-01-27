@@ -14,6 +14,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.44</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -38,6 +46,7 @@
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
@@ -58,6 +67,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <package>org.netbeans.modules.cnd.api.model</package>
                 <package>org.netbeans.modules.cnd.api.model.deep</package>
                 <package>org.netbeans.modules.cnd.api.model.services</package>

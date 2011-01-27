@@ -67,9 +67,10 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
         for(CsmProject project : ModelImpl.instance().projects()){
             Object platformProject = project.getPlatformProject();
             if (platformProject instanceof NativeProject) {
-                Key aKey = KeyUtilities.createProjectKey(ProjectBase.getUniqueName(platformProject));
+                NativeProject nativeProject = (NativeProject) platformProject;
+                Key aKey = KeyUtilities.createProjectKey(ProjectBase.getUniqueName(nativeProject));
                 if (prjKey.equals(aKey)) {
-                    return new APTFileSearchImplementationImpl((NativeProject) platformProject);
+                    return new APTFileSearchImplementationImpl(nativeProject);
                 }
             }
         }

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
@@ -51,6 +50,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
@@ -64,33 +65,32 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
-
 /**
  * An implementation of SetupProvider that nandles RFS related binaries
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
-    public static final String POSTFIX_64 = "_64"; // NOI18N
 
+    public static final String POSTFIX_64 = "_64"; // NOI18N
     private Map<String, File> binarySetupMap;
     private static final String CONTROLLER = "rfs_controller"; // NOI18N
     private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 
     public RfsSetupProvider() {
-        String[] dirs = new String[] {
-             "SunOS-x86" // NOI18N
-            ,"SunOS-x86_64" // NOI18N
-            ,"Linux-x86" // NOI18N
-            ,"Linux-x86_64" // NOI18N
-            ,"SunOS-sparc" // NOI18N
-            ,"SunOS-sparc_64" // NOI18N
+        String[] dirs = new String[]{
+            "SunOS-x86" // NOI18N
+            , "SunOS-x86_64" // NOI18N
+            , "Linux-x86" // NOI18N
+            , "Linux-x86_64" // NOI18N
+            , "SunOS-sparc" // NOI18N
+            , "SunOS-sparc_64" // NOI18N
         };
         binarySetupMap = new HashMap<String, File>();
         File file;
         for (String dir : dirs) {
-            binarySetupMap.put(dir + "/" + PRELOAD, InstalledFileLocator.getDefault().locate("bin/" +  dir + "/" + PRELOAD, "org.netbeans.modules.cnd.remote", false)); // NOI18N
-            binarySetupMap.put(dir + "/" + CONTROLLER, InstalledFileLocator.getDefault().locate("bin/" +  dir + "/" + CONTROLLER, "org.netbeans.modules.cnd.remote", false)); // NOI18N
+            binarySetupMap.put(dir + "/" + PRELOAD, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + PRELOAD, "org.netbeans.modules.cnd.remote", false)); // NOI18N
+            binarySetupMap.put(dir + "/" + CONTROLLER, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + CONTROLLER, "org.netbeans.modules.cnd.remote", false)); // NOI18N
         }
     }
 
@@ -156,19 +156,21 @@ public class RfsSetupProvider implements SetupProvider {
 
         HostInfo.OSFamily osFamily = null;
         HostInfo.CpuFamily cpuFamily = null;
+        HostInfo.OS os = null;
 
         if (HostInfoUtils.isHostInfoAvailable(env)) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                 osFamily = hostInfo.getOSFamily();
                 cpuFamily = hostInfo.getCpuFamily();
+                os = hostInfo.getOS();
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.log(Level.WARNING, "Exception when getting host info:", ex);
             } catch (CancellationException ex) {
                 // don't log CancellationException
             }
         }
-        
+
         if (osFamily == null || cpuFamily == null) { // in fact either both or none is null
             RemoteServerRecord record = RemoteServerList.getInstance().get(env, false);
             if (record != null) {
@@ -186,6 +188,12 @@ public class RfsSetupProvider implements SetupProvider {
             case LINUX:
                 return (cpuFamily == HostInfo.CpuFamily.X86) ? Boolean.TRUE : Boolean.FALSE;
             case SUNOS:
+                //BZ #189231 Smart secure copy does not work on (remote) Solaris 8
+                //Disable Automatic copying on Solaris 8 as it is not supported platform
+                //NFS file sharing can be used in this case
+                if (getSolarisOSVersionNumber(os.getVersion()) <= 8){
+                    return Boolean.FALSE;
+                }
                 return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? Boolean.TRUE : Boolean.FALSE;
             case MACOSX:
             case WINDOWS:
@@ -193,6 +201,28 @@ public class RfsSetupProvider implements SetupProvider {
             default:
                 return Boolean.FALSE;
         }
+    }
+
+    private static int getSolarisOSVersionNumber(String versionString) {
+        String prefixToStrip = "Oracle "; // NOI18N
+        if (versionString.startsWith(prefixToStrip)) {
+            versionString = versionString.substring(prefixToStrip.length());
+        }
+        
+        Pattern p = Pattern.compile("[a-zA-Z]+[ ]([\\d]+).*"); // NOI18N
+        Matcher m = p.matcher(versionString);
+        String result = "-1"; // NOI18N
+        if (m.matches()) {
+            result = m.group(1);
+        }
+
+        int version = -1;
+        try {
+            version = Integer.valueOf(result);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+        return version;
     }
 
     public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {

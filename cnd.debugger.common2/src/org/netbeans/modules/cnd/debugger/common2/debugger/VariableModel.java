@@ -355,7 +355,8 @@ public abstract class VariableModel extends ModelListenerSupport
 		     columnID == Constants.PROP_WATCH_VALUE ||
 		     columnID == Constants.PROP_LOCAL_TO_STRING ||
 		     columnID == Constants.PROP_WATCH_TO_STRING ) {
-			return new VariableValue(v.getAsText(), v.getDelta());
+			VariableValue value = new VariableValue(v.getAsText(), v.getDelta());
+			return value.toString();
 		}
 	    else return null;
 	} else {
@@ -373,7 +374,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	    Variable v = (Variable) node;
 	    if (columnID == Constants.PROP_LOCAL_VALUE ||
 		columnID == Constants.PROP_WATCH_VALUE ) 
-		return !v.isLeaf() && !v.isPtr();
+		return !v.isEditable();
 	    else
 		// 6500791 Type column is read only
 		return true;

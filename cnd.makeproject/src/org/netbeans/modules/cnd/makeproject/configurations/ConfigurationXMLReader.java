@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,7 +79,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
     private static int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-    private FileObject projectDirectory;
+    private final FileObject projectDirectory;
     private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
@@ -117,7 +118,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                         try {
                             Thread.sleep(10000); // to emulate long reading for testing purpose
                         } catch (InterruptedException ex) {
-                            ex.printStackTrace();
+                            ex.printStackTrace(System.err);
                         }
                     }
                     if (_read(relativeOffset, tag, xml, configurationDescriptor) == null) {
@@ -189,8 +190,16 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
         // the makefiles will be generated before the project is being built
+        boolean isMakefileProject = false;
+        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
+            MakeConfiguration makeConfiguration = (MakeConfiguration)configuration;
+            if (makeConfiguration.isMakefileConfiguration()) {
+                isMakefileProject = true;
+                break;
+            }
+        }
         FileObject makeImpl = projectDirectory.getFileObject("nbproject/Makefile-impl.mk"); // NOI18N
-        configurationDescriptor.setModified(makeImpl == null || relativeOffset != null);
+        configurationDescriptor.setModified((!isMakefileProject && makeImpl == null) || relativeOffset != null);
 
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
@@ -213,7 +222,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             SwingUtilities.invokeLater(warning);
         }
 
-        if (configurationDescriptor.getModified()) {
+        if (configurationDescriptor.isModified()) {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }

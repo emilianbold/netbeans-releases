@@ -140,11 +140,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init-clusters">
         <property name="main.clusters" value="
                                          cnd(cpp), dlight(cpp),
-                                         apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                         ruby(ruby),                                       
+                                         apisupport(javase), profiler(javase), java(javase), harness(javase),                                                                              
 					 groovy(groovy),
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), groovy(javaee),
+                                         enterprise(javaee), 
                                          mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
@@ -223,8 +222,7 @@ Microsystems, Inc. All Rights Reserved.
                                         javase(${javase-title}),
                                         javaee(${javaee-title}),
                                         javame(${javame-title}),
-                                        cpp(${cpp-title}),
-                                        ruby(${ruby-title}),
+                                        cpp(${cpp-title}),                                       
                                         groovy(${groovy-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})
@@ -292,11 +290,10 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
-                                             -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),
-                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg),
+                                             -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>
 
@@ -498,7 +495,7 @@ Microsystems, Inc. All Rights Reserved.
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
 
         <ant target="build-dmg">             
-             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
              <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
              <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
@@ -541,7 +538,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!--<filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>-->
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
-                <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
+                <!--<filter token="SIZE_RUBY" value="${sizeof.ruby}"/>-->
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>

@@ -258,8 +258,6 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
         // TODO - should be 2
         assertEquals("Wrong number of events when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
-        // TODO - should be 0
-        assertEquals("Wrong number of Attribute change events (see #129178).", 1, fcl.check(EventType.ATTRIBUTE_CHANGED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
 //        TestUtils.gcAll();

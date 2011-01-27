@@ -56,6 +56,7 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -396,6 +397,12 @@ public abstract class PsProvider {
 	public int commandColumnIndex() {
 	    return 4;
 	}
+        
+        // see IZ 193741 - skip status column
+        @Override
+        protected int firstPosition() {
+            return 1;
+        }
 
         public int pidColumnIndex() {
 	    return 0;
@@ -406,7 +413,7 @@ public abstract class PsProvider {
 	}
 
 	protected String uidCommand() {
-	    return "id -u";	// NOI18N
+	    return getUtilityPath("id") + " -u";	// NOI18N
 	}
 
 	protected String psCommand(String uid) {
@@ -417,20 +424,32 @@ public abstract class PsProvider {
 	    if (Log.Ps.null_uid)
 		uid = null;
 
+            // Always show all processes on Windows (-W option), see IZ 193743
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
-		return "ps";	// NOI18N
+		return getUtilityPath("ps") + " -W";	// NOI18N
 	    } else {
-		return "ps -u " + uid;	// NOI18N
+		return getUtilityPath("ps") + " -u " + uid + " -W";	// NOI18N
 	    }
 	}
+        
+        private String getUtilityPath(String util) {
+            File file = new File(CompilerSetUtils.getCygwinBase() + "/bin", util + ".exe"); // NOI18N
+            if (!file.exists()) {
+                file = new File(CompilerSetUtils.getCommandFolder(null), util + ".exe"); // NOI18N
+            }
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+            return util;
+        }
     }
 
     public static synchronized PsProvider getDefault(Host host) {
         PsProvider psProvider = host.getResource(PsProvider.class);
         if (psProvider == null) {
             try {
-                ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+                ExecutionEnvironment exEnv = host.executionEnvironment();
                 if (!ConnectionManager.getInstance().isConnectedTo(exEnv)) {
                     ConnectionManager.getInstance().connectTo(exEnv);
                 }
@@ -466,11 +485,15 @@ public abstract class PsProvider {
 
     // OLD protected abstract String[] psCommand1(String root); // for executor
     protected abstract String uidCommand(); // for Runtime.exe
+    
+    protected int firstPosition() {
+        return 0;
+    }
 
     protected final ExecutionEnvironment exEnv;
 
     private PsProvider(Host host) {
-        exEnv = ExecutionEnvironmentFactory.fromUniqueID(host.getHostKey());
+        exEnv = host.executionEnvironment();
     }
 
     // "host" for getUid is usually "localhost"
@@ -605,7 +628,7 @@ public abstract class PsProvider {
 
 	    if (i >= 0) { // found
 		if (cx == 0) // first column
-		    fields[cx][0] = 0;
+		    fields[cx][0] = firstPosition();
 		fields[cx][1] = i + headerStr()[cx].length() - 1;
 	    }
 
@@ -658,15 +681,8 @@ public abstract class PsProvider {
 		process = npb.call();
 	    } catch (Exception e) {
 		logger.log(Level.WARNING, "Failed to exec ps command", e);
-		return psData;
+		return null;
 	    } 
-
-	    int exitCode = process.waitFor();
-	    if (exitCode != 0) {
-		String msg = "ps command failed with " + exitCode; // NOI18N
-		logger.log(Level.WARNING, msg);
-		return psData;
-	    }
 
 	    int lineNo = 0;
 	    for (String line : ProcessUtils.readProcessOutput(process)) {
@@ -682,6 +698,13 @@ public abstract class PsProvider {
 			psData.addProcess(line);
                     }
 		}
+	    }
+            
+            int exitCode = process.waitFor();
+	    if (exitCode != 0) {
+		String msg = "ps command failed with " + exitCode; // NOI18N
+		logger.log(Level.WARNING, msg);
+		return null;
 	    }
 
 	} catch (Exception e) {

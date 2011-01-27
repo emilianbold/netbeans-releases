@@ -159,6 +159,7 @@ public class DiagnosticUnresolved {
             out.println(" By files:"); // NOI18N
             
             Comparator<CsmFile> comp = new Comparator<CsmFile>() {
+                @Override
                 public int compare(CsmFile o1, CsmFile o2) {
                     if( o1 == o2 ) {
                         return 0;
@@ -228,6 +229,7 @@ public class DiagnosticUnresolved {
         out.println("\n**** Unresolved names statistics\n"); // NOI18N
         
         Comparator<UnresolvedInfoBase> comp = new Comparator<UnresolvedInfoBase>() {
+            @Override
             public int compare(UnresolvedInfoBase ui1, UnresolvedInfoBase ui2) {
                 if( ui1 == ui2 ) {
                     return 0;

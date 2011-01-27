@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -90,6 +91,7 @@ import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -151,35 +153,14 @@ public final class OpenProjectList {
     public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
-    static StringBuffer details;
-    static {
-        boolean ea = false;
-        assert ea = true;
-        if (ea) {
-            details = new StringBuffer();
-        }
-    }
     static void log(LogRecord r) {
         LOGGER.log(r);
-        printMsg(r.getMessage(), r.getParameters());
     }
     static void log(Level l, String msg, Object... params) {
         LOGGER.log(l, msg, params);
-        printMsg(msg, params);
     }
     static void log(Level l, String msg, Throwable e) {
         LOGGER.log(l, msg, e);
-        printMsg(msg, e);
-    }
-    private static void printMsg(String msg, Object... params) {
-        StringBuffer sb = details;
-        if (sb != null) {
-            sb.append(msg);
-            for (Object p : params) {
-                sb.append("\n  ").append(p);
-            }
-            sb.append("\n");
-        }
     }
 
 
@@ -247,10 +228,10 @@ public final class OpenProjectList {
 
     static void preferredProject(Project lazyP) {
         if (lazyP != null) {
-            getDefault().LOAD.preferredProject(lazyP);
+            getDefault().LOAD.preferredProject(Collections.singleton(lazyP.getProjectDirectory()));
         }
     }
-    
+
     Future<Project[]> openProjectsAPI() {
         return LOAD;
     }
@@ -329,15 +310,7 @@ public final class OpenProjectList {
                         progress.finish();
                     }
                     updateGlobalState();
-                    StringBuffer os = null;
-                    boolean verify = false;
-                    assert verify = true;
-                    if (verify) {
-                        os = details;
-                    }
-                    ProjectsRootNode.checkNoLazyNode(os);
-                    details = null;
-                    os = null;
+                    ProjectsRootNode.checkNoLazyNode();
                     return;
                 case 2:
                     // finished, oK
@@ -347,16 +320,13 @@ public final class OpenProjectList {
             }
         }
 
-        final void preferredProject(final Project lazyP) {
+        final void preferredProject(final Set<FileObject> lazyPDirs) {
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
-                for (Project p : toOpenProjects) {
+                for (Project p : new ArrayList<Project>(toOpenProjects)) {
                     FileObject dir = p.getProjectDirectory();
                     assert dir != null : "Project has real directory " + p;
-                    if (dir == null) {
-                        continue;
-                    }
-                    if (dir.equals(lazyP.getProjectDirectory())) {
+                    if (lazyPDirs.contains(dir)) {
                         toOpenProjects.remove(p);
                         toOpenProjects.addFirst(p);
                         return null;
@@ -485,12 +455,21 @@ public final class OpenProjectList {
 
         }
 
-        public void resultChanged(LookupEvent ev) {
+        public @Override void resultChanged(LookupEvent ev) {
+            final Set<FileObject> lazyPDirs = new HashSet<FileObject>();
             for (FileObject fileObject : currentFiles.allInstances()) {
                 Project p = FileOwnerQuery.getOwner(fileObject);
-                OpenProjectList.preferredProject(p);
+                if (p != null) {
+                    lazyPDirs.add(p.getProjectDirectory());
+                }
             }
-
+            if (!lazyPDirs.isEmpty()) {
+                Hacks.RP.post(new Runnable() {
+                    public @Override void run() {
+                        getDefault().LOAD.preferredProject(lazyPDirs);
+                    }
+                });
+            }
         }
 
         final void enter() {
@@ -677,6 +656,7 @@ public final class OpenProjectList {
         
         while (!toHandle.isEmpty()) {
             Project p = toHandle.remove(0);
+            assert p != null;
             Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
             
             if (subprojects == null) {
@@ -692,6 +672,7 @@ public final class OpenProjectList {
             projectsToOpen.add(p);
             
             for (Project sub : subprojects) {
+                assert sub != null;
                 if (!projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
                     toHandle.add(sub);
                 }
@@ -960,7 +941,9 @@ public final class OpenProjectList {
                         }
                         if (fail) {
                             logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                            throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                            Exceptions.attachSeverity(x, Level.INFO);
+                            throw x;
                         }
                     }
                 } catch (IOException ex) {
@@ -1205,8 +1188,8 @@ public final class OpenProjectList {
         return itemAdded;
     }
 
-    private boolean doOpenProject(final Project p) {
-        LOGGER.finer("doOpenProject(): opening project " + p.toString());
+    private boolean doOpenProject(final @NonNull Project p) {
+        LOGGER.log(Level.FINER, "doOpenProject: {0}", p);
         final AtomicBoolean alreadyOpen = new AtomicBoolean();
         boolean recentProjectsChanged = ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public @Override Boolean run() {

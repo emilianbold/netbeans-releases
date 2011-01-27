@@ -300,8 +300,15 @@ public class ElementOverlay {
         if (tm == null || tm.getKind() != TypeKind.DECLARED) {
             return;
         }
-
-        result.add(resolve(ast, elements, ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().toString()));
+        
+        String fqn = ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().toString();
+        Element resolved = resolve(ast, elements, fqn);
+        
+        if (resolved != null) {
+            result.add(resolved);
+        } else {
+            Logger.getLogger(ElementOverlay.class.getName()).log(Level.FINE, "cannot resolve {0}", fqn);
+        }
     }
 
     public Element wrap(ASTService ast, Elements elements, Element original) {
@@ -373,7 +380,9 @@ public class ElementOverlay {
         result.addAll(el.getEnclosedElements());
 
         for (Element parent : getAllSuperElements(ast, elements, el)) {
-            result.addAll(getAllMembers(ast, elements, parent));
+            if (!el.equals(parent)) {
+                result.addAll(getAllMembers(ast, elements, parent));
+            }
         }
 
         return result;

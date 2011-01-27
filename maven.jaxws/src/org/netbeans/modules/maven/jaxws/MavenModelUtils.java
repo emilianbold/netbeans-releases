@@ -75,7 +75,6 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Resource;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -468,6 +467,21 @@ public final class MavenModelUtils {
                 rep.setName("Repository for library[metro]"); //NOI18N
             }
         }
+        addPluginRepository( model );
+    }
+    
+    public static void addPluginRepository(POMModel model){
+        assert model.isIntransaction();
+        
+        Repository pluginRepository = model.getFactory().createPluginRepository();
+        
+        String javaNet = "java.net";                                    // NOI18N
+        pluginRepository.setName( javaNet );
+        pluginRepository.setId(javaNet);
+        pluginRepository.setUrl("http://download.java.net/maven/2/");    // NOI18N
+        
+        org.netbeans.modules.maven.model.pom.Project project = model.getProject();
+        project.addPluginRepository(pluginRepository);
     }
 
     /** Detect JAX-WS 2.1 Library in project.
@@ -492,16 +506,10 @@ public final class MavenModelUtils {
      * @param project Project
      */
     public static void addJavadoc(final Project project) {
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
-                if (mavenProject != null) {
-                    mavenProject.downloadDependencyAndJavadocSource();
-                }
-            }
-
-        });
+        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (mavenProject != null) {
+            mavenProject.downloadDependencyAndJavadocSource(false);
+        }
     }
 
     /** get list of wsdl files in Maven project

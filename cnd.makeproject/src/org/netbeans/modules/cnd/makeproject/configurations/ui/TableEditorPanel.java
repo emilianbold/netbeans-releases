@@ -44,10 +44,11 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Image;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -65,7 +66,11 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.ImageUtilities;
@@ -75,6 +80,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
     private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"); // NOI18N
     private String baseDir;
+    private MakeConfiguration conf;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
 
@@ -88,8 +94,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
     this(objects, null, null);
     }
      */
-    public TableEditorPanel(List<LibraryItem> objects, JButton[] extraButtons, String baseDir) {
+    public TableEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons, String baseDir) {
         super(objects, extraButtons);
+        this.conf = conf;
         this.baseDir = baseDir;
     }
 
@@ -97,7 +104,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
     @Override
     public int getSelectedIndex() {
         int index = getTargetList().getSelectedRow();
-        if (index >= 0 && index < listData.size()) {
+        if (index >= 0 && index < getListDataSize()) {
             return index;
         } else {
             return 0;
@@ -109,14 +116,24 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         getTargetList().getSelectionModel().setSelectionInterval(i, i);
     }
 
+    private int calculateColumnWidth(String txt) {
+        Font font = getTargetList().getFont();
+        FontMetrics fontMetrics = getTargetList().getFontMetrics(font);
+        int width = fontMetrics.stringWidth(txt);
+        return width;
+    }
+
     @Override
-    protected void setData(Vector data) {
+    protected void setData(List<LibraryItem> data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
-        getTargetList().getColumnModel().getColumn(1).setPreferredWidth(100);
-        getTargetList().getColumnModel().getColumn(1).setMaxWidth(200);
-        getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
-        getTargetList().getColumnModel().getColumn(2).setMaxWidth(100);
+        getTargetList().getColumnModel().getColumn(0).setPreferredWidth(1000);
+        int w1 = calculateColumnWidth(getString("CONFIGURATION")) + 10;
+        getTargetList().getColumnModel().getColumn(1).setPreferredWidth(w1);
+        getTargetList().getColumnModel().getColumn(1).setMinWidth(w1);
+        int w2 = calculateColumnWidth(getString("BUILD")) + 10;
+        getTargetList().getColumnModel().getColumn(2).setPreferredWidth(w2);
+        getTargetList().getColumnModel().getColumn(2).setMinWidth(w2);
         //
         getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
@@ -160,9 +177,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
         public MyTable() {
             //setTableHeader(null); // Hides table headers
-            if (getRowHeight() < 19) {
-                setRowHeight(19);
-            }
+//            if (getRowHeight() < 19) {
+//                setRowHeight(19);
+//            }
             getAccessibleContext().setAccessibleDescription(""); // NOI18N
             getAccessibleContext().setAccessibleName(""); // NOI18N
         }
@@ -188,7 +205,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             if (col == 0) {
                 return super.getCellEditor(row, col);
             } else if (col == 1) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) listData.elementAt(row);
+                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) getElementAt(row);
                 Project project = projectItem.getProject(baseDir);
                 if (project == null) {
                     return super.getCellEditor(row, col);
@@ -202,9 +219,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 }
             } else {
                 // col 2
-                LibraryItem libraryItem = listData.elementAt(row);
+                LibraryItem libraryItem = getElementAt(row);
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) listData.elementAt(row);
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) getElementAt(row);
                     JCheckBox checkBox = new JCheckBox();
                     checkBox.setSelected(((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().getBuild());
                     return new DefaultCellEditor(checkBox);
@@ -238,7 +255,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            Object element = listData.elementAt(row);
+            Object element = getElementAt(row);
             if (!(element instanceof LibraryItem)) {
                 // FIXUP ERROR!
                 label.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/resources/blank.gif", false)); // NOI18N
@@ -271,6 +288,10 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                     JCheckBox checkBox = new JCheckBox();
                     checkBox.setSelected(((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().getBuild());
                     checkBox.setBackground(label.getBackground());
+                    if (conf.isMakefileConfiguration()) {
+                        checkBox.setEnabled(false);
+                        checkBox.setSelected(false);
+                    }
                     return checkBox;
                 } else {
                     label.setText(""); // NOI18N
@@ -298,22 +319,28 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
         @Override
         public int getRowCount() {
-            return listData.size();
+            return getListDataSize();
         }
 
         @Override
         public Object getValueAt(int row, int col) {
-            return listData.elementAt(row);
+            return getElementAt(row);
         }
 
         @Override
         public boolean isCellEditable(int row, int col) {
-            Object element = listData.elementAt(row);
+            Object element = getElementAt(row);
             LibraryItem libraryItem = (LibraryItem) element;
             if (col == 0) {
                 return libraryItem.canEdit();
             } else if (col == 1) {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
+                    Project libProject = ((LibraryItem.ProjectItem) libraryItem).getProject(baseDir);
+                    ConfigurationDescriptorProvider configurationDescriptorProvider = libProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    MakeConfigurationDescriptor makeConfigurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
+                    if (makeConfigurationDescriptor.getState() == ConfigurationDescriptor.State.BROKEN) { // See IZ 193075
+                        return false;
+                    }
                     if (((LibraryItem.ProjectItem) libraryItem).getProject(baseDir) != null) {
                         return true;
                     } else {
@@ -324,7 +351,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 }
             } else {
                 // col 2
-                if (libraryItem instanceof LibraryItem.ProjectItem) {
+                if (!conf.isMakefileConfiguration() && libraryItem instanceof LibraryItem.ProjectItem) {
                     return true;
                 } else {
                     return false;
@@ -334,7 +361,10 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
         @Override
         public void setValueAt(Object value, int row, int col) {
-            LibraryItem libraryItem = listData.elementAt(row);
+            if (value == null) {
+                return; // See IZ 193075
+            }
+            LibraryItem libraryItem = getElementAt(row);
             if (col == 0) {
                 libraryItem.setValue((String) value);
                 fireTableCellUpdated(row, col);
@@ -342,7 +372,6 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 // FIXUP: should do a deep clone of the list
                 MakeArtifact oldMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact();
                 boolean abs = CndPathUtilitities.isPathAbsolute(oldMakeArtifact.getProjectLocation());
-                listData.removeElementAt(row);
                 MakeArtifact makeArtifact = ((MakeArtifactWrapper) value).getMakeArtifact();
                 String projectLocation = makeArtifact.getProjectLocation();
                 String workingDirectory = makeArtifact.getWorkingDirectory();
@@ -351,9 +380,9 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                     projectLocation = CndPathUtilitities.toRelativePath(baseDir, projectLocation);
                     workingDirectory = CndPathUtilitities.toRelativePath(baseDir, workingDirectory);
                 }
-                makeArtifact.setProjectLocation(CndPathUtilitities.normalize(projectLocation));
-                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalize(workingDirectory));
-                listData.add(row, new LibraryItem.ProjectItem(makeArtifact));
+                makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
+                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));
+                replaceElement(libraryItem, new LibraryItem.ProjectItem(makeArtifact));
                 // FIXUP
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);
@@ -364,8 +393,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
                     MakeArtifact newMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact().clone();
                     newMakeArtifact.setBuild(!newMakeArtifact.getBuild());
-                    listData.removeElementAt(row);
-                    listData.add(row, new LibraryItem.ProjectItem(newMakeArtifact));
+                    replaceElement(libraryItem, new LibraryItem.ProjectItem(newMakeArtifact));
                 }
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);

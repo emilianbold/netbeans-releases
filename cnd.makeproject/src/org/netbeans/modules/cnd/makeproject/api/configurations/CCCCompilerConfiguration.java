@@ -45,6 +45,8 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
@@ -92,10 +94,13 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private BooleanConfiguration inheritIncludes;
     private VectorConfiguration<String> preprocessorConfiguration;
     private BooleanConfiguration inheritPreprocessor;
+    private BooleanConfiguration useLinkerPkgConfigLibraries;
+    private MakeConfiguration owner;
 
     // Constructors
-    protected CCCCompilerConfiguration(String baseDir, CCCCompilerConfiguration master) {
+    protected CCCCompilerConfiguration(String baseDir, CCCCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master);
+        this.owner = owner;
         libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, getLibraryLevelOptions());
         standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
         languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
@@ -103,6 +108,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         inheritIncludes = new BooleanConfiguration(true);
         preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
         inheritPreprocessor = new BooleanConfiguration(true);
+        useLinkerPkgConfigLibraries = new BooleanConfiguration(true);
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
@@ -122,21 +128,19 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 includeDirectories.getModified() ||
                 inheritIncludes.getModified() ||
                 preprocessorConfiguration.getModified() ||
-                inheritPreprocessor.getModified();
+                inheritPreprocessor.getModified() ||
+                useLinkerPkgConfigLibraries.getModified();
     }
 
-    // To be overridden
-    protected String[] getLibraryLevelOptions() {
+    protected final String[] getLibraryLevelOptions() {
         return LIBRARY_LEVEL_OPTIONS;
     }
 
-    // To be overridden
-    protected String[] getStandardsEvolutionOptions() {
+    protected final String[] getStandardsEvolutionOptions() {
         return STANDARD_OPTIONS;
     }
 
-    // To be overridden
-    protected String[] getLanguageExtOptions() {
+    protected final String[] getLanguageExtOptions() {
         return LANGUAGE_EXT_OPTIONS;
     }
 
@@ -203,6 +207,29 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         this.inheritPreprocessor = inheritPreprocessor;
     }
 
+    // Linker libraries
+    public BooleanConfiguration getUseLinkerLibraries() {
+        return useLinkerPkgConfigLibraries;
+    }
+
+    public void setUseLinkerLibraries(BooleanConfiguration useLinkerPkgConfigLibraries) {
+        this.useLinkerPkgConfigLibraries = useLinkerPkgConfigLibraries;
+    }
+
+    /**
+     * @return the owner
+     */
+    public MakeConfiguration getOwner() {
+        return owner;
+    }
+
+    /**
+     * @param owner the owner to set
+     */
+    public void setOwner(MakeConfiguration owner) {
+        this.owner = owner;
+    }
+
     // Clone and assign
     protected void assign(CCCCompilerConfiguration conf) {
         // BasicCompilerConfiguration
@@ -215,6 +242,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getInheritIncludes().assign(conf.getInheritIncludes());
         getPreprocessorConfiguration().assign(conf.getPreprocessorConfiguration());
         getInheritPreprocessor().assign(conf.getInheritPreprocessor());
+        getUseLinkerLibraries().assign(conf.getUseLinkerLibraries());
     }
 
     // Sheet
@@ -237,7 +265,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 master = null;
             }
         }
-        set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+        set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, getBaseDir(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         // Preprocessor Macros
         inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration) getMaster();
@@ -249,10 +277,30 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 master = null;
             }
         }
-        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions"))); // NOI18N
+        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions"))); // NOI18N
 
+        if (this.getMaster() == null) {
+            set1.put(new BooleanNodeProp(getUseLinkerLibraries(), true,
+                    "use-linker-libraries", getString("UseLinkerLibrariesTxt"), getString("UseLinkerLibrariesHint"))); // NOI18N
+        }
         return set1;
     }
+
+
+    private CCCCompilerConfiguration getTopMaster() {
+        CCCCompilerConfiguration aMaster = (CCCCompilerConfiguration) getMaster();
+        if (aMaster == null) {
+            return this;
+        }
+        while (true) {
+            CCCCompilerConfiguration m = (CCCCompilerConfiguration) aMaster.getMaster();
+            if (m == null) {
+                return aMaster;
+            }
+            aMaster = m;
+        }
+    }
+
 
     // Sheet
     protected Sheet getSheet(Project project) {
@@ -264,6 +312,38 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(CCCCompilerConfiguration.class, s);
+    }
+
+    private static final String LIB_FLAG = " --libs "; // NOI18N
+    private static final String FLAGS_FLAG = " --cflags "; // NOI18N
+
+    protected String getLibrariesFlags() {
+        CCCCompilerConfiguration topMaster = getTopMaster();
+        if (!topMaster.getUseLinkerLibraries().getValue() || topMaster.getOwner() == null) {
+            return "";
+        }
+        StringBuilder buf = new StringBuilder();
+        for (LibraryItem lib : topMaster.getOwner().getLinkerConfiguration().getLibrariesConfiguration().getValue()) {
+            if (lib.getType() == LibraryItem.OPTION_ITEM) {
+                OptionItem option = (OptionItem) lib;
+                String task = option.getLibraryOption();
+                if (task.length() > 2  && task.charAt(0) == '`' && task.charAt(task.length()-1) == '`') { // NOI18N
+                    int i = task.indexOf(LIB_FLAG);
+                    if (i > 0) {
+                        if (buf.length() > 0) {
+                            buf.append(' ');
+                        }
+                        buf.append(task.substring(0, i));
+                        buf.append(FLAGS_FLAG);
+                        buf.append( task.substring(i+LIB_FLAG.length()));
+                    }
+                }
+            }
+        }
+        if (buf.length() > 0) {
+            buf.append(' ');
+        }
+        return buf.toString();
     }
 
     protected abstract String getUserIncludeFlag(CompilerSet cs);

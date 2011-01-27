@@ -43,6 +43,7 @@ package org.netbeans.modules.html.parser;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -65,15 +66,16 @@ import org.openide.util.NbBundle;
  */
 public class HtmlTagProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(HtmlTagProvider.class.getName());
-    private static HashMap<String, HtmlTag> MAP = new HashMap<String, HtmlTag>();
+    //global maps
+    private static HashMap<String, HtmlTag> TAGS = new HashMap<String, HtmlTag>();
+    private static Map<Attribute, HtmlTagAttribute> ATTRS = new EnumMap<Attribute, HtmlTagAttribute>(Attribute.class);
 
     public static synchronized HtmlTag getTagForElement(String name) {
         assert name != null;
-        HtmlTag impl = MAP.get(name);
+        HtmlTag impl = TAGS.get(name);
         if (impl == null) {
             impl = new ElementName2HtmlTagAdapter(name);
-            MAP.put(name, impl);
+            TAGS.put(name, impl);
         }
         return impl;
     }
@@ -84,6 +86,15 @@ public class HtmlTagProvider {
             converted.add(getTagForElement(element.getName()));
         }
         return converted;
+    }
+
+    private static synchronized HtmlTagAttribute getHtmlTagAttributeInstance(Attribute attr) {
+        HtmlTagAttribute htmlTagAttribute = ATTRS.get(attr);
+        if(htmlTagAttribute == null) {
+            htmlTagAttribute = new HtmlTagAttributeAdapter(attr);
+            ATTRS.put(attr, htmlTagAttribute);
+        }
+        return htmlTagAttribute;
     }
 
     private static class ElementName2HtmlTagAdapter implements HtmlTag {
@@ -97,9 +108,6 @@ public class HtmlTagProvider {
         private ElementName2HtmlTagAdapter(String elementName) {
             this.elementName = elementName;
             this.descriptor = ElementDescriptor.forName(elementName);
-            this.attrs = isPureHtmlTag()
-                    ? wrap(descriptor.getAttributes())
-                    : Collections.<String, HtmlTagAttribute>emptyMap();
             this.type = findType();
         }
 
@@ -111,20 +119,15 @@ public class HtmlTagProvider {
             return isPureHtmlTag() ? descriptor.getTagType() : HtmlTagType.UNKNOWN;
         }
 
-        private Map<String, HtmlTagAttribute> wrap(Collection<Attribute> attrNames) {
-            if (attrNames == null) {
-                return Collections.emptyMap();
-            }
-            Map<String, HtmlTagAttribute> attributes = new HashMap<String, HtmlTagAttribute>();
-            for (Attribute an : attrNames) {
-                HtmlTagAttribute hta = new HtmlTagAttributeAdapter(an);
-                if (hta != null) {
-                    attributes.put(an.getName(), hta);
-                } else {
-                    LOGGER.info(String.format("Unknown attribute %s requested.", an));//NOI18N
+        private void initAttributes() {
+            if(isPureHtmlTag()) {
+                attrs = new HashMap<String, HtmlTagAttribute>();
+                for (Attribute attr : descriptor.getAttributes()) {
+                    attrs.put(attr.getName(), getHtmlTagAttributeInstance(attr));
                 }
+            } else {
+                attrs = Collections.emptyMap();
             }
-            return attributes;
         }
 
         public String getName() {
@@ -158,7 +161,10 @@ public class HtmlTagProvider {
             return String.format("ElementName2HtmlTagAdapter{name=%s}", getName());//NOI18N
         }
 
-        public Collection<HtmlTagAttribute> getAttributes() {
+        public synchronized Collection<HtmlTagAttribute> getAttributes() {
+            if(attrs == null) {
+                initAttributes();
+            }
             return attrs.values();
         }
 
@@ -174,7 +180,10 @@ public class HtmlTagProvider {
              return isPureHtmlTag() ? descriptor.hasOptionalEndTag() : false;
         }
 
-        public HtmlTagAttribute getAttribute(String name) {
+        public synchronized HtmlTagAttribute getAttribute(String name) {
+            if(attrs == null) {
+                initAttributes();
+            }
             return attrs.get(name);
         }
 
@@ -211,15 +220,14 @@ public class HtmlTagProvider {
 
             return isPureHtmlTag() && descriptor.getHelpLink() != null
                     ? new DefaultHelpItem(
-                    Documentation.getDefault().resolveLink(descriptor.getHelpLink()),
-                    Documentation.getDefault(),
+                    HtmlDocumentation.getDefault().resolveLink(descriptor.getHelpLink()),
+                    HtmlDocumentation.getDefault(),
                     header.toString())
                     : null;
 
         }
 
     }
-
 
     private static class HtmlTagAttributeAdapter implements HtmlTagAttribute {
 
@@ -254,8 +262,8 @@ public class HtmlTagProvider {
             header.append("'</h2>");//NOI18N
 
             return new DefaultHelpItem(
-                    Documentation.getDefault().resolveLink(attr.getHelpLink()),
-                    Documentation.getDefault(),
+                    HtmlDocumentation.getDefault().resolveLink(attr.getHelpLink()),
+                    HtmlDocumentation.getDefault(),
                     header.toString());
         }
     }

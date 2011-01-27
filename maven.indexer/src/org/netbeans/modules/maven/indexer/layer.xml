@@ -58,15 +58,13 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="100"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.maven.indexer.Bundle#central"/>
                     <attr name="provider" stringvalue="nexus"/>
-                    <attr name="repoUrl" stringvalue="http://repo1.maven.org/maven2"/>
-                    <attr name="repoIndexUrl" stringvalue="http://repo1.maven.org/maven2/.index"/>
+                    <attr name="repoUrl" stringvalue="http://repo1.maven.org/maven2/"/>
                 </file>
                 <file name="java.net2.ext">
                     <attr name="position" intvalue="150"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.maven.indexer.Bundle#java.net2.ext"/>
                     <attr name="provider" stringvalue="nexus"/>
                     <attr name="repoUrl" stringvalue="http://download.java.net/maven/2/"/>
-                    <attr name="repoIndexUrl" stringvalue="http://download.java.net/maven/2/.index/"/>
                 </file>
             </folder>    
         </folder>

@@ -346,6 +346,36 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        \n    }\n}\n");
     }
 
+    public void testNewLineIndentationInsideEmptyMethodBodyBeforeEnd() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {|}\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyMethodBodyBeforeEnd() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n|        }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyMethodBodyWithMultilineMethodHeader() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n        \n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyMethodBodyWithMultilineMethodHeader() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {\n|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n        \n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyMethodBodyWithMultilineMethodHeaderBeforeEnd() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {|}\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyMethodBodyWithMultilineMethodHeaderBeforeEnd() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op(\n            int i) {\n|        }\n}\n",
+                "package t;\npublic class T {\n    public void op(\n            int i) {\n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideEmptyHalfIndentedMethodBody() throws Exception {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
@@ -428,6 +458,102 @@ public class ReindenterTest extends NbTestCase {
     public void testLineIndentationBeforeMethodBodyEnd() throws Exception {
         performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        System.out.println();\n|}\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        System.out.println();\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeStaticBlock() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    static| {\n    }\n}\n",
+                "package t;\npublic class T {\n    static\n    {\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeStaticBlock() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    static\n| {\n    }\n}\n",
+                "package t;\npublic class T {\n    static\n    {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    static| {\n    }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationBeforeHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    static\n|{\n    }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testNewLineIndentationInsideEmptyStaticBlock() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    static {|\n    }\n}\n",
+                "package t;\npublic class T {\n    static {\n        \n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyStaticBlock() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    static {\n|\n    }\n}\n",
+                "package t;\npublic class T {\n    static {\n        \n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    static\n      {|\n      }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n        \n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationInsideEmptyHalfIndentedStaticBlock() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    static\n      {\n|\n      }\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n        \n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testNewLineIndentationInsideEmptyStaticBlockBeforeEnd() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    static {|}\n}\n",
+                "package t;\npublic class T {\n    static {\n    }\n}\n");
+    }
+
+    public void testLineIndentationIndideEmptyStaticBlockBeforeEnd() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    static {\n|        }\n}\n",
+                "package t;\npublic class T {\n    static {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideEmptyHalfIndentedStaticBlockBeforeEnd() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    static\n      {|}\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationIndideEmptyHalfIndentedStaticBlockBeforeEnd() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    static\n      {\n|}\n}\n",
+                    "package t;\npublic class T {\n    static\n      {\n      }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
     }
 
     public void testNewLineIndentationInsideBlockStatement() throws Exception {
@@ -1126,6 +1252,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n                \n        }\n    }\n}\n");
     }
 
+    public void testNewLineIndentationBeforeEmptyBlockAfterSwitchCase() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:|{\n            }\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n            {\n            }\n        }\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeEmptyBlockAfterSwitchCase() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n|{\n            }\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n            {\n            }\n        }\n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideCase() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:|\n                break;\n        }\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        switch(get()) {\n            case 1:\n                \n                break;\n        }\n    }\n}\n");
@@ -1330,6 +1466,58 @@ public class ReindenterTest extends NbTestCase {
     public void testLineIndentationInsideMultilineComment() throws Exception {
         performLineIndentationTest("package t;\npublic class T {\n    /*\n|\n     */\n    public void op() {\n    }\n}\n",
                 "package t;\npublic class T {\n    /*\n     * \n     */\n    public void op() {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationAtMultilineCommentStartWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n\t/*|\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
+    public void testLineIndentationAtMultilineCommentStartWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n\t/*\n|\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
+    public void testNewLineIndentationInsideMultilineCommentWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n\t/*|\n\t */\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\t */\n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
+    }
+
+    public void testLineIndentationInsideMultilineCommentWithTabIndents() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("expand-tabs", false);
+        preferences.putInt("tab-size", 4);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n\t/*\n|\n\t */\n\tpublic void op() {\n\t}\n}\n",
+                    "package t;\npublic class T {\n\t/*\n\t * \n\t */\n\tpublic void op() {\n\t}\n}\n");
+        } finally {
+            preferences.remove("tab-size");
+            preferences.remove("expand-tabs");
+        }
     }
 
     public void testNewLineIndentationInsideMethodInvocation() throws Exception {

@@ -164,6 +164,11 @@ class SearchExecutor implements Runnable {
         final SVNRevision fromRevision = criteria.getFrom();
         final SVNRevision toRevision = criteria.getTo();
 
+        if (fromRevision == null || toRevision == null) {
+            // guess a sync problem, search criteria changed while populatePathToRoot was running
+            LOG.log(Level.WARNING, "wrong revision: [{0}:{1}] - [{2}:{3}]", new Object[] { fromRevision, criteria.tfFrom.getText(), toRevision, criteria.tfTo.getText() }); //NOI18N
+            return;
+        }
         completedSearches = 0;
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());

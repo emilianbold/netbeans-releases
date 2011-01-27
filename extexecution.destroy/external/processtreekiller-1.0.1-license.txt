@@ -1,6 +1,6 @@
 Name: nb-processtree-killer
 Version: 1.0.1
-License: MIT License
+License: MIT
 OSR: 12294
 Origin: http://kenai.com/projects/nb-process-killler
 Source: http://kenai.com/projects/nb-process-killler

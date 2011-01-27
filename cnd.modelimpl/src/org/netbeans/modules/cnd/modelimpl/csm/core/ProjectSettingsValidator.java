@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
@@ -134,7 +135,7 @@ public class ProjectSettingsValidator {
     private void updateMap(List<NativeFileItem> items) {
 	for( NativeFileItem item : items ) {
 	    long crc = calculateCrc(item);
-	    data.setCrc(item.getFile().getAbsolutePath(), crc);
+	    data.setCrc(item.getAbsolutePath(), crc);
 	}
     }
     
@@ -159,27 +160,27 @@ public class ProjectSettingsValidator {
 	    return false;
 	}
 	assert data != null;
-	long savedCrc = data.getCrc(item.getFile().getAbsolutePath());
+	long savedCrc = data.getCrc(item.getAbsolutePath());
 	long currentCrc = calculateCrc(item);
 	if( TRACE ) {
-            System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getFile().getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
+            System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
         }
 	return savedCrc != currentCrc;
     }
     
     private long calculateCrc(NativeFileItem item) {
 	if( TRACE ) {
-            System.err.printf(">>> CRC %s\n", item.getFile().getName());
+            System.err.printf(">>> CRC %s\n", item.getName());
         }
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, item.getLanguage().toString());
 	updateCrc(checksum, item.getLanguageFlavor().toString());
-	updateCrc(checksum, item.getSystemIncludePaths());
-	updateCrc(checksum, item.getUserIncludePaths());
-	updateCrc(checksum, item.getSystemMacroDefinitions());
-	updateCrc(checksum, item.getUserMacroDefinitions());
+	updateCrcByFSPaths(checksum, item.getSystemIncludePaths());
+	updateCrcByFSPaths(checksum, item.getUserIncludePaths());
+	updateCrcByStrings(checksum, item.getSystemMacroDefinitions());
+	updateCrcByStrings(checksum, item.getUserMacroDefinitions());
 	if( TRACE ) {
-            System.err.printf("<<< CRC %s %d\n", item.getFile().getName(), checksum.getValue());
+            System.err.printf("<<< CRC %s %d\n", item.getName(), checksum.getValue());
         }
 	return checksum.getValue();
     }
@@ -191,7 +192,13 @@ public class ProjectSettingsValidator {
         }
     }
     
-    private void updateCrc(Checksum checksum, List<String> strings) {
+    private void updateCrcByFSPaths(Checksum checksum, List<FSPath> fsPaths) {
+	for( FSPath fsp : fsPaths ) {
+	    updateCrc(checksum, fsp.getURL().toString());
+	}
+    }
+
+    private void updateCrcByStrings(Checksum checksum, List<String> strings) {
 	for( String s : strings ) {
 	    updateCrc(checksum, s);
 	}
@@ -233,6 +240,7 @@ public class ProjectSettingsValidator {
 	    }
 	}
 	
+        @Override
 	public void write(DataOutput stream ) throws IOException {
 	    stream.writeInt(map.size());
 	    for( Map.Entry<CharSequence, Long> entry : map.entrySet()) {
@@ -243,17 +251,14 @@ public class ProjectSettingsValidator {
     }
     
     private static class ValidatorPersistentFactory implements PersistentFactory {
-	
-	public boolean canWrite(Persistent obj) {
-	    assert obj instanceof Data;
-	    return true;
-	}
 
+        @Override
 	public void write(DataOutput out, Persistent obj) throws IOException {
 	    assert obj instanceof Data;
 	    ((Data) obj).write(out);
 	}
 
+        @Override
 	public Persistent read(DataInput in) throws IOException {
 	    return new Data(in);
 	}

@@ -346,7 +346,7 @@ import org.openide.util.Utilities;
 //        }
 //    }
 
-    protected static final <T> void addUnique(List<? super T> list, T element) {
+    protected static <T> void addUnique(List<? super T> list, T element) {
         if (!list.contains(element)) {
             list.add(element);
         }

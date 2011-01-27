@@ -82,8 +82,14 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -153,11 +159,10 @@ public class TraceModel extends TraceModelBase {
 
     public static void main(String[] args) {
         new TraceModel(true).test(args);
-        APTDriver.getInstance().close();
+        APTDriver.close();
         APTFileCacheManager.close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
-    private Cache cache;
     private static CsmTracer tracer = new CsmTracer(false);
     private boolean showAstWindow = false;
     private boolean dumpAst = false;
@@ -166,9 +171,6 @@ public class TraceModel extends TraceModelBase {
     private boolean dumpFileOnly = false;
     private boolean showTime = false;
     //private boolean showErrorCount = false;
-    private boolean writeAst = false;
-    private boolean readAst = false;
-    private boolean useZip = false;
     private boolean testLibProject = false;
     private boolean deep = true;
     private boolean showMemoryUsage = false;
@@ -194,10 +196,6 @@ public class TraceModel extends TraceModelBase {
     private String dumpFile = null;
     private String dumpDir = null;
     private static final String statPostfix = ".stat"; // NOI18N
-
-    // Cache options
-    private boolean enableCache = false;
-    private boolean testCache = false;
 
     // Callback options
     private boolean dumpPPState = false;
@@ -281,23 +279,8 @@ public class TraceModel extends TraceModelBase {
                 break;
             //            case 'L':   testLexer = true; break;
             //case 'c':   showErrorCount = true; break;
-            case 'W':
-                writeAst = true;
-                break;
-            case 'R':
-                readAst = true;
-                break;
-            case 'Z':
-                useZip = true;
-                break;
-            case 'C':
-                enableCache = true;
-                break;
             case 'l':
                 testLibProject = true;
-                break;
-            case 'c':
-                testCache = true;
                 break;
             case 'p':
                 dumpPPState = true;
@@ -471,28 +454,7 @@ public class TraceModel extends TraceModelBase {
         if (stopBeforeAll) {
             waitAnyKey();
         }
-        if (writeAst || readAst) {
-            try {
-                cache = new Cache(useZip);
-            } catch (Exception e) {
-                DiagnosticExceptoins.register(e);
-                return;
-            }
-        }
-
-        if (writeAst && readAst) {
-            print("Impossible options combination: both writing and reading AST\n"); // NOI18N
-            return;
-        }
-        if (useZip && !(writeAst || readAst)) {
-            print("Impossible options combination: using ZIP format, but neither writing nor reading AST. Ignoring ZIP format.\n"); // NOI18N
-            useZip = false;
-        }
-
-        if (testCache) {
-            //print("Test cache mode ON." + '\n');
-            enableCache = true;
-        } else if (dumpStatistics) {
+        if (dumpStatistics) {
             if (dumpFile == null && dumpDir == null) {
                 print("Turning OFF statistics as neither global file nor directory is specified"); // NOI18N
                 dumpStatistics = false;
@@ -518,7 +480,7 @@ public class TraceModel extends TraceModelBase {
         if (printUserFileList) {
             print("Processing files:\n"); // NOI18N
             for (NativeFileItem file : getFileItems()) {
-                print(file.getFile().getAbsolutePath() + ' ', false);
+                print(file.getAbsolutePath() + ' ', false);
             }
             print("");
         }
@@ -787,34 +749,39 @@ public class TraceModel extends TraceModelBase {
             //ex.printStackTrace();
         }
     }
-    private final APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
+    private final APTSystemStorage sysAPTData = APTSystemStorage.getInstance();
     private final APTIncludePathStorage userPathStorage = new APTIncludePathStorage();
     
-    private APTIncludeHandler getIncludeHandler(File file) {
-        List<String> systemIncludes = getSystemIncludes();
+    private APTIncludeHandler getIncludeHandler(FileObject fo) {
+        FileSystem localFS = CndFileUtils.getLocalFileSystem();
+        List<FSPath> systemIncludes = CndFileUtils.toFSPathList(localFS, getSystemIncludes());
         List<IncludeDirEntry> sysIncludes = sysAPTData.getIncludes(systemIncludes.toString(), systemIncludes); // NOI18N
         List<String> qInc = getQuoteIncludePaths();
         if (isPathsRelCurFile()) {
             qInc = new ArrayList<String>(getQuoteIncludePaths().size());
             for (Iterator<String> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
                 String path = it.next();
-                if (!(new File(path).isAbsolute())) {
-                    File dirFile = file.getParentFile();
-                    File pathFile = new File(dirFile, path.toString());
-                    path = pathFile.getAbsolutePath();
-                }
-                qInc.add(path);
+                if (CndPathUtilitities.isPathAbsolute(path)) {
+                    qInc.add(path);
+                } else {
+                    FileObject dirFO = fo.getParent();
+                    FileObject pathFile = dirFO.getFileObject(path);
+                    if (pathFile != null && pathFile.isValid()) {
+                        path = pathFile.getPath();
+                        qInc.add(path);
+                    }
+                }                
             }
         }
-        StartEntry startEntry = new StartEntry(file.getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
-        List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), qInc);
+        StartEntry startEntry = new StartEntry(localFS, fo.getPath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+        List<IncludeDirEntry> userIncludes = userPathStorage.get(qInc.toString(), CndFileUtils.toFSPathList(localFS, qInc));
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, userIncludes, null);
     }
 
-    private APTMacroMap getMacroMap(File file) {
+    private APTMacroMap getMacroMap(FileObject fo) {
         //print("SystemIncludePaths: " + systemIncludePaths.toString() + "\n");
         //print("QuoteIncludePaths: " + quoteIncludePaths.toString() + "\n");
-        APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(file), getMacros());
+        APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(fo), getMacros());
         return map;
     }
 
@@ -822,7 +789,7 @@ public class TraceModel extends TraceModelBase {
 //	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
 //	return preprocHandler;
 //    }
-    private APTMacroMap getSysMap(File file) {
+    private APTMacroMap getSysMap(FileObject fo) {
         APTMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
         return map;
     }
@@ -847,15 +814,15 @@ public class TraceModel extends TraceModelBase {
 //	}
 //	return result;
 //    }
-    private long testAPTLexer(File file, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
+    private long testAPTLexer(FileObject fo, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         print("Testing APT lexer:"); // NOI18N
         long time = System.currentTimeMillis();
         Reader reader = null;
         InputStream stream = null;
         try {
-            stream = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
+            stream = new BufferedInputStream(fo.getInputStream(), TraceFlags.BUF_SIZE);
             reader = new InputStreamReader(stream, FileEncodingQuery.getDefaultEncoding());
-            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, getFileLanguage(file));
+            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(fo.getPath(), reader, getFileLanguage(fo));
             for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
                 if (printTokens) {
                     print("" + t);
@@ -863,7 +830,7 @@ public class TraceModel extends TraceModelBase {
             }
             time = System.currentTimeMillis() - time;
             if (isShowTime()) {
-                print("APT Lexing " + file.getName() + " took " + time + " ms"); // NOI18N
+                print("APT Lexing " + fo.getNameExt() + " took " + time + " ms"); // NOI18N
             }
             return time;
         } finally {
@@ -877,15 +844,15 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTWalkerVisit(APTFile apt, FileBuffer buffer) throws TokenStreamException, IOException {
-        File file = buffer.getFile();
+        FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPTLight(buffer);
+            apt = APTDriver.findAPTLight(buffer);
         }
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), true);
+        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true);
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         walker.visit();
         time = System.currentTimeMillis() - time;
@@ -912,16 +879,16 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTWalkerGetStream(APTFile apt, FileBuffer buffer, boolean expand, boolean filter, boolean printTokens) throws TokenStreamException, IOException {
-        File file = buffer.getFile();
+        FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
+            apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
         }
-        APTMacroMap macroMap = getMacroMap(file);
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
+        APTMacroMap macroMap = getMacroMap(fo);
+        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true);
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         TokenStream ts = walker.getTokenStream();
         if (expand) {
@@ -950,10 +917,8 @@ public class TraceModel extends TraceModelBase {
     }
 
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
-        FileBuffer buffer = new FileBufferFile(item.getFile().getAbsolutePath());
+        FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT Parser"); // NOI18N
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
-        File file = buffer.getFile();
         long time = System.currentTimeMillis();
         if (cleanAPT) {
             invalidateAPT(buffer);
@@ -971,16 +936,16 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
-        File file = item.getFile();
-        FileBuffer buffer = new FileBufferFile(file.getAbsolutePath());
-        print("Testing APT: " + file.getName()); // NOI18N
+        FileObject fo = item.getFileObject();
+        FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
+        print("Testing APT: " + fo.getNameExt()); // NOI18N
         long minLexer = Long.MAX_VALUE;
         long maxLexer = Long.MIN_VALUE;
         long minAPTLexer = Long.MAX_VALUE;
         long maxAPTLexer = Long.MIN_VALUE;
         if (testAPTLexer) {
             for (int i = -1; i < testAPTIterations; i++) {
-                long val = testAPTLexer(file, i == -1 ? printTokens : false);
+                long val = testAPTLexer(fo, i == -1 ? printTokens : false);
                 minAPTLexer = Math.min(minAPTLexer, val);
                 maxAPTLexer = Math.max(maxAPTLexer, val);
             }
@@ -1044,7 +1009,7 @@ public class TraceModel extends TraceModelBase {
             }
         }
         if (isShowTime()) {
-            print("APT BEST/WORST results for " + file.getAbsolutePath()); // NOI18N
+            print("APT BEST/WORST results for " + fo.getPath()); // NOI18N
             if (minLexer != Long.MAX_VALUE) {
                 print(minLexer + " ms BEST Plain lexer"); // NOI18N
                 print(maxLexer + " ms WORST Plain lexer"); // NOI18N
@@ -1087,38 +1052,38 @@ public class TraceModel extends TraceModelBase {
     private static String firstFile = null;
 
     private void invalidateAPT(final FileBuffer buffer) {
-        File file = buffer.getFile();
-        if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
-            firstFile = file.getAbsolutePath();
-            APTDriver.getInstance().invalidateAll();
+        String absPath = buffer.getAbsolutePath().toString();
+        if (firstFile == null || firstFile.equalsIgnoreCase(absPath)) {
+            firstFile = absPath;
+            APTDriver.invalidateAll();
             APTFileCacheManager.invalidateAll();
             getProject().debugInvalidateFiles();
         } else {
-            APTDriver.getInstance().invalidateAPT(buffer);
-            APTFileCacheManager.invalidate(buffer);
+            APTDriver.invalidateAPT(buffer);
+            APTFileCacheManager.getInstance(buffer.getFileSystem()).invalidate(buffer.getAbsolutePath());
         }
     }
     long minDriver = Long.MAX_VALUE;
     long maxDriver = Long.MIN_VALUE;
 
     private APTFile testAPTDriver(final FileBuffer buffer, boolean buildXML) throws IOException, FileNotFoundException {
-        File file = buffer.getFile();
+        FileObject fo = buffer.getFileObject();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.getInstance().findAPT(buffer, getFileLanguage(file));
+        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {
             minDriver = Math.min(minDriver, time);
             maxDriver = Math.max(maxDriver, time);
-            print("Building APT for " + file.getName() + "\n SIZE OF FILE:" + file.length() / 1024 + "Kb\n TIME: took " + time + " ms\n MEMORY: changed from " + (oldMem) / (1024) + " to " + newMem / (1024) + "[" + (newMem - oldMem) / 1024 + "]Kb"); // NOI18N
+            print("Building APT for " + fo.getNameExt() + "\n SIZE OF FILE:" + fo.getSize() / 1024 + "Kb\n TIME: took " + time + " ms\n MEMORY: changed from " + (oldMem) / (1024) + " to " + newMem / (1024) + "[" + (newMem - oldMem) / 1024 + "]Kb"); // NOI18N
         }
 
         //        System.out.println("apt tree: \n" + APTTraceUtils.toStringList(apt));
         if (buildXML) {
             File outDir = new File("/tmp/aptout/"); // NOI18N
             outDir.mkdirs();
-            File outFile = new File(outDir, file.getName() + ".xml"); // NOI18N
+            File outFile = new File(outDir, fo.getNameExt() + ".xml"); // NOI18N
             if (outFile.exists()) {
                 outFile.delete();
             }
@@ -1127,7 +1092,7 @@ public class TraceModel extends TraceModelBase {
             APTTraceUtils.xmlSerialize(apt, out);
             out.flush();
             APT light = APTBuilder.buildAPTLight(apt);
-            File outFileLW = new File(outDir, file.getName() + "_lw.xml"); // NOI18N
+            File outFileLW = new File(outDir, fo.getNameExt() + "_lw.xml"); // NOI18N
             if (outFileLW.exists()) {
                 outFileLW.delete();
             }
@@ -1168,24 +1133,17 @@ public class TraceModel extends TraceModelBase {
         AST ast = null;
 
         if (dumpStatistics) {
-            Diagnostic.initFileStatistics(item.getFile().getAbsolutePath());
+            Diagnostic.initFileStatistics(item.getAbsolutePath());
         }
 
         long time = System.currentTimeMillis();
-
-        if (readAst) {
-            long t2 = System.currentTimeMillis();
-            ast = cache.readAst(item.getFile());
-            t2 = System.currentTimeMillis() - t2;
-            print("AST read; time: " + t2 + " ms"); // NOI18N
-        }
 
         AST tree = null;
         int errCount = 0;
 
         FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
         waitProjectParsed(getProject(), false);
-        if (dumpAst || writeAst || showAstWindow) {
+        if (dumpAst || showAstWindow) {
             tree = fileImpl.debugParse();
         }
         errCount = fileImpl.getErrorCount();
@@ -1203,7 +1161,7 @@ public class TraceModel extends TraceModelBase {
             result.setTime(time);
             result.setLineCount(countLines(fileImpl));
             if (!quiet) {
-                print("Processing " + item.getFile().getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
+                print("Processing " + item.getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
             }
         }
 
@@ -1213,7 +1171,7 @@ public class TraceModel extends TraceModelBase {
                 if (Diagnostic.getStatisticsLevel() > 1) {
                     postfix += "." + Diagnostic.getStatisticsLevel(); // NOI18N
                 }
-                String name = item.getFile().getName() + postfix;
+                String name = item.getName() + postfix;
                 String theDumpFile = new File(this.dumpDir, name).getAbsolutePath();
                 Diagnostic.dumpFileStatistics(theDumpFile);
             }
@@ -1222,19 +1180,9 @@ public class TraceModel extends TraceModelBase {
             }
         }
 
-        if (testCache) {
-            cacheTimes.put(item.getFile().getName(), Long.valueOf(time));
-        }
         if (dumpAst) {
-            System.out.println("AST DUMP for file " + item.getFile().getName()); // NOI18N
+            System.out.println("AST DUMP for file " + item.getName()); // NOI18N
             dumpAst(tree);
-        }
-
-        if (writeAst && tree != null) {
-            long t2 = System.currentTimeMillis();
-            t2 = System.currentTimeMillis() - t2;
-            cache.writeAst(tree, item.getFile());
-            print("AST stored; time: " + t2 + " ms"); // NOI18N
         }
 
         if (doCleanRepository) {
@@ -1262,7 +1210,7 @@ public class TraceModel extends TraceModelBase {
         }
 
         if (showAstWindow) {
-            test(tree, item.getFile().getName());
+            test(tree, item.getName());
         }
 
         return result;
@@ -1340,7 +1288,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testLibProject() {
-        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), "/usr/include"); // NOI18N
+        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include"); // NOI18N
         getModel().addProject(libProject);
         tracer.dumpModel(libProject);
     }
@@ -1481,13 +1429,13 @@ public class TraceModel extends TraceModelBase {
         return result;
     }
 
-    private static String getFileLanguage(File file) {
+    private static String getFileLanguage(FileObject fo) {
         String lang = APTLanguageSupport.GNU_CPP;
-        final String fileName = file.getName();
-        if (file.getName().length() > 2 && fileName.endsWith(".c")) { // NOI18N
+        String ext = fo.getExt();
+        if (ext.equals("c")) { // NOI18N
             lang = APTLanguageSupport.GNU_C;
         }
-        if (file.getName().length() > 2 && fileName.endsWith(".f")) { // NOI18N
+        if (ext.equals("f")) { // NOI18N
             lang = APTLanguageSupport.FORTRAN;
         }
         return lang;

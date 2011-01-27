@@ -733,8 +733,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             throw new BadLocationException("Wrong insert position " + offset, offset); // NOI18N
         }
 
-        incrementDocVersion();
-
         // possible CR-LF conversion
         text = Analyzer.convertLSToLF(text);
 
@@ -756,6 +754,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         boolean modFinished = false; // Whether modification succeeded
         extWriteLock();
         try {
+           incrementDocVersion();
 
             /*
             boolean checkSpaces = inited && org.netbeans.lib.editor.util.swing.DocumentUtilities.isTypingModification(this);
@@ -901,8 +900,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 throw new BadLocationException("Wrong remove position " + offset, offset); // NOI18N
             }
 
-            incrementDocVersion();
-            
             // Check whether there is an active postModificationDocumentListener
             // and if so then start an atomic transaction.
             boolean activePostModification;
@@ -920,6 +917,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             boolean modFinished = false; // Whether modification succeeded
             extWriteLock();
             try {
+                incrementDocVersion();
+
                 int docLen = getLength();
                 if (offset < 0 || offset > docLen) {
                     throw new BadLocationException("Wrong remove position " + offset, offset); // NOI18N
@@ -2196,7 +2195,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Detailed debug info about the document */
     public String toStringDetail() {
-        return toString();
+        return toString() + ", content:\n  " + getContent().toString();
     }
 
     /* package */ void incrementDocVersion() {

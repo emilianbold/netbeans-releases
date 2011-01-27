@@ -44,22 +44,16 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Represents the input stream provider for APTDriver
  * @author Vladimir Voskresensky
  */
 public interface APTFileBuffer {
-    public File getFile(); // XXX:FileObject conversion: remove
-    public FileObject getFileObject();
+    /** Gets normalized absolute path */
     public CharSequence getAbsolutePath();
-    public Reader getReader() throws IOException;    
+    public FileSystem getFileSystem();
     public char[] getCharBuffer() throws IOException;
-    public int getLength();
-    public boolean isFileBased();
-
 }

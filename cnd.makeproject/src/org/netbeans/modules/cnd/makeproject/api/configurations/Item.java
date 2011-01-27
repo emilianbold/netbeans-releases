@@ -49,14 +49,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -65,13 +66,18 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
@@ -90,7 +96,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         this.fileObject = fileObject;
 
         String p = ProjectSupport.toProperPath(baseDirFO, fileObject, pathMode);
-        p = CndPathUtilitities.normalize(p);
+        p = CndPathUtilitities.normalizeSlashes(p);
 
         path = p;
     }
@@ -171,10 +177,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return path;
     }
 
+    @Override
     public String getAbsolutePath() {
         synchronized (this) {
             if (fileObject != null) {
-                return fileObject.getPath();
+                return CndFileUtils.getNormalizedPath(fileObject);
             }
         }
         return getNormalizedFile().getAbsolutePath();
@@ -185,6 +192,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return getName();
     }
 
+    @Override
     public String getName() {
         return CndPathUtilitities.getBaseName(path);
     }
@@ -262,7 +270,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (!CndPathUtilitities.isPathAbsolute(getPath())) {
                     newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }
-                newPath = CndPathUtilitities.normalize(newPath);
+                newPath = CndPathUtilitities.normalizeSlashes(newPath);
                 renameTo(newPath);
             }
         }
@@ -273,7 +281,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public String getNormalizedPath() {
-        return getNormalizedFile().getPath();
+        if (fileObject == null) {
+            return getNormalizedFile().getPath();
+        } else {
+            return CndFileUtils.getNormalizedPath(fileObject);
+        }
     }
     
     public File getNormalizedFile() {
@@ -283,12 +295,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         ensureFileNotNull();
         return file;
-    }
-
-    @Override
-    public File getFile() {
-        // let's try to use normalized, not canonical paths
-        return getNormalizedFile();
     }
 
     public String getCanonicalPath() {
@@ -403,7 +409,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         DataObject dataObject = null;
         FileObject fo = getFileObjectImpl(true);
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
@@ -428,6 +434,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return dataObject;
     }
 
+    public final void onClose() {
+        DataObject dao = getDataObject();
+        if (dao != null) {
+            dao.removePropertyChangeListener(this);
+            NativeFileItemSet set = dao.getCookie(NativeFileItemSet.class);
+            if (set != null) {
+                set.remove(this);
+            }
+        }
+    }
+    
     public final String getMIMEType() {
         DataObject dataObject = getDataObject();
         FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
@@ -501,8 +518,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     @Override
-    public List<String> getSystemIncludePaths() {
-        List<String> vec = new ArrayList<String>();
+    public List<FSPath> getSystemIncludePaths() {
+        List<FSPath> vec = new ArrayList<FSPath>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
@@ -518,24 +535,24 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
             if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
-                vec.addAll(compiler.getSystemIncludeDirectories());
+                FileSystem fs = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+                vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories()));
             }
         }
         return vec;
     }
 
     @Override
-    public List<String> getUserIncludePaths() {
-        List<String> vec = new ArrayList<String>();
+    public List<FSPath> getUserIncludePaths() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
         {
-            return vec;
+            return Collections.<FSPath>emptyList();
         }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
-            return vec;
+            return Collections.<FSPath>emptyList();
         }
         AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
@@ -554,13 +571,25 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
-            Iterator<String> iter = vec2.iterator();
-            while (iter.hasNext()) {
-                vec.add(CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
+            FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+            FileSystem projectFS;
+            try {
+                projectFS = getFileObject().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                projectFS = CndFileUtils.getLocalFileSystem();
             }
-            vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, cccCompilerConfiguration, compiler, makeConfiguration);
+            List<FSPath> result = new ArrayList<FSPath>();            
+            for (String p : vec2) {
+                String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), p);
+                result.add(new FSPath(projectFS, absPath));
+            }
+            List<String> vec3 = new ArrayList<String>();
+            vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
+            result.addAll(CndFileUtils.toFSPathList(compilerFS, vec3));
+            return result;
         }
-        return vec;
+        return Collections.<FSPath>emptyList();
     }
 
     @Override

@@ -102,11 +102,13 @@ public class UnixBrowserImplTest extends NbTestCase {
     }
     
     /** Test of setURL method, of class org.netbeans.modules.extbrowser.UnixBrowserImpl. */
+	/** commented out - see bug 194635
     public void testSetURL () throws java.net.MalformedURLException {
         if (!org.openide.util.Utilities.isUnix ())
             return;
         testObject.setURL (new java.net.URL ("http://www.netbeans.org/"));
     }
+	*/
     
     /** Test of showHistory method, of class org.netbeans.modules.extbrowser.UnixBrowserImpl. */
     public void testShowHistory () {

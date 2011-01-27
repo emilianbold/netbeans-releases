@@ -101,6 +101,9 @@ public class ConvertToAnnotationHint implements UpToDateStatusProviderFactory {
         } else {
             return null;
         }
+        if (xml.getPrimaryFile().getNameExt().equals("generated-layer.xml")) { // NOI18N
+            return null;
+        }
         LayerHandle handle = xml.getLookup().lookup(LayerHandle.class);
         if (handle == null) {
             return null;

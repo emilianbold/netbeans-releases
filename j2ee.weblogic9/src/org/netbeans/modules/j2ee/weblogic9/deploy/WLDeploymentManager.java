@@ -85,6 +85,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
@@ -93,6 +94,7 @@ import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -130,7 +132,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private final String port;
 
     private final WLProductProperties productProperties = new WLProductProperties(this);
-
+    
     private final WLSharedState mutableState;
 
     private final boolean disconnected;
@@ -142,8 +144,14 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private DeploymentManager manager;
 
     /* GuardedBy("this") */
+    private WLJ2eePlatformFactory.J2eePlatformImplImpl j2eePlatformImpl;
+
+    /* GuardedBy("this") */
     private Version serverVersion;
 
+    /* GuardedBy("this") */
+    private Version domainVersion;
+    
     /* GuardedBy("this") */
     private boolean webProfile;
 
@@ -185,6 +193,12 @@ public class WLDeploymentManager implements DeploymentManager2 {
         init();
         return serverVersion;
     }
+    
+    @CheckForNull
+    public synchronized Version getDomainVersion() {
+        init();
+        return domainVersion;
+    }    
 
     public synchronized boolean isWebProfile() {
         init();
@@ -199,6 +213,14 @@ public class WLDeploymentManager implements DeploymentManager2 {
             instanceProperties = InstanceProperties.getInstanceProperties(uri);
         }
         return instanceProperties;
+    }
+    
+    @NonNull
+    public synchronized WLJ2eePlatformFactory.J2eePlatformImplImpl getJ2eePlatformImpl() {
+        if (j2eePlatformImpl == null) {
+            j2eePlatformImpl = new WLJ2eePlatformFactory.J2eePlatformImplImpl(this);
+        }
+        return j2eePlatformImpl;
     }
 
     public void addDomainChangeListener(ChangeListener listener) {
@@ -234,6 +256,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return;
         }
         serverVersion = WLPluginProperties.getServerVersion(WLPluginProperties.getServerRoot(this, true));
+        domainVersion = WLPluginProperties.getDomainVersion(instanceProperties);
         webProfile = WLPluginProperties.isWebProfile(WLPluginProperties.getServerRoot(this, true));
     }
 
@@ -832,6 +855,5 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 }
             }
         }
-
     }
 }

@@ -99,6 +99,11 @@ public class UpdateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/subversion/resources/icons/update.png"; // NOI18N
+    }
     
     @Override
     protected void performContextAction(final Node[] nodes) {

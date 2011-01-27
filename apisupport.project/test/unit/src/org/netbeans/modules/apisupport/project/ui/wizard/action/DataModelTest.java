@@ -57,7 +57,6 @@ import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
 
 /**
  * Tests {@link DataModel}.
@@ -85,8 +84,7 @@ public class DataModelTest extends LayerTestBase {
         assertEquals("after", 130, res.separatorAfter());
     }
 
-    public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
-//    XXX: failing test, fix or delete
+    public void testDataModelGenerationForAlwaysEnabledActions() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
         FileObject root = fs.getRoot();
@@ -127,7 +125,7 @@ public class DataModelTest extends LayerTestBase {
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         assertEquals(
-            Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java", "src/org/example/module1/Bundle.properties"}),
+            Arrays.asList("src/org/example/module1/BeepAction.java"),
             Arrays.asList(cmf.getCreatedPaths())
         );
         assertEquals(

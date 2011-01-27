@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -124,22 +124,33 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
             this.instanceProvider = instanceProvider;
+            String domainDirPath = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+            String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
+            if (null != domainDirPath && null != domainName) {
+                File domainDir = new File(domainDirPath,domainName);
+                PortCollection pc = new PortCollection();
+                if (Util.readServerConfiguration(domainDir, pc)) {
+                    ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(pc.getAdminPort()));
+                    ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(pc.getHttpPort()));
+                }
+            }
             commonSupport = new CommonServerSupport(lookup, ip, instanceProvider);
-            ic.add(this); // Server instance in lookup (to find instance from node lookup)
-
-            ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
             // Flag this server URI as under construction
             deployerUri = commonSupport.getDeployerUri();
             GlassfishInstanceProvider.activeRegistrationSet.add(deployerUri);
+            if (null == instanceProvider.getInstance(deployerUri)) {
+                ic.add(this); // Server instance in lookup (to find instance from node lookup)
 
-            commonInstance = ServerInstanceFactory.createServerInstance(this);
-            if (updateNow) {
-                updateModuleSupport();
+                ic.add(commonSupport); // Common action support, e.g start/stop, etc.
+                commonInstance = ServerInstanceFactory.createServerInstance(this);
+                if (updateNow) {
+                    updateModuleSupport();
+                }
+
+                // make this instance publicly accessible
+                instanceProvider.addServerInstance(this);
             }
-            
-            // make this instance publicly accessible
-            instanceProvider.addServerInstance(this);
         } finally {
             if(deployerUri != null) {
                 GlassfishInstanceProvider.activeRegistrationSet.remove(deployerUri);
@@ -177,7 +188,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             added.addAll(factories);
             added.removeAll(currentFactories);
             currentFactories = factories;
-        
+
             for (GlassfishModuleFactory moduleFactory : added) {
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                     Object t = moduleFactory.createModule(lookup);
@@ -320,7 +331,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return commonSupport.getInstanceProvider().getDisplayName();
+        return commonSupport.getInstanceProvider().getDisplayName(commonSupport.getDeployerUri());
     }
 
     @Override
@@ -390,6 +401,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         }
 
         instanceProvider.removeServerInstance(this);
+        ic.remove(this);
     }
 
     //

@@ -48,13 +48,14 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.netbeans.modules.nativeexecution.ExecutionEnvironmentFactoryServiceImpl;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
  * A factory for ExecutionEnvironment.
  *
  * The purpose is as follows
- * 1) share a single local execurion environment
- * 2) probably remote executione environments as well
+ * 1) share a single local execution environment
+ * 2) probably remote execution environments as well
  * 3) during transitional period,
  * transform the user@host string to ExecutionEnvironment
  *
@@ -78,6 +79,7 @@ public class ExecutionEnvironmentFactory {
     static {
         ll = new LookupListener() {
 
+            @Override
             public synchronized void resultChanged(LookupEvent ev) {
                 Collection<? extends ExecutionEnvironmentFactoryService> newSet =
                         lookupResult.allInstances();
@@ -104,7 +106,7 @@ public class ExecutionEnvironmentFactory {
     }
 
     /**
-     * Returns an instance of <tt>ExecutionEnvironment</tt> for localexecution.
+     * Returns an instance of <tt>ExecutionEnvironment</tt> for local execution.
      */
     public static ExecutionEnvironment getLocal() {
         ExecutionEnvironment result;
@@ -129,6 +131,8 @@ public class ExecutionEnvironmentFactory {
      * @param host host identification string (either hostname or IP address)
      */
     public static ExecutionEnvironment createNew(String user, String host) {
+        Logger.assertTrue(user != null && !user.isEmpty());
+        Logger.assertTrue(host != null && !host.isEmpty());
         ExecutionEnvironment result;
 
         for (ExecutionEnvironmentFactoryService f : allFactories) {
@@ -154,6 +158,8 @@ public class ExecutionEnvironmentFactory {
      * @param sshPort port to be used to establish ssh connection.
      */
     public static ExecutionEnvironment createNew(String user, String host, int port) {
+        Logger.assertTrue(user != null && !user.isEmpty());
+        Logger.assertTrue(host != null && !host.isEmpty());
         ExecutionEnvironment result;
 
         for (ExecutionEnvironmentFactoryService f : allFactories) {

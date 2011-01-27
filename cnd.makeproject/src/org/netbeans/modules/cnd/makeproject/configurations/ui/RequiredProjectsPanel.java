@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -86,7 +85,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         addProjectButton.setMnemonic(getString("ADD_PROJECTS_BUTTON_MN").charAt(0)); // NOI18N
 
         JButton[] extraButtons = new JButton[]{addProjectButton};
-        myListEditorPanel = new MyListEditorPanel(data, extraButtons);
+        myListEditorPanel = new MyListEditorPanel(conf, data, extraButtons);
         addProjectButton.addActionListener(new AddProjectButtonAction());
         //
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -106,11 +105,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         instructionsTextArea.setText(txt);
     }
 
-    public void setListData(List<LibraryItem> data) {
-        myListEditorPanel.setListData(data);
-    }
-
-    public List<LibraryItem> getListData() {
+    private List<LibraryItem> getListData() {
         return myListEditorPanel.getListData();
     }
 
@@ -174,9 +169,9 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
     }
 
     private class MyListEditorPanel extends TableEditorPanel {
-
-        public MyListEditorPanel(List<LibraryItem> objects, JButton[] extraButtons) {
-            super(objects, extraButtons, baseDir);
+        private MakeConfiguration conf;
+        public MyListEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons) {
+            super(conf, objects, extraButtons, baseDir);
             getAddButton().setVisible(false);
             getCopyButton().setVisible(false);
             getEditButton().setVisible(false);
@@ -203,8 +198,8 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalize(location);
-                    workingdir = CndPathUtilitities.normalize(workingdir);
+                    location = CndPathUtilitities.normalizeSlashes(location);
+                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);

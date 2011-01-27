@@ -61,6 +61,9 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import org.netbeans.junit.NbTestCase;
@@ -72,6 +75,7 @@ import org.openide.util.LookupListener;
 @SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class AbstractLookupBaseHid extends NbTestCase {
     private static AbstractLookupBaseHid running;
+    private Logger LOG;
 
     /** instance content to work with */
     InstanceContent ic;
@@ -91,6 +95,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
     }
     
     protected @Override void setUp() {
+        LOG = Logger.getLogger("test." + getName());
+        
         this.ic = new InstanceContent ();
         
         beforeActualTest(getName());
@@ -102,6 +108,11 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     protected @Override void tearDown() {
         running = null;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     /** The methods to influence test behaviour */
@@ -205,6 +216,48 @@ public class AbstractLookupBaseHid extends NbTestCase {
 
         Iterator<?> all = lookup.lookupAll(Object.class).iterator();
         checkIterator ("Difference between instances added and found", all, Arrays.asList (INSTANCES));
+    }
+    
+    public void testLookupListenerRemoved() {
+        class C0 {
+        }
+        class C1 {
+        }
+
+        Lookup.Result<C0> r0 = lookup.lookupResult(C0.class);
+
+        final AtomicInteger cnt = new AtomicInteger();
+        r0.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                cnt.incrementAndGet();
+                LOG.fine("r0 notified");
+            }
+        });
+        
+        C0 o0 = new C0();
+        C1 o1 = new C1();
+
+        LOG.fine("Add o0");
+        ic.add(o0);
+        assertEquals("One change", 1, cnt.getAndSet(0));
+
+        LOG.fine("Remove o0");
+        ic.remove(o0);
+        assertEquals("Another change change", 1, cnt.getAndSet(0));
+
+        LOG.fine("Add o1");
+        ic.add(o1);
+        assertEquals("No change", 0, cnt.getAndSet(0));
+
+        LOG.fine("Remove o1");
+        ic.remove(o1);
+        assertEquals("No change", 0, cnt.getAndSet(0));
+
+        LOG.fine("Add o0");
+        ic.add(o0);
+        LOG.fine("Line before should read 'r0 notified' ?");
+        assertEquals("One change", 1, cnt.getAndSet(0));
     }
     
     /** Checks the reorder of items in lookup reflects the result.
@@ -1493,13 +1546,14 @@ public class AbstractLookupBaseHid extends NbTestCase {
         LL ll = new LL();
         res.addLookupListener(ll);
 
+        assertEquals("No changes yet", 0, ll.getCount());
         Collection c = res.allInstances();
         assertFalse("Has next", c.isEmpty());
+        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         ActionMap am1 = (ActionMap)c.iterator().next();
         assertEquals("Am is there", am, am1);
         
-        assertEquals("Correct # of changes in first get", firstChange, ll.getCount());
         
         Object m1 = new InputMap();
         Object m2 = new InputMap();
@@ -1826,7 +1880,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     /** Counting listener */
     protected static class LL implements LookupListener {
-        private int count = 0;
+        private int count;
         public Object source;
         public Thread changesIn;
         

@@ -433,6 +433,11 @@ public final class J2EEProjectProperties {
         boolean ok = true;
         for (File file : j2eePlatform.getClasspathEntries()) {
             FileObject fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                // if some file from server classpath does not exist then let's
+                // ignore it
+                continue;
+            }
             boolean hit = false;
             for (FileObject root : toCheck) {
                 if (FileUtil.isParentOf(root, fo)) {
@@ -453,7 +458,7 @@ public final class J2EEProjectProperties {
     
     @SuppressWarnings("deprecated")
     private static Map<String, String> extractPlatformLibrariesRootHeuristic(J2eePlatform j2eePlatform) {
-        if (j2eePlatform.getPlatformRoots() == null) {
+        if (j2eePlatform.getPlatformRoots() == null || j2eePlatform.getPlatformRoots().length == 0) {
             return null;
         }
         File rootFile = FileUtil.normalizeFile(j2eePlatform.getPlatformRoots()[0]);

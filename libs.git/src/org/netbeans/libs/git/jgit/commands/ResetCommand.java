@@ -47,15 +47,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
-import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -71,8 +68,10 @@ import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.jgit.index.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -109,7 +108,7 @@ public class ResetCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git reset"); //NOI18N
+        StringBuilder sb = new StringBuilder("git reset "); //NOI18N
         if (moveHead) {
             sb.append(resetType.toString()).append(" ").append(revisionStr); //NOI18N
         } else {
@@ -126,11 +125,13 @@ public class ResetCommand extends GitCommand {
         Repository repository = getRepository();
         RevCommit commit = Utils.findCommit(repository, revisionStr);
         try {
+            boolean started = false;
             boolean finished = false;
             DirCache backup = repository.readDirCache();
             try {
                 try {
                     DirCache cache = repository.lockDirCache();
+                    started = true;
                     try {
                         if (!resetType.equals(ResetType.SOFT)) {
                             TreeWalk treeWalk = new TreeWalk(repository);
@@ -146,7 +147,6 @@ public class ResetCommand extends GitCommand {
                             treeWalk.addTree(new DirCacheBuildIterator(builder));
                             treeWalk.addTree(commit.getTree());
                             List<File> toDelete = new LinkedList<File>();
-                            Map<File, DirCacheEntry> toCheckout = new LinkedHashMap<File, DirCacheEntry>();
                             String lastAddedPath = null;
                             while (treeWalk.next() && !monitor.isCanceled()) {
                                 File path = new File(repository.getWorkTree(), treeWalk.getPathString());
@@ -175,38 +175,28 @@ public class ResetCommand extends GitCommand {
                                     e.setObjectId(it.getEntryObjectId());
                                     e.smudgeRacilyClean();
                                     builder.add(e);
-                                    toCheckout.put(path, e);
                                 } else {
                                     DirCacheEntry e = treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry();
                                     builder.add(e);
-                                    toCheckout.put(path, e);
+                                    new java.util.Date(path.lastModified()).toString();
+                                    new java.util.Date(e.getLastModified()).toString();
                                 }
                             }
                             if (!monitor.isCanceled()) {
-                                builder.commit();
                                 finished = true;
-                            }
-                            if (resetType.equals(ResetType.HARD) && !monitor.isCanceled()) {
-                                for (File file : toDelete) {
-                                    deleteFile(file, roots.length > 0 ? roots : new File[] { repository.getWorkTree() });
-                                }
-
-                                for (Map.Entry<File, DirCacheEntry> e : toCheckout.entrySet()) {
-                                    // ... create/overwrite this file ...
-                                    File file = e.getKey();
-                                    if (!ensureParentFolderExists(file.getParentFile())) {
-                                        continue;
+                                if (resetType.equals(ResetType.HARD)) {
+                                    builder.finish();
+                                    for (File file : toDelete) {
+                                        deleteFile(file, roots.length > 0 ? roots : new File[] { repository.getWorkTree() });
                                     }
-                                    if (file.isDirectory()) {
-                                        monitor.notifyWarning("Replacing directory " + file.getAbsolutePath());
-                                        Utils.deleteRecursively(file);
+                                    try {
+                                        new CheckoutIndex(repository, cache, roots, listener, monitor, false).checkout();
+                                    } finally {
+                                        // checkout also updates index entries and corrects timestamps, so write the cache after the checkout
+                                        builder.commit();
                                     }
-                                    file.createNewFile();
-                                    if (file.isFile()) {
-                                        DirCacheCheckout.checkoutEntry(repository, file, e.getValue(), getFileMode(repository));
-                                    } else {
-                                        monitor.notifyWarning("Cannot create file " + file.getAbsolutePath());
-                                    }
+                                } else {
+                                    builder.commit();
                                 }
                             }
                         }
@@ -214,7 +204,7 @@ public class ResetCommand extends GitCommand {
                             RefUpdate u = repository.updateRef(Constants.HEAD);
                             u.setNewObjectId(commit);
                             if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-                                throw new GitException("Cannot update HEAD reference to " + revisionStr + ": ");
+                                throw new GitException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr)); //NOI18N
                             }
                         }
                     } finally {
@@ -224,7 +214,7 @@ public class ResetCommand extends GitCommand {
                     throw new GitException(ex);
                 }
             } finally {
-                if (!finished) {
+                if (started && !finished) {
                     backup.lock();
                     try {
                         backup.write();
@@ -242,15 +232,6 @@ public class ResetCommand extends GitCommand {
         }
     }
 
-    private Boolean filemode;
-
-    private boolean getFileMode (Repository repository) {
-        if (filemode == null) {
-            filemode = Utils.checkExecutable(repository);
-        }
-        return filemode.booleanValue();
-    }
-
     private void deleteFile (File file, File[] roots) {
         Set<File> rootFiles = new HashSet<File>(Arrays.asList(roots));
         File[] children;
@@ -261,20 +242,5 @@ public class ResetCommand extends GitCommand {
             }
             file = file.getParentFile();
         }
-    }
-
-    private boolean ensureParentFolderExists (File parentFolder) {
-        File predecessor = parentFolder;
-        while (!predecessor.exists()) {
-            predecessor = predecessor.getParentFile();
-        }
-        if (predecessor.isFile()) {
-            if (!predecessor.delete()) {
-                monitor.notifyError("Cannot replace file " + predecessor.getAbsolutePath());
-                return false;
-            }
-            monitor.notifyWarning("Replacing file " + predecessor.getAbsolutePath());
-        }
-        return parentFolder.mkdirs() || parentFolder.exists();
     }
 }

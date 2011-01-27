@@ -53,10 +53,20 @@ public interface ProjectActionHandlerFactory {
      * Tells if created handler will be able to handle given action type.
      *
      * @param type  action type
+     * @param configuration  configuration for action
      * @return <code>true</code> if created handler will be able to handle
      *          given action <code>type</code>, <code>false</code> otherwise
      */
     boolean canHandle(ProjectActionEvent.Type type, Configuration configuration);
+
+    /**
+     * Tells if created handler will be able to handle given project action event.
+     *
+     * @param pae  project action event to handle
+     * @return <code>true</code> if created handler will be able to handle
+     *          given project action event <code>pae</code>, <code>false</code> otherwise
+     */
+    boolean canHandle(ProjectActionEvent pae);
 
     /**
      * Creates handler instances. New handler is created for each action.

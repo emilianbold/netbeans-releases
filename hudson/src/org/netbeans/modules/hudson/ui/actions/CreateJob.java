@@ -74,7 +74,8 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -85,25 +86,31 @@ import org.w3c.dom.Document;
 @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob")
 @ActionRegistration(displayName="#CTL_CreateJob", iconInMenu=false)
 @ActionReference(path="Menu/Versioning", position=400)
+@Messages("CTL_CreateJob=Create Build Job...")
 public class CreateJob extends AbstractAction {
 
     private final HudsonInstance instance;
 
     public CreateJob() {
-        super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
+        super(CTL_CreateJob());
         this.instance = null;
     }
 
+    @Messages("CreateJob.new_build=New Build...")
     public CreateJob(HudsonInstance instance) {
-        super(NbBundle.getMessage(CreateJob.class, "CreateJob.new_build"));
+        super(CreateJob_new_build());
         this.instance = instance;
     }
 
+    @Messages({
+        "CreateJob.title=New Continuous Build",
+        "CreateJob.create=Create"
+    })
     public void actionPerformed(ActionEvent e) {
         final CreateJobPanel panel = new CreateJobPanel();
-        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateJob.class, "CreateJob.title"));
+        final DialogDescriptor dd = new DialogDescriptor(panel, CreateJob_title());
         final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
-        final JButton createButton = new JButton(NbBundle.getMessage(CreateJob.class, "CreateJob.create"));
+        final JButton createButton = new JButton(CreateJob_create());
         createButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -135,6 +142,7 @@ public class CreateJob extends AbstractAction {
         dialog.get().setVisible(true);
     }
 
+    @Messages("CreateJob.failure=Could not create job. Please check your server's log for details.")
     private void finalizeJob(HudsonInstance instance, ProjectHudsonJobCreator creator, String name, Project project) {
         try {
             Document doc = creator.configure();
@@ -152,7 +160,7 @@ public class CreateJob extends AbstractAction {
             OpenProjects.getDefault().open(new Project[] {project}, false);
             UI.selectNode(instance.getUrl(), name);
         } catch (IOException x) {
-            Exceptions.attachLocalizedMessage(x, NbBundle.getMessage(CreateJob.class, "CreateJob.failure"));
+            Exceptions.attachLocalizedMessage(x, CreateJob_failure());
             Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);
         }
     }

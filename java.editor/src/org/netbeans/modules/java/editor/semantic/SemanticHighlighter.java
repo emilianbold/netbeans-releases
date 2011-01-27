@@ -55,7 +55,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.DisjointTypeTree;
+import com.sun.source.tree.DisjunctiveTypeTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -130,6 +130,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -1411,11 +1412,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
         }
 
         @Override
-        public Void visitDisjointType(DisjointTypeTree node, EnumSet<UseTypes> p) {
-            for (Tree tree : node.getTypeComponents()) {
+        public Void visitDisjunctiveType(DisjunctiveTypeTree node, EnumSet<UseTypes> p) {
+            for (Tree tree : node.getTypeAlternatives()) {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree), EnumSet.of(UseTypes.CLASS_USE));
             }
-            return super.visitDisjointType(node, p);
+            return super.visitDisjunctiveType(node, p);
         }
 
         @Override
@@ -1554,6 +1555,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
     static ErrorDescriptionSetter ERROR_DESCRIPTION_SETTER = new ErrorDescriptionSetter() {
         
         public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
+            FileObject file = NbEditorUtilities.getFileObject(doc);
+            if (file != null && org.netbeans.modules.editor.java.Utilities.disableErrors(file).contains(Severity.VERIFIER)) {
+                return;
+            }
+
             HintsController.setErrors(doc, "semantic-highlighter", errors);
         }
         

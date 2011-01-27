@@ -42,14 +42,20 @@
 package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.Shell;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.pty.PtyAllocator;
 import org.netbeans.modules.nativeexecution.pty.SttySupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 /**
@@ -130,5 +136,45 @@ public final class PtySupport {
      */
     public static void disableEcho(ExecutionEnvironment exEnv, String tty) {
         SttySupport.apply(exEnv, tty, "-echo"); //NOI18N
+    }
+
+    public static void setBackspaceAsEraseChar(ExecutionEnvironment exEnv, String tty) {
+        SttySupport.apply(exEnv, tty, "erase \\^H"); // NOI18N
+    }
+
+    public static boolean isSupportedFor(ExecutionEnvironment executionEnvironment) {
+        if (!HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
+            return false;
+        }
+
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+
+            switch (hostInfo.getOSFamily()) {
+                case WINDOWS:
+                    // for now pty mode only supported with Cygwin
+                    Shell shell = WindowsSupport.getInstance().getActiveShell();
+
+                    if (shell == null) {
+                        return false;
+                    }
+                    
+                    return shell.type == Shell.ShellType.CYGWIN;
+                case MACOSX:
+                    return true;
+                case LINUX:
+                    return true;
+                case SUNOS:
+                    return true;
+                default:
+                    return false;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return false;
     }
 }

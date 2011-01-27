@@ -66,6 +66,14 @@ public final class GitModuleConfig {
     private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
     private static final String RECENT_COMMIT_AUTHORS   = "recentCommitAuhtors";// NOI18N
     private static final String RECENT_COMMITERS        = "recentCommiters";    // NOI18N
+    private static final String SIGN_OFF                = "signOff";            // NOI18N
+    private static final String REVERT_ALL              = "revertAll";          // NOI18N
+    private static final String REMOVE_ALL_NEW          = "removeAllNew";       // NOI18N
+    private static final String REVERT_INDEX            = "revertIndex";        // NOI18N
+    private static final String REVERT_WT               = "revertWT";           // NOI18N
+    private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
+    private static final String PROP_LAST_USED_COMMIT_VIEW_MODE = "lastUsedCommitViewMode"; //NOI18N
+    private static final String AUTO_IGNORE_FILES        = "autoIgnoreFiles"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -79,8 +87,9 @@ public final class GitModuleConfig {
     
     private GitModuleConfig() { }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
+    public boolean isExcludedFromCommit(String path) {
+        Set<String> commitExclusions = getCommitExclusions();        
+        return commitExclusions.contains(path);
     }
 
     public Color getColor(String colorName, Color defaultColor) {
@@ -152,6 +161,20 @@ public final class GitModuleConfig {
     public void setLastUsedModificationContext (Mode mode) {
         getPreferences().put(PROP_LAST_USED_MODE, mode.name());
     }    
+
+    public Mode getLastUsedCommitViewMode () {
+        Mode mode;
+        try {
+            mode = Mode.valueOf(getPreferences().get(PROP_LAST_USED_COMMIT_VIEW_MODE, Mode.HEAD_VS_WORKING_TREE.name()));
+        } catch (IllegalArgumentException ex) {
+            mode = null;
+        }
+        return mode == null ? Mode.HEAD_VS_WORKING_TREE : mode;
+    }
+
+    public void setLastUsedCommitViewMode (Mode mode) {
+        getPreferences().put(PROP_LAST_USED_COMMIT_VIEW_MODE, mode.name());
+    }
     
     public boolean getAutoOpenOutput() {
         return getPreferences().getBoolean(AUTO_OPEN_OUTPUT_WINDOW, true);
@@ -182,5 +205,60 @@ public final class GitModuleConfig {
     public List<String> getRecentCommiters() {
         return Utils.getStringList(getPreferences(), RECENT_COMMITERS);
     }
+
+    public void setSignOff(boolean value) {
+        getPreferences().putBoolean(SIGN_OFF, value);
+    }
     
+    public boolean getSignOff() {
+        return getPreferences().getBoolean(SIGN_OFF, false);
+    }
+    
+    public void putRevertAll(boolean value) {
+        getPreferences().putBoolean(REVERT_ALL, value);        
+    }
+    
+    public void putRevertIndex(boolean value) {
+        getPreferences().putBoolean(REVERT_INDEX, value);        
+    }
+    
+    public void putRevertWT(boolean value) {
+        getPreferences().putBoolean(REVERT_WT, value);        
+    }
+    
+    public void putRemoveAllNew(boolean value) {
+        getPreferences().putBoolean(REMOVE_ALL_NEW, value);        
+    }
+    
+    public void putRemoveWTNew(boolean value) {
+        getPreferences().putBoolean(REMOVE_WT_NEW, value);        
+    }
+    
+    public boolean getRevertAll() {
+        return getPreferences().getBoolean(REVERT_ALL, true);        
+    }
+    
+    public boolean getRevertIndex() {
+        return getPreferences().getBoolean(REVERT_INDEX, false);        
+    }
+    
+    public boolean getRevertWT() {
+        return getPreferences().getBoolean(REVERT_WT, true);        
+    }
+        
+    public boolean getRemoveWTNew() {
+        return getPreferences().getBoolean(REMOVE_WT_NEW, false);                
+    }
+    
+    public boolean getRemoveAllNew() {
+        return getPreferences().getBoolean(REMOVE_ALL_NEW, false);                
+    }
+
+    public boolean getAutoIgnoreFiles () {
+        return getPreferences().getBoolean(AUTO_IGNORE_FILES, true);
+    }
+
+    public void setAutoIgnoreFiles (boolean flag) {
+        getPreferences().putBoolean(AUTO_IGNORE_FILES, flag);
+    }
 }

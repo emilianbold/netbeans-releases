@@ -115,6 +115,8 @@ public interface GlassfishModule {
 
     public String getResourcesXmlName();
 
+    public boolean isWritable();
+
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */
@@ -390,4 +392,9 @@ public interface GlassfishModule {
      * get the password for this server
      */
     public String getPassword();
+
+    public boolean supportsRestartInDebug();
+
+    public boolean isRestfulLogAccessSupported();
+
 }

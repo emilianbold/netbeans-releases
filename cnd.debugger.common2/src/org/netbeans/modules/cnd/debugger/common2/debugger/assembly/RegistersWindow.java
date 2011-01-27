@@ -49,34 +49,28 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.List;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.openide.util.HelpCtx;
 
 import org.netbeans.spi.viewmodel.Models;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -103,9 +97,9 @@ public final class RegistersWindow extends TopComponent
     private JTextArea ta;
     private JScrollPane ta_sp;
     private JScrollPane tab_sp;
-    private List previous_regs;
-    private List current_regs;
-    private List hidden_regs;
+    private List<String> previous_regs;
+    private List<String> current_regs;
+    private List<String> hidden_regs;
     private PopupListener popupListener;
     private boolean needInitData=true;
     private boolean seen_sparc_regs=false;
@@ -116,29 +110,30 @@ public final class RegistersWindow extends TopComponent
 
     public static TopComponent getDefault() {
         if (DEFAULT == null) {
-            RegistersWindow tc = (RegistersWindow) WindowManager.getDefault().findTopComponent(preferredID);
+            DEFAULT = (RegistersWindow) WindowManager.getDefault().findTopComponent(preferredID);
 
-            if (tc == null)
-                new RegistersWindow();
+            if (DEFAULT == null) {
+                DEFAULT = new RegistersWindow();
+            }
         }
         return DEFAULT;
     }
     
-
     public RegistersWindow() {
 	name = Catalog.get("TITLE_RegistersWindow");    // NOI18N
 	view_name = Catalog.get("TITLE_RegistersView"); // NOI18N
 	super.setName(name);
-	DEFAULT = this;
 	final String iconDir = "org/netbeans/modules/cnd/debugger/common2/icons/";//NOI18N
 	setIcon(org.openide.util.ImageUtilities.loadImage
 	    (iconDir + "registers.png")); // NOI18N
     }
 
+    @Override
     protected String preferredID() {
         return this.getClass().getName();
     }
 
+    @Override
     protected void componentHidden () {
 	if (debugger != null) {
 	    debugger.registerRegistersWindow(null);
@@ -146,6 +141,7 @@ public final class RegistersWindow extends TopComponent
         super.componentHidden();
     }
 
+    @Override
     protected void componentShowing () {
         super.componentShowing ();
 	connectToDebugger(DebuggerManager.get().currentDebugger());
@@ -153,6 +149,7 @@ public final class RegistersWindow extends TopComponent
         updateWindow();
     }
 
+    @Override
     protected void componentClosed () {
 	if (debugger != null) {
 	    debugger.registerRegistersWindow(null);
@@ -164,6 +161,12 @@ public final class RegistersWindow extends TopComponent
 	this.debugger = debugger;
 	if (debugger == null) return;
 	debugger.registerRegistersWindow(this);
+    }
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        tab.requestFocusInWindow();
     }
     
     protected void updateWindow () {
@@ -190,9 +193,9 @@ public final class RegistersWindow extends TopComponent
             tab.setGridColor(Color.LIGHT_GRAY);
             tab_sp = new JScrollPane(tab);
             
-            previous_regs = new List();
-            current_regs = new List();
-            hidden_regs = new List();
+            previous_regs = new ArrayList<String>();
+            current_regs = new ArrayList<String>();
+            hidden_regs = new ArrayList<String>();
             setLayout (new BorderLayout ());
             tree = Models.createView (Models.EMPTY_MODEL);
             // Models.setModelsToView (tree, Models.createCompoundModel(regs1));
@@ -266,17 +269,17 @@ public final class RegistersWindow extends TopComponent
         ta.setText(null);
         // Clean Table
         dataModel.setRowCount(0);
-       	k = current_regs.getItemCount();
+       	k = current_regs.size();
        	for (i = 0; i < k; i++) {
-       	    s = current_regs.getItem(i);
-       	    l = hidden_regs.getItemCount();
+       	    s = current_regs.get(i);
+       	    l = hidden_regs.size();
        	    for (j=0; j < l; j++) {
-       	        if (s.startsWith("   " + hidden_regs.getItem(j))) break; // NOI18N
+       	        if (s.startsWith("   " + hidden_regs.get(j))) break; // NOI18N
        	    }
        	    if (j == l) {
-       	        if (i < previous_regs.getItemCount()) {
+       	        if (i < previous_regs.size()) {
        	            try {
-       	                String prev_s=previous_regs.getItem(i);
+       	                String prev_s=previous_regs.get(i);
        	                if (prev_s.equals(s)) {
 //System.out.println("RegistersWindow.updateWindow() previous_regs.getItem("+i+") == current_regs.getItem("+i+") == "+s);
        	                } else {
@@ -312,8 +315,8 @@ public final class RegistersWindow extends TopComponent
                 }
        	        dataModel.addRow(row);
        	    }
-       	    if (i < previous_regs.getItemCount()) {
-       	        previous_regs.replaceItem(s, i);
+       	    if (i < previous_regs.size()) {
+       	        previous_regs.set(i, s);
        	    } else {
        	        previous_regs.add(s);
        	    }
@@ -399,10 +402,12 @@ public final class RegistersWindow extends TopComponent
             popup = popupMenu;
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             maybeShowPopup(e);
         }
@@ -449,87 +454,33 @@ public final class RegistersWindow extends TopComponent
         }
     }
 
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
         
+    @Override
     public String getName () {
-        return (name);
+        return name;
     }
     
+    @Override
     public String getToolTipText () {
-        return (view_name);
+        return view_name;
     }
     
     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
 	// super.actionPerformed(actionEvent);
     }
 
-    public void updateData(String regs) {
-        int i, j, k, l, regnamelen;
-        String s, regname, regvalue;
-        
-        if (regs == null) return;
-        current_regs.removeAll();
-        l = 1;
-       	for (i = 0; i < regs.length(); i++, l++) {
-       	    k = regs.indexOf('\n', i);
-       	    if (k < i) break;
-       	    s = regs.substring(i, k + 1);
-            i = k;
-            regname = null;
-            regvalue = null;
-            regnamelen = 0;
-       	    for (j=0, k=0; j < s.length(); j++) {
-       	        if (s.charAt(j) != ' ') {
-       	            if (k == 0) {
-       	                k = s.indexOf(' ', j);
-       	                if (k < j) break;
-       	                regnamelen = k - j;
-       	                regname = s.substring(j, k);
-       	                j = k;
-                    } else {
-       	                k = s.indexOf('\n', j);
-       	                if (k < j) break;
-       	                regvalue = s.substring(j, k);
-       	                break;
-                    }
-       	        }
-            }
-       	    if (l != 1) {
-       	        // skip the first line (current frame || current thread)
-		// second line could be "current frame" 
-		// if first line is current thread
-       	        if ((regname != null) && (regvalue != null)) {
-		    if (!regname.equals("current")) { // NOI18N
-			if (regname.indexOf("g0") > 0) 		// NOI18N
-			    seen_sparc_regs = true;
-			if (regname.indexOf("ax") > 0) 	// NOI18N
-			    seen_sparc_regs = false;
-			if (regnamelen < 6)  {
-			    current_regs.add("   " + // NOI18N
-					     regname +
-					     "  \t\t" + // NOI18N
-					     regvalue +
-					     "\n"); // NOI18N
-			} else if (regnamelen < 14) {
-			    current_regs.add("   " + // NOI18N
-					     regname +
-					     "  \t" + // NOI18N
-					     regvalue +
-					     "\n"); // NOI18N
-			} else {
-			    current_regs.add("   " + // NOI18N
-					     regname +
-					     regvalue +
-					     "\n"); // NOI18N
-			}
-		    }
-       	        } else {
-                    current_regs.add("   " + s); // NOI18N
-                }
-            }
+    public void updateData(List<String> regs) {
+        if (regs == null || regs.isEmpty()) {
+            return;
         }
+        
+        current_regs.clear();
+        current_regs.addAll(regs);
+        
         updateWindow();
     }
 
@@ -564,9 +515,9 @@ public final class RegistersWindow extends TopComponent
        	        }
             }
        	    if (regname != null) {
-       	        k = hidden_regs.getItemCount();
+       	        k = hidden_regs.size();
        	        for (j=0; j < k; j++) {
-       	            s = hidden_regs.getItem(j);
+       	            s = hidden_regs.get(j);
        	            if (s.compareTo(regname) == 0) break;
        	        }
        	        if (j == k) {
@@ -578,7 +529,7 @@ public final class RegistersWindow extends TopComponent
     }
 
     protected void ShowAllRegisters() {
-        hidden_regs.removeAll();
+        hidden_regs.clear();
         updateWindow();
     }
 
@@ -597,6 +548,7 @@ public final class RegistersWindow extends TopComponent
         updateWindow();
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("RegistersWindow");
     }

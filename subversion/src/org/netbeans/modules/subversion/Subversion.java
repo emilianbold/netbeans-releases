@@ -167,11 +167,16 @@ public class Subversion {
         cleanupTask = getRequestProcessor().create(new Runnable() {
             @Override
             public void run() {
+                
+                if(!fileStatusCache.ready()) {
+                    fileStatusCache.computeIndex();                    
+                }
+                
                 if (DelayScanRegistry.getInstance().isDelayed(cleanupTask, LOG, "Subversion.cleanupTask")) { //NOI18N
                     return;
                 }
+                
                 try {
-                    fileStatusCache.computeIndex();
                     LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {
@@ -410,7 +415,7 @@ public class Subversion {
                 } catch (SVNClientException ex)  {
                     if(!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) && 
                        !SvnClientExceptionHandler.isCancelledAction(ex.getMessage()) &&
-                       !SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage()))
+                       !WorkingCopyAttributesCache.getInstance().isSuppressed(ex))
                     {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
                     }
@@ -432,7 +437,7 @@ public class Subversion {
                     }
                 }
             } catch (SVNClientException ex) {
-                if(!SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                if(!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
             }

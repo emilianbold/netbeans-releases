@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -225,7 +225,7 @@ public abstract class GlassfishConfiguration implements
         // target server, use that, otherwise, use 9.0.
         ASDDVersion result = getTargetAppServerVersion();
         if (result == null) {
-            result = ASDDVersion.SUN_APPSERVER_9_0;
+            result = ASDDVersion.SUN_APPSERVER_10_1;
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
                     GlassfishConfiguration.class, "ERR_UnidentifiedTargetServer", result.toString())); // NOI18N
         }
@@ -314,7 +314,10 @@ public abstract class GlassfishConfiguration implements
     protected ASDDVersion getTargetAppServerVersion() {
         ASDDVersion result = null;
         J2eeModuleProvider provider = getProvider(primarySunDD.getParentFile());
-        String serverType = provider.getServerID();
+        if (null == provider) {
+            return result;
+        }
+        String serverType = Utils.getInstanceReleaseID(provider); // provider.getServerInstanceID();
 // [/tools/as81ur2]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/as82]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/glassfish_b35]deployer:Sun:AppServer::localhost:4948, serverType: J2EE
@@ -392,7 +395,7 @@ public abstract class GlassfishConfiguration implements
         return J2EEBaseVersion.getVersion(module.getType(), module.getModuleVersion());
     }
 
-    public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
+    final public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
         J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
@@ -401,7 +404,7 @@ public abstract class GlassfishConfiguration implements
         return stdRootDD;
     }
 
-    public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
+    final public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
         org.netbeans.modules.j2ee.dd.api.webservices.Webservices wsRootDD = null;
         J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
@@ -599,6 +602,8 @@ public abstract class GlassfishConfiguration implements
                     contextRoot = ((SunWebApp) rootDD).getContextRoot();
                     if((contextRoot != null) && (contextRoot.equals("/"))) { //NOI18N
                         contextRoot = ""; //NOI18N
+                    } else if (null == contextRoot) {
+                        contextRoot = cr;
                     }
                 }
             } catch (IOException ex) {
@@ -611,19 +616,30 @@ public abstract class GlassfishConfiguration implements
                     "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: {0}",
                     module.getType());
         }
+        cr = contextRoot;
         return contextRoot;
     }
 
     private String cr = null;
+    
+    private static final RequestProcessor RP = new RequestProcessor("GlassFishConfiguration.setContextRoot");
 
     @Override
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         try {
             if (J2eeModule.Type.WAR.equals(module.getType())) {
-                String suspect = module.getResourceDirectory().getAbsolutePath();
+                String suspect = "";
+                if (null != module.getResourceDirectory())
+                    suspect = module.getResourceDirectory().getAbsolutePath();
+                if (contextRoot.equals(cr))
+                    return;
+                if (null == cr) {
+                    cr = contextRoot;
+                    return;
+                }
                 cr = contextRoot;
                 final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         try {

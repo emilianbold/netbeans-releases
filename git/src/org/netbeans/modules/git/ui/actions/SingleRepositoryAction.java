@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,11 +61,11 @@ public abstract class SingleRepositoryAction extends GitAction {
     private static final Logger LOG = Logger.getLogger(SingleRepositoryAction.class.getName());
 
     @Override
-    protected final void performContextAction (Node[] nodes) {
-        final VCSContext context = getCurrentContext(nodes);
+    protected final void performContextAction (final Node[] nodes) {
         Utils.postParallel(new Runnable () {
             @Override
             public void run() {
+                VCSContext context = getCurrentContext(nodes);
                 performAction(context);
             }
         }, 0);
@@ -76,11 +77,14 @@ public abstract class SingleRepositoryAction extends GitAction {
             LOG.log(Level.FINE, "No repository in the current context: {0}", context.getRootFiles()); //NOI18N
             return;
         }
-        File repository = repositories.iterator().next();
-        if (repositories.size() > 1) {
-            LOG.log(Level.FINE, "Multiple repositories in the current context: {0}, running only with {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
+        SimpleImmutableEntry<File, File[]> actionRoots = GitUtils.getActionRoots(context);
+        if (actionRoots != null) {
+            File repository = actionRoots.getKey();
+            if (repositories.size() > 1) {
+                LOG.log(Level.FINE, "Multiple repositories in the current context: {0}, running only with {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
+            }
+            performAction(repository, actionRoots.getValue(), context);
         }
-        performAction(repository, GitUtils.filterForRepository(context, repository), context);
     }
     
     protected abstract void performAction (File repository, File[] roots, VCSContext context);

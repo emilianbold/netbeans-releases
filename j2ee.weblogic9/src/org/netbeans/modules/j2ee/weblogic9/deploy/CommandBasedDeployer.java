@@ -77,6 +77,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
+import org.netbeans.modules.j2ee.dd.api.application.Web;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
@@ -90,7 +91,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -105,8 +109,6 @@ public final class CommandBasedDeployer {
     private static RequestProcessor DEPLOYMENT_RP = new RequestProcessor("Weblogic Deployment", 1); // NOI18N
 
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
-
-    private static final String WEBLOGIC_JAR_PATH = "server/lib/weblogic.jar"; // NOI18N
 
     private static final int TIMEOUT = 300000;
 
@@ -632,8 +634,13 @@ public final class CommandBasedDeployer {
         String port = parts.length > 1 ? parts[1] : "";
 
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .redirectErrorStream(true)
-                .addArgument("-cp") // NOI18N
+                .redirectErrorStream(true);
+        // NB supports only JDK6+ while WL 9, only JDK 5
+        if (deploymentManager.getDomainVersion() == null
+                || !deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
+        }
+        builder = builder.addArgument("-cp") // NOI18N
                 .addArgument(getClassPath())
                 .addArgument("weblogic.Deployer") // NOI18N
                 .addArgument("-adminurl") // NOI18N
@@ -664,13 +671,9 @@ public final class CommandBasedDeployer {
     }
 
     private String getClassPath() {
-        InstanceProperties ip = deploymentManager.getInstanceProperties();
-        String serverRoot = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        if (serverRoot != null) {
-            File file = new File(serverRoot, WEBLOGIC_JAR_PATH);
-            if (file.exists() && file.isFile()) {
-                return file.getAbsolutePath();
-            }
+        File weblogicJar = WLPluginProperties.getWeblogicJar(deploymentManager);
+        if (weblogicJar != null && weblogicJar.isFile() && weblogicJar.exists()) {
+            return weblogicJar.getAbsolutePath();
         }
         return "";
     }
@@ -679,13 +682,14 @@ public final class CommandBasedDeployer {
         // TODO configurable ? or use the jdk server is running on ?
         JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection<FileObject> folders = platform.getInstallFolders();
-        String javaBinary = "java"; // NOI18N
+        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
         if (folders.size() > 0) {
             FileObject folder = folders.iterator().next();
             File file = FileUtil.toFile(folder);
             if (file != null) {
                 javaBinary = file.getAbsolutePath() + File.separator
-                        + "bin" + File.separator + "java"; // NOI18N
+                        + "bin" + File.separator
+                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
             }
         }
         return javaBinary;
@@ -694,6 +698,9 @@ public final class CommandBasedDeployer {
     private static void waitForUrlReady(TargetModuleID moduleID,
             WLProgressObject progressObject) throws InterruptedException, TimeoutException {
 
+        // prevent hitting the old content
+        Thread.sleep(3000);
+        long start = System.currentTimeMillis();
         String webUrl = moduleID.getWebURL();
         if (webUrl == null) {
             TargetModuleID[] ch = moduleID.getChildTargetModuleID();
@@ -701,17 +708,17 @@ public final class CommandBasedDeployer {
                 for (int i = 0; i < ch.length; i++) {
                     webUrl = ch[i].getWebURL();
                     if (webUrl != null) {
-                        break;
+                        waitForUrlReady(webUrl, progressObject, start);
                     }
                 }
             }
-
+        } else {
+            waitForUrlReady(webUrl, progressObject, start);
         }
-        waitForUrlReady(webUrl, progressObject);
     }
 
-    private static void waitForUrlReady(String webUrl,
-            WLProgressObject progressObject) throws InterruptedException, TimeoutException {
+    private static void waitForUrlReady(String webUrl, WLProgressObject progressObject,
+            long start) throws InterruptedException, TimeoutException {
 
         if (webUrl != null) {
             try {
@@ -720,11 +727,7 @@ public final class CommandBasedDeployer {
 
                 progressObject.fireProgressEvent(null,
                         new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-                //delay to prevent hitting the old content before reload
-                for (int i = 0; i < 3; i++) {
-                    Thread.sleep(1000);
-                }
-                long start = System.currentTimeMillis();
+
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     if (URLWait.waitForUrlReady(URL_WAIT_RP, url, 1000)) {
                         break;
@@ -778,21 +781,36 @@ public final class CommandBasedDeployer {
             
             FileObject appXml = root.getFileObject("META-INF/application.xml"); // NOI18N
             if (appXml != null) {
-                Application ear = DDProvider.getDefault().getDDRoot(appXml);
-                Module[] modules = ear.getModule();
-                for (int i = 0; i < modules.length; i++) {
-                    WLTargetModuleID childModuleId = new WLTargetModuleID(moduleId.getTarget());
-                    if (modules[i].getWeb() != null) {
-                        childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                InputStream is = new BufferedInputStream(appXml.getInputStream());
+                try {
+                    // we used getDDRoot(FO), but the caching has been returning
+                    // old model - see #194656
+                    Application ear = DDProvider.getDefault().getDDRoot(new InputSource(is));
+                    Module[] modules = ear.getModule();
+                    for (int i = 0; i < modules.length; i++) {
+                        WLTargetModuleID childModuleId = null;
+                        Web web = modules[i].getWeb();
+                        if (web != null) {
+                            childModuleId = new WLTargetModuleID(moduleId.getTarget(), web.getWebUri());
+                        } else {
+                            childModuleId = new WLTargetModuleID(moduleId.getTarget());
+                        }
+
+                        if (modules[i].getWeb() != null) {
+                            childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                        }
+                        moduleId.addChild(childModuleId);
                     }
-                    moduleId.addChild(childModuleId);
+                } finally {
+                    is.close();
                 }
             } else {
                 // Java EE 5
                 for (FileObject child : root.getChildren()) {
                     // this should work for exploded directory as well
                     if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
-                        WLTargetModuleID childModuleId = new WLTargetModuleID(moduleId.getTarget());
+                        WLTargetModuleID childModuleId =
+                                new WLTargetModuleID(moduleId.getTarget(), child.getNameExt());
 
                         if (child.hasExt("war")) { // NOI18N
                             configureWarModuleId(childModuleId, child, serverUrl);
@@ -804,6 +822,8 @@ public final class CommandBasedDeployer {
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (PropertyVetoException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (SAXException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
     }

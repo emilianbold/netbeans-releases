@@ -713,6 +713,31 @@ public class FileObjectTestHid extends TestBaseHid {
         fsAssert("findResource problem", result != null);
         fsAssert("findResource problem",fo1.equals(result));
     }
+
+    public void  testGetPathWithDots() {
+        checkSetUp();
+        FileObject fold1 = getTestFolder1(root);
+        FileObject fold2 = getTestFolder1(fold1);
+        
+        assertEquals("Is parent", fold1, fold2.getParent());
+        assertEquals("No .. can be used", null, fold2.getFileObject(".."));
+    }
+
+    public void  testFindResourceWithDots() throws Exception {
+        checkSetUp();
+        FileObject fold1 = getTestFolder1(root);
+        FileObject fold2 = getTestFolder1(fold1);
+        
+        String[] arr = fold2.getPath().split("/");
+        StringBuilder sb = new StringBuilder();
+        for (String s : arr) {
+            sb.append(s).append("/../").append(s).append('/');
+        }
+        assertNull(
+            "No .. in findResource allowed", 
+            fold2.getFileSystem().findResource(sb.toString())
+        );
+    }
     
     public void  testGetPath2() {
         checkSetUp();
@@ -774,6 +799,30 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject result = fs.findResource(fo1.getPath());
         fsAssert("findResource problem", result != null);
         fsAssert("findResource problem",fo1.equals(result));
+    }
+
+    public void testGetPathNoParent() throws  IOException{
+        checkSetUp();
+        FileObject fold1 = getTestFolder1(root);
+        FileObject fold2 = getTestFolder1(fold1);
+
+        FileObject fo1 = null;
+        FileObject fo2 = null;
+        try {
+            fo1 = FileUtil.createData(fold2, "a/b/c.java");        
+            fo2 = FileUtil.createData(fold2, "a/x/y.java");        
+        } catch (IOException iex) {
+            fsAssert("There is not possible to create folder a.b.c",
+            fs.isReadOnly() || fold2.isReadOnly());
+            return;
+        }
+        
+        FileObject r1 = fo1.getParent().getParent().getFileObject("x/y.java");
+        FileObject r2 = fo1.getParent().getFileObject("../x/y.java");
+        FileObject r3 = fo1.getFileObject("../../x/y.java");
+        assertEquals("y.java found without ..", fo2, r1);
+        assertNull("y.java not found with ..", r2);
+        assertNull("y.java not found with ../..", r3);
     }
 
     public void  testGetPath5() throws  IOException{
@@ -1152,6 +1201,33 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         
         fileRenamedAssert("",1);        
+        fileDataCreatedAssert("fireFileDataCreatedEvent should not be fired ",0);
+        fileFolderCreatedAssert("fireFolderDataCreatedEvent  should not be fired ",0);
+        fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);
+    }
+    
+    public void  testCaseSensitiveRename() throws Exception {
+        checkSetUp();
+        FileObject fo = getTestFile1(root);
+        registerDefaultListener(fo);
+        FileLock lock = null;
+        
+        try {
+            lock = fo.lock();
+            fo.rename(lock,fo.getName().toUpperCase(),fo.getExt().toUpperCase());
+        } catch (IOException iex) {
+            if (!fs.isReadOnly() && !root.isReadOnly()) {
+                throw iex;
+            }
+            fsAssert("FileObject could not be renamed. So there was expected fs or fo are read-only",
+            fs.isReadOnly() || root.isReadOnly());
+            fileRenamedAssert("fs or fo is read-only. So no event should be fired",0);
+            return;
+        } finally {
+            if (lock != null) lock.releaseLock();
+        }
+        
+        fileRenamedAssert("One rename event",1);        
         fileDataCreatedAssert("fireFileDataCreatedEvent should not be fired ",0);
         fileFolderCreatedAssert("fireFolderDataCreatedEvent  should not be fired ",0);
         fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);

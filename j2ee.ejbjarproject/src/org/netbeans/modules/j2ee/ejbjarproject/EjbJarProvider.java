@@ -171,8 +171,13 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return getFile(EjbJarProjectProperties.META_INF);
     }
 
+    @Override
     public File getResourceDirectory() {
-        return getFile(EjbJarProjectProperties.RESOURCE_DIR);
+        File f = getFile(EjbJarProjectProperties.RESOURCE_DIR);
+        if (f == null) {
+            f = new File(FileUtil.toFile(project.getProjectDirectory()), "setup"); // NOI18N
+        }
+        return f;
     }
     
     public File getDeploymentConfigurationFile(String name) {
@@ -232,6 +237,13 @@ public final class EjbJarProvider extends J2eeModuleProvider
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return project.getDeployOnSaveSupport();
     }
+    
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE)) &&
+            !Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    }
+    
     
     @Override
     public String getServerID() {

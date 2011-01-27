@@ -674,12 +674,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         UniqueNameCache.getManager().dispose();
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
-        APTDriver.getInstance().close();
+        APTDriver.close();
         APTFileCacheManager.close();
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();
         CndFileUtils.clearFileExistenceCache();
-        APTSystemStorage.getDefault().dispose();
+        APTSystemStorage.dispose();
     }
 
     @Override
@@ -733,7 +733,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     
     /////////// 
     // tracing
-    public void dumpInfo(PrintWriter printOut) {
+    public void dumpInfo(PrintWriter printOut, boolean withContainers) {
         printOut.printf("ModelImpl: disabled=%d, projects=%d\n", disabledProjects.size(), platf2csm.size());// NOI18N
         int ind = 1;
         for (Object prj : disabledProjects) {
@@ -743,7 +743,19 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (Map.Entry<Object, CsmUID<CsmProject>> entry : platf2csm.entrySet()) {
             final Object key = entry.getKey();
             CsmUID<CsmProject> value = entry.getValue();
-            printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind++, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
+            printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
+            if (withContainers) {
+                CsmProject prj = UIDCsmConverter.UIDtoProject(value);
+                if (prj == null) {
+                    printOut.printf("Project was NOT restored from repository\n");// NOI18N
+                } else if (prj instanceof ProjectBase) {
+                    printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
+                    ((ProjectBase) prj).traceFileContainer(printOut);
+                } else {
+                    printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
+                }
+            }
+            ind++;
         }
     }
 }

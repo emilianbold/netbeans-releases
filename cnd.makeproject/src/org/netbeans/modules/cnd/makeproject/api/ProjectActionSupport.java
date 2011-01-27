@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -91,6 +93,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -202,6 +205,7 @@ public class ProjectActionSupport {
         private int currentAction = 0;
         private StopAction sa = null;
         private RerunAction ra = null;
+        private TermAction ta = null;
         private List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
         private final ProjectActionHandler customHandler;
@@ -259,8 +263,12 @@ public class ProjectActionSupport {
             if (ra == null) {
                 ra = new RerunAction(this);
             }
+            if (ta == null) {
+                ta = new TermAction(this);
+            }
             list.add(sa);
             list.add(ra);
+            list.add(ta);
             if (additional == null) {
                 additional = BuildActionsProvider.getDefault().getActions(name, paes);
             }
@@ -363,6 +371,9 @@ public class ProjectActionSupport {
                 Action[] actions = getActions(pae.getActionName());
                 if (reuse) {
                     synchronized (lock) {
+                        // Close buildtab from default provider
+                        InputOutput buildtab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                        buildtab.closeInputOutput(); // Close it...
                         io = runIoTab;
                         if (io == null) {
                             io = termProvider.getIO(name, false);
@@ -412,6 +423,24 @@ public class ProjectActionSupport {
             }
         }
 
+        private void stopProgress() {
+            progressHandle.finish();
+            synchronized (lock) {
+                InputOutput tabToClose = ioTab;
+                if (tabToClose != null && !tabToClose.isClosed()&& tabToClose.getOut() != null) {
+                    PrintWriter out = tabToClose.getOut();
+                    // Closing out several times is not harmful 
+                    // any attempt to write to the same tab will re-open it
+                    // If nothing was written to the tab at all, closing
+                    // it's out still will leave it bold ...
+                    // So write a space... Should not make any harm..
+                    out.write(' ');
+                    out.flush();
+                    out.close();
+                }
+            }
+        }
+        
         private void go() {
             LifecycleManager.getDefault().saveAll();
             currentHandler = null;
@@ -424,7 +453,7 @@ public class ProjectActionSupport {
             final ProjectActionEvent pae = paes[currentAction];
 
             if (!checkProject(pae)) {
-                progressHandle.finish();
+                stopProgress();
                 return;
             }
             Type type = pae.getType();
@@ -436,13 +465,19 @@ public class ProjectActionSupport {
                     || type == PredefinedType.CHECK_EXECUTABLE
                     || type == PredefinedType.CUSTOM_ACTION) {
                 if (!checkExecutable(pae) || type == PredefinedType.CHECK_EXECUTABLE) {
-                    progressHandle.finish();
+                    stopProgress();
                     return;
                 }
             }
 
             InputOutput io = ioTab;
+            boolean runInExternalTerminal = false;
             int consoleType = pae.getProfile().getConsoleType().getValue();
+            runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
+            if (!pae.getConfiguration().getDevelopmentHost().isLocalhost() && runInExternalTerminal){
+                //set to internal terminal
+                consoleType = RunProfile.getDefaultConsoleType();
+            }            
             // Always show build log in regular output (IZ 191555)
             // and the same for test run
             // 191589 -  Regression in "C/C++ Unit Tests" framework
@@ -456,7 +491,7 @@ public class ProjectActionSupport {
                 }
                 consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             }
-            
+
             if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                 consoleType = RunProfile.getDefaultConsoleType();
             }
@@ -479,7 +514,7 @@ public class ProjectActionSupport {
                 //}
                 boolean foundFactory = false;
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(type, pae.getConfiguration())) {
+                    if (factory.canHandle(pae)) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
                         handler.execute(io);
@@ -489,7 +524,7 @@ public class ProjectActionSupport {
                     }
                 }
                 if (!foundFactory) {
-                    progressHandle.finish();
+                    stopProgress();
                 }
             }
 
@@ -526,7 +561,7 @@ public class ProjectActionSupport {
                 }
             }
             Type type = paes[currentAction].getType();
-            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS || type == PredefinedType.RUN) {
                 // Refresh all files
                 refreshProjectFiles(paes[currentAction].getProject());
             }
@@ -539,7 +574,7 @@ public class ProjectActionSupport {
                 }
                 sa.setEnabled(false);
                 ra.setEnabled(true);
-                progressHandle.finish();
+                stopProgress();
                 return;
             }
 
@@ -591,12 +626,16 @@ public class ProjectActionSupport {
                     // Set executable in configuration
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
-                    executable = CndPathUtilitities.naturalize(executable);
+                    executable = CndPathUtilitities.naturalizeSlashes(executable);
                     //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
                     executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
-                    executable = CndPathUtilitities.normalize(executable);
-                    makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
-                    // Mark the project 'modified'
+                    executable = CndPathUtilitities.normalizeSlashes(executable);
+                    if (makeConfiguration.isMakefileConfiguration()) {
+                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
+                    }
+                    else if (makeConfiguration.isLibraryConfiguration()) {
+                        makeConfiguration.getProfile().setRunCommand(executable);
+                    }
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {
                         pdp.getConfigurationDescriptor().setModified();
@@ -627,7 +666,7 @@ public class ProjectActionSupport {
                     runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
                     executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
                 }
-                executable = CndPathUtilitities.normalize(executable);
+                executable = CndPathUtilitities.normalizeSlashes(executable);
             }
             if (CndPathUtilitities.isPathAbsolute(executable)) {
                 MakeConfiguration conf = pae.getConfiguration();
@@ -730,6 +769,30 @@ public class ProjectActionSupport {
         }
     }
 
+    private static final class TermAction extends AbstractAction {
+
+        private HandleEvents handleEvents;
+
+        public TermAction(HandleEvents handleEvents) {
+            this.handleEvents = handleEvents;
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.TermAction.text")); // NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String dir = null;
+            ExecutionEnvironment env = null;
+            for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
+                ProjectActionEvent pae = handleEvents.paes[i];
+                dir = pae.getProfile().getRunDirectory();
+                env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                break;
+            }
+            TerminalSupport.openTerminal(IOContainer.getDefault(), env, dir);
+        }
+    }
+    
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getBundle(ProjectActionSupport.class).getString(s);

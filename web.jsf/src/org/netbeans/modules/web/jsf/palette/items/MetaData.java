@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.openide.filesystems.FileObject;
@@ -74,17 +75,21 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Alexey Butenko
+ * @author mfukala@netbeans.org
  */
 public class MetaData implements ActiveEditorDrop, PaletteItem {
 
     private HashMap<String, String> properties = new HashMap<String, String>();
 
-    private static final String TAG_NAME = "h:inputText";   //NOI18N
-    private static final String NAME_SPACE = "http://java.sun.com/jsf/html";   //NOI18N
+    private static final String TAG_NAME = ":inputText";   //NOI18N
     private static final String VALUE_NAME = "value";   //NOI18N
 
+    private JsfLibrariesSupport jsfLibrariesSupport;
+
+    @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         properties.clear();
+        jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
         findProperties(targetComponent);
 
         MetaDataCustomizer customizer = new MetaDataCustomizer(this, targetComponent);
@@ -93,6 +98,7 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
             try {
                 String body = createBody(targetComponent);
                 JSFPaletteUtilities.insert(body, targetComponent);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.JSF_CORE);
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
                 accept = false;
@@ -102,22 +108,25 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
         return accept;
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(MetaData.class, "NAME_jsp-JsfMetadata");
+        return NbBundle.getMessage(MetaData.class, "NAME_jsp-JsfMetadata"); //NOI18N
     }
 
+    @Override
     public void insert(JTextComponent component) {
         handleTransfer(component);
     }
 
+
     private String createBody(JTextComponent targetComponent) {
         final StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append("<f:metadata>\n");    //NOI18N
+        stringBuffer.append('<').append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":metadata>\n");    //NOI18N
         Set<Entry<String,String>> set = properties.entrySet();
         for (Entry<String, String> entry : set) {
-            stringBuffer.append("   <f:viewParam id='"+entry.getKey()+"' value='"+entry.getValue()+"'/>\n");    //NOI18N
+            stringBuffer.append("   <").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":viewParam name=\"").append(entry.getKey()).append("\" value=\"").append(entry.getValue()).append("\"/>\n");    //NOI18N
         }
-        stringBuffer.append("</f:metadata>\n");    //NOI18N
+        stringBuffer.append("</").append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":metadata>\n");    //NOI18N
         return stringBuffer.toString();
     }
 
@@ -149,9 +158,9 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
                             if(_result instanceof HtmlParserResult) {
                                 HtmlParserResult result = (HtmlParserResult)_result;
 //                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
-                                if (result.getNamespaces().containsKey(NAME_SPACE)) {
+                                if (result.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getNamespace())) {
 
-                                    List<AstNode> foundNodes = findValue(result.root(NAME_SPACE).children(), TAG_NAME, new ArrayList<AstNode>());
+                                    List<AstNode> foundNodes = findValue(result.root(DefaultLibraryInfo.HTML.getNamespace()).children(), getTagName(), new ArrayList<AstNode>());
 
                                     for (AstNode node : foundNodes) {
                                         String value = node.getAttribute(VALUE_NAME).unquotedValue();
@@ -175,7 +184,7 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
                     if (result != null) {
                         Node.Nodes nodes = result.getNodes();
                         List<Node> foundNodes = new ArrayList<Node>();
-                        foundNodes=findValue(nodes, TAG_NAME, foundNodes);
+                        foundNodes=findValue(nodes, getTagName(), foundNodes);
                         for (Node node: foundNodes) {
                             String ref_val = node.getAttributeValue(VALUE_NAME);
                             String key = generateKey(ref_val);
@@ -229,6 +238,10 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
             tmp=result+i;
         }
         return result;
+    }
+
+    private String getTagName() {
+        return new StringBuilder().append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)).append(TAG_NAME).toString();
     }
 
 }

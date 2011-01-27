@@ -48,6 +48,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import org.openide.loaders.XMLDataObject;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.openide.xml.EntityCatalog;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -58,13 +61,16 @@ import org.xml.sax.SAXException;
  * <li>transient
  * <li>of the hihgest priority
  * <li>last registration prevails
+ * @see XMLDataObject#registerCatalogEntry(String,String)
+ * @see XMLDataObject#registerCatalogEntry(String,String,ClassLoader)
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.xml.EntityCatalog.class)
+@ServiceProviders({
+    @ServiceProvider(service=EntityCatalog.class),
+    @ServiceProvider(service=RuntimeCatalog.class)
+})
+@Deprecated
 public final class RuntimeCatalog extends EntityCatalog {
 
-    /** Public constructor for lookup. */
-    public RuntimeCatalog() {}
-    
     // table mapping public IDs to (local) URIs
     private Map<String,String> id2uri;
     
@@ -72,8 +78,7 @@ public final class RuntimeCatalog extends EntityCatalog {
     private Map<String,String> id2resource;
     private Map<String,ClassLoader> id2loader;
     
-    /** SAX entity resolver */
-    public InputSource resolveEntity(String name, String uri) throws IOException, SAXException {
+    public @Override InputSource resolveEntity(String name, String systemId) throws IOException, SAXException {
         
         InputSource retval;
         String mappedURI = name2uri(name);
@@ -86,8 +91,6 @@ public final class RuntimeCatalog extends EntityCatalog {
             return retval;
             
         } else if (stream != null) {
-            // XXX unused var, what is it for?
-            uri = "java:resource:" + id2resource.get(name); // NOI18N
             retval = new InputSource(stream);
             retval.setPublicId(name);
             return retval;

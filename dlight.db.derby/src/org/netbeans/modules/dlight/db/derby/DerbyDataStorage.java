@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
@@ -156,6 +157,13 @@ public class DerbyDataStorage extends SQLDataStorage {
         initStorageTypes();
     }
 
+
+    @Override
+    public String createForeignKeyConstraint(ForeignKeyConstraint fKey) {
+        return " FOREIGN KEY (" + fKey.getColumn().getColumnName() + ") REFERENCES " + // NOI18N
+                fKey.getReferenceTable().getName()  + "(" + fKey.getReferenceColumn().getColumnName() +  ") "; // NOI18N
+    }
+    
     String getURL() {
         return dbURL;
     }

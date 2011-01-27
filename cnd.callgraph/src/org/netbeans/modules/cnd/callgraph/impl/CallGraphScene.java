@@ -58,6 +58,7 @@ import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
+import org.netbeans.api.visual.widget.BirdViewController;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -96,7 +97,8 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     public enum LayoutKind {
         grid,
         hierarchical,
-        hierarchical_inverted
+        hierarchical_inverted,
+        horizontal
     }
 
     private LayoutKind layoutKind = LayoutKind.grid;
@@ -104,13 +106,14 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     public CallGraphScene() {
         mainLayer = new LayerWidget (this);
         addChild(mainLayer);
-
         connectionLayer = new LayerWidget (this);
         addChild(connectionLayer);
         router = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
         defaultItalicFont = new Font(getDefaultFont().getName(),
                               Font.ITALIC, getDefaultFont().getSize());
         getActions().addAction(popupAction);
+        getActions ().addAction (ActionFactory.createZoomAction ());
+        getActions ().addAction (ActionFactory.createPanAction ());
         getActions().addAction(ActionFactory.createWheelPanAction());
     }
     
@@ -129,6 +132,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             case hierarchical_inverted:
                 layout = GraphLayoutFactory.<Function,Call>createHierarchicalGraphLayout(this, true, true);
                 NbPreferences.forModule(CallGraphPanel.class).putInt(CallGraphPanel.INITIAL_LAYOUT, 2);
+                break;
+            case horizontal:
+                layout = new HorizontalHierarchicalLayout<Function, Call>(this, true, false);
+                NbPreferences.forModule(CallGraphPanel.class).putInt(CallGraphPanel.INITIAL_LAYOUT, 3);
                 break;
         }
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, layout);
@@ -596,6 +603,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 menu.add(new GridAction().getPopupPresenter());
                 menu.add(new HierarchicalAction().getPopupPresenter());
                 menu.add(new HierarchicalInvertedAction().getPopupPresenter());
+                menu.add(new HorizontalAction().getPopupPresenter());
                 menu.add(new JSeparator());
                 menu.add(((Presenter.Popup)exportAction).getPopupPresenter());
             }
@@ -818,4 +826,25 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             return menuItem;
         }
     }
+
+    private class HorizontalAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public HorizontalAction() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "HorizontalLayout"));  // NOI18N
+            menuItem = new JRadioButtonMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setLayout(LayoutKind.horizontal);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(layoutKind == LayoutKind.horizontal);
+            return menuItem;
+        }
+    }
+
 }

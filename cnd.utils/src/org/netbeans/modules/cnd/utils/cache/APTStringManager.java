@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.WeakSet;
 
 
 /**
@@ -117,14 +118,14 @@ public abstract class APTStringManager  {
     }  
 
     /*package*/ static final class APTSingleStringManager extends APTStringManager {
-        private final WeakSharedSet<CharSequence> storage;
+        private final WeakSet<CharSequence> storage;
         private final int initialCapacity;
         // To gebug
         private final String name;
 
         /** Creates a new instance of APTStringManager */
         private APTSingleStringManager(String name, int initialCapacity) {
-            storage = new WeakSharedSet<CharSequence>(initialCapacity);
+            storage = new WeakSet<CharSequence>(initialCapacity);
             this.initialCapacity = initialCapacity;
             // To gebug
             this.name = name;

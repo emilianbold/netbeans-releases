@@ -127,6 +127,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                     for (int i = 0; i < modules.length; i++) {
                         JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
                         if (modules[i].getWeb() != null) {
+                            mod_id.setJARName(modules[i].getWeb().getWebUri());
                             mod_id.setContextURL(server_url + modules[i].getWeb().getContextRoot());
                         }
                         mainModuleID.addChild(mod_id);
@@ -135,7 +136,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                     // Java EE 5
                     for (FileObject child : jfs.getRoot().getChildren()) {
                         if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
-                            JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
+                            JBTargetModuleID mod_id = new JBTargetModuleID(target[0], child.getNameExt());
 
                             if (child.hasExt("war")) { // NOI18N
                                 String contextRoot = child.getName();
@@ -187,7 +188,6 @@ public class JBDeployer implements ProgressObject, Runnable {
     }
 
     public void run() {
-
         String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
         FileObject foIn = FileUtil.toFileObject(file);
         FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
@@ -222,6 +222,19 @@ public class JBDeployer implements ProgressObject, Runnable {
                 }
 
             }
+            
+            // try to start the app (to be sure we won't hit the old content
+            try { 
+                // profile service is available only fo JBoss5+
+                JBoss5ProfileServiceProxy profileService = dm.getProfileService();
+                if (profileService != null) {
+                    profileService.startAndWait(mainModuleID.getModuleID(), TIMEOUT);
+                }
+            } catch (Exception ex) {
+                // pass through, try the old way
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
             if (webUrl != null) {
                 URL url = new URL(webUrl);
                 String waitingMsg = NbBundle.getMessage(JBDeployer.class, "MSG_Waiting_For_Url", url);
@@ -230,7 +243,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                 //wait until the url becomes active
                 boolean ready = waitForUrlReady(moduleID, toDeploy, previousDeployTime, TIMEOUT);
                 if (!ready) {
-                    LOGGER.log(Level.INFO, "URL wait timeouted after " + TIMEOUT); // NOI18N
+                    LOGGER.log(Level.INFO, "URL wait timeouted after {0}", TIMEOUT); // NOI18N
                 }
             }
         } catch (MalformedURLException ex) {
@@ -263,13 +276,18 @@ public class JBDeployer implements ProgressObject, Runnable {
             throw new InterruptedException("Interrupted on wait enter"); // NOI18N
         }
 
+        String mainName = moduleID.getModuleID();
+        if (moduleID.getParentTargetModuleID() != null) {
+            mainName = moduleID.getParentTargetModuleID().getModuleID();
+        }
         for (int i = 0, limit = (int) timeout / POLLING_INTERVAL;
-                i < limit && !isApplicationReady(deployedFile, moduleID.getModuleID(), previousDeploymentTime, i == 0); i++) {
-
+                i < limit && !isApplicationReady(deployedFile, mainName,
+                    moduleID.getModuleID(), previousDeploymentTime, i == 0); i++) {
             Thread.sleep(POLLING_INTERVAL);
         }
 
-        return isApplicationReady(deployedFile, moduleID.getModuleID(), previousDeploymentTime, false);
+        return true;
+        //return isApplicationReady(deployedFile, moduleID.getModuleID(), previousDeploymentTime, false);
     }
 
     private Long getDeploymentTime(File fileToDeploy) {
@@ -296,8 +314,8 @@ public class JBDeployer implements ProgressObject, Runnable {
         return null;
     }
 
-    private boolean isApplicationReady(File deployedFile, String warName, Long previouslyDeployed,
-            boolean initial) throws InterruptedException {
+    private boolean isApplicationReady(File deployedFile, String mainName,
+            String warName, Long previouslyDeployed, boolean initial) throws InterruptedException {
 
         assert deployedFile != null;
         assert warName != null;
@@ -306,7 +324,17 @@ public class JBDeployer implements ProgressObject, Runnable {
             // safety wait - avoids hitting previous content
             Thread.sleep(2000);
         }
-
+        
+        try {  
+            JBoss5ProfileServiceProxy profileService = dm.getProfileService();
+            if (profileService != null) {
+                return profileService.isReady(mainName);
+            }
+        } catch (Exception ex) {
+            // pass through, try the old way
+            LOGGER.log(Level.INFO, null, ex);
+        }        
+        
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         // Try JMX deployer first.
         try {

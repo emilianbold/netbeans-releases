@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Managing Users for the GlassFish Application Server</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+
+</head>
+
+<body>
+<h1>Managing Users for the GlassFish Application Server</h1>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You use the Admin Console of the GlassFish application server
+to add and delete users, change passwords and perform other user and group management tasks.  
+You can access the Admin Console from the Services window.
+For more, see <a href="adminconsole.html">Accessing the GlassFish Application Server Admin Console</a>.
+</p>
+
+<p><b>To add a user:</b></p>
+ 
+ <ol>
+<li><a href="adminconsole.html">Open the Admin Console</a> of the GlassFish application server. </li>
+<li>In the tree in the left pane of the Admin Console, select Configuration &gt; Security &gt; Realms &gt; admin-realm.</li>
+<li>In the Edit Realm page, click Manage Users. 
+<p>Current user IDs are displayed in a table. </p>
+</li>
+  <li>Click New and enter the new User ID and Password in the respective fields. 
+  Confirm the password by entering the same password again in the Confirm Password field.</li>
+  <li>Click OK to create the new user. 
+  If you made an error entering the password, a prompt appears telling you to reenter the password.</li>
+  <li>To continue managing users, click Close to return to the File Users page. </li>
+ </ol>
+ 
+<p><b>To delete a user:</b></p>
+ <ol>
+     <li><a href="adminconsole.html">Open the Admin Console</a> of the GlassFish application server. </li>
+<li>In the tree in the left pane of the Admin Console, select Configuration &gt; Security &gt; Realms &gt; admin-realm.</li>
+<li>In the Edit Realm page of the Admin Console, click Manage Users to display a table showing the Current user IDs.</li>
+<li>In the User ID column, select the checkbox of the user you want to delete and click Delete. 
+<p>The user immediately disappears from the table of User IDs.</li>
+  <li>To continue managing users, click Close to return to the File Users page. </li>
+</ol>
+
+<p><b>To change a user's password:</b></p>
+ <ol>
+   <li><a href="adminconsole.html">Open the Admin Console</a> of the GlassFish application server. </li>
+    <li>In the tree in the left pane of the Admin Console, select Configuration &gt; Security &gt; Realms &gt; admin-realm.</li>
+   <li>In the Edit Realm page of the Admin Console, click Manage Users to display a table showing the Current user IDs.</li>
+   <li>In the User ID column, select a user name, such as <code>admin</code>.
+   <p>The File Users page opens.</p>
+   </li>
+   <li>Enter the new password in the Password field. Confirm it by entering the password again in the Confirm Password field.</li>
+   <li>Click Save to have your password entries checked and saved. If you made an error, a prompt appears telling you to enter the password again. </li>
+   <li>To continue managing users, click Close to return to the File Users page.</li>
+   </ol>
+ 
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="working_withSJS.html">Working with the GlassFish Application Server</a></dd>
+<dd><a href="../../server_start.html">Starting and Stopping a Server</a></dd>
+<dd><a href="adminconsole.html">Accessing the GlassFish Application Server Admin Console</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_webapp.html">About Deployment</a></dd>
+</dl>
+
+<hr> 
+<small><a href="../../../credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+</body>
+</html>
+

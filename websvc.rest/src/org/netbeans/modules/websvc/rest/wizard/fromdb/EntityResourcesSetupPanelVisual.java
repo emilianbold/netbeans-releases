@@ -80,7 +80,6 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         this.javaEE6 = javaEE6;
         initComponents();
         setName(name);
-        System.out.println("wizard = "+wizard);
         resourcePackageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
 
             @Override

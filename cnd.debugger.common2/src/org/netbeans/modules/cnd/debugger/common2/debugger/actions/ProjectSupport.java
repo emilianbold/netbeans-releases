@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * Help manage project and configuration creation for debug/attach/core.
@@ -199,7 +200,7 @@ public final class ProjectSupport {
 	    if (IpeUtils.isEmpty(executable) || isAuto(executable) ) {
 		projectName = "Project"; // NOI18N
 	    } else {
-		projectName = IpeUtils.getBaseName(executable);
+		projectName = CndPathUtilitities.getBaseName(executable);
 	    }
 
 
@@ -342,7 +343,7 @@ public final class ProjectSupport {
 	// we may not always have an executable, especially under core|attach!
 	if (!isAuto(seed.executable) && isAbsolute(seed.executable)) {
 	    seed.conf.getMakefileConfiguration().getOutput().
-		setValue(org.netbeans.modules.cnd.utils.CndPathUtilitities.normalize(seed.executable));
+		setValue(org.netbeans.modules.cnd.utils.CndPathUtilitities.normalizeSlashes(seed.executable));
 	}
 
         String currentDebuggerProfileID = EngineTypeManager.engine2DebugProfileID(seed.engineType);
@@ -406,7 +407,7 @@ public final class ProjectSupport {
 	final String hostName = seed.getHostName();
 	CndRemote.validate(hostName, new Runnable() {
 		public void run() {
-		    Host host = CndRemote.hostFromName(null, hostName);
+		    Host host = Host.byName(hostName);
 		    seed.setHost(host);
 		    CndRemote.fillConfiguratioFromHost(seed.conf, host);
 		}
@@ -534,7 +535,6 @@ public final class ProjectSupport {
 		// IZ 114302
 		// re-get the actual conf object
                 seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
-
 		// OLD adjustDefaults(seed);
 
 		// IZ 114302
@@ -545,9 +545,13 @@ public final class ProjectSupport {
 
 	    case OLD_PROJECT:
 		assert seed.conf == null;
-		seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
+		/* CR 7000724 needs to make a clone, it won't override the orig one later on */
+		seed.conf = ConfigurationSupport.getProjectActiveConfiguration(seed.project).clone();
 
+		/* CR 7000724 don't override configuration of existing project
 		populateConfiguration(seed);
+		 *
+		 */
 		break;
 	}
 	return;

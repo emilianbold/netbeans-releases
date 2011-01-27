@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -64,18 +65,19 @@ import org.openide.modules.ModuleInfo;
  * @author Dmitry Lipin
  */
 public class CrossDependencyTest extends NbmAdvancedTestCase {
+    private static final Logger LOG = Logger.getLogger(CrossDependencyTest.class.getName());
     
     public CrossDependencyTest (String testName) {
         super (testName);
     }
+
+    @Override
+    protected int timeOut() {
+        return 5000;
+    }
     
     public void testCrossDependentModules () throws Exception {
         checkCrossDependentModulesDependencies();
-    }
-
-    @Override
-    public boolean canRun() {
-        return false;
     }
 
     private String generateModule(String codeName, String dependentModule, String needs, String provides, String version) {
@@ -142,28 +144,13 @@ public class CrossDependencyTest extends NbmAdvancedTestCase {
         col.add(module2Item.getModuleInfo());
 
         
-        Thread t = new Thread() {
-            @Override
-            public void run () {
-                final Set <Dependency> broken1 = new HashSet <Dependency> ();
-                Set <UpdateElement> set1 = Utilities.findRequiredUpdateElements(ue1, col, broken1, true);
-                System.out.println("required (1): " + set1);
-                System.out.println("broken (1): " + broken1);
-                final Set <Dependency> broken2 = new HashSet <Dependency> ();
-                Set <UpdateElement> set2 = Utilities.findRequiredUpdateElements(ue2, col, broken2, true);
-                System.out.println("required (2): " + set2);
-                System.out.println("broken (2): " + broken2);
-            }
-        };
-        t.start();
-        try {
-            t.join(5000);
-            if(t.isAlive()) {
-                t.interrupt();
-                fail("Can`t handle crossing dependencies");
-            }
-        } catch (InterruptedException e) {
-            throw e;
-        }
+        final Set <Dependency> broken1 = new HashSet <Dependency> ();
+        Set <UpdateElement> set1 = Utilities.findRequiredUpdateElements(ue1, col, broken1, true);
+        LOG.info("required (1): " + set1);
+        LOG.info("broken (1): " + broken1);
+        final Set <Dependency> broken2 = new HashSet <Dependency> ();
+        Set <UpdateElement> set2 = Utilities.findRequiredUpdateElements(ue2, col, broken2, true);
+        LOG.info("required (2): " + set2);
+        LOG.info("broken (2): " + broken2);
     }
 }

@@ -140,7 +140,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.13.2</specification-version>
+                        <specification-version>1.13.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

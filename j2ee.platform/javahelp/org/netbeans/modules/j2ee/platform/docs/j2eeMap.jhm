@@ -394,5 +394,108 @@ PK - if help ID arrives for the first below, please make sure it gets in the jav
 
 <!-- End of Packaged Archive project help -->
 
+
+<!-- Begin Glassfish help topics -->
+    <mapID target="aboutplugin"      				url="server/glassfish/general/aboutplugin.html" />
+    <mapID target="register_appserver"                          url="server/glassfish/general/register_appserver.html" />
+    <mapID target="viewing_appserver"				url="server/glassfish/general/viewing_SJS.html" />
+    <mapID target="viewing_logfile"				url="server/glassfish/general/sjs_view_serverlog.html" />
+    <mapID target="def_connpool"      				url="server/glassfish/general/def_connpool.html" />
+    <mapID target="def_jdbcresource"      			url="server/glassfish/general/def_jdbcresource.html" />
+    <mapID target="def_javamail"      				url="server/glassfish/general/def_javamail.html" />
+    <mapID target="def_jms"      				url="server/glassfish/general/def_jms.html" />
+    <mapID target="working_withsjs"          			url="server/glassfish/general/working_withSJS.html" />
+    <mapID target="register_resource"                           url="server/glassfish/general/register_resource.html" /> 
+    <mapID target="sjs_quickref"                                url="server/glassfish/general/sjs_quickref.html" />
+    <mapID target="sjs_undeploy"                                url="server/glassfish/general/sjs_undeploy.html" />
+    <mapID target="sjs_jvm"                                     url="server/glassfish/general/JVM.html" />
+    <mapID target="sjs_manageuser"                              url="server/glassfish/general/sjs_manage_users.html" />
+    <mapID target="sjs_security"                                url="server/glassfish/general/sjs_configure_security.html" />
+    <mapID target="adminconsole"                                url="server/glassfish/general/adminconsole.html" />
+    <mapID target="jsp_connectionpool_tomcatmodule"             url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
+    
+    
+    <!-- CMP pages -->
+    <mapID target="gen_tables" url="server/glassfish/cmp/gen_tables.html" />
+    <mapID target="map_bean_to_db" url="server/glassfish/cmp/map_bean_to_db.html" />
+    <mapID target="map_rel_fields" url="server/glassfish/cmp/map_rel_fields.html" />
+    
+    <!-- sun-???.xml dataobject mappings -->
+    <mapID target="sun-web_help"				url="server/glassfish/configeditors/WebAppGeneral.html"  />
+    <mapID target="sun-ejb-jar_help"				url="server/glassfish/ejbconfigeditors/sunconfig.html"  />
+    <mapID target="sun-application_help"			url="server/glassfish/appconfigeditors/sunapplication.html"  />
+    <mapID target="sun-application-client_help"			url="server/glassfish/appclientconfigeditors/sun-application-client.html"  />
+    
+    
+
+    <!-- sun-web.xml DD editor CSH: -->
+    <!-- DD dialogs -->
+    <mapID target="AS_CFG_SecurityRoleNewPrincipal"		url="server/glassfish/configeditors/SecurityWebAddPrincipal.html"  />
+    <mapID target="AS_CFG_SecurityRoleEditPrincipal"		url="server/glassfish/configeditors/SecurityWebEditPrincipal.html"  />
+    <mapID target="AS_CFG_SecurityRoleNewGroup"                 url="server/glassfish/configeditors/SecurityWebAddGroup.html"  />
+    <mapID target="AS_CFG_SecurityRoleEditGroup"                url="server/glassfish/configeditors/SecurityWebEditGroup.html"  />
+    
+    <mapID target="AS_CFG_WebServiceEndpointSecurity"           url="server/glassfish/configeditors/SecurityWebMessageSecBindings.html"  />
+    <mapID target="AS_CFG_WebServiceEndpointMessageSecurity"    url="server/glassfish/configeditors/SecurityWebMessageSecurity.html"  />
+    
+    <!-- DD CSH from within editor -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="server/glassfish/configeditors/WebAppMessages.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="server/glassfish/configeditors/WebAppMessages.html"  />
+
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView"                    url="server/glassfish/configeditors/WebAppGeneral.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="server/glassfish/configeditors/WebAppGeneral.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="server/glassfish/configeditors/WebAppGeneral.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="server/glassfish/configeditors/Servlet.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"                   url="server/glassfish/configeditors/Servlet.html"  />   
+
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceView" 	url="server/glassfish/configeditors/WebserviceDescriptor.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="server/glassfish/configeditors/WebserviceDescriptor.html"  />
+ 
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode"             url="server/glassfish/configeditors/WebserviceClients.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView"             url="server/glassfish/configeditors/WebserviceClients.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"	url="server/glassfish/configeditors/SecurityWebRoleMapping.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingNode"	url="server/glassfish/configeditors/SecurityWebRoleMapping.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentView"            url="server/glassfish/appclientconfigeditors/sun-applicationclient_env.html"  />
+
+    <!-- sun-ejb-jar.xml DD editor CSH: -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView"                 url="server/glassfish/ejbconfigeditors/sunconfig.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"          url="server/glassfish/ejbconfigeditors/sunconfig.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbView"                       url="server/glassfish/ejbconfigeditors/entitybean.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbJarView"                    url="server/glassfish/ejbconfigeditors/entitybean.html" />    
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"                       url="server/glassfish/ejbconfigeditors/entitybean.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode"                url="server/glassfish/ejbconfigeditors/entitybean.html" />  
+    <mapID target="AS_CFG_CmpEntityEjb"                                                                 url="server/glassfish/ejbconfigeditors/entitybean.html" />
+
+    <!-- sun-application-client.xml DD editor CSH -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientJWSNode"     url="server/glassfish/appclientconfigeditors/sun-application-client.html"  />
+
+    <!-- older targets we can probably remove -->
+    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="server/glassfish/configeditors/Servlet.html"  />
+
+   <!-- Sun Resource New File wizard and property sheet CSH pages: -->
+   <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="server/glassfish/resourcewizards/ConnPool_chooseDB.html"  />
+   <mapID target="AS_Wiz_ConnPool_props" 		url="server/glassfish/resourcewizards/ConnPool_props.html"  />
+   <mapID target="AS_Wiz_ConnPool_poolSettings" 	url="server/glassfish/resourcewizards/ConnPool_poolSettings.html"  />
+   <mapID target="AS_Wiz_DataSource_general" 		url="server/glassfish/resourcewizards/DataSource_general.html"  />
+   <mapID target="AS_Wiz_DataSource_props" 		url="server/glassfish/resourcewizards/DataSource_props.html"  />
+   <mapID target="AS_Wiz_JMS_general"                   url="server/glassfish/resourcewizards/JMS_general.html"  />
+   <mapID target="AS_Wiz_JMS_props"                     url="server/glassfish/resourcewizards/JMS_props.html"  />
+   <mapID target="AS_Wiz_Mail_general"                  url="server/glassfish/resourcewizards/Mail_general.html"  />
+   <mapID target="AS_Wiz_Mail_props"                    url="server/glassfish/resourcewizards/Mail_props.html"  />
+
+    <mapID target="AS_RegServ_EnterPIDir"                                       url="server/glassfish/runtimetab/RegServ_UserDef.html" />
+    <mapID target="AS_RegServ_EnterDomainDir"      				url="server/glassfish/runtimetab/RegServ_UserDef.html" />
+    <mapID target="AS_RegServ_EnterRemoteInfo"      				url="server/glassfish/runtimetab/RegServ_Remote.html" />
+    <mapID target="AS_RegServ_EnterNameAndPassword"                             url="server/glassfish/runtimetab/RegServ_LogInfo.html" />
+    <mapID target="AS_RegServ_EnterPlatformDir"      				url="server/glassfish/runtimetab/RegServ_Choose.html" />
+    <mapID target="AS_RegServ_DefinePorts"      				url="server/glassfish/runtimetab/RegServ_Create.html" />
+
+    <mapID target="registering_app_server_hk2_location"      			url="server/glassfish/runtimetab/RegServ_Choose_v3.html" />
+    <mapID target="registering_app_server_hk2_domain"      			url="server/glassfish/runtimetab/RegServ_Remote_v3.html" />
+  
+
+  <!-- sun-application.xml DD editor CSH: -->
+  <mapID target="AS_CFG_Application"                    			url="server/glassfish/appconfigeditors/sunapplication.html" />
+
 </map>
 

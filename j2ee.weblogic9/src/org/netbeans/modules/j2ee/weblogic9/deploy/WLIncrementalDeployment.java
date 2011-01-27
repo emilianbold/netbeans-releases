@@ -52,6 +52,8 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -68,17 +70,24 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
 public class WLIncrementalDeployment extends IncrementalDeployment implements IncrementalDeployment2 {
-
+    
     private static final Logger LOGGER = Logger.getLogger(WLIncrementalDeployment.class.getName());
+    
+    private static RequestProcessor DEPLOYMENT_RP = new RequestProcessor("Weblogic Incremental Deployment", 5); // NOI18N
 
     private static final boolean FORBID_DIRECTORY_DEPLOYMENT = Boolean.getBoolean(WLIncrementalDeployment.class.getName() + ".forbidDirectoryDeployment");
 
+    private static final int FAST_SWAP_TIMEOUT = 3000;
+    
+    private static final int FAST_SWAP_POLLING = 100;
+    
     private final WLDeploymentManager dm;
 
     public WLIncrementalDeployment(WLDeploymentManager dm) {
@@ -172,10 +181,41 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
     }
 
     @Override
-    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+    public ProgressObject deployOnSave(final TargetModuleID module,
+            final DeploymentChangeDescriptor desc) {
+
+        if (desc.classesChanged() && !desc.descriptorChanged()
+                && !desc.ejbsChanged() && !desc.manifestChanged()
+                && !desc.serverDescriptorChanged() && !desc.serverResourcesChanged()) {
+            final BridgingProgressObject progress = new BridgingProgressObject(module);
+            progress.fireProgressEvent(null, new WLDeploymentStatus(
+                    ActionType.EXECUTE, CommandType.REDEPLOY, StateType.RUNNING,
+                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Started")));
+        
+            DEPLOYMENT_RP.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", module.getModuleID())));
+
+                    if (deployFastSwap(module)) {
+                        LOGGER.log(Level.FINE, "Fast swap sucessfull");
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+                        return;
+                    }
+                    LOGGER.log(Level.FINE, "Fast swap failed doing incremental deploy");
+                    progress.startListening(module, incrementalDeploy(module, desc));
+                }
+            });
+            return progress;
+        }
         return incrementalDeploy(module, desc);
     }
-
+    
     @Override
     public String getModuleUrl(TargetModuleID module) {
         assert module != null;
@@ -214,9 +254,98 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
             // pass through
         }
         if (url != null) {
-            return url.startsWith("/") ? url : "/" + url;
+            return url.startsWith("/") ? url : "/" + url; // NOI18N
         }
         // will fail probably
-        return module.getModuleID();
+        return id.startsWith("/") ? id : "/" + id; // NOI18N
+    }
+    
+    private boolean deployFastSwap(TargetModuleID module) {
+        final String server = module.getTarget().getName();
+        final String application = module.getModuleID();
+
+        WLConnectionSupport support = new WLConnectionSupport(dm);
+        try {
+            Boolean ret = support.executeAction(new WLConnectionSupport.JMXAction<Boolean>() {
+
+                @Override
+                public Boolean call(MBeanServerConnection connection) throws Exception {
+                    ObjectName appRuntime = new ObjectName(
+                            "com.bea:ServerRuntime=" + server + ",Name=" + application + ",Type=ApplicationRuntime"); // NOI18N
+                    ObjectName redefinitionRuntime = (ObjectName) connection.getAttribute(
+                            appRuntime, "ClassRedefinitionRuntime"); // NOI18N
+
+                    if (redefinitionRuntime == null) {
+                        return false;
+                    }
+
+                    ObjectName redef = (ObjectName) connection.invoke(
+                            redefinitionRuntime, "redefineClasses", new Object[] {null, null}, // NOI18N
+                            new String[] {String.class.getName(), String[].class.getName()});
+                    
+                    long start = System.currentTimeMillis();
+                    String str = (String) connection.getAttribute(redef, "Status"); // NOI18N
+                    while ((System.currentTimeMillis() - start) < FAST_SWAP_TIMEOUT && isRunning(str)) {
+                        Thread.sleep(FAST_SWAP_POLLING);
+                        str = (String) connection.getAttribute(redef, "Status"); // NOI18N
+                    }
+                    
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        Integer candidates = (Integer) connection.getAttribute(redef, "CandidateClassesCount"); // NOI18N
+                        Integer processed = (Integer) connection.getAttribute(redef, "ProcessedClassesCount"); // NOI18N
+                        LOGGER.log(Level.FINE, "Processed {0} from {1} candidate classes", // NOI18N
+                                new Object[] {processed, candidates});
+                    }
+
+                    if (isRunning(str)) {
+                        connection.invoke(redef, "cancel", new Object[0], new String[0]); // NOI18N
+                        return false;
+                    }
+
+                    if (!("FINISHED".equals(str))) { // NOI18N
+                        return false;
+                    }
+                    return true;
+                }
+
+                @Override
+                public String getPath() {
+                    return "/jndi/weblogic.management.mbeanservers.runtime"; // NOI18N
+                }
+            });
+            return ret.booleanValue();
+        }catch (Exception ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return false;
+        }
+    }
+    
+    private static boolean isRunning(String status) {
+        return "RUNNING".equals(status) || "SCHEDULED".equals(status); // NOI18N
+    }
+
+    private static class BridgingProgressObject extends WLProgressObject implements ProgressListener {
+
+        public BridgingProgressObject(TargetModuleID... moduleIds) {
+            super(moduleIds);
+        }
+        
+        public void startListening(TargetModuleID moduleID, ProgressObject po) {
+            po.addProgressListener(this);
+            if (!po.getDeploymentStatus().isRunning()) {
+                po.removeProgressListener(this);
+            }
+            fireProgressEvent(moduleID, po.getDeploymentStatus());
+        }
+        
+        @Override
+        public void handleProgressEvent(ProgressEvent pe) {
+            if (!getDeploymentStatus().isRunning() && pe.getDeploymentStatus().isRunning()) {
+                // prevent wrong ordering
+                return;
+            }
+            fireProgressEvent(pe.getTargetModuleID(), pe.getDeploymentStatus());
+        }
+        
     }
 }

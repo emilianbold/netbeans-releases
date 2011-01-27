@@ -43,9 +43,12 @@
 package org.netbeans.modules.remote.api.ui;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -54,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -75,6 +79,7 @@ public class FileObjectBasedFile extends File {
 
     public FileObjectBasedFile(ExecutionEnvironment env, String path) {
         super(path);
+        RemoteLogger.assertTrue(path != null, "Path should not be null"); //NOI18N
         this.fo = null;
         this.path = toUnix(super.getPath());
         this.env = env;
@@ -181,7 +186,12 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean canWrite() {
-       return false;
+       return (fo == null) ? false : fo.canWrite();
+    }
+
+    @Override
+    public boolean canRead() {
+       return (fo == null) ? false : fo.canRead();
     }
 
     @Override
@@ -201,7 +211,11 @@ public class FileObjectBasedFile extends File {
     @Override
     public String getParent() {
 	int index = path.lastIndexOf('/');
-	return (index < 0) ? null : path.substring(0, index);
+        if (index < 0 || (index == 0 && path.length() == 1) ) {
+            return null;
+        } else {
+            return path.substring(0, index);
+        }
     }
 
     @Override
@@ -238,24 +252,24 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public File[] listFiles() {
+        return listFiles((FilenameFilter) null);
+    }
+
+    @Override
+    public File[] listFiles(FilenameFilter filter) {
         if (fo == null) {
             return NO_CHILDREN;
         }
 
         FileObject[] children = fo.getChildren();
 
-        if (children.length == 0) {
-            fo.refresh();
-            children = fo.getChildren();
-        }
-
-        File[] res = new File[children.length];
-        int idx = 0;
+        List<File> res = new ArrayList<File>(children.length);
         for (FileObject child : children) {
-            res[idx++] = new FileObjectBasedFile(env, child);
+            if (filter == null || filter.accept(this, child.getNameExt())) {
+                res.add(new FileObjectBasedFile(env, child));
+            }
         }
-
-        return res;
+        return res.toArray(new File[res.size()]);
     }
 
     @Override

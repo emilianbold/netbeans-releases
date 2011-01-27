@@ -101,7 +101,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 28, Short.MAX_VALUE)
+            .addGap(0, 30, Short.MAX_VALUE)
         );
 
         controlToolbar.add(jPanel1);
@@ -130,7 +130,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 28, Short.MAX_VALUE)
+            .addGap(0, 30, Short.MAX_VALUE)
         );
 
         controlToolbar.add(jPanel4);
@@ -142,14 +142,15 @@ class MultiDiffPanel extends javax.swing.JPanel {
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         controlToolbar.add(btnRefresh);
 
+        jPanel3.setMaximumSize(new java.awt.Dimension(20, 32767));
         jPanel3.setOpaque(false);
         controlToolbar.add(jPanel3);
 
-        btnCheckout.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/checkout_paths.png"))); // NOI18N
-        btnCheckout.setToolTipText(bundle.getString("MultiDiffPanel.btnCheckout.toolTipText")); // NOI18N
-        btnCheckout.setFocusable(false);
-        btnCheckout.setPreferredSize(new java.awt.Dimension(22, 25));
-        controlToolbar.add(btnCheckout);
+        btnRevert.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/get_clean.png"))); // NOI18N
+        btnRevert.setToolTipText(bundle.getString("MultiDiffPanel.btnRevert.toolTipText")); // NOI18N
+        btnRevert.setFocusable(false);
+        btnRevert.setPreferredSize(new java.awt.Dimension(22, 25));
+        controlToolbar.add(btnRevert);
 
         btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("MultiDiffPanel.btnCommit.toolTipText")); // NOI18N
@@ -169,7 +170,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(31, 31, 31)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addComponent(controlToolbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -178,10 +179,10 @@ class MultiDiffPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton btnCheckout = new javax.swing.JButton();
     final javax.swing.JButton btnCommit = new javax.swing.JButton();
     private javax.swing.ButtonGroup btnModeGroup;
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
+    final javax.swing.JButton btnRevert = new javax.swing.JButton();
     final javax.swing.JToolBar controlToolbar = new javax.swing.JToolBar();
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;

@@ -63,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
@@ -225,12 +224,15 @@ final class NewTCIterator extends BasicWizardIterator {
         final String mode = model.getMode();
 
         boolean actionLessTC;
+        boolean xmlLessTC;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.windows");
             actionLessTC = current == null || current.compareTo(new SpecificationVersion("6.24")) >= 0; // NOI18N
+            xmlLessTC = current == null || current.compareTo(new SpecificationVersion("6.37")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
             actionLessTC = false;
+            xmlLessTC = false;
         }
         boolean propertiesPersistence;
         try {
@@ -295,7 +297,8 @@ final class NewTCIterator extends BasicWizardIterator {
         final String tcName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.java"); //NOI18N
         FileObject template = CreatedModifiedFiles.getTemplate(
-            propertiesPersistence ? "templateTopComponentAnno.java" : "templateTopComponent.java" //NOI18N
+            xmlLessTC ? "templateTopComponent637.java" :    
+            (propertiesPersistence ? "templateTopComponentAnno.java" : "templateTopComponent.java")
         );
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
         // x. generate java classes
@@ -311,17 +314,23 @@ final class NewTCIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.createFileWithSubstitutions(actionName, template, replaceTokens));
         }
         
-        final String settingsName = name + "TopComponent.settings"; //NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateSettings.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null)); // NOI18N
+        if (!xmlLessTC) {
+            final String settingsName = name + "TopComponent.settings"; //NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateSettings.xml");//NOI18N
+            fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null)); // NOI18N
+        }
         
-        final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateWstcref.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
-                             template, replaceTokens, null, null));
+        if (!xmlLessTC) {
+            final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateWstcref.xml");//NOI18N
+            fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
+                                 template, replaceTokens, null, null));
+        }
 
         String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties"); //NOI18N
-        if (actionLessTC) {
+        if (xmlLessTC) {
+            // nothing in layer
+        } else if (actionLessTC) {
             String path = "Actions/Window/" + packageName.replace('.','-') + "-" + name + "Action.instance"; // NOI18N
             {
                 Map<String,Object> attrs = new HashMap<String,Object>();
@@ -359,13 +368,14 @@ final class NewTCIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
                                                        Collections.<String>emptySet()));
         }
+        // XXX use @Messages where available
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
-                                NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name))); //NOI18N
+                                name)); //NOI18N
         
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "TopComponent",  // NOI18N
-                                NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateTCName", name))); //NOI18N
+                                name + " Window")); //NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "HINT_" + name + "TopComponent",  // NOI18N
-                                NbBundle.getMessage(NewTCIterator.class, "HINT_TemplateTCName", name))); //NOI18N
+                                "This is a " + name + " window")); //NOI18N
         
         model.setCreatedModifiedFiles(fileChanges);
     }

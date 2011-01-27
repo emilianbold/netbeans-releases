@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,15 +61,14 @@ import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
@@ -79,6 +79,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private PropertyEditorSupport editor;
     private JButton addProjectButton;
     private JButton addStandardLibraryButton;
+    private JButton addPkgConfigLibraryButton;
     private JButton addLibraryButton;
     private JButton addLibraryFileButton;
     private JButton addLibraryOption;
@@ -98,6 +99,10 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         addStandardLibraryButton.setToolTipText(getString("ADD_STANDARD_LIBRARY_BUTTON_TT")); // NOI18N
         addStandardLibraryButton.setMnemonic(getString("ADD_STANDARD_LIBRARY_BUTTON_MN").charAt(0)); // NOI18N
 
+        addPkgConfigLibraryButton = new JButton(getString("ADD_PKG_CONFIG_LIBRARY_BUTTON_TXT")); // NOI18N
+        addPkgConfigLibraryButton.setToolTipText(getString("ADD_PKG_CONFIG_LIBRARY_BUTTON_TT")); // NOI18N
+        addPkgConfigLibraryButton.setMnemonic(getString("ADD_PKG_CONFIG_LIBRARY_BUTTON_MN").charAt(0)); // NOI18N
+
         addLibraryButton = new JButton(getString("ADD_LIBRARY_BUTTON_TXT")); // NOI18N
         addLibraryButton.setToolTipText(getString("ADD_LIBRARY_BUTTON_TT")); // NOI18N
         addLibraryButton.setMnemonic(getString("ADD_LIBRARY_BUTTON_MN").charAt(0)); // NOI18N
@@ -110,10 +115,12 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         addLibraryOption.setToolTipText(getString("ADD_OPTION_BUTTON_TT")); // NOI18N
         addLibraryOption.setMnemonic(getString("ADD_OPTION_BUTTON_MN").charAt(0)); // NOI18N
 
-        JButton[] extraButtons = new JButton[]{addProjectButton, addStandardLibraryButton, addLibraryButton, addLibraryFileButton, addLibraryOption};
-        myListEditorPanel = new MyListEditorPanel(data, extraButtons);
+        JButton[] extraButtons = new JButton[]{addProjectButton, addStandardLibraryButton, addPkgConfigLibraryButton,
+                                               addLibraryButton, addLibraryFileButton, addLibraryOption};
+        myListEditorPanel = new MyListEditorPanel(conf, data, extraButtons);
         addProjectButton.addActionListener(new AddProjectButtonAction());
         addStandardLibraryButton.addActionListener(new AddStandardLibraryButtonAction());
+        addPkgConfigLibraryButton.addActionListener(new AddPkgCongigLibraryButtonAction());
         addLibraryButton.addActionListener(new AddLibraryButtonAction());
         addLibraryOption.addActionListener(new AddLinkerOptionButtonAction());
         addLibraryFileButton.addActionListener(new AddLibraryFileButtonAction());
@@ -135,11 +142,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         instructionsTextArea.setText(txt);
     }
 
-    public void setListData(List<LibraryItem> data) {
-        myListEditorPanel.setListData(data);
-    }
-
-    public List<LibraryItem> getListData() {
+    private List<LibraryItem> getListData() {
         return myListEditorPanel.getListData();
     }
 
@@ -204,8 +207,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
     private class MyListEditorPanel extends TableEditorPanel {
 
-        public MyListEditorPanel(List<LibraryItem> objects, JButton[] extraButtons) {
-            super(objects, extraButtons, baseDir);
+        public MyListEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons) {
+            super(conf, objects, extraButtons, baseDir);
             getAddButton().setVisible(false);
             //getCopyButton().setVisible(false);
             getEditButton().setVisible(false);
@@ -238,8 +241,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalize(location);
-                    workingdir = CndPathUtilitities.normalize(workingdir);
+                    location = CndPathUtilitities.normalizeSlashes(location);
+                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
@@ -265,7 +268,27 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
+    private final class AddPkgCongigLibraryButtonAction implements java.awt.event.ActionListener {
+
+        @Override
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            PkgConfigLibrary stdLibPanel = new PkgConfigLibrary(conf);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(stdLibPanel, getString("SELECT_STATNDARD_LIBRARY_DIALOG_TITLE"));
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+                return;
+            }
+            PackageConfiguration[] libs = stdLibPanel.getPkgConfigLibs();
+            for (int i = 0; i < libs.length; i++) {
+                myListEditorPanel.addObjectAction(new LibraryItem.OptionItem("`pkg-config --libs "+libs[i].getName()+"`")); //NOI18N
+            }
+        }
+    }
+
+
     private final class AddLibraryButtonAction implements java.awt.event.ActionListener {
+
+        private FileFilter lastSelectedFilter = null;
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -276,44 +299,41 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (seed == null) {
                 seed = baseDir;
             }
-            FileFilter[] filters;
-            if (Utilities.isWindows()) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getPeStaticLibraryFileFilter(),
-                            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-            } else {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getElfDynamicLibraryFileFilter()};
+            FileFilter[] filters = FileFilterFactory.getLibraryFilters();
+            if (lastSelectedFilter == null) {
+                lastSelectedFilter = filters[0];
             }
             FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            fileChooser.setMultiSelectionEnabled(true);
+            fileChooser.setFileFilter(lastSelectedFilter);
             int ret = fileChooser.showOpenDialog(myListEditorPanel);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
-            String libName = fileChooser.getSelectedFile().getName();
-            if (libName.startsWith("lib")) // NOI18N
-            {
-                libName = libName.substring(3);
+            lastSelectedFilter = fileChooser.getFileFilter();
+            for(File libFile: fileChooser.getSelectedFiles()) {
+                String libName = libFile.getName();
+                if (libName.startsWith("lib")) // NOI18N
+                {
+                    libName = libName.substring(3);
+                }
+                if (libName.endsWith(".so") || // NOI18N
+                        libName.endsWith(".dll") || // NOI18N
+                        libName.endsWith(".dylib") || // NOI18N
+                        libName.endsWith(".lib") || // NOI18N
+                        libName.endsWith(".a")) { // NOI18N
+                    int i = libName.lastIndexOf('.');
+                    libName = libName.substring(0, i);
+                }
+                myListEditorPanel.addObjectAction(new LibraryItem.LibItem(libName));
             }
-            if (libName.endsWith(".so") || // NOI18N
-                    libName.endsWith(".dll") || // NOI18N
-                    libName.endsWith(".dylib") || // NOI18N
-                    libName.endsWith(".lib") || // NOI18N
-                    libName.endsWith(".a")) { // NOI18N
-                int i = libName.lastIndexOf('.');
-                libName = libName.substring(0, i);
-            }
-            myListEditorPanel.addObjectAction(new LibraryItem.LibItem(libName));
         }
     }
 
     private final class AddLibraryFileButtonAction implements java.awt.event.ActionListener {
 
+        private FileFilter lastSelectedFilter = null;
+
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
@@ -323,31 +343,26 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (seed == null) {
                 seed = baseDir;
             }
-            FileFilter[] filters;
-            if (Utilities.isWindows()) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getPeStaticLibraryFileFilter(),
-                            FileFilterFactory.getPeDynamicLibraryFileFilter()};
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
-            } else {
-                filters = new FileFilter[]{
-                            FileFilterFactory.getElfStaticLibraryFileFilter(),
-                            FileFilterFactory.getElfDynamicLibraryFileFilter()};
+            FileFilter[] filters = FileFilterFactory.getLibraryFilters();
+            if (lastSelectedFilter == null) {
+                lastSelectedFilter = filters[0];
             }
             FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            fileChooser.setMultiSelectionEnabled(true);
+            fileChooser.setFileFilter(lastSelectedFilter);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             int ret = fileChooser.showOpenDialog(null);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
-            // FIXUP: why are baseDir UNIX path when remote?
-            String path = ProjectSupport.toProperPath(baseDir, fileChooser.getSelectedFile().getPath(), project);
-            path = CndPathUtilitities.normalize(path);
-            myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
+            lastSelectedFilter = fileChooser.getFileFilter();
+            for(File libFile: fileChooser.getSelectedFiles()) {
+                // FIXUP: why are baseDir UNIX path when remote?
+                String path = ProjectSupport.toProperPath(baseDir, libFile.getPath(), project);
+                path = CndPathUtilitities.normalizeSlashes(path);
+                myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
+            }
         }
     }
 

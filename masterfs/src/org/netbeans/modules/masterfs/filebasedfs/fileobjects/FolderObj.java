@@ -50,16 +50,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -67,6 +64,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.FSCallable;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
@@ -76,6 +74,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 /**
@@ -87,7 +86,7 @@ public final class FolderObj extends BaseFileObj {
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
-    private FileObjectKeeper keeper;
+    private volatile FileObjectKeeper keeper;
 
     /**
      * Creates a new instance of FolderImpl
@@ -106,6 +105,11 @@ public final class FolderObj extends BaseFileObj {
         if(relativePath.indexOf('\\') != -1) {
             // #47885 - relative path must not contain back slashes
             return null;
+        }
+        if (relativePath.contains("..")) {
+            if (("/" + relativePath + "/").contains("/../")) {
+                return null;
+            }
         }
         if (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
@@ -147,13 +151,30 @@ public final class FolderObj extends BaseFileObj {
             final FileObject fo = lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
             if (fo != null) {
                 assert fileName == ((BaseFileObj)fo).getFileName() : 
-                    "FileName: " + fileName + "@" +  // NOI18N
-                    Integer.toHexString(System.identityHashCode(fileName)) + 
-                    " fo: " + fo; // NOI18N
+                    dumpFileNaming(fileName) + "\n" + 
+                    dumpFileNaming(((BaseFileObj)fo).getFileName()) + "\nfo: " +
+                    fo + "\nContent of the nameMap cache:\n" +
+                    NamingFactory.dumpId(fInfo.getID());
                 results.put(fileName, fo);
             }
         }
         return results.values().toArray(new FileObject[0]);
+    }
+    
+    private static String dumpFileNaming(FileNaming fn) {
+        if (fn == null) {
+            return "null";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("FileName: ").append(fn).append("#").
+           append(Integer.toHexString(fn.hashCode())).append("@").
+           append(Integer.toHexString(System.identityHashCode(fn)))
+           .append("\n");
+        
+        if (fn instanceof FileName) {
+            ((FileName)fn).dumpCreation(sb);
+        }
+        return sb.toString();
     }
 
     public final FileObject createFolderImpl(final String name) throws java.io.IOException {
@@ -257,11 +278,12 @@ public final class FolderObj extends BaseFileObj {
 
         FileObj retVal;
         File file2Create;
+        FileNaming childName;
         try {
             file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
             createData(file2Create);
 
-            FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
+            childName = getChildrenCache().getChild(file2Create.getName(), true);
             if (childName != null && childName.isDirectory()) {
                 childName = NamingFactory.fromFile(getFileName(), file2Create, true);
             }
@@ -276,12 +298,25 @@ public final class FolderObj extends BaseFileObj {
         final FileObjectFactory factory = getFactory();
         retVal = null;
         if (factory != null) {
-            retVal = (FileObj) factory.getValidFileObject(file2Create, FileObjectFactory.Caller.Others);
+            final BaseFileObj fo = factory.getValidFileObject(file2Create, FileObjectFactory.Caller.Others);
+            try {
+                retVal = (FileObj) fo;
+            } catch (ClassCastException ex) {
+                boolean dir = file2Create.isDirectory();
+                boolean file = file2Create.isFile();
+                Exceptions.attachMessage(ex, "isDir: " + dir); // NOI18N
+                Exceptions.attachMessage(ex, "isFile: " + file); // NOI18N
+                Exceptions.attachMessage(ex, "file: " + file2Create); // NOI18N
+                Exceptions.attachMessage(ex, "fo: " + fo); // NOI18N
+                Exceptions.attachMessage(ex, "fn: " + Integer.toHexString(System.identityHashCode(childName))); // NOI18N
+                Exceptions.attachMessage(ex, "dump: " + NamingFactory.dumpId(childName.getId())); // NOI18N
+                throw ex;
+            }
         }
 
         if (retVal != null) {            
             if (retVal instanceof FileObj) {
-                retVal.setLastModified(file2Create.lastModified(), file2Create);
+                retVal.setLastModified(file2Create.lastModified(), file2Create, false);
             }
             retVal.fireFileDataCreatedEvent(false);
         } else {
@@ -352,6 +387,7 @@ public final class FolderObj extends BaseFileObj {
         }        
     }
 
+    @Override
     public void refreshImpl(final boolean expected, boolean fire) {
         final ChildrenCache cache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
@@ -531,15 +567,21 @@ public final class FolderObj extends BaseFileObj {
         return true;
     }
 
-    public final synchronized ChildrenCache getChildrenCache() {
-        //assert getFileName().getFile().isDirectory() || !getFileName().getFile().exists();
-        if (folderChildren == null) {
-            folderChildren = new FolderChildrenCache();
+    public final ChildrenCache getChildrenCache() {
+        synchronized (FolderChildrenCache.class) {
+            if (folderChildren == null) {
+                folderChildren = new FolderChildrenCache();
+            }
+            return folderChildren;
         }
-        return folderChildren;
+    }
+    
+    public final boolean hasRecursiveListener() {
+        FileObjectKeeper k = keeper;
+        return k != null && k.isOn();
     }
 
-    synchronized FileObjectKeeper getKeeper(Collection<? super File> arr) {
+    final synchronized FileObjectKeeper getKeeper(Collection<? super File> arr) {
         if (keeper == null) {
             keeper = new FileObjectKeeper(this);
             List<File> ch = keeper.init(-1, null, false);

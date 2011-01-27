@@ -44,6 +44,7 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
@@ -74,6 +76,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
 import org.netbeans.modules.websvc.rest.support.MetadataModelReadHelper;
+import org.netbeans.modules.websvc.rest.support.MetadataModelReadHelper.State;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -492,14 +495,17 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
         public void stateChanged(ChangeEvent e) {
             if (available && e.getSource() instanceof MetadataModelReadHelper) {
-                switch (((MetadataModelReadHelper) e.getSource()).getState()) {
+                final MetadataModelReadHelper helper = 
+                    (MetadataModelReadHelper)e.getSource();
+                switch (helper.getState()) {
                     case FINISHED:
                         // when we got here the model action has been executed
                         if (mappings == null && entitiesHelper.isReady()) {
                             try {
                                 mappings = entitiesHelper.getResult();
                             } catch (ExecutionException ex) {
-                                Logger.getLogger(getClass().getName()).log(Level.ALL, "stateChanged", ex); //NOI18N
+                                Logger.getLogger(getClass().getName()).
+                                    log(Level.ALL, "stateChanged", ex); //NOI18N
 
                                 throw new IllegalStateException(ex);
                             }
@@ -514,10 +520,27 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
                                         }
                                     }
 
-                                    for (Entity e : mappings.getEntity()) {
-                                        if (entities.get(e.getClass2()) == null) {
-                                            entities.put(e.getClass2(), e);
-                                        }
+                                    MetadataModel model = helper.getModel();
+                                    try {
+                                        model.runReadAction(new MetadataModelAction() {
+                                            public Void run(Object metadata) throws Exception {
+                                                for (Entity e : mappings.getEntity()) {
+                                                    if (entities.get(e.getClass2()) == null) {
+                                                        entities.put(e.getClass2(), e);
+                                                    }
+                                                }
+                                                return null;
+                                            }
+                                        });
+                                    }
+                                    catch (MetadataModelException e) {
+                                        Throwable ex = e.getCause()== null ? e: e.getCause();
+                                        Logger.getLogger(EntitySelectionPanel.class.getName()).
+                                            log(Level.ALL, null , ex); //NOI18N
+                                    }
+                                    catch (IOException e) {
+                                        Logger.getLogger(EntitySelectionPanel.class.getName()).
+                                        log(Level.ALL, null, e); //NOI18N
                                     }
 
                                     builder = new EntityResourceModelBuilder(project, entities.values());

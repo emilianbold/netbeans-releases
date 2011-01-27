@@ -59,6 +59,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -224,14 +225,15 @@ import org.openide.util.CharSequences;
         }
         CharSequence qn = decl.getQualifiedName();
         put = putClassifier(map, qn, uid);
-        if (CsmKindUtilities.isClass(decl) && !CsmKindUtilities.isTemplate(decl)) {
-            // Special case for nested structs in C
-            // See Bug 144535 - wrong error highlighting for inner structure
-            CharSequence qn2 = getQualifiedNameWithoutScopeClasses(decl);
-            if (qn.length() != qn2.length()) {
-                putClassifier(map, qn2, uid);
-            }
+
+        // Special case for nested structs in C
+        // See Bug 144535 - wrong error highlighting for inner structure
+        CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
+        if (qn2 != null && qn.length() != qn2.length()) {
+            // TODO: think about multiple objects per name in classifier as well
+            putClassifier(map, qn2, uid);
         }
+
         return put;
     }
 
@@ -295,14 +297,15 @@ import org.openide.util.CharSequences;
         }
         CharSequence qn = decl.getQualifiedName();
         removeClassifier(map, qn);
-        if (CsmKindUtilities.isClass(decl) && !CsmKindUtilities.isTemplate(decl)) {
-            // Special case for nested structs in C
-            // See Bug 144535 - wrong error highlighting for inner structure
-            CharSequence qn2 = getQualifiedNameWithoutScopeClasses((CsmClass) decl);
-            if (qn.length() != qn2.length()) {
-                removeClassifier(map, qn2);
-            }
+
+        // Special case for nested structs in C
+        // See Bug 144535 - wrong error highlighting for inner structure
+        CharSequence qn2 = getQualifiedNameWithoutScopeStructNameForC(decl);
+        if (qn2 != null && qn.length() != qn2.length()) {
+            // TODO: think about multiple objects per name in classifier as well
+            removeClassifier(map, qn2);
         }
+
     }
 
     private void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn) {
@@ -324,7 +327,15 @@ import org.openide.util.CharSequences;
     //    typedefs.clear();
     //}
 
-    private CharSequence getQualifiedNameWithoutScopeClasses(CsmClassifier decl) {
+    private CharSequence getQualifiedNameWithoutScopeStructNameForC(CsmDeclaration decl) {
+        // #192897 -  unstable LiteSQL accuracy test
+        // skip not C env
+        Kind kind = decl.getKind();
+        if ((kind != CsmDeclaration.Kind.STRUCT && kind != CsmDeclaration.Kind.UNION) || CsmKindUtilities.isTemplate(decl)) {
+            // not valid in C env
+            return null;
+        }
+            
         CharSequence qualifiedNamePostfix;
         if(decl instanceof OffsetableDeclarationBase) {
             qualifiedNamePostfix = ((OffsetableDeclarationBase)decl).getQualifiedNamePostfix();
@@ -333,15 +344,19 @@ import org.openide.util.CharSequences;
         }
         CsmScope scope = decl.getScope();
         while (CsmKindUtilities.isClass(scope)) {
-            scope = ((CsmClass) scope).getScope();
+            CsmClass cls = (CsmClass) scope;
+            kind = cls.getKind();
+            if ((kind != CsmDeclaration.Kind.STRUCT && kind != CsmDeclaration.Kind.UNION) || CsmKindUtilities.isTemplate(decl)) {
+                // not valid in C env
+                return null;
+            }
+            scope = cls.getScope();
         }
-        CharSequence qualifiedName;
-        if (CsmKindUtilities.isNamespace(scope)) {
-            qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
-        } else {
-            qualifiedName = qualifiedNamePostfix;
+        if (CsmKindUtilities.isNamespace(scope) && !((CsmNamespace)scope).isGlobal()) {
+            // not valid in C env
+            return null;
         }
-        qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
+        CharSequence qualifiedName = QualifiedNameCache.getManager().getString(qualifiedNamePostfix);
         return qualifiedName;
     }
 

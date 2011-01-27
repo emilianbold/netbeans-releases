@@ -96,7 +96,6 @@ import javax.swing.text.StyledEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.StepInstAction;
@@ -107,6 +106,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RegistersWindo
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MemoryWindowAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * A Disassembler View.
@@ -1335,9 +1335,17 @@ public class DisView {
 	    fileText.setToolTipText(null);
             functionText.setText(null);
         } else {
-            fileText.setText(IpeUtils.getBaseName(stateModel.getFile()));
-	    fileText.setToolTipText(stateModel.getFile());
-            functionText.setText(stateModel.getFunction());
+	    if (stateModel.getFile() != null) {
+		fileText.setText(CndPathUtilitities.getBaseName(stateModel.getFile()));
+		fileText.setToolTipText(stateModel.getFile());
+	    } else {
+		fileText.setText(null);
+		fileText.setToolTipText(null);
+	    }
+	    if (stateModel.getFunction() != null) 
+		functionText.setText(stateModel.getFunction());
+	    else
+		functionText.setText(null);
         }
 
 	try {

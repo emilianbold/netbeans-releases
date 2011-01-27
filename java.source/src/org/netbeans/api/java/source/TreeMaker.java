@@ -460,16 +460,16 @@ public final class TreeMaker {
     }
 
     /**
-     * Creates new DisjointTypeTree.
+     * Creates new DisjunctiveTypeTree.
      *
-     * @param typeComponents components from which the DisjointTypeTree should be created.
+     * @param typeComponents components from which the DisjunctiveTypeTree should be created.
      *                       The components should either be {@link ExpressionTree} (qualified or unqualified identifier),
      *                       {@link PrimitiveTypeTree}, {@link WildcardTree}, {@link ParameterizedTypeTree} or {@link ArrayTypeTree}.
-     * @return newly created DisjointTypeTree
-     * @since 0.67
+     * @return newly created DisjunctiveTypeTree
+     * @since 0.70
      */
-    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
-        return delegate.DisjointType(typeComponents);
+    public DisjunctiveTypeTree DisjunctiveType(List<? extends Tree> typeComponents) {
+        return delegate.DisjunctiveType(typeComponents);
     }
     
     /** Creates a new DoWhileLoopTree.
@@ -817,16 +817,6 @@ public final class TreeMaker {
         return delegate.ParameterizedType(type, typeArguments);
     }
 
-    //XXX: AnnotationType and (maybe) TypeAnnotation should be public:
-    AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
-                                           ExpressionTree type) {
-        return delegate.AnnotatedType(annotations, type);
-    }
-
-    AnnotationTree TypeAnnotation(AnnotationTree t) {
-        return delegate.TypeAnnotation(t);
-    }
-    
     /**
      * Creates a new ParenthesizedTree.
      *
@@ -2874,8 +2864,8 @@ public final class TreeMaker {
     
     private void mapComments(BlockTree block, String inputText, WorkingCopy copy, CommentHandler comments, SourcePositions positions) {
         TokenSequence<JavaTokenId> seq = TokenHierarchy.create(inputText, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-        TranslateIdentifier ti = new TranslateIdentifier(copy, block, false, seq, positions);
-        ti.translate(block);
+        AssignComments ti = new AssignComments(copy, block, false, seq, positions);
+        ti.scan(block, null);
         /*List<? extends StatementTree> trees = block.getStatements();
         SourcePositions pos = copy.getTrees().getSourcePositions();
         for (StatementTree statement : trees) {

@@ -300,8 +300,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             resultsPanel.revalidate();
             resultsPanel.repaint();
         }
-        nextAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isNextEnabled());
-        prevAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isPrevEnabled());
+        updateActions();
 
         divider.setArrowDirection(criteriaVisible ? Divider.UP : Divider.DOWN);
         searchCriteriaPanel.setVisible(criteriaVisible);
@@ -309,7 +308,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         revalidate();
         repaint();
     }
-    
+ 
+    final void updateActions () {
+        nextAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isNextEnabled());
+        prevAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isPrevEnabled());
+    }
     public void setResults(List<RepositoryRevision> newResults) {
         setResults(newResults, false);
     }

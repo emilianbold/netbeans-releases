@@ -97,10 +97,12 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -626,17 +628,17 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             }
         }
         if (file != null){
-            List<String> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
+            List<FSPath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
             if (list.size()>0) {
                 buf.append(i18n("SourceUserPaths"));  // NOI18N
-                for (String path : list){
+                for (FSPath fsPath : list){
                     buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                    File f = new File(path);
-                    if (f.exists() && f.isDirectory()) {
-                        buf.append(path);
+                    FileObject fo = fsPath.getFileObject();
+                    if (fo != null && fo.isValid() && fo.isFolder()) {
+                        buf.append(fsPath.getPath());
                     } else {
                         buf.append("<font color='red'>");  // NOI18N
-                        buf.append(path);
+                        buf.append(fsPath.getPath());
                         buf.append("</font>");  // NOI18N
                     }
                 }
@@ -645,14 +647,14 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             list = CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
             if (list.size()>0) {
                 buf.append(i18n("SourceSystemPaths"));  // NOI18N
-                for (String path : list){
+                for (FSPath fsPath : list){
                     buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                    File f = new File(path);
-                    if (f.exists() && f.isDirectory()) {
-                        buf.append(path);
+                    FileObject fo = fsPath.getFileObject();
+                    if (fo != null && fo.isValid() && fo.isFolder()) {
+                        buf.append(fsPath.getPath());
                     } else {
                         buf.append("<font color='red'>");  // NOI18N
-                        buf.append(path);
+                        buf.append(fsPath.getPath());
                         buf.append("</font>");  // NOI18N
                     }
                 }
@@ -772,14 +774,16 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    if (ff[i].isFile()) {
-                        List<String> l = map.get(ff[i].getName());
-                        if (l==null){
-                            l = new ArrayList<String>();
-                            map.put(ff[i].getName(),l);
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isFile()) {
+                            List<String> l = map.get(ff[i].getName());
+                            if (l==null){
+                                l = new ArrayList<String>();
+                                map.put(ff[i].getName(),l);
+                            }
+                            l.add(ff[i].getAbsolutePath());
                         }
-                        l.add(ff[i].getAbsolutePath());
                     }
                 }
             }
@@ -796,17 +800,19 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             if (!set.contains(path)){
                 set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();
-                for (int i = 0; i < ff.length; i++) {
-                    try {
-                        String canPath = ff[i].getCanonicalPath();
-                        String absPath = ff[i].getAbsolutePath();
-                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                            continue;
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
                         }
-                    } catch (IOException ex) {
-                        //Exceptions.printStackTrace(ex);
+                        gatherSubFolders(ff[i], set);
                     }
-                    gatherSubFolders(ff[i], set);
                 }
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -86,9 +86,9 @@ public class SunResourceDataLoaderBeanInfo extends SimpleBeanInfo {
     
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad.gif", true); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/share/resources/sun-cluster_16_pad.gif", true); //NOI18N
         } else {
-            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/sun-cluster_16_pad32.gif", true); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/share/resources/sun-cluster_16_pad32.gif", true); //NOI18N
         }
     }
     

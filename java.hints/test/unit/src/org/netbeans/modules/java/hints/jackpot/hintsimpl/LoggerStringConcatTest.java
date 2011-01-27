@@ -198,4 +198,27 @@ public class LoggerStringConcatTest extends TestBase {
                         "        l.log(Level.SEVERE,A + \"=$'{'{0}'}'.\", a);\n" +
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "));
-    }}
+    }
+
+    public void test181962() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private void t(Logger l, int a, int b, int c) {\n" +
+                       "        l.severe(\"A=/\" + a + '/');\n" +
+                       "    }\n" +
+                       "}\n",
+                       "5:17-5:32:verifier:Inefficient use of string concatenation in logger",
+                       "FixImpl",
+                      ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "    private void t(Logger l, int a, int b, int c) {\n" +
+                        "        l.log(Level.SEVERE, \"A=/{0}/\", a);\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
+}

@@ -72,7 +72,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performEncapsulateFieldsTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -81,7 +81,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
         performEncapsulateFieldsTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -90,7 +90,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performEncapsulateFieldsTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; private F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
     }
 
@@ -101,6 +101,116 @@ public class InnerToOutterTest extends RefactoringTestBase {
         verifyContent(src,
                       new File("t/F.java", "package t; class F extends A {  private void t() { i = 0; } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { int i; }"));
+    }
+    
+    public void test144209() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java",
+                                          "package t;\n" +
+                                          "\n" +
+                                          "import java.awt.event.ActionEvent;\n" +
+                                          "import java.awt.event.MouseEvent;\n" +
+                                          "import javax.swing.AbstractAction;\n" +
+                                          "\n" +
+                                          "public class Outer {\n" +
+                                          "\n" +
+                                          "    static void refresh() {\n" +
+                                          "    }\n" +
+                                          "\n" +
+                                          "    /**\n" +
+                                          "     * javadoc comment for F.\n" +
+                                          "     */\n" +
+                                          "    static class F {\n" +
+                                          "        void refresh() {\n" +
+                                          "            //Outer.refresh();\n" +
+                                          "        }\n" +
+                                          "\n" +
+                                          "        /**\n" +
+                                          "         * javadoc for F.handler\n" +
+                                          "         * @param e\n" +
+                                          "         */\n" +
+                                          "        void handler(MouseEvent e) {\n" +
+                                          "            new InnerInner();\n" +
+                                          "        }\n" +
+                                          "\n" +
+                                          "        private void someInnerMethod() {\n" +
+                                          "            // test comment\n" +
+                                          "            System.err.println(\"in inner method\");\n" +
+                                          "        }\n" +
+                                          "\n" +
+                                          "        /**\n" +
+                                          "         * javadoc comment for InnerInner\n" +
+                                          "         */\n" +
+                                          "        private class InnerInner extends AbstractAction {\n" +
+                                          "\n" +
+                                          "            /* coment with '*' */\n" +
+                                          "\n" +
+                                          "            @Override\n" +
+                                          "            public void actionPerformed(ActionEvent e) {\n" +
+                                          "                someInnerMethod();\n" +
+                                          "            }\n" +
+                                          "\n" +
+                                          "        }\n" +
+                                          "    }\n" +
+                                          "\n" +
+                                          "}\n"));
+        performEncapsulateFieldsTest(false);
+        verifyContent(src,
+                                 new File("t/A.java",
+                                          "package t;\n" +
+                                          "\n" +
+                                          "import java.awt.event.ActionEvent;\n" +
+                                          "import java.awt.event.MouseEvent;\n" +
+                                          "import javax.swing.AbstractAction;\n" +
+                                          "\n" +
+                                          "public class Outer {\n" +
+                                          "\n" +
+                                          "    static void refresh() {\n" +
+                                          "    }\n" +
+                                          "\n" +
+                                          "}\n"),
+                                 new File("t/F.java",
+                                          "package t;\n" +
+                                          "\n" +
+                                          "import java.awt.event.ActionEvent;\n" +
+                                          "import java.awt.event.MouseEvent;\n" +
+                                          "import javax.swing.AbstractAction;\n" +
+                                          "\n" +
+                                          "/**\n" +
+                                          " * javadoc comment for F.\n" +
+                                          " */\n" +
+                                          "class F {\n" +
+                                          "    void refresh() {\n" +
+                                          "        //Outer.refresh();\n" +
+                                          "    }\n" +
+                                          "\n" +
+                                          "    /**\n" +
+                                          "     * javadoc for F.handler\n" +
+                                          "     * @param e\n" +
+                                          "     */\n" +
+                                          "    void handler(MouseEvent e) {\n" +
+                                          "        new InnerInner();\n" +
+                                          "    }\n" +
+                                          "\n" +
+                                          "    private void someInnerMethod() {\n" +
+                                          "        // test comment\n" +
+                                          "        System.err.println(\"in inner method\");\n" +
+                                          "    }\n" +
+                                          "\n" +
+                                          "    /**\n" +
+                                          "     * javadoc comment for InnerInner\n" +
+                                          "     */\n" +
+                                          "    private class InnerInner extends AbstractAction {\n" +
+                                          "\n" +
+                                          "        /* coment with '*' */\n" +
+                                          "\n" +
+                                          "        @Override\n" +
+                                          "        public void actionPerformed(ActionEvent e) {\n" +
+                                          "            someInnerMethod();\n" +
+                                          "        }\n" +
+                                          "\n" +
+                                          "    }\n" +
+                                          "}\n"));
     }
 
     private void performEncapsulateFieldsTest(boolean generateOuter, Problem... expectedProblems) throws Exception {

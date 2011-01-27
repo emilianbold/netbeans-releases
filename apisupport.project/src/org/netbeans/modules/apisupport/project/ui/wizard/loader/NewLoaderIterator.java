@@ -70,8 +70,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -275,7 +273,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "Resolver.xml", //NOI18N
                 template,
                 replaceTokens,
-                NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
+                namePrefix + " Files",//NOI18N
                 null));
         
         //5. update project.xml with dependencies
@@ -290,11 +288,13 @@ final class NewLoaderIterator extends BasicWizardIterator {
         if (isEditable) {
             fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         }
-        
+
+        if (!loaderlessObject) {
         // 6. update/create bundle file
         String bundlePath = model.getDefaultPackagePath("Bundle.properties", true); // NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
-                NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
+                namePrefix + " Files")); //NOI18N
+        }
         
         if (loaderlessObject) {
             // 7. register in layer
@@ -392,7 +392,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
                 template,
                 replaceTokens,
-                NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix),
+                "Empty " + namePrefix + " file", // NOI18N
                 attrs)); //NOI18N
         model.setCreatedModifiedFiles(fileChanges);
     }

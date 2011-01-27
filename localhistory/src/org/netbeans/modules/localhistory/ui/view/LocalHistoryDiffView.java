@@ -64,7 +64,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.explorer.ExplorerManager;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -97,6 +96,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
     }    
         
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             disableNavigationButtons();
@@ -106,6 +106,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }
     }
       
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
             return;
@@ -172,6 +173,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             entry = se;
         }
 
+        @Override
         public void run() {
             // XXX how to get the mimetype
 
@@ -195,6 +197,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             }
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {            
                     try {   
                         
@@ -248,6 +251,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         //panel.splitPane.setDividerLocation(dl);                
     }       
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.nextButton) {
             onNextButton();
@@ -304,8 +308,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             this.mimeType = mimeType;
         }
 
+        @Override
         public boolean isEditable() {
-            FileObject fo = FileUtil.toFileObject(file);
+            FileObject fo = FileUtils.toFileObject(file);
             return isPrimary(fo);
         }
         
@@ -321,8 +326,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             return true;
         }
     
+        @Override
         public Lookup getLookup() {
-            FileObject fo = FileUtil.toFileObject(file);
+            FileObject fo = FileUtils.toFileObject(file);
             if (fo != null && isPrimary(fo)) {
                 return Lookups.fixed(fo);                 
             } else {
@@ -330,22 +336,27 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             }
         }
 
+        @Override
         public String getName() {
             return title;
         }
 
+        @Override
         public String getTitle() {
             return title;
         }
 
+        @Override
         public String getMIMEType() {
             return mimeType;
         }
 
+        @Override
         public Reader createReader() throws IOException {
             return new FileReader(file);
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }

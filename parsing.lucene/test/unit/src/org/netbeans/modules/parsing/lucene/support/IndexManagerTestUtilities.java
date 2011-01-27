@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.lucene.support;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
+import org.netbeans.modules.parsing.lucene.LuceneIndex;
 import org.openide.util.Parameters;
 
 /**
@@ -60,6 +61,10 @@ public final class IndexManagerTestUtilities {
     public static void setIndexFactory(final @NonNull IndexFactory factory) {
         Parameters.notNull("factory",factory);  //NOI18N
         IndexManager.factory = factory;
+    }
+    
+    public static void setDisabledLocks(final boolean disabled) {
+        LuceneIndex.setDisabledLocks(disabled);
     }
     
 }

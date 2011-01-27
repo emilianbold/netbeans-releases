@@ -43,20 +43,13 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.SwingUtilities;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.ui.ElementOpen;
-import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -133,14 +126,6 @@ public class IsOverriddenAnnotation extends Annotation {
         return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
     }
     
-    void mouseClicked(JTextComponent c, Point p) {
-        Point position = new Point(p);
-        
-        SwingUtilities.convertPointToScreen(position, c);
-        
-        performGoToAction(type, declarations, position, shortDescription);
-    }
-
     public AnnotationType getType() {
         return type;
     }
@@ -149,39 +134,4 @@ public class IsOverriddenAnnotation extends Annotation {
         return declarations;
     }
     
-    static void performGoToAction(AnnotationType type, List<ElementDescription> declarations, Point position, String shortDescription/*XXX*/) {
-        if (type == AnnotationType.IMPLEMENTS || type == AnnotationType.OVERRIDES) {
-            if (declarations.size() == 1) {
-                ElementDescription desc = declarations.get(0);
-                FileObject file = desc.getSourceFile();
-                
-                if (file != null) {
-                    ElementOpen.open(file, desc.getHandle());
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                }
-                
-                return ;
-            }
-        }
-        
-        String caption;
-        
-        switch (type) {
-            case IMPLEMENTS:
-                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Implements");
-                break;
-            case OVERRIDES:
-                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Overrides");
-                break;
-            case HAS_IMPLEMENTATION:
-            case IS_OVERRIDDEN:
-                caption = shortDescription;
-                break;
-            default:
-                throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
-        }
-        
-        PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
-    }
 }

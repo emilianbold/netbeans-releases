@@ -104,31 +104,6 @@ public class IpeUtils {
 	}
     }
 
-    /** Same as the C library dirname function: given a path, return
-	its directory name. Unlike dirname, however, return null if
-	the file is in the current directory rather than ".".
-    */
-    public static String getDirName(String path) {
-	int sep = path.lastIndexOf(File.separatorChar);
-	if (sep != -1) {
-	    return path.substring(0, sep);
-	}
-	return null;
-    }
-	
-    /** Same as the C library basename function: given a path, return
-	its filename.
-    */
-    public static String getBaseName(String path) {
-	if (path != null) {
-	    int sep = path.lastIndexOf(File.separatorChar);
-	    if (sep != -1) {
-		return path.substring(sep+1);
-	    }
-	}
-	return path;
-    }
-
     /**
      * Convert strings of the form "abc.xyz" to "abc".
      */
@@ -362,23 +337,6 @@ public class IpeUtils {
 	File normalizedFile = FileUtil.normalizeFile(file);
 	FileObject fo = FileUtil.toFileObject(normalizedFile);
 	return fo;
-    }
-
-    /** Trim surrounding white space and trailing slashes */
-    public static String trimpath(String dir) {
-	int trim = 0;
-
-	dir = dir.trim();
-	int i = dir.length();
-	while (i > 0 && dir.charAt(i - 1) == File.separatorChar) {
-	    trim++;
-	    i--;
-	}
-	if (trim > 0) {
-	    return dir.substring(0, dir.length() - trim);
-	} else {
-	    return dir;
-	}
     }
 
     /** Compare two boolean values and return 0 if they are equal,

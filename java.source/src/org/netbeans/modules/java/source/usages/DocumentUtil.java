@@ -257,30 +257,30 @@ public class DocumentUtil {
         }
         caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
         Document doc = new Document ();        
-        Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NO_NORMS);
+        Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add (field);
-        field = new Field (FIELD_PACKAGE_NAME,pkgName,Field.Store.YES, Field.Index.NO_NORMS);
+        field = new Field (FIELD_PACKAGE_NAME,pkgName,Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add (field);
-        field = new Field (FIELD_SIMPLE_NAME,simpleName, Field.Store.YES, Field.Index.NO_NORMS);
+        field = new Field (FIELD_SIMPLE_NAME,simpleName, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add (field);
-        field = new Field (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName, Field.Store.YES, Field.Index.NO_NORMS);
+        field = new Field (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
         doc.add (field);
         for (String reference : references) {
-            field = new Field (FIELD_REFERENCES,reference,Field.Store.NO,Field.Index.NO_NORMS);
+            field = new Field (FIELD_REFERENCES,reference,Field.Store.NO,Field.Index.NOT_ANALYZED_NO_NORMS);
             doc.add(field);
         }
         if (featureIdents != null) {
-            field = new Field(FIELD_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
+            field = new Field(FIELD_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS);
             doc.add(field);
-            field = new Field(FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
+            field = new Field(FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS);
             doc.add(field);
         }
         if (idents != null) {
-            field = new Field(FIELD_IDENTS, idents, Field.Store.NO, Field.Index.TOKENIZED);
+            field = new Field(FIELD_IDENTS, idents, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS);
             doc.add(field);
         }
         if (source != null) {
-            field = new Field (FIELD_SOURCE,source,Field.Store.YES,Field.Index.NO_NORMS);
+            field = new Field (FIELD_SOURCE,source,Field.Store.YES,Field.Index.NOT_ANALYZED_NO_NORMS);
             doc.add(field);
         }
         return doc;
@@ -421,7 +421,7 @@ public class DocumentUtil {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             for (FileObject root : roots ) {
                 try {
-                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL());
+                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL(), true);
                     if (impl != null) {
                         String sourceName = impl.getSourceName(value);
                         if (sourceName != null) {

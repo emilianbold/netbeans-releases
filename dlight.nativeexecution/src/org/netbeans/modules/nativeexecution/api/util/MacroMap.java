@@ -74,7 +74,7 @@ public final class MacroMap implements Cloneable {
     private final Set<String> varsForExport = new HashSet<String>();
     private final boolean isWindows;
 
-    private MacroMap(final ExecutionEnvironment execEnv, final MacroExpander macroExpander) {
+    private MacroMap(final ExecutionEnvironment execEnv, final MacroExpander macroExpander, boolean init) {
         this.execEnv = execEnv;
         this.macroExpander = macroExpander;
         this.isWindows = execEnv.isLocal() && Utilities.isWindows();
@@ -85,7 +85,7 @@ public final class MacroMap implements Cloneable {
             map = new TreeMap<String, String>();
         }
 
-        if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
+        if (init && HostInfoUtils.isHostInfoAvailable(execEnv)) {
             // This always should be true
             try {
                 map.putAll(HostInfoUtils.getHostInfo(execEnv).getEnvironment());
@@ -97,10 +97,20 @@ public final class MacroMap implements Cloneable {
         varsForExport.addAll(Arrays.asList(EnvWriter.wellKnownVars));
     }
 
+    /**
+     * Create a MacroMap populated with macros defined in specified ExecutionEnvironment
+     */
     public static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
-        return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv));
+        return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv), true);
     }
-
+    
+    /**
+     * Create empty MacroMap for specified ExecutionEnvironment
+     */
+    public static MacroMap createEmpty(final ExecutionEnvironment execEnv) {
+        return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv), false);
+    }
+    
     public final void putAll(final MacroMap envVariables) {
         if (envVariables == null) {
             return;
@@ -196,7 +206,7 @@ public final class MacroMap implements Cloneable {
 
     @Override
     public MacroMap clone() {
-        MacroMap clone = new MacroMap(execEnv, macroExpander);
+        MacroMap clone = new MacroMap(execEnv, macroExpander, false);
         clone.map.putAll(map);
         clone.varsForExport.addAll(varsForExport);
         return clone;

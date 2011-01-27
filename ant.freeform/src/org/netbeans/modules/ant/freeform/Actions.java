@@ -144,18 +144,17 @@ public final class Actions implements ActionProvider {
     }
     
     public String[] getSupportedActions() {
-        Element genldata = project.getPrimaryConfigurationData();
-        Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
-        if (actionsEl == null) {
-            return new String[0];
-        }
+        final Element genldata = project.getPrimaryConfigurationData();
+        final Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         // Use a set, not a list, since when using context you can define one action several times:
-        Set<String> names = new LinkedHashSet<String>();
-        for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
-            names.add(actionEl.getAttribute("name")); // NOI18N
+        final Set<String> names = new LinkedHashSet<String>();
+        if (actionsEl != null) {                            
+            for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
+                names.add(actionEl.getAttribute("name")); // NOI18N
+            }
+            // #46886: also always enable all common global actions, in case they should be selected:
+            names.addAll(COMMON_NON_IDE_GLOBAL_ACTIONS);
         }
-        // #46886: also always enable all common global actions, in case they should be selected:
-        names.addAll(COMMON_NON_IDE_GLOBAL_ACTIONS);
         names.add(COMMAND_RENAME);
         names.add(COMMAND_MOVE);
         names.add(COMMAND_COPY);

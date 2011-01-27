@@ -169,8 +169,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             LOG.log(Level.WARNING, "Going to recompute root={0}, files in error={1}.",
                     new Object[] {FileUtil.getFileDisplayName(root), ErrorsCache.getAllFilesInError(root.getURL())});
 
-// XXX:            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
-            IndexingManager.getDefault().refreshIndex(root.getURL(), null);
+            IndexingManager.getDefault().refreshIndex(root.getURL(), null, true, true);
         } catch (IOException ex) {
             LOG.log(Level.FINE, null, ex);
         }

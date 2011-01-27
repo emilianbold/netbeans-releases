@@ -89,8 +89,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
@@ -134,11 +132,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private static final RequestProcessor RPofQueryPanel = new RequestProcessor(AddDependencyPanel.QueryPanel.class.getName(), 10);
 
     private NotificationLineSupport nls;
-    private RepositoryInfo nbRepo;
 
     public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
-        this.nbRepo = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans");
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -229,12 +225,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             tabPane.setEnabledAt(2, false);
         }
         chkNbOnly.setVisible(false);
-        if (nbRepo != null) {
-            String packaging = mavenProject.getPackaging();
-            if (NbMavenProject.TYPE_NBM.equals(packaging) || NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging)) {
-                chkNbOnly.setVisible(true);
-                chkNbOnly.setSelected(true);
-            }
+        String packaging = mavenProject.getPackaging();
+        if (NbMavenProject.TYPE_NBM.equals(packaging) || NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging)) {
+            chkNbOnly.setVisible(true);
+            chkNbOnly.setSelected(true);
         }
 
         pnlOpenProjects.add(new OpenListPanel(prj), BorderLayout.CENTER);
@@ -441,16 +435,16 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
-                                .addComponent(searchField, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
+                                .addComponent(searchField, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(chkNbOnly))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
                             .addGroup(searchPanelLayout.createSequentialGroup()
                                 .addComponent(resultsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 238, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(106, 106, 106)))))
                 .addContainerGap())
@@ -470,7 +464,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(resultsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -479,6 +473,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchPanel.TabConstraints.tabTitle", new Object[] {}), null, searchPanel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchPanel.TabConstraints.tabToolTip")); // NOI18N
 
+        jLabel3.setLabelFor(pnlOpenProjects);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel3.text")); // NOI18N
 
         pnlOpenProjects.setLayout(new java.awt.BorderLayout());
@@ -490,7 +485,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(pnlOpenLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlOpenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                    .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
                     .addComponent(jLabel3))
                 .addContainerGap())
         );
@@ -500,7 +495,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                .addComponent(pnlOpenProjects, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -522,7 +517,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             .addGroup(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlDepManLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                    .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
                     .addComponent(artifactsLabel))
                 .addContainerGap())
         );
@@ -532,7 +527,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(artifactsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                .addComponent(artifactPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -550,8 +545,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     .addComponent(lblVersion))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
+                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                    .addComponent(txtGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(txtVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -559,7 +554,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(comScope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
-            .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
+            .addComponent(tabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -658,7 +653,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 vers.add(rec.getVersion());
             }
         }
-        Collections.sort(vers);
         // also include properties/expressions that could be related to version
         // management
         List<String> propList = new ArrayList<String>();
@@ -926,22 +920,11 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             AddDependencyPanel.this.searchField.setForeground(defSearchC);
 
             if (curTypedText.length() > 0) {
-                RepositoryInfo[] infos;
-                if (chkNbOnly.isSelected() && AddDependencyPanel.this.nbRepo != null) {
-                    infos = new RepositoryInfo[] { AddDependencyPanel.this.nbRepo };
-                } else {
-                    infos = new RepositoryInfo[0];
-                }
-                find(curTypedText, infos);
+                find(curTypedText);
             }
         }
 
-        /**
-         *
-         * @param queryText
-         * @param infos Repositories to search in, null means all repos
-         */
-        void find(String queryText, final RepositoryInfo... infos) {
+        void find(String queryText) {
             synchronized (LOCK) {
                 if (inProgressText != null) {
                     lastQueryText = queryText;
@@ -988,7 +971,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             
-            queryRequest = new QueryRequest(fields,infos,this);
+            queryRequest = new QueryRequest(fields, null, this);
 
             Task t = RPofQueryPanel.post(new Runnable() {
 
@@ -1135,6 +1118,33 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
             if (infos != null) {
+                if (chkNbOnly.isSelected()) { // #181656: show only NB modules
+                    List<NBVersionInfo> refined = new ArrayList<NBVersionInfo>();
+                    Set<String> check = new HashSet<String>(); // class index works only on JAR artifacts
+                    Set<String> found = new HashSet<String>(); // but search string might also be found in other fields
+                    for (NBVersionInfo nbvi : infos) {
+                        String key = key(nbvi);
+                        if (NbMavenProject.TYPE_NBM.equals(nbvi.getPackaging())) {
+                            refined.add(nbvi);
+                            found.add(key);
+                        } else {
+                            check.add(key);
+                        }
+                    }
+                    QueryField qf = new QueryField();
+                    qf.setField(QueryField.FIELD_PACKAGING);
+                    qf.setValue(NbMavenProject.TYPE_NBM);
+                    qf.setMatch(QueryField.MATCH_EXACT);
+                    qf.setOccur(QueryField.OCCUR_MUST);
+                    for (NBVersionInfo alt : RepositoryQueries.find(Collections.singletonList(qf))) {
+                        String key = key(alt);
+                        if (check.contains(key) && !found.contains(key)) {
+                            refined.add(alt);
+                        }
+                    }
+                    Collections.sort(refined);
+                    infos = refined;
+                }
                 for (NBVersionInfo nbvi : infos) {
                     String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
                     List<NBVersionInfo> get = map.get(key);
@@ -1155,6 +1165,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     updateResultNodes(keyList, map);
                 }
             });
+        }
+        private String key(NBVersionInfo nbvi) {
+            return nbvi.getGroupId() + ':' + nbvi.getArtifactId() + ':' + nbvi.getVersion();
         }
 
     } // QueryPanel

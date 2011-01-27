@@ -58,15 +58,18 @@ import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  */
+@Messages("NbmWizardPanelVisual.wait=Searching...")
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
-    private static final String SEARCHING = NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.wait");
+    private static final String SEARCHING = NbmWizardPanelVisual_wait();
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
     boolean isApp = false;
@@ -97,9 +100,11 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", info)) { // NOI18N
                         versions.add(version.getVersion());
                     }
+                    versions.add("SNAPSHOT"); // NOI18N
                     EventQueue.invokeLater(new Runnable()  {
                         public @Override void run() {
                             versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
+                            versionComboActionPerformed(null);
                         }
                     });
                 }
@@ -116,23 +121,24 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cbOsgiDeps = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
-        txtAddModule = new javax.swing.JTextField();
-        cbAddModule = new javax.swing.JCheckBox();
         versionLabel = new javax.swing.JLabel();
         versionCombo = new javax.swing.JComboBox();
+        cbOsgiDeps = new javax.swing.JCheckBox();
+        cbAddModule = new javax.swing.JCheckBox();
+        txtAddModule = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbOsgiDeps, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbOsgiDeps.text")); // NOI18N
-        cbOsgiDeps.addActionListener(new java.awt.event.ActionListener() {
+        versionLabel.setLabelFor(versionCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.versionLabel.text")); // NOI18N
+
+        versionCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RELEASE123" }));
+        versionCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbOsgiDepsActionPerformed(evt);
+                versionComboActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.jLabel1.text")); // NOI18N
-
-        txtAddModule.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(cbOsgiDeps, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbOsgiDeps.text")); // NOI18N
+        cbOsgiDeps.setEnabled(false);
 
         cbAddModule.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbAddModule, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbAddModule.text")); // NOI18N
@@ -142,10 +148,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             }
         });
 
-        versionLabel.setLabelFor(versionCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.versionLabel.text")); // NOI18N
-
-        versionCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RELEASE123" }));
+        txtAddModule.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -155,41 +158,43 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(jLabel1))
+                        .addComponent(versionLabel)
+                        .addGap(8, 8, 8)
+                        .addComponent(versionCombo, 0, 395, Short.MAX_VALUE))
                     .addComponent(cbOsgiDeps)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cbAddModule)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtAddModule, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(versionLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(versionCombo, 0, 391, Short.MAX_VALUE)))
+                        .addComponent(txtAddModule, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(cbOsgiDeps)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtAddModule, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbAddModule))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(versionLabel)
                     .addComponent(versionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(163, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbOsgiDeps)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbAddModule)
+                    .addComponent(txtAddModule, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(176, Short.MAX_VALUE))
         );
-    }// </editor-fold>//GEN-END:initComponents
 
-    private void cbOsgiDepsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbOsgiDepsActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbOsgiDepsActionPerformed
+        versionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.versionLabel.accessibledesc")); // NOI18N
+        versionCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbVersion.accessiblename")); // NOI18N
+        versionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbVersion.accessibledesc")); // NOI18N
+        cbOsgiDeps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbOsgiDeps.accessibledesc")); // NOI18N
+        cbAddModule.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbAddModule.accessibledesc")); // NOI18N
+        txtAddModule.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.txtAddModule.accessiblename")); // NOI18N
+        txtAddModule.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.txtAddModule.accessibledesc")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.panel.accessiblename")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.panel.accessibledesc")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void cbAddModuleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddModuleActionPerformed
         // TODO add your handling code here:
@@ -197,11 +202,20 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         vg.validateAll();
 }//GEN-LAST:event_cbAddModuleActionPerformed
 
+    private void versionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionComboActionPerformed
+        String version = (String) versionCombo.getSelectedItem();
+        if (version != null && (version.equals("SNAPSHOT") || new NBVersionInfo("x", "x", "x", version, null, null, null, null, null).compareTo(new NBVersionInfo("x", "x", "x", "RELEASE69-BETA", null, null, null, null, null)) <= 0)) { // NOI18N
+            cbOsgiDeps.setEnabled(true);
+        } else {
+            cbOsgiDeps.setEnabled(false);
+            cbOsgiDeps.setSelected(false);
+        }
+    }//GEN-LAST:event_versionComboActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbAddModule;
     private javax.swing.JCheckBox cbOsgiDeps;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField txtAddModule;
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;

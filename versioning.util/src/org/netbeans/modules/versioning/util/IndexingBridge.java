@@ -130,6 +130,12 @@ public final class IndexingBridge {
                 }
                 LOG.fine("running vcs operaton without scheduling for files:" + sb.toString()); // NOI18N
             }
+            if (files != null) {
+                // normalize all files
+                for (int i = 0; i < files.length; ++i) {
+                    files[i] = FileUtil.normalizeFile(files[i]);
+                }
+            }
             return ibp.runWithoutIndexing(operation, files);
         } else {
             try {

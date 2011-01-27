@@ -46,6 +46,9 @@ package org.netbeans.modules.editor.codegen;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
@@ -77,6 +80,12 @@ public class GenerateCodePanel extends javax.swing.JPanel {
         jList1.setVisibleRowCount(generators.size() > 8 ? 8 : generators.size());
         jList1.setCellRenderer(new Renderer(jList1));
         jList1.grabFocus();
+        jList1.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                PopupUtil.hidePopup();
+            }
+        });
     }
     
     /** This method is called from within the constructor to

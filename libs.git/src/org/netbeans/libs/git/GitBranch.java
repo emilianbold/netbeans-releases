@@ -48,7 +48,7 @@ package org.netbeans.libs.git;
  */
 public interface GitBranch {
 
-    public static final String NO_BRANCH = "(no branch)";
+    public static final String NO_BRANCH = "(no branch)"; //NOI18N
 
     String getName ();
 

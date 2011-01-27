@@ -69,6 +69,7 @@ public class FmtAlignment extends javax.swing.JPanel {
         amCallArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineCallArgs);
         amAnnotationArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineAnnotationArgs);
         amTryResourcesCheckBox.putClientProperty(OPTION_ID, alignMultilineTryResources);
+        amMultiCatchCheckBox.putClientProperty(OPTION_ID, alignMultilineDisjunctiveCatchTypes);
         amArrayInitCheckBox1.putClientProperty(OPTION_ID, alignMultilineArrayInit);
         amAssignCheckBox1.putClientProperty(OPTION_ID, alignMultilineAssignment);
         amBinaryOpCheckBox1.putClientProperty(OPTION_ID, alignMultilineBinaryOp);
@@ -115,6 +116,7 @@ public class FmtAlignment extends javax.swing.JPanel {
         amImplementsCheckBox1 = new javax.swing.JCheckBox();
         amThrowsCheckBox1 = new javax.swing.JCheckBox();
         amTryResourcesCheckBox = new javax.swing.JCheckBox();
+        amMultiCatchCheckBox = new javax.swing.JCheckBox();
         amArrayInitCheckBox1 = new javax.swing.JCheckBox();
         amBinaryOpCheckBox1 = new javax.swing.JCheckBox();
         amTernaryOpCheckBox1 = new javax.swing.JCheckBox();
@@ -186,6 +188,11 @@ public class FmtAlignment extends javax.swing.JPanel {
         amTryResourcesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         amTryResourcesCheckBox.setOpaque(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(amMultiCatchCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignment.class, "LBL_am_MultiCatch")); // NOI18N
+        amMultiCatchCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        amMultiCatchCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        amMultiCatchCheckBox.setOpaque(false);
+
         org.openide.awt.Mnemonics.setLocalizedText(amArrayInitCheckBox1, org.openide.util.NbBundle.getMessage(FmtAlignment.class, "LBL_am_ArrayInit")); // NOI18N
         amArrayInitCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         amArrayInitCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -220,42 +227,40 @@ public class FmtAlignment extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addComponent(newLinesLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jSeparator1))
+                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addComponent(multilineAlignmentLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jSeparator2))
+                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(amThrowsCheckBox1)
+                        .addComponent(amAnnotationArgsCheckBox)
+                        .addComponent(nlElseCheckBox)
+                        .addComponent(nlWhileCheckBox)
+                        .addComponent(nlCatchCheckBox)
+                        .addComponent(amMethodParamsCheckBox)
+                        .addComponent(amAssignCheckBox1)
+                        .addComponent(amBinaryOpCheckBox1)
+                        .addComponent(amMultiCatchCheckBox))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(amTryResourcesCheckBox)
+                        .addComponent(amArrayInitCheckBox1)
+                        .addComponent(amTernaryOpCheckBox1)
+                        .addComponent(amCallArgsCheckBox)
+                        .addComponent(nlModifiersCheckBox)
+                        .addComponent(nlFinallyCheckBox)
+                        .addComponent(amImplementsCheckBox1)
+                        .addComponent(amForCheckBox1))))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(amParenthesizedCheckBox1))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                            .addComponent(newLinesLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jSeparator1))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                            .addComponent(multilineAlignmentLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jSeparator2))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(amThrowsCheckBox1)
-                                .addComponent(amBinaryOpCheckBox1)
-                                .addComponent(amAssignCheckBox1)
-                                .addComponent(amAnnotationArgsCheckBox)
-                                .addComponent(nlElseCheckBox)
-                                .addComponent(nlWhileCheckBox)
-                                .addComponent(nlCatchCheckBox)
-                                .addComponent(amMethodParamsCheckBox))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(amTryResourcesCheckBox)
-                                .addComponent(amArrayInitCheckBox1)
-                                .addComponent(amTernaryOpCheckBox1)
-                                .addComponent(amCallArgsCheckBox)
-                                .addComponent(nlModifiersCheckBox)
-                                .addComponent(nlFinallyCheckBox)
-                                .addComponent(amImplementsCheckBox1)
-                                .addComponent(amForCheckBox1)))))
-                .addGap(0, 0, 0))
+                .addContainerGap()
+                .addComponent(amParenthesizedCheckBox1))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -298,16 +303,18 @@ public class FmtAlignment extends javax.swing.JPanel {
                     .addComponent(amTryResourcesCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(amBinaryOpCheckBox1)
-                    .addComponent(amArrayInitCheckBox1))
+                    .addComponent(amArrayInitCheckBox1)
+                    .addComponent(amMultiCatchCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(amAssignCheckBox1)
-                    .addComponent(amTernaryOpCheckBox1))
+                    .addComponent(amTernaryOpCheckBox1)
+                    .addComponent(amBinaryOpCheckBox1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(amParenthesizedCheckBox1)
-                    .addComponent(amForCheckBox1))
+                    .addComponent(amForCheckBox1)
+                    .addComponent(amAssignCheckBox1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(amParenthesizedCheckBox1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -322,6 +329,7 @@ public class FmtAlignment extends javax.swing.JPanel {
     private javax.swing.JCheckBox amForCheckBox1;
     private javax.swing.JCheckBox amImplementsCheckBox1;
     private javax.swing.JCheckBox amMethodParamsCheckBox;
+    private javax.swing.JCheckBox amMultiCatchCheckBox;
     private javax.swing.JCheckBox amParenthesizedCheckBox1;
     private javax.swing.JCheckBox amTernaryOpCheckBox1;
     private javax.swing.JCheckBox amThrowsCheckBox1;

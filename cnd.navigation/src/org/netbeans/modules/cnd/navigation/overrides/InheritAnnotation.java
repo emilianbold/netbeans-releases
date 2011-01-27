@@ -56,25 +56,37 @@ import org.openide.util.NbBundle;
 /*package*/ class InheritAnnotation extends BaseAnnotation {
 
     public InheritAnnotation(StyledDocument document, CsmClass decl,
-            Collection<? extends CsmOffsetableDeclaration> descDecls) {
-        super(document, decl, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls);
+            Collection<? extends CsmOffsetableDeclaration> descDecls,
+            Collection<? extends CsmOffsetableDeclaration> baseTemplates,
+            Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
+        super(document, decl, Collections.<CsmOffsetableDeclaration>emptyList(), descDecls, baseTemplates, templateSpecializations);
     }
 
 
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage(getClass(), "LAB_Extended");
+        String out = descUIDs.isEmpty() ? "" : NbBundle.getMessage(getClass(), "LAB_Extended");
+        out = addTemplateAnnotation(out);
+        return out;
     }
 
     @Override
-    protected CharSequence debugTypeStirng() {
+    protected CharSequence debugTypeString() {
         switch (type) {
             case OVERRIDES:
                 return "INHERITS"; // NOI18N
             case IS_OVERRIDDEN:
                 return "INHERITED"; // NOI18N
-            case COMBINED:
+            case SPECIALIZES:
+                return "SPECIALIZES"; // NOI18N
+            case IS_SPECIALIZED:
+                return "IS_SPECIALIZED"; // NOI18N
+            case OVERRIDEN_COMBINED:
                 return "INHERITS_AND_INHERITED"; // NOI18N
+            case TEMPLATE_COMBINED:
+                return "SPECIALIZES_AND_SPECIALIZED_CLASS"; // NOI18N
+            case COMBINED:
+                return "INHERIT_TEMPLATE_COMBINED_CLASS"; // NOI18N
             default:
                 return "???"; // NOI18N
         }

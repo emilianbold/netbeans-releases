@@ -267,39 +267,39 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         // Listening to OK button ----------------------------------------------
         
         public void actionPerformed( ActionEvent e ) {
-            if (SwingUtilities.isEventDispatchThread()) {
+            if (SwingUtilities.isEventDispatchThread()) { // OK option listener
                 if ( dialog != null ) {
                     dialog.setVisible(false);
                     dialog.dispose();
                     dialog = null;
                     weAreSaving = true;
-
-                    //we need to finish transactions in the same thread we initiated them, doh..
-                    // but #189854: this cannot be while holding project mutex
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public @Override void run() {
-                            if (handle.getPOMModel().isIntransaction()) {
-                                if (handle.isModified(handle.getPOMModel())) {
-                                    handle.getPOMModel().endTransaction();
-                                } else {
-                                    handle.getPOMModel().rollbackTransaction();
-                                }
+                }
+            } else { // store listener
+                //we need to finish transactions in the same thread we initiated them, doh..
+                // but #189854: this cannot be while holding project mutex
+                // and #192051: must happen before the other stuff
+                SwingUtilities.invokeLater(new Runnable() {
+                    public @Override void run() {
+                        if (handle.getPOMModel().isIntransaction()) {
+                            if (handle.isModified(handle.getPOMModel())) {
+                                handle.getPOMModel().endTransaction();
+                            } else {
+                                handle.getPOMModel().rollbackTransaction();
                             }
                         }
-                    });
-                }
-            } else {
-                try {
-                    project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
-                            project.getLookup().lookup(MavenProjectPropsImpl.class).commitTransaction();
-                            writeAll(handle, project);
+                        try {
+                            project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                                public void run() throws IOException {
+                                    project.getLookup().lookup(MavenProjectPropsImpl.class).commitTransaction();
+                                    writeAll(handle, project);
+                                }
+                            });
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                            //TODO error reporting on wrong model save
                         }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                    //TODO error reporting on wrong model save
-                }
+                    }
+                });
             }
         }
         

@@ -61,8 +61,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.ImageUtilities;
@@ -139,30 +138,23 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             }
 
             Project project = info.getProject();
+            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+            if (conf != null) {
+                // Get debugger type
+                EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
 
-            // Get debugger type
-            EngineType projectDebuggerType = null;
-            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (cdp != null) {
-                MakeConfigurationDescriptor configurationDescriptor = cdp.getConfigurationDescriptor();
-                if (configurationDescriptor != null) {
-                    final MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
-                    projectDebuggerType = DebuggerManager.debuggerType(conf);
+                String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
+                path = HostInfoProvider.getMapper(exEnv).getRemotePath(path, true);
 
-                    String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
-                    path = HostInfoProvider.getMapper(exEnv).getRemotePath(path, true);
+                if (projectDebuggerType != null) {
+                    // do not change the original configuration!
+                    DebugTarget dt = new DebugTarget(conf.clone());
+                    dt.setExecutable(path);
+                    dt.setPid(attachPid);
+                    dt.setHostName(ExecutionEnvironmentFactory.toUniqueID(exEnv));
+                    dt.setEngine(projectDebuggerType);
 
-                    if (projectDebuggerType != null) {
-                        DebugTarget dt = new DebugTarget(conf);
-                        dt.setExecutable(path);
-                        dt.setPid(attachPid);
-                        dt.setHostName(ExecutionEnvironmentFactory.toUniqueID(exEnv));
-                        dt.setEngine(projectDebuggerType);
-
-                        dt.assignProject(project);
-
-                        DebuggerManager.get().attach(dt);
-                    }
+                    DebuggerManager.get().attach(dt);
                 }
             }
         }

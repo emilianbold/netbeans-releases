@@ -59,14 +59,11 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
@@ -82,52 +79,52 @@ public class CndRemote {
     /**
      * Convert a combo-box index into a HostName
      */
-    public static String hostNameFromIndex(int index) {
-	if (index < 0)
-	    return null;
-        if (DebuggerManager.isStandalone()) {
-            // string in combo-box has more than just hostname in it
-	    HostList hostList = DebuggerManager.get().getHostList();
-            Host host = hostList.getRecordAt(index);
-            if (host == null)
-                return null;
-            return host.getHostName();
-        } else {
-	/*
-	 * Server list does NOT support getting/setting by index any more
-	    ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-	*/
-	    //String serverKey = serverList.getRecords().get[index];
-            // IZ 179270
-	    String[] IdList = getServerListIDs();
-	    if (index < IdList.length)
-		return IdList[index];
-	    else
-		return "localhost"; // NOI18N
-        }
-    }
+//    public static String hostNameFromIndex(int index) {
+//	if (index < 0)
+//	    return null;
+//        if (DebuggerManager.isStandalone()) {
+//            // string in combo-box has more than just hostname in it
+//	    CustomizableHostList hostList = DebuggerManager.get().getHostList();
+//            Host host = hostList.getRecordAt(index);
+//            if (host == null)
+//                return null;
+//            return host.getHostName();
+//        } else {
+//	/*
+//	 * Server list does NOT support getting/setting by index any more
+//	    ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
+//	*/
+//	    //String serverKey = serverList.getRecords().get[index];
+//            // IZ 179270
+//	    String[] IdList = getServerListIDs();
+//	    if (index < IdList.length)
+//		return IdList[index];
+//	    else
+//		return "localhost"; // NOI18N
+//        }
+//    }
 
     /**
      * Convert a combo-box index into a Host
      */
-    public static Host OLD_hostFromIndex(int index) {
-	if (index < 0)
-	    return null;
-        if (DebuggerManager.isStandalone()) {
-	    HostList hostList = DebuggerManager.get().getHostList();
-            return hostList.getRecordAt(index);
-        } else {
-	/*
-	 * Server list does NOT support getting/setting by index any more
-	    ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-	*/
-	    //String serverKey = serverList.getServerNames()[index];
-
-            // IZ 179270
-            String serverKey = getServerListIDs()[index];
-	    return hostFromName(null, serverKey);
-        }
-    }
+//    public static Host OLD_hostFromIndex(int index) {
+//	if (index < 0)
+//	    return null;
+//        if (DebuggerManager.isStandalone()) {
+//	    HostList hostList = DebuggerManager.get().getHostList();
+//            return hostList.getRecordAt(index);
+//        } else {
+//	/*
+//	 * Server list does NOT support getting/setting by index any more
+//	    ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
+//	*/
+//	    //String serverKey = serverList.getServerNames()[index];
+//
+//            // IZ 179270
+//            String serverKey = getServerListIDs()[index];
+//	    return hostFromName(serverKey);
+//        }
+//    }
 
     private final static RequestProcessor validatorRP = 
 			new RequestProcessor("validator"); // throughput 1 // NOI18N
@@ -138,28 +135,18 @@ public class CndRemote {
      * Once everything is ready continuation is called.
      * See IZ 147560.
      */
-    public static void validate(String name, final Runnable continuation) {
+    public static void validate(final String name, final Runnable continuation) {
 	if (name != null && name.equals("localhost")) { // NOI18N
 	    continuation.run();
 	    return;
 	}
         
-        // extend name back to full form
-        if (DebuggerManager.isStandalone()) {
-            HostList hostList = DebuggerManager.get().getHostList();
-            if (hostList != null) {
-                Host host = hostList.getHostByName(name);
-                if (host == null) {
-                    host = hostList.getHostByDispName(name);
-                }
-                name = host.getHostKey();
-            }
-        }
-
-	final ServerRecord serverRecord = ServerList.get(ExecutionEnvironmentFactory.fromUniqueID(name));
-
 	Runnable validator = new Runnable() {
 	    public void run() {
+                Host host = Host.byName(name);
+
+                final ServerRecord serverRecord = ServerList.get(host.executionEnvironment());
+
 		serverRecord.validate(true);
                 // No need to continue if connection is not available
                 if (!serverRecord.isOnline()) {
@@ -168,7 +155,8 @@ public class CndRemote {
                 ExecutionEnvironment exEnv = serverRecord.getExecutionEnvironment();
 		CompilerSetManager csm = CompilerSetManager.get(exEnv);
 		csm.initialize(true, true, null);
-                platformInfo(exEnv);
+                // initialize host info
+                PlatformInfo.getDefault(exEnv);
 		try {
 		    javax.swing.SwingUtilities.invokeAndWait(continuation);
 		} catch (Exception x) {
@@ -188,26 +176,6 @@ public class CndRemote {
 	RequestProcessor.Task task = validatorRP.post(validator);
     }
 
-    /**
-     * Convert a host display name "localhost (Solaris_intel) " from either
-     * - cnd's host and cset DB's
-     * - dbxtools host DB
-     * to our host.
-     * @return host passed in or new one if the passed-in one is null.
-     */
-    public static Host hostFromDispName(Host host, String name) {
-	if (host == null)
-	    host = new Host();
-
-	if (DebuggerManager.isStandalone()) {
-	    host = DebuggerManager.get().getHostList().getHostByDispName(name);
-	} else {
-            // don't apply to IDE remote
-	    assert false : "Cndremote.hostfromDispName() called under IDE";
-	}
-	return host;
-    }
-
     public static String[] getServerListIDs() {
         List<String> l = new ArrayList<String>();
         for (ExecutionEnvironment env : ServerList.getEnvironments()) {
@@ -216,107 +184,103 @@ public class CndRemote {
         return l.toArray(new String[l.size()]);
     }
 
-    private static SecuritySettings getSecuritySettings(ExecutionEnvironment ee) {
-	SecuritySettings securitySettings;
-	securitySettings = new SecuritySettings(ee.getSSHPort(), null);
-	/* LATER
-	Authentication a = Authentication.getFor(ee);
-	switch (a.getType()) {
-	    case PASSWORD:
-		securitySettings = new SecuritySettings(ee.getSSHPort(), null);
-		break;
-	    case SSH_KEY:
-		securitySettings = new SecuritySettings(ee.getSSHPort(), a.getKey());
-		break;
-	    default:
-	    case UNDEFINED:
-		securitySettings = new SecuritySettings(ee.getSSHPort(), null);
-		break;
-	}
-	 */
-	return securitySettings;
-    }
+//    private static SecuritySettings getSecuritySettings(ExecutionEnvironment ee) {
+//	SecuritySettings securitySettings;
+//	securitySettings = new SecuritySettings(ee.getSSHPort(), null);
+//	/* LATER
+//	Authentication a = Authentication.getFor(ee);
+//	switch (a.getType()) {
+//	    case PASSWORD:
+//		securitySettings = new SecuritySettings(ee.getSSHPort(), null);
+//		break;
+//	    case SSH_KEY:
+//		securitySettings = new SecuritySettings(ee.getSSHPort(), a.getKey());
+//		break;
+//	    default:
+//	    case UNDEFINED:
+//		securitySettings = new SecuritySettings(ee.getSSHPort(), null);
+//		break;
+//	}
+//	 */
+//	return securitySettings;
+//    }
 
     /**
      * Convert a hostname from either
      * - cnd's host and cset DB's
      * - dbxtools host DB
      * to our host.
-     * @return host passed in or new one if the passed-in one is null.
+     * @return new host
      */
-    public static Host hostFromName(Host host, String name) {
-	if (Log.Remote.host)
-	    System.out.printf("hostFromName(%s, %s)\n", host, name); // NOI18N
-
-	if (host == null)
-	    host = new Host();
-
-	if (name == null)
-	    name = "localhost";		// NOI18N
-
-	if (DebuggerManager.isStandalone()) {
-	    host = DebuggerManager.get().getHostList().getHostByName(name);
-	} else {
-	    /*
-	     * not apply anymore
-	     * ServerList is static
-	     ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-	     */
-
-            final ServerRecord serverRecord = ServerList.get(ExecutionEnvironmentFactory.fromUniqueID(name));
-	    String userName = serverRecord.getUserName();
-	    String hostName = serverRecord.getServerName();
-
-	    if ("127.0.0.1".equals(hostName))			// NOI18N
-		hostName = "localhost";				// NOI18N
-
-
-	    String userHostName;
-	    if ("localhost".equals(hostName))			// NOI18N
-		userHostName = hostName;
-	    else
-		userHostName = userName + "@" + hostName; // NOI18N
-
-	    ExecutionEnvironment ee = serverRecord.getExecutionEnvironment();
-
-	    host.setHostName(hostName);
-	    host.setHostLogin(userName);
-	    host.setSecuritySettings(getSecuritySettings(ee));
-
-
-
-	    // convert Cnd platform info to Host platform		
-	    // for remote debugging that launched from "Debug Executable"
-            ExecutionEnvironment exEnv = serverRecord.getExecutionEnvironment();
-	    String pName = platformInfo(exEnv); // generic platform name
-	    if (pName != null)
-		host.setPlatformName(pName);
-
-	    CompilerSetManager csm =
-		CompilerSetManager.get(exEnv);
-
-	    CompilerSet cs = csm.getDefaultCompilerSet();
-	    if (cs == null) {
-		String csname = "SunStudio";		// NOI18N
-		cs = csm.getCompilerSet(csname);
-	    }
-
-	    if (Log.Remote.host)
-		System.out.printf("hostFromName() cs %s\n", cs); // NOI18N
-	    if (cs != null) {
-		String base = cs.getDirectory();
-		if (Log.Remote.host)
-		    System.out.printf("hostFromName() base %s\n", base); // NOI18N
-		host.setRemoteStudioLocation(base + "/.."); // NOI18N
-	    } else {
-		// explicitly set to null so we don't end up with the
-		// default value.
-		host.setRemoteStudioLocation(null);
-		// Executor will fall back an a non glue-based provider
-	    }
-	}
-	return host;
-    }
+//    public static Host hostFromName(String name) {
+//	if (Log.Remote.host)
+//	    System.out.printf("hostFromName(%s)\n", name); // NOI18N
+//
+//	if (name == null)
+//	    name = "localhost";		// NOI18N
+//
+//	if (DebuggerManager.isStandalone()) {
+//	    return DebuggerManager.get().getHostList().getHostByName(name);
+//	} else {
+//	    /*
+//	     * not apply anymore
+//	     * ServerList is static
+//	     ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
+//	     */
+//            return new Host.CndHost(ExecutionEnvironmentFactory.fromUniqueID(name));
+//
+////            final ServerRecord serverRecord = ServerList.get(ExecutionEnvironmentFactory.fromUniqueID(name));
+////	    String userName = serverRecord.getUserName();
+////	    String hostName = serverRecord.getServerName();
+////
+//////	    if ("127.0.0.1".equals(hostName))			// NOI18N
+//////		hostName = "localhost";				// NOI18N
+////
+////
+//////	    String userHostName;
+//////	    if ("localhost".equals(hostName))			// NOI18N
+//////		userHostName = hostName;
+//////	    else
+//////		userHostName = userName + "@" + hostName; // NOI18N
+////
+////	    ExecutionEnvironment ee = serverRecord.getExecutionEnvironment();
+////
+////            Host host = new Host();
+////	    host.setHostName(hostName);
+////	    host.setHostLogin(userName);
+////	    host.setSecuritySettings(getSecuritySettings(ee));
+////
+////	    // convert Cnd platform info to Host platform		
+////	    // for remote debugging that launched from "Debug Executable"
+////	    String pName = platformInfo(ee); // generic platform name
+////	    if (pName != null)
+////		host.setPlatformName(pName);
+////
+////	    CompilerSetManager csm =
+////		CompilerSetManager.get(ee);
+////
+////	    CompilerSet cs = csm.getDefaultCompilerSet();
+////	    if (cs == null) {
+////		String csname = "SunStudio";		// NOI18N
+////		cs = csm.getCompilerSet(csname);
+////	    }
+////
+////	    if (Log.Remote.host)
+////		System.out.printf("hostFromName() cs %s\n", cs); // NOI18N
+////	    if (cs != null) {
+////		String base = cs.getDirectory();
+////		if (Log.Remote.host)
+////		    System.out.printf("hostFromName() base %s\n", base); // NOI18N
+////		host.setRemoteStudioLocation(base + "/.."); // NOI18N
+////	    } else {
+////		// explicitly set to null so we don't end up with the
+////		// default value.
+////		host.setRemoteStudioLocation(null);
+////		// Executor will fall back an a non glue-based provider
+////	    }
+////            return host;
+//	}
+//    }
 
     /**
      * Return the usr@hostname stored in 'conf'.
@@ -338,72 +302,72 @@ public class CndRemote {
      * to our Host.
      * @return host passed in or new one if the passed-in one is null.
      */
-    public static Host hostFromConfiguration(Host host, Configuration conf) {
-	if (Log.Remote.host)
-	    System.out.printf("hostFromConfiguration(%s, %s)\n", host, conf); // NOI18N
-	if (host == null)
-	    host = new Host();
-
-	if (! (conf instanceof MakeConfiguration))
-	    return host;
-
-	MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
-
-	DevelopmentHostConfiguration hostConfig =
-	    makeConfiguration.getDevelopmentHost();
-
-
-	// userHostName is of the form <user>@<hostname>
-	String userName;
-	String hostName;
-	String platformName;
-
-        String userHostName = ExecutionEnvironmentFactory.toUniqueID(hostConfig.getExecutionEnvironment());
-	if ("127.0.0.1".equals(userHostName))	    // NOI18N
-	    userHostName = "localhost";		    // NOI18N
-
-	if ("localhost".equals(userHostName)) {	    // NOI18N
-	    userName = null;
-	    hostName = userHostName;
-	} else {
-	    int atx = userHostName.indexOf('@');
-	    userName = userHostName.substring(0, atx);
-	    hostName = userHostName.substring(atx+1);
-	}
-
-	// covert Cnd platform info to Host platform
-        ExecutionEnvironment exEnv = hostConfig.getExecutionEnvironment();
-	String pName = platformInfo(exEnv); // generic platform name
-	if (pName != null)
-	    host.setPlatformName(pName);
-
-	CompilerSetManager csm = CompilerSetManager.get(exEnv);
-
-	CompilerSet2Configuration csconf = makeConfiguration.getCompilerSet();
-	if (Log.Remote.host)
-	    System.out.printf("hostFromConfiguration() csm %s  csconf %s\n", csm, csconf); // NOI18N
-
-	if (csm != null && csconf.isValid()) {
-	    String csname = csconf.getOption();
-	    CompilerSet cs = csm.getCompilerSet(csname);
-	    if (Log.Remote.host)
-		System.out.printf("hostFromConfiguration() csname %s  cs %s\n", csname, cs); // NOI18N
-	    if (cs != null) {
-		host.setHostName(hostName);
-		if (userName != null)
-		    host.setHostLogin(userName);
-
-		String base = cs.getDirectory();        // usually .../bin
-		if (Log.Remote.host)
-		    System.out.printf("hostFromConfiguration() base %s\n", base); // NOI18N
-		host.setRemoteStudioLocation(base + "/.."); // NOI18N
-		// platform determined automatically
-		host.setSecuritySettings(getSecuritySettings(exEnv));
-	    }
-	}
-
-	return host;
-    }
+//    public static Host hostFromConfiguration(Host host, Configuration conf) {
+//	if (Log.Remote.host)
+//	    System.out.printf("hostFromConfiguration(%s, %s)\n", host, conf); // NOI18N
+//	if (host == null)
+//	    host = new Host();
+//
+//	if (! (conf instanceof MakeConfiguration))
+//	    return host;
+//
+//	MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
+//
+//	DevelopmentHostConfiguration hostConfig =
+//	    makeConfiguration.getDevelopmentHost();
+//
+//
+//	// userHostName is of the form <user>@<hostname>
+//	String userName;
+//	String hostName;
+//	String platformName;
+//
+//        String userHostName = ExecutionEnvironmentFactory.toUniqueID(hostConfig.getExecutionEnvironment());
+//	if ("127.0.0.1".equals(userHostName))	    // NOI18N
+//	    userHostName = "localhost";		    // NOI18N
+//
+//	if ("localhost".equals(userHostName)) {	    // NOI18N
+//	    userName = null;
+//	    hostName = userHostName;
+//	} else {
+//	    int atx = userHostName.indexOf('@');
+//	    userName = userHostName.substring(0, atx);
+//	    hostName = userHostName.substring(atx+1);
+//	}
+//
+//	// covert Cnd platform info to Host platform
+//        ExecutionEnvironment exEnv = hostConfig.getExecutionEnvironment();
+//	String pName = platformInfo(exEnv); // generic platform name
+//	if (pName != null)
+//	    host.setPlatformName(pName);
+//
+//	CompilerSetManager csm = CompilerSetManager.get(exEnv);
+//
+//	CompilerSet2Configuration csconf = makeConfiguration.getCompilerSet();
+//	if (Log.Remote.host)
+//	    System.out.printf("hostFromConfiguration() csm %s  csconf %s\n", csm, csconf); // NOI18N
+//
+//	if (csm != null && csconf.isValid()) {
+//	    String csname = csconf.getOption();
+//	    CompilerSet cs = csm.getCompilerSet(csname);
+//	    if (Log.Remote.host)
+//		System.out.printf("hostFromConfiguration() csname %s  cs %s\n", csname, cs); // NOI18N
+//	    if (cs != null) {
+//		host.setHostName(hostName);
+//		if (userName != null)
+//		    host.setHostLogin(userName);
+//
+//		String base = cs.getDirectory();        // usually .../bin
+//		if (Log.Remote.host)
+//		    System.out.printf("hostFromConfiguration() base %s\n", base); // NOI18N
+//		host.setRemoteStudioLocation(base + "/.."); // NOI18N
+//		// platform determined automatically
+//		host.setSecuritySettings(getSecuritySettings(exEnv));
+//	    }
+//	}
+//
+//	return host;
+//    }
 
     /**
      * Convert information described by host into CND-style and stuff it
@@ -411,8 +375,6 @@ public class CndRemote {
      * Sort of the reverse of hostFromConfiguration().
      */
     public static void fillConfiguratioFromHost(Configuration conf, Host host) {
-	String userHostName = host.getHostKey();
-
 	MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
 	if (! makeConfiguration.isMakefileConfiguration())
 	    return;
@@ -420,7 +382,8 @@ public class CndRemote {
 	DevelopmentHostConfiguration hostConfig =
 	    makeConfiguration.getDevelopmentHost();
 
-        ExecutionEnvironment exEnv = ExecutionEnvironmentFactory.createNew(host.getHostLogin(), host.getHostName());
+        ExecutionEnvironment exEnv = host.executionEnvironment();
+        String userHostName = ExecutionEnvironmentFactory.toUniqueID(exEnv);
 	CompilerSetManager csm = CompilerSetManager.get(exEnv);
 
 	CompilerSet2Configuration csconf = makeConfiguration.getCompilerSet();
@@ -456,60 +419,4 @@ public class CndRemote {
 	cs.setDirectory(base);
 	*/
     }
-
-    // covert Cnd platform info to Platform name
-    private static String platformInfo (ExecutionEnvironment exEnv) {
-
-        // OLD NB69 int platformx = HostInfoProvider.getPlatform(exEnv);
-	PlatformInfo platformInfo = PlatformInfo.getDefault(exEnv);
-	int platformx = platformInfo.getPlatform();
-
-	return platformByCNDId(platformx).name();
-
-	/* OLD
-	String platformname = null;
-	switch (platformx) {
-	    case PlatformTypes.PLATFORM_LINUX:
-		platformname = "Linux_x86";
-		break;
-	    case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-		platformname = "Solaris_x86";
-		break;
-	    case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-		platformname = "Solaris_Sparc";
-		break;
-	    case PlatformTypes.PLATFORM_MACOSX:
-		platformname = "MacOSX_x86";
-		break;
-	    case PlatformTypes.PLATFORM_WINDOWS:
-		platformname = "Windows_x86";
-		break;
-	}
-
-	return platformname;
-	*/
-    }
-
-    static Platform platformByCNDId(int id) {
-	switch (id) {
-	    case PlatformTypes.PLATFORM_LINUX:
-		return Platform.Linux_x86;
-
-	    case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-		return Platform.Solaris_x86;
-
-	    case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-		return Platform.Solaris_Sparc;
-
-	    case PlatformTypes.PLATFORM_MACOSX:
-		return Platform.MacOSX_x86;
-
-	    case PlatformTypes.PLATFORM_WINDOWS:
-		return Platform.Windows_x86;
-
-	    default:
-		return Platform.Unknown;
-	}
-    }
-
 }

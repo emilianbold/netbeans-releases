@@ -72,14 +72,23 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "getBranches",  //NOI18N
+            "getConflicts", //NOI18N
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
+            "listModifiedIndexEntries", //NOI18N
+            "listRemoteBranches", //NOI18N
+            "log", //NOI18N
             "removeNotificationListener")); //NOI18N
     /**
      * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
      */
-    private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "remove", "reset")); //NOI18N
+    private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", //NOI18N
+            "checkoutBranch", //NOI18N
+            "merge", //NOI18N
+            "remove", //NOI18N
+            "reset", //NOI18N
+            "clean")); //NOI18N
     /**
      * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
      * otherwise a FS event will come to Interceptor and trigger the full scan.
@@ -87,15 +96,31 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener",  //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
+            "createBranch", //NOI18N - does not update index or files in WT
+            "fetch", //NOI18N - updates only metadata
             "getBranches",  //NOI18N
+            "getConflicts", //NOI18N
             "getStatus",  //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
+            "ignore",  //NOI18N
+            "listModifiedIndexEntries", //NOI18N
+            "listRemoteBranches", //NOI18N
+            "log", //NOI18N
+            "unignore", //NOI18N
             "removeNotificationListener")); //NOI18N
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
      */
-    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "commit", "reset")); //NOI18N
+    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
+            "checkout", //NOI18N
+            "checkoutBranch", //NOI18N // current head changes
+            "commit", //NOI18N
+            "createBranch", //NOI18N // should refresh set of known branches
+            "fetch", //NOI18N - changes available remote heads or tags
+            "merge", //NOI18N // creates a new head
+            "remove", //NOI18N // may change state, e.g. MERGING->MERGED
+            "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
 

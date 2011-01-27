@@ -120,16 +120,27 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         if (downloadIfNeed(model, cs)){
             return true;
         }
-        tp = new ToolsPanel(model);
+        tp = new ToolsPanel(model, "ResolveBuildTools"); // NOI18N
         tp.addPropertyChangeListener(this);
         jOK = new JButton(NbBundle.getMessage(BuildToolsAction.class, "BTN_OK")); // NOI18N
         tp.setPreferredSize(new Dimension(640, 450));
         tp.update(errs);
         DialogDescriptor dd = new DialogDescriptor((Object) constructOuterPanel(tp), getTitle(), true, 
                 new Object[] { jOK, DialogDescriptor.CANCEL_OPTION},
-                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, HelpCtx.findHelp(tp), null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
+
+        try {
+            dialog.setVisible(true);
+        } catch (Throwable th) {
+            if (!(th.getCause() instanceof InterruptedException)) {
+                throw new RuntimeException(th);
+            }
+            dd.setValue(DialogDescriptor.CLOSED_OPTION);
+        } finally {
+            dialog.dispose();
+        }
+        
         if (dd.getValue() == jOK) {
             tp.applyChanges(true);
             return true;

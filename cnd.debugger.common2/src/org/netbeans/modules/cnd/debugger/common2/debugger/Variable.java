@@ -112,6 +112,20 @@ public abstract class Variable {
 	this.name = name;
     }
 
+    public String getFullName() {
+        StringBuilder res = new StringBuilder(name);
+        Variable p = parent;
+        while (p != null) {
+            // LATER: need to insert -> or . based on type
+            res.insert(0, p.getVariableName() + '.');
+            p = p.parent;
+        }
+        return res.toString();
+    }
+    
+    public boolean isEditable() {
+        return isLeaf() || isPtr();
+    }
 
     /**
      * Getter for textual representation of the value. It converts
@@ -263,6 +277,11 @@ public abstract class Variable {
 	} else {
 	    return new Variable[0];		// see IZ 99042
 	}
+    }
+
+    @Override
+    public String toString() {
+        return getVariableName() + '=' + getAsText();
     }
 
     public abstract String getDebugInfo();

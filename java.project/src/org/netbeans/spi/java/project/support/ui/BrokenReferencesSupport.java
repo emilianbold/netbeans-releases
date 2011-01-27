@@ -62,9 +62,10 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.windows.WindowManager;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 
 /**
  * Support for managing broken project references. Project freshly checkout from
@@ -133,12 +134,17 @@ public class BrokenReferencesSupport {
      *    platform is expected to be "default_platform" and this platform
      *    always exists.
      */
+    @Messages({
+        "LBL_BrokenLinksCustomizer_Close=Close",
+        "ACSD_BrokenLinksCustomizer_Close=N/A",
+        "LBL_BrokenLinksCustomizer_Title=Resolve Reference Problems - \"{0}\" Project"
+    })
     public static void showCustomizer(AntProjectHelper projectHelper, 
             ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
         BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platformProperties);
         BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
-        JButton close = new JButton (NbBundle.getMessage(BrokenReferencesCustomizer.class,"LBL_BrokenLinksCustomizer_Close")); // NOI18N
-        close.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(BrokenReferencesCustomizer.class,"ACSD_BrokenLinksCustomizer_Close")); // NOI18N
+        JButton close = new JButton (LBL_BrokenLinksCustomizer_Close()); // NOI18N
+        close.getAccessibleContext ().setAccessibleDescription (ACSD_BrokenLinksCustomizer_Close()); // NOI18N
         String projectDisplayName = "???"; // NOI18N
         try {
             Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
@@ -149,16 +155,16 @@ public class BrokenReferencesSupport {
             Exceptions.printStackTrace(e);
         }
         DialogDescriptor dd = new DialogDescriptor(customizer, 
-            NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-            "LBL_BrokenLinksCustomizer_Title", projectDisplayName), // NOI18N
+            LBL_BrokenLinksCustomizer_Title(projectDisplayName), // NOI18N
             true, new Object[] {close}, close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(dd);
             dlg.setVisible(true);
         } finally {
-            if (dlg != null)
+            if (dlg != null) {
                 dlg.dispose();
+            }
         }
     }
 
@@ -169,6 +175,11 @@ public class BrokenReferencesSupport {
      * once for several subsequent calls during a timeout.
      * The alert box has also "show this warning again" check box.
      */
+    @Messages({
+        "CTL_Broken_References_Close=Close",
+        "AD_Broken_References_Close=N/A",
+        "MSG_Broken_References_Title=Open Project"
+    })
     public static synchronized void showAlert() {
         // Do not show alert if it is already shown or if it was shown
         // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
@@ -179,12 +190,12 @@ public class BrokenReferencesSupport {
         }
         brokenAlertShown = true;
         final Runnable task = new Runnable() {
-            public void run() {
+            public @Override void run() {
                 try {
-                    JButton closeOption = new JButton (NbBundle.getMessage(BrokenReferencesAlertPanel.class, "CTL_Broken_References_Close"));
-                    closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrokenReferencesAlertPanel.class, "AD_Broken_References_Close"));
-                    DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                        NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                    JButton closeOption = new JButton (CTL_Broken_References_Close());
+                    closeOption.getAccessibleContext().setAccessibleDescription(AD_Broken_References_Close());
+                    DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(),
+                        MSG_Broken_References_Title(),
                         true,
                         new Object[] {closeOption},
                         closeOption,
@@ -203,7 +214,8 @@ public class BrokenReferencesSupport {
             }
         };
         SwingUtilities.invokeLater(new Runnable() {
-            public void run () {
+            @SuppressWarnings("ResultOfObjectAllocationIgnored")
+            public @Override void run() {
                 Frame f = WindowManager.getDefault().getMainWindow();
                 if (f == null || f.isShowing()) {
                     task.run();
@@ -233,7 +245,7 @@ public class BrokenReferencesSupport {
             frame.addWindowListener(this);
         }
         
-        public /*@Override*/ void windowOpened(java.awt.event.WindowEvent e) {
+        public @Override void windowOpened(java.awt.event.WindowEvent e) {
             MainWindowListener.this.frame.removeWindowListener (this);
             SwingUtilities.invokeLater(this.task);
         }

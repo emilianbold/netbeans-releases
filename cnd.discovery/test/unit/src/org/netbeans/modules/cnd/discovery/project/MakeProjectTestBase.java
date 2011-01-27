@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
@@ -72,14 +74,20 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
@@ -90,8 +98,6 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
-    private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
-    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = true;
     private static final String LOG_POSTFIX = ".discoveryLog";
     private static final boolean TRACE = true;
 
@@ -105,6 +111,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
 //        MockServices.setServices(MakeProjectType.class);
+    }
+
+    protected boolean optimizeNativeExecutions() {
+        return false;
+    }
+
+    protected boolean optimizeSimpleProjects() {
+        return true;
     }
 
     @Override
@@ -179,32 +193,49 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
             }
         }
+        if (new File(path, "configure").exists()) {
+            return new File(path, "configure");
+        }
+        if (files != null){
+            for(File file : files) {
+                if (file.isDirectory()) {
+                    File res = new File(file,"configure");
+                    if (res.exists()) {
+                        return res;
+                    }
+                }
+            }
+        }
         return new File(path, "configure");
+    }
+    
+    protected ExecutionEnvironment getEE(){
+        return ExecutionEnvironmentFactory.getLocal();
     }
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
         if (useSunCompilers) {
             if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
                     if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
+                        CompilerSetManager.get(getEE()).setDefault(set);
                         break;
                     }
                 }
             }
         } else {
             if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
                     if (set.getCompilerFlavor().isGnuCompiler()) {
-                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
+                        CompilerSetManager.get(getEE()).setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
         final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
@@ -212,9 +243,15 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             return;
         }
         try {
-            final String path = download(URL, additionalScripts, tools)+subFolder;
+            String aPath = download(URL, additionalScripts, tools)+subFolder;
 
-            final File configure = detectConfigure(path);
+            final File configure = detectConfigure(aPath);
+            final String path;
+            if (configure.exists()) {
+                path = configure.getParent();
+            } else {
+                path = aPath;
+            }
             final File makeFile = new File(path, "Makefile");
             if (!configure.exists()) {
                 if (!makeFile.exists()){
@@ -228,7 +265,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
             // For simple configure-make projects store logs for reuse
             boolean generateLogs = false;
-            if (OPTIMIZE_SIMPLE_PROJECTS && "configure".equals(configure.getName())) {
+            if (optimizeSimpleProjects() && "configure".equals(configure.getName())) {
                 generateLogs = !hasLogs(new File(path));
             }
             
@@ -242,9 +279,13 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                     } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
                         return CndFileUtils.toFileObject(path);
                     } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
-                        return new File(path);
+                        return FileUtil.normalizeFile(new File(path));
+                    } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
+                        return CompilerSetManager.get(getEE()).getDefaultCompilerSet();
+                    } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {
+                        return ExecutionEnvironmentFactory.toUniqueID(getEE());
                     } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {
-                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
+                        if (optimizeNativeExecutions() && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
                             // run configure only once
                             return null;
@@ -279,9 +320,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
                                                 if (set.getCompilerFlavor().isMinGWCompiler()) {
-                                                    CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
+                                                    CompilerSetManager.get(getEE()).setDefault(set);
                                                     break;
                                                 }
                                             }
@@ -292,7 +333,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                             }
                         }
                     } else if ("buildProject".equals(name)) {
-                        if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists() && findObjectFiles(path)) {
+                        if (optimizeNativeExecutions() && makeFile.exists() && findObjectFiles(path)) {
                             // optimization on developer computer:
                             // make only once
                             return Boolean.FALSE;
@@ -355,14 +396,17 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     private boolean findObjectFiles(File file){
         if (file.isDirectory()) {
-            for(File f : file.listFiles()){
-                if (f.isDirectory()) {
-                    boolean b = findObjectFiles(f);
-                    if (b) {
+            File[] ff = file.listFiles();
+            if (ff != null) {
+                for(File f : ff){
+                    if (f.isDirectory()) {
+                        boolean b = findObjectFiles(f);
+                        if (b) {
+                            return true;
+                        }
+                    } else if (f.isFile() && f.getName().endsWith(".o")) {
                         return true;
                     }
-                } else if (f.isFile() && f.getName().endsWith(".o")) {
-                    return true;
                 }
             }
         }
@@ -375,6 +419,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         list.add("gzip");
         list.add("tar");
         list.add("rm");
+        list.add("cp");
         return list;
     }
 
@@ -423,22 +468,42 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     protected void perform(CsmProject csmProject) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         csmProject.waitParse();
         Collection<CsmFile> col = csmProject.getAllFiles();
         if (TRACE) {
             System.err.println("Model has "+col.size()+" files");
         }
+        boolean hasInvalidFiles = false;
         for (CsmFile file : col) {
             if (TRACE) {
                 //System.err.println("\t"+file.getAbsolutePath());
             }
+            boolean fileHasUnresolved = false;
             for(CsmInclude include : file.getIncludes()){
-                assertTrue("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath(), include.getIncludeFile() != null);
+                if (include.getIncludeFile() == null) {
+                    hasInvalidFiles = true;
+                    fileHasUnresolved = true;
+                    System.err.println("Not resolved include directive "+include.getIncludeName()+" in file "+file.getAbsolutePath());
+                }
+            }
+            if (fileHasUnresolved) {
+                NativeFileItem nativeFileItem = ((ProjectBase) file.getProject()).getNativeFileItem(UIDs.get(file));
+                if (nativeFileItem != null) {
+                    for(FSPath path : nativeFileItem.getUserIncludePaths()) {
+                        System.err.println("\tSearch path "+path.getPath());
+                    }
+                }
             }
         }
+        assertFalse("Model has unresolved include directives", hasInvalidFiles);
     }
 
-    private String download(String urlName, List<String> additionalScripts, Map<String, String> tools) throws IOException {
+    protected String download(String urlName, List<String> additionalScripts, Map<String, String> tools) throws IOException {
         String zipName = urlName.substring(urlName.lastIndexOf('/')+1);
         String tarName = zipName.substring(0, zipName.lastIndexOf('.'));
         String packageName = tarName.substring(0, tarName.lastIndexOf('.'));
@@ -450,15 +515,19 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         } else {
-            if (!OPTIMIZE_NATIVE_EXECUTIONS && 
-                    (!OPTIMIZE_SIMPLE_PROJECTS || !hasLogs(fileCreatedFolder))) {
+            if (!optimizeNativeExecutions() &&
+                    (!optimizeSimpleProjects() || !hasLogs(fileCreatedFolder))) {
                 execute(tools, "rm", dataPath, "-rf", packageName);
                 fileCreatedFolder.mkdirs();
             }
         }
         if (fileCreatedFolder.list().length == 0){
             if (!new File(fileDataPath, tarName).exists()) {
-                execute(tools, "wget", dataPath, "-qN", urlName);
+                if (urlName.startsWith("http")) {
+                    execute(tools, "wget", dataPath, "-qN", urlName);
+                } else {
+                    execute(tools, "cp", dataPath, urlName, dataPath);
+                }
                 execute(tools, "gzip", dataPath, "-d", zipName);
             }
             execute(tools, "tar", dataPath, "xf", tarName);

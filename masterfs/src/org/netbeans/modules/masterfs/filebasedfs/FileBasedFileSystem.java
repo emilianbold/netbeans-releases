@@ -200,7 +200,12 @@ public final class FileBasedFileSystem extends FileSystem {
             }
         }  else {
             name = (name.startsWith("/")) ? name : ("/"+name);    
-        }               
+        }             
+        if (name.contains("..")) {
+            if (("/" + name + "/").contains("/../")) {
+                return null;
+            }
+        }
         return getFileObject(new File(name));
     }
 

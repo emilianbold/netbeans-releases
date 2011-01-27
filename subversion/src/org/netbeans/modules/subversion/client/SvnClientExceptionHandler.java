@@ -182,7 +182,7 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
        
-    public boolean handleKenaiAuthorisation(SvnKenaiAccessor support, String url) {
+    private boolean handleKenaiAuthorization(SvnKenaiAccessor support, String url) {
         PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         if(pa == null) {
             return false;
@@ -220,7 +220,7 @@ public class SvnClientExceptionHandler {
             } else if (!support.canRead(sUrl)) {
                 throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"));//NOI18N
             }
-            return support.showLogin() && handleKenaiAuthorisation(support, sUrl);
+            return support.showLogin() && handleKenaiAuthorization(support, sUrl);
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
@@ -808,7 +808,26 @@ public class SvnClientExceptionHandler {
         message = message.toLowerCase();
         return message.contains("is not under version control"); //NOI18N
     }
+
+    public static boolean isNodeNotFound (String message) {
+        message = message.toLowerCase();
+        return message.contains("svn: the node") && message.contains("not found"); //NOI18N
+    }
     
+    public static boolean isPartOf17OrGreater (String message) {
+        message = message.toLowerCase();
+        return message.contains("the path") && (
+                message.contains("appears to be part of a subversion 1.7 or greater") //NOI18N
+                || message.contains("appears to be part of subversion 1.7")); //NOI18N
+    }
+
+    public static boolean isTooOldWorkingCopy (String message) {
+        message = message.toLowerCase();
+        return message.contains("working copy format") //NOI18N
+                && message.contains("is too old") //NOI18N
+                && message.contains("please run \'svn upgrade\'"); //NOI18N
+    }
+
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         if(isNoCliSvnClient(ex.getMessage())) {
             if(isUI) {

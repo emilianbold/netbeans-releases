@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.openide.filesystems.FileSystem;
 
 /**
  * abstract Tree walker for APT
@@ -66,11 +67,13 @@ public abstract class APTAbstractWalker extends APTWalker {
     
     private final APTPreprocHandler preprocHandler;
     private final CharSequence startPath;
+    private final FileSystem startFileSystem;
     private final APTFileCacheEntry cacheEntry;
     
     protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
         super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
         this.startPath = apt.getPath();
+        this.startFileSystem = apt.getFileSystem();
         this.preprocHandler = preprocHandler;
         this.cacheEntry = cacheEntry;
     }
@@ -93,7 +96,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     @Override
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath);
             ResolvedPath resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
@@ -113,7 +116,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     @Override
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
-            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath); 
             ResolvedPath resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {

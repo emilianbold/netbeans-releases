@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.versioning.util.common;
 
-import java.io.File;
 import java.util.Comparator;
 
 /**

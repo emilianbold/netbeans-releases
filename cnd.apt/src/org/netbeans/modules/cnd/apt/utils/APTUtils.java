@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.util.CharSequences;
 
 /**
@@ -303,7 +304,7 @@ public class APTUtils {
         StringBuilder retValue = new StringBuilder();
         for (Iterator<IncludeDirEntry> it = includePaths.iterator(); it.hasNext();) {
             IncludeDirEntry path = it.next();
-            retValue.append(path.getAsSharedCharSequence());
+            retValue.append(CndFileSystemProvider.toUrl(path.getFileSystem(), path.getAsSharedCharSequence()));
             if (it.hasNext()) {
                 retValue.append('\n'); // NOI18N
             }

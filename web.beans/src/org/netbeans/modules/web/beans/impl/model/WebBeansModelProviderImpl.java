@@ -43,12 +43,17 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -58,7 +63,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 
+import org.netbeans.api.java.source.ClassIndexListener;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.RootsEvent;
+import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
@@ -214,10 +224,23 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
      */
     @Override
     public List<Element> getNamedElements( AbstractModelImplementation modelImpl ) {
+        boolean dirty = isDirty.getAndSet( false );
         WebBeansModelImplementation impl = getImplementation( modelImpl);
         if ( impl == null ){
             return Collections.emptyList();
         }
+        
+        if ( !isIndexListenerAdded ){
+            addIndexListener( impl );
+        }
+        
+        if ( !dirty ) {
+            List<Element> result = getCachedNamedElements( impl );
+            if ( !isDirty.get() ) {
+                return result;
+            }
+        }
+        
         List<Element> result = new LinkedList<Element>();
         Collection<BindingQualifier> objects = impl.getNamedManager().getObjects();
         for (BindingQualifier named : objects) {
@@ -254,7 +277,10 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
                 getAnnotatedMembers( stereotype, impl.getHelper());
             result.addAll( stereotypedMembers );
         }
+        PackagingFilter filter = new PackagingFilter(impl);
+        filter.filter(result);
         
+        setCachedResult( result );
         return result;
     }
     
@@ -276,6 +302,56 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         boolean result = checker.check();
         checker.clean();
         return result;
+    }
+    
+    private void setCachedResult( List<Element> list) {
+        myNamedElement = new ArrayList<ElementHandle<? extends Element>>( list.size());
+        for( Element element : list ){
+            myNamedElement.add( ElementHandle.create( element ));
+        }
+    }
+
+    private List<Element> getCachedNamedElements( WebBeansModelImplementation impl  ) {
+        List<Element> result = new ArrayList<Element>( myNamedElement.size());
+        for ( ElementHandle<? extends Element> handle : myNamedElement ){
+            Element element = handle.resolve(impl.getHelper().getCompilationController());
+            if ( element != null ){
+                result.add( element );
+            }
+        }
+        return result;
+    }
+    
+    private void addIndexListener( WebBeansModelImplementation impl ) {
+        final AnnotationModelHelper helper = impl.getHelper();
+        helper.getClasspathInfo().getClassIndex().addClassIndexListener( 
+            new ClassIndexListener(){
+            
+                public void typesAdded(final TypesEvent event) {
+                    setDirty();
+                }
+
+                public void typesRemoved(final TypesEvent event) {
+                    setDirty();
+                }
+
+                public void typesChanged(final TypesEvent event) {
+                    setDirty();
+                }
+
+                public void rootsAdded(RootsEvent event) {
+                    setDirty();
+                }
+
+                public void rootsRemoved(RootsEvent event) {
+                    setDirty();
+                }
+                
+                private void setDirty(){
+                    isDirty.set( true );
+                    
+                }
+        });        
     }
     
     private String inspectSpecializes( Element element,
@@ -520,4 +596,7 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         return null;
     }
 
+    private AtomicBoolean isDirty = new AtomicBoolean(true);
+    private volatile boolean isIndexListenerAdded;
+    private List<ElementHandle<? extends Element>> myNamedElement;
 }

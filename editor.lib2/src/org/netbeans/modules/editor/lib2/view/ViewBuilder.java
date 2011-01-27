@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -96,6 +97,9 @@ final class ViewBuilder {
 
     private final FactoryState[] factoryStates;
 
+    /**
+     * Replace of paragraph views in a document view.
+     */
     private final ViewReplace<DocumentView,ParagraphView> dReplace;
 
     /**
@@ -104,15 +108,23 @@ final class ViewBuilder {
      */
     private ViewReplace<ParagraphView,EditorView> fReplace;
 
+    /**
+     * Actual replace inside current paragraph.
+     */
     private ViewReplace<ParagraphView,EditorView> pReplace;
 
     private boolean viewRemovalFinished;
 
+    /**
+     * List of all paragraph replaces done so far.
+     */
     private List<ViewReplace<ParagraphView,EditorView>> pReplaceList;
 
     private int docViewEndOffset;
 
     private boolean createLocalViews; // Whether children of paragraph views are created
+    
+    private static boolean wrongStartOffsetReported; // TODO remove when ISE gets fixed
     
     /**
      * Construct view builder.
@@ -171,14 +183,22 @@ final class ViewBuilder {
         endAffectedOffset = Math.min(endAffectedOffset, docViewEndOffset - offsetDelta);
         if (fReplace != null) {
             int paragraphViewStartOffset = paragraphView.getStartOffset();
-            assert (paragraphViewStartOffset <= startOffset) : "paragraphViewStartOffset=" + // NOI18N
-                    paragraphViewStartOffset + " > startOffset=" + startOffset; // NOI18N
+            if ((startOffset < paragraphViewStartOffset) && !wrongStartOffsetReported) {
+                wrongStartOffsetReported = true;
+                throw new IllegalStateException("startOffset=" + startOffset + // NOI18N
+                        " < paragraphViewStartOffset=" + paragraphViewStartOffset + // NOI18N
+                        "\ndocViewEndOffset=" + docViewEndOffset + ", paragraph-views-count=" + documentView.getViewCount() + // NOI18N
+                        "\n" + documentView.toStringDetail()); // NOI18N
+            }                
             EditorView childView = fReplace.childViewAtIndex();
             // Round start offset to child's start offset
             int childStartOffset = childView.getStartOffset();
             // Re-check updated startOffset
-            assert (childStartOffset <= startOffset) : "childStartOffset=" + childStartOffset + // NOI18N
-                    " > startOffset=" + startOffset; // NOI18N
+            if (childStartOffset > startOffset && !wrongStartOffsetReported) {
+                wrongStartOffsetReported = true;
+                throw new IllegalStateException("childStartOffset=" + childStartOffset + // NOI18N
+                    " > startOffset=" + startOffset + "\ndocumentView:\n" + documentView.toStringDetail());
+            }
             startOffset = childStartOffset;
             // Get paragraph end offset in original offset coordinates
             paragraphViewEndOffset = paragraphViewStartOffset + paragraphView.getLength();
@@ -320,7 +340,8 @@ final class ViewBuilder {
         }
 
         if (pReplace != null && pReplace != fReplace) { // Unfinished pReplace
-            throw new IllegalStateException("Unfinished non-first replace pReplace=" + pReplace);
+            throw new IllegalStateException("Unfinished non-first replace - error during view replacement: view:\n" + // NOI18N
+                    dReplace.view + "\n\npReplace:\n" + pReplace + "\nfReplace:\n" + fReplace); // NOI18N
         }
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -505,11 +526,11 @@ final class ViewBuilder {
     void replaceAndRepaintViews() {
         // Compute repaint region as area of views being removed
         DocumentView docView = dReplace.view;
-        JTextComponent textComponent = docView.getTextComponent();
+        final JTextComponent textComponent = docView.getTextComponent();
+        final Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
         assert (textComponent != null) : "Null textComponent"; // NOI18N
         boolean docViewHeightChanged = false;
         boolean docViewWidthChanged = false;
-        Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
         Rectangle2D.Double docViewBounds = docView.getAllocation();
         TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
         VisualUpdate<?> fUpdate = null;
@@ -595,7 +616,12 @@ final class ViewBuilder {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("REPAINT-bounds:" + ViewUtils.toString(repaintBounds) + '\n');
             }
-            ViewUtils.repaint(textComponent, repaintBounds);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ViewUtils.repaint(textComponent, repaintBounds);
+                }
+            });
         }
         if (docViewWidthChanged || docViewHeightChanged) {
             docView.preferenceChanged(null, docViewWidthChanged, docViewHeightChanged);

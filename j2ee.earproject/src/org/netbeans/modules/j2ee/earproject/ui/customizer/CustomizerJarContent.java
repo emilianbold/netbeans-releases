@@ -47,11 +47,9 @@ package org.netbeans.modules.j2ee.earproject.ui.customizer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableColumn;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
@@ -102,28 +100,8 @@ public class CustomizerJarContent extends JPanel implements HelpCtx.Provider {
                 null, JFileChooser.FILES_ONLY);
         jTableAddContent.setModel( uiProperties.EAR_CONTENT_ADDITIONAL_MODEL);
         jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_RENDERER);
-        initTableVisualProperties(jTableAddContent);
-    }
-    
-    private void initTableVisualProperties(JTable table) {
-        //table.setGridColor(jTableCpC.getBackground());
-        table.setRowHeight(jTableAddContent.getRowHeight() + 4);
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
-        // set the color of the table's JViewport
-        table.getParent().setBackground(table.getBackground());
-   
-        //#88174 - Need horizontal scrollbar for library names
-        //ugly but I didn't find a better way how to do it
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        TableColumn column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(230);
-        column.setWidth(230);
-        column.setMinWidth(75);
-        column = table.getColumnModel().getColumn(1);
-        column.setMinWidth(126);
-        column.setWidth(126);
-        column.setMinWidth(28);
+        Util.initTwoColumnTableVisualProperties(this, jTableAddContent);
+        jTableAddContent.setRowHeight(jTableAddContent.getRowHeight() + 4);
     }
     
     /** This method is called from within the constructor to

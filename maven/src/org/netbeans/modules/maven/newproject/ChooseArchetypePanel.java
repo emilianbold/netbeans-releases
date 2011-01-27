@@ -215,6 +215,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         taDescription.setEditable(false);
         taDescription.setRows(5);
         jScrollPane1.setViewportView(taDescription);
+        taDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.taDescription.accessibledesc")); // NOI18N
 
         jLabel1.setLabelFor(taDescription);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Description")); // NOI18N
@@ -228,7 +229,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
             .addComponent(jLabel2)
             .addComponent(lblHint)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(pnlView, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                .addComponent(pnlView, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(btnCustom)
@@ -259,6 +260,11 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        pnlView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.pnlView.accessiblename")); // NOI18N
+        pnlView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.pnlView.accessibledesc")); // NOI18N
+        btnCustom.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.btnCustom.accessibledesc")); // NOI18N
+        btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.btnRemove.accessibledesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed

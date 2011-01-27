@@ -48,7 +48,6 @@ import java.awt.Component;
 import java.io.File;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 
@@ -56,10 +55,9 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import static org.netbeans.modules.java.project.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -172,31 +170,32 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         updateSelection();
     }//GEN-LAST:event_errorListValueChanged
 
+    @Messages({
+        "LBL_BrokenLinksCustomizer_Resolve_Project=Browse Project \"{0}\"",
+        "LBL_BrokenLinksCustomizer_Resolve_File=Browse \"{0}\""
+    })
     private void fixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixActionPerformed
         int index = errorList.getSelectedIndex();
         if (index==-1) {
             return;
         }
         BrokenReferencesModel.OneReference or = model.getOneReference(index);
-        if (or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY ||
-            or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY_CONTENT) {
+        if (or.getType() == BrokenReferencesModel.RefType.LIBRARY ||
+            or.getType() == BrokenReferencesModel.RefType.LIBRARY_CONTENT) {
             LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
-        } else if (or.getType() == BrokenReferencesModel.REF_TYPE_PLATFORM) {
+        } else if (or.getType() == BrokenReferencesModel.RefType.PLATFORM) {
             PlatformsCustomizer.showCustomizer(null);
-        } else if (or.getType() == BrokenReferencesModel.REF_TYPE_VARIABLE || or.getType() == BrokenReferencesModel.REF_TYPE_VARIABLE_CONTENT) {
+        } else if (or.getType() == BrokenReferencesModel.RefType.VARIABLE || or.getType() == BrokenReferencesModel.RefType.VARIABLE_CONTENT) {
             VariablesSupport.showVariablesCustomizer();
         } else {
             JFileChooser chooser;
-            if (or.getType() == BrokenReferencesModel.REF_TYPE_PROJECT) {
+            if (or.getType() == BrokenReferencesModel.RefType.PROJECT) {
                 chooser = ProjectChooser.projectChooser();
-                chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-                    "LBL_BrokenLinksCustomizer_Resolve_Project", or.getDisplayID()));
+                chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_Project(or.getDisplayID()));
             } else {
                 chooser = new JFileChooser();
-                FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-                    "LBL_BrokenLinksCustomizer_Resolve_File", or.getDisplayID()));
+                chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_File(or.getDisplayID()));
             }
             if (lastSelectedFile != null) {
                 chooser.setSelectedFile(lastSelectedFile);
@@ -211,14 +210,14 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         updateSelection();
     }//GEN-LAST:event_fixActionPerformed
 
+    @Messages("LBL_BrokenLinksCustomizer_Problem_Was_Resolved=This problem was resolved")
     private void updateSelection() {
         if (errorList.getSelectedIndex() != -1 && errorList.getSelectedIndex() < model.getSize()) {
             if (model.isBroken(errorList.getSelectedIndex())) {
-                description.setText(model.getDesciption(errorList.getSelectedIndex()));
+                description.setText(getDescription(errorList.getSelectedIndex()));
                 fix.setEnabled(true);
             } else {
-                description.setText(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-                    "LBL_BrokenLinksCustomizer_Problem_Was_Resolved"));
+                description.setText(LBL_BrokenLinksCustomizer_Problem_Was_Resolved());
                 // Leave the button always enabled so that user can alter 
                 // resolved reference. Especially needed for automatically
                 // resolved JAR references.
@@ -230,6 +229,37 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         }
     }
     
+    @Messages({
+        "LBL_BrokenLinksCustomizer_BrokenLibraryDesc=Problem: The project uses a class library called \"{0}\", but this class library was not found.\nSolution: Click Resolve to open the Library Manager and create a new class library called \"{0}\".",
+        "LBL_BrokenLinksCustomizer_BrokenLibraryContentDesc=Problem: The project uses the class library called \"{0}\" but the classpath items of this library are missing.\nSolution: Click Resolve to open the Library Manager and locate the missing classpath items of \"{0}\" library.",
+        "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc=Problem: The project classpath includes a reference to the project called \"{0}\", but this project was not found.\nSolution: Click Resolve and locate the missing project.",
+        "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc=Problem: The project uses the file/folder called \"{0}\", but this file/folder was not found.\nSolution: Click Resolve and locate the missing file/folder.",
+        "LBL_BrokenLinksCustomizer_BrokenVariableReferenceDesc=Problem: The project uses the variable called \"{0}\", but this variable was not found.\nSolution: Click Resolve and setup this variable there.",
+        "LBL_BrokenLinksCustomizer_BrokenVariableContentDesc=Problem: The project uses the variable based file/folder \"{0}\", but this file/folder was not found.\nSolution: Click Resolve and update your variable to point to correct location.",
+        "LBL_BrokenLinksCustomizer_BrokenPlatformDesc=Problem: The project uses the Java Platform called \"{0}\", but this platform was not found.\nSolution: Click Resolve and create new platform called \"{0}\"."
+    })
+    private String getDescription(int index) {
+        BrokenReferencesModel.OneReference or = model.getOneReference(index);
+        switch (or.getType()) {
+            case LIBRARY:
+                return LBL_BrokenLinksCustomizer_BrokenLibraryDesc(or.getDisplayID());
+            case LIBRARY_CONTENT:
+                return LBL_BrokenLinksCustomizer_BrokenLibraryContentDesc(or.getDisplayID());
+            case PROJECT:
+                return LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc(or.getDisplayID());
+            case FILE:
+                return LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc(or.getDisplayID());
+            case VARIABLE:
+                return LBL_BrokenLinksCustomizer_BrokenVariableReferenceDesc(or.getDisplayID());
+            case VARIABLE_CONTENT:
+                return LBL_BrokenLinksCustomizer_BrokenVariableContentDesc(or.getDisplayID());
+            case PLATFORM:
+                return LBL_BrokenLinksCustomizer_BrokenPlatformDesc(or.getDisplayID());
+            default:
+                assert false;
+                return null;
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea description;
@@ -252,7 +282,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             this.model = model;
         }
         
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public @Override Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );            
             if (model.isBroken(index)) {
                 setIcon(brokenRef);

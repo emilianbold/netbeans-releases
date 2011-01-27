@@ -108,6 +108,47 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="run-modification-task-sourceless">
+             <api name="general"/>
+             <summary>JavaSource.runModificationTask can run on source-less JavaSources</summary>
+             <version major="0" minor="74"/>
+             <date day="21" month="1" year="2011"/>
+             <author login="jlahoda"/>
+             <compatibility addition="no" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 <code>JavaSource.runModificationTask</code> method works on source-less <code>JavaSource</code>s.
+             </description>
+             <class package="org.netbeans.api.java.source" name="JavaSource"/>
+             <issue number="119887"/>
+        </change>
+        <change id="index-based-is-main">
+             <api name="general"/>
+             <summary>Added a method for checking the existence of the main method using index only</summary>
+             <version major="0" minor="71"/>
+             <date day="10" month="12" year="2010"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added a new version of the <code>isMain</code> method into <code>org.netbeans.api.java.source.SourceUtils</code> which allows
+                 check based only on index information.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="191648"/>
+        </change>
+        <change id="jdk7-update-2">
+             <api name="general"/>
+             <summary>DisjointTypeTree renamed to DisjunctiveTypeTree, AnnotationTypeTree has been removed</summary>
+             <version major="0" minor="70"/>
+             <date day="12" month="11" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility binary="incompatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="incompatible"/>
+             <description>
+                 <code>com.sun.source.tree.DisjointTypeTree</code> renamed to <code>com.sun.source.tree.DisjunctiveTypeTree</code> from javac,
+                 so adjusting <code>TreeMaker</code> to it. <code>com.sun.source.tree.AnnotationTypeTree</code> has been removed from javac and
+                 is no longer available.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+        </change>
         <change id="jdk7-update">
              <api name="general"/>
              <summary>Added several methods to support new API for modeling JDK7 features.</summary>

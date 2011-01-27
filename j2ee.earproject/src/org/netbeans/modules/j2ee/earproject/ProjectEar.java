@@ -161,8 +161,13 @@ public final class ProjectEar extends J2eeApplicationProvider
         return project.getOrCreateMetaInfDir();
     }
     
+    @Override
     public File getResourceDirectory() {
-        return project.getFile(EarProjectProperties.RESOURCE_DIR);
+        File f = project.getFile(EarProjectProperties.RESOURCE_DIR);
+        if (f == null) {
+            f = new File(FileUtil.toFile(project.getProjectDirectory()), "setup"); // NOI18N
+        }
+        return f;
     }
 
     public ClassPathProvider getClassPathProvider () {
@@ -549,6 +554,12 @@ public final class ProjectEar extends J2eeApplicationProvider
         return deployOnSaveSupport;
     }
     
+    @Override
+    public boolean isOnlyCompileOnSaveEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE)) &&
+            !Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    }
+    
     public File getDeploymentConfigurationFile(String name) {
         String path = getConfigSupport().getContentRelativePath(name);
         if (path == null) {
@@ -792,7 +803,15 @@ public final class ProjectEar extends J2eeApplicationProvider
                     // FIXME manifest ant TLD magic
                     File buildDir = project.getAntProjectHelper().resolveFile(
                             project.evaluator().getProperty(EarProjectProperties.BUILD_DIR));
-                    File destFile = new File(buildDir, artifact.getFile().getName());
+                    String relocation = artifact.getRelocation();
+                    File destFile = null;
+                    if (relocation != null) {
+                        destFile = new File(buildDir, relocation + File.separator
+                                + artifact.getFile().getName());
+                    } else {
+                        destFile = new File(buildDir, artifact.getFile().getName());
+                    }
+
                     try {
                         FileUtil.createData(destFile);
                     } catch (IOException ex) {

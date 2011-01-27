@@ -97,20 +97,29 @@ public class IssueAccessorTest extends NbTestCase {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
-            System.setProperty("kenai.com.url","https://testkenai.com");
-            kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
+            System.setProperty("kenai.com.url","https://testjava.net");
+            kenai = KenaiManager.getDefault().createKenai("testjava.net", "https://testjava.net");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
+
+            String proxy = br.readLine();
+            String port = br.readLine();
+        
+            if(proxy != null) {
+                System.setProperty("https.proxyHost", proxy);
+                System.setProperty("https.proxyPort", port);
+            }
+            
             br.close();
-            kenai.login(username, password.toCharArray());
+            kenai.login(username, password.toCharArray(), false);
 
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
         if(TestConnector.kolibaRepository == null) {
-            TestConnector.kolibaRepository = new TestRepository("koliba");
-            TestConnector.goldenProjectRepository = new TestRepository("golden-project-1");
+            TestConnector.kolibaRepository = new TestRepository("nb-jnet-test");
+//            TestConnector.goldenProjectRepository = new TestRepository("golden-project-1");
         }
     }
 
@@ -131,12 +140,13 @@ public class IssueAccessorTest extends NbTestCase {
 
         KenaiIssueAccessor accessor = getIssueAccessor();
 
+        LogHandler lh = new LogHandler("activated issue", LogHandler.Compare.STARTS_WITH);
         // open issue1, issue2, issue3
-        issue1.open(); waitAbit();
-        issue2.open(); waitAbit();
-        issue3.open(); waitAbit();
-        issue2.open(); waitAbit();
-        issue1.open();
+        issue1.open(); lh.waitUntilDone(); waitAbit();
+        issue2.open(); lh.waitUntilDone(); waitAbit();
+        issue3.open(); lh.waitUntilDone(); waitAbit();
+        issue2.open(); lh.waitUntilDone(); waitAbit();
+        issue1.open(); lh.waitUntilDone();
         
 //        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue1);
 //        BugtrackingManager.getInstance().addRecentIssue(TestConnector.kolibaRepository, issue2);
@@ -148,7 +158,7 @@ public class IssueAccessorTest extends NbTestCase {
 //        // the expected order should be 1,2,3
 
         // getIssues for koliba -> issues 1, 2, 3 are returned
-        IssueHandle[] issues = accessor.getRecentIssues(getKenaiProject("koliba"));
+        IssueHandle[] issues = accessor.getRecentIssues(getKenaiProject("nb-jnet-test"));
         assertNotNull(issues);
         assertIssueHandles(issues, new String[] {issue1.getID(), issue2.getID(), issue3.getID()});
     }
@@ -291,7 +301,7 @@ public class IssueAccessorTest extends NbTestCase {
     public static class TestConnector extends BugtrackingConnector {
         static String ID = "KenaiCconector";
         static TestRepository kolibaRepository;
-        static TestRepository goldenProjectRepository;
+//        static TestRepository goldenProjectRepository;
 
         public TestConnector() {
         }
@@ -305,7 +315,7 @@ public class IssueAccessorTest extends NbTestCase {
                 throw new UnsupportedOperationException("Not supported yet.");
         }
         public Repository[] getRepositories() {
-            return new Repository[] {kolibaRepository, goldenProjectRepository};
+            return new Repository[] {kolibaRepository /*, goldenProjectRepository*/};
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;

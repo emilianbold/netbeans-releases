@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
@@ -137,9 +138,9 @@ class ModelBuilder {
 
     }
 
-     MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder) {
+     MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder, ModelVisitor visitor) {
         final ScopeImpl scope = getCurrentScope();
-        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(),node, (TypeScope)scope), this);
+        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(),node, (TypeScope)scope), this, visitor);
         setCurrentScope(methodScope);
         occurencesBuilder.prepare(node, methodScope);
         return methodScope;
@@ -151,6 +152,22 @@ class ModelBuilder {
             if (createdScope instanceof NamespaceScopeImpl) {
                 namespaceScope = defaultNamespaceScope;
             } 
+        }
+    }
+    
+    /**
+     * This method basically restore stack of scopes for scanning a node
+     * that was not scanned during lazy scanning
+     * @param scope
+     */
+    void prepareForScope(Scope scope) {
+        currentScope.clear();
+        while (scope != null) {
+            if (scope instanceof NamespaceScopeImpl) {
+                namespaceScope = (NamespaceScopeImpl) scope;
+            }
+            currentScope.add(0, (ScopeImpl)scope);
+            scope = scope.getInScope();
         }
     }
 

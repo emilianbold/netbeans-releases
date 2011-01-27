@@ -116,15 +116,14 @@ public final class TomcatFactory implements DeploymentFactory {
                 tomcatUriPrefix = TOMCAT_URI_PREFIX_55;
                 disconnectedUri = DISCONNECTED_URI_55;
                 break;
-            // not the default for now
-            case TOMCAT_70 :
-                tomcatUriPrefix = TOMCAT_URI_PREFIX_70;
-                disconnectedUri = DISCONNECTED_URI_70;
-                break;
             case TOMCAT_60 :
-            default:
                 tomcatUriPrefix = TOMCAT_URI_PREFIX_60;
                 disconnectedUri = DISCONNECTED_URI_60;
+                break;
+            case TOMCAT_70 :
+            default:
+                tomcatUriPrefix = TOMCAT_URI_PREFIX_70;
+                disconnectedUri = DISCONNECTED_URI_70;
                 break;
         }
     }
@@ -184,7 +183,7 @@ public final class TomcatFactory implements DeploymentFactory {
      * @throws DeploymentManagerCreationException
      * @return {@link TomcatManager}
      */
-    public synchronized DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
+    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
             throw new DeploymentManagerCreationException ("Invalid URI:" + uri); // NOI18N
@@ -199,17 +198,19 @@ public final class TomcatFactory implements DeploymentFactory {
                 throw new DeploymentManagerCreationException("Tomcat instance: " + uri + " is not registered in the IDE."); // NOI18N
             }
         }
-        TomcatManager tm = (TomcatManager)managerCache.get(ip);
-        if (tm == null) {
-            try {
-                tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), version);
-                managerCache.put(ip, tm);
-            } catch (IllegalArgumentException iae) {
-                Throwable t = new DeploymentManagerCreationException("Cannot create deployment manager for Tomcat instance: " + uri + "."); // NOI18N
-                throw (DeploymentManagerCreationException)(t.initCause(iae));
+        synchronized (this) {
+            TomcatManager tm = (TomcatManager)managerCache.get(ip);
+            if (tm == null) {
+                try {
+                    tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), version);
+                    managerCache.put(ip, tm);
+                } catch (IllegalArgumentException iae) {
+                    Throwable t = new DeploymentManagerCreationException("Cannot create deployment manager for Tomcat instance: " + uri + "."); // NOI18N
+                    throw (DeploymentManagerCreationException)(t.initCause(iae));
+                }
             }
+            return tm;
         }
-        return tm;
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
@@ -224,12 +225,11 @@ public final class TomcatFactory implements DeploymentFactory {
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory");
             case TOMCAT_55 :
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory55");
-            // not the default for now
-            case TOMCAT_70 :
-                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory70");
             case TOMCAT_60 :
-            default:
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory60");
+            case TOMCAT_70 :
+            default:
+                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory70");
         }
     }
     

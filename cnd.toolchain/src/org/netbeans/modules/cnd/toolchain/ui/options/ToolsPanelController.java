@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 )
 public final class ToolsPanelController extends OptionsPanelController {
 
-    private ToolsPanel panel = new ToolsPanel();
+    private ToolsPanel panel = new ToolsPanel("ConfiguringBuildTools"); // NOI18N
 
     @Override
     public void update() {

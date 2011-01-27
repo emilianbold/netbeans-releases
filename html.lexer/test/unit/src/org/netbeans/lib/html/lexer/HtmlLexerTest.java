@@ -71,9 +71,9 @@ public class HtmlLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public static Test suite() {
+    public static Test Xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlLexerTest("testFlyweightTokens"));
+        suite.addTest(new HtmlLexerTest("testAttributeNameWithUnderscorePrefix"));
         return suite;
     }
 
@@ -230,6 +230,19 @@ public class HtmlLexerTest extends NbTestCase {
         checkTokens(code,  "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN",
                 " |WS", "onclick|ARGUMENT", "=|OPERATOR",
                 "\"alert(\\\"hello\\\")\"|VALUE_JAVASCRIPT", "/>|TAG_CLOSE_SYMBOL" );
+    }
+
+    //issue 192803 requires the attribute name allowing underscore prefix
+    public void testAttributeNameWithUnderscorePrefix() {
+        checkTokens("<x:customTag _myattr='value'/>",
+                "<|TAG_OPEN_SYMBOL", "x:customTag|TAG_OPEN", " |WS", "_myattr|ARGUMENT",
+                "=|OPERATOR", "'value'|VALUE","/>|TAG_CLOSE_SYMBOL");
+
+        //just the underscore cannot be the argument name
+        checkTokens("<x:customTag _='value'/>",
+                "<|TAG_OPEN_SYMBOL", "x:customTag|TAG_OPEN", " |WS", "_=|ERROR",
+                "'value'/>|TEXT");
+
     }
 
     private void checkTokens(String text, String... descriptions) {

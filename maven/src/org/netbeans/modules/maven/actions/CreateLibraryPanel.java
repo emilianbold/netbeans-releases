@@ -47,7 +47,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.DefaultComboBoxModel;
@@ -74,7 +73,8 @@ import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.actions.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -86,19 +86,21 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     private DialogDescriptor dd;
     private ValidationGroup vg;
 
-    /** Creates new form CreateLibraryPanel */
+    @Messages("NAME_Library=Library Name")
     CreateLibraryPanel(DependencyNode root) {
         initComponents();
         DefaultComboBoxModel mdl = new DefaultComboBoxModel();
-        txtName.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(CreateLibraryPanel.class, "NAME_Library"));
+        txtName.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NAME_Library());
 
         for (LibraryManager manager : LibraryManager.getOpenManagers()) {
             mdl.addElement(manager);
         }
         comManager.setModel(mdl);
         comManager.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (vg != null) vg.validateAll();
+            public @Override void actionPerformed(ActionEvent e) {
+                if (vg != null) {
+                    vg.validateAll();
+                }
             }
 
         });
@@ -305,39 +307,13 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         return 0;
     }
 
-
-    private static class Comp implements Comparator<Artifact> {
-
-        public int compare(Artifact a1, Artifact a2) {
-            String scope1 = a1.getScope();
-            String scope2 = a2.getScope();
-            int order1 = getScopeOrder(scope1);
-            int order2 = getScopeOrder(scope2);
-            if (order1 > order2) {
-                return -1;
-            }
-            if (order2 > order1) {
-                return 1;
-            }
-            int trail1 = a1.getDependencyTrail().size();
-            int trail2 = a2.getDependencyTrail().size();
-            if (trail1 > trail2) {
-                return -1;
-            }
-            if (trail2 > trail1) {
-                return 1;
-            }
-
-            return a1.getId().compareTo(a2.getId());
-        }
-    }
-
     private class LibraryNameExists implements Validator<String> {
-        public boolean validate(Problems problems, String compName, String model) {
+        @Messages("ERR_NameExists=Library with given name already exists.")
+        public @Override boolean validate(Problems problems, String compName, String model) {
             LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
             String currentName = model.trim();
             if (manager.getLibrary(currentName) != null) {
-                problems.add(NbBundle.getMessage(CreateLibraryPanel.class, "ERR_NameExists"));
+                problems.add(ERR_NameExists());
                 return false;
             }
             return true;
@@ -345,19 +321,19 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     }
 
 
-    private class Visitor implements DependencyNodeVisitor {
+    private static class Visitor implements DependencyNodeVisitor {
 
         private DefaultMutableTreeNode rootNode;
         private DependencyNode root;
         private Stack<DependencyNode> path;
-        private Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true)); //NOI18N
-        private Icon icn2 = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true)); //NOI18N
+        private Icon icn = ImageUtilities.loadImageIcon("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true); //NOI18N
+        private Icon icn2 = ImageUtilities.loadImageIcon("org/netbeans/modules/maven/DependencyIcon.png", true); //NOI18N
 
         Visitor(DefaultMutableTreeNode root) {
             this.rootNode = root;
         }
 
-        public boolean visit(DependencyNode node) {
+        public @Override boolean visit(DependencyNode node) {
             if (root == null) {
                 root = node;
                 path = new Stack<DependencyNode>();
@@ -380,7 +356,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
             return true;
         }
 
-        public boolean endVisit(DependencyNode node) {
+        public @Override boolean endVisit(DependencyNode node) {
             if (root == node) {
                 root = null;
                 path = null;

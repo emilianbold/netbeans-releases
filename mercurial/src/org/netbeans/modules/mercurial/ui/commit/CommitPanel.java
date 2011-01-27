@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.mercurial.HgFileNode;
@@ -99,6 +101,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
+import org.netbeans.modules.versioning.util.common.SectionButton;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -128,17 +131,16 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     final JLabel filesLabel = new JLabel();
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
     private final JPanel filesPanel = new JPanel(new GridLayout(1, 1));
-    private final JLabel filesSectionButton = new JLabel();
+    private final SectionButton filesSectionButton = new SectionButton();
     private final JPanel filesSectionPanel2 = new JPanel();
     private final PlaceholderPanel hookSectionPanel = new PlaceholderPanel();
-    private final JLabel hooksSectionButton = new JLabel();
+    private final SectionButton hooksSectionButton = new SectionButton();
     private final JLabel jLabel1 = new JLabel();
     private final JLabel jLabel2 = new JLabel();
     private final JScrollPane jScrollPane1 = new JScrollPane();
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
     private final JLabel templateLink = new JLabel();
-    private Icon expandedIcon, collapsedIcon;
     
     private CommitTable commitTable;
     private Collection<HgHook> hooks = Collections.emptyList();
@@ -187,18 +189,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void initCollapsibleSections() {
-        JTree tv = new JTree();
-        BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
-        expandedIcon = tvui.getExpandedIcon();
-        collapsedIcon = tvui.getCollapsedIcon();
-
         initSectionButton(filesSectionButton, filesSectionPanel2,
                           "initFilesPanel",                             //NOI18N
                           DEFAULT_DISPLAY_FILES);
         if (!hooks.isEmpty()) {
-            hooksSectionButton.setText((hooks.size() == 1)
-                                       ? hooks.iterator().next().getDisplayName()
-                                       : getMessage("LBL_Advanced"));   //NOI18N
+            Mnemonics.setLocalizedText(hooksSectionButton, (hooks.size() == 1)
+                                           ? hooks.iterator().next().getDisplayName()
+                                           : getMessage("LBL_Advanced")); // NOI18N                 
             initSectionButton(hooksSectionButton, hookSectionPanel,
                               "initHooksPanel",                         //NOI18N
                               DEFAULT_DISPLAY_HOOKS);
@@ -207,42 +204,39 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
-    private void initSectionButton(final JLabel label,
+    private void initSectionButton(final SectionButton button,
                                    final JPanel panel,
                                    final String initPanelMethodName,
                                    final boolean defaultSectionDisplayed) {
         if (defaultSectionDisplayed) {
-            displaySection(label, panel, initPanelMethodName);
+            displaySection(panel, initPanelMethodName);
         } else {
-            hideSection(label, panel);
+            hideSection(panel);
         }
-        label.addMouseListener(new MouseAdapter() {
+        button.setSelected(defaultSectionDisplayed);
+        button.addActionListener(new ActionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 if (panel.isVisible()) {
-                    hideSection(label, panel);
+                    hideSection(panel);
                 } else {
-                    displaySection(label, panel, initPanelMethodName);
+                    displaySection(panel, initPanelMethodName);
                 }
             }
         });
     }
 
-    private void displaySection(JLabel sectionButton,
-                                Container sectionPanel,
+    private void displaySection(Container sectionPanel,
                                 String initPanelMethodName) {
         if (sectionPanel.getComponentCount() == 0) {
             invokeInitPanelMethod(initPanelMethodName);
         }
         sectionPanel.setVisible(true);
-        sectionButton.setIcon(expandedIcon);
         enlargeVerticallyAsNecessary();
     }
 
-    private void hideSection(JLabel sectionButton,
-                             JPanel sectionPanel) {
+    private void hideSection(JPanel sectionPanel) {
         sectionPanel.setVisible(false);
-        sectionButton.setIcon(collapsedIcon);
     }
 
     private void invokeInitPanelMethod(String methodName) {
@@ -281,7 +275,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             JTabbedPane hooksTabbedPane = new JTabbedPane();
             for (HgHook hook : hooks) {
                 hooksTabbedPane.add(hook.createComponent(hookContext),
-                                    hook.getDisplayName());
+                                    hook.getDisplayName().replaceAll("\\&", ""));
             }
             hookSectionPanel.add(hooksTabbedPane);
         }
@@ -366,7 +360,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/load_template.png"))); // NOI18N
         templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
 
-        messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
+        messageTextArea.setColumns(70);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(4);
         messageTextArea.setTabSize(4);
@@ -407,10 +401,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
         basePanel.add(jScrollPane1);
         basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
+        filesSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesSectionButton.getMaximumSize().height));
         basePanel.add(filesSectionButton);
         basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
         basePanel.add(filesSectionPanel2);
         basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, RELATED));
+        hooksSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, hooksSectionButton.getMaximumSize().height));
         basePanel.add(hooksSectionButton);
         basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
         basePanel.add(hookSectionPanel);

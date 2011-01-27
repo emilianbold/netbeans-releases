@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.openide.util.Utilities;
 
 /**
@@ -157,31 +158,31 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     public void testApplicable_RHEL55_x64_gcc() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "GNU C++ 4.1.2 20080704 (Red Hat 4.1.2-48)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/", 39);
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc", 39);
     }
 
     public void testApplicable_Ubuntu1010_x64_gcc() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "GNU C++ 4.4.5",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/", 37);
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc", 37);
     }
 
     public void testApplicable_macosx32() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/main/dist/Debug/GNU-MacOSX/main",
                 "GNU C++ 4.2.1 (Apple Inc. build 5664)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/", 39);
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32", 39);
     }
 
     public void testApplicable_macosx64() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/main/dist/Debug/GNU-MacOSX/main",
                 "GNU C++ 4.2.1 (Apple Inc. build 5664)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/", 39);
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64", 39);
     }
 
     public void testApplicable_windows7_cygwin() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
                 "GNU C++ 3.4.4 (cygming special, gdc 0.12, using dmd 0.125)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/", 39);
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin", 39);
     }
 
     public void testApplicable_windowsxp_mingw() {
@@ -194,7 +195,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         }
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "GNU C++ 3.4.5 (mingw-vista special r3)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/", 39);
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw", 39);
     }
 
     public void testStatic_RHEL55_x64_gcc() {
@@ -354,6 +355,12 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         System.err.println(compilerName);
         System.err.println(sourceRoot);
         System.err.println(mainFunctionPosition);
+        if (canAnalyze.getErrors() != null && canAnalyze.getErrors().size() > 0) {
+            for(String error : canAnalyze.getErrors()) {
+                System.err.print(error);
+            }
+            assert true;
+        }
         assertEquals(compiler, compilerName);
         assertEquals(root, sourceRoot);
         assertNotNull(mainFunctionPosition);
@@ -421,17 +428,17 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
         assertTrue(new File(objFileName).exists());
-        List<String> res =  null;
+        SharedLibraries res =  null;
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
             res = dump.readPubNames();
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (WrongFileFormatException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -439,11 +446,14 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         }
         assertNotNull(res);
         System.err.println(res);
-        assertEquals(dlls.length, res.size());
+        assertEquals(dlls.length, res.getDlls().size());
         int i = 0;
-        for(String dll: res) {
+        for(String dll: res.getDlls()) {
             assertEquals(dlls[i], dll);
             i++;
         }
+        //for(String searchPath: res.getPaths()) {
+        //    System.err.println("Search path="+searchPath);
+        //}
     }
 }

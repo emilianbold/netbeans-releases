@@ -32,6 +32,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -78,7 +79,9 @@ class RfsLocalController extends NamedRunnable {
     private static enum RequestKind {
         REQUEST,
         WRITTEN,
-        PING
+        PING,
+        UNKNOWN,
+        KILLED
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
@@ -129,7 +132,22 @@ class RfsLocalController extends NamedRunnable {
             case 'w':   return RequestKind.WRITTEN;
             case 'p':   return RequestKind.PING;
             default:
-                throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
+                if ("Killed".equals(request)){//NOI18N
+                    //BZ #193114 - IllegalArgumentException: Protocol error: Killed
+                    //let's check the process state
+                    if (remoteControllerProcess.getState() == NativeProcess.State.CANCELLED ||
+                            remoteControllerProcess.getState() == NativeProcess.State.FINISHED){
+                        try {
+                            int exitStatus = remoteControllerProcess.waitFor();
+                            if (exitStatus != 0){
+                                return RequestKind.KILLED;
+                            }
+                        } catch (InterruptedException ex) {
+                        }
+                        
+                    }
+                }
+                return RequestKind.UNKNOWN;
         }
     }
 
@@ -144,7 +162,14 @@ class RfsLocalController extends NamedRunnable {
                     break;
                 }
                 RequestKind kind = getRequestKind(request);
-                if (kind == RequestKind.PING) {
+                if (kind == RequestKind.KILLED){
+                    //there is something wrong with the process
+                    //print to error that remote process is killed
+                    err.append("\nRemote process is killed");//NOI18N
+                    break;
+                }else if (kind == RequestKind.UNKNOWN){
+                    err.append("\nProtocol error: " + request);//NOI18N
+                }else   if (kind == RequestKind.PING) {
                     logger.log(Level.FINEST, "PING from remote controller");
                     // no response needed
                     // respond_ok();
@@ -163,6 +188,7 @@ class RfsLocalController extends NamedRunnable {
                         if (kind == RequestKind.WRITTEN) {
                             fileData.setState(localFile, FileState.UNCONTROLLED);
                             remoteUpdates.add(localFile);
+                            RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                             logger.log(Level.FINEST, "uncontrolled %s", localFile);
                         } else {
                             CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
@@ -327,6 +353,7 @@ class RfsLocalController extends NamedRunnable {
                     if (fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
                         if (filter.accept(localFile)) {
                             remoteUpdates.add(localFile);
+                            RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                         }
                     }
                 }
@@ -613,25 +640,34 @@ class RfsLocalController extends NamedRunnable {
                         logger.log(Level.WARNING, "Unexpected ls output: %s", line);
                     }
                 }
-                String linkTarget = parts[parts.length - 1];
-                if (linkTarget.endsWith("/")) { // NOI18N
-                    linkTarget = linkTarget.substring(0, linkTarget.length() - 1);
+                String localLinkTarget = parts[parts.length - 1];
+                if (localLinkTarget.endsWith("/")) { // NOI18N
+                    localLinkTarget = localLinkTarget.substring(0, localLinkTarget.length() - 1);
                 }
                 String linkPath = parts[parts.length - 3];
                 FileGatheringInfo info = map.get(linkPath);
                 CndUtils.assertNotNull(info, "Null FileGatheringInfo for " + linkPath); //NOI18N
                 if (info != null) {
-                    logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, linkTarget);
-                    info.setLinkTarget(linkTarget);
+                    logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, localLinkTarget);
+                    //info.setLinkTarget(localLinkTarget);
                     File linkParentFile = CndFileUtils.createLocalFile(linkPath).getParentFile();
-                    File linkTargetFile = CndFileUtils.createLocalFile(linkParentFile, linkTarget);
-                    linkTargetFile = CndFileUtils.normalizeFile(linkTargetFile);
+                    //File localLinkTargetFile = CndFileUtils.createLocalFile(linkParentFile, localLinkTarget);
+                    File localLinkTargetFile;
+                    if (CndPathUtilitities.isPathAbsolute(localLinkTarget)) {
+                        String remoteLinkTarget = mapper.getRemotePath(localLinkTarget, false);
+                        info.setLinkTarget(remoteLinkTarget);
+                        localLinkTargetFile = CndFileUtils.createLocalFile(localLinkTarget);
+                    } else {
+                        info.setLinkTarget(localLinkTarget); // it's relative, so it's the same for remote
+                        localLinkTargetFile = CndFileUtils.createLocalFile(linkParentFile, localLinkTarget);
+                    }
+                    localLinkTargetFile = CndFileUtils.normalizeFile(localLinkTargetFile);
                     FileGatheringInfo targetInfo;
-                    targetInfo = map.get(linkTargetFile.getAbsolutePath());
+                    targetInfo = map.get(localLinkTargetFile.getAbsolutePath());
                     // TODO: try finding in newly added infos. Probably replace List to Map in filesToAdd
                     if (targetInfo == null) {
-                        String remotePath = mapper.getRemotePath(linkTargetFile.getAbsolutePath(), false);
-                        targetInfo = addFileGatheringInfo(filesToAdd, linkTargetFile, remotePath);
+                        String remotePath = mapper.getRemotePath(localLinkTargetFile.getAbsolutePath(), false);
+                        targetInfo = addFileGatheringInfo(filesToAdd, localLinkTargetFile, remotePath);
                         addedInfos.add(targetInfo);
                     }
                 }

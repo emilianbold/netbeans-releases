@@ -86,15 +86,15 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
             final Map<FunctionMetric, Object> metrics) {
         super(function, offset);
         this.ref = function.getRef();
-        this.metrics = Collections.unmodifiableMap(metrics);
+        this.metrics = Collections.unmodifiableMap(new HashMap<FunctionMetric, Object>(metrics));
         updateDisplayedName();
     }
-    
+
     public synchronized void setSourceFileInfo(SourceFileInfo sourceInfo) {
         this.sourceInfo = sourceInfo;
         updateDisplayedName();
-        this.setLineNumber(sourceInfo == null ? -1 : sourceInfo.getLine());        
-        ((FunctionImpl)this.getFunction()).setSourcefileName(sourceInfo == null ? "<unknown>" : sourceInfo.getFileName());//NOI18N
+        this.setLineNumber(sourceInfo == null ? -1 : sourceInfo.getLine());
+        ((FunctionImpl) this.getFunction()).setSourcefileName(sourceInfo == null ? "<unknown>" : sourceInfo.getFileName());//NOI18N
     }
 
     public long getFunctionRefID() {
@@ -110,6 +110,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         return displayedName;
     }
 
+    @Override
     public Object getMetricValue(FunctionMetric metric) {
         return metrics.get(metric);
     }
@@ -131,17 +132,24 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof FunctionCallImpl)) {
+        if (!(obj instanceof FunctionCallImpl)) {
             return false;
         }
 
-        return this.ref == ((FunctionCallImpl) obj).ref;
+        FunctionCallImpl that = (FunctionCallImpl) obj;
+
+        if (this.ref != that.ref) {
+            return false;
+        }
+
+        return this.metrics.equals(that.metrics);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (int) (this.ref ^ (this.ref >>> 32));
+        int hash = 5;
+        hash = 29 * hash + (this.metrics != null ? this.metrics.hashCode() : 0);
+        hash = 29 * hash + (int) (this.ref ^ (this.ref >>> 32));
         return hash;
     }
 
@@ -222,7 +230,7 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
         FunctionImpl func = new FunctionImpl(m.group(1), m.group(2) != null ? m.group(2).hashCode() : (m.group(1) + lineNumber).hashCode());
 
         FunctionCallImpl call = new FunctionCallImpl(func, lineNumber, new HashMap<FunctionMetric, Object>());
-        
+
         if (m.group(4) != null) {
             call.setSourceFileInfo(new SourceFileInfo(m.group(4), lineNumber, 0));
             func.setSourcefileName(m.group(4));

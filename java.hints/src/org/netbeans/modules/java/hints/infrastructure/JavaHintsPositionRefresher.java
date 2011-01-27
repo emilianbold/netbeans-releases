@@ -46,6 +46,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,6 +85,12 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
     @Override
     public Map<String, List<ErrorDescription>> getErrorDescriptionsAt(final Context context, final Document doc) {
         final JavaSource js = JavaSource.forDocument(doc);
+
+        if (js == null) {
+            LOG.log(Level.FINE, "No JavaSource associated to: {0}", new Object[] {doc, doc.getProperty(Document.StreamDescriptionProperty)});
+            return Collections.emptyMap();
+        }
+
         final Map<String, List<ErrorDescription>> eds = new HashMap<String, List<ErrorDescription>>();
 
         Runnable r = new Runnable() {
