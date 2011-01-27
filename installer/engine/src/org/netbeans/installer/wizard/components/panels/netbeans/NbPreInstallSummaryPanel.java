@@ -623,9 +623,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         if (s.indexOf(prefix) != -1) {
                             String path = s.substring(s.indexOf(prefix) + prefix.length());
                             String url = path.substring(0, path.indexOf("\""));
-                            String prefix2 = "tomcat60:home=";
-                            if (url.startsWith(prefix2)) {
-                                url = url.substring(prefix2.length());
+                            String prefix2 = ":home=";
+                            if(url.startsWith("tomcat") && url.contains(prefix2)) {
+                                url = url.substring(url.indexOf(prefix2) + prefix2.length());
                                 url = url.substring(0, url.indexOf(":base="));
                                 LogManager.log("Adding URL : " + url);
                                 result.add(url);
