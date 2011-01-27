@@ -46,10 +46,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
@@ -87,10 +85,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 @MimeRegistration(mimeType="text/x-netbeans-layer+xml", service=UpToDateStatusProviderFactory.class)
-public class ConvertToAnnotationHint implements UpToDateStatusProviderFactory {
+public class LayerHints implements UpToDateStatusProviderFactory {
 
-    private static final RequestProcessor RP = new RequestProcessor(ConvertToAnnotationHint.class);
-    private static final Logger LOG = Logger.getLogger(ConvertToAnnotationHint.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(LayerHints.class);
+    private static final Logger LOG = Logger.getLogger(LayerHints.class.getName());
 
     public @Override UpToDateStatusProvider createUpToDateStatusProvider(Document doc) {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty); // avoid dep on NbEditorUtilities.getFileObject if possible
@@ -161,25 +159,12 @@ public class ConvertToAnnotationHint implements UpToDateStatusProviderFactory {
                 LOG.log(Level.INFO, null, x);
                 return;
             }
-            Set<FileObject> instances = new LinkedHashSet<FileObject>();
             String expectedLayers = "[" + layerURL + "]";
-            // Compare AbstractRefactoringPlugin.checkFileObject:
-            for (FileObject f : NbCollections.iterable(fs.getRoot().getData(true))) {
-                if (!expectedLayers.equals(Arrays.toString((URL[]) f.getAttribute("layers")))) {
-                    LOG.log(Level.FINE, "skipping {0}", f);
-                    continue; // part of generated-layer.xml
-                }
-                if (!f.hasExt("instance")) {
-                    continue; // not supporting *.settings etc. for now
-                }
-                instances.add(f);
-            }
             List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-            if (!instances.isEmpty()) {
-                RunnableFuture<Map<String,Integer>> linesFuture = new FutureTask<Map<String,Integer>>(new Callable<Map<String,Integer>>() {
-                    public @Override Map<String,Integer> call() throws Exception {
-                        // Adapted from OpenLayerFilesAction.openLayerFileAndFind:
-                        final Map<String,Integer> lines = new HashMap<String,Integer>();
+            RunnableFuture<Map<String,Integer>> linesFuture = new FutureTask<Map<String,Integer>>(new Callable<Map<String,Integer>>() {
+                public @Override Map<String,Integer> call() throws Exception {
+                    // Adapted from OpenLayerFilesAction.openLayerFileAndFind:
+                    final Map<String,Integer> lines = new HashMap<String,Integer>();
                     InputSource in = new InputSource(layerURL.toExternalForm());
                     LOG.log(Level.FINE, "parsing {0}", layerURL);
                     SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -209,20 +194,24 @@ public class ConvertToAnnotationHint implements UpToDateStatusProviderFactory {
                     DefaultHandler2 handler = new Handler();
                     parser.getXMLReader().setProperty("http://xml.org/sax/properties/lexical-handler", handler); // NOI18N
                     parser.parse(in, handler);
-                        return lines;
+                    return lines;
+                }
+            });
+            // Compare AbstractRefactoringPlugin.checkFileObject:
+            for (FileObject file : NbCollections.iterable(fs.getRoot().getChildren(true))) {
+                if (!expectedLayers.equals(Arrays.toString((URL[]) file.getAttribute("layers")))) {
+                    LOG.log(Level.FINE, "skipping {0}", file);
+                    continue; // part of generated-layer.xml
+                }
+                for (Hinter hinter : Lookup.getDefault().lookupAll(Hinter.class)) {
+                    try {
+                        hinter.process(new Hinter.Context(doc, handle, file, linesFuture, errors));
+                    } catch (Exception x) {
+                        LOG.log(Level.WARNING, null, x);
                     }
-                });
-                for (FileObject instance : instances) {
-                    for (Hinter hinter : Lookup.getDefault().lookupAll(Hinter.class)) {
-                        try {
-                            hinter.process(new Hinter.Context(doc, handle, instance, linesFuture, errors));
-                        } catch (Exception x) {
-                            LOG.log(Level.WARNING, null, x);
-                        }
-                    }
-               }
+                }
             }
-            HintsController.setErrors(doc, ConvertToAnnotationHint.class.getName(), errors);
+            HintsController.setErrors(doc, LayerHints.class.getName(), errors);
             processed = true;
             firePropertyChange(PROP_UP_TO_DATE, null, null);
         }

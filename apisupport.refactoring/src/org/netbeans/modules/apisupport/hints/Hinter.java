@@ -104,14 +104,14 @@ public interface Hinter {
 
         private final Document doc;
         private final LayerHandle layer;
-        private final FileObject instanceFile;
+        private final FileObject file;
         private final RunnableFuture<Map<String,Integer>> lines;
         private final List<? super ErrorDescription> errors;
 
-        Context(Document doc, LayerHandle layer, FileObject instanceFile, RunnableFuture<Map<String,Integer>> lines, List<? super ErrorDescription> errors) {
+        Context(Document doc, LayerHandle layer, FileObject file, RunnableFuture<Map<String,Integer>> lines, List<? super ErrorDescription> errors) {
             this.doc = doc;
             this.layer = layer;
-            this.instanceFile = instanceFile;
+            this.file = file;
             this.lines = lines;
             this.errors = errors;
         }
@@ -119,17 +119,17 @@ public interface Hinter {
         /**
          * Gets the layer entry you may offer hints for.
          * File attribute names like {@code literal:instanceCreate} may return values like {@code new:pkg.Clazz} or {@code method:pkg.Clazz.factory}.
-         * @return a {@code *.instance} file in the project's layer
+         * @return a file (or folder) in the project's layer
          */
-        public FileObject instanceFile() {
-            return instanceFile;
+        public FileObject file() {
+            return file;
         }
 
         /**
          * @return standard description to pass to {@link #addHint}
          */
         @Messages("Hinter.description=Use of layer entry where annotation is available")
-        public String standardDescription() {
+        public String standardAnnotationDescription() {
             return Hinter_description();
         }
 
@@ -137,43 +137,43 @@ public interface Hinter {
          * @return standard fix description to pass to {@link #addHint}
          */
         @Messages("Hinter.fix.description=Convert registration to Java annotation")
-        public String standardFixDescription() {
+        public String standardAnnotationFixDescription() {
             return Hinter_fix_description();
         }
 
         /**
          * Add a hint.
          * @param severity whether to treat as a warning, etc.
-         * @param description description of hint (e.g. {@link #standardDescription})
-         * @param fixes any fixes to offer (see {@link #standardFixDescription}
-         * @see #addStandardHint
+         * @param description description of hint
+         * @param fixes any fixes to offer
+         * @see #addStandardAnnotationHint
          */
         public void addHint(Severity severity, String description, Fix... fixes) {
             Integer line = null;
             try {
                 lines.run();
-                line = lines.get().get(instanceFile.getPath());
+                line = lines.get().get(file.getPath());
             } catch (Exception x) {
                 LOG.log(Level.INFO, null, x);
             }
             if (line != null) {
                 errors.add(ErrorDescriptionFactory.createErrorDescription(severity, description, Arrays.asList(fixes), doc, line));
             } else {
-                LOG.log(Level.WARNING, "no line found for {0}", instanceFile);
+                LOG.log(Level.WARNING, "no line found for {0}", file);
             }
         }
 
         /**
-         * Add a warning hint following the standard pattern.
+         * Add an annotation-oriented warning hint following the standard pattern.
          * @param fix what to do for a fix (see e.g. {@link #findAndModifyDeclaration}); no change info
          * @see #addHint
-         * @see #standardDescription
-         * @see #standardFixDescription
+         * @see #standardAnnotationDescription
+         * @see #standardAnnotationFixDescription
          */
-        public void addStandardHint(final Callable<Void> fix) {
-            addHint(Severity.WARNING, standardDescription(), new Fix() {
+        public void addStandardAnnotationHint(final Callable<Void> fix) {
+            addHint(Severity.WARNING, standardAnnotationDescription(), new Fix() {
                 public @Override String getText() {
-                    return standardFixDescription();
+                    return standardAnnotationFixDescription();
                 }
                 public @Override ChangeInfo implement() throws Exception {
                     fix.call();
