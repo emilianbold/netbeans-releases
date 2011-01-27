@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,6 +64,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.CreateDomain;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.common.PortCollection;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
@@ -81,7 +82,7 @@ import org.openide.util.Utilities;
 /**
  * @author Ludo
  */
-public class ServerWizardIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+public class ServerWizardIterator extends PortCollection implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
     private transient AddServerLocationPanel locationPanel = null;
     private transient AddDomainLocationPanel locationPanel2 = null;
@@ -246,9 +247,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
     
-    private int httpPort = -1; // GlassfishInstance.DEFAULT_HTTP_PORT;
-    private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
-    private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
 //    private String userName;
 //    private String password;
     private String installRoot;
@@ -268,34 +266,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return null != sd ? "[" + glassfishRoot + "]" + sd.uriFragment + ":" + host + ":" + port // NOI18N
                 : "[" + glassfishRoot + "]null:" + host + ":" + port; // NOI18N
     }
-
-    int getHttpPort() {
-        return httpPort;
-    }
-
-    public void setHttpPort(int httpPort) {
-        this.httpPort = httpPort;
-    }
-    
-    int getAdminPort() {
-        return this.adminPort;
-    }
-
-    public void setAdminPort(int adminPort) {
-        this.adminPort = adminPort;
-    }
-   
-    public void setHttpsPort(int httpsPort) {
-        this.httpsPort = httpsPort;
-    }
-    
-//    public void setUserName(String userName) {
-//        this.userName = userName;
-//    }
-//    
-//    public void setPassword(String password) {
-//        this.password = password;
-//    }
     
     public void setInstallRoot(String installRoot) {
         this.installRoot = installRoot;
@@ -472,8 +442,8 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         } else {
             GlassfishInstance instance = GlassfishInstance.create(
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
-                    installRoot, glassfishRoot, domainsDir, domainName, httpPort, 
-                    adminPort, formatUri("localhost", adminPort), 
+                    installRoot, glassfishRoot, domainsDir, domainName, getHttpPort(),
+                    getAdminPort(), formatUri("localhost", getAdminPort()),
                     sd.uriFragment, 
                     gip);
             result.add(instance.getCommonInstance());
@@ -482,15 +452,15 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
 
     private void handleRemoteDomains(Set<ServerInstance> result, File ir) {
         // TODO - vbk : get the real port from the server. Doable, but hard to do right.
-        httpPort = 8080;
+        setHttpPort(8080);
         String hn = getHostName();
         if ("localhost".equals(hn)) {
             hn = "127.0.0.1";
         }
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"),   // NOI18N
-                installRoot, glassfishRoot, null, null, httpPort, adminPort, 
-                formatUri(hn, adminPort), sd.uriFragment, gip);
+                installRoot, glassfishRoot, null, null, getHttpPort(), getAdminPort(),
+                formatUri(hn, getAdminPort()), sd.uriFragment, gip);
         result.add(instance.getCommonInstance());
     }
 

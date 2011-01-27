@@ -433,6 +433,11 @@ public final class J2EEProjectProperties {
         boolean ok = true;
         for (File file : j2eePlatform.getClasspathEntries()) {
             FileObject fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                // if some file from server classpath does not exist then let's
+                // ignore it
+                continue;
+            }
             boolean hit = false;
             for (FileObject root : toCheck) {
                 if (FileUtil.isParentOf(root, fo)) {
