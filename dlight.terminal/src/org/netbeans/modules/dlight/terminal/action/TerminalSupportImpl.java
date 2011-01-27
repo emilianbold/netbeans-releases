@@ -99,7 +99,7 @@ public final class TerminalSupportImpl {
         button.putClientProperty("hideActionText", Boolean.TRUE); // NOI18N
         Object icon = action.getValue(Action.SMALL_ICON);
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false);
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false);// NOI18N
         }
         if (!(icon instanceof Icon)) {
             throw new IllegalStateException("No icon provided for " + action); // NOI18N
@@ -108,7 +108,7 @@ public final class TerminalSupportImpl {
         return button;
     }
     
-    public static void openTerminalImpl(final IOContainer ioContainer, final ExecutionEnvironment env, final String dir, final boolean silentMode) {
+    public static void openTerminalImpl(final IOContainer ioContainer, final String tabTitle, final ExecutionEnvironment env, final String dir, final boolean silentMode) {
         final IOProvider term = IOProvider.get("Terminal"); // NOI18N
         if (term != null) {
             final AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -168,7 +168,7 @@ public final class TerminalSupportImpl {
 
                     final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                     try {
-                        ioRef.set(term.getIO(env.getDisplayName(), null, ioContainer));
+                        ioRef.set(term.getIO(tabTitle, null, ioContainer));
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));

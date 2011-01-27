@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
 import org.netbeans.libs.git.jgit.commands.ListBranchCommand;
@@ -67,6 +68,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
@@ -76,6 +78,8 @@ import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.FetchCommand;
+import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
@@ -204,6 +208,20 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         cmd.execute();
         return cmd.getBranch();
     }
+
+    @Override
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, monitor);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
+
+    @Override
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, fetchRefSpecifications, monitor);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
     
     @Override
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException {
@@ -237,6 +255,19 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         return cmd.getStatuses();
     }
 
+    @Override
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException {
+        return getRemotes(monitor).get(remoteName);
+    }
+
+    @Override
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        GetRemotesCommand cmd = new GetRemotesCommand(repository, monitor);
+        cmd.execute();
+        return cmd.getRemotes();
+    }
+    
     @Override
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();

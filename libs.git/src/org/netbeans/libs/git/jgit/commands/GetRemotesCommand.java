@@ -37,64 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.options;
+package org.netbeans.libs.git.jgit.commands;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.libs.git.jgit.JGitRemoteConfig;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * Preferences class for externalizing the hardwired plugin versions to
- * allow changes by advanced users?
- * @author mkleint
+ *
+ * @author ondra
  */
-public final class MavenVersionSettings {
-    private static final MavenVersionSettings INSTANCE = new MavenVersionSettings();
+public class GetRemotesCommand extends GitCommand {
+
+    private Map<String, GitRemoteConfig> remotes;
     
-    public static final String VERSION_COMPILER = "maven-compiler-plugin"; //NOI18N
-    public static final String VERSION_RESOURCES = "maven-resources-plugin"; //NOI18N
-    
-    public static MavenVersionSettings getDefault() {
-        return INSTANCE;
-    }
-    
-    protected final Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/pluginVersions"); //NOI18N
-    }
-    
-    protected final String putProperty(String key, String value) {
-        String retval = getProperty(key);
-        if (value != null) {
-            getPreferences().put(key, value);
-        } else {
-            getPreferences().remove(key);
-        }
-        return retval;
+    public GetRemotesCommand (Repository repository, ProgressMonitor monitor) {
+        super(repository, monitor);
     }
 
-    protected final String getProperty(String key) {
-        return getPreferences().get(key, null);
-    }    
-    
-    private MavenVersionSettings() {
-    }
-    
-    public String getVersion(String plugin) {
-        String toRet = getProperty(plugin);
-        if (toRet == null) {
-            // XXX these should rather read the most recent version from the repository index
-            if (VERSION_RESOURCES.equals(plugin)) {
-                toRet = "2.4.3"; //NOI18N
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        try {
+            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
+            remotes = new HashMap<String, GitRemoteConfig>(configs.size());
+            for (RemoteConfig remote : configs) {
+                remotes.put(remote.getName(), new JGitRemoteConfig(remote));
             }
-            else if (VERSION_COMPILER.equals(plugin)) {
-                toRet = "2.3.2"; //NOI18N
-            }
+        } catch (URISyntaxException ex) {
+            throw new GitException(ex);
         }
-        if (toRet == null) {
-            toRet = "RELEASE"; // this is wrong for 2.1
-        }
-        return toRet;
     }
-    
+
+    @Override
+    protected String getCommandDescription () {
+        return "git remote -v"; //NOI18N
+    }
+
+    public Map<String, GitRemoteConfig> getRemotes () {
+        return remotes;
+    }
 }

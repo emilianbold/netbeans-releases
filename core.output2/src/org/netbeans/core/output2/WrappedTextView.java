@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tim Boudreau
  */
-public class WrappedTextView extends View {
+public class WrappedTextView extends View implements TabExpander {
     /**
      * The component we will paint
      */
@@ -115,6 +115,10 @@ public class WrappedTextView extends View {
     static final Color arrowColor = new Color (80, 162, 80);
 
     private static Map hintsMap = null;
+    
+    int tabSize;
+    int tabBase;
+    private int tabOffsetX = 0;
     
     @SuppressWarnings("unchecked")
     static final Map getHints() {
@@ -177,6 +181,21 @@ public class WrappedTextView extends View {
         }
     }
 
+    private int getTabSize() {
+        Integer i = (Integer) getDocument().getProperty(PlainDocument.tabSizeAttribute);
+        int size = (i != null) ? i.intValue() : 8;
+        return size;
+    }
+
+    @Override
+    public float nextTabStop(float x, int tabOffset) {
+        if (tabSize == 0) {
+            return x;
+        }
+        int ntabs = (((int) x) - margin() + tabOffsetX) / tabSize;
+        return margin() + ((ntabs + 1) * tabSize) - tabOffsetX;
+    }
+
     void updateMetrics() {
         Font font = comp.getFont();
         FontMetrics fm = comp.getFontMetrics(font);
@@ -189,6 +208,7 @@ public class WrappedTextView extends View {
             aa = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
                     RenderingHints.VALUE_ANTIALIAS_ON;
         }
+        tabSize = getTabSize() * charWidth;
         updateWidth();
     }
 
@@ -234,7 +254,9 @@ public class WrappedTextView extends View {
         ((Graphics2D)g).addRenderingHints(getHints());
         
         comp.getHighlighter().paint(g);
-        
+
+        tabBase = ((Rectangle) allocation).x + margin();
+
         OutputDocument doc = odoc();
         if (doc != null) {
             Rectangle clip = g.getClipBounds();
@@ -271,6 +293,7 @@ public class WrappedTextView extends View {
                         y += charHeight;
                         continue;
                     }
+                    length = lines.lengthWithTabs(i);
                     LineInfo info = lines.getLineInfo(i);
 
                     // get number of logical lines
@@ -285,12 +308,16 @@ public class WrappedTextView extends View {
                     lineStart += logLineOffset;
                     
                     // limit number of chars needed by estimation of maximum number of chars we need to repaint
-                    length = Math.min(maxVisibleChars, lineEnd - lineStart);
-                    
-                    // get just small part of document we need (no need to get e.g. whole 10 MB line)
-                    doc.getText(lineStart, length, seg);
+                    length = Math.min(maxVisibleChars, length - logLineOffset);
+                    int sourceLength = Math.min(maxVisibleChars, lineEnd - lineStart);
 
+                    // get just small part of document we need (no need to get e.g. whole 10 MB line)
+                    doc.getText(lineStart, sourceLength, seg);
+
+                    tabOffsetX = charWidth * logLineOffset;
                     int charpos = 0;
+                    int tabOverLine = 0;    // 0 or 1
+                    int charsWithTabs = 0;
                     int arrowDrawn = currLogicalLine - 1;
                     int x = 0;
                     int remainCharsOnLogicalLine = charsPerLine;
@@ -301,23 +328,30 @@ public class WrappedTextView extends View {
                         g.setColor(ls.getColor());
                         while (charpos < ls.getEnd() - logLineOffset && currLogicalLine < logicalLines) {
                             int lenToDraw = Math.min(remainCharsOnLogicalLine, ls.getEnd() - logLineOffset - charpos);
+                            int charsToDraw = lenToDraw;
                             if (lenToDraw > 0) {
+                                charsToDraw = getCharsForLengthWithTabs(seg.array, charpos - tabOverLine, currLogicalLine * charsPerLine, lenToDraw + tabOverLine, charsPerLine/*remainCharsOnLogicalLine*/) - tabOverLine;
                                 if (currLogicalLine != logicalLines - 1 && arrowDrawn != currLogicalLine) {
                                     arrowDrawn = currLogicalLine;
                                     drawArrow(g, y, currLogicalLine == logicalLines - 2);
                                 }
-                                drawText(seg, g, x, y, lineStart, charpos, selStart, lenToDraw, selEnd);
+                                drawText(seg, g, x, y, lineStart, charpos, selStart, charsToDraw, selEnd);
                                 if (ls.getListener() != null) {
-                                    underline(g, seg, charpos, lenToDraw, x, y);
+                                    underline(g, seg, charpos, charsToDraw, x, y);
                                 }
                             }
-                            charpos += lenToDraw;
-                            remainCharsOnLogicalLine -= lenToDraw;
+                            lenToDraw = getCharLengthWithTabs(seg.array, charpos - tabOverLine, currLogicalLine * charsPerLine, charsToDraw + tabOverLine);// - tabOverLine;
+                            charpos += charsToDraw;
+                            charsWithTabs += (lenToDraw > charsPerLine) ? charsPerLine : lenToDraw;
+                            remainCharsOnLogicalLine = charsPerLine - lenToDraw;
                             x += lenToDraw * charWidth;
-                            if (remainCharsOnLogicalLine == 0) {
-                                remainCharsOnLogicalLine = charsPerLine;
+                            tabOverLine = (remainCharsOnLogicalLine < 0) ? 1 : 0;
+                            while(remainCharsOnLogicalLine <= 0) {
+                                int shift = -remainCharsOnLogicalLine;
+                                remainCharsOnLogicalLine += charsPerLine;
                                 currLogicalLine++;
-                                x = 0;
+                                x = shift * charWidth;
+                                tabOffsetX += charWidth * (charsPerLine);// + shift);
                                 y += charHeight;
                                 if (y > clip.y + clip.height) {
                                     return;
@@ -325,10 +359,11 @@ public class WrappedTextView extends View {
                             }
                         }
                     }
-                    if (charsPerLine == 0 || charpos % charsPerLine != 0) {
+                    if (charsPerLine == 0 || charsWithTabs % charsPerLine != 0) {
                         y += charHeight;
                     }
                 }
+                tabOffsetX = 0;
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -361,7 +396,14 @@ public class WrappedTextView extends View {
                 g.setColor (c);
             }
         }
-        g.drawChars(seg.array, charpos, lenToDraw, margin() + x, y);
+        //g.drawChars(seg.array, charpos, lenToDraw, margin() + x, y);
+        int count = seg.count;
+        int offset = seg.offset;
+        seg.count = lenToDraw;
+        seg.offset = charpos;
+        Utilities.drawTabbedText(seg, margin() + x, y, g, this, charpos);
+        seg.count = count;
+        seg.offset = offset;
     }
 
     private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int x, int y) {
@@ -490,5 +532,38 @@ public class WrappedTextView extends View {
         } else {
             return 0;
         }
+    }
+
+    private int getCharLengthWithTabs(char[] array, int charpos, int tabLineOffset, int lenToDraw) {
+        int n = Math.min(array.length, charpos + lenToDraw);
+        int tabExpand = 0;
+        for (int i = charpos; i < n; i++) {
+            if ('\t' == array[i]) {
+                int numSpaces = 8 - (((i - charpos + tabLineOffset) + tabExpand) % 8);
+                tabExpand += numSpaces - 1;
+                lenToDraw += numSpaces - 1;
+            }
+        }
+        return lenToDraw;
+    }
+
+    private int getCharsForLengthWithTabs(char[] array, int charpos, int tabLineOffset, int lenToDraw, int length) {
+        int n = Math.min(array.length, charpos + lenToDraw);
+        int lengthWithTab = 0;
+        int tabExpand = 0;
+        int i;
+        for (i = charpos; i < n && lengthWithTab < length; i++) {
+            if ('\t' == array[i]) {
+                int numSpaces = 8 - (((i - charpos + tabLineOffset) + tabExpand) % 8);
+                tabExpand += numSpaces - 1;
+                lengthWithTab += numSpaces;
+            } else {
+                lengthWithTab++;
+            }
+        }
+        if (lengthWithTab > length && i > (charpos + 1) && array[i-1] != '\t') {
+            i--;
+        }
+        return i - charpos;
     }
 }

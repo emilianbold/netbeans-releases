@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.options;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+package org.netbeans.libs.git.jgit;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.netbeans.libs.git.GitRemoteConfig;
 
 /**
- * Preferences class for externalizing the hardwired plugin versions to
- * allow changes by advanced users?
- * @author mkleint
+ *
+ * @author ondra
  */
-public final class MavenVersionSettings {
-    private static final MavenVersionSettings INSTANCE = new MavenVersionSettings();
-    
-    public static final String VERSION_COMPILER = "maven-compiler-plugin"; //NOI18N
-    public static final String VERSION_RESOURCES = "maven-resources-plugin"; //NOI18N
-    
-    public static MavenVersionSettings getDefault() {
-        return INSTANCE;
-    }
-    
-    protected final Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/pluginVersions"); //NOI18N
-    }
-    
-    protected final String putProperty(String key, String value) {
-        String retval = getProperty(key);
-        if (value != null) {
-            getPreferences().put(key, value);
-        } else {
-            getPreferences().remove(key);
-        }
-        return retval;
+public class JGitRemoteConfig implements GitRemoteConfig {
+    private final List<String> uris;
+    private final List<String> pushUris;
+    private final List<String> fetchSpecs;
+    private final List<String> pushSpecs;
+    private final String remoteName;
+
+    public JGitRemoteConfig (RemoteConfig config) {
+        this.remoteName = config.getName();
+        this.uris = getAsStrings(config.getURIs());
+        this.pushUris = getAsStrings(config.getPushURIs());
+        this.fetchSpecs = getAsStrings(config.getFetchRefSpecs());
+        this.pushSpecs = getAsStrings(config.getPushRefSpecs());
     }
 
-    protected final String getProperty(String key) {
-        return getPreferences().get(key, null);
-    }    
-    
-    private MavenVersionSettings() {
+    @Override
+    public String getRemoteName () {
+        return remoteName;
     }
-    
-    public String getVersion(String plugin) {
-        String toRet = getProperty(plugin);
-        if (toRet == null) {
-            // XXX these should rather read the most recent version from the repository index
-            if (VERSION_RESOURCES.equals(plugin)) {
-                toRet = "2.4.3"; //NOI18N
-            }
-            else if (VERSION_COMPILER.equals(plugin)) {
-                toRet = "2.3.2"; //NOI18N
-            }
-        }
-        if (toRet == null) {
-            toRet = "RELEASE"; // this is wrong for 2.1
-        }
-        return toRet;
+
+    @Override
+    public List<String> getUris () {
+        return Collections.unmodifiableList(uris);
     }
-    
+
+    @Override
+    public List<String> getPushUris () {
+        return Collections.unmodifiableList(pushUris);
+    }
+
+    @Override
+    public List<String> getFetchRefSpecs () {
+        return Collections.unmodifiableList(fetchSpecs);
+    }
+
+    @Override
+    public List<String> getPushRefSpecs () {
+        return Collections.unmodifiableList(pushSpecs);
+    }
+
+    private static List<String> getAsStrings (List<? extends Object> list) {
+        Set<String> set = new HashSet<String>();
+        for (Object elem : list) {
+            set.add(elem.toString());
+        }
+        return new LinkedList<String>(set);
+    }
+
 }

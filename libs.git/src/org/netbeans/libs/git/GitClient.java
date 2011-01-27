@@ -44,6 +44,7 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -160,6 +161,25 @@ public interface GitClient {
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
     
     /**
+     * Fetches remote changes for references specified in the config file under a given remote.
+     * @param remote
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     */
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Fetches remote changes for given reference specifications.
+     * @param remote
+     * @param fetchRefSpecifications 
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     */
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException;
+    
+    /**
      * Returns all branches
      * @param all if false then only local branches will be returned
      * @return
@@ -182,6 +202,23 @@ public interface GitClient {
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
 
+    /**
+     * Returns remote configuration set up for this repository identified by a given remoteName
+     * @param remoteName
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns all remote configurations set up for this repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException;
+    
     /**
      * Returns the current state of the repository this client is associated with.
      * @return current repository state

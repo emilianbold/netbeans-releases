@@ -52,6 +52,8 @@ import org.netbeans.libs.git.jgit.commands.CheckoutTest;
 import org.netbeans.libs.git.jgit.commands.CleanTest;
 import org.netbeans.libs.git.jgit.commands.CommitTest;
 import org.netbeans.libs.git.jgit.commands.CopyTest;
+import org.netbeans.libs.git.jgit.commands.FetchTest;
+import org.netbeans.libs.git.jgit.commands.GetRemotesTest;
 import org.netbeans.libs.git.jgit.commands.IgnoreTest;
 import org.netbeans.libs.git.jgit.commands.InitTest;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
@@ -82,6 +84,8 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(CleanTest.class);
         suite.addTestSuite(CommitTest.class);
         suite.addTestSuite(CopyTest.class);
+        suite.addTestSuite(FetchTest.class);
+        suite.addTestSuite(GetRemotesTest.class);
         suite.addTestSuite(IgnoreTest.class);
         suite.addTestSuite(InitTest.class);
         suite.addTestSuite(ListModifiedIndexEntriesTest.class);

@@ -920,7 +920,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     try {
                                         toRefresh.add(new URL(pathElement));
                                     } catch (MalformedURLException mue) {
-                                        JavaIndex.LOG.log(Level.INFO, "Malformed URL in sourcePath attribute", pathElement);
+                                        JavaIndex.LOG.log(Level.INFO, "Malformed URL in sourcePath attribute: {0}", pathElement);
                                     }
                                 }                                
                             } else if (ensureSourcePath(root)){

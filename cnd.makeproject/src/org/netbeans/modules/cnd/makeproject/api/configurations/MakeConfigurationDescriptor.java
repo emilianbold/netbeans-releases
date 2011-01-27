@@ -260,7 +260,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, 
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
             Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -603,7 +603,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return clone;
     }
 
-
     /**
      * @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor.isModified instead.
      */
@@ -656,12 +655,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
         RequestProcessor.Task task = RP.post(saveRunnable);
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()){
+        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
             ModalMessageDlg.runLongTask(
-            WindowManager.getDefault().getMainWindow(),
-            task, null, null,
-            getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
-            getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
+                    WindowManager.getDefault().getMainWindow(),
+                    task, null, null,
+                    getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
+                    getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         } else {
             task.waitFinished();
         }
@@ -868,6 +867,20 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
                 data.appendChild(nativeProjectType);
             }
+
+            // Create active configuration type node
+            nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue());
+            } else {
+                // Create node
+                Element elem = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
+                elem.appendChild(doc.createTextNode("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue()));
+                data.appendChild(elem);
+            }
+
             helper.putPrimaryConfigurationData(data, true);
 
             ProjectManager.getDefault().saveProject(project);

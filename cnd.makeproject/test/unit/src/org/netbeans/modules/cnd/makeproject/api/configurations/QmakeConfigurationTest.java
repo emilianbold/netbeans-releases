@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import java.io.File;
 import java.util.Collections;
 import org.junit.Before;
@@ -73,6 +75,11 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     private static QmakeConfiguration newQmakeConfiguration(int confType) {
         File dir = new File(System.getProperty("java.io.tmpdir"), "QmakeConfigurationTest");
         MakeConfiguration conf = new MakeConfiguration(dir.getPath(), "Dummy", confType);
+        //++ trace for #194772 -  QmakeConfigurationTest fails on Windows and Mac
+        Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
+        System.out.println("Creating QmakeConfiguration for platform " + platform.getDisplayName());        
+        System.out.println("platform.getQtLibraryName returned " + platform.getQtLibraryName("my-qt-lib", "1"));
+        //-- trace for #194772 -  QmakeConfigurationTest fails on Windows and Mac
         return new QmakeConfiguration(conf);
     }
 
