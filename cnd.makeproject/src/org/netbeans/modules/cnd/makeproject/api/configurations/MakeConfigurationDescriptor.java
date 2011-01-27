@@ -868,6 +868,20 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
                 data.appendChild(nativeProjectType);
             }
+
+            // Create active configuration type node
+            nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent("" + ((MakeConfiguration)getConfs().getActive()).getConfigurationType().getValue());
+            } else {
+                // Create node
+                Element elem = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
+                elem.appendChild(doc.createTextNode("" + ((MakeConfiguration)getConfs().getActive()).getConfigurationType().getValue()));
+                data.appendChild(elem);
+            }
+
             helper.putPrimaryConfigurationData(data, true);
 
             ProjectManager.getDefault().saveProject(project);

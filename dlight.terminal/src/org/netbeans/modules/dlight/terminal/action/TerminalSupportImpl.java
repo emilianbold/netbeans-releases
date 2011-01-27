@@ -99,7 +99,7 @@ public final class TerminalSupportImpl {
         button.putClientProperty("hideActionText", Boolean.TRUE); // NOI18N
         Object icon = action.getValue(Action.SMALL_ICON);
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false);
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false);// NOI18N
         }
         if (!(icon instanceof Icon)) {
             throw new IllegalStateException("No icon provided for " + action); // NOI18N

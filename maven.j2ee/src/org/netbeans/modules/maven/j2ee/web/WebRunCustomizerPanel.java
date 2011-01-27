@@ -137,7 +137,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         });
 
         Profile p = module.getJ2eeProfile();
-        String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.toPropertiesString() : p.toPropertiesString();
+        String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.getDisplayName() : p.getDisplayName();
         txtJ2EEVersion.setText(version);
         WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
         if (Profile.JAVA_EE_6_WEB.equals(impl.getDescriptorJ2eeProfile())) {
