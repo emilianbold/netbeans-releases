@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Date;
 import junit.framework.Test;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -63,6 +62,10 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
+    public RemoteFileSystemTestCase(String testName) {
+        super(testName);
+    }
+    
     public RemoteFileSystemTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);
     }
@@ -153,6 +156,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 //        assertTrue("Two instances of file objects for " + absPath, fo1 == fo2);
 //    }
 
+    @ForAllEnvironments
     public void testMultipleRead() throws Exception {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/errno.h";
