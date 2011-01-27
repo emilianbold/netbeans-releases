@@ -263,7 +263,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
             AbstractLines lines = (AbstractLines) getLines();
             int start = lines.getLineStart(lines.getLineCount() - 1);
             int length = getLength() - start;
-            lines.lineUpdated(2*start, 2*length, false);
+            lines.lineUpdated(2*start, 2*length, length, false);
         }
         fireDocumentEvent(ev);
     }
@@ -297,7 +297,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
         if (getLines() instanceof AbstractLines) {
             AbstractLines lines = (AbstractLines) getLines();
             int start = lines.getLineStart(lines.getLineCount() - 1);
-            lines.lineUpdated(2*start, 0, false);
+            lines.lineUpdated(2*start, 0, 0, false);
         }        
         fireDocumentEvent(ev);
         return toReturn;
@@ -338,7 +338,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
                 AbstractLines lines = (AbstractLines) getLines();
                 int start = lines.getLineStart(lines.getLineCount() - 1);
                 int l = getLength() - start;
-                lines.lineUpdated(2*start, 2*l, false);
+                lines.lineUpdated(2*start, 2*l, l, false);
             }            
             fireDocumentEvent(ev);
         }

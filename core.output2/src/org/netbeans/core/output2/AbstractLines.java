@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.windows.IOColors;
@@ -73,6 +74,7 @@ import org.openide.windows.OutputListener;
 abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /** A collections-like lineStartList that maps file positions to getLine numbers */
     IntList lineStartList;
+    IntListSimple lineCharLengthListWithTabs;
     /** Maps output listeners to the lines they are associated with */
     IntMap lineWithListenerToInfo;
 
@@ -280,6 +282,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         knownLogicalLineCounts = null;
         lineStartList = new IntList(100);
         lineStartList.add(0);
+        lineCharLengthListWithTabs = new IntListSimple(100);
         linesToInfos = new IntMap();
         lineWithListenerToInfo = new IntMap();
         longestLineLen = 0;
@@ -343,6 +346,19 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      */
     public int length (int idx) {
         return toCharIndex(getByteLineLength(idx));
+    }
+
+    /**
+     * Returns the length of the specified lin characters.
+     *
+     * @param idx A getLine number
+     * @return The number of characters
+     */
+    public int lengthWithTabs (int idx) {
+        if (idx == lineCharLengthListWithTabs.size()) {
+            return Math.max(0, lastCharLengthWithTabs);
+        }
+        return lineCharLengthListWithTabs.get(idx);
     }
 
     /**
@@ -455,7 +471,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             //First getLine never has lines above it
             info[0] = 0;
             info[1] = 0;
-            info[2] = lengthToLineCount(length(0), charsPerLine);
+            info[2] = lengthToLineCount(lengthWithTabs(0), charsPerLine);
             return;
         }
 
@@ -556,7 +572,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
             int val = 0;
             for (int i = 0; i < lineCount; i++) {
-                int len = length(i);
+                int len = lengthWithTabs(i);
 
                 if (len > width) {
                     val += lengthToLineCount(len, width);
@@ -583,7 +599,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     private boolean lastLineFinished = true;
     private int lastLineLength = -1;
+    private int lastCharLengthWithTabs = -1;
 
+    // lineLength with tabs
     private void updateLastLine(int lineIdx, int lineLength) {
         synchronized (readLock()) {
             longestLineLen = Math.max(longestLineLen, lineLength);
@@ -599,7 +617,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     knownLogicalLineCounts.removeLast();
                 } else {
                     aboveLineCount = knownLogicalLineCounts.lastAdded()
-                            - lengthToLineCount(lastLineLength, knownCharsPerLine)
+                            - lengthToLineCount(lastCharLengthWithTabs, knownCharsPerLine)
                             + lengthToLineCount(lineLength, knownCharsPerLine);
                     knownLogicalLineCounts.updateLast(lineIdx, aboveLineCount);
                 }
@@ -624,18 +642,20 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    public void lineUpdated(int lineStart, int lineLength, boolean isFinished) {
+    public void lineUpdated(int lineStart, int lineLength, int charLengthWithTabs, boolean isFinished) {
         synchronized (readLock()) {
             int charLineLength = toCharIndex(lineLength);
             if (isFinished) {
                 charLineLength -= 1;
             }
-            updateLastLine(lineStartList.size() - 1, charLineLength);
+            updateLastLine(lineStartList.size() - 1, charLengthWithTabs);
             if (isFinished) {
                 lineStartList.add(lineStart + lineLength);
+                lineCharLengthListWithTabs.add(charLengthWithTabs);
             }
             lastLineFinished = isFinished;
             lastLineLength = isFinished ? -1 : charLineLength;
+            lastCharLengthWithTabs = isFinished ? -1 : charLengthWithTabs;
         }
         markDirty();
     }
@@ -683,6 +703,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             ch.close();
         } finally {
             fos.close();
+            FileUtil.refreshFor(new java.io.File(path));
         }
     }
 
@@ -922,7 +943,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     for (int k = i; k < s.length(); k++) {
                         if (s.charAt(k) == '\t') {
                             str.append(s, start, k);
-                            str.append(OutWriter.TAB_REPLACEMENT);
+                            str.append("        "); // Max tab replacement    // NOI18N
                             start = k + 1;
                         }
                     }
