@@ -85,10 +85,10 @@ public final class MavenVersionSettings {
         if (toRet == null) {
             // XXX these should rather read the most recent version from the repository index
             if (VERSION_RESOURCES.equals(plugin)) {
-                toRet = "2.2"; //NOI18N
+                toRet = "2.4.3"; //NOI18N
             }
             else if (VERSION_COMPILER.equals(plugin)) {
-                toRet = "2.0.2"; //NOI18N
+                toRet = "2.3.2"; //NOI18N
             }
         }
         if (toRet == null) {
