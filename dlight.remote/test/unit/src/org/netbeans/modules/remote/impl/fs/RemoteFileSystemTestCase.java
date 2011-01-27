@@ -68,8 +68,6 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     }
 
     @ForAllEnvironments
-    // Disabled, see IZ 190453
-    @RandomlyFails
     public void testRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
@@ -155,9 +153,6 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 //        assertTrue("Two instances of file objects for " + absPath, fo1 == fo2);
 //    }
 
-    @ForAllEnvironments
-    // Disabled, see IZ 190453
-    @RandomlyFails
     public void testMultipleRead() throws Exception {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/errno.h";
