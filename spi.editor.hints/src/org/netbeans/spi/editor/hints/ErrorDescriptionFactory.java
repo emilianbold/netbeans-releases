@@ -46,10 +46,12 @@ package org.netbeans.spi.editor.hints;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.netbeans.modules.editor.hints.StaticFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Parameters;
 
 /**
  * Factory class with static methods that allow creation of ErrorDescription.
@@ -64,21 +66,33 @@ public class ErrorDescriptionFactory {
     /**
      * Should be called inside document read lock to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, Document doc, int lineNumber) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull Document doc, int lineNumber) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("doc", doc);
         return createErrorDescription(severity, description, new StaticFixList(), doc, lineNumber);
     }
     
     /**
      * Should be called inside document read lock to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, List<Fix> fixes, Document doc, int lineNumber) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull List<Fix> fixes, @NonNull Document doc, int lineNumber) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("doc", doc);
         return createErrorDescription(severity, description, new StaticFixList(fixes), doc, lineNumber);
     }
     
     /**
      * Should be called inside document read lock to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, LazyFixList fixes, Document doc, int lineNumber) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, int lineNumber) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("doc", doc);
+        
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         FileObject file = od != null ? od.getPrimaryFile() : null;
         
@@ -88,21 +102,41 @@ public class ErrorDescriptionFactory {
     /**
      * Acquires read lock on the provided document to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, Document doc, Position start, Position end) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("doc", doc);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
         return createErrorDescription(severity, description, new StaticFixList(), doc, start, end);
     }
 
     /**
      * Acquires read lock on the provided document to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, List<Fix> fixes, Document doc, Position start, Position end) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull List<Fix> fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("doc", doc);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
         return createErrorDescription(severity, description, new StaticFixList(fixes), doc, start, end);
     }
     
     /**
      * Acquires read lock on the provided document to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, LazyFixList fixes, Document doc, Position start, Position end) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("doc", doc);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         FileObject file = od != null ? od.getPrimaryFile() : null;
         
@@ -112,21 +146,41 @@ public class ErrorDescriptionFactory {
     /**
      * Should be called inside document read lock to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, FileObject file, int start, int end) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull FileObject file, int start, int end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("file", file);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
         return createErrorDescription(severity, description, new StaticFixList(), file, start, end);
     }
 
     /**
      * Should be called inside document read lock to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, List<Fix> fixes, FileObject file, int start, int end) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull List<Fix> fixes, @NonNull FileObject file, int start, int end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("file", file);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
         return createErrorDescription(severity, description, new StaticFixList(fixes), file, start, end);
     }
     
     /**
      * Should be called inside document read lock to assure consistency
      */
-    public static ErrorDescription createErrorDescription(Severity severity, String description, LazyFixList fixes, FileObject file, int start, int end) {
+    public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull FileObject file, int start, int end) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("file", file);
+        Parameters.notNull("start", start);
+        Parameters.notNull("end", end);
+        
         return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(file, start, end));
     }
 
@@ -135,7 +189,9 @@ public class ErrorDescriptionFactory {
      * @param fixes
      * @return lazy
      */
-    public static LazyFixList lazyListForFixes(List<Fix> fixes) {
+    public static @NonNull LazyFixList lazyListForFixes(@NonNull List<Fix> fixes) {
+        Parameters.notNull("fixes", fixes);
+        
         return new StaticFixList(fixes);
     }
 
@@ -144,7 +200,9 @@ public class ErrorDescriptionFactory {
      * @param delegates the lists to be delegated to
      * @return one list to contain them all
      */
-    public static LazyFixList lazyListForDelegates(List<LazyFixList> delegates) {
+    public static @NonNull LazyFixList lazyListForDelegates(@NonNull List<LazyFixList> delegates) {
+        Parameters.notNull("delegates", delegates);
+        
         return new HintsControllerImpl.CompoundLazyFixList(delegates);
     }
 
@@ -158,7 +216,10 @@ public class ErrorDescriptionFactory {
      * @return the given fix
      * @since 1.13
      */
-    public static Fix attachSubfixes(Fix to, Iterable<? extends Fix> subfixes) {
+    public static @NonNull Fix attachSubfixes(@NonNull Fix to, @NonNull Iterable<? extends Fix> subfixes) {
+        Parameters.notNull("to", to);
+        Parameters.notNull("subfixes", subfixes);
+        
         HintsControllerImpl.attachSubfixes(to, subfixes);
         return to;
     }

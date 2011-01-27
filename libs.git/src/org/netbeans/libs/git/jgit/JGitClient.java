@@ -54,6 +54,7 @@ import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,6 +68,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
@@ -76,6 +78,7 @@ import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.FetchCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
@@ -203,6 +206,20 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         CreateBranchCommand cmd = new CreateBranchCommand(gitRepository.getRepository(), branchName, revision, monitor);
         cmd.execute();
         return cmd.getBranch();
+    }
+
+    @Override
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, monitor);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
+
+    @Override
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, fetchRefSpecifications, monitor);
+        cmd.execute();
+        return cmd.getUpdates();
     }
     
     @Override

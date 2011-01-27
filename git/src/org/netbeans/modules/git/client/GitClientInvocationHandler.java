@@ -97,6 +97,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "createBranch", //NOI18N - does not update index or files in WT
+            "fetch", //NOI18N - updates only metadata
             "getBranches",  //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N
@@ -116,6 +117,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "checkoutBranch", //NOI18N // current head changes
             "commit", //NOI18N
             "createBranch", //NOI18N // should refresh set of known branches
+            "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset")); //NOI18N
