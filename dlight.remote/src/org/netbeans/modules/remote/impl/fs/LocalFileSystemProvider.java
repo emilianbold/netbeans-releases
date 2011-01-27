@@ -80,6 +80,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public boolean isAbsolute(String path) {
+        return new File(path).isAbsolute();
+    }
+    
+    @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         String absPath;
         if (FileSystemProvider.isAbsolute(relativeOrAbsolutePath)) {
