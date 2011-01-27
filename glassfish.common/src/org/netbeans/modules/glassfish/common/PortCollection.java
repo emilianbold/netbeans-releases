@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.terminal.action;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.actions.Presenter;
-import org.openide.windows.IOContainer;
-import org.openide.windows.IOProvider;
+package org.netbeans.modules.glassfish.common;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author vkraemer
  */
-abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
+public class PortCollection {
 
-    public TerminalAction(String name, String descr, ImageIcon icon) {
-        putValue(Action.NAME, name);
-        putValue(Action.SMALL_ICON, icon);
-        putValue(Action.SHORT_DESCRIPTION, descr);
+    private int adminPort;
+
+    public int getAdminPort() {
+        return adminPort;
     }
 
-    @Override
-    public void actionPerformed(final ActionEvent e) {
-        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
-        instance.open();
-        instance.requestActive();
-        final IOContainer ioContainer = instance.getIOContainer();
-        final IOProvider term = IOProvider.get("Terminal"); // NOI18N
-        if (term != null) {
-            final ExecutionEnvironment env = getEnvironment();
-            if (env != null) {
-                TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand()));
-            }
-        }
+    public void setAdminPort(int adminPort) {
+        this.adminPort = adminPort;
     }
 
-    @Override
-    public Component getToolbarPresenter() {
-        return TerminalSupportImpl.getToolbarPresenter(this);
+    public int getHttpPort() {
+        return httpPort;
     }
 
-    protected abstract ExecutionEnvironment getEnvironment();
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+    }
+    private int httpPort;
+
+    public int getHttpsPort() {
+        return httpsPort;
+    }
+
+    public void setHttpsPort(int httpsPort) {
+        this.httpsPort = httpPort;
+    }
+    private int httpsPort;
 }

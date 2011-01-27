@@ -65,7 +65,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -207,7 +206,7 @@ public class ProjectsRootNode extends AbstractNode {
         return null;
     }
 
-    static void checkNoLazyNode(Object msg) {
+    static void checkNoLazyNode() {
         synchronized(all){
             for (ProjectsRootNode root : all) {
                 for (Node n : root.getChildren().getNodes()) {
@@ -216,10 +215,7 @@ public class ProjectsRootNode extends AbstractNode {
                     }
 
                     if (n.getLookup().lookup(LazyProject.class) != null) {
-                        LogRecord REC = new LogRecord(Level.WARNING, "LazyProjects remain visible:\n {0}"); // NOI18N
-                        REC.setLoggerName(OpenProjectList.LOGGER.getName());
-                        REC.setParameters(new Object[] { msg });
-                        OpenProjectList.log(REC);
+                        OpenProjectList.LOGGER.warning("LazyProjects remain visible");
                     }
                 }
             }

@@ -87,7 +87,6 @@ public class VerifyFullIDETest extends NbTestCase {
         Map<String,String> all = FeatureManager.projectFiles();
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
-        all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
 
@@ -112,12 +111,6 @@ public class VerifyFullIDETest extends NbTestCase {
             Thread.currentThread().getContextClassLoader()
         );
         iterateRegistrations(sb, ant, ant.getDeclaredMethod("getType"), all);
-        Class<?> rake = Class.forName(
-            "org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType",
-            true,
-            Thread.currentThread().getContextClassLoader()
-        );
-        iterateRegistrations(sb, rake, rake.getDeclaredMethod("getType"), all);
 
         if (!all.isEmpty()) {
             fail("Not all IDE projects are registered for ergonomics mode, see the list below.\n" +
