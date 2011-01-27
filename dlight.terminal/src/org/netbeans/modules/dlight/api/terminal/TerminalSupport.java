@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.terminal.action;
+
+package org.netbeans.modules.dlight.api.terminal;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
+import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.actions.Presenter;
 import org.openide.windows.IOContainer;
-import org.openide.windows.IOProvider;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-abstract class TerminalAction extends AbstractAction implements Presenter.Toolbar {
-
-    public TerminalAction(String name, String descr, ImageIcon icon) {
-        putValue(Action.NAME, name);
-        putValue(Action.SMALL_ICON, icon);
-        putValue(Action.SHORT_DESCRIPTION, descr);
+public final class TerminalSupport {
+    
+    private TerminalSupport() {
+    }
+    
+    /**
+     * opens terminal tab in tab container for specified host in default location
+     * @param ioContainer
+     * @param env 
+     */
+    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, false);
+    }
+    
+    /**
+     * opens terminal tab in tab container and change dir into specified directory
+     * @param ioContainer
+     * @param env 
+     */
+    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env, String dir) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, env, dir, false);
     }
 
-    @Override
-    public void actionPerformed(final ActionEvent e) {
-        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
-        instance.open();
-        instance.requestActive();
-        final IOContainer ioContainer = instance.getIOContainer();
-        final IOProvider term = IOProvider.get("Terminal"); // NOI18N
-        if (term != null) {
-            final ExecutionEnvironment env = getEnvironment();
-            if (env != null) {
-                TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand()));
-            }
-        }
+    public static Component getToolbarPresenter(Action action) {
+        return TerminalSupportImpl.getToolbarPresenter(action);
     }
-
-    @Override
-    public Component getToolbarPresenter() {
-        return TerminalSupportImpl.getToolbarPresenter(this);
-    }
-
-    protected abstract ExecutionEnvironment getEnvironment();
 }
