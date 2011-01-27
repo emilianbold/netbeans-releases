@@ -79,9 +79,8 @@ import org.w3c.dom.Node;
  * XXX will not correctly unregister released external source roots
  */
 public class MakeSources implements Sources, AntProjectListener {
-    
-    private static final String GENERIC = "generic"; // NOI18N
 
+    private static final String GENERIC = "generic"; // NOI18N
     private MakeProject project;
     private AntProjectHelper helper;
 
@@ -229,7 +228,7 @@ public class MakeSources implements Sources, AntProjectListener {
                 FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);
                 if (fo == null) {
                     new NullPointerException().printStackTrace();
-                } else {                    
+                } else {
                     sources.addGroup(project, GENERIC, fo, displayName);
                 }
             }
