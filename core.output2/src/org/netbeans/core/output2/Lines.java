@@ -70,6 +70,8 @@ public interface Lines {
      */
     int length (int idx);
 
+    int lengthWithTabs (int idx);
+
     /**
      * Get the character position corresponding to the start of a line
      *
