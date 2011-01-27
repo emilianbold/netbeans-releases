@@ -44,6 +44,8 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -158,6 +160,25 @@ public interface GitClient {
      * @throws GitException  an error occurs
      */
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Fetches remote changes for references specified in the config file under a given remote.
+     * @param remote
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     */
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Fetches remote changes for given reference specifications.
+     * @param remote
+     * @param fetchRefSpecifications 
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     */
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException;
     
     /**
      * Returns all branches
