@@ -652,7 +652,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     /** Create a valid default for context path from project name.
      */
     private static String createDefaultContext(String projectName) {
-        return "/" + PropertyUtils.getUsablePropertyName(projectName);
+        return "/" + (projectName != null ? PropertyUtils.getUsablePropertyName(projectName) : "");
     }
     
     
