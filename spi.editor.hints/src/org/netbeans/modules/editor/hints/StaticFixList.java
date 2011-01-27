@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.hints;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 
@@ -56,13 +57,13 @@ import org.netbeans.spi.editor.hints.LazyFixList;
  */
 public class StaticFixList implements LazyFixList {
     
-    private List<Fix> fixes;
+    private @NonNull List<Fix> fixes;
     
     public StaticFixList() {
         this.fixes = Collections.<Fix>emptyList();
     }
     
-    public StaticFixList(List<Fix> fixes) {
+    public StaticFixList(@NonNull List<Fix> fixes) {
         this.fixes = fixes;
     }
 
@@ -70,7 +71,7 @@ public class StaticFixList implements LazyFixList {
         return !fixes.isEmpty();
     }
 
-    public List<Fix> getFixes() {
+    public @NonNull List<Fix> getFixes() {
         return fixes;
     }
 
