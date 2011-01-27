@@ -50,6 +50,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.RunnableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -97,17 +100,19 @@ public interface Hinter {
      */
     class Context {
 
+        private static final Logger LOG = Logger.getLogger(Hinter.class.getName());
+
         private final Document doc;
         private final LayerHandle layer;
         private final FileObject instanceFile;
-        private final int line;
+        private final RunnableFuture<Map<String,Integer>> lines;
         private final List<? super ErrorDescription> errors;
 
-        Context(Document doc, LayerHandle layer, FileObject instanceFile, int line, List<? super ErrorDescription> errors) {
+        Context(Document doc, LayerHandle layer, FileObject instanceFile, RunnableFuture<Map<String,Integer>> lines, List<? super ErrorDescription> errors) {
             this.doc = doc;
             this.layer = layer;
             this.instanceFile = instanceFile;
-            this.line = line;
+            this.lines = lines;
             this.errors = errors;
         }
 
@@ -144,7 +149,18 @@ public interface Hinter {
          * @see #addStandardHint
          */
         public void addHint(Severity severity, String description, Fix... fixes) {
-            errors.add(ErrorDescriptionFactory.createErrorDescription(severity, description, Arrays.asList(fixes), doc, line));
+            Integer line = null;
+            try {
+                lines.run();
+                line = lines.get().get(instanceFile.getPath());
+            } catch (Exception x) {
+                LOG.log(Level.INFO, null, x);
+            }
+            if (line != null) {
+                errors.add(ErrorDescriptionFactory.createErrorDescription(severity, description, Arrays.asList(fixes), doc, line));
+            } else {
+                LOG.log(Level.WARNING, "no line found for {0}", instanceFile);
+            }
         }
 
         /**
