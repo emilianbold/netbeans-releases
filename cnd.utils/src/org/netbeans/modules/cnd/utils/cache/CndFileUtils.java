@@ -83,6 +83,25 @@ import org.openide.util.Utilities;
 public final class CndFileUtils {
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
+    private static final FileSystem fileFileSystem;
+    static {
+        FileSystem afileFileSystem = null;
+        File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); //NOI18N
+        tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+        FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!
+        if (tmpDirFo != null) {
+            try {
+                afileFileSystem = tmpDirFo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (afileFileSystem == null) {
+            afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            Exceptions.printStackTrace(new Exception("Cannot get local file system")); //NOI18N
+        }
+        fileFileSystem = afileFileSystem;
+    }
 
     private CndFileUtils() {
     }
@@ -464,22 +483,7 @@ public final class CndFileUtils {
        return info;
     }
     
-    public static synchronized FileSystem getLocalFileSystem() {
-        if (fileFileSystem == null) {
-            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
-            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
-            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
-            if (tmpDirFo != null) {
-                try {
-                    fileFileSystem = tmpDirFo.getFileSystem();
-                } catch (FileStateInvalidException ex) {
-                    // it's no use to log it here
-                }
-            }
-            if (fileFileSystem == null) {
-                fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
-            }
-        }
+    public static FileSystem getLocalFileSystem() {
         return fileFileSystem;
     }
     
@@ -514,8 +518,7 @@ public final class CndFileUtils {
     }
     
     private static final Lock maRefLock = new ReentrantLock();
-    private static FileSystem fileFileSystem;
-    
+
     private static final Map<FileSystem, Reference<ConcurrentMap<String, Flags>>> maps = 
             new WeakHashMap<FileSystem, Reference<ConcurrentMap<String, Flags>>>();
 
