@@ -90,7 +90,8 @@ public final class TerminalContainerTopComponent extends TopComponent {
         setName(title);
         setToolTipText(NbBundle.getMessage(TerminalContainerTopComponent.class, "HINT_TerminalContainerTopComponent"));// NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
+        // do not use PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, see #187391
+//        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
         tc = TerminalContainer.create(TerminalContainerTopComponent.this, title);
         add(tc);
     }
