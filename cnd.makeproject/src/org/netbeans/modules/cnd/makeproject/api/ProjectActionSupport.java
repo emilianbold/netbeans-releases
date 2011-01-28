@@ -775,7 +775,7 @@ public class ProjectActionSupport {
 
         public TermAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false)); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/ui/term.png", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.TermAction.text")); // NOI18N
         }
 

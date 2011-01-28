@@ -991,6 +991,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug187272.cc", 18, 17, "bug187272.cc", 12, 3);
         performTest("bug187272.cc", 24, 17, "bug187272.cc", 12, 3);
     }
+
+    public void testBug187254() throws Exception {
+        // Bug 187254 - unresolved full method name
+        performTest("bug187254.cpp", 14, 24, "bug187254.cpp", 8, 9);
+        performTest("bug187254.cpp", 15, 24, "bug187254.cpp", 9, 9);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
