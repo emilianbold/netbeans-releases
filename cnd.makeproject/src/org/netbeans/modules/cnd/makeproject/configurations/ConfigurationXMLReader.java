@@ -180,9 +180,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
         }
 
         // Read things from private/project.xml
-        int activeIndex = ((MakeProject)project).getActiveConfigurationIndexFromPrivateXML();
-        if (activeIndex >= 0) {
-            configurationDescriptor.getConfs().setActive(activeIndex);
+        if (project != null) {
+            int activeIndex = ((MakeProject)project).getActiveConfigurationIndexFromPrivateXML();
+            if (activeIndex >= 0) {
+                configurationDescriptor.getConfs().setActive(activeIndex);
+            }
         }
 
         // Ensure all item configurations have been created (default are not stored in V >= 57)
