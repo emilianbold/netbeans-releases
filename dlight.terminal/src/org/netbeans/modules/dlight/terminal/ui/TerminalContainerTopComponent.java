@@ -202,9 +202,13 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        JComponent selected = getIOContainer().getSelected();
+        while (selected != null) {
+            getIOContainer().remove(selected);
+            selected = getIOContainer().getSelected();
+        }
     }
-
+    
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
