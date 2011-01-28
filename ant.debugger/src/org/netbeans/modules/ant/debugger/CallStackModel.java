@@ -257,11 +257,17 @@ NodeActionsProvider, TableModel {
     public void performDefaultAction (Object node) 
     throws UnknownTypeException {
         if (node instanceof TargetLister.Target) {
-            Utils.showLine (Utils.getLine ((TargetLister.Target) node, null));
+            Object line = Utils.getLine ((TargetLister.Target) node, null);
+            if (line != null) {
+                Utils.showLine (line);
+            }
             return;
         }
         if (node instanceof Task) {
-            Utils.showLine (((Task) node).getLine ());
+            Object line = ((Task) node).getLine ();
+            if (line != null) {
+                Utils.showLine (line);
+            }
             return;
         }
         throw new UnknownTypeException (node);
