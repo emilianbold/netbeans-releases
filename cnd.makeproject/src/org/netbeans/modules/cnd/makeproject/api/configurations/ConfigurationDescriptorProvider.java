@@ -147,7 +147,7 @@ public class ConfigurationDescriptorProvider {
                         trackedFiles = files;
                     }
 
-                    ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
+                    ConfigurationXMLReader reader = new ConfigurationXMLReader(project, projectDirectory);
 
                     //                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
                     //                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
@@ -192,7 +192,7 @@ public class ConfigurationDescriptorProvider {
                     hasTried = true;
                 }
             }
-        }
+            }
         if (waitReading && projectDescriptor != null) {
             projectDescriptor.waitInitTask();
         }
