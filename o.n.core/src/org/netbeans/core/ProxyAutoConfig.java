@@ -182,7 +182,11 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.FINE, "While invoking FindProxyForURL(" + u + ", " + u.getHost() + " thrown " + ex, ex);
         }
         List<Proxy> res = analyzeResult(u, proxies);
-        LOGGER.fine("findProxyForURL(" + u + ") returns " + (res == null ? "null!" : Arrays.asList(res)));
+        if (res == null) {
+            LOGGER.info("findProxyForURL(" + u + ") returns null.");
+            res = Collections.emptyList();
+        }
+        LOGGER.fine("findProxyForURL(" + u + ") returns " + Arrays.asList(res));
         return res;
     }
 
@@ -211,7 +215,7 @@ public class ProxyAutoConfig {
 
     private List<Proxy> analyzeResult(URI uri, Object proxiesString) {
         if (proxiesString == null) {
-            LOGGER.info("Null result for " + uri);
+            LOGGER.fine("Null result for " + uri);
             return null;
         }
         Proxy.Type proxyType;
