@@ -81,7 +81,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
- * V78 (76?) - NB 7.0
+ * V79 - NB 7.0
+ *    Configuration type (CONFIGURATION_TYPE_ELEMENT) in project.xml
+ * V78 - NB 7.0
  *    storing active configuration inde in private/private.xml and no longer in private/configurations.xml
  * V77 (76?) - NB 7.0
  *    Store configuration type in project.xml
@@ -223,7 +225,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 78;
+    public final static int CURRENT_VERSION = 79;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N

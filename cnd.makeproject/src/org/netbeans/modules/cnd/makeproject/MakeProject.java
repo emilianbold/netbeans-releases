@@ -638,6 +638,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
      * Return source encoding if in project.xml (only project version >= 50)
      */
     public String getSourceEncodingFromProjectXml() {
+        int xxx = getActiveConfigurationType();
         Element data = helper.getPrimaryConfigurationData(true);
 
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
@@ -670,19 +671,60 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     /**
      * @return active configuration type (doesn't force reading configuration metadata)
-     * If metadata already read, get typw from the active configuration ((it may have changed)
-     * If not read, get type from project.xml file. This works only for >= V77
-     * If < V77 return -1.
+     * If metadata already read, get type from the active configuration (it may have changed)
+     * If not read, try private.xml (V >= V77)
+     * If not found, try project.xml (V >= V78)
      */
     public int getActiveConfigurationType() {
+        int type = -1;
+
         // If configurations already read, get it from active configuration (it may have changed)
         MakeConfiguration makeConfiguration = getActiveConfiguration();
         if (makeConfiguration != null) {
             return makeConfiguration.getConfigurationType().getValue();
         }
-        // Get it from xml (version >= V77)
-        Element data = helper.getPrimaryConfigurationData(false);
 
+        // Get it from private.xml (version >= V77)
+        type = getActiveConfigurationTypeFromPrivateXML();
+        if (type >= 0) {
+            return type;
+        }
+
+        // Get it from private.xml (version >= V77)
+        type = getActiveConfigurationTypeFromProjectXML();
+        if (type >= 0) {
+            return type;
+        }
+
+        return type;
+    }
+
+    /**
+     * @return active configuration type (doesn't force reading configuration metadata) (V >= V78). Returns -1 if not found.
+     */
+    public int getActiveConfigurationTypeFromProjectXML() {
+        Element data = helper.getPrimaryConfigurationData(true);
+        data = helper.getPrimaryConfigurationData(true);
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            Node typeNode = nodeList.item(0).getFirstChild();
+            if (typeNode != null) {
+                String type = typeNode.getNodeValue();
+                try {
+                    return new Integer(type).intValue();
+                }
+                catch (NumberFormatException nfe) {
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @return active configuration type from private.xml (doesn't force reading configuration metadata) (V >= V77). Returns -1 if not found.
+     */
+    public int getActiveConfigurationTypeFromPrivateXML() {
+        Element data = helper.getPrimaryConfigurationData(false);
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             for (int i = 0; i < nodeList.getLength(); i++) {
@@ -690,12 +732,11 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 return new Integer(node.getTextContent()).intValue();
             }
         }
-
         return -1;
     }
 
     /**
-     * @return active configuration index (doesn't force reading configuration metadata) from private.xml, if exists. Otherwise it returns 0;
+     * @return active configuration index (doesn't force reading configuration metadata) from private.xml, if exists. Returns -1 if not found.
      */
     public int getActiveConfigurationIndexFromPrivateXML() {
         // Get it from xml (version >= V77)
@@ -711,6 +752,26 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
         return -1;
     }
+
+
+//    private void dumpNode(Node node, int indent) {
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("-----------------------------");
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("nodeName    " + node.getNodeName());
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("nodeValue   " + node.getNodeValue());
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("localName   " + node.getLocalName());
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("prefix      " + node.getPrefix());
+////        System.out.print("            ".subSequence(0, indent));
+////        System.out.println("textContent " + node.getTextContent());
+//        NodeList nodeList = node.getChildNodes();
+//        for (int i = 0; i < nodeList.getLength(); i++) {
+//            dumpNode(nodeList.item(i), indent+2);
+//        }
+//    }
 
     /** NPE-safe method for getting active configuration */
     public MakeConfiguration getActiveConfiguration() {

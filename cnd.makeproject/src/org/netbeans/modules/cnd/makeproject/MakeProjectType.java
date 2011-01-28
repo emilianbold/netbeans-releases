@@ -65,6 +65,8 @@ public final class MakeProjectType implements AntBasedProjectType {
     public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
     public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
+    public final static String CONFIGURATION_NAME_ELEMENT = "name"; // NOI18N
+    public final static String CONFIGURATION_TYPE_ELEMENT = "type"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N
 
