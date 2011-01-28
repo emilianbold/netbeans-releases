@@ -645,6 +645,9 @@ public final class Resolver3 implements Resolver {
                 if( result == null ) {
                     if (parentResolver == null || !((Resolver3)parentResolver).resolveInBaseClass) {
                         result = resolveInBaseClasses(cls, nameTokens[0]);
+                        if(needTemplateClasses() && !CsmKindUtilities.isTemplate(result)) {
+                            result = null;
+                        }
                     }
                 }
             }
@@ -661,6 +664,9 @@ public final class Resolver3 implements Resolver {
             }
             if (result == null  && needClassifiers()){
                 result = findClassifierUsedInFile(nameTokens[0]);
+                if(needTemplateClasses() && !CsmKindUtilities.isTemplate(result)) {
+                    result = null;
+                }
             }
             if( result == null ) {
                 gatherMaps(file, true, origOffset);
@@ -720,7 +726,7 @@ public final class Resolver3 implements Resolver {
                 if(TemplateUtils.isTemplateQualifiedName(nameTokens[0].toString())) {
                     Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
                     try {
-                        result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString())), interestedKind);
+                        result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString())), TEMPLATE_CLASS);
                     } finally {
                         ResolverFactory.releaseResolver(aResolver);
                     }
@@ -964,7 +970,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private boolean needClassifiers() {
-        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses();
+        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses() || needTemplateClasses();
     }
 
     private boolean needNamespaces() {
@@ -972,6 +978,10 @@ public final class Resolver3 implements Resolver {
     }
 
     private boolean needClasses() {
-        return (interestedKind & CLASS) == CLASS;
+        return (interestedKind & CLASS) == CLASS || needTemplateClasses();
+    }
+
+    private boolean needTemplateClasses() {
+        return (interestedKind & TEMPLATE_CLASS) == TEMPLATE_CLASS;
     }
 }
