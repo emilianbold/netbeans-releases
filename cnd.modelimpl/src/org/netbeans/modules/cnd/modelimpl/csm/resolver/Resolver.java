@@ -58,6 +58,7 @@ public interface Resolver {
     public static final int NAMESPACE = 1 << 0;
     public static final int CLASSIFIER = 1 << 1;
     public static final int CLASS = 1 << 2;
+    public static final int TEMPLATE_CLASS = 1 << 3;
     public static final int ALL = NAMESPACE | CLASSIFIER | CLASS;
 
     public Collection<CsmProject> getLibraries();

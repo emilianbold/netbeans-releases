@@ -997,6 +997,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug187254.cpp", 14, 24, "bug187254.cpp", 8, 9);
         performTest("bug187254.cpp", 15, 24, "bug187254.cpp", 9, 9);
     }
+
+    public void testBug191026() throws Exception {
+        // Bug 191026 - Wrong class resolving
+        performTest("bug191026.cpp", 20, 11, "bug191026.cpp", 7, 9);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
