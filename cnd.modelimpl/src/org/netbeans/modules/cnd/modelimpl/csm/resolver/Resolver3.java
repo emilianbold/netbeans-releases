@@ -730,7 +730,7 @@ public final class Resolver3 implements Resolver {
             if (TemplateUtils.isTemplateQualifiedName(name.toString())) {
                 Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
                 try {
-                    result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString())), TEMPLATE_CLASS);
+                    result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(name.toString())), TEMPLATE_CLASS);
                 } finally {
                     ResolverFactory.releaseResolver(aResolver);
                 }
