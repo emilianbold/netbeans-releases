@@ -47,7 +47,9 @@ import java.io.File;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
@@ -70,6 +72,7 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     public void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
+        ServerList.setDefaultRecord(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
     }
 
     private static QmakeConfiguration newQmakeConfiguration(int confType) {
