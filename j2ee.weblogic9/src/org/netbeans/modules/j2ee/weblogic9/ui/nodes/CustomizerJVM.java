@@ -64,6 +64,7 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.Vendor;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,9 +74,12 @@ import org.openide.util.NbBundle;
 class CustomizerJVM extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 3411155308004602121L;
+
+    private final WLJpa2SwitchSupport support;
     
     CustomizerJVM(WLDeploymentManager manager) {
         this.manager = manager;
+        this.support = new WLJpa2SwitchSupport(manager);
         initComponents();
         
         initValues();
@@ -177,6 +181,20 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions.getDocument().addDocumentListener( 
                 new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
                         memoryOptions));
+        updateJPA20Button();
+    }
+
+    private void updateJPA20Button(){
+        if (support.isEnabledViaSmartUpdate()) {
+            jpa2Button.setEnabled(false);
+        } else {
+            jpa2Button.setEnabled(true);
+        }
+        if(support.isEnabled()){
+            org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_DisableJPA2")); // NOI18N
+        } else {
+            org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_EnableJPA2")); // NOI18N
+        }
     }
 
     /** This method is called from within the constructor to
@@ -199,6 +217,8 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions = new javax.swing.JTextField();
         memoryOptionsLabel = new javax.swing.JLabel();
         memoryOptionsCommentLabel = new javax.swing.JLabel();
+        jpa2Button = new javax.swing.JButton();
+        jpaOptionsLabel = new javax.swing.JLabel();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -220,6 +240,16 @@ class CustomizerJVM extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(memoryOptionsCommentLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmMemoryOptionsComment")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2Button, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.jpa2Button.text")); // NOI18N
+        jpa2Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jpa2ButtonActionPerformed(evt);
+            }
+        });
+
+        jpaOptionsLabel.setLabelFor(jpa2Button);
+        org.openide.awt.Mnemonics.setLocalizedText(jpaOptionsLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JPAOptions")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -233,15 +263,17 @@ class CustomizerJVM extends javax.swing.JPanel {
                             .addComponent(vendorLabel)
                             .addComponent(vmOptionsLabel)
                             .addComponent(javaHomeLabel)
-                            .addComponent(memoryOptionsLabel))
+                            .addComponent(memoryOptionsLabel)
+                            .addComponent(jpaOptionsLabel))
                         .addGap(8, 8, 8)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
+                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
+                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
                             .addComponent(vmOptionsSampleLabel)
-                            .addComponent(memoryOptionsCommentLabel))))
+                            .addComponent(memoryOptionsCommentLabel)
+                            .addComponent(jpa2Button))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -267,7 +299,11 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(memoryOptionsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jpa2Button)
+                    .addComponent(jpaOptionsLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
@@ -292,6 +328,15 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptionsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_VmMemoryOptions")); // NOI18N
         memoryOptionsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_VmMemoryOptions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jpa2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2ButtonActionPerformed
+        if (support.isEnabled()) {
+            support.disable();
+        } else {
+            support.enable();
+        }
+        updateJPA20Button();
+    }//GEN-LAST:event_jpa2ButtonActionPerformed
     
     private static final class DefaultVendor{
         private DefaultVendor(){
@@ -313,6 +358,8 @@ class CustomizerJVM extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField javaHome;
     private javax.swing.JLabel javaHomeLabel;
+    private javax.swing.JButton jpa2Button;
+    private javax.swing.JLabel jpaOptionsLabel;
     private javax.swing.JTextField memoryOptions;
     private javax.swing.JLabel memoryOptionsCommentLabel;
     private javax.swing.JLabel memoryOptionsLabel;
