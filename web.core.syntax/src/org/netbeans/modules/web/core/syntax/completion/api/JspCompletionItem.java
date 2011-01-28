@@ -391,7 +391,7 @@ public class JspCompletionItem implements CompletionItem {
         }
 
         PrefixTag(String prefix, int substitutionOffset, TagInfo ti, SyntaxElement.Tag set) {
-            super(prefix + ":" + ti.getTagName(), substitutionOffset, ti != null ? ti.getInfoString() : null); // NOI18N
+            super(prefix + ":" + (ti != null ? ti.getTagName() : "<null>"), substitutionOffset, ti != null ? ti.getInfoString() : null); // NOI18N
             tagInfo = ti;
             if ((tagInfo != null) &&
                     (tagInfo.getBodyContent().equalsIgnoreCase(TagInfo.BODY_CONTENT_EMPTY))) {
