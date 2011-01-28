@@ -162,7 +162,7 @@ public interface GitClient {
     
     /**
      * Fetches remote changes for references specified in the config file under a given remote.
-     * @param remote
+     * @param remote should be a name of a remote set up in the repository config file
      * @param monitor
      * @return 
      * @throws GitException 
@@ -171,7 +171,7 @@ public interface GitClient {
     
     /**
      * Fetches remote changes for given reference specifications.
-     * @param remote
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
      * @param fetchRefSpecifications 
      * @param monitor
      * @return 
