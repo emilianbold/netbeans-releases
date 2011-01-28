@@ -207,7 +207,6 @@ Other names may be trademarks of their respective owners.
                     <tocitem text="Generating a JAX-WS Web Service from a WSDL File" target="create_ws_from_wsdl" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
-                    <tocitem text="Creating Axis2 Web Services" target="create_axis" />
             </tocitem>
             <tocitem text="Configuring Web Services" >
                 <tocitem text="About Configuring Web Services" target="config_ws_about" />
@@ -215,7 +214,6 @@ Other names may be trademarks of their respective owners.
                 <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
                 <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
                 <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
-                <tocitem text="Configuring Axis2 Web Services" target="configure_axis"></tocitem>
             </tocitem>  
             <tocitem text="Building Web Services" >
                 <tocitem text="About Building Web Services" target="about_build_ws" />
@@ -228,12 +226,7 @@ Other names may be trademarks of their respective owners.
                 <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
                 <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
                 <tocitem text="Testing a RESTful Web Service" target="test_rest" />
-		<tocitem text="Deploying and Testing Axis2 Web Services" target="deploy_test_axis" >
-			<tocitem text="Setting Up Axis2 Web Service Deployment" target="as_setup" />
-			<tocitem text="Deploying Axis2 Web Services" target="deploy_axis" />
-			<tocitem text="Testing Axis2 Web Services" target="test_axis" />
-		</tocitem>
-                <tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
+		<tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
             </tocitem>
             <tocitem text="Creating Web Service Clients" >
                 <tocitem text="About Web Service Clients" target="about_wsc" />

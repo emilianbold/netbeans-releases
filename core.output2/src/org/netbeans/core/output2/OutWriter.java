@@ -98,6 +98,7 @@ class OutWriter extends PrintWriter {
      */
     private int lineStart;
     private int lineLength;
+    private int lineCharLengthWithTabs;
 
     /** Creates a new instance of OutWriter */
     OutWriter(NbIO owner) {
@@ -112,6 +113,7 @@ class OutWriter extends PrintWriter {
         super (new DummyWriter());
         lineStart = -1;
         lineLength = 0;
+        lineCharLengthWithTabs = 0;
     }
 
     Storage getStorage() {
@@ -166,7 +168,7 @@ class OutWriter extends PrintWriter {
      * @param bb
      * @throws IOException
      */
-    public synchronized void write(ByteBuffer bb, boolean completeLine) {
+    public synchronized void write(ByteBuffer bb, int lineCharLengthWithTabs, boolean completeLine) {
         if (checkError()) {
             return;
         }
@@ -202,13 +204,15 @@ class OutWriter extends PrintWriter {
         }
         int length = bb.limit();
         lineLength = lineLength + length;
+        this.lineCharLengthWithTabs += lineCharLengthWithTabs;
         if (start >= 0 && lineStart == -1) {
             lineStart = start;
         }
-        lines.lineUpdated(lineStart, lineLength, completeLine);
+        lines.lineUpdated(lineStart, lineLength, this.lineCharLengthWithTabs, completeLine);
         if (completeLine) {
             lineStart = -1;
             lineLength = 0;
+            this.lineCharLengthWithTabs = 0;
         }
         if (owner != null && owner.isStreamClosed()) {
             owner.setStreamClosed(false);
@@ -377,7 +381,6 @@ class OutWriter extends PrintWriter {
     
     /** write buffer size in chars */
     private static final int WRITE_BUFF_SIZE = 16*1024;
-    static final String TAB_REPLACEMENT = "        ";
     private synchronized void doWrite(CharSequence s, int off, int len) {
         if (checkError() || len == 0) {
             return;
@@ -394,35 +397,39 @@ class OutWriter extends PrintWriter {
         }
          */
 
+        int lineCLVT = 0;
         try {
             boolean written = false;
             ByteBuffer byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
             CharBuffer charBuff = byteBuff.asCharBuffer();
             for (int i = off; i < off + len; i++) {
-                if (charBuff.position() + TAB_REPLACEMENT.length() >= WRITE_BUFF_SIZE) {
-                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), false);
+                if (charBuff.position() + 1 >= WRITE_BUFF_SIZE) {
+                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, false);
                     written = true;
                 }
                 if (written) {
                     byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
                     charBuff = byteBuff.asCharBuffer();
+                    lineCLVT = 0;
                     written = false;
                 }
                 char c = s.charAt(i);
                 if (c == '\t') {
-                    charBuff.put(TAB_REPLACEMENT);
+                    charBuff.put(c);
+                    lineCLVT += 8 - ((this.lineCharLengthWithTabs + lineCLVT) % 8);
                 } else if (c == '\r') {
                     // skip
                 } else if (c == '\n') {
                     charBuff.put(c);
-                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), true);
+                    write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, true);
                     written = true;
                 } else {
                     charBuff.put(c);
+                    lineCLVT++;
                 }
             }
             if (!written) {
-                write((ByteBuffer) byteBuff.position(charBuff.position() * 2), false);
+                write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, false);
             }
         } catch (IOException ioe) {
             onWriteException();

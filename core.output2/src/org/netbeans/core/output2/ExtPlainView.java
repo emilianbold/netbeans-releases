@@ -294,16 +294,6 @@ class ExtPlainView extends PlainView {
 	}
     }    
 
-    @Override
-    protected void updateMetrics() {
-        Component host = getContainer();
-        Font f = host.getFont();
-        if (font != f) {
-            // The font changed, we need to recalculate the longest line.
-            calcLongestLineLength();
-        }
-    }
-    
     /**
      * Calculate the width of the line represented by the given element.
      * It is assumed that the font and font metrics are up-to-date.
