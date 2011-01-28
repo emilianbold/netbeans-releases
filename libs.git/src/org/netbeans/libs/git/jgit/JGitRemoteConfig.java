@@ -40,42 +40,66 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.terminal;
+package org.netbeans.libs.git.jgit;
 
-import java.awt.Component;
-import javax.swing.Action;
-import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.windows.IOContainer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.netbeans.libs.git.GitRemoteConfig;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author ondra
  */
-public final class TerminalSupport {
-    
-    private TerminalSupport() {
-    }
-    
-    /**
-     * opens terminal tab in tab container for specified host in default location
-     * @param ioContainer
-     * @param env 
-     */
-    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false);
-    }
-    
-    /**
-     * opens terminal tab in tab container and change dir into specified directory
-     * @param ioContainer
-     * @param env 
-     */
-    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+public class JGitRemoteConfig implements GitRemoteConfig {
+    private final List<String> uris;
+    private final List<String> pushUris;
+    private final List<String> fetchSpecs;
+    private final List<String> pushSpecs;
+    private final String remoteName;
+
+    public JGitRemoteConfig (RemoteConfig config) {
+        this.remoteName = config.getName();
+        this.uris = getAsStrings(config.getURIs());
+        this.pushUris = getAsStrings(config.getPushURIs());
+        this.fetchSpecs = getAsStrings(config.getFetchRefSpecs());
+        this.pushSpecs = getAsStrings(config.getPushRefSpecs());
     }
 
-    public static Component getToolbarPresenter(Action action) {
-        return TerminalSupportImpl.getToolbarPresenter(action);
+    @Override
+    public String getRemoteName () {
+        return remoteName;
     }
+
+    @Override
+    public List<String> getUris () {
+        return Collections.unmodifiableList(uris);
+    }
+
+    @Override
+    public List<String> getPushUris () {
+        return Collections.unmodifiableList(pushUris);
+    }
+
+    @Override
+    public List<String> getFetchRefSpecs () {
+        return Collections.unmodifiableList(fetchSpecs);
+    }
+
+    @Override
+    public List<String> getPushRefSpecs () {
+        return Collections.unmodifiableList(pushSpecs);
+    }
+
+    private static List<String> getAsStrings (List<? extends Object> list) {
+        Set<String> set = new HashSet<String>();
+        for (Object elem : list) {
+            set.add(elem.toString());
+        }
+        return new LinkedList<String>(set);
+    }
+
 }

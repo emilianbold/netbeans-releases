@@ -102,6 +102,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -323,8 +324,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
+        Info info = new Info();
         Lookup lkp = Lookups.fixed(new Object[]{
-                    new Info(),
+                    info,
                     aux,
                     helper.createCacheDirectoryProvider(),
                     spp,
@@ -338,7 +340,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     sources,
                     helper,
                     projectDescriptorProvider,
-                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
+                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
                     new NativeProjectProvider(this, projectDescriptorProvider),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
@@ -679,9 +681,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return makeConfiguration.getConfigurationType().getValue();
         }
         // Get it from xml (version >= V77)
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = helper.getPrimaryConfigurationData(false);
 
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                return new Integer(node.getTextContent()).intValue();
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * @return active configuration index (doesn't force reading configuration metadata) from private.xml, if exists. Otherwise it returns 0;
+     */
+    public int getActiveConfigurationIndexFromPrivateXML() {
+        // Get it from xml (version >= V77)
+        Element data = helper.getPrimaryConfigurationData(false);
+
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
@@ -792,9 +812,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final static String PROJECT_NAME_WITH_HIDDEN_PATHS = System.getProperty("cnd.project.name.hidden.paths"); //NOI18N
     private final static int PROJECT_NAME_NUM_SHOWN_FOLDERS = Integer.getInteger("cnd.project.name.folders.num", 1); //NOI18N
 
-    interface InfoInterface extends ProjectInformation {
-        public void firePropertyChange(String prop);
-        public void setName(String name);
+    interface InfoInterface extends ProjectInformation, PropertyChangeListener {
+        void firePropertyChange(String prop);
+        void setName(String name);
     }
     
     private final class Info implements InfoInterface {
@@ -803,6 +823,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         private String name;
 
         Info() {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
+                firePropertyChange(ProjectInformation.PROP_ICON);
+            }
         }
 
         @Override
@@ -930,16 +957,26 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return aName;
         }
 
-        @Override
-        public Icon getIcon() {
-            Icon icon = null;
-            icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
+        private int getProjectType() {
             MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
             if (activeConfiguration != null) {
-                int type = activeConfiguration.getConfigurationType().getValue();
-                switch (type) {
-                    case MakeConfiguration.TYPE_MAKEFILE:
-                    {
+                return activeConfiguration.getConfigurationType().getValue();
+            }
+            if (projectType != -1) {
+                return projectType;
+            }
+            return -1;
+        }
+
+        @Override
+        public Icon getIcon() {
+            int type = getProjectType();
+            Icon icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
+            switch (type) {
+                case MakeConfiguration.TYPE_MAKEFILE:
+                {
+                    MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
+                    if (activeConfiguration != null) {
                         String outputValue = activeConfiguration.getOutputValue();
                         if (outputValue != null) {
                             if (outputValue.endsWith(".so") || // NOI18N
@@ -954,27 +991,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                         } else {
                             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
                         }
-                        break;
                     }
-                    case MakeConfiguration.TYPE_APPLICATION:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_STATIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_APPLICATION:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
-                        break;
+                    break;
                 }
+                case MakeConfiguration.TYPE_APPLICATION:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_STATIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_QT_APPLICATION:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
+                    break;
             }
             return icon;
         }

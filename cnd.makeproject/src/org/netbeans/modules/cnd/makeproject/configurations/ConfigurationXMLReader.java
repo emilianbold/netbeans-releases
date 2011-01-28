@@ -50,10 +50,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -80,9 +82,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
     private static int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final FileObject projectDirectory;
+    private final Project project;
     private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
-    public ConfigurationXMLReader(FileObject projectDirectory) {
+    public ConfigurationXMLReader(Project project, FileObject projectDirectory) {
+        this.project = project;
         this.projectDirectory = projectDirectory;
     // LATER configurationDescriptor = new
     }
@@ -173,6 +177,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
             if (!success) {
                 return null;
             }
+        }
+
+        // Read things from private/project.xml
+        int activeIndex = ((MakeProject)project).getActiveConfigurationIndexFromPrivateXML();
+        if (activeIndex >= 0) {
+            configurationDescriptor.getConfs().setActive(activeIndex);
         }
 
         // Ensure all item configurations have been created (default are not stored in V >= 57)

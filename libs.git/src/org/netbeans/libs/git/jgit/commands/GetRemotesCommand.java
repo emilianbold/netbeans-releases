@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git.jgit.commands;
 
-package org.netbeans.modules.dlight.api.terminal;
-
-import java.awt.Component;
-import javax.swing.Action;
-import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.windows.IOContainer;
+import org.netbeans.libs.git.jgit.JGitRemoteConfig;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author ondra
  */
-public final class TerminalSupport {
+public class GetRemotesCommand extends GitCommand {
+
+    private Map<String, GitRemoteConfig> remotes;
     
-    private TerminalSupport() {
-    }
-    
-    /**
-     * opens terminal tab in tab container for specified host in default location
-     * @param ioContainer
-     * @param env 
-     */
-    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false);
-    }
-    
-    /**
-     * opens terminal tab in tab container and change dir into specified directory
-     * @param ioContainer
-     * @param env 
-     */
-    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+    public GetRemotesCommand (Repository repository, ProgressMonitor monitor) {
+        super(repository, monitor);
     }
 
-    public static Component getToolbarPresenter(Action action) {
-        return TerminalSupportImpl.getToolbarPresenter(action);
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        try {
+            List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
+            remotes = new HashMap<String, GitRemoteConfig>(configs.size());
+            for (RemoteConfig remote : configs) {
+                remotes.put(remote.getName(), new JGitRemoteConfig(remote));
+            }
+        } catch (URISyntaxException ex) {
+            throw new GitException(ex);
+        }
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        return "git remote -v"; //NOI18N
+    }
+
+    public Map<String, GitRemoteConfig> getRemotes () {
+        return remotes;
     }
 }

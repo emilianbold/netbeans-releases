@@ -44,7 +44,6 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -203,6 +202,23 @@ public interface GitClient {
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
 
+    /**
+     * Returns remote configuration set up for this repository identified by a given remoteName
+     * @param remoteName
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns all remote configurations set up for this repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException;
+    
     /**
      * Returns the current state of the repository this client is associated with.
      * @return current repository state

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
@@ -71,19 +70,18 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
+
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
     private static final String USG_CND_PROJECT_ACTION = "USG_CND_PROJECT_ACTION"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final static RequestProcessor RP = new RequestProcessor("Configuration Updater", 1); // NOI18N
-
     private final FileObject projectDirectory;
     private Project project = null;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
     private String relativeOffset = null;
-
     private List<FileObject> trackedFiles;
     private volatile boolean needReload;
 
@@ -91,24 +89,26 @@ public class ConfigurationDescriptorProvider {
         this.project = null;
         this.projectDirectory = projectDirectory;
     }
-    
+
     public ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
         this.project = project;
         this.projectDirectory = projectDirectory;
     }
-    
+
     public void setRelativeOffset(String relativeOffset) {
         this.relativeOffset = relativeOffset;
     }
-    
     private final Object readLock = new Object();
+
     public MakeConfigurationDescriptor getConfigurationDescriptor() {
         return getConfigurationDescriptor(true);
     }
-    private boolean shouldBeLoaded(){
+
+    private boolean shouldBeLoaded() {
         return ((projectDescriptor == null || needReload) && !hasTried);
 
     }
+
     public MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
         if (shouldBeLoaded()) {
             // attempt to read configuration descriptor
@@ -124,11 +124,11 @@ public class ConfigurationDescriptorProvider {
 
                     if (trackedFiles == null) {
                         FileChangeListener fcl = new ConfigurationXMLChangeListener();
-                         List<FileObject> files = new ArrayList<FileObject>(2);
+                        List<FileObject> files = new ArrayList<FileObject>(2);
                         boolean first = true;
-                        for (String path : new String[] {
-                                "nbproject/configurations.xml", //NOI18N
-                                "nbproject/private/configurations.xml"}) { //NOI18N
+                        for (String path : new String[]{
+                                    "nbproject/configurations.xml", //NOI18N
+                                    "nbproject/private/configurations.xml"}) { //NOI18N
                             FileObject fo = projectDirectory.getFileObject(path);
                             if (fo != null) {
                                 fo.addFileChangeListener(fcl);
@@ -138,7 +138,7 @@ public class ConfigurationDescriptorProvider {
                             } else {
                                 if (first) {
                                     // prevent reading configurations before project cration
-                                    new Exception("Attempt to read project before creation. Not found file "+projectDirectory.getPath()+"/"+path).printStackTrace(System.err); // NOI18N
+                                    new Exception("Attempt to read project before creation. Not found file " + projectDirectory.getPath() + "/" + path).printStackTrace(System.err); // NOI18N
                                     return null;
                                 }
                             }
@@ -147,16 +147,16 @@ public class ConfigurationDescriptorProvider {
                         trackedFiles = files;
                     }
 
-                    ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
+                    ConfigurationXMLReader reader = new ConfigurationXMLReader(project, projectDirectory);
 
-    //                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
-    //                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
-    //                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-    //                            // CHANGE YOUR LOGIC INSTEAD
-    //
-    //                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-    //                            // return null;
-    //                        }
+                    //                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
+                    //                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
+                    //                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+                    //                            // CHANGE YOUR LOGIC INSTEAD
+                    //
+                    //                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+                    //                            // return null;
+                    //                        }
                     try {
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
@@ -192,7 +192,7 @@ public class ConfigurationDescriptorProvider {
                     hasTried = true;
                 }
             }
-        }
+            }
         if (waitReading && projectDescriptor != null) {
             projectDescriptor.waitInitTask();
         }
@@ -201,15 +201,15 @@ public class ConfigurationDescriptorProvider {
 
     private Delta getDelta(MakeConfigurationDescriptor newDescriptor) {
         Item[] oldItems = projectDescriptor.getProjectItems();
-        Map<String,Item> oldMap = new HashMap<String,Item>();
+        Map<String, Item> oldMap = new HashMap<String, Item>();
         Set<Item> oldSet = new HashSet<Item>();
-        for(Item item : oldItems) {
+        for (Item item : oldItems) {
             oldMap.put(item.getAbsolutePath(), item);
             oldSet.add(item);
         }
         Delta delta = new Delta();
         Item[] newItems = newDescriptor.getProjectItems();
-        for(Item item : newItems) {
+        for (Item item : newItems) {
             Item oldItem = oldMap.get(item.getAbsolutePath());
             if (oldItem == null) {
                 delta.added.add(item);
@@ -220,12 +220,12 @@ public class ConfigurationDescriptorProvider {
                     delta.replaced.add(item);
                 } else if (item.isExcluded() && !oldItem.isExcluded()) {
                     delta.exluded.add(item);
-                } else  if (!item.isExcluded() && oldItem.isExcluded()) {
+                } else if (!item.isExcluded() && oldItem.isExcluded()) {
                     delta.included.add(item);
                 } else {
                     // compare item properties
-                    if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths()) &&
-                          item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
+                    if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths())
+                            && item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
                         delta.changed.add(item);
                     } else {
                         delta.replaced.add(item);
@@ -240,9 +240,9 @@ public class ConfigurationDescriptorProvider {
     }
 
     public boolean gotDescriptor() {
-        return projectDescriptor != null && projectDescriptor.getState() != State.READING;   
+        return projectDescriptor != null && projectDescriptor.getState() != State.READING;
     }
-    
+
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
         HashSet<ConfigurationAuxObjectProvider> auxObjectProviders = new HashSet<ConfigurationAuxObjectProvider>();
         Collection<? extends ConfigurationAuxObjectProvider> collection =
@@ -283,7 +283,7 @@ public class ConfigurationDescriptorProvider {
         }
         Item[] projectItems = null;
         if (makeConfiguration == null) {
-            if (descr.getConfs() == null || descr.getConfs().getActive() == null){
+            if (descr.getConfs() == null || descr.getConfs().getActive() == null) {
                 return;
             }
             if (makeConfiguration == null) {
@@ -339,7 +339,7 @@ public class ConfigurationDescriptorProvider {
         } else {
             families = new String[0];
             if (makeConfiguration.getCompilerSet() != null) {
-                families = new String[] { makeConfiguration.getCompilerSet().getName() };
+                families = new String[]{makeConfiguration.getCompilerSet().getName()};
             }
             flavor = makeConfiguration.getCompilerSet().getFlavor();
         }
@@ -453,6 +453,7 @@ public class ConfigurationDescriptorProvider {
                         needReload = true;
                         hasTried = false;
                         RP.post(new Runnable() {
+
                             @Override
                             public void run() {
                                 getConfigurationDescriptor();
@@ -492,10 +493,10 @@ public class ConfigurationDescriptorProvider {
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // Don't reset configuration on file attribute change.
         }
-
     }
 
     public static final class Delta {
+
         public List<Item> included = new ArrayList<Item>(); // marked as included
         public List<Item> added = new ArrayList<Item>(); // added in project
         public List<Item> exluded = new ArrayList<Item>(); // marked as excluded
@@ -503,7 +504,7 @@ public class ConfigurationDescriptorProvider {
         public List<Item> changed = new ArrayList<Item>(); // changed properties
         public List<Item> replaced = new ArrayList<Item>(); // properties were not changed (from code model point of view) but instance was replaced
 
-        public boolean isEmpty(){
+        public boolean isEmpty() {
             return included.isEmpty() && added.isEmpty() && exluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
         }
     }

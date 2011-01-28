@@ -40,42 +40,24 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.terminal;
+package org.netbeans.libs.git;
 
-import java.awt.Component;
-import javax.swing.Action;
-import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.windows.IOContainer;
+import java.util.List;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author ondra
  */
-public final class TerminalSupport {
+public interface GitRemoteConfig {
     
-    private TerminalSupport() {
-    }
+    String getRemoteName ();
     
-    /**
-     * opens terminal tab in tab container for specified host in default location
-     * @param ioContainer
-     * @param env 
-     */
-    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false);
-    }
+    List<String> getUris ();
     
-    /**
-     * opens terminal tab in tab container and change dir into specified directory
-     * @param ioContainer
-     * @param env 
-     */
-    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
-    }
+    List<String> getPushUris ();
+    
+    List<String> getFetchRefSpecs ();
+    
+    List<String> getPushRefSpecs ();
 
-    public static Component getToolbarPresenter(Action action) {
-        return TerminalSupportImpl.getToolbarPresenter(action);
-    }
 }

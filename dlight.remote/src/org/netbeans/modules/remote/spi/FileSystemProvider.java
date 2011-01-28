@@ -181,6 +181,15 @@ public final class FileSystemProvider {
         return absPath;
     }
 
+    public static boolean isAbsolute(ExecutionEnvironment env,  String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.isAbsolute(path);
+            }
+        }
+        return true; // for other file system, let us return true - or should it be false? 
+    }
+    
     public static boolean isAbsolute(String path) {
         if (path == null || path.length() == 0) {
             return false;
