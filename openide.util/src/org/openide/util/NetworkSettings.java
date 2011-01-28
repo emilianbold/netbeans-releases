@@ -130,6 +130,9 @@ public final class NetworkSettings {
     }
     
     private static InetSocketAddress analyzeProxy(URI u) {
+        if (u == null) {
+            throw new IllegalArgumentException("The URI parameter cannot be null.");
+        }
         List<Proxy> proxies = ProxySelector.getDefault().select(u);
         assert proxies != null : "ProxySelector cannot return null for " + u;
         assert ! proxies.isEmpty() : "ProxySelector cannot return empty list for " + u;
