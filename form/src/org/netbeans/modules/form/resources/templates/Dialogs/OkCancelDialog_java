@@ -14,6 +14,15 @@
 package ${package};
 
 </#if>
+
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+
 /**
  *
  * @author ${user}
@@ -28,6 +37,17 @@ public class ${name} extends javax.swing.JDialog {
     public ${name}(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+
+        // Close the dialog when Esc is pressed
+        String cancelName = "cancel";
+        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), cancelName);
+        ActionMap actionMap = getRootPane().getActionMap();
+        actionMap.put(cancelName, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                doClose(RET_CANCEL);
+            }
+        });
     }
 
     /** @return the return status of this dialog - one of RET_OK or RET_CANCEL */
@@ -89,6 +109,9 @@ public class ${name} extends javax.swing.JDialog {
                     .add(okButton))
                 .addContainerGap())
         );
+
+        getRootPane().setDefaultButton(okButton);
+
         pack();
     }
     // </editor-fold>//GEN-END:initComponents
@@ -130,9 +153,8 @@ public class ${name} extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JButton okButton;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 
     private int returnStatus = RET_CANCEL;
