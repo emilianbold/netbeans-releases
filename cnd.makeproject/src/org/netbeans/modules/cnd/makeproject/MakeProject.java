@@ -681,9 +681,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return makeConfiguration.getConfigurationType().getValue();
         }
         // Get it from xml (version >= V77)
-        Element data = helper.getPrimaryConfigurationData(true);
+        Element data = helper.getPrimaryConfigurationData(false);
 
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                return new Integer(node.getTextContent()).intValue();
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * @return active configuration index (doesn't force reading configuration metadata) from private.xml, if exists. Otherwise it returns 0;
+     */
+    public int getActiveConfigurationIndexFromPrivateXML() {
+        // Get it from xml (version >= V77)
+        Element data = helper.getPrimaryConfigurationData(false);
+
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
