@@ -858,14 +858,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             n1.appendChild(doc.createTextNode(conf.getName()));
             element2.appendChild(n1);
             n1 = doc.createElement(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
-            n1.appendChild(doc.createTextNode("" + ((MakeConfiguration)conf).getConfigurationType().getValue()));
+            n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getConfigurationType().getValue()));
             element2.appendChild(n1);
             element.appendChild(element2);
         }
         data.appendChild(element);
 
         helper.putPrimaryConfigurationData(data, true);
-        
+
 
         // Create source encoding node
         nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);

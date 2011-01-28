@@ -88,7 +88,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     public ConfigurationXMLReader(Project project, FileObject projectDirectory) {
         this.project = project;
         this.projectDirectory = projectDirectory;
-    // LATER configurationDescriptor = new
+        // LATER configurationDescriptor = new
     }
 
 
@@ -116,7 +116,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory);
         Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
-            protected @Override void runImpl() {
+            protected 
+            @Override
+            void runImpl() {
                 try {
                     if (MakeProjectConfigurationProvider.ASYNC_LOAD) {
                         try {
@@ -181,7 +183,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Read things from private/project.xml
         if (project != null) {
-            int activeIndex = ((MakeProject)project).getActiveConfigurationIndexFromPrivateXML();
+            int activeIndex = ((MakeProject) project).getActiveConfigurationIndexFromPrivateXML();
             if (activeIndex >= 0) {
                 configurationDescriptor.getConfs().setActive(activeIndex);
             }
@@ -204,7 +206,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // the makefiles will be generated before the project is being built
         boolean isMakefileProject = false;
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration)configuration;
+            MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
             if (makeConfiguration.isMakefileConfiguration()) {
                 isMakefileProject = true;
                 break;
@@ -249,8 +251,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
+    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor) {
         Task task = REQUEST_PROCESSOR.post(new Runnable() {
+
             @Override
             public void run() {
                 long time = System.currentTimeMillis();
@@ -279,7 +282,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // revert changes bacause opening project time is increased.
         //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
     }
-
 
     // interface XMLDecoder
     @Override
