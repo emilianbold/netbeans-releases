@@ -78,16 +78,16 @@ public class ConfigurationDescriptorProvider {
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final static RequestProcessor RP = new RequestProcessor("Configuration Updater", 1); // NOI18N
     private final FileObject projectDirectory;
-    private Project project = null;
+    private final Project project;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
     private String relativeOffset = null;
     private List<FileObject> trackedFiles;
     private volatile boolean needReload;
 
+    // for unit tests only
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
-        this.project = null;
-        this.projectDirectory = projectDirectory;
+        this(null, projectDirectory);
     }
 
     public ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
