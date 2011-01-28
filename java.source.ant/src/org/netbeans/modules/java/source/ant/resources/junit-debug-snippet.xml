@@ -70,11 +70,12 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
     <target name="-prepare-execution" depends="-init-debug-args">
+        <property name="test.result.dir" location="${java.io.tmpdir}"/>
+        <property name="test.result.file"
+                  location="${test.result.dir}/TEST-${classname}.xml"/>
+        <property  name="tmp.dir" value="${basedir}"/>
         <macrodef name="junit-debug-template">
-            <!-- This macros is intended to be used in conjunction with the
-            org.apache.tools.ant.module.spi.AntLogger. Note, the last task
-            deletes just created test report. -->
-            <element name="extra-args" implicit="yes" optional="yes"/>
+            <element name="test-spec" implicit="yes"/>
             <sequential>
                 <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
                 <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
@@ -87,40 +88,40 @@ made subject to such option by the copyright holder.
                 </nbjpdastart>
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
-                <!-- needed in order to display test names: -->
-                <property name="test.result.file" location="${java.io.tmpdir}/TEST-${classname}.xml"/>
-                <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}" jvm="${platform.java}">
-                    <classpath>
-                        <fileset dir="${ant.home}" includes="patches/*.jar"/>
-                        <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
-                        <path path="${classpath-translated}"/>
-                    </classpath>
+                <junit showoutput="true" fork="true" dir="${work.dir}" jvm="${platform.java}" tempdir="${tmp.dir}">
+                    <test-spec/>
+                    <classpath path="${classpath-translated}" />
                     <jvmarg line="${debug-args-line}"/>
                     <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <jvmarg value="-ea"/>
                     <jvmarg line="${run.jvmargs}"/>
-                    <arg value="${classname}"/>
-                    <arg value="showoutput=true"/>
-                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
-                    <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.result.file}"/>
-                    <extra-args/>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml" />
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
                         <mapper from="test-sys-prop.*" to="*" type="glob"/>
                     </syspropertyset>
-                </java>
-                <delete file="${test.result.file}" deleteonexit="true" />
+                </junit>
             </sequential>
         </macrodef>
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
     </target>
     <target name="-debug-test-class" depends="-prepare-execution" unless="methodname">
-        <junit-debug-template/>
+        <junit-debug-template>
+            <test name="${classname}" todir="${test.result.dir}"/>
+        </junit-debug-template>
     </target>
     <target name="-debug-test-method" depends="-check-run-test-single-method-supported,-prepare-execution" if="methodname">
         <junit-debug-template>
-            <arg value="methods=${methodname}"/>
+            <test name="${classname}" methods="${methodname}"
+                  todir="${test.result.dir}"/>
         </junit-debug-template>
     </target>
-    <target name="debug-test" depends="-debug-test-class,-debug-test-method"/>
+    <target name="debug-test" depends="-debug-test-class,-debug-test-method">
+        <!-- This target is intended to be used in conjunction with the
+        org.apache.tools.ant.module.spi.AntLogger. Note, the next task
+        deletes just created test report. -->
+        <delete file="${test.result.file}" deleteonexit="true" />
+    </target>
 
 </project>
