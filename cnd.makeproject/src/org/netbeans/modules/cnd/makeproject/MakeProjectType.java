@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.IOException;
@@ -67,18 +66,19 @@ public final class MakeProjectType implements AntBasedProjectType {
     public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
-    
+
     /**
      * Do nothing, just a service.
      * public for testing
      */
-    public MakeProjectType() {}
-    
+    public MakeProjectType() {
+    }
+
     @Override
     public String getType() {
         return TYPE;
     }
-    
+
     @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         return new MakeProject(helper);
@@ -88,7 +88,7 @@ public final class MakeProjectType implements AntBasedProjectType {
     public String getPrimaryConfigurationDataElementName(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
     }
-    
+
     @Override
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
