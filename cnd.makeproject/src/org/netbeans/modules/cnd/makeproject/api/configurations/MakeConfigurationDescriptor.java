@@ -840,6 +840,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         data.appendChild(element);
         helper.putPrimaryConfigurationData(data, true);
 
+
         // Remove old configuration node
         nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
@@ -850,15 +851,21 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         // Create new configuration node
         element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
-        String[] confsNames = getConfs().getConfsAsNames();
-        for (String name : confsNames) {
+        for (Configuration conf : getConfs().getConfigurations()) {
+            Element element2 = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_ELEMENT);
             Node n1;
-            n1 = doc.createElement(MakeProjectType.CONFIGURATION_ELEMENT);
-            n1.appendChild(doc.createTextNode(name));
-            element.appendChild(n1);
+            n1 = doc.createElement(MakeProjectType.CONFIGURATION_NAME_ELEMENT);
+            n1.appendChild(doc.createTextNode(conf.getName()));
+            element2.appendChild(n1);
+            n1 = doc.createElement(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
+            n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getConfigurationType().getValue()));
+            element2.appendChild(n1);
+            element.appendChild(element2);
         }
         data.appendChild(element);
+
         helper.putPrimaryConfigurationData(data, true);
+
 
         // Create source encoding node
         nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
