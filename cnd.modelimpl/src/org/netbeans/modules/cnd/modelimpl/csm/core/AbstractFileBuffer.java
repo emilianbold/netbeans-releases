@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -56,8 +55,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
@@ -100,7 +97,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             return fileObject.getFileSystem();
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
-            return InvalidFileObjectSupport.getDummyFileSystem();
+            return CndFileSystemProvider.getDummyFileSystem();
         }       
     }
 
@@ -131,7 +128,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public FileObject getFileObject() {
         FileObject result = fileSystem.findResource(absPath.toString());
         if (result == null) {
-            result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
+            result = CndFileSystemProvider.getInvalidFileObject(fileSystem, absPath);
         }
         return result;
     }

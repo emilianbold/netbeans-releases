@@ -59,7 +59,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -97,7 +96,7 @@ public final class CndFileUtils {
             }
         }
         if (afileFileSystem == null) {
-            afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            afileFileSystem = CndFileSystemProvider.getDummyFileSystem();
             Exceptions.printStackTrace(new Exception("Cannot get local file system")); //NOI18N
         }
         fileFileSystem = afileFileSystem;
@@ -163,7 +162,7 @@ public final class CndFileUtils {
     public static FileObject toFileObject(File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) {
-            return InvalidFileObjectSupport.getInvalidFileObject(file);
+            return CndFileSystemProvider.getInvalidFileObject(file);
         }
         return fo;
     }
