@@ -52,8 +52,6 @@ package org.netbeans;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
