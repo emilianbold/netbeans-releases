@@ -111,7 +111,7 @@ public final class ViewUpdates implements DocumentListener {
                 WeakListeners.create(DocumentListener.class, incomingModificationListener, null),
                 DocumentListenerPriority.FIRST);
         DocumentUtilities.addDocumentListener(doc,
-                WeakListeners.create(DocumentListener.class, incomingModificationListener, doc),
+                WeakListeners.create(DocumentListener.class, this, doc),
                 DocumentListenerPriority.VIEW);
     }
 
