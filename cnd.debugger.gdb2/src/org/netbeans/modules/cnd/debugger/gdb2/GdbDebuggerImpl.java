@@ -3180,6 +3180,7 @@ import org.openide.util.Exceptions;
         }
         
         String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        outputFile = localToRemote("symbol-file", outputFile); //NOI18N
         if (!CndPathUtilitities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531
             send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
