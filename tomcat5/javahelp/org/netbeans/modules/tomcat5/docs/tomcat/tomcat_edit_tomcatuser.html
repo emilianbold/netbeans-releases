@@ -37,8 +37,9 @@ with the appropriate role associated with them.</p>
       <td>
 	 You can only use the usernames and passwords that are defined in  
 	 the IDE user directory's <tt>tomcat-users.xml</tt> file, 
-	 and not those that are in the IDE installation directory's
-	 <tt>tomcat-users.xml</tt> file. Click show to display the password for a username created while registering the server with the IDE.
+	 and not those that are in the IDE installation directory's <tt>tomcat-users.xml</tt> file. 
+         Click show to display the password for a username created while 
+         registering the server with the IDE.
       </td>
    </tr>
 </table>
@@ -55,11 +56,14 @@ with the appropriate role associated with them.</p>
   <tr valign="top">
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
       <td>
-   If you don't know where Tomcat's base directory is,
-   right-click
+   If you don't know where Tomcat's base directory is, right-click
    the Tomcat Web Server instance node in the Services window and select Properties.
    In the Server Manager, the Catalina Base Directory points to the
    base directory.
+   <p>The <tt>tomcat-users.xml</tt> file in Tomcat's base directory contains
+    instructions for creating user roles. 
+    If necessary, define the necessary role, save the file and 
+    stop and restart the Tomcat instance in the Services window.</p>
       </td>
    </tr>
 </table></li>
