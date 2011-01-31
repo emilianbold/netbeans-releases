@@ -796,8 +796,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").parse(timestamp); // NOI18N
                 }
             } catch (ParseException ex) {
+                RemoteLogger.getInstance().log(Level.INFO, "Error parsing date string for " + child.remotePath + ": " + timestamp, ex);
             }
         }
-        return null;
+        return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
     }
 }

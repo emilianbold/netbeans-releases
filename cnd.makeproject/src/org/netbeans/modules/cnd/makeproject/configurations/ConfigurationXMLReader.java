@@ -50,10 +50,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -80,11 +82,13 @@ public class ConfigurationXMLReader extends XMLDocReader {
     private static int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final FileObject projectDirectory;
+    private final Project project;
     private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
-    public ConfigurationXMLReader(FileObject projectDirectory) {
+    public ConfigurationXMLReader(Project project, FileObject projectDirectory) {
+        this.project = project;
         this.projectDirectory = projectDirectory;
-    // LATER configurationDescriptor = new
+        // LATER configurationDescriptor = new
     }
 
 
@@ -112,7 +116,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory);
         Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
-            protected @Override void runImpl() {
+            protected 
+            @Override
+            void runImpl() {
                 try {
                     if (MakeProjectConfigurationProvider.ASYNC_LOAD) {
                         try {
@@ -175,6 +181,14 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         }
 
+        // Read things from private/project.xml
+        if (project != null) {
+            int activeIndex = ((MakeProject) project).getActiveConfigurationIndexFromPrivateXML();
+            if (activeIndex >= 0) {
+                configurationDescriptor.getConfs().setActive(activeIndex);
+            }
+        }
+
         // Ensure all item configurations have been created (default are not stored in V >= 57)
         Item[] projectItems = configurationDescriptor.getProjectItems();
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
@@ -192,7 +206,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // the makefiles will be generated before the project is being built
         boolean isMakefileProject = false;
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration)configuration;
+            MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
             if (makeConfiguration.isMakefileConfiguration()) {
                 isMakefileProject = true;
                 break;
@@ -237,8 +251,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
+    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor) {
         Task task = REQUEST_PROCESSOR.post(new Runnable() {
+
             @Override
             public void run() {
                 long time = System.currentTimeMillis();
@@ -267,7 +282,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // revert changes bacause opening project time is increased.
         //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
     }
-
 
     // interface XMLDecoder
     @Override

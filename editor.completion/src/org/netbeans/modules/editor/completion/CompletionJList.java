@@ -49,9 +49,11 @@ import java.awt.event.MouseListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import javax.swing.*;
-
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
@@ -180,6 +182,55 @@ public class CompletionJList extends JList {
             }
             int visibleRowCount = Math.min(itemCount, maxVisibleRowCount);
             setVisibleRowCount(visibleRowCount);
+        }
+    }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        if (isVisible()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    updateAccessible();
+                }
+            });
+        } else {
+            AccessibleContext editorAC = editorComponent.getAccessibleContext();
+            if (accessibleLabel != null) {
+                editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY, accessibleLabel, null);
+                editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, accessibleLabel, null);
+            }
+            if (accessibleFakeLabel != null) {
+                editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, accessibleFakeLabel, null);
+            }
+        }
+    }
+
+    @Override
+    public void setSelectedIndex(int index) {
+        super.setSelectedIndex(index);
+        if (isVisible()) {
+            updateAccessible();
+        }
+    }
+    
+    private JLabel accessibleLabel;
+    private JLabel accessibleFakeLabel;
+    private void updateAccessible() {
+        AccessibleContext editorAC = editorComponent.getAccessibleContext();
+        if (accessibleFakeLabel == null) {
+            accessibleFakeLabel = new JLabel(""); //NOI18N
+            editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, null, accessibleFakeLabel);
+        }
+        JLabel orig = accessibleLabel;
+        editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY, accessibleLabel, accessibleFakeLabel);
+        Object selectedValue = getSelectedValue();
+        String accName = selectedValue instanceof Accessible ? ((Accessible) selectedValue).getAccessibleContext().getAccessibleName() : selectedValue.toString();
+        accessibleLabel = new JLabel(LocaleSupport.getString("ACSN_CompletionView_SelectedItem") + accName); //NOI18N
+        editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, null, accessibleLabel);
+        editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY, accessibleFakeLabel, accessibleLabel);
+        if (orig != null) {
+            editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, orig, null);
         }
     }
     

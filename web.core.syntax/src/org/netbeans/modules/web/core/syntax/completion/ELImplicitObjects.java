@@ -86,7 +86,7 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
         @Override
         public boolean isApplicable( ELExpression expression ) {
             FileObject fileObject = expression.getFileObject();
-            return !fileObject.getMIMEType().equals("text/xhtml");      // NOI18N
+            return fileObject != null ? (!fileObject.getMIMEType().equals("text/xhtml")) : false; // NOI18N
         }
     }
     

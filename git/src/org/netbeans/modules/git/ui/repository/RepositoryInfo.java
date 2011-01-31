@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
@@ -85,6 +86,10 @@ public class RepositoryInfo {
      * fired when a set of known branches changes (a branch is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitBranch&gt;.
      */
     public static final String PROPERTY_BRANCHES = "prop.branches"; //NOI18N
+    /**
+     * fired when a set of known remotes changes (a remote is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitRemoteConfig&gt;.
+     */
+    public static final String PROPERTY_REMOTES = "prop.remotes"; //NOI18N
 
     private final Reference<File> rootRef;
     private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
@@ -94,6 +99,7 @@ public class RepositoryInfo {
     private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
     private final PropertyChangeSupport propertyChangeSupport;
     private final Map<String, GitBranch> branches;
+    private final Map<String, GitRemoteConfig> remotes;
 
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
@@ -103,6 +109,7 @@ public class RepositoryInfo {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
         this.branches = new HashMap<String, GitBranch>();
+        this.remotes = new HashMap<String, GitRemoteConfig>();
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -144,6 +151,8 @@ public class RepositoryInfo {
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
+                Map<String, GitRemoteConfig> newRemotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+                setRemotes(newRemotes);
                 GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
                 setActiveBranch(newBranches);
@@ -196,6 +205,22 @@ public class RepositoryInfo {
         }
     }
 
+    private void setRemotes (Map<String, GitRemoteConfig> newRemotes) {
+        Map<String, GitRemoteConfig> oldRemotes;
+        boolean changed = false;
+        synchronized (remotes) {
+            oldRemotes = new HashMap<String, GitRemoteConfig>(remotes);
+            if (oldRemotes.size() != newRemotes.size() || !remotes.keySet().equals(newRemotes.keySet())) {
+                remotes.clear();
+                remotes.putAll(newRemotes);
+                changed = true;
+            }
+        }
+        if (changed) {
+            propertyChangeSupport.firePropertyChange(PROPERTY_REMOTES, oldRemotes, new HashMap<String, GitRemoteConfig>(newRemotes));
+        }
+    }
+
     public void addPropertyChangeListener (PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
@@ -219,6 +244,12 @@ public class RepositoryInfo {
     public Map<String, GitBranch> getBranches () {
         synchronized (branches) {
             return new HashMap<String, GitBranch>(branches);
+        }
+    }
+    
+    public Map<String, GitRemoteConfig> getRemotes () {
+        synchronized (remotes) {
+            return new HashMap<String, GitRemoteConfig>(remotes);
         }
     }
 

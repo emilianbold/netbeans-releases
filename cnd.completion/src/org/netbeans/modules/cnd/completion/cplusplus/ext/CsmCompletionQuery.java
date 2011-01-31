@@ -1438,7 +1438,7 @@ abstract public class CsmCompletionQuery {
                                                         CsmObject csmObj = (CsmObject) elemList.get(0);
                                                         lastType = CsmCompletion.getObjectType(csmObj, false);
                                                         staticOnly = false;
-                                                    } else if (kind == ExprKind.ARROW) {
+                                                    } else if (kind == ExprKind.ARROW || kind == ExprKind.SCOPE) {
                                                     } else { // no match found
                                                         lastType = null;
                                                         cont = false;
@@ -1467,11 +1467,17 @@ abstract public class CsmCompletionQuery {
                                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
-                                            if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
+                                            if (kind == ExprKind.ARROW || kind == ExprKind.DOT || kind == ExprKind.SCOPE) {
                                                 // try base classes names like in this->Base::foo()
                                                 // or like in a.Base::foo()
                                                 List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
                                                 res.addAll(baseClasses);
+                                                if(res.isEmpty()) {                                                    
+                                                    CsmNamespace ns = finder.getExactNamespace(var);
+                                                    if(ns != null && lastNamespace == null) {
+                                                        res.add(ns);
+                                                    }
+                                                }
                                             }
                                             if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {
                                                 needToCheckNS = true;

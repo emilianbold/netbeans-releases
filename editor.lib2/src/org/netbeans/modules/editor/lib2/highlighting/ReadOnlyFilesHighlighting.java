@@ -67,6 +67,7 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
     private static final AttributeSet EXTENDS_EOL_OR_EMPTY_ATTR_SET =
             AttributesUtilities.createImmutable(ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE, ATTR_EXTENDS_EOL, Boolean.TRUE);
 
+    private Boolean fileWritable;
 
     public ReadOnlyFilesHighlighting(Document doc) {
         this.document = doc;
@@ -93,7 +94,10 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         FileObject file = fileFromDoc(document);
         if (attribs != null && file != null) {
-            if (!file.canWrite()) {
+            if (fileWritable == null) {
+                fileWritable = file.canWrite();
+            }
+            if (!fileWritable) {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Highlighting file " + file + " in <" + startOffset + ", " + endOffset + ">"); //NOI18N
                 }
