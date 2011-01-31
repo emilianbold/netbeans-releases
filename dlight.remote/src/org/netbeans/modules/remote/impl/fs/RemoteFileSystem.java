@@ -106,7 +106,7 @@ public class RemoteFileSystem extends FileSystem {
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
 
-    public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
+    /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
