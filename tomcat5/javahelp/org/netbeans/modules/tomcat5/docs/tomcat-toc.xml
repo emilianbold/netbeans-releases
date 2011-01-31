@@ -21,20 +21,15 @@ PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
                     <tocitem text="About the Tomcat Web Server" target="tomcat_plugin" />
                     <tocitem text="Working with the Tomcat Web Server" target="tomcat_process" />
                     <tocitem text="Tomcat Web Server Tasks: Quick Reference" target="tomcat_quickref" />
-                    <tocitem text="Setting Up the Tomcat Web Server">
-                        <tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
-                        <tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
-                        <tocitem text="Registering a Tomcat Web Server" target="tomcat_addinstall_noncsh" />
-                    </tocitem>
-                    <tocitem text="Editing the Tomcat Configuration File">
-                        <tocitem text="About Editing the Tomcat Configuration File" target="tomcat_edit_config" />
-                        <tocitem text="Accessing the Tomcat Web Server Administration Tool" target="tomcat_admin_access" />
+                    <tocitem text="Registering a Tomcat Web Server" target="tomcat_addinstall_noncsh" />
+                    <tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
+                    <tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
+                    <tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
+                    <tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
+                    <tocitem text="Editing the Tomcat Configuration File" target="tomcat_edit_config" />
+                    <tocitem text="Advanced Configuration">
                         <tocitem text="Setting Up a Connection Pool on the Tomcat Web Server" target="tomcat_setup_tdcp" />
                         <tocitem text="Accessing a Connection Pool from a JSP Page" target="tomcat_use_tdcp" />
-                    </tocitem>
-                    <tocitem text="Deploying to the Tomcat Web Server">
-                        <tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
-                        <tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
                         <tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="tomcat_websvc_jwsdp" />
                         <tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="tomcat_websvc" />
                     </tocitem>
