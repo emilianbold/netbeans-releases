@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -441,9 +441,9 @@ public class ModelSupport implements PropertyChangeListener {
                 fs = fo.getFileSystem();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
-                fs = InvalidFileObjectSupport.getDummyFileSystem();
+                fs = CndFileSystemProvider.getDummyFileSystem();
             }
-            return new FileBufferFile(InvalidFileObjectSupport.getInvalidFileObject(fs, fo.getPath()));
+            return new FileBufferFile(CndFileSystemProvider.getInvalidFileObject(fs, fo.getPath()));
         }
     }
 

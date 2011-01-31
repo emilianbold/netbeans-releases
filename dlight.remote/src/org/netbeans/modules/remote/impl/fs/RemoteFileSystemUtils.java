@@ -325,4 +325,39 @@ public class RemoteFileSystemUtils {
     public static InputStream createDummyInputStream() {
         return new DummyInputStream();
     }
+    
+    /** Same as the C library dirname function: given a path, return
+     * its directory name. Unlike dirname, however, return null if
+     * the file is in the current directory rather than ".".
+     */
+    public static String getDirName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
+        int sep = path.lastIndexOf('/');
+        if (sep == -1) {
+            sep = path.lastIndexOf('\\');
+        }
+        if (sep != -1) {
+            return path.substring(0, sep);
+        }
+        return null;
+    }
+
+    /** Same as the C library basename function: given a path, return
+     * its filename.
+     */
+    public static String getBaseName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
+        int sep = path.lastIndexOf('/');
+        if (sep == -1) {
+            sep = path.lastIndexOf('\\');
+        }
+        if (sep != -1) {
+            return path.substring(sep + 1);
+        }
+        return path;
+    }    
 }
