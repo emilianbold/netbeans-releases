@@ -181,6 +181,9 @@ public class RemoteFileSystem extends FileSystem {
         //no special code for Windows
         //also as absolute path is passed to the method we will use it as an absolute
         String result = absPath;
+        if (result.endsWith("/.")) {
+            result = result.substring(0, result.length()-2);
+        }
 // # Remove all /./ sequences.
 //    local   path=${1//\/.\//\/}
         result = result.replaceAll("[/][.][/]", "[/]"); // NOI18N
