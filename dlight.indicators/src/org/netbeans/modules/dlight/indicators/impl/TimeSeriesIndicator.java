@@ -61,7 +61,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
@@ -111,7 +110,6 @@ public final class TimeSeriesIndicator
     private GraphPanel<TimeSeriesPlot, Legend> panel;
     private TimeSeriesPlot graph;
     private Legend legend;
-    private JButton button;
     private final int timeSeriesCount;
     private int tickCounter;
     private List<Action> popupActions;
@@ -146,9 +144,9 @@ public final class TimeSeriesIndicator
         this.graph = createGraph(configuration, data);
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.legend = new Legend(timeSeriesList, detailsList);
-        this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
+        
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
-                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), getActions());
         panel.setPopupActions(popupActions);
     }
 
@@ -347,7 +345,7 @@ public final class TimeSeriesIndicator
             return Collections.emptyList();
         }
     }
-    
+
     // TODO: perhaps need to redesign this... 
     public boolean initFromStorage(SQLDataStorage storage, String query) {
         if (1 < data.size()) {
@@ -374,7 +372,7 @@ public final class TimeSeriesIndicator
                 return false;
             }
         }
-        
+
         return true;
     }
 

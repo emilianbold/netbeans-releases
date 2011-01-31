@@ -114,6 +114,8 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         System.setProperty(" parser.report.include.failures","true"); // NOI18N
         System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
+        Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
 //        MockServices.setServices(MakeProjectType.class);
     }
 

@@ -653,7 +653,7 @@ public final class Resolver3 implements Resolver {
             if (result == null) {
                 if (parentResolver == null || !((Resolver3) parentResolver).resolveInBaseClass) {
                     result = resolveInBaseClasses(cls, name);
-                    if(needTemplateClasses() && !CsmKindUtilities.isTemplate(result)) {
+                    if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
                         result = null;
                     }
                 }
@@ -672,7 +672,7 @@ public final class Resolver3 implements Resolver {
         }
         if (result == null && needClassifiers()) {
             result = findClassifierUsedInFile(name);
-            if(needTemplateClasses() && !CsmKindUtilities.isTemplate(result)) {
+            if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
                 result = null;
             }
         }
@@ -735,6 +735,9 @@ public final class Resolver3 implements Resolver {
                     ResolverFactory.releaseResolver(aResolver);
                 }
             }
+        }
+        if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
+            result = null;
         }
         return result;
     }
@@ -992,5 +995,9 @@ public final class Resolver3 implements Resolver {
 
     private boolean needTemplateClasses() {
         return (interestedKind & TEMPLATE_CLASS) == TEMPLATE_CLASS;
+    }
+    
+    private boolean needTemplateClassesOnly() {
+        return interestedKind == TEMPLATE_CLASS;
     }
 }
