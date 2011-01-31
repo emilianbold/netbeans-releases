@@ -14,43 +14,39 @@
 </head>
 <body>
 
-<h2>Accessing the Tomcat Web Server Administration Tool</h2>
+<h2>Accessing the Tomcat Web Application Manager</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>The Tomcat Web Server instance node in the IDE provides access to the Administration Tool of the Tomcat Web Server. 
-You can manage server resources, such as connection pools, through the Administration Tool.</p>
+<p>The Tomcat Web Server instance node in the IDE provides access to the Application Manager of the Tomcat Web Server. 
+You can use the Application Manager to manually deploy applications to the server.</p>
 
-<p><b>To access the Tomcat Web Server Administration Tool:</b>
-<ul class="note">
-  <li><b>Note: </b> In newer versions of the Tomcat Web Server, you may have to download and intall the &quot;admin&quot; package before you can access this functionality.</li>
-</ul>
+<p><b>To access the Tomcat Web Application Manager:</b>
+
 <ol>
-  <li>In the Services window, expand the Servers node and the Tomcat Web Server 
- instance node.</li>
-<li>Start the server by right-clicking the Tomcat instance node and choosing Start.</li>
-  <li>Once the server has started, expand the Web Applications node. Right-click the node for the <tt>/admin</tt> 
-    context and choose Open in Browser. The Tomcat Web Server Administration Tool 
-    opens in the IDE's default web browser.
-<table>
-  <tr> 
-    <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
-    <td valign=top align=left><p>If the Administration Tool does not
-open, or if you don't have a user name or password, check the <tt>tomcat-users.xml</tt> file
-in Tomcat's base directory. To identify the location of this directory, right-click
-the Tomcat Web Server instance node in the Services window and select Properties.
-In the Properties dialog box, the Base Directory property points to 
-Tomcat's base directory.</p><p>In the <tt>tomcat-users.xml</tt> file in Tomcat's base
- directory, check 
-that a role called "admin" exists and that the role is assigned
-to a user. If necessary, define the "admin" role, assign the "admin" role to a user, save the file,
-and, using the Services tab, stop and restart the Tomcat instance.</p></td>
-  </tr>
-</table></li>
-<li>Make your changes. For example, <a href="tomcat_setup_tdcp.html">set up a database connection pool</a>.</li>
-  <li>Click Save. Then click Commit Changes. Then click Log Out.</li>
-
+    <li>In the Services window, expand the Servers node and the Tomcat Web Server 
+    instance node.</li>
+    <li>Start the server by right-clicking the Tomcat instance node and choosing Start.</li>
+    <li>Once the server has started, expand the Web Applications node. 
+    Right-click the node for the <tt>/manager</tt> context and choose Open in Browser. 
+    The Tomcat Web Application Manager opens in the IDE's default web browser.</li>
+    <li>Make your changes. For example, <a href="tomcat_setup_tdcp.html">set up a database connection pool</a>.</li>
+    <li>Click Save. Then click Commit Changes. Then click Log Out.</li>
 </ol>	
+<ul class="note">
+  <li><b>Note: </b>
+      If the Application Manager does not
+    open, or if you don't have a user name or password, check the <tt>tomcat-users.xml</tt> file
+    in Tomcat's base directory. To identify the location of this directory, right-click
+    the Tomcat Web Server instance node in the Services window and select Properties.
+    In the Properties dialog box, the Base Directory property points to 
+    Tomcat's base directory.
+    
+    <p>The <tt>tomcat-users.xml</tt> file in Tomcat's base directory contains
+    instructions for creating user roles. 
+    If necessary, define the necessary role, save the file and 
+    stop and restart the Tomcat instance in the Services window.</li>
+</ul>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
