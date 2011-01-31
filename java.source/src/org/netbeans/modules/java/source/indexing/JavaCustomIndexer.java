@@ -925,8 +925,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 }                                
                             } else if (ensureSourcePath(root)){
                                 final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
-                                for (final FileObject srcRoot : srcPath.getRoots()) {
-                                    toRefresh.add(srcRoot.getURL());
+                                if (srcPath != null) {
+                                    for (final FileObject srcRoot : srcPath.getRoots()) {
+                                        toRefresh.add(srcRoot.getURL());
+                                    }
                                 }
                             }
                         }
