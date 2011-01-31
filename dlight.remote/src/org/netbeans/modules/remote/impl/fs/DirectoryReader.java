@@ -46,7 +46,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.FieldPosition;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
@@ -61,6 +65,8 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -69,6 +75,9 @@ import org.openide.util.RequestProcessor;
  */
 public class DirectoryReader {
 
+    private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss Z"; // NOI18N
+    private static final String DUMMY_TIMESTAMP = "N/A"; // NOI18N
+    
     private final ExecutionEnvironment execEnv;
     private final String remoteDirectory;
     private final List<DirectoryStorage.Entry> entries = new ArrayList<DirectoryStorage.Entry>();
@@ -83,12 +92,58 @@ public class DirectoryReader {
 
     private static class LsLineParser {
 
+        private final HostInfo.OSFamily oSFamily;
         private final int timestampWordCount;
         private final String remoteDir;
 
-        public LsLineParser(int timestampWordCount, String remoteDir) {
-            this.timestampWordCount = timestampWordCount;
+        public LsLineParser(HostInfo.OSFamily oSFamily, String remoteDir) {
             this.remoteDir = remoteDir;
+            this.oSFamily = oSFamily;
+            this.timestampWordCount = getTimestampWordCount(oSFamily);
+        }
+        
+        private static int getTimestampWordCount(HostInfo.OSFamily oSFamily) {
+            switch (oSFamily) {
+                case LINUX:
+                    return 3;
+                case MACOSX:
+                    return 4;
+                case SUNOS:
+                    return 3;
+                case WINDOWS:
+                    throw new IllegalStateException("Windows in unsupported"); //NOI18N
+                case UNKNOWN:
+                default:
+                    return 3;
+            }            
+        }
+        
+        /**
+         * Get timestamp to TIMESTAMP_FORMAT format
+         */
+        private String convertTimestamp(String timestamp) {            
+            switch (oSFamily) {
+                case LINUX: 
+                    // fallthrough
+                case SUNOS: 
+                    // like "2011-01-31 17:48:56.337703315 +0300"
+                    int dot = timestamp.indexOf('.'); // NOI18N
+                    if (dot > 0) {
+                        int space = timestamp.indexOf(' ', dot); // NOI18N
+                        if (space > 0) {
+                            timestamp = timestamp.substring(0,dot)+timestamp.substring(space);
+                            return timestamp;
+                        }
+                    }                    
+                case MACOSX:
+                    // like "Apr  5 18:31:26 2010"                   
+                    break;
+                case WINDOWS:
+                    throw new IllegalStateException("Windows in unsupported"); //NOI18N
+                case UNKNOWN:
+                    break;
+            }            
+            return DUMMY_TIMESTAMP;
         }
 
         public DirectoryStorage.Entry parseLine(String line) {
@@ -136,7 +191,7 @@ public class DirectoryReader {
 
             DirectoryStorage.Entry result = new DirectoryStorage.Entry(
                     name.toString(), null, words[0], words[2],
-                    words[3], size, timestamp.toString(),
+                    words[3], size, convertTimestamp(timestamp.toString()),
                     (link.length() == 0) ? null : link.toString());
 
             return result;
@@ -247,6 +302,15 @@ public class DirectoryReader {
     public List<DirectoryStorage.Entry> getEntries() {
         return entries;
     }
+    
+    public static Date getDate(String timeStamp) throws ParseException {
+        Parameters.notNull("timeStamp", timeStamp);
+        if (DUMMY_TIMESTAMP.equals(timeStamp)) {
+            return null;
+        } else {
+            return new SimpleDateFormat(TIMESTAMP_FORMAT).parse(timeStamp);
+        }
+    }
 
     private String getFullTimeLsOption(HostInfo.OSFamily oSFamily) {
         switch (oSFamily) {
@@ -265,19 +329,7 @@ public class DirectoryReader {
     }
 
     private static LsLineParser createLsLineParser(HostInfo.OSFamily oSFamily, String remoteDir) {
-        switch (oSFamily) {
-            case LINUX:
-                return new LsLineParser(3, remoteDir); // LinuxLsLineParser();
-            case MACOSX:
-                return new LsLineParser(4, remoteDir); // MacosLsLineParser();
-            case SUNOS:
-                return new LsLineParser(3, remoteDir); // SolarisLsLineParser();
-            case WINDOWS:
-                throw new IllegalStateException("Windows in unsupported"); //NOI18N
-            case UNKNOWN:
-            default:
-                return new LsLineParser(4, remoteDir); // OtherLsLineParser();
-        }
+        return new LsLineParser(oSFamily, remoteDir);
     }
 
     /*package*/ static List<DirectoryStorage.Entry> testLsLineParser(HostInfo.OSFamily oSFamily, String[] lines) {
