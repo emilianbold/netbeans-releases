@@ -884,6 +884,7 @@ public class ETable extends JTable {
         Set<AWTKeyStroke> emptySet = Collections.emptySet();
         setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, emptySet);
         setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, emptySet);
+        setFocusCycleRoot(false);
         //Next two lines do not work using inputmap/actionmap, but do work
         //using the older API.  We will process ENTER to skip to next row,
         //not next cell
@@ -2446,8 +2447,8 @@ public class ETable extends JTable {
                 Container ancestor = getFocusCycleRootAncestor();
                 //Find the next component in our parent's focus cycle
                 Component sibling = direction ?
-                ancestor.getFocusTraversalPolicy().getComponentAfter(ancestor,
-                ETable.this.getParent()) :
+                    ancestor.getFocusTraversalPolicy().getComponentAfter(ancestor,
+                    ETable.this) :
                     ancestor.getFocusTraversalPolicy().getComponentBefore(ancestor,
                     ETable.this);
                     
