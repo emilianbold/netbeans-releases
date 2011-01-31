@@ -54,7 +54,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -90,6 +89,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private Reference<DirectoryStorage> storageRef;
     private static final class RefLock {}
     private final Object refLock = new RefLock();
+    private static boolean wrongDateFormatReported = false;
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -786,17 +786,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String timestamp = childEntry.getTimestamp();
             try {
                 if (timestamp != null) {
-                    int dot = timestamp.indexOf('.'); // NOI18N
-                    if (dot > 0) {
-                        int space = timestamp.indexOf(' ', dot); // NOI18N
-                        if (space > 0) {
-                            timestamp = timestamp.substring(0,dot)+timestamp.substring(space);
-                        }
+                    Date date = DirectoryReader.getDate(timestamp);
+                    if (date != null) {
+                        return date;
                     }
-                    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").parse(timestamp); // NOI18N
                 }
             } catch (ParseException ex) {
-                RemoteLogger.getInstance().log(Level.INFO, "Error parsing date string for " + child.remotePath + ": " + timestamp, ex);
+                // it can be normal, for example, for not fully supported remote OS (FreeBSD, Mac, AIX, etc)
+                if (!wrongDateFormatReported) {
+                    wrongDateFormatReported = true;
+                    RemoteLogger.getInstance().log(Level.INFO, "Error parsing date string for " + child.remotePath + ": " + timestamp, ex);
+                }
             }
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
