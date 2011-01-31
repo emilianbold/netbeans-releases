@@ -237,9 +237,20 @@ public class InvalidFileObjectSupport {
 
         @Override
         public String getName() {
-            return RemoteFileSystemUtils.getBaseName(path.toString());
+            String nameExt = getNameExt();
+            int pos = nameExt.indexOf('.', 1); // skip '.' as the leftmost char
+            if (pos <= 0) { 
+                return nameExt;
+            } else {
+                return nameExt.substring(0, pos);
+            }
         }
 
+        @Override
+        public String getNameExt() {
+            return RemoteFileSystemUtils.getBaseName(path.toString());
+        }
+        
         @Override
         public OutputStream getOutputStream(FileLock lock) throws IOException {
             throw new FileNotFoundException(fileNotFoundExceptionMessage());
