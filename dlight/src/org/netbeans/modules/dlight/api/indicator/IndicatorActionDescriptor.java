@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.api.indicator;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
 /**
- *  Indicator's data description, it should describe columns this indicator shows.
+ * A description of open-visualizer-action to be associated with an indicator
+ * 
+ * @author ak119685
  */
-public final class IndicatorMetadata {
+public final class IndicatorActionDescriptor {
 
-    private final List<Column> columns;
+    private final String displayName;
+    private final String tooltip;
+    private final VisualizerConfiguration visualizerConfiguration;
 
-    /**
-     * Use columns to create new metadata
-     * @param columns columns description to create new metadata for
-     */
-    public IndicatorMetadata(List<Column> columns) {
-        this.columns = columns;
+    public IndicatorActionDescriptor(String displayName, String tooltip, VisualizerConfiguration visualizerConfiguration) {
+        this.displayName = displayName;
+        this.tooltip = tooltip;
+        this.visualizerConfiguration = visualizerConfiguration;
     }
 
-    /**
-     * Returns columns list
-     * @return columns list
-     */
-    public List<Column> getColumns() {
-        return Collections.unmodifiableList(columns);
+    public String getDisplayName() {
+        return displayName;
     }
 
-    /**
-     * Returns columns count
-     * @return columns count
-     */
-    public int getColumnsCount() {
-        return columns.size();
+    public String getTooltip() {
+        return tooltip;
+    }
+
+    public VisualizerConfiguration getVisualizerConfiguration() {
+        return visualizerConfiguration;
     }
 }
