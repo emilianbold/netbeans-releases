@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -150,6 +151,19 @@ public final class FileSystemProvider {
         } else {
             return baseFileObject.getFileObject(relativeOrAbsolutePath);
         }
+    }
+    
+    /**
+     * Just a convenient shortcut
+     */
+    public static FileObject getFileObject(ExecutionEnvironment env, String absPath) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.getFileSystem(env, "/").findResource(absPath);
+            }
+        }
+        noProvidersWarning(env);
+        return FileUtil.toFileObject(FileUtil.normalizeFile(new File(absPath)));
     }
 
     public static FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
