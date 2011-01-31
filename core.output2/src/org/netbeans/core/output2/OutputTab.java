@@ -820,7 +820,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 // Cached action for an already closed tab.
                 // Try to find the appropriate action for a new active tab...
                 JComponent selected = getIO().getIOContainer().getSelected();
-                if (selected instanceof OutputTab) {
+                if (OutputTab.this != selected && selected instanceof OutputTab) {
                     OutputTab tab = (OutputTab) selected;
                     return tab.action(action).isEnabled();
                 }
@@ -834,7 +834,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 // Cached action for an already closed tab.
                 // Try to find the appropriate action for a new active tab...
                 JComponent selected = getIO().getIOContainer().getSelected();
-                if (selected instanceof OutputTab) {
+                if (OutputTab.this != selected && selected instanceof OutputTab) {
                     OutputTab tab = (OutputTab) selected;
                     tab.action(action).actionPerformed(e);
                 }
