@@ -42,21 +42,26 @@
 
 package org.netbeans.modules.nativeexecution;
 import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  * The configuration of the environment for a {@link NativeProcess} execution.
- * ExecutionEnvirenment is about "<b>where</b>" to start a native proccess.
+ * ExecutionEnvirenment is about "<b>where</b>" to start a native process.
  */
-final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
+final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Serializable {
 
     private final String user;
     private final String host;
     private final int sshPort;
     private final String toString;
+
+    static final long serialVersionUID = 2098997126628923682L;
 
     /**
      * Creates a new instance of <tt>ExecutionEnvironment</tt> for local
@@ -250,5 +255,22 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
 
     @Override
     public void prepareForConnection() throws IOException, CancellationException {
+    }
+    
+    /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
+        return new SerializedForm(ExecutionEnvironmentFactory.toUniqueID(this));
+    }
+    
+    private static class SerializedForm implements Serializable {
+        
+        private final String id;
+
+        public SerializedForm(String id) {
+            this.id = id;
+        }
+        
+        /* Java serialization*/ Object readResolve() throws ObjectStreamException {
+            return ExecutionEnvironmentFactory.fromUniqueID(id);
+        }
     }
 }
