@@ -292,6 +292,13 @@ public interface GitClient {
      */
     public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException;
     public void removeNotificationListener (NotificationListener listener);
+    
+    /**
+     * Removes remote configuration from the config file
+     * @param remote name of the remote
+     * @param monitor 
+     */
+    public void removeRemote (String remote, ProgressMonitor monitor) throws GitException;
 
     /**
      * Renames source file or folder to target
@@ -318,6 +325,13 @@ public interface GitClient {
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
     
+    /**
+     * Sets the remote configuration in the configuration file.
+     * @param remoteConfig
+     * @param monitor 
+     */
+    public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException;
+
     /**
      * Unignores given files
      * @param files
