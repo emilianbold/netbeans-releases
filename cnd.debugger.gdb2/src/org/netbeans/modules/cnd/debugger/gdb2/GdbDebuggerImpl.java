@@ -362,7 +362,7 @@ import org.openide.util.Exceptions;
             connectExisting = false;
         }
 
-
+        profileBridge.setup(gdi);
 	if (!connectExisting) {
 	    int flags = 0;
 	    if (Log.Startup.nopty)
