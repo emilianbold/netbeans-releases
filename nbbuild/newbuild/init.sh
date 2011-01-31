@@ -46,7 +46,7 @@ if [ -z ${ML_BUILD} ]; then
     export ML_BUILD=1
 fi
 if [ -z ${LOCALES} ]; then
-    export LOCALES=ja,zh_CN,pt_BR
+    export LOCALES=ja,zh_CN,pt_BR,ru
 fi
 
 if [ -z ${UPLOAD_ML} ]; then
