@@ -96,13 +96,15 @@ public class ComputeAnnotations {
             Collection<BaseAnnotation> toAdd) {
 
         for (CsmOffsetableDeclaration decl : toProcess) {
-            if (CsmKindUtilities.isFunction(decl)) {
-                computeAnnotation((CsmFunction) decl, toAdd);
-            } else if (CsmKindUtilities.isClass(decl)) {
-                computeAnnotation((CsmClass) decl, toAdd);
-                computeAnnotations(((CsmClass) decl).getMembers(), toAdd);
-            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd);
+            if (this.csmFile.equals(decl.getContainingFile())) {
+                if (CsmKindUtilities.isFunction(decl)) {
+                    computeAnnotation((CsmFunction) decl, toAdd);
+                } else if (CsmKindUtilities.isClass(decl)) {
+                    computeAnnotation((CsmClass) decl, toAdd);
+                    computeAnnotations(((CsmClass) decl).getMembers(), toAdd);
+                } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                    computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd);
+                }
             }
         }
     }
