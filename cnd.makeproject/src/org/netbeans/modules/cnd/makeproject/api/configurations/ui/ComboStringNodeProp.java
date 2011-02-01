@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ComboStringConfiguration;
@@ -56,7 +57,7 @@ public class ComboStringNodeProp extends Node.Property {
     private final String name;
     private final String description;
     private boolean canWrite;
-    IntEditor intEditor = null;
+    StringEditor intEditor = null;
 
     @SuppressWarnings("unchecked")
     public ComboStringNodeProp(ComboStringConfiguration comboStringConfiguration, boolean canWrite, String name, String description) {
@@ -94,6 +95,7 @@ public class ComboStringNodeProp extends Node.Property {
     @Override
     public void setValue(Object v) {
         comboStringConfiguration.setValue((String) v);
+        comboStringConfiguration.getPicklist().addElement((String) v);
     }
 
     @Override
@@ -128,17 +130,18 @@ public class ComboStringNodeProp extends Node.Property {
     @Override
     public PropertyEditor getPropertyEditor() {
         if (intEditor == null) {
-            intEditor = new IntEditor();
+            intEditor = new StringEditor();
         }
         return intEditor;
     }
 
-    private class IntEditor extends PropertyEditorSupport implements
-                                                         ExPropertyEditor {
+    protected class StringEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
+        private PropertyEnv env;
 
         @Override
         public void attachEnv(PropertyEnv env) {
-            //this.env = env;
+            this.env = env;
             env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); // NOI18N
         }
 
@@ -159,11 +162,17 @@ public class ComboStringNodeProp extends Node.Property {
 
         @Override
         public String[] getTags() {
-            return comboStringConfiguration.getChoices();
+            return comboStringConfiguration.getPicklist().getElementsDisplayName();
         }
 
-        public boolean canEditAsText() {
+        @Override
+        public boolean supportsCustomEditor() {
             return true;
+        }
+
+        @Override
+        public Component getCustomEditor() {
+            return new StringPanel(this, env);
         }
     }
 }

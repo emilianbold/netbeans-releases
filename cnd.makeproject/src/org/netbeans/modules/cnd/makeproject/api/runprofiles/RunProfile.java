@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -109,8 +110,8 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Environment
     private Env environment;
     // Run Command
-
     private ComboStringConfiguration runCommand;
+    private DefaultPicklistModel runCommandPicklist;
 
     private String dorun;
     public static final int CONSOLE_TYPE_DEFAULT = 0;
@@ -168,7 +169,10 @@ public final class RunProfile implements ConfigurationAuxObject {
         argsFlatValid = true;
         argsArrayValid = false;
         runDir = ""; // NOI18N
-        runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, new String[]{DEFAULT_RUN_COMMAND}); // NOI18N
+
+        runCommandPicklist = new DefaultPicklistModel(10);
+        runCommandPicklist.addElement(DEFAULT_RUN_COMMAND);
+        runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, runCommandPicklist); // NOI18N
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
@@ -701,6 +705,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
         setRunCommand(p.getRunCommand());
+        runCommandPicklist = p.getRunCommand().getPicklist();
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -721,7 +726,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setArgs(getArgsFlat());
         p.setRunDir(getRunDir());
-        p.setRunCommand(getRunCommand());
+        p.setRunCommand(getRunCommand().clone());
         //p.setRawRunDirectory(getRawRunDirectory());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
