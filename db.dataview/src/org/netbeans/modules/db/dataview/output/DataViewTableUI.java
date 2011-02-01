@@ -192,21 +192,14 @@ class DataViewTableUI extends ResultSetJXTable {
                 if (row == -1) {
                     return;
                 }
-                editCellAt(row, col);
 
-                TableCellEditor editor = getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = getDBColumn(col);
-                    if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
-                        setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    }
-                    setRowSelectionInterval(row, row);
+                DBColumn dbcol = getDBColumn(col);
+                if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                    Toolkit.getDefaultToolkit().beep();
+                } else {
+                    setValueAt("<NULL>", row, col);
                 }
+                setRowSelectionInterval(row, row);
             } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
@@ -214,25 +207,16 @@ class DataViewTableUI extends ResultSetJXTable {
                     return;
                 }
 
-                editCellAt(row, col);
-                TableCellEditor editor = getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = getDBColumn(col);
-                    Object val = getValueAt(row, col);
-                    if (dbcol.isGenerated() || !dbcol.hasDefault()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, "", rowSelectionAllowed, row, col);
-                        setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, "<DEFAULT>", rowSelectionAllowed, row, col);
-                        setValueAt("<DEFAULT>", row, col);
-                        editor.stopCellEditing();
-                    }
-                    setRowSelectionInterval(row, row);
+                DBColumn dbcol = getDBColumn(col);
+                Object val = getValueAt(row, col);
+                if (dbcol.isGenerated() || !dbcol.hasDefault()) {
+                    Toolkit.getDefaultToolkit().beep();
+                } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
+                    setValueAt(null, row, col);
+                } else {
+                    setValueAt("<DEFAULT>", row, col);
                 }
+                setRowSelectionInterval(row, row);
             }
         }
 
