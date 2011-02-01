@@ -40,14 +40,13 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
+package org.netbeans.modules.dlight;
 
-import org.netbeans.modules.remote.api.InvalidFileObjectSupport;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -56,11 +55,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Kvashin
  */
-public class InvalidFileObjectSupportTestCase extends NativeExecutionBaseTestCase {
-
-    public InvalidFileObjectSupportTestCase(String name) {
-        super(name);
-    }
+public class InvalidFileObjectSupportTest {
     
     @Test
     public void testInvalidFileObject() throws Exception {

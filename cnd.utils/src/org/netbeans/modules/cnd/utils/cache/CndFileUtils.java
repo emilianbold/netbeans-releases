@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -96,7 +97,7 @@ public final class CndFileUtils {
             }
         }
         if (afileFileSystem == null) {
-            afileFileSystem = CndFileSystemProvider.getDummyFileSystem();
+            afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
             Exceptions.printStackTrace(new Exception("Cannot get local file system")); //NOI18N
         }
         fileFileSystem = afileFileSystem;
@@ -162,7 +163,7 @@ public final class CndFileUtils {
     public static FileObject toFileObject(File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) {
-            return CndFileSystemProvider.getInvalidFileObject(file);
+            return InvalidFileObjectSupport.getInvalidFileObject(file);
         }
         return fo;
     }
