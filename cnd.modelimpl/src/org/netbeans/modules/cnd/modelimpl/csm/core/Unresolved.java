@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
@@ -228,7 +228,7 @@ public final class Unresolved implements Disposable {
         public FileObject getFileObject() {
             ProjectBase csmProject = _getProject();
             FileSystem fs = (csmProject == null) ? CndFileUtils.getLocalFileSystem() : csmProject.getFileSystem();
-            return CndFileSystemProvider.getInvalidFileObject(fs, getAbsolutePath());
+            return InvalidFileObjectSupport.getInvalidFileObject(fs, getAbsolutePath());
         }
         
         @Override

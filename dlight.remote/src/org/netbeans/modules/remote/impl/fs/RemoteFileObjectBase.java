@@ -54,14 +54,12 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.api.InvalidFileObjectSupport;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 
 /**
