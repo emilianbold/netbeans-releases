@@ -240,6 +240,15 @@ public final class FilePreprocessorConditionState {
                 addBlockImpl(startDeadBlock, endDeadBlock);
             }
         }
+        
+        /**
+         * Implements APTParseFileWalker.EvalCallback -
+         * adds offset of dead branch to offsets array
+         */        
+        @Override
+        public void onStoppedDirective(APT apt) {
+            addBlockImpl(apt.getToken().getOffset(), Integer.MAX_VALUE);
+        }
 
         /**
          * Implements APTParseFileWalker.EvalCallback -

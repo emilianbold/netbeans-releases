@@ -227,6 +227,8 @@ public final class APTBuilderImpl {
 		newNode = new APTErrorNode(token);
 		break;
             case APTTokenTypes.PRAGMA:
+                newNode = new APTPragmaNode(token);
+                break;
             case APTTokenTypes.LINE:
             case APTTokenTypes.PREPROC_DIRECTIVE:                
                 newNode = new APTUnknownNode(token);
@@ -280,6 +282,9 @@ public final class APTBuilderImpl {
             case APT.Type.ERROR:
                 light = new APTErrorNode((APTErrorNode) apt);
                 break;
+            case APT.Type.PRAGMA:
+                light = new APTPragmaNode((APTPragmaNode) apt);
+                break;
             case APT.Type.FILE:
                 light = new APTFileNode((APTFileNode)apt);
                 break;
@@ -303,6 +308,7 @@ public final class APTBuilderImpl {
             case APT.Type.DEFINE:
             case APT.Type.UNDEF:
             case APT.Type.ERROR:
+            case APT.Type.PRAGMA:
                 return true;
         }
         return false;        
