@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 
 public class Gdb {
     protected class StartProgressManager extends ProgressManager {
@@ -452,7 +453,12 @@ public class Gdb {
 		ioPack.console().getTerm().setCustomColor(2,
 		    Color.red.darker());
 
-		pid = executor.startEngine(gdbname, gdb_argv, null,
+                // On windows we need to run gdb itself with the correct path
+                Map<String, String> env = null;
+                if (!executor.isRemote() && Utilities.isWindows()) {
+                    env = ndi.getProfile().getEnvironment().getenvAsMap();
+                }
+		pid = executor.startEngine(gdbname, gdb_argv, env, ndi.getProfile().getRunDirectory(),
 		    ioPack.console(), false, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
