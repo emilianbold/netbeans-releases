@@ -120,7 +120,7 @@ public abstract class CndFileSystemProvider {
 
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
-        CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
+        CndUtils.assertNotNull(result, "Null URL for file object " + fileObject); //NOI18N
         return result;
     }
     
