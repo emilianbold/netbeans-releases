@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.support;
+package org.netbeans.modules.remote.api;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,15 +53,15 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 
@@ -84,7 +84,24 @@ public class InvalidFileObjectSupport {
     }
 
     public static FileObject getInvalidFileObject(File file) {
-        return getInvalidFileObject(CndFileUtils.getLocalFileSystem(), file.getAbsolutePath());
+        return getInvalidFileObject(getFileSystem(file), file.getAbsolutePath());
+    }
+    
+    private static FileSystem getFileSystem(File file) {
+        file = FileUtil.normalizeFile(file);
+        while (file != null) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                try {
+                    return fo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return getDummyFileSystem();
+                }
+            }
+            file = file.getParentFile();
+        }
+        return getDummyFileSystem();
     }
 
     public static FileSystem getDummyFileSystem() {
@@ -97,8 +114,8 @@ public class InvalidFileObjectSupport {
 
     private FileObject getInvalidFileObject(CharSequence path) {
         synchronized (this) {
-            if (CndUtils.isDebugMode() && new File(path.toString()).exists()) {
-                CndUtils.getLogger().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
+            if (RemoteLogger.isDebugMode() && new File(path.toString()).exists()) {
+                RemoteLogger.getInstance().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
             }
             FileObject fo = fileObjects.putIfAbsent(new InvalidFileObject(fileSystem, path));
             return fo;
@@ -142,17 +159,17 @@ public class InvalidFileObjectSupport {
     private static class InvalidFileObject extends FileObject {
 
         private final FileSystem fileSystem;
-        private final CharSequence path;
+        private final String path;
         private static Date lastModifiedDate = new Date();
 
         public InvalidFileObject(FileSystem fileSystem, CharSequence path) {
             this.fileSystem = (fileSystem == null) ? dummyFileSystem : fileSystem;
-            this.path = path;
+            this.path = path.toString();
         }
 
         @Override
         public String getPath() {
-            return path.toString();
+            return path;
         }
 
 
@@ -195,7 +212,7 @@ public class InvalidFileObjectSupport {
 
         @Override
         public String getExt() {
-            int pos = CharSequenceUtils.lastIndexOf(path, '.'); //NOI18N
+            int pos = path.lastIndexOf('.'); //NOI18N
             if (pos == 0 || pos == -1) {
                 return ""; //NOI18N
             } else {
@@ -220,9 +237,20 @@ public class InvalidFileObjectSupport {
 
         @Override
         public String getName() {
-            return CndPathUtilitities.getBaseName(path.toString());
+            String nameExt = getNameExt();
+            int pos = nameExt.indexOf('.', 1); // skip '.' as the leftmost char
+            if (pos <= 0) { 
+                return nameExt;
+            } else {
+                return nameExt.substring(0, pos);
+            }
         }
 
+        @Override
+        public String getNameExt() {
+            return RemoteFileSystemUtils.getBaseName(path.toString());
+        }
+        
         @Override
         public OutputStream getOutputStream(FileLock lock) throws IOException {
             throw new FileNotFoundException(fileNotFoundExceptionMessage());
@@ -234,7 +262,7 @@ public class InvalidFileObjectSupport {
                 if (isRoot()) {
                     return null;
                 }
-                String parentPath = CndPathUtilitities.getDirName(path.toString());
+                String parentPath = RemoteFileSystemUtils.getDirName(path);
                 if (parentPath == null) {
                     // should there be an assertion? it's just an invalid file object...
                     //CndUtils.assertTrueInConsole(false, getClass().getSimpleName() + ": should be root, but it isn't"); //NOI18N
