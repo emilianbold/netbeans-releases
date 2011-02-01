@@ -787,7 +787,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // Start dbx
 	    //
 	    if (!connectExisting) {
-		pid = executor.startEngine(dbxname, dbx_argv, null,
+		pid = executor.startEngine(dbxname, dbx_argv, null, null,
 					   ioPack.console(), true, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonDbx.Factory.start(): " + // NOI18N
