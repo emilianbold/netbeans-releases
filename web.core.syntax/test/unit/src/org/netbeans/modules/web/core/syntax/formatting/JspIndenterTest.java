@@ -197,6 +197,7 @@ public class JspIndenterTest extends TestBase2 {
             this.map = map;
         }
 
+        @Override
         public ClassPath findClassPath(FileObject file, String type) {
             if (map != null) {
                 return map.get(type);
@@ -292,8 +293,8 @@ public class JspIndenterTest extends TestBase2 {
     }
     
     public void testIndentation() throws Exception {
-//        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
-//                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
+        insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
+                      "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);
 
         //#160092:
         insertNewline("^<html>\n</html>\n", "\n^<html>\n</html>\n", null);
@@ -351,16 +352,18 @@ public class JspIndenterTest extends TestBase2 {
                 "<html>^${\"expression\"}",
                 "<html>\n    ^${\"expression\"}", null);
 
+//        // #167228
+//        insertNewline(
+//                "<div>\n    <div>\n       ${jdks}\n    </div>\n</div>\n^aaaa",
+//                "<div>\n    <div>\n       ${jdks}\n    </div>\n</div>\n\n^aaaa", null);
 
 // #128034
 //        insertNewline(
 //            "<a href=\"${path}\">^</a>",
 //            "<a href=\"${path}\">\n    ^\n</a>", null);
 
-// broken: html indenter eliminates SCRIPT tags and previous line (containing wrongly formatted JS)
-//         is then used to calcualte line-adjustment causing wrong indentation:
-//        insertNewline("<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>^",
-//                      "<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>\n        ^", null);
+        insertNewline("<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>^",
+                      "<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>\n        ^", null);
     }
 
     
@@ -400,6 +403,7 @@ public class JspIndenterTest extends TestBase2 {
             this.webRoot = webRoot;
         }
 
+        @Override
         public WebModule findWebModule(FileObject file) {
             return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot));
         }
@@ -414,37 +418,46 @@ public class JspIndenterTest extends TestBase2 {
             this.webRoot = webRoot;
         }
 
+        @Override
         public FileObject getDocumentBase() {
             return webRoot;
         }
 
+        @Override
         public String getContextPath() {
             return "/";
         }
 
+        @Override
         public Profile getJ2eeProfile() {
             return Profile.JAVA_EE_6_FULL;
         }
 
+        @Override
         public FileObject getWebInf() {
             return null;
         }
 
+        @Override
         public FileObject getDeploymentDescriptor() {
             return null;
         }
 
+        @Override
         public FileObject[] getJavaSources() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public MetadataModel<WebAppMetadata> getMetadataModel() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
 
