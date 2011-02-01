@@ -836,6 +836,9 @@ public abstract class FileObject extends Object implements Serializable {
 
     /** Retrieve file or folder relative to a current folder, with a given relative path.
     * <em>Note</em> that neither file nor folder is created on disk. This method isn't final since revision 1.93.
+    * Since 7.45 common implementations of this method 
+    * accept also ".." which is interpreted as a reference to parent.
+    * 
     * @param relativePath is just basename of the file or (since 4.16) the relative path delimited by '/'
     * @return the object representing this file or <CODE>null</CODE> if the file
     *   or folder does not exist
@@ -855,7 +858,11 @@ public abstract class FileObject extends Object implements Serializable {
         }
         while ((myObj != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();
-            myObj = myObj.getFileObject(nameExt, null);
+            if (nameExt.equals("..")) { // NOI18N
+                myObj = myObj.getParent();
+            } else {
+                myObj = myObj.getFileObject(nameExt, null);
+            }
         }
 
         return myObj;

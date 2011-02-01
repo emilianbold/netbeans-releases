@@ -106,15 +106,18 @@ public final class FolderObj extends BaseFileObj {
             // #47885 - relative path must not contain back slashes
             return null;
         }
-        if (relativePath.contains("..")) {
-            if (("/" + relativePath + "/").contains("/../")) {
-                return null;
-            }
-        }
         if (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }
         File file = new File(getFileName().getFile(), relativePath);
+        if (relativePath.contains("..")) {
+            try {
+                file = file.getCanonicalFile();
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Cannot canonicalize " + file, ex);
+            }
+        }
+        
         FileObjectFactory factory = getFactory();
         return factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject);
     }
