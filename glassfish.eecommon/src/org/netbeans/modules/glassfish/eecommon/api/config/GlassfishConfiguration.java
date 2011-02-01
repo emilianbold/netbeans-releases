@@ -377,7 +377,7 @@ public abstract class GlassfishConfiguration implements
     // of unsupported features (e.g. CMP, etc.)
     // ------------------------------------------------------------------------
 
-    private void createDefaultSunDD(File sunDDFile) throws IOException {
+    protected void createDefaultSunDD(File sunDDFile) throws IOException {
         FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(module, sunDDFile.getName()); //FileUtil.getConfigFile(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
@@ -638,7 +638,7 @@ public abstract class GlassfishConfiguration implements
                     return;
                 }
                 cr = contextRoot;
-                final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
+                final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot) || "".equals(contextRoot));
                 RP.post(new Runnable() {
                     @Override
                     public void run() {

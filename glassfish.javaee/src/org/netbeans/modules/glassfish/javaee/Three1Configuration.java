@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,6 +44,7 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
@@ -62,6 +63,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -174,4 +177,23 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    private static final String GLASSFISH_DASH = "glassfish-"; // NOI18N
+
+    @Override
+    protected FileObject getSunDD(File sunDDFile, boolean create) throws IOException {
+        if (!sunDDFile.exists()) {
+            if (create) {
+                createDefaultSunDD(sunDDFile);
+            }
+        }
+        FileObject retVal = FileUtil.toFileObject(sunDDFile);
+        if (null == retVal) {
+            String fn = sunDDFile.getName();
+            if (fn.contains(GLASSFISH_DASH) && null != sunDDFile.getParentFile()) {
+                File alternate = new File(sunDDFile.getParentFile(), fn.replace(GLASSFISH_DASH, "sun-")); // NOI18N
+                retVal = FileUtil.toFileObject(FileUtil.normalizeFile(alternate));
+            }
+        }
+        return retVal;
+    }
 }
