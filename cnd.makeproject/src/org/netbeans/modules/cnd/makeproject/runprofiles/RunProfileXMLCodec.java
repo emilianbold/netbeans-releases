@@ -132,7 +132,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	    profile.setRunDir(currentText);
 	}
 	else if (element.equals(RUNCOMMAND_ELEMENT)) {
-	    profile.setRunCommand(currentText);
+	    profile.getRunCommand().setValue(currentText); // FIXUP
 	}
 	else if (element.equals(BUILD_FIRST_ELEMENT)) {
 	    profile.setBuildFirst(currentText.equals(TRUE_VALUE));
@@ -191,7 +191,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
     private static void encode(XMLEncoderStream xes, RunProfile profile) {
 	xes.elementOpen(PROFILE_ID, getVersion());
-        xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand());
+        xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand().getValue()); // FIXUP
         xes.element(ARGS_ELEMENT, profile.getArgsFlat());
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
