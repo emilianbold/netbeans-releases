@@ -73,13 +73,13 @@ public class FetchAction extends SingleRepositoryAction {
         throw new UnsupportedOperationException("Not yet possible");
     }
     
-    public void fetch (File repository, String url, GitRemoteConfig remote) {
+    public void fetch (File repository, GitRemoteConfig remote) {
         if (remote.getUris().isEmpty()) {
             throw new IllegalArgumentException("No fetch specs in the remote");
         } else if (remote.getUris().size() > 1) {
             throw new UnsupportedOperationException("Sorry, not yet supported. Remote config must contain exactly one fetch spec");
         } else {
-            fetch(repository, url, remote.getFetchRefSpecs());
+            fetch(repository, remote.getUris().get(0), remote.getFetchRefSpecs());
         }
     }
     
