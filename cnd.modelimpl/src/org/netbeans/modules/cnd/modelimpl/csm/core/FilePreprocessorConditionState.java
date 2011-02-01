@@ -311,9 +311,17 @@ public final class FilePreprocessorConditionState {
 
         private static void checkConsistency(FilePreprocessorConditionState pcState) {
             // check consistency for ordering and absence of intersections
-            for (int i = 0; i < pcState.offsets.length; i++) {
-                if (i + 1 < pcState.offsets.length) {
-                    if (!(pcState.offsets[i] < pcState.offsets[i + 1])) {
+            for (int i = 0; i < pcState.offsets.length/2; i++) {
+                int start = i*2;
+                int end = i*2+1;
+                if (end < pcState.offsets.length) {
+                    if (!(pcState.offsets[start] < pcState.offsets[end])) {
+                        CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
+                    }
+                }
+                if (i > 0) {
+                    int prevEnd = start -1;
+                    if (!(pcState.offsets[prevEnd] < pcState.offsets[start] || pcState.offsets[prevEnd] == Integer.MAX_VALUE)) {
                         CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
                     }
                 }
