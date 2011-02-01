@@ -207,6 +207,8 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             }
             Collection<File> keys = new ArrayList<File>();
             keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "pom.xml")); //NOI18N
+            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "nbactions.xml")); //NOI18N
+            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "nb-configuration.xml")); //NOI18N
             keys.add(new File(MavenSettingsSingleton.getInstance().getM2UserDir(), "settings.xml")); //NOI18N
             setKeys(keys);
             ((ProjectFilesNode)getNode()).setMyFiles();
