@@ -96,9 +96,12 @@ public class SetRemoteCommand extends GitCommand {
             }
             cfg.update(config);
             config.save();
-        } catch (URISyntaxException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
+            try {
+                config.load();
+            } catch (Exception e) {
+                
+            }
             throw new GitException(ex);
         }
     }
