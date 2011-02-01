@@ -126,9 +126,10 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "merge",
                 "remove",
                 "removeNotificationListener",
-                "remove",
+                "removeRemote",
                 "rename",
                 "reset",
+                "setRemote",
                 "unignore"));
         Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
@@ -193,9 +194,10 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "merge",
                 "remove",
                 "removeNotificationListener",
-                "remove",
+                "removeRemote",
                 "rename",
                 "reset",
+                "setRemote",
                 "unignore"));
         Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
@@ -215,6 +217,8 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "listRemoteBranches",
                 "log",
                 "removeNotificationListener",
+                "removeRemote",
+                "setRemote",
                 "unignore"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
         f.setAccessible(true);
@@ -271,9 +275,10 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "merge",
                 "remove",
                 "removeNotificationListener",
-                "remove",
+                "removeRemote",
                 "rename",
                 "reset",
+                "setRemote",
                 "unignore"));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
@@ -282,7 +287,9 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "createBranch",
                 "fetch",
                 "merge",
-                "reset"));
+                "reset",
+                "removeRemote",
+                "setRemote"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
         Set<String> actualMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
@@ -384,9 +391,10 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "merge",
                 "remove",
                 "removeNotificationListener",
-                "remove",
+                "removeRemote",
                 "rename",
                 "reset",
+                "setRemote",
                 "unignore"));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
@@ -402,7 +410,9 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "listModifiedIndexEntries",
                 "listRemoteBranches",
                 "log",
-                "removeNotificationListener"));
+                "removeNotificationListener",
+                "removeRemote",
+                "setRemote"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
         f.setAccessible(true);
         Set<String> actualParallelizableCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
