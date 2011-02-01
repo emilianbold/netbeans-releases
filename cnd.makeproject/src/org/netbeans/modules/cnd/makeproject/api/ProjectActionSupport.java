@@ -64,7 +64,9 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -785,8 +787,13 @@ public class ProjectActionSupport {
             ExecutionEnvironment env = null;
             for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
                 ProjectActionEvent pae = handleEvents.paes[i];
-                dir = pae.getProfile().getRunDirectory();
+                dir = pae.getProfile().getRunDirectory();                                
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                if (env.isRemote()) {
+                    if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
+                        dir = HostInfoProvider.getMapper(env).getRemotePath(dir);
+                    }
+                }
                 break;
             }
             TerminalSupport.openTerminal(IOContainer.getDefault(), getString("TargetExecutor.TermAction.tabTitle", handleEvents.tabNameSeq), env, dir); // NOI18N
