@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -83,7 +83,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Ahimanikya Satapathy
  */
-class DataViewTableUI extends ResultSetJXTable {
+final class DataViewTableUI extends ResultSetJXTable {
 
     private JPopupMenu tablePopupMenu;
     private final DataViewTablePanel tablePanel;
@@ -176,9 +176,11 @@ class DataViewTableUI extends ResultSetJXTable {
         public Control0KeyListener() {
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
         }
 
+        @Override
         public void keyPressed(KeyEvent e) {
             if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_DELETE) {
                 TableCellEditor editor = getCellEditor();
@@ -192,21 +194,14 @@ class DataViewTableUI extends ResultSetJXTable {
                 if (row == -1) {
                     return;
                 }
-                editCellAt(row, col);
 
-                TableCellEditor editor = getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = getDBColumn(col);
-                    if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, null, rowSelectionAllowed, row, col);
-                        setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    }
-                    setRowSelectionInterval(row, row);
+                DBColumn dbcol = getDBColumn(col);
+                if (dbcol.isGenerated() || !dbcol.isNullable()) {
+                    Toolkit.getDefaultToolkit().beep();
+                } else {
+                    setValueAt("<NULL>", row, col);
                 }
+                setRowSelectionInterval(row, row);
             } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
@@ -214,28 +209,20 @@ class DataViewTableUI extends ResultSetJXTable {
                     return;
                 }
 
-                editCellAt(row, col);
-                TableCellEditor editor = getCellEditor();
-                if (editor != null) {
-                    DBColumn dbcol = getDBColumn(col);
-                    Object val = getValueAt(row, col);
-                    if (dbcol.isGenerated() || !dbcol.hasDefault()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        editor.stopCellEditing();
-                    } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, "", rowSelectionAllowed, row, col);
-                        setValueAt(null, row, col);
-                        editor.stopCellEditing();
-                    } else {
-                        editor.getTableCellEditorComponent(DataViewTableUI.this, "<DEFAULT>", rowSelectionAllowed, row, col);
-                        setValueAt("<DEFAULT>", row, col);
-                        editor.stopCellEditing();
-                    }
-                    setRowSelectionInterval(row, row);
+                DBColumn dbcol = getDBColumn(col);
+                Object val = getValueAt(row, col);
+                if (dbcol.isGenerated() || !dbcol.hasDefault()) {
+                    Toolkit.getDefaultToolkit().beep();
+                } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
+                    setValueAt(null, row, col);
+                } else {
+                    setValueAt("<DEFAULT>", row, col);
                 }
+                setRowSelectionInterval(row, row);
             }
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
         }
     }
@@ -248,6 +235,7 @@ class DataViewTableUI extends ResultSetJXTable {
             this.table = table;
         }
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (tablePanel == null) {
                 return;
@@ -270,6 +258,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miInsertAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_insert"));
         miInsertAction.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handler.insertActionPerformed();
             }
@@ -280,6 +269,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miDeleteAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_deleterow"));
         miDeleteAction.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handler.deleteRecordActionPerformed();
             }
@@ -289,6 +279,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCommitAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_commit"));
         miCommitAction.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handler.commitActionPerformed(true);
             }
@@ -298,6 +289,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCancelEdits = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_cancel_edits"));
         miCancelEdits.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handler.cancelEditPerformed(true);
             }
@@ -307,6 +299,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miTruncateRecord = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_truncate_table"));
         miTruncateRecord.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handler.truncateActionPerformed();
             }
@@ -317,6 +310,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCopyValue = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_copy_cell_value"));
         miCopyValue.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     Object o = getValueAt(selectedRow, selectedColumn);
@@ -334,6 +328,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCopyRowValues = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_copy_row_value"));
         miCopyRowValues.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 copyRowValues(false);
             }
@@ -343,6 +338,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCopyRowValuesH = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_copy_row_header"));
         miCopyRowValuesH.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 copyRowValues(true);
             }
@@ -353,6 +349,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCreateSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_create_sql"));
         miCreateSQLScript.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     DBTable table = dataView.getDataViewDBTable().geTable(0);
@@ -372,6 +369,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miInsertSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_insert_sql"));
         miInsertSQLScript.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     int[] rows = getSelectedRows();
@@ -396,6 +394,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miDeleteSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_delete_sql"));
         miDeleteSQLScript.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 int[] rows = getSelectedRows();
                 String rawDeleteStmt = "";
@@ -415,6 +414,7 @@ class DataViewTableUI extends ResultSetJXTable {
         final JMenuItem miCommitSQLScript = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_show_update_sql"));
         miCommitSQLScript.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String rawUpdateStmt = "";
                 UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
@@ -443,6 +443,7 @@ class DataViewTableUI extends ResultSetJXTable {
 
         printTable.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
                 try {
@@ -459,6 +460,7 @@ class DataViewTableUI extends ResultSetJXTable {
         JMenuItem miRefreshAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_refresh"));
         miRefreshAction.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handler.refreshActionPerformed();
             }
@@ -530,7 +532,7 @@ class DataViewTableUI extends ResultSetJXTable {
                 columns = getSelectedColumns();
             }
             if (rows != null && columns != null) {
-                StringBuffer output = new StringBuffer();
+                StringBuilder output = new StringBuilder();
 
                 if (withHeader) {
                     for (int column = 0; column < columns.length; column++) {
