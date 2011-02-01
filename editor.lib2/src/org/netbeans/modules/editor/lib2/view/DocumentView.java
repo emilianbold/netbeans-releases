@@ -815,20 +815,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         defaultBackground = backColor;
         defaultLimitLine = limitLineColor;
 
-        if (!customFont) {
+        if (!customFont && textComponent != null) {
             textComponent.setFont(defaultFont);
         }
-        if (!customForeground) {
+        if (!customForeground && textComponent != null) {
             textComponent.setForeground(defaultForeground);
         }
-        if (!customBackground) {
+        if (!customBackground && textComponent != null) {
             textComponent.setBackground(defaultBackground);
         }
 
-        updateCharMetrics(); // Update metrics with just updated font
+        if (textComponent != null) {
+            updateCharMetrics(); // Update metrics with just updated font
 
-        releaseChildren();
-
+            releaseChildren();
+        }
+            
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
