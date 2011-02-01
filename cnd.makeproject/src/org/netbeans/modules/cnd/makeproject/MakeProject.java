@@ -632,7 +632,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
      * Return source encoding if in project.xml (only project version >= 50)
      */
     public String getSourceEncodingFromProjectXml() {
-        int xxx = getActiveConfigurationType();
         Element data = helper.getPrimaryConfigurationData(true);
 
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
@@ -684,7 +683,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return type;
         }
 
-        // Get it from private.xml (version >= V77)
+        // Get it from project.xml (version >= V77)
         type = getActiveConfigurationTypeFromProjectXML();
         if (type >= 0) {
             return type;

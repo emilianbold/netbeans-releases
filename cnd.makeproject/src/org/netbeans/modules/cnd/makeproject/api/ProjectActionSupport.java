@@ -634,7 +634,7 @@ public class ProjectActionSupport {
                         makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     }
                     else if (makeConfiguration.isLibraryConfiguration()) {
-                        makeConfiguration.getProfile().setRunCommand(executable);
+                        makeConfiguration.getProfile().getRunCommand().setValue(executable);
                     }
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {
