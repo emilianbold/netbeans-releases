@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.core.syntax.spi;
 
-import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
+package org.netbeans.modules.web.core.spi;
 
-public class ELImplicitObject {
+import org.netbeans.modules.web.core.api.ErrorInfo;
 
-    public enum Type {
-        OBJECT_TYPE,
-        MAP_TYPE,
-        SCOPE_TYPE
-    }
+/**
+ *
+ * @author marekfukala
+ */
+public interface ErrorAnnotation {
 
-    /** Creates a new instance of ELImplicitObject */
-    public ELImplicitObject(String name ) {
-        myName = name;
-        setType(Type.MAP_TYPE);
-    }
+    public void annotate(ErrorInfo[] errors);
 
-    public String getName() {
-        return myName;
-    }
-
-    public Type getType() {
-        return myType;
-    }
-
-    public void setType(Type type) {
-        myType = type;
-    }
-    
-    public String getClazz(){
-        return myClazz;
-    }
-    
-    public void setClazz(String clazz){
-        myClazz = clazz;
-    }
-    
-    public boolean isApplicable( ELExpression expression ){
-        return true;
-    }
-    
-    private String myName;
-    private Type myType;
-    private String myClazz; 
 }

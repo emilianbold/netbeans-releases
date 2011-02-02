@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.completion.api;
-
-import org.netbeans.test.web.core.syntax.TestBase;
+package org.netbeans.modules.web.el.spi;
 
 /**
  *
  * @author marekfukala
  */
-public class JspCompletionItemTest extends TestBase {
+public enum ImplicitObjectType {
 
-    public JspCompletionItemTest() {
-        super("");
-    }
-
-    public void testELBeanType() {
-        ElCompletionItem.ELBean elb = new ElCompletionItem.ELBean(null, 0, "Collection");
-        assertEquals("Collection", elb.getRightHtmlText());
-
-        elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection");
-        assertEquals("Collection", elb.getRightHtmlText());
-
-        elb = new ElCompletionItem.ELBean(null, 0, "java.util.Collection<java.lang.String>");
-        assertEquals("Collection&lt;String&gt;", elb.getRightHtmlText());
-
-    }
+        OBJECT_TYPE,
+        MAP_TYPE,
+        SCOPE_TYPE,
+        RAW
 
 
 }

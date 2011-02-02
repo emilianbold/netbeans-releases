@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,74 +37,75 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.core.syntax.completion.api;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.test.web.core.syntax.TestBase;
+package org.netbeans.modules.web.core.api;
 
 /**
  *
  * @author marekfukala
  */
-public class ELExpressionTest extends TestBase {
+public final class ErrorInfo {
 
-    public ELExpressionTest(String testName) {
-        super(testName);
+    public static final int JSP_ERROR = 1;
+
+    /**
+     * Holds value of property description.
+     */
+    private String description;
+    /**
+     * Holds value of property line.
+     */
+    private int line;
+    /**
+     * Holds value of property column.
+     */
+    private int column;
+    /**
+     * Holds value of property type.
+     */
+    private int type;
+
+    public ErrorInfo(String description, int line, int column, int type) {
+        this.description = description;
+        this.line = line;
+        this.column = column;
+        this.type = type;
     }
 
-    @Test
-    public void testGetPropertyName() {
-        NbTestCase.assertEquals("id", ELExpression.getPropertyName("getId", 3));
-        NbTestCase.assertEquals("ID", ELExpression.getPropertyName("getID", 3));
-        NbTestCase.assertEquals("i", ELExpression.getPropertyName("getI", 3));
+    /**
+     * Getter for property description.
+     * @return Value of property description.
+     */
+    public String getDescription() {
+
+        return this.description;
     }
 
-    public void testParseElFunction() throws BadLocationException {
-        Document doc = createDocument("${f:continue}");
-        //                             012345678
-        ELExpression expr = new ELExpression(doc,8);
-        int type = expr.parse();
+    /**
+     * Getter for property line.
+     * @return Value of property line.
+     */
+    public int getLine() {
 
-        assertEquals(ELExpression.EL_START, type);
-        assertEquals("f:cont", expr.getReplace());
-
-        doc = createDocument("${f:cont}");
-        //                    012345678
-        expr = new ELExpression(doc,8);
-        type = expr.parse();
-
-        assertEquals(ELExpression.EL_START, type);
-        assertEquals("f:cont", expr.getReplace());
-
-        doc = createDocument("${f:cont}");
-        //                    012345678
-        expr = new ELExpression(doc,4);
-        type = expr.parse();
-
-        assertEquals(ELExpression.EL_START, type);
-        assertEquals("f:", expr.getReplace());
-
-        doc = createDocument("${f:}");
-        //                    012345678
-        expr = new ELExpression(doc,4);
-        type = expr.parse();
-
-        assertEquals(ELExpression.EL_START, type);
-        assertEquals("f:", expr.getReplace());
-
+        return this.line;
     }
 
-    @Override
-    protected String getPreferredMimeType() {
-        return "text/x-jsp";
+    /**
+     * Getter for property column.
+     * @return Value of property column.
+     */
+    public int getColumn() {
+
+        return this.column;
     }
 
+    /**
+     * Getter for property type.
+     * @return Value of property type.
+     */
+    public int getType() {
 
-
+        return this.type;
+    }
 }
