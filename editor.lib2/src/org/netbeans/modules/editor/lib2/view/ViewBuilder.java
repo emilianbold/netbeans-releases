@@ -331,8 +331,15 @@ final class ViewBuilder {
         }
 
         if (doCreateViews) {
-            // Create all new views
-            while (createNextView()) {
+            try {
+                // Create all new views
+                while (createNextView()) {
+                }
+            } catch (IllegalStateException ex) { // Re-throw with more info
+                throw new IllegalStateException("ViewBuilder: Error in view creation: prevViewEndOffset=" +
+                        prevViewEndOffset + ", matchOffset=" + matchOffset +
+                        ", docViewEndOffset=" + docViewEndOffset + ", lineEndOffset=" + lineEndOffset +
+                        ", viewRemovalFinished=" + viewRemovalFinished, ex);
             }
         }
 
