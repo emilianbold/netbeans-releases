@@ -44,16 +44,15 @@ package org.netbeans.modules.web.jsf.editor.el;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.jsf.editor.TestBase;
+import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 
 /**
  *
  * @author marekfukala
  */
-public class JsfVariablesModelTest extends TestBase {
+public class JsfVariablesModelTest extends TestBaseForTestProject {
 
     public JsfVariablesModelTest(String testName) {
         super(testName);
@@ -62,20 +61,22 @@ public class JsfVariablesModelTest extends TestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JsfVariablesModel.inTest = true; //do not require JsfSupport since we have no project
+//        JsfVariablesModel.inTest = true; //do not require JsfSupport since we have no project
+    }
+
+    private String getTestFilePath() {
+        return "testWebProject/web/test.xhtml";
     }
 
     public void testCreateModel() throws ParseException {
-        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
-        HtmlParserResult result = getHtmlParserResult(ri);
-        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
+        ParseResultInfo result = parse(getTestFilePath());
+        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
         assertNotNull(model);
     }
 
     public void testModel() throws ParseException {
-        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
-        HtmlParserResult result = getHtmlParserResult(ri);
-        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
+        ParseResultInfo result = parse(getTestFilePath());
+        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -93,43 +94,42 @@ public class JsfVariablesModelTest extends TestBase {
         JsfVariableContext third = contexts.next();
 
         assertEquals(385, first.getFrom());
-        assertEquals(1161, first.getTo());
+        assertEquals(1073, first.getTo());
 
-        assertEquals(674, second.getFrom());
-        assertEquals(1114, second.getTo());
+        assertEquals(645, second.getFrom());
+        assertEquals(1026, second.getTo());
 
-        assertEquals(1170, third.getFrom());
-        assertEquals(1527, third.getTo());
+        assertEquals(1082, third.getFrom());
+        assertEquals(1384, third.getTo());
 
         //test get element by offset
 
         //out of the contexts regions
         assertNull(model.getContainingContext(0));
         assertNull(model.getContainingContext(1600));
-        assertNull(model.getContainingContext(1165));
+        assertNull(model.getContainingContext(300));
 
         //inside
         assertEquals(first, model.getContainingContext(390));
-        assertEquals(first, model.getContainingContext(673));
-        assertEquals(first, model.getContainingContext(1150));
+        assertEquals(first, model.getContainingContext(640));
+        assertEquals(first, model.getContainingContext(1050));
 
         assertEquals(second, model.getContainingContext(700));
-        assertEquals(second, model.getContainingContext(1100));
+        assertEquals(second, model.getContainingContext(1000));
 
         assertEquals(third, model.getContainingContext(1200));
 
         //boundaries - start is inclusive, end exclusive
         assertEquals(first, model.getContainingContext(385));
-        assertEquals(first, model.getContainingContext(1114));
-        assertNull(model.getContainingContext(1161));
+        assertEquals(first, model.getContainingContext(1072));
+        assertNull(model.getContainingContext(1384));
 
 
     }
 
     public void testGetAncestors() throws ParseException {
-        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
-        HtmlParserResult result = getHtmlParserResult(ri);
-        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
+        ParseResultInfo result = parse(getTestFilePath());
+        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -156,9 +156,8 @@ public class JsfVariablesModelTest extends TestBase {
     }
 
     public void testResolveProperties() throws ParseException {
-        ResultIterator ri = getResultIterator("testfiles/test.xhtml");
-        HtmlParserResult result = getHtmlParserResult(ri);
-        JsfVariablesModel model = JsfVariablesModel.getModel(result, ri.getSnapshot());
+        ParseResultInfo result = parse(getTestFilePath());
+        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -174,4 +173,6 @@ public class JsfVariablesModelTest extends TestBase {
         assertEquals("ProductMB.all.name", model.resolveVariable(second, false));
 
     }
+
+   
 }

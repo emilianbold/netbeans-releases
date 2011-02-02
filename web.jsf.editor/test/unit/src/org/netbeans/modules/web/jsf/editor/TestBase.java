@@ -66,6 +66,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -199,7 +200,7 @@ public class TestBase extends CslTestBase {
         return HtmlKit.HTML_MIME_TYPE;
     }
 
-    public ResultIterator getResultIterator(String fileName) throws ParseException {
+    public ParseResultInfo parse(String fileName) throws ParseException {
         FileObject file = getTestFile(fileName);
 
         assertNotNull(file);
@@ -207,28 +208,23 @@ public class TestBase extends CslTestBase {
         Source source = getTestSource(file);
         assertNotNull(source);
 
-        final ResultIterator[] _result = new ResultIterator[1];
+        final ParseResultInfo[] _result = new ParseResultInfo[]{new ParseResultInfo()};
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = resultIterator;
+                _result[0].topLevelSnapshot = resultIterator.getSnapshot();
+                _result[0].result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
             }
         });
-
         
-        assertNotNull(_result[0]);
+        assertNotNull(_result[0].topLevelSnapshot);
+        assertNotNull(_result[0].result);
 
         return _result[0];
     }
 
-    public HtmlParserResult getHtmlParserResult(ResultIterator ri) throws ParseException {
-        HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(ri, "text/html").getParserResult();
-        assertNotNull(result);
-
-        return result;
-    }
-
+  
     protected class TestClassPathProvider implements ClassPathProvider {
 
         private Map<String, ClassPath> map;
@@ -589,5 +585,10 @@ public class TestBase extends CslTestBase {
         @Override
         void setMainProject(Project project) {
         }
+    }
+
+    protected static class ParseResultInfo {
+        public Snapshot topLevelSnapshot;
+        public HtmlParserResult result;
     }
 }
