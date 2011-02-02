@@ -300,28 +300,30 @@ public final class FilePreprocessorConditionState {
         }
 
         public FilePreprocessorConditionState build() {
-            int[] offsets = new int[blocks.size()*2];
+            int size = 0;
+            for (int[] deadInterval : blocks) {
+                size++;
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
+            }
+            int[] offsets = new int[size*2];
             int index = 0;
             for (int[] deadInterval : blocks) {
                 offsets[index++] = deadInterval[0];
                 offsets[index++] = deadInterval[1];
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
             }
             return build(this.name, offsets);
         }
 
         private static void checkConsistency(FilePreprocessorConditionState pcState) {
             // check consistency for ordering and absence of intersections
-            for (int i = 0; i < pcState.offsets.length/2; i++) {
-                int start = i*2;
-                int end = i*2+1;
-                if (end < pcState.offsets.length) {
-                    if (!(pcState.offsets[start] < pcState.offsets[end])) {
-                        CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
-                    }
-                }
-                if (i > 0) {
-                    int prevEnd = start -1;
-                    if (!(pcState.offsets[prevEnd] < pcState.offsets[start] || pcState.offsets[prevEnd] == Integer.MAX_VALUE)) {
+            for (int i = 0; i < pcState.offsets.length; i++) {
+                if (i + 1 < pcState.offsets.length) {
+                    if (!(pcState.offsets[i] < pcState.offsets[i + 1])) {
                         CndUtils.assertTrue(false, "inconsistent state " + pcState);  // NOI18N
                     }
                 }
@@ -343,6 +345,9 @@ public final class FilePreprocessorConditionState {
                 sb.append(deadInterval[0]);
                 sb.append("-");//NOI18N
                 sb.append(deadInterval[1]);
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
             }
             sb.append("]");//NOI18N
             return sb.toString();
