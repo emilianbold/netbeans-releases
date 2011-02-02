@@ -43,7 +43,7 @@
  */
 
 
-package org.netbeans.modules.web.core.syntax.spi;
+package org.netbeans.modules.web.core.api;
 
 import java.beans.PropertyChangeSupport;
 import java.util.Map;

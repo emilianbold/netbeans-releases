@@ -280,7 +280,7 @@ made subject to such option by the copyright holder.
     </folder>
   </folder>
 
-  <folder name="J2EE">
+<!--  <folder name="J2EE">
     <folder name="JSPParser">
     </folder>
     <folder name="JSPCompilation">
@@ -299,7 +299,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-  </folder>
+  </folder>-->
   
   <folder name="Editors">
         <folder name="text">

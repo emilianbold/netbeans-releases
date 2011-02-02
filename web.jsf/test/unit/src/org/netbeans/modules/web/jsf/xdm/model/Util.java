@@ -70,9 +70,7 @@ public class Util {
     }
 
     public static Document loadDocument(InputStream in) throws Exception {
-//	Document sd = new PlainDocument();
-        Document sd = new org.netbeans.editor.BaseDocument(
-                org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
+        Document sd = new org.netbeans.editor.BaseDocument(false, "text/xml"); //NOI18N
         return setDocumentContentTo(sd, in);
     }
     
