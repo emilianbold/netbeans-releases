@@ -184,6 +184,7 @@
                 <friend>org.netbeans.modules.j2ee.jpa.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.spring.beans</friend>

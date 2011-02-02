@@ -106,7 +106,7 @@ public class RemoteFileSystem extends FileSystem {
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
 
-    public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
+    /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
@@ -181,6 +181,9 @@ public class RemoteFileSystem extends FileSystem {
         //no special code for Windows
         //also as absolute path is passed to the method we will use it as an absolute
         String result = absPath;
+        if (result.endsWith("/.")) {
+            result = result.substring(0, result.length()-2);
+        }
 // # Remove all /./ sequences.
 //    local   path=${1//\/.\//\/}
         result = result.replaceAll("[/][.][/]", "[/]"); // NOI18N

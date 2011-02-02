@@ -62,8 +62,8 @@ public final class TerminalSupport {
      * @param ioContainer
      * @param env 
      */
-    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, false);
+    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false);
     }
     
     /**
@@ -71,8 +71,8 @@ public final class TerminalSupport {
      * @param ioContainer
      * @param env 
      */
-    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, env, dir, false);
+    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
     }
 
     public static Component getToolbarPresenter(Action action) {

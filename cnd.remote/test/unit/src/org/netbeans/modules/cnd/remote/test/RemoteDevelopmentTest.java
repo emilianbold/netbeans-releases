@@ -49,6 +49,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
+import org.netbeans.modules.remote.impl.fs.InvalidFileObjectSupportTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;

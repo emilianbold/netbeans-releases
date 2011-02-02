@@ -218,8 +218,10 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
                 log.log(Level.FINE, "after syncTask clipboard wait"); // NOI18N
                 try {
                     prev = systemClipboard.getContents (requestor);
-                } catch( IllegalStateException isE ) {
-                    log.log (Level.INFO, "System clipboard not available.", isE); // NOI18N
+                } catch( ThreadDeath td ) {
+                    throw td;
+                } catch( Throwable ex ) {
+                    log.log (Level.INFO, "System clipboard not available.", ex); // NOI18N
                     prev = null;
                 }
             }

@@ -158,5 +158,17 @@ public class MakeVariableFinal implements ErrorRule<Void> {
             
             return null;
         }
+
+        @Override
+        public int hashCode() {
+            return variable.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof FixImpl)) return false;
+            return variable.equals(((FixImpl) obj).variable);
+        }
+        
     }
 }

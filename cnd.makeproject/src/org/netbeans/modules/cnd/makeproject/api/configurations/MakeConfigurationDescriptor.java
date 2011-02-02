@@ -260,7 +260,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, 
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
             Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -603,7 +603,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return clone;
     }
 
-
     /**
      * @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor.isModified instead.
      */
@@ -656,12 +655,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
         RequestProcessor.Task task = RP.post(saveRunnable);
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()){
+        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
             ModalMessageDlg.runLongTask(
-            WindowManager.getDefault().getMainWindow(),
-            task, null, null,
-            getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
-            getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
+                    WindowManager.getDefault().getMainWindow(),
+                    task, null, null,
+                    getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
+                    getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         } else {
             task.waitFinished();
         }
@@ -731,6 +730,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (!isModified()) {
             // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
             new ConfigurationMakefileWriter(this).writeMissingMakefiles();
+
+            ConfigurationPrivateXMLWriter();
+            saveProject();
+
             return true;
         }
 
@@ -773,6 +776,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
+            ConfigurationPrivateXMLWriter();
+            saveProject();
             LOGGER.log(Level.FINE, "End of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
         }
 
@@ -791,99 +796,135 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Fix is to rewrite this method to not use Project and Ant Helper and use DocumentFactory.createInstance().parse instead to open the document.
             return;
         }
+        AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+
+        // Remove old project dependency node
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        // Create new project dependency node
+        Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
+        Set<String> subprojectLocations = getSubprojectLocations();
+        for (String loc : subprojectLocations) {
+            Node n1;
+            n1 = doc.createElement(MakeProjectType.MAKE_DEP_PROJECT);
+            n1.appendChild(doc.createTextNode(loc));
+            element.appendChild(n1);
+        }
+        data.appendChild(element);
+        helper.putPrimaryConfigurationData(data, true);
+
+        // Remove old source root node
+        nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        // Create new source root node
+        element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+        List<String> sourceRootist = getSourceRoots();
+        for (String loc : sourceRootist) {
+            Node n1;
+            n1 = doc.createElement(MakeProjectType.SOURCE_ROOT_ELEMENT);
+            n1.appendChild(doc.createTextNode(loc));
+            element.appendChild(n1);
+        }
+        data.appendChild(element);
+        helper.putPrimaryConfigurationData(data, true);
+
+
+        // Remove old configuration node
+        nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        // Create new configuration node
+        element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+        for (Configuration conf : getConfs().getConfigurations()) {
+            Element element2 = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_ELEMENT);
+            Node n1;
+            n1 = doc.createElement(MakeProjectType.CONFIGURATION_NAME_ELEMENT);
+            n1.appendChild(doc.createTextNode(conf.getName()));
+            element2.appendChild(n1);
+            n1 = doc.createElement(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
+            n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getConfigurationType().getValue()));
+            element2.appendChild(n1);
+            element.appendChild(element2);
+        }
+        data.appendChild(element);
+
+        helper.putPrimaryConfigurationData(data, true);
+
+
+        // Create source encoding node
+        nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            // Node already there
+            Node node = nodeList.item(0);
+            node.setTextContent(((MakeProject) getProject()).getSourceEncoding());
+        } else {
+            // Create node
+            Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
+            nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
+            data.appendChild(nativeProjectType);
+        }
+
+        helper.putPrimaryConfigurationData(data, true);
+    }
+
+    private void ConfigurationPrivateXMLWriter() {
+        if (getProject() == null) {
+            return;
+        }
+        AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
+        Element data = helper.getPrimaryConfigurationData(false);
+        Document doc = data.getOwnerDocument();
+
+        // Create active configuration type node
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            // Node already there
+            Node node = nodeList.item(0);
+            node.setTextContent("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue());
+        } else {
+            // Create node
+            Element elem = doc.createElementNS(MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
+            elem.appendChild(doc.createTextNode("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue()));
+            data.appendChild(elem);
+        }
+
+        // Create active configuration type node
+        nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            // Node already there
+            Node node = nodeList.item(0);
+            node.setTextContent("" + getConfs().getActiveAsIndex());
+        } else {
+            // Create node
+            Element elem = doc.createElementNS(MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT); // NOI18N
+            elem.appendChild(doc.createTextNode("" + getConfs().getActiveAsIndex()));
+            data.appendChild(elem);
+        }
+
+        helper.putPrimaryConfigurationData(data, false);
+    }
+
+    private void saveProject() {
+        if (getProject() == null) {
+            return;
+        }
         try {
-            AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
-            Element data = helper.getPrimaryConfigurationData(true);
-            Document doc = data.getOwnerDocument();
-
-            // Remove old project dependency node
-            NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Node node = nodeList.item(i);
-                    data.removeChild(node);
-                }
-            }
-            // Create new project dependency node
-            Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
-            Set<String> subprojectLocations = getSubprojectLocations();
-            for (String loc : subprojectLocations) {
-                Node n1;
-                n1 = doc.createElement(MakeProjectType.MAKE_DEP_PROJECT);
-                n1.appendChild(doc.createTextNode(loc));
-                element.appendChild(n1);
-            }
-            data.appendChild(element);
-            helper.putPrimaryConfigurationData(data, true);
-
-            // Remove old source root node
-            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Node node = nodeList.item(i);
-                    data.removeChild(node);
-                }
-            }
-            // Create new source root node
-            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
-            List<String> sourceRootist = getSourceRoots();
-            for (String loc : sourceRootist) {
-                Node n1;
-                n1 = doc.createElement(MakeProjectType.SOURCE_ROOT_ELEMENT);
-                n1.appendChild(doc.createTextNode(loc));
-                element.appendChild(n1);
-            }
-            data.appendChild(element);
-            helper.putPrimaryConfigurationData(data, true);
-
-            // Remove old configuration node
-            nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Node node = nodeList.item(i);
-                    data.removeChild(node);
-                }
-            }
-            // Create new configuration node
-            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
-            String[] confsNames = getConfs().getConfsAsNames();
-            for (String name : confsNames) {
-                Node n1;
-                n1 = doc.createElement(MakeProjectType.CONFIGURATION_ELEMENT);
-                n1.appendChild(doc.createTextNode(name));
-                element.appendChild(n1);
-            }
-            data.appendChild(element);
-            helper.putPrimaryConfigurationData(data, true);
-
-            // Create source encoding node
-            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                // Node already there
-                Node node = nodeList.item(0);
-                node.setTextContent(((MakeProject) getProject()).getSourceEncoding());
-            } else {
-                // Create node
-                Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
-                nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
-                data.appendChild(nativeProjectType);
-            }
-
-            // Create active configuration type node
-            nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                // Node already there
-                Node node = nodeList.item(0);
-                node.setTextContent("" + ((MakeConfiguration)getConfs().getActive()).getConfigurationType().getValue());
-            } else {
-                // Create node
-                Element elem = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
-                elem.appendChild(doc.createTextNode("" + ((MakeConfiguration)getConfs().getActive()).getConfigurationType().getValue()));
-                data.appendChild(elem);
-            }
-
-            helper.putPrimaryConfigurationData(data, true);
-
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
             Set<Entry<Thread, StackTraceElement[]>> entrySet = Thread.getAllStackTraces().entrySet();

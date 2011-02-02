@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.api.indicator;
 
-package org.netbeans.modules.cnd.support;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
 /**
- *
- * @author Vladimir Kvashin
+ * A description of open-visualizer-action to be associated with an indicator
+ * 
+ * @author ak119685
  */
-public class InvalidFileObjectSupportTest {
+public final class IndicatorActionDescriptor {
 
-    @Test
-    public void testInvalidFileObject() throws Exception {
-        File file = File.createTempFile("qwe", "asd");
-        FileObject origFo = FileUtil.toFileObject(file); // FileUtil SIC!
-        String path = origFo.getPath();
-        FileSystem fs = origFo.getFileSystem();
-        assertNotNull(origFo);
-        file.delete();
-        FileObject invalidFo1 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
-        FileObject invalidFo2 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
-        assertTrue(invalidFo1 == invalidFo2);
-        assertFalse(invalidFo1.isValid());
-        assertEquals(origFo.getName(), invalidFo1.getName());
-        assertEquals(origFo.getExt(), invalidFo1.getExt());
-        String p1 = origFo.getPath();
-        String p2 = invalidFo1.getPath();
-        boolean eq = p1.equals(p2);
-        assertEquals(origFo.getPath(), invalidFo1.getPath());
-        assertEquals(origFo.getNameExt(), invalidFo1.getNameExt());
-        assertEquals(origFo.getFileSystem(), invalidFo1.getFileSystem());
+    private final String displayName;
+    private final String tooltip;
+    private final VisualizerConfiguration visualizerConfiguration;
+
+    public IndicatorActionDescriptor(String displayName, String tooltip, VisualizerConfiguration visualizerConfiguration) {
+        this.displayName = displayName;
+        this.tooltip = tooltip;
+        this.visualizerConfiguration = visualizerConfiguration;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getTooltip() {
+        return tooltip;
+    }
+
+    public VisualizerConfiguration getVisualizerConfiguration() {
+        return visualizerConfiguration;
     }
 }

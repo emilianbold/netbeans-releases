@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TagCommand;
+import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate.Result;
@@ -58,6 +59,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepository;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
@@ -67,6 +69,7 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.DelegatingProgressMonitor;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -112,6 +115,21 @@ public class FetchTest extends AbstractGitTestCase {
         Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(0, branches.size());
         Map<String, GitTransportUpdate> updates = client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, branches.size());
+        assertTrue(branches.get("origin/master").isRemote());
+        assertTrue(branches.get("origin/" + BRANCH_NAME).isRemote());
+        assertEquals(branch.getId(), branches.get("origin/" + BRANCH_NAME).getId());
+        assertEquals(2, updates.size());
+        assertUpdate(updates.get("origin/master"), "origin/master", "master", masterInfo.getRevision(), null, new URIish(otherWT.toURI().toURL()).toString(), Type.BRANCH, GitRefUpdateResult.NEW);
+        assertUpdate(updates.get("origin/" + BRANCH_NAME), "origin/" + BRANCH_NAME, BRANCH_NAME, branch.getId(), null, new URIish(otherWT.toURI().toURL()).toString(), Type.BRANCH, GitRefUpdateResult.NEW);
+    }
+
+    public void testFetchAllBranchesUrl () throws Exception {
+        GitClient client = getClient(workDir);
+        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(0, branches.size());
+        Map<String, GitTransportUpdate> updates = client.fetch(otherWT.toURI().toURL().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
         branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertTrue(branches.get("origin/master").isRemote());
@@ -194,35 +212,57 @@ public class FetchTest extends AbstractGitTestCase {
         assertUpdate(updates.get("origin/" + BRANCH_NAME), "origin/" + BRANCH_NAME, BRANCH_NAME, branch.getId(), null, new URIish(otherWT.toURI().toURL()).toString(), Type.BRANCH, GitRefUpdateResult.NEW);
     }
     
-    public void testFetchDeleteBranch () throws Exception {
+    public void testDeleteStaleReferencesFails () throws Exception {
+        setupRemoteSpec("origin", "+refs/heads/*:refs/remotes/origin/*");
         GitClient client = getClient(workDir);
         Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(0, branches.size());
-        setupRemoteSpec("origin", "+refs/heads/" + BRANCH_NAME + ":refs/remotes/origin/" + BRANCH_NAME);
-        Map<String, GitTransportUpdate> updates = client.fetch("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitTransportUpdate> updates = client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
         branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         
-        // delete the remote branch
-        File branchFile = new File(otherWT, ".git/refs/heads/" + BRANCH_NAME);
-        assertEquals(2, getClient(otherWT).getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
-        Thread.sleep(100);
-        branchFile.delete();
-        assertEquals(1, getClient(otherWT).getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
-        
-        try {
-            client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
-            fail();
-        } catch (GitException ex) {
-            assertEquals("Remote does not have refs/heads/new_branch available for fetch.", ex.getMessage());
-        }
-        
-        updates = client.fetch("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        new File(workDir, ".git/refs/remotes/origin").mkdirs();
+        write(new File(workDir, ".git/refs/remotes/origin/HEAD"), "ref: refs/remotes/origin/master");
+        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(2, branches.size());
+        // and now the master is deleted and HEAD points to nowhere :(
+        Transport transport = Transport.open(repository, "origin");
+        transport.setRemoveDeletedRefs(true);
+        transport.fetch(new DelegatingProgressMonitor(ProgressMonitor.NULL_PROGRESS_MONITOR), new RemoteConfig(repository.getConfig(), "origin").getFetchRefSpecs());
         branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
-        assertEquals(1, updates.size());
-        assertUpdate(updates.get("origin/" + BRANCH_NAME), "origin/" + BRANCH_NAME, BRANCH_NAME, null, branch.getId(), new URIish(otherWT.toURI().toURL()).toString(), Type.BRANCH, GitRefUpdateResult.FORCED);
     }
+
+//    enable when the fixed in jgit - see the previous test
+//    public void testFetchDeleteBranch () throws Exception {
+//        GitClient client = getClient(workDir);
+//        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+//        assertEquals(0, branches.size());
+//        setupRemoteSpec("origin", "+refs/heads/" + BRANCH_NAME + ":refs/remotes/origin/" + BRANCH_NAME);
+//        Map<String, GitTransportUpdate> updates = client.fetch("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+//        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+//        assertEquals(2, branches.size());
+//        
+//        // delete the remote branch
+//        File branchFile = new File(otherWT, ".git/refs/heads/" + BRANCH_NAME);
+//        assertEquals(2, getClient(otherWT).getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+//        Thread.sleep(100);
+//        branchFile.delete();
+//        assertEquals(1, getClient(otherWT).getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+//        
+//        try {
+//            client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
+//            fail();
+//        } catch (GitException ex) {
+//            assertEquals("Remote does not have refs/heads/new_branch available for fetch.", ex.getMessage());
+//        }
+//        
+//        updates = client.fetch("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+//        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+//        assertEquals(1, branches.size());
+//        assertEquals(1, updates.size());
+//        assertUpdate(updates.get("origin/" + BRANCH_NAME), "origin/" + BRANCH_NAME, BRANCH_NAME, null, branch.getId(), new URIish(otherWT.toURI().toURL()).toString(), Type.BRANCH, GitRefUpdateResult.FORCED);
+//    }
     
     public void testFetchTags () throws Exception {
         setupRemoteSpec("origin", "+refs/heads/master:refs/remotes/origin/master");

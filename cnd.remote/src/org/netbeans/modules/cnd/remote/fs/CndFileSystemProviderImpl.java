@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import org.netbeans.modules.remote.api.InvalidFileObjectSupport;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -246,7 +247,22 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     public void postConnectDownloadFinished(ExecutionEnvironment env) {
         RemoteCodeModelUtils.scheduleReparse(env);
     }
+    
+    @Override
+    protected FileSystem geDummyFileSystemImpl() {
+        return InvalidFileObjectSupport.getDummyFileSystem();
+    }
 
+    @Override
+    protected FileObject getInvalidFileObjectImpl(File file) {
+        return InvalidFileObjectSupport.getInvalidFileObject(file);
+    }
+
+    @Override
+    protected FileObject getInvalidFileObjectImpl(FileSystem fileSystem, CharSequence path) {
+        return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, path);
+    }
+    
     private static class FileSystemAndString {
 
         public final FileSystem fileSystem;

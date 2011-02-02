@@ -68,7 +68,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class FetchCommand extends GitCommand {
 
-    private final String remoteName;
+    private final String remote;
     private final ProgressMonitor monitor;
     private final List<String> refSpecs;
     private Map<String, GitTransportUpdate> updates;
@@ -78,10 +78,10 @@ public class FetchCommand extends GitCommand {
         this(repository, remoteName, Collections.<String>emptyList(), monitor);
     }
 
-    public FetchCommand (Repository repository, String remoteName, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
+    public FetchCommand (Repository repository, String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
         super(repository, monitor);
         this.monitor = monitor;
-        this.remoteName = remoteName;
+        this.remote = remote;
         this.refSpecs = fetchRefSpecifications;
     }
 
@@ -94,15 +94,16 @@ public class FetchCommand extends GitCommand {
         }
         Transport transport = null;
         try {
-            transport = Transport.open(repository, remoteName);
-            transport.setRemoveDeletedRefs(true);
+            transport = Transport.open(repository, remote);
+            transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
             transport.setDryRun(false);
             transport.setFetchThin(true);
             transport.setTagOpt(TagOpt.FETCH_TAGS);
             result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
             for (String msg : result.getMessages().split("\n")) { //NOI18N
                 if (!msg.isEmpty()) {
-                    monitor.notifyWarning(msg);
+                    // these are not warnings, i guess, just plain informational messages
+//                    monitor.notifyWarning(msg);
                 }
             }
             updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
@@ -125,7 +126,7 @@ public class FetchCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git fetch ").append(remoteName); //NOI18N
+        StringBuilder sb = new StringBuilder("git fetch ").append(remote); //NOI18N
         for (String refSpec : refSpecs) {
             sb.append(' ').append(refSpec);
         }
