@@ -76,8 +76,6 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -113,6 +111,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         System.setProperty("cnd.modelimpl.timing","true"); // NOI18N
         System.setProperty(" parser.report.include.failures","true"); // NOI18N
         System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
+        System.setProperty("cnd.dump.native.file.item.paths","true"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
         Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);

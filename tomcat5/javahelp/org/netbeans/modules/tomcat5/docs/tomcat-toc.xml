@@ -27,12 +27,7 @@ PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
                     <tocitem text="Authenticating the Tomcat Web Server" target="tomcat_edit_tomcatuser" />
                     <tocitem text="Deploying a Web Application" target="tomcat_setup_registered" />
                     <tocitem text="Editing the Tomcat Configuration File" target="tomcat_edit_config" />
-                    <tocitem text="Advanced Configuration">
-                        <tocitem text="Setting Up a Connection Pool on the Tomcat Web Server" target="tomcat_setup_tdcp" />
-                        <tocitem text="Accessing a Connection Pool from a JSP Page" target="tomcat_use_tdcp" />
-                        <tocitem text="Using JWSDP 1.6 on the Tomcat Web Server" target="tomcat_websvc_jwsdp" />
-                        <tocitem text="Writing Ant Targets for Web Services on the Tomcat Web Server" target="tomcat_websvc" />
-                    </tocitem>
+                    <tocitem text="Setting Up a Connection Pool on the Tomcat Web Server" target="tomcat_setup_tdcp" />
                 </tocitem>
             </tocitem>
         </tocitem>

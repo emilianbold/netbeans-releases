@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
+import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -178,7 +179,26 @@ public abstract class APTAbstractWalker extends APTWalker {
             }
         }
     }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
+        APTPragma pragma = (APTPragma) apt;
+        APTToken name = pragma.getName();
+        if (name != null && APTPragma.PRAGMA_ONCE.contentEquals(name.getTextID())) {
+            if (getMacroMap().isDefined(getFileOnceMacroName())) {
+                // if already included => stop
+                super.stop();
+            } else {
+                APTDefine fileOnce = APTUtils.createAPTDefineOnce(getFileOnceMacroName());
+                getMacroMap().define(getRootFile(), fileOnce, Kind.DEFINED);
+            }
+        }
+    }
     
+    protected String getFileOnceMacroName() {
+        return "\""+getRootFile().getPath().toString()+"\""; //NOI18N
+    }
+
     @Override
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
