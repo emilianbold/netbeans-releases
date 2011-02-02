@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial;
 
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import java.io.File;
@@ -52,6 +53,7 @@ import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -270,11 +272,16 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            FileInformation info = cache.getCachedStatus(file);
+            File root = Mercurial.getInstance().getRepositoryRoot(file);
+            FileInformation info = null;
+            try {
+                Map<File, FileInformation> statusMap = HgCommand.getStatus(root, Arrays.asList(file));
+                info = statusMap != null ? statusMap.get(file) : null;
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, "beforeCreate(): getStatus failed for file: {0} {1}", new Object[]{file.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
             if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
-                Mercurial hg = Mercurial.getInstance();
-                final File root = hg.getRepositoryRoot(file);
                 if (root == null) return false;
                 final OutputLogger logger = Mercurial.getInstance().getLogger(root.getAbsolutePath());
                 try {
