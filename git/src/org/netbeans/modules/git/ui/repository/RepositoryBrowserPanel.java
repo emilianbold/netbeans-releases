@@ -868,6 +868,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String getName () {
             return remoteName;
         }
+        
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    FetchAction action = SystemAction.get(FetchAction.class);
+                    action.fetch(currRepository, getLookup().lookup(GitRemoteConfig.class));
+                }
+            });
+            return actions.toArray(new Action[actions.size()]);
+        }
     }
 
     private class RemoteUri {
@@ -941,7 +954,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public void actionPerformed (ActionEvent e) {
                         FetchAction action = SystemAction.get(FetchAction.class);
-                        action.fetch(currRepository, uri.uri, remote);
+                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs());
                     }
                 });
             }

@@ -154,7 +154,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
         @Override
         public FileObject getFileObject() {
-            return elElement.getParserResult().getFileObject();
+            return elElement.getSnapshot().getSource().getFileObject();
         }
 
         @Override

@@ -2158,9 +2158,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
                 });
 		return;
 	} else {
-	    ConsoleTopComponent.getDefault().open();
+	    ConsoleTopComponent.findInstance().open();
 	    if (DebuggerOption.FRONT_DBGWIN.isEnabled(globalOptions())) {
-		ConsoleTopComponent.getDefault().requestActive();
+		ConsoleTopComponent.findInstance().requestActive();
 	    }
 	}
     }
@@ -2181,8 +2181,8 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	    });
 	    return;
 	} else {
-	    PioTopComponent.getDefault().open();
-	    PioTopComponent.getDefault().requestActive();
+	    PioTopComponent.findInstance().open();
+	    PioTopComponent.findInstance().requestActive();
 	}
     }
 

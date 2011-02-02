@@ -134,7 +134,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private volatile NativeProject nativeProject = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
-    private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
+    private String projectMakefileName; // = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
     private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 10);//NOI18N
@@ -272,7 +272,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         if (!addGeneratedMakefileToLogicalView) {
-            externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+            if (getProjectMakefileName() != null) {
+                externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+            }
         }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
