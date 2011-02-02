@@ -44,9 +44,12 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Misc projct related utility functions
@@ -116,14 +120,20 @@ public class RemoteProjectSupport {
             sourceFilesAndDirs.add(file);
         }
         addExtraFiles(mcs, sourceFilesAndDirs);
-        // Make sure 1st level subprojects are visible remotely
-        // First, remembr all subproject locations
-        for (String subprojectDir : conf.getSubProjectLocations()) {
-            subprojectDir = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-            sourceFilesAndDirs.add(CndFileUtils.createLocalFile(subprojectDir));
-        }
+        List<Project> subProjects = new ArrayList<Project>(conf.getSubProjects());
+        // required projects are different - see #194997
+        for (ProjectItem requiredProject : conf.getRequiredProjectsConfiguration().getValue() ) {
+            Project p = requiredProject.getProject(conf.getBaseDir());
+            if (p != null) {
+                subProjects.add(p);                
+            }
+        }        
         // Then go trough open subprojects and add their external source roots
-        for (Project subProject : conf.getSubProjects()) {
+        for (Project subProject : subProjects) {
+            File projectDirFile = FileUtil.toFile(subProject.getProjectDirectory());
+            if (projectDirFile != null) {
+                sourceFilesAndDirs.add(projectDirFile);
+            }
             MakeConfigurationDescriptor subMcs =
                     MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
             for(String soorceRoot : mcs.getSourceRoots()) {
