@@ -58,7 +58,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
+import org.netbeans.modules.web.core.api.JspColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.ParseResult;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;

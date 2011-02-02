@@ -77,12 +77,13 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
-import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
-import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
+import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
+import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Utility class for resolving elements/types for EL expressions.
@@ -94,6 +95,7 @@ public final class ELTypeUtilities {
     private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
     private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
     private final ClasspathInfo cpInfo;
+    private final FileObject file;
 
     private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
     static {
@@ -109,18 +111,19 @@ public final class ELTypeUtilities {
         TYPES.put(node, kindSet);
     }
 
-    private ELTypeUtilities(ClasspathInfo cpInfo) {
+    private ELTypeUtilities(FileObject context, ClasspathInfo cpInfo) {
         assert cpInfo != null;
         this.cpInfo = cpInfo;
-    }
-
-    public static ELTypeUtilities create(ClasspathInfo cpInfo) {
-        return new ELTypeUtilities(cpInfo);
+        this.file = context;
     }
 
     public static ELTypeUtilities create(FileObject context) {
         ClasspathInfo cp = ClasspathInfo.create(context);
-        return create(cp);
+        return new ELTypeUtilities(context, cp);
+    }
+
+    public static ELTypeUtilities create(FileObject context, ClasspathInfo cpInfo) {
+        return new ELTypeUtilities(context, cpInfo);
     }
 
     public String getTypeNameFor(Element element) {
@@ -276,23 +279,29 @@ public final class ELTypeUtilities {
         return task.getResult();
     }
 
-    public static Collection<ELImplicitObject> getImplicitObjects() {
-        Set<ELImplicitObject> result = new HashSet<ELImplicitObject>();
-        Collection<? extends ImplicitObjectProvider> providers =
-                Lookup.getDefault().lookupAll(ImplicitObjectProvider.class);
-        
-        for (ImplicitObjectProvider each : providers) {
-            result.addAll(each.getImplicitObjects());
-        }
-        return result;
+    public Collection<ImplicitObject> getImplicitObjects() {
+        return ELPlugin.Query.getImplicitObjects(file);
     }
 
-    public static boolean isScopeObject(Node target) {
+    public boolean isScopeObject(Node target) {
         if (!(target instanceof AstIdentifier)) {
             return false;
         }
-        for (ELImplicitObject each : ELTypeUtilities.getImplicitObjects()) {
-            if (each.getType() == ELImplicitObject.Type.SCOPE_TYPE
+        for (ImplicitObject each : getImplicitObjects()) {
+            if (each.getType() == ImplicitObjectType.SCOPE_TYPE
+                    && each.getName().equals(target.getImage())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isRawObject(Node target) {
+        if (!(target instanceof AstIdentifier)) {
+            return false;
+        }
+        for (ImplicitObject each : getImplicitObjects()) {
+            if (each.getType() == ImplicitObjectType.RAW
                     && each.getName().equals(target.getImage())) {
                 return true;
             }
@@ -403,11 +412,11 @@ public final class ELTypeUtilities {
     private Element getIdentifierType(final AstIdentifier identifier, final ELElement element) {
         String tempClass = null;
         // try implicit objects first
-        for (ELImplicitObject implicitObject : getImplicitObjects()) {
+        for (ImplicitObject implicitObject : getImplicitObjects()) {
             if (implicitObject.getName().equals(identifier.getImage())) {
                 if (implicitObject.getClazz() == null || implicitObject.getClazz().isEmpty()) {
                     // the identiefier represents an implicit object whose type we don't know
-                    tempClass = Object.class.getName();
+//                    tempClass = Object.class.getName();
                 } else {
                     tempClass = implicitObject.getClazz();
                 }
@@ -416,7 +425,7 @@ public final class ELTypeUtilities {
         }
         if (tempClass == null) {
             // managed beans
-            tempClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getParserResult().getFileObject());
+            tempClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getSnapshot().getSource().getFileObject());
         }
         final String clazz = tempClass;
         SourceTask<Element> task = new SourceTask<Element>() {
@@ -429,10 +438,23 @@ public final class ELTypeUtilities {
                 }
                 // probably a variable
                 int offset = element.getOriginalOffset().getStart() + identifier.startOffset();
-                Node expressionNode = ELVariableResolvers.getReferredExpression(element.getParserResult().getSnapshot(), offset);
-                if (expressionNode != null) {
-                    setResult(getReferredType(expressionNode, element.getParserResult().getFileObject(), info));
+
+                Collection<ELVariableResolver.VariableInfo> vis = ELVariableResolvers.getVariables(element.getSnapshot(), offset);
+                for(ELVariableResolver.VariableInfo vi : vis) {
+                    if(identifier.getImage().equals(vi.name)) {
+                        try {
+                            Node expressionNode = ELParser.parse(vi.expression);
+                            if (expressionNode != null) {
+                                setResult(getReferredType(expressionNode, element.getSnapshot().getSource().getFileObject(), info));
+                                return ;
+                            }
+                        }catch (ELException e) {
+                            //invalid expression
+                        }
+                    }
                 }
+
+
             }
         };
         runTask(task);
@@ -443,7 +465,7 @@ public final class ELTypeUtilities {
      * @return the element for the type that that given {@code expression} refers to, i.e.
      * the return type of the last method in the expression.
      */
-    private Element getReferredType(Node expression, final FileObject context, final CompilationController info) {
+    public Element getReferredType(Node expression, final FileObject context, final CompilationController info) {
 
         final Element[] result = new Element[1];
         expression.accept(new NodeVisitor() {
@@ -475,12 +497,17 @@ public final class ELTypeUtilities {
                     TypeMirror returnType = getReturnType(method);
                     //XXX: works just for generic collections, i.e. the assumption is
                     // that variables refer to collections, which is not always the case
+
+                    //XXX: marek: is that even correct? Shouldn't the usage of the type arguments
+                    //be restricted only for the Iterable types?
                     if (returnType instanceof DeclaredType) {
                         List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
                         for (TypeMirror arg : typeArguments) {
                             result[0] = info.getTypes().asElement(arg);
                             return;
                         }
+                        //use the returned type itself
+                        result[0] = info.getTypes().asElement(returnType);
                     }
 
                 }
@@ -541,7 +568,7 @@ public final class ELTypeUtilities {
                                 // in resolving the beans they contain. The code below handles cases
                                 // like sessionScope.myBean => sessionScope is in position parent.jjtGetChild(i - 1)
                                 if (i > 0 && isScopeObject(parent.jjtGetChild(i - 1))) {
-                                    final String clazz = ELVariableResolvers.findBeanClass(child.getImage(), elem.getParserResult().getFileObject());
+                                    final String clazz = ELVariableResolvers.findBeanClass(child.getImage(), elem.getSnapshot().getSource().getFileObject());
                                     if (clazz == null) {
                                         return;
                                     }

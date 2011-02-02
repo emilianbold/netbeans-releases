@@ -1002,7 +1002,9 @@ public class CommitAction extends ContextAction {
             //        => the commit has to be split in two parts.
             for(File file : nonRecursiveComits) {
                 ISVNStatus st = null;
-                if(removeCandidates.contains(file) || ((st = cache.getStatus(file).getEntry(file)) != null && st.isCopied())) {
+                FileInformation fi = cache.getStatus(file);
+                if((file.isDirectory() || fi.isDirectory()) &&
+                        (removeCandidates.contains(file) || ((st = fi.getEntry(file)) != null && st.isCopied()))) {
                     recursiveCommits.add(file);
                 }
             }
