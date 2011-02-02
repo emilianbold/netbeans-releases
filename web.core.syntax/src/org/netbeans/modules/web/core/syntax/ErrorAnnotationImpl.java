@@ -48,7 +48,7 @@
  * Created on November 9, 2004, 3:09 PM
  */
 
-package org.netbeans.modules.web.core.syntax.spi;
+package org.netbeans.modules.web.core.syntax;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +60,9 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.web.core.syntax.JspParserErrorAnnotation;
+import org.netbeans.modules.web.core.api.ErrorInfo;
+import org.netbeans.modules.web.core.spi.ErrorAnnotation;
+import org.netbeans.modules.web.core.spi.ErrorAnnotationFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -69,15 +71,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, mfukala@netbeans.org
  */
-public class ErrorAnnotation {
+public class ErrorAnnotationImpl implements ErrorAnnotation {
     
-    public static final int JSP_ERROR = 1;
     
     /** Jsp file, for which is the ErrorAnnotation */
     private FileObject jspFo;
@@ -85,16 +87,17 @@ public class ErrorAnnotation {
     private ArrayList annotations;
     
     /** Creates a new instance of ErrorAnnotation */
-    public ErrorAnnotation(FileObject jspFo) {
+    public ErrorAnnotationImpl(FileObject jspFo) {
         this.jspFo = jspFo;
         annotations = new ArrayList();
     }
     
     /** Adds annotation for the errors. If the error is already annotated, does nothing. If there are 
-     *  annotated erros, which are not in the input array, then these annotations are deleted.
+     *  annotated errors, which are not in the input array, then these annotations are deleted.
      *
      *  
      */
+    @Override
     public void annotate(ErrorInfo[] errors){
         ArrayList added, removed, unchanged;
         Collection newAnnotations;
@@ -150,6 +153,7 @@ public class ErrorAnnotation {
             final ArrayList finalAdded = added;
             final DataObject doJsp2 = doJsp;
             Runnable docRenderer = new Runnable() {
+                @Override
                 public void run() {
                     LineCookie cookie = (LineCookie)doJsp2.getCookie(LineCookie.class);
                     Line.Set lines = cookie.getLineSet();
@@ -196,7 +200,7 @@ public class ErrorAnnotation {
             String message = err.getDescription();
             LineSetAnnotation ann;
             switch (err.getType()){
-                case JSP_ERROR:
+                case ErrorInfo.JSP_ERROR:
                     ann = new JspParserErrorAnnotation(line, column, message, (NbEditorDocument)document);
                     break;
                 default:
@@ -241,71 +245,14 @@ public class ErrorAnnotation {
         public abstract void attachToLineSet(Line.Set lines);
     }
     
-    
-    public static class ErrorInfo {
-        /**
-         * Holds value of property description.
-         */
-        private String description;
+    @ServiceProvider(service=ErrorAnnotationFactory.class)
+    public static class Factory implements ErrorAnnotationFactory {
 
-        /**
-         * Holds value of property line.
-         */
-        private int line;
-
-        /**
-         * Holds value of property column.
-         */
-        private int column;
-
-        /**
-         * Holds value of property type.
-         */
-        private int type;
-
-        
-        public ErrorInfo(String description, int line, int column, int type){
-            this.description = description;
-            this.line = line;
-            this.column = column;
-            this.type = type;
-        }
-        /**
-         * Getter for property description.
-         * @return Value of property description.
-         */
-        public String getDescription() {
-
-            return this.description;
+        @Override
+        public ErrorAnnotation create(FileObject file) {
+            return new ErrorAnnotationImpl(file);
         }
 
-        /**
-         * Getter for property line.
-         * @return Value of property line.
-         */
-        public int getLine() {
-
-            return this.line;
-        }
-
-        /**
-         * Getter for property column.
-         * @return Value of property column.
-         */
-        public int getColumn() {
-
-            return this.column;
-        }
-
-        /**
-         * Getter for property type.
-         * @return Value of property type.
-         */
-        public int getType() {
-
-            return this.type;
-        }
-        
-        
     }
+   
 }

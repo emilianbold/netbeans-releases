@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.core.syntax.spi;
+package org.netbeans.modules.web.core.api;
 
 import java.util.Hashtable;
 import javax.swing.text.Document;
@@ -50,6 +50,7 @@ import java.net.URLClassLoader;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.core.jsploader.JspContextInfoImpl;
 
 import org.openide.filesystems.FileObject;
 
@@ -78,48 +79,57 @@ import org.openide.util.NbBundle;
  */
 public abstract class JspContextInfo {
     
-    /** Name of the settings context where an instance of this class should be registered */
-    public static final String CONTEXT_NAME = "/J2EE/JSPSyntaxColoring/"; //NOI18N
-    
-    private static Hashtable <String, JspContextInfo> instances = new Hashtable();
+//    /** Name of the settings context where an instance of this class should be registered */
+//    public static final String CONTEXT_NAME = "/J2EE/JSPSyntaxColoring/"; //NOI18N
+//
+//    private static Hashtable <String, JspContextInfo> instances = new Hashtable();
 
+    private static JspContextInfo SHARED;
     /**
      *
      * @param fo non-null fileobject
      * @return JspContextInfo instance, null if fo == null or not valid (already deleted)
      */
     public static synchronized JspContextInfo getContextInfo( FileObject fo ) {
-        if (fo == null || !fo.isValid()){
-            return null;
+
+//        if (fo == null || !fo.isValid()){
+//            return null;
+//        }
+
+        if(SHARED == null) {
+            SHARED = new JspContextInfoImpl();
         }
-        JspContextInfo instance = instances.get(fo.getMIMEType());
-        
-        if (instance == null) {
-            FileObject f = FileUtil.getConfigFile(CONTEXT_NAME + fo.getMIMEType()); // NOI18N
-            if (f != null) {
-                try {
-                    DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);
-                    DataObject[] dobjs = folder.getChildren();
-                    
-                    for (int i = 0; i < dobjs.length; i ++){
-                        InstanceCookie ic = (InstanceCookie)dobjs[i].getCookie(InstanceCookie.class);
-                        Object o = ic.instanceCreate();
-                        if (o instanceof JspContextInfo){
-                            instance = (JspContextInfo)o;
-                            instances.put(fo.getMIMEType(), instance);
-                            continue;
-                        }
-                    }
-                } catch (DataObjectNotFoundException ex) {
-                    Logger.getLogger("global").log(Level.WARNING, null, ex);
-                } catch (java.io.IOException ex) {
-                    Logger.getLogger("global").log(Level.WARNING, null, ex);
-                } catch (java.lang.ClassNotFoundException ex){
-                    Logger.getLogger("global").log(Level.WARNING, null, ex);
-                }
-            }
-        }
-        return instance;
+
+        return SHARED;
+
+//        JspContextInfo instance = instances.get(fo.getMIMEType());
+//
+//        if (instance == null) {
+//            FileObject f = FileUtil.getConfigFile(CONTEXT_NAME + fo.getMIMEType()); // NOI18N
+//            if (f != null) {
+//                try {
+//                    DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);
+//                    DataObject[] dobjs = folder.getChildren();
+//
+//                    for (int i = 0; i < dobjs.length; i ++){
+//                        InstanceCookie ic = (InstanceCookie)dobjs[i].getCookie(InstanceCookie.class);
+//                        Object o = ic.instanceCreate();
+//                        if (o instanceof JspContextInfo){
+//                            instance = (JspContextInfo)o;
+//                            instances.put(fo.getMIMEType(), instance);
+//                            continue;
+//                        }
+//                    }
+//                } catch (DataObjectNotFoundException ex) {
+//                    Logger.getLogger("global").log(Level.WARNING, null, ex);
+//                } catch (java.io.IOException ex) {
+//                    Logger.getLogger("global").log(Level.WARNING, null, ex);
+//                } catch (java.lang.ClassNotFoundException ex){
+//                    Logger.getLogger("global").log(Level.WARNING, null, ex);
+//                }
+//            }
+//        }
+//        return instance;
     }
     
     public abstract JspColoringData getJSPColoringData(FileObject fo);

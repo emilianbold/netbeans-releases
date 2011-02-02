@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.core.syntax.spi;
+package org.netbeans.modules.web.core.syntax;
 
 import javax.swing.text.Document;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;

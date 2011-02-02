@@ -189,7 +189,7 @@ public final class RefactoringUtil {
         int startOffset = elem.getOriginalOffset().getStart() + targetNode.startOffset();
         int endOffset = startOffset + targetNode.getImage().length();
 
-        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getParserResult().getFileObject());
+        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getSnapshot().getSource().getFileObject());
         PositionRef start = editor.createPositionRef(startOffset, Bias.Forward);
         PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
 

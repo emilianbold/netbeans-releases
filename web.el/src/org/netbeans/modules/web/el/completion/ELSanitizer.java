@@ -56,7 +56,7 @@ import org.netbeans.modules.web.el.Pair;
  *
  * @author Erno Mononen
  */
-final class ELSanitizer {
+public final class ELSanitizer {
 
     static final String ADDED_SUFFIX = "x"; // NOI18N
     private final String expression;
