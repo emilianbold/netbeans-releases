@@ -54,7 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import javax.swing.JOptionPane;
+import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -63,8 +63,10 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ComboStringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -108,7 +110,9 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Environment
     private Env environment;
     // Run Command
-    private String runCommand = DEFAULT_RUN_COMMAND;
+    private ComboStringConfiguration runCommand;
+    private DefaultPicklistModel runCommandPicklist;
+
     private String dorun;
     public static final int CONSOLE_TYPE_DEFAULT = 0;
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
@@ -165,7 +169,10 @@ public final class RunProfile implements ConfigurationAuxObject {
         argsFlatValid = true;
         argsArrayValid = false;
         runDir = ""; // NOI18N
-        runCommand = DEFAULT_RUN_COMMAND; // NOI18N
+
+        runCommandPicklist = new DefaultPicklistModel(10);
+        runCommandPicklist.addElement(DEFAULT_RUN_COMMAND);
+        runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, runCommandPicklist); // NOI18N
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
@@ -543,26 +550,27 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Run Command
 
     public boolean isSimpleRunCommand() {
-        return !runCommand.contains(" "); // NOI18N
+        return !runCommand.getValue().contains(" "); // NOI18N
     }
 
-    public String getRunCommand() {
+    public ComboStringConfiguration getRunCommand() {
         return runCommand;
     }
 
-    public void setRunCommand(String command) {
-        command = command.trim();
-        if (command == null || command.length() == 0) {
-            command = DEFAULT_RUN_COMMAND;
-        }
-        if (this.runCommand.equals(command)) {
-            return;
-        }
-        this.runCommand = command;
-        if (pcs != null) {
-            pcs.firePropertyChange(PROP_RUNCOMMAND_CHANGED, null, this);
-        }
-        needSave = true;   
+    public void setRunCommand(ComboStringConfiguration runCommand) {
+        this.runCommand = runCommand;
+//        command = command.trim();
+//        if (command == null || command.length() == 0) {
+//            command = DEFAULT_RUN_COMMAND;
+//        }
+//        if (this.runCommand.equals(command)) {
+//            return;
+//        }
+//        this.runCommand.setValue(command);
+//        if (pcs != null) {
+//            pcs.firePropertyChange(PROP_RUNCOMMAND_CHANGED, null, this);
+//        }
+//        needSave = true;
     }
 
     public IntConfiguration getConsoleType() {
@@ -697,6 +705,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
         setRunCommand(p.getRunCommand());
+        runCommandPicklist = p.getRunCommand().getPicklist();
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -717,7 +726,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setArgs(getArgsFlat());
         p.setRunDir(getRunDir());
-        p.setRunCommand(getRunCommand());
+        p.setRunCommand(getRunCommand().clone());
         //p.setRawRunDirectory(getRawRunDirectory());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
@@ -742,7 +751,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.setShortDescription(getString("GeneralTT"));
-        set.put(new RunCommandNodeProp());
+        set.put(new ComboStringNodeProp(getRunCommand(), true, getString("RunCommandName"), getString("RunCommandHint")));
         set.put(new ArgumentsNodeProp());
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
@@ -807,49 +816,49 @@ public final class RunProfile implements ConfigurationAuxObject {
         return hasTHAModule.booleanValue();
     }
 
-    private class RunCommandNodeProp extends PropertySupport<String> {
-
-        public RunCommandNodeProp() {
-            super("Run Command", String.class, getString("RunCommandName"), getString("RunCommandHint"), true, true); // NOI18N
-        }
-
-        @Override
-        public String getValue() {
-            return getRunCommand();
-        }
-
-        @Override
-        public void setValue(String v) {
-            setRunCommand(v);
-            if (!isSimpleRunCommand()) {
-                JOptionPane.showMessageDialog(null, getString("ComplexCommandText"), getString("ComplexCommandTitle"), JOptionPane.INFORMATION_MESSAGE); //NOI18N
-                setShortDescription(getString("ComplexRunCommandHint"));
-            } else {
-                setShortDescription(getString("RunCommandHint"));
-            }
-        }
-
-        @Override
-        public void restoreDefaultValue() {
-            setValue(""); // Sets the default value // NOI18N
-        }
-
-        @Override
-        public boolean supportsDefaultValue() {
-            return true;
-        }
-
-        @Override
-        public String getHtmlDisplayName() {
-            if (!DEFAULT_RUN_COMMAND.equals(getValue())) {
-                return "<b>" + getDisplayName(); // NOI18N
-            }
-            else {
-                return null;
-            }
-        }
-
-    }
+//    private class RunCommandNodeProp extends PropertySupport<String> {
+//
+//        public RunCommandNodeProp() {
+//            super("Run Command", String.class, getString("RunCommandName"), getString("RunCommandHint"), true, true); // NOI18N
+//        }
+//
+//        @Override
+//        public String getValue() {
+//            return getRunCommand();
+//        }
+//
+//        @Override
+//        public void setValue(String v) {
+//            setRunCommand(v);
+//            if (!isSimpleRunCommand()) {
+//                JOptionPane.showMessageDialog(null, getString("ComplexCommandText"), getString("ComplexCommandTitle"), JOptionPane.INFORMATION_MESSAGE); //NOI18N
+//                setShortDescription(getString("ComplexRunCommandHint"));
+//            } else {
+//                setShortDescription(getString("RunCommandHint"));
+//            }
+//        }
+//
+//        @Override
+//        public void restoreDefaultValue() {
+//            setValue(""); // Sets the default value // NOI18N
+//        }
+//
+//        @Override
+//        public boolean supportsDefaultValue() {
+//            return true;
+//        }
+//
+//        @Override
+//        public String getHtmlDisplayName() {
+//            if (!DEFAULT_RUN_COMMAND.equals(getValue())) {
+//                return "<b>" + getDisplayName(); // NOI18N
+//            }
+//            else {
+//                return null;
+//            }
+//        }
+//
+//    }
 
     private class ArgumentsNodeProp extends PropertySupport<String> {
 

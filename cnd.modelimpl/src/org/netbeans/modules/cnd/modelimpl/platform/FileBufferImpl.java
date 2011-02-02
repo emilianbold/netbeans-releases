@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
@@ -147,7 +148,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
             return fileObject.getFileSystem();
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
-            return CndFileSystemProvider.getDummyFileSystem();
+            return InvalidFileObjectSupport.getDummyFileSystem();
         }
     }
     

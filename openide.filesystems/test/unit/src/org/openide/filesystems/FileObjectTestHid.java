@@ -720,7 +720,7 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fold2 = getTestFolder1(fold1);
         
         assertEquals("Is parent", fold1, fold2.getParent());
-        assertEquals("No .. can be used", null, fold2.getFileObject(".."));
+        assertEquals(".. goes to parent", fold1, fold2.getFileObject(".."));
     }
 
     public void  testFindResourceWithDots() throws Exception {
@@ -733,8 +733,8 @@ public class FileObjectTestHid extends TestBaseHid {
         for (String s : arr) {
             sb.append(s).append("/../").append(s).append('/');
         }
-        assertNull(
-            "No .. in findResource allowed", 
+        assertEquals(
+            "Properly found", fold2,
             fold2.getFileSystem().findResource(sb.toString())
         );
     }
@@ -821,8 +821,8 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject r2 = fo1.getParent().getFileObject("../x/y.java");
         FileObject r3 = fo1.getFileObject("../../x/y.java");
         assertEquals("y.java found without ..", fo2, r1);
-        assertNull("y.java not found with ..", r2);
-        assertNull("y.java not found with ../..", r3);
+        assertEquals("y.java found with ..", fo2, r2);
+        assertEquals("y.java found with ../..", fo2, r3);
     }
 
     public void  testGetPath5() throws  IOException{
