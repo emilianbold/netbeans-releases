@@ -89,6 +89,10 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
         List<SpringBean> beans = getSpringBeans(context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (SpringBean bean : beans) {
+            String beanName = getBeanName(bean);
+            if(beanName == null) {
+                continue; //an invalid bean?
+            }
             result.add(VariableInfo.createResolvedVariable(getBeanName(bean), bean.getClassName()));
         }
         return result;
