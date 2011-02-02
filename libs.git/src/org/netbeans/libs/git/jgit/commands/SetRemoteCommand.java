@@ -42,8 +42,6 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -108,6 +106,6 @@ public class SetRemoteCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return new StringBuilder("setting up remote: ").append(remote).toString(); //NOI18N
+        return new StringBuilder("setting up remote: ").append(remote.getRemoteName()).toString(); //NOI18N
     }
 }
