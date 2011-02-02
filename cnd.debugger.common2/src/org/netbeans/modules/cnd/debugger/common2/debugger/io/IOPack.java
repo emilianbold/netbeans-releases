@@ -94,7 +94,7 @@ public class IOPack {
     }
 
     public static TermComponent makeConsole(int flags) {
-	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.getDefault(), flags);
+	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.findInstance(), flags);
     }
 
     public String[] getIOFiles() {
