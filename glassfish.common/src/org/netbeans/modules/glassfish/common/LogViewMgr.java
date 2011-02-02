@@ -1177,11 +1177,11 @@ public class LogViewMgr {
                     }
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } finally {
             }
         }
