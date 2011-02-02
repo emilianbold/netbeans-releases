@@ -43,19 +43,15 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -113,8 +109,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.text.NbDocument;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -237,11 +231,11 @@ public final class ReferencesSupport {
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, UNRESOLVED, oldVersion);
+                    putReferencedObject(csmFile, key, ReferencesCache.UNRESOLVED, oldVersion);
                 } else {
                     putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
-            } else if (csmItem == UNRESOLVED) {
+            } else if (csmItem == ReferencesCache.UNRESOLVED) {
                 csmItem = null;
             }
         }
@@ -578,70 +572,18 @@ public final class ReferencesSupport {
         return kind;
     }
     private final CsmProgressListener progressListener;
-    private static final int MAX_CACHE_SIZE = 10;
-    private final Object cacheLock = new CacheLock();
-    private final static class CacheLock {};
-    private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
-    private Map<CsmFile, Long> cachedFilesVersions = new HashMap<CsmFile, Long>();
-    private static CsmObject UNRESOLVED = new CsmObject() {
-
-        @Override
-        public String toString() {
-            return "FAKE REFERENCE"; // NOI18N
-        }
-
-    };
+    private final ReferencesCache cache = new ReferencesCache();
 
     private CsmObject getReferencedObject(CsmFile file, int offset, long oldVersion) {
-        synchronized (cacheLock) {
-            Map<Integer, CsmObject> map = cache.get(file);
-            CsmObject out = null;
-            if (map != null) {
-                out = map.get(offset);
-                final long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-                cachedFilesVersions.put(file, fileVersion);
-                if (out == UNRESOLVED && fileVersion != oldVersion) {
-                    // we don't beleive in such fake and put null instead
-                    map.put(offset, null);
-                    out = null;
-                }
-            }
-            return out;
-        }
+        return cache.getReferencedObject(file, offset, oldVersion);
     }
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
-        synchronized (cacheLock) {
-            final long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-            if (object == UNRESOLVED && fileVersion != oldVersion) {
-                // we don't beleive in such fake
-//                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
-                return;
-            }
-            Map<Integer, CsmObject> map = cache.get(file);
-            if (map == null) {
-                if (cache.size() > MAX_CACHE_SIZE) {
-                    cache.clear();
-                    cachedFilesVersions.clear();
-                }
-                map = new HashMap<Integer, CsmObject>();
-                cache.put(file, map);
-            }
-            cachedFilesVersions.put(file, fileVersion);
-            map.put(offset, object);
-        }
+        cache.putReferencedObject(file, offset, object, oldVersion);
     }
 
     private void clearFileReferences(CsmFile file) {
-        synchronized (cacheLock) {
-            if (file == null) {
-                cache.clear();
-                cachedFilesVersions.clear();
-            } else {
-                cache.remove(file);
-                cachedFilesVersions.remove(file);
-            }
-        }
+        cache.clearFileReferences(file);
     }
 
     /**
@@ -748,55 +690,7 @@ public final class ReferencesSupport {
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
             ReferencesSupport inst = ReferencesSupport.instance;
-            synchronized (inst.cacheLock) {
-                printOut.printf("cache of size %d\n", inst.cache.size());// NOI18N 
-                for (Map.Entry<CsmFile, Map<Integer, CsmObject>> entry : inst.cache.entrySet()) {
-                    final CsmFile file = entry.getKey();
-                    printOut.printf("-----------------------\n");// NOI18N 
-                    printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), inst.cachedFilesVersions.get(file), file.getClass().getName());// NOI18N 
-                    List<Integer> unresolved = new ArrayList<Integer>();
-                    for (Map.Entry<Integer, CsmObject> entry1 : entry.getValue().entrySet()) {
-                        if (entry1.getValue() == UNRESOLVED) {
-                            unresolved.add(entry1.getKey());
-                        }
-                    }
-                    if (unresolved.isEmpty()) {
-                        printOut.printf("no UNRESOLVED \n");// NOI18N 
-                    } else {
-                        Collections.sort(unresolved);
-                        for (Integer integer : unresolved) {
-                            printOut.printf("UNRESOLVED [%s]\n", getPosition(integer, file));// NOI18N 
-                            CsmObject checkAgain = findDeclaration(file, getDocument(file), null, integer.intValue());
-                            if (checkAgain != null) {
-                                printOut.printf("\t ERROR: resolved as [%s]\n", checkAgain);// NOI18N 
-                            }
-                        }
-                    }
-                }
-                printOut.printf("-----------------------\n");// NOI18N 
-            }
+            inst.cache.dumpInfo(printOut);
         }
-        
-        private String getPosition(int offset, CsmFile file) {
-            BaseDocument document = getDocument(file);
-            StringBuilder out = new StringBuilder();
-            out.append("offset=").append(offset);// NOI18N 
-            if (document instanceof StyledDocument) {
-                int line = NbDocument.findLineNumber((StyledDocument) document, offset)+1;
-                out.append(", line=").append(line);// NOI18N 
-                int col = NbDocument.findLineColumn((StyledDocument) document, offset)+1;
-                out.append(", column=").append(col);// NOI18N 
-                TokenItem<TokenId> jumpToken;
-                document.readLock();
-                try {
-                    jumpToken = CndTokenUtilities.getTokenCheckPrev(document, offset);
-                } finally {
-                    document.readUnlock();
-                }
-                out.append(", tok=").append(jumpToken);// NOI18N 
-            }
-            return out.toString();
-        }
-        
     }
 }
