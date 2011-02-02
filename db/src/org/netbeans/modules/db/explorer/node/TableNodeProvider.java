@@ -132,7 +132,7 @@ public class TableNodeProvider extends NodeProvider {
     static class TableComparator implements Comparator<Node> {
 
         public int compare(Node node1, Node node2) {
-            return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
+            return node1.getDisplayName().compareTo(node2.getDisplayName());
         }
 
     }
