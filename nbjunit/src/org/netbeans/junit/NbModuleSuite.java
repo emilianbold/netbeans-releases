@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -878,7 +879,7 @@ public class NbModuleSuite {
         }
         
         private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
-        private static Pattern VERSION = Pattern.compile("OpenIDE-Module-Specification-Version: *([0-9\\.]*)", Pattern.MULTILINE);
+        private static final Pattern JAR_URL = Pattern.compile("(jar:)?(file:.+[.]jar)(!/)?");
         private static final Pattern MAVEN_CP = Pattern.compile("Maven-Class-Path: (.+)$", Pattern.MULTILINE);
         /** Looks for all modules on classpath of given loader and builds 
          * their list from them.
@@ -898,7 +899,14 @@ public class NbModuleSuite {
 
             return cnbs;
         }
-        private static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
+        private static final Set<String> pseudoModules = new HashSet<String>(Arrays.asList(
+                "org.openide.util",
+                "org.openide.util.lookup",
+                "org.openide.modules",
+                "org.netbeans.bootstrap",
+                "org.openide.filesystems",
+                "org.netbeans.core.startup"));
+        static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
@@ -906,21 +914,18 @@ public class NbModuleSuite {
                 Matcher m = CODENAME.matcher(manifest);
                 if (m.find()) {
                     String cnb = m.group(1);
-                    Matcher v = VERSION.matcher(manifest);
-                    if (!v.find()) {
-                        throw new IllegalStateException("Cannot find version:\n" + manifest);
-                    }
                     File jar = jarFromURL(url);
                     if (jar == null) {
                         continue;
                     }
-                    if (jar.getParentFile().getName().matches("lib|core") || /* from Maven */ jar.getParentFile().getParentFile().getName().matches("org-openide-util|org-openide-util-lookup|org-openide-modules|org-netbeans-bootstrap|org-openide-filesystems|org-netbeans-core-startup")) {
+                    if (pseudoModules.contains(cnb)) {
                         // Otherwise will get DuplicateException.
                         continue;
                     }
-                    m = MAVEN_CP.matcher(manifest);
-                    if (m.find()) {
-                        jar = rewrite(jar, m.group(1).split(" "), /* XXX any better way to get list of URLs from loader? */System.getProperty("java.class.path"));
+                    Matcher m2 = MAVEN_CP.matcher(manifest);
+                    if (m2.find()) {
+                        // Do not use ((URLClassLoader) loader).getURLs() as this does not work for Surefire Booter.
+                        jar = rewrite(jar, m2.group(1).split(" "), System.getProperty("java.class.path"));
                     }
                     String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -990,6 +995,7 @@ public class NbModuleSuite {
                         }
                         jos.write(buf);
                     }
+                    jis.close();
                     jos.close();
                 } finally {
                     os.close();

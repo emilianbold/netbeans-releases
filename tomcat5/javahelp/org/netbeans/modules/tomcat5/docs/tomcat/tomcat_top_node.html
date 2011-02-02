@@ -19,27 +19,22 @@
 </small></p>
 <p>The Servers node in the Services window and its subnodes represent the Tomcat 
   Web Server, its instances, and the contexts that have been deployed by an instance 
-  to the server. If you right-click a node and display its contextual menu, you 
+  to the server. If you right-click a node and display its popup menu, you 
   see a list of menu items that enable you to work with this node.</p>
 <p><b>To view the Tomcat Web Server in the IDE:</b></p>
-<ol><li>Choose Window > Services (Ctrl+5)
+<ol><li>Choose Window &gt; Services (Ctrl+5)
 	from the main menu. The Services window appears.</li>
 	
   <li>Expand the Servers node to view the Tomcat Web Server nodes.
     <ul>
-        <li>The Servers node <img src="../images/tomcat-container16.gif">&nbsp;shows
-        all the servers that are registered in the IDE, such as the
+        <li>The Servers node shows all the servers that are registered in the IDE, such as the
        bundled Tomcat Web Server.</li>
-        <li>The <img src="../images/tomcat5instance.gif" width="16" height="16">&nbsp; instance node
-       represents a physical installation of a Tomcat Web Server. </li>    
-        <li>The web applications node <img src="../images/mfolder.gif">&nbsp;lists
+        <li>Each physical installation of a Tomcat Web Server is represented by a Tomcat Server instance node. </li>    
+        <li>The Web Applications node lists
        the web application contexts that have been deployed to the server. It appears 
        under the server's instance node in the Services window.
-       The IDE adds a web application's context node <img src="../images/webmodule.gif">&nbsp;
-       the first time you execute the web application from the IDE.
-       When the server receives a HTTP request, the server selects the web application 
-       for processing the request by matching the longest possible prefix of the Request 
-       URI against all of the defined context paths.</li>
+       The IDE adds a web application's context node 
+       the first time the web application is deployed from the IDE.</li>
     </ul></li>
 </ol>
 <table cellpadding="3" cellspacing="0" border="0">
@@ -69,14 +64,12 @@
           <li>Web application context parameters and environment entries</li>
       </ul>
    <p>The <tt>context.xml</tt> file represents the <tt>server.xml</tt> context element.
-      Unlike Tomcat 4, use of the <tt>server.xml</tt> context element is not recommended
-      for Tomcat 5.
-      Instead, the recommendation is to specify the context information 
+      It is recommended that the context information is specified 
       in a standalone <tt>context.xml</tt> file in the <tt>META-INF</tt> directory.
    For more information about the <tt>context.xml</tt> configuration, see: </p>
       <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/context.html">
-        <param name="text" value="<html><u>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/context.html</u></html>">
+        <param name="content" value="http://tomcat.apache.org/tomcat-7.0-doc/config/context.html">
+        <param name="text" value="<html><u>http://tomcat.apache.org/tomcat-7.0-doc/config/context.html</u></html>">
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
 </object></p>

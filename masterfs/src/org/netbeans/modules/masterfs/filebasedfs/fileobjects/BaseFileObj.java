@@ -116,7 +116,11 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final String getNameExt() {
-        return getFileName().getName();
+        String ne = getFileName().getName();
+        while (ne.endsWith("\\")) {
+            ne = ne.substring(0, ne.length() - 1);
+        }
+        return ne;
     }
 
     /** Returns true is file is \\ComputerName\sharedFolder. */

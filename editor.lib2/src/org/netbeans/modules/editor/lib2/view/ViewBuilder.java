@@ -561,6 +561,7 @@ final class ViewBuilder {
                 textLayoutCache.remove(paragraphView);
             }
         }
+//        String err = textLayoutCache.findIntegrityError(); if (err != null) throw new IllegalStateException(err);
 
         // Repaint removed paragraph views
         dReplace.retainSpans(); // Attempt to retain spans of paragraph views

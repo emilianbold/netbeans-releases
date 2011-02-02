@@ -455,13 +455,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 mutex.lock();
                 try {
                     super.setParent(parent);
+                    textLayoutCache = new TextLayoutCache();
                     textComponent = tc;
                     viewHierarchy = ViewHierarchy.get(textComponent);
                     startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
                     endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
                     accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
                     viewUpdates = new ViewUpdates(this);
-                    textLayoutCache = new TextLayoutCache();
                     textComponent.addPropertyChangeListener(this);
                     if (REPAINT_LOG.isLoggable(Level.FINE)) {
                         DebugRepaintManager.register(textComponent);
@@ -481,8 +481,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     if (mutex != null) {
                         mutex.lock();
                         try {
-                            textComponent.removePropertyChangeListener(DocumentView.this);
-                            textComponent = null; // View services stop working and propagating to children
+                            if (textComponent != null) {
+                                if (listeningOnViewport != null) {
+                                    listeningOnViewport.removeChangeListener(DocumentView.this);
+                                }
+                                textComponent.removePropertyChangeListener(DocumentView.this);
+                                textLayoutCache = null;
+                                viewUpdates = null;
+                                textComponent = null; // View services stop working and propagating to children
+                            }
                             DocumentView.super.setParent(null);
                         } finally {
                             mutex.unlock();
@@ -808,20 +815,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         defaultBackground = backColor;
         defaultLimitLine = limitLineColor;
 
-        if (!customFont) {
+        if (!customFont && textComponent != null) {
             textComponent.setFont(defaultFont);
         }
-        if (!customForeground) {
+        if (!customForeground && textComponent != null) {
             textComponent.setForeground(defaultForeground);
         }
-        if (!customBackground) {
+        if (!customBackground && textComponent != null) {
             textComponent.setBackground(defaultBackground);
         }
 
-        updateCharMetrics(); // Update metrics with just updated font
+        if (textComponent != null) {
+            updateCharMetrics(); // Update metrics with just updated font
 
-        releaseChildren();
-
+            releaseChildren();
+        }
+            
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N

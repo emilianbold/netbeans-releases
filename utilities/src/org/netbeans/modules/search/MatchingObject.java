@@ -44,12 +44,9 @@
 
 package org.netbeans.modules.search;
 
-import org.openide.util.Exceptions;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -61,7 +58,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
@@ -84,7 +80,7 @@ final class MatchingObject
     /** */
     private final ResultModel resultModel;
     /** */
-    private final File file;
+    private final FileObject fileObject;
     /** */
     private final long timestamp;
     
@@ -137,7 +133,7 @@ final class MatchingObject
     /** */
     private boolean valid = true;
     /** */
-    private StringBuilder text;
+    private String text;
     
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
@@ -162,9 +158,8 @@ final class MatchingObject
         this.object = object;
         this.charset = charset;
         
-        FileObject fileObject = getFileObject();
-        file = FileUtil.toFile(fileObject);
-        timestamp = (file != null) ? file.lastModified() : 0L;
+        fileObject = fileObject();
+        timestamp =  fileObject.lastModified().getTime();        
         valid = (timestamp != 0L);
         
         setUpDataObjValidityChecking();
@@ -213,10 +208,16 @@ final class MatchingObject
         return valid && data != null ? data.isValid() : false; // #190819
     }
     
-    FileObject getFileObject() {
+    private FileObject fileObject() {
         return object instanceof FileObject ?
             (FileObject) object :
             ((DataObject) getDataObject()).getPrimaryFile();
+    }
+
+    /**
+     */
+    FileObject getFileObject() {
+        return fileObject;
     }
     
     /**
@@ -378,15 +379,10 @@ final class MatchingObject
         return expanded;
     }
     
-    /**
-     */
-    File getFile() {
-        return file;
-    }
     
     /** Get the name (not the path) of the file */
-    String getName() {
-        return getFile().getName();
+    String getName() {        
+        return getFileObject().getName();
     }
 
     String getHtmlDisplayName() {
@@ -410,19 +406,14 @@ final class MatchingObject
     
     /**
      */
-    String getDescription() {
-        return getFile().getParent();
+    String getDescription() { 
+        return getFileObject().getParent().getPath();
     }
 
     /**
      */
     String getText() throws IOException {
-        StringBuilder txt = text();
-        if (txt != null) {
-            return txt.toString();
-        } else {
-            return null;
-        }
+        return text(false);
     }
 
     /**
@@ -437,17 +428,14 @@ final class MatchingObject
      * @author  TimBoudreau
      * @author  Marian Petras
      */
-    private StringBuilder text() throws IOException {
-        return text(false);
-    }
-    
-    private StringBuilder text(boolean refreshCache) throws IOException {
+ 
+    private String text(boolean refreshCache) throws IOException {
         assert !EventQueue.isDispatchThread();
         
-        if (refreshCache || (text == null)) {
-            text = new StringBuilder(Utils.getCharSequence(new FileInputStream(getFile()), charset));
+        if (refreshCache || (text == null)) {     
+            text = getFileObject().asText();
         }
-        return text == null ? new StringBuilder() : text;
+        return text;
     }
 
     @Override
@@ -470,7 +458,7 @@ final class MatchingObject
             }
             throw new IOException("Unknown object in search: " +
                                   object);// NOI18N
-        } catch (IOException ex) {
+        } catch (IOException ex) {       
             valid = false;
             return null;
         }
@@ -549,7 +537,7 @@ final class MatchingObject
         
         InvalidityStatus status = getInvalidityStatus();
         if (status != null) {
-            descr = status.getDescription(getFile().getPath());
+            descr = status.getDescription(getFileObject().getPath());
         } else {
             descr = null;
         }
@@ -566,18 +554,17 @@ final class MatchingObject
      */
     private InvalidityStatus getInvalidityStatus() {
         log(FINER, "getInvalidityStatus()");                            //NOI18N
-        File f = getFile();
-        if (!f.exists()) {
-            log(FINEST, " - DELETED");
+        FileObject f = getFileObject();
+        if (!f.isValid()) {
+            log(FINEST, " - DELETED");            
             return InvalidityStatus.DELETED;
         }
-        
-        if (f.isDirectory()) {
-            log(FINEST, " - BECAME_DIR");
+        if (f.isFolder()) {
+            log(FINEST, " - BECAME_DIR");            
             return InvalidityStatus.BECAME_DIR;
         }
         
-        long stamp = f.lastModified();
+        long stamp = f.lastModified().getTime();
         if (stamp > resultModel.getCreationTime()) {
             log(SEVERE, "file's timestamp changed since start of the search");
             if (LOG.isLoggable(FINEST)) {
@@ -586,15 +573,15 @@ final class MatchingObject
                 log(FINEST, " - file stamp:           " + stamp + " (" + cal.getTime() + ')');
                 cal.setTimeInMillis(resultModel.getCreationTime());
                 log(FINEST, " - result model created: " + resultModel.getCreationTime() + " (" + cal.getTime() + ')');
-            }
+            }            
             return InvalidityStatus.CHANGED;
         }
         
-        if (f.length() > Integer.MAX_VALUE) {
+        if (f.getSize() > Integer.MAX_VALUE) {            
             return InvalidityStatus.TOO_BIG;
         }
         
-        if (!f.canRead()) {
+        if (!f.canRead()) {           
             return InvalidityStatus.CANT_READ;
         }
         
@@ -619,8 +606,8 @@ final class MatchingObject
         if (shouldReplaceNone) {
             return null;
         }
-        
-        StringBuilder content = text(true);   //refresh the cache, reads the file
+       
+        StringBuilder content = new StringBuilder(text(true));   //refresh the cache, reads the file
         
         List<TextDetail> textMatches = 
                 resultModel.basicCriteria.getTextDetails(getFileObject());
@@ -667,8 +654,7 @@ final class MatchingObject
             throw new IllegalStateException("Buffer is gone");          //NOI18N
         }
         
-        if (REALLY_WRITE) {
-            final FileObject fileObject = getFileObject();
+        if (REALLY_WRITE) {            
             Writer writer = null;
             try {
                 writer = new OutputStreamWriter(
@@ -681,7 +667,7 @@ final class MatchingObject
                 }
             }
         } else {
-            System.err.println("Would write to " + getFile().getPath());//NOI18N
+            System.err.println("Would write to " + getFileObject().getPath());//NOI18N
             System.err.println(text);
         }
     }
@@ -689,7 +675,7 @@ final class MatchingObject
     /**
      */
     private String makeStringToWrite() {
-        return makeStringToWrite(text);
+        return text;
     }
     
     /**
@@ -726,7 +712,7 @@ final class MatchingObject
             return false;
         }
         final MatchingObject other = (MatchingObject) obj;
-        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+        if (this.fileObject != other.fileObject && (this.fileObject == null || !this.fileObject.equals(other.fileObject))) {
             return false;
         }
         return true;
@@ -735,7 +721,7 @@ final class MatchingObject
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 73 * hash + (this.file != null ? this.file.hashCode() : 0);
+        hash = 73 * hash + (this.fileObject != null ? this.fileObject.hashCode() : 0);
         return hash;
     }
 

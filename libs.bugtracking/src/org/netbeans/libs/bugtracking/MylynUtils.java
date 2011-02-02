@@ -44,6 +44,8 @@ package org.netbeans.libs.bugtracking;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
@@ -54,6 +56,8 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NetworkSettings;
 
 /**
  * 
@@ -86,51 +90,37 @@ public class MylynUtils {
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         }
 
-        String host;
+        URI uri = null;
         try {
-            host = new URL(repository.getUrl()).getHost();
-        } catch (MalformedURLException ex) {
-            LOG.log(Level.WARNING, repository.getUrl(), ex);
-            host = repository.getUrl();
+            uri = new URI(repository.getUrl());
+        } catch (URISyntaxException ex) {
+            LOG.log(Level.INFO, null, ex);
         }
+        
+        String proxyHost = NetworkSettings.getProxyHost(uri);
 
-        ProxySettings ps = new ProxySettings();
-
-        LOG.log(Level.FINEST, "Proxy: {0}", ps.toString());  // NOI18N
-
-        if(!ps.isDirect() && !isNonProxyHost(ps.getNotProxyHosts(), host)) {
+        // check DIRECT connection
+        if(proxyHost != null && proxyHost.length() > 0) {
+            String proxyPort = NetworkSettings.getProxyPort(uri);
+            assert proxyPort != null;
             repository.setDefaultProxyEnabled(false);
             
-            String proxyHost = ps.getHttpHost();
-            String proxyPort = ps.getHttpPort();
-            if(proxyHost == null || proxyHost.equals("")) {                     // NOI18N
-                proxyHost = ps.getHttpsHost();
-                proxyPort = ps.getHttpsPort();
-            }
+            LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
 
-            if(proxyHost != null && !proxyHost.equals("")) {
-                LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
+            repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
+            repository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
 
-                repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
-                repository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
-
-                String proxyUser = ps.getUsername();
-                String proxyPassword = ps.getPassword();
-                if(proxyUser != null || proxyPassword != null) {
-                    if(proxyUser == null) {
-                        proxyUser = "";     // NOI18N
-                    }
-                    if(proxyPassword == null) {
-                        proxyPassword = ""; // NOI18N
-                    }
-                    logCredentials(repository, proxyUser, proxyPassword, "Setting proxy credentials: ");
-                    authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);
-                    repository.setCredentials(AuthenticationType.PROXY, authenticationCredentials, false);
-                }
+            String proxyUser = NetworkSettings.getAuthenticationUsername(uri);
+            if(proxyUser != null) {
+                char[] pwd = Keyring.read(NetworkSettings.getKeyForAuthenticationPassword(uri));
+                String proxyPassword = pwd == null ? "" : new String(pwd); //NOI18N
+                logCredentials(repository, proxyUser, proxyPassword, "Setting proxy credentials: ");
+                authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);
+                repository.setCredentials(AuthenticationType.PROXY, authenticationCredentials, false);
             }
         }
     }
-
+    
     public static void logCredentials(TaskRepository repository, String user, String psswd, String msg) {
         LOG.log(
             Level.FINEST,
