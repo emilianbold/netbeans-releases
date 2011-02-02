@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.search;
 
+import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.FileInputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +62,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.search.TextDetail.DetailNode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -748,13 +747,13 @@ final class BasicSearchCriteria {
         lastCharset = FileEncodingQuery.getEncoding(fo);
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
-        try {
-            FileInputStream fis = (FileInputStream)fo.getInputStream();
-            bcs = new BufferedCharSequence(fis, lastCharset);
+        try {         
+            InputStream stream = fo.getInputStream();
+            bcs = new BufferedCharSequence(stream, lastCharset, fo.getSize());
             ArrayList<TextDetail> txtDetails = getTextDetails(bcs, fo, sp);
-            if (txtDetails.isEmpty()){
+            if (txtDetails.isEmpty()){                
                 return false;
-            }
+            }            
             getDetailsMap().put(fo, txtDetails);
             freeDataObject();
             return true;
