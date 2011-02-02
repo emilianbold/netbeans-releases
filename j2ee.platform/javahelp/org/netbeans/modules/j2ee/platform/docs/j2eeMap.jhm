@@ -409,7 +409,6 @@ PK - if help ID arrives for the first below, please make sure it gets in the jav
     <mapID target="sjs_manageuser"                              url="server/glassfish/general/sjs_manage_users.html" />
     <mapID target="sjs_security"                                url="server/glassfish/general/sjs_configure_security.html" />
     <mapID target="adminconsole"                                url="server/glassfish/general/adminconsole.html" />
-    <mapID target="jsp_connectionpool_tomcatmodule"             url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
     
     
     <!-- CMP pages -->

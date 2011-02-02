@@ -563,7 +563,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (conf.isLibraryConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
-                path = conf.getProfile().getRunCommand();
+                path = conf.getProfile().getRunCommand().getValue();
                 if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
