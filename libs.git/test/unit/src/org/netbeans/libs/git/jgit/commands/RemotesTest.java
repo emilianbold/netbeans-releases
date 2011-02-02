@@ -52,6 +52,7 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -200,5 +201,54 @@ public class RemotesTest extends AbstractGitTestCase {
         assertEquals(Arrays.asList(new URIish(new File(workDir.getParentFile(), "repo2").toURI().toString())), cfg.getPushURIs());
         assertEquals(Arrays.asList(new RefSpec("+refs/heads/*:refs/remotes/origin/*")), cfg.getFetchRefSpecs());
         assertEquals(Arrays.asList(new RefSpec("refs/remotes/origin/*:+refs/heads/*")), cfg.getPushRefSpecs());
+    }
+    
+    public void testUpdateRemoteRollback () throws Exception {
+        StoredConfig config = repository.getConfig();
+        RemoteConfig cfg = new RemoteConfig(config, "origin");
+        cfg.addURI(new URIish("blablabla"));
+        cfg.setFetchRefSpecs(Arrays.asList(new RefSpec("refs/heads/master:refs/remotes/origin/master")));
+        cfg.update(config);
+        config.save();
+        config.load();
+        assertEquals(1, config.getSubsections("remote").size());        
+        
+        GitClient client = getClient(workDir);
+        GitRemoteConfig remoteConfig = new GitRemoteConfig() {
+            @Override
+            public String getRemoteName () {
+                return "origin";
+            }
+
+            @Override
+            public List<String> getUris () {
+                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
+            }
+
+            @Override
+            public List<String> getPushUris () {
+                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
+            }
+
+            @Override
+            public List<String> getFetchRefSpecs () {
+                // this refspec is invalid
+                return Arrays.asList("+refs/heads/*:refs/remotes/origin/master");
+            }
+
+            @Override
+            public List<String> getPushRefSpecs () {
+                return Arrays.asList("refs/remotes/origin/*:+refs/heads/*");
+            }
+        };
+        // an error while setting the remote must result in the rollback of the modification
+        try {
+            client.setRemote(remoteConfig, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        } catch (GitException ex) {
+            
+        }
+        cfg = new RemoteConfig(config, "origin");
+        assertEquals(Arrays.asList(new URIish("blablabla")), cfg.getURIs());
+        assertEquals(Arrays.asList(new RefSpec("refs/heads/master:refs/remotes/origin/master")), cfg.getFetchRefSpecs());
     }
 }

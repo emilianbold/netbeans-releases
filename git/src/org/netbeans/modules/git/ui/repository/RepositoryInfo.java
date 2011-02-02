@@ -210,7 +210,7 @@ public class RepositoryInfo {
         boolean changed = false;
         synchronized (remotes) {
             oldRemotes = new HashMap<String, GitRemoteConfig>(remotes);
-            if (oldRemotes.size() != newRemotes.size() || !remotes.keySet().equals(newRemotes.keySet())) {
+            if (!equals(oldRemotes, newRemotes)) {
                 remotes.clear();
                 remotes.putAll(newRemotes);
                 changed = true;
@@ -268,6 +268,22 @@ public class RepositoryInfo {
                 refreshTask.schedule(3000);
             }
         }
+    }
+
+    private boolean equals (Map<String, GitRemoteConfig> oldRemotes, Map<String, GitRemoteConfig> newRemotes) {
+        boolean retval = oldRemotes.size() == newRemotes.size() && oldRemotes.keySet().equals(newRemotes.keySet());
+        if (retval) {
+            for (Map.Entry<String, GitRemoteConfig> e : oldRemotes.entrySet()) {
+                GitRemoteConfig oldRemote = e.getValue();
+                GitRemoteConfig newRemote = newRemotes.get(e.getKey());
+                if (!(oldRemote.getFetchRefSpecs().equals(newRemote.getFetchRefSpecs()) && oldRemote.getPushRefSpecs().equals(newRemote.getPushRefSpecs()) && 
+                        oldRemote.getUris().equals(newRemote.getUris()) && oldRemote.getPushUris().equals(newRemote.getPushUris()))) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        return retval;
     }
 
     private static class RepositoryRefreshTask implements Runnable {
