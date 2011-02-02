@@ -47,17 +47,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import javax.imageio.IIOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -324,40 +321,5 @@ public class RemoteFileSystemUtils {
     
     public static InputStream createDummyInputStream() {
         return new DummyInputStream();
-    }
-    
-    /** Same as the C library dirname function: given a path, return
-     * its directory name. Unlike dirname, however, return null if
-     * the file is in the current directory rather than ".".
-     */
-    public static String getDirName(String path) {
-        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
-            path = path.substring(0,path.length()-1);
-        }
-        int sep = path.lastIndexOf('/');
-        if (sep == -1) {
-            sep = path.lastIndexOf('\\');
-        }
-        if (sep != -1) {
-            return path.substring(0, sep);
-        }
-        return null;
-    }
-
-    /** Same as the C library basename function: given a path, return
-     * its filename.
-     */
-    public static String getBaseName(String path) {
-        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
-            path = path.substring(0,path.length()-1);
-        }
-        int sep = path.lastIndexOf('/');
-        if (sep == -1) {
-            sep = path.lastIndexOf('\\');
-        }
-        if (sep != -1) {
-            return path.substring(sep + 1);
-        }
-        return path;
     }    
 }

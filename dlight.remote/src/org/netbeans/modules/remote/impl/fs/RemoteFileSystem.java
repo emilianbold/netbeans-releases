@@ -181,7 +181,7 @@ public class RemoteFileSystem extends FileSystem {
         //no special code for Windows
         //also as absolute path is passed to the method we will use it as an absolute
         String result = absPath;
-        if (result.endsWith("/.")) {
+        if (result.endsWith("/.")) {// NOI18N
             result = result.substring(0, result.length()-2);
         }
 // # Remove all /./ sequences.

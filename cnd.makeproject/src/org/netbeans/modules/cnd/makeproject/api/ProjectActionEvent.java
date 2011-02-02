@@ -160,7 +160,7 @@ public final class ProjectActionEvent {
 
     private String[] getRunCommand() {
         if (runCommandCache == null || runCommandCache.length == 0) {
-            String command = getProfile().getRunCommand();
+            String command = getProfile().getRunCommand().getValue();
 
             // not clear what is the difference between getPlatformInfo
             // and getDevelopmentHost. 

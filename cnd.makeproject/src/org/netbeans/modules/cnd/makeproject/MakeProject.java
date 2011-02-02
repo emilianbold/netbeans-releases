@@ -632,7 +632,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
      * Return source encoding if in project.xml (only project version >= 50)
      */
     public String getSourceEncodingFromProjectXml() {
-        int xxx = getActiveConfigurationType();
         Element data = helper.getPrimaryConfigurationData(true);
 
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
@@ -669,7 +668,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
      * If not read, try private.xml (V >= V77)
      * If not found, try project.xml (V >= V78)
      */
-    public int getActiveConfigurationType() {
+    private int getActiveConfigurationType() {
         int type = -1;
 
         // If configurations already read, get it from active configuration (it may have changed)
@@ -684,7 +683,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return type;
         }
 
-        // Get it from private.xml (version >= V77)
+        // Get it from project.xml (version >= V77)
         type = getActiveConfigurationTypeFromProjectXML();
         if (type >= 0) {
             return type;
@@ -696,7 +695,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     /**
      * @return active configuration type (doesn't force reading configuration metadata) (V >= V78). Returns -1 if not found.
      */
-    public int getActiveConfigurationTypeFromProjectXML() {
+    private int getActiveConfigurationTypeFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
         data = helper.getPrimaryConfigurationData(true);
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
@@ -716,7 +715,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     /**
      * @return active configuration type from private.xml (doesn't force reading configuration metadata) (V >= V77). Returns -1 if not found.
      */
-    public int getActiveConfigurationTypeFromPrivateXML() {
+    private int getActiveConfigurationTypeFromPrivateXML() {
         Element data = helper.getPrimaryConfigurationData(false);
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
@@ -1011,12 +1010,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         private int getProjectType() {
-            MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
-            if (activeConfiguration != null) {
-                return activeConfiguration.getConfigurationType().getValue();
-            }
-            if (projectType != -1) {
-                return projectType;
+            int aProjectType = getActiveConfigurationType();
+            if (aProjectType != -1) {
+                return aProjectType;
             }
             return -1;
         }

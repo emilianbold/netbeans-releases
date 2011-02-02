@@ -100,6 +100,16 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
         addBlock(startOffset, endOffset);
     }
 
+    @Override
+    protected void onPragmaNode(APT apt) {
+        super.onPragmaNode(apt);
+        if (isStopped()) {
+            int startOffset = apt.getEndOffset();
+            int endOffset = this.csmFile.getText().length();
+            addBlock(startOffset, endOffset);
+        }
+    }
+
     private void handleIf(APT opener, boolean value) {
         APT closer = opener.getNextSibling();
         if (closer != null && !value) {

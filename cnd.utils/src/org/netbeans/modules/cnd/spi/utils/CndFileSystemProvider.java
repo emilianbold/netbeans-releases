@@ -48,6 +48,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -102,7 +103,7 @@ public abstract class CndFileSystemProvider {
 
     public static FileObject toFileObject(CharSequence absPath) {
         FileObject result = getDefault().toFileObjectImpl(absPath);
-        CndUtils.assertNotNull(result, "Null file object"); //NOI18N
+        CndUtils.assertNotNull(result, "Null file object for " + absPath); //NOI18N
         return result;
     }
 
@@ -120,7 +121,7 @@ public abstract class CndFileSystemProvider {
 
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
-        CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
+        CndUtils.assertNotNull(result, "Null URL for file object " + fileObject); //NOI18N
         return result;
     }
     
@@ -129,18 +130,6 @@ public abstract class CndFileSystemProvider {
         return getDefault().getCanonicalPathImpl(fileSystem, absPath);
     }
     
-    public static FileSystem getDummyFileSystem() {
-        return getDefault().geDummyFileSystemImpl();
-    }
-    
-    public static FileObject getInvalidFileObject(File file) {
-        return getDefault().getInvalidFileObjectImpl(file);
-    }
-    
-    public static FileObject getInvalidFileObject(FileSystem fileSystem, CharSequence path) {
-        return getDefault().getInvalidFileObjectImpl(fileSystem, path);
-    }
-
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -159,9 +148,6 @@ public abstract class CndFileSystemProvider {
     protected abstract CharSequence toUrlImpl(FSPath fSPath);
     protected abstract CharSequence toUrlImpl(FileSystem fileSystem, CharSequence absPath);
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
-    protected abstract FileSystem geDummyFileSystemImpl();
-    protected abstract FileObject getInvalidFileObjectImpl(File file);
-    protected abstract FileObject getInvalidFileObjectImpl(FileSystem fileSystem, CharSequence path);
 
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
     
@@ -191,7 +177,7 @@ public abstract class CndFileSystemProvider {
                     }
                 }
                 if (fileFileSystem == null) {
-                    fileFileSystem = getDummyFileSystem();
+                    fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
                 }
             }
             return fileFileSystem;
@@ -210,7 +196,7 @@ public abstract class CndFileSystemProvider {
             File file = new File(FileUtil.normalizePath(absPath.toString()));
             fo = FileUtil.toFileObject(file);
             if (fo == null) {
-                fo = getInvalidFileObject(file);
+                fo = InvalidFileObjectSupport.getInvalidFileObject(file);
             }
             return fo;
         }
@@ -313,39 +299,6 @@ public abstract class CndFileSystemProvider {
                 }
             }
             return absPath;
-        }
-
-        @Override
-        protected FileSystem geDummyFileSystemImpl() {
-            for (CndFileSystemProvider provider : cache) {
-                FileSystem fs = provider.geDummyFileSystemImpl();
-                if (fs != null) {
-                    return fs;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected FileObject getInvalidFileObjectImpl(File file) {
-            for (CndFileSystemProvider provider : cache) {
-                FileObject fo = provider.getInvalidFileObjectImpl(file);
-                if (fo != null) {
-                    return fo;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected FileObject getInvalidFileObjectImpl(FileSystem fileSystem, CharSequence path) {
-            for (CndFileSystemProvider provider : cache) {
-                FileObject fo = provider.getInvalidFileObjectImpl(fileSystem, path);
-                if (fo != null) {
-                    return fo;
-                }
-            }
-            return null;
         }
     }
 }

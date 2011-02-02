@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.api;
+package org.netbeans.modules.dlight.libs.common;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,8 +53,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
-import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -114,14 +112,15 @@ public class InvalidFileObjectSupport {
 
     private FileObject getInvalidFileObject(CharSequence path) {
         synchronized (this) {
-            if (RemoteLogger.isDebugMode() && new File(path.toString()).exists()) {
-                RemoteLogger.getInstance().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
+            if (DLightLibsCommonLogger.isDebugMode() && new File(path.toString()).exists()) {
+                DLightLibsCommonLogger.getInstance().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
             }
             FileObject fo = fileObjects.putIfAbsent(new InvalidFileObject(fileSystem, path));
             return fo;
         }
     }
-
+    
+    
     private final FileSystem fileSystem;
     private final WeakSet<FileObject> fileObjects = new WeakSet<FileObject>();
 
@@ -248,7 +247,7 @@ public class InvalidFileObjectSupport {
 
         @Override
         public String getNameExt() {
-            return RemoteFileSystemUtils.getBaseName(path.toString());
+            return PathUtilities.getBaseName(path.toString());
         }
         
         @Override
@@ -262,7 +261,7 @@ public class InvalidFileObjectSupport {
                 if (isRoot()) {
                     return null;
                 }
-                String parentPath = RemoteFileSystemUtils.getDirName(path);
+                String parentPath = PathUtilities.getDirName(path);
                 if (parentPath == null) {
                     // should there be an assertion? it's just an invalid file object...
                     //CndUtils.assertTrueInConsole(false, getClass().getSimpleName() + ": should be root, but it isn't"); //NOI18N

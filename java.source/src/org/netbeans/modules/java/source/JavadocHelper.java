@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import java.awt.EventQueue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -148,6 +149,7 @@ public class JavadocHelper {
                 LOG.log(Level.FINE, "loaded cached content for {0}", url);
                 return new ByteArrayInputStream(cache);
             }
+            assert !isRemote() || !EventQueue.isDispatchThread();
             InputStream uncached;
             if (stream != null) {
                 uncached = stream;
@@ -155,7 +157,7 @@ public class JavadocHelper {
             } else {
                 uncached = JavadocHelper.openStream(url);
             }
-            if (url.getProtocol().startsWith("http")) { // NOI18N
+            if (isRemote()) {
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
                     FileUtil.copy(uncached, baos);
@@ -168,6 +170,12 @@ public class JavadocHelper {
             } else {
                 return uncached;
             }
+        }
+        /**
+         * @return true if this looks to be a web location
+         */
+        public boolean isRemote() {
+            return url.getProtocol().startsWith("http"); // NOI18N
         }
     }
     
