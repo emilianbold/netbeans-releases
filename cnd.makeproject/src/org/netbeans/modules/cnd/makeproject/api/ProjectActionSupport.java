@@ -783,10 +783,11 @@ public class ProjectActionSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String dir = null;
-            ExecutionEnvironment env = null;
             for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
+                String dir = null;
+                ExecutionEnvironment env = null;
                 ProjectActionEvent pae = handleEvents.paes[i];
+                String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
                 dir = pae.getProfile().getRunDirectory();                                
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
                 if (env.isRemote()) {
@@ -794,9 +795,9 @@ public class ProjectActionSupport {
                         dir = HostInfoProvider.getMapper(env).getRemotePath(dir);
                     }
                 }
+                TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
                 break;
             }
-            TerminalSupport.openTerminal(IOContainer.getDefault(), getString("TargetExecutor.TermAction.tabTitle", handleEvents.tabNameSeq), env, dir); // NOI18N
         }
     }
     
@@ -805,7 +806,7 @@ public class ProjectActionSupport {
         return NbBundle.getBundle(ProjectActionSupport.class).getString(s);
     }
 
-    private static String getString(String s, String arg) {
+    private static String getString(String s, String... arg) {
         return NbBundle.getMessage(ProjectActionSupport.class, s, arg);
     }
 }
