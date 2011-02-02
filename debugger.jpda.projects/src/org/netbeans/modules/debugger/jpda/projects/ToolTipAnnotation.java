@@ -154,7 +154,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             rp = RequestProcessor.getDefault();
         }
         rp.post (this);
-        return "";
+        return null;
     }
 
     public void run () {
