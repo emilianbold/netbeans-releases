@@ -228,8 +228,14 @@ is divided into following sections:
                         <isset property="main.class.available"/>
                     </and>
                 </condition>
+                <condition property="do.archive">
+                    <not>
+                        <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
+                    </not>
+                </condition>
                 <condition property="do.mkdist">
                     <and>
+                        <isset property="do.archive"/>
                         <isset property="libs.CopyLibs.classpath"/>
                         <not>
                             <istrue value="${{mkdist.disabled}}"/>
@@ -241,21 +247,22 @@ is divided into following sections:
                         <istrue value="${{manifest.available+main.class}}"/>
                         <isset property="do.mkdist"/>
                     </and>
-                </condition>
-                <condition property="manifest.available+main.class+mkdist.available+splashscreen.available">
-                    <and>
-                        <istrue value="${{manifest.available+main.class+mkdist.available}}"/>
-                        <istrue value="${{splashscreen.available}}"/>
-                    </and>
-                </condition>
-                <condition property="do.archive">
-                    <not>
-                        <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
-                    </not>
-                </condition>
+                </condition>                
                 <condition property="do.archive+manifest.available">
                     <and>
                         <isset property="manifest.available"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
+                <condition property="do.archive+main.class.available">
+                    <and>
+                        <isset property="main.class.available"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
+                <condition property="do.archive+splashscreen.available">
+                    <and>
+                        <isset property="splashscreen.available"/>
                         <istrue value="${{do.archive}}"/>
                     </and>
                 </condition>
@@ -265,17 +272,18 @@ is divided into following sections:
                         <istrue value="${{do.archive}}"/>
                     </and>
                 </condition>
-                <condition property="do.archive+manifest.available+main.class+mkdist.available">
-                    <and>
-                        <istrue value="${{manifest.available+main.class+mkdist.available}}"/>
-                        <istrue value="${{do.archive}}"/>
-                    </and>
+
+                <condition property="manifest.available-mkdist.available">
+                    <or>
+                        <istrue value="${{manifest.available}}"/>
+                        <isset property="do.mkdist"/>
+                    </or>
                 </condition>
-                <condition property="do.archive+manifest.available+main.class+mkdist.available+splashscreen.available">
-                    <and>
-                        <istrue value="${{manifest.available+main.class+mkdist.available+splashscreen.available}}"/>
-                        <istrue value="${{do.archive}}"/>
-                    </and>
+                <condition property="manifest.available+main.class-mkdist.available">
+                    <or>
+                        <istrue value="${{manifest.available+main.class}}"/>
+                        <isset property="do.mkdist"/>
+                    </or>
                 </condition>
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
@@ -1212,14 +1220,14 @@ is divided into following sections:
             <target name="-do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available-mkdist.available</xsl:attribute>
                 <j2seproject1:jar/>
             </target>
             
             <target name="-do-jar-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">do.archive+manifest.available</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available+main.class-mkdist.available</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}"/>
             </target>
             
@@ -1245,51 +1253,71 @@ is divided into following sections:
                 </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
             </target>
 
-            <target name="-do-jar-with-libraries-and-splashscreen">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
-                <xsl:attribute name="if">do.archive+manifest.available+main.class+mkdist.available+splashscreen.available</xsl:attribute>
+            <target name="-do-jar-with-libraries-create-manifest">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">do.archive</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available</xsl:attribute>
+                <tempfile destdir="${{build.dir}}" deleteonexit="true" property="tmp.manifest.file"/>
+                <touch file="${{tmp.manifest.file}}"/>
+            </target>
 
-                <basename property="splashscreen.basename" file="${{application.splash}}"/>
+            <target name="-do-jar-with-libraries-copy-manifest">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">do.archive+manifest.available</xsl:attribute>
+                <tempfile destdir="${{build.dir}}" deleteonexit="true" property="tmp.manifest.file"/>
+                <copy file="${{manifest.file}}" tofile="${{tmp.manifest.file}}"/>
+            </target>
+
+            <target name="-do-jar-with-libraries-set-main">
+                <xsl:attribute name="depends">init,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest</xsl:attribute>
+                <xsl:attribute name="if">do.archive+main.class.available</xsl:attribute>
+                <manifest file="${{tmp.manifest.file}}" mode="update">
+                    <attribute name="Main-Class" value="${{main.class}}"/>
+                </manifest>
+            </target>
+
+            <target name="-do-jar-with-libraries-set-splashscreen">
+                <xsl:attribute name="depends">init,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest</xsl:attribute>
+                <xsl:attribute name="if">do.archive+splashscreen.available</xsl:attribute>
+                <basename file="${{application.splash}}" property="splashscreen.basename"/>
                 <mkdir dir="${{build.classes.dir}}/META-INF"/>
-                <copy file="${{application.splash}}" todir="${{build.classes.dir}}/META-INF" failonerror="false"/>
-                <j2seproject3:copylibs>
-                    <customize>
-                        <attribute name="Main-Class" value="${{main.class}}"/>
-                        <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
-                    </customize>
-                </j2seproject3:copylibs>
+                <copy failonerror="false" file="${{application.splash}}" todir="${{build.classes.dir}}/META-INF"/>
+                <manifest file="${{tmp.manifest.file}}" mode="update">
+                    <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
+                </manifest>
+            </target>
+
+            <target name="-do-jar-with-libraries-pack">
+                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest,-do-jar-with-libraries-set-main,-do-jar-with-libraries-set-splashscreen</xsl:attribute>
+                <xsl:attribute name="if">do.mkdist</xsl:attribute>
+                <j2seproject3:copylibs manifest="${{tmp.manifest.file}}"/>
                 <echo level="info">To run this application from the command line without Ant, try:</echo>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
                 <echo level="info"><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -jar "${dist.jar.resolved}"</echo>
+            </target>
+
+            <target depends="" name="-do-jar-with-libraries-delete-manifest" >
+                <xsl:attribute name="depends">-do-jar-with-libraries-pack</xsl:attribute>
+                <xsl:attribute name="if">do.archive</xsl:attribute>
+                <delete>
+                    <fileset file="${{tmp.manifest.file}}"/>
+                </delete>
             </target>
 
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
-                <xsl:attribute name="if">do.archive+manifest.available+main.class+mkdist.available</xsl:attribute>
-                <xsl:attribute name="unless">splashscreen.available</xsl:attribute>
-                <j2seproject3:copylibs>
-                    <customize>
-                        <attribute name="Main-Class" value="${{main.class}}"/>
-                    </customize>
-                </j2seproject3:copylibs>
-                <echo level="info">To run this application from the command line without Ant, try:</echo>
-                <property name="dist.jar.resolved" location="${{dist.jar}}"/>
-                <echo level="info"><xsl:choose>
-                        <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
-                        <xsl:otherwise>java</xsl:otherwise>
-                </xsl:choose> -jar "${dist.jar.resolved}"</echo>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest,-do-jar-with-libraries-set-main,-do-jar-with-libraries-set-splashscreen,-do-jar-with-libraries-pack,-do-jar-with-libraries-delete-manifest</xsl:attribute>
             </target>
-
+           
             <target name="-post-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries-and-splashscreen,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
             

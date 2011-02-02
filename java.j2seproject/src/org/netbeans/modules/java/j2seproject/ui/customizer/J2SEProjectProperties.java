@@ -180,6 +180,8 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    //Disables copying of dependencies to dist folder
+    public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     
     ClassPathSupport cs;
     
@@ -226,6 +228,7 @@ public class J2SEProjectProperties {
     Document BUILD_CLASSES_EXCLUDES_MODEL; 
     ButtonModel JAR_COMPRESS_MODEL;
     ButtonModel DO_JAR_MODEL;
+    ButtonModel COPY_LIBS_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -382,6 +385,7 @@ public class J2SEProjectProperties {
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
         DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, kind);
         doJarBooleanKind = kind[0];
+        COPY_LIBS_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, MKDIST_DISABLED);
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
