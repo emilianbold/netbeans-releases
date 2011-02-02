@@ -59,9 +59,16 @@ public class VarArgsCastTest extends ErrorHintsTestBase {
         super(name);
     }
     
-    public void testSimple() throws Exception {
+    public void testSimple1() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {private void test(String s, Object... o) { test(\"\", |null); } }",
+                       "VarArgsCastFix:Object",
+                       "package test; public class Test {private void test(String s, Object... o) { test(\"\", (Object) null); } }");
+    }
+    
+    public void testSimple2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {private void test(String s, Object... o) { test(\"\", n|ull); } }",
                        "VarArgsCastFix:Object",
                        "package test; public class Test {private void test(String s, Object... o) { test(\"\", (Object) null); } }");
     }

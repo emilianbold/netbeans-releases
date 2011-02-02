@@ -82,7 +82,10 @@ public class VarArgsCast implements ErrorRule<Void> {
         TreePath call = treePath;//.getParentPath();
         
         if (call.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
-            return null;
+            call = call.getParentPath();
+            if (call.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
+                return null;
+            }
         }
         
         MethodInvocationTree mit = (MethodInvocationTree) call.getLeaf();
