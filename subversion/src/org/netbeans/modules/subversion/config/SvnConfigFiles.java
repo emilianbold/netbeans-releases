@@ -248,10 +248,6 @@ public class SvnConfigFiles {
             assert proxyPort != null;
             nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
             nbGlobalSection.put("http-proxy-port", proxyPort);                     // NOI18N
-            // XXX: obsolete?
-//            if(!exceptions.equals("")) {
-//                nbGlobalSection.put("http-proxy-exceptions", exceptions);   // NOI18N
-//            }
 
             // and the authentication
             String username = NetworkSettings.getAuthenticationUsername(uri);
