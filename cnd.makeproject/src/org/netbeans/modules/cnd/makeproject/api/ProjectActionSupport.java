@@ -64,7 +64,9 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -781,15 +783,21 @@ public class ProjectActionSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String dir = null;
-            ExecutionEnvironment env = null;
             for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
+                String dir = null;
+                ExecutionEnvironment env = null;
                 ProjectActionEvent pae = handleEvents.paes[i];
-                dir = pae.getProfile().getRunDirectory();
+                String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
+                dir = pae.getProfile().getRunDirectory();                                
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                if (env.isRemote()) {
+                    if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
+                        dir = HostInfoProvider.getMapper(env).getRemotePath(dir);
+                    }
+                }
+                TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
                 break;
             }
-            TerminalSupport.openTerminal(IOContainer.getDefault(), getString("TargetExecutor.TermAction.tabTitle", handleEvents.tabNameSeq), env, dir); // NOI18N
         }
     }
     
@@ -798,7 +806,7 @@ public class ProjectActionSupport {
         return NbBundle.getBundle(ProjectActionSupport.class).getString(s);
     }
 
-    private static String getString(String s, String arg) {
+    private static String getString(String s, String... arg) {
         return NbBundle.getMessage(ProjectActionSupport.class, s, arg);
     }
 }

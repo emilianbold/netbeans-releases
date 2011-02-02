@@ -82,7 +82,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private List<IncludeDirEntry> userIncludeFilePaths;
     
     private Map<CharSequence, Integer> recurseIncludes = null;
-    private static final int MAX_INCLUDE_DEEP = 5;    
+    private static final int MAX_INCLUDE_DEEP = 3; // CUDA+trast example shows that 5 is too expensive.
     private LinkedList<IncludeInfo> inclStack = null;
     private StartEntry startFile;
     private final APTFileSearch fileSearch;

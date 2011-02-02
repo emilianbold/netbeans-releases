@@ -45,6 +45,7 @@ package org.netbeans.modules.dlight.api.terminal;
 import java.awt.Component;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
+import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.windows.IOContainer;
 
@@ -75,6 +76,18 @@ public final class TerminalSupport {
         TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
     }
 
+    /**
+     * opens terminal tab in default terminals container and change dir into specified directory
+     * @param env 
+     */
+    public static void openTerminal(String termTitle, ExecutionEnvironment env, String dir) {
+        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
+        instance.open();
+        instance.requestActive();
+        IOContainer ioContainer = instance.getIOContainer();
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+    }
+    
     public static Component getToolbarPresenter(Action action) {
         return TerminalSupportImpl.getToolbarPresenter(action);
     }

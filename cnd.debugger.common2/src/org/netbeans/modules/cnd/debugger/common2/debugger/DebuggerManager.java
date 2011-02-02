@@ -130,6 +130,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1201,11 +1202,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
      * Start debugging by loading program.
      */
     public void debug(String executable, Configuration configuration, String host,
-            InputOutput io, DbgActionHandler dah) {
+            InputOutput io, DbgActionHandler dah, RunProfile profile) {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(configuration));
         ndi.setTarget(executable);
         ndi.setHostName(host);
         ndi.setConfiguration(configuration);
+        ndi.setProfile(profile);
         ndi.setInputOutput(io);
         ndi.setDah(dah);
         if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {

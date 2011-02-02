@@ -43,19 +43,22 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
+
 public class ComboStringConfiguration {
 
     private ComboStringConfiguration master;
     private String def;
-    private String[] choices;
     private String value;
     private boolean modified;
     private boolean dirty = false;
+    private DefaultPicklistModel picklist;
 
-    public ComboStringConfiguration(ComboStringConfiguration master, String def, String[] choices) {
+    public ComboStringConfiguration(ComboStringConfiguration master, String def, DefaultPicklistModel picklist) {
         this.master = master;
         this.def = def;
-        this.choices = choices;
+
+        this.picklist = picklist;
         reset();
     }
 
@@ -114,8 +117,8 @@ public class ComboStringConfiguration {
         setModified(false);
     }
 
-    public String[] getChoices() {
-        return choices;
+    public DefaultPicklistModel getPicklist() {
+        return picklist;
     }
 
     // Clone and Assign
@@ -127,7 +130,7 @@ public class ComboStringConfiguration {
 
     @Override
     public ComboStringConfiguration clone() {
-        ComboStringConfiguration clone = new ComboStringConfiguration(master, def, choices);
+        ComboStringConfiguration clone = new ComboStringConfiguration(master, def, (DefaultPicklistModel)picklist.clonePicklist());
         clone.setValue(getValue());
         clone.setModified(getModified());
         return clone;
