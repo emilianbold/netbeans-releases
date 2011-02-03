@@ -1,9 +1,7 @@
-package org.netbeans.modules.dlight.dtrace.collector.support;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,48 +37,43 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-import static org.junit.Assert.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.dtrace.collector.DTraceEventData;
+
+package org.netbeans.modules.git.ui.repository.remote;
+
+import java.io.File;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author ondra
  */
-public class DtraceParserPerformanceTest {
+public class RemoveRemoteConfig {
 
-    @Test
-    public void testSimpleParser() {
-        List<Column> columns = Arrays.asList(
-                new Column("timestamp", Time.class),
-                new Column("foo", Integer.class),
-                new Column("bar", Integer.class));
-        DataTableMetadata table = new DataTableMetadata("table", columns, null);
-        DataOnlyParser parser = new DataOnlyParser(table);
-
-        int iterations = 1200000;
-        List<DataRow> data = new ArrayList<DataRow>(iterations);
-
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < iterations; ++i) {
-            String line = (i + iterations) + " " + i + " -" + i;
-            DTraceEventData res = parser.parse(line);
-            assertNull(res.getEventCallStack());
-            DataRow row = res.getDataRow();
-            assertNotNull(row);
-            data.add(row);
+    public void removeRemote (File repository, final String remoteName) {
+        if (DialogDisplayer.getDefault().notify(new NotifyDescriptor(NbBundle.getMessage(RemoveRemoteConfig.class, "MSG_RemoveRemoteConfig.confirmation", remoteName), //NOI18N
+                NbBundle.getMessage(RemoveRemoteConfig.class, "LBL_RemoveRemoteConfig.confirmation"), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, //NOI18N
+                new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION }, NotifyDescriptor.OK_OPTION)) == NotifyDescriptor.OK_OPTION) {
+            GitProgressSupport supp = new GitProgressSupport() {
+                @Override
+                protected void perform () {
+                    try {
+                        GitClient client = getClient();
+                        client.removeRemote(remoteName, this);
+                    } catch (GitException ex) {
+                        GitClientExceptionHandler.notifyException(ex, true);
+                    }
+                }
+            };
+            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(RemoveRemoteConfig.class, "LBL_RemoveRemoteConfig.progressName")); //NOI18N
         }
-        long endTime = System.currentTimeMillis();
-
-        System.err.println(endTime - startTime);
     }
 }

@@ -1,9 +1,7 @@
-package org.netbeans.modules.dlight.dtrace.collector.support;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,48 +37,26 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-import static org.junit.Assert.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+package org.netbeans.modules.dlight.api.storage;
+
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.dtrace.collector.DTraceEventData;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author ak119685
  */
-public class DtraceParserPerformanceTest {
+public final class StandardColumns {
 
-    @Test
-    public void testSimpleParser() {
-        List<Column> columns = Arrays.asList(
-                new Column("timestamp", Time.class),
-                new Column("foo", Integer.class),
-                new Column("bar", Integer.class));
-        DataTableMetadata table = new DataTableMetadata("table", columns, null);
-        DataOnlyParser parser = new DataOnlyParser(table);
-
-        int iterations = 1200000;
-        List<DataRow> data = new ArrayList<DataRow>(iterations);
-
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < iterations; ++i) {
-            String line = (i + iterations) + " " + i + " -" + i;
-            DTraceEventData res = parser.parse(line);
-            assertNull(res.getEventCallStack());
-            DataRow row = res.getDataRow();
-            assertNotNull(row);
-            data.add(row);
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.err.println(endTime - startTime);
+    private StandardColumns() {
     }
+    public static final Column TIMESTAMP_COLUMN =
+            new Column("timestamp", Time.class, NbBundle.getMessage(StandardColumns.class, "Column.timestamp"), null); // NOI18N
+    public static final Column STACK_COLUMN =
+            new Column("stack_id", Long.class, NbBundle.getMessage(StandardColumns.class, "Column.stack_id"), null); // NOI18N
+    public static final Column DURATION_COLUMN =
+            new Column("duration", Long.class, NbBundle.getMessage(StandardColumns.class, "Column.duration"), null); // NOI18N
 }

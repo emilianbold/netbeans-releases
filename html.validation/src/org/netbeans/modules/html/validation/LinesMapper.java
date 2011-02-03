@@ -55,7 +55,7 @@ public class LinesMapper implements CharacterHandler {
     private final List<Line> lines = new ArrayList<Line>();
     private Line currentLine = null;
     private boolean prevWasCr = false;
-    StringBuilder content = new StringBuilder();
+    final StringBuilder content = new StringBuilder();
 
     public CharSequence getSourceText() {
         return content;
@@ -132,11 +132,17 @@ public class LinesMapper implements CharacterHandler {
             throw new IllegalArgumentException();
         }
         Line lline = lines.get(line);
+        int sourceOffset = lline.getOffset() + column;
 
-//        assert column <= lline.getBufferLength() : "requested column " + column + " for line only " + lline.getBufferLength() + " chars long!";
+        if(sourceOffset > content.length()) {
+            //the location overlaps the source length, recover by returning the source len
+            //XXX report it somehow?
+            //XXX note: may *possibly* be a bug in the LinesMapper itself!
+            return content.length();
+        } else {
+            return sourceOffset;
+        }
 
-
-        return lline.getOffset() + column;
     }
 
     public class Line {

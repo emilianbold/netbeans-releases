@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector;
+package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
- *
+ * Simple parser that takes a string and returns a list of Objects based in 
+ * in accordance to provided list of Columns.
+ * 
+ * @author ak119685
  */
-public class DtraceParser {
+public final class LineParser {
 
-    private static final Logger log = DLightLogger.getLogger(DtraceParser.class);
-    private final DataTableMetadata metadata;
+    private final List<Column> columns;
 
-    public DtraceParser(DataTableMetadata metadata) {
-        this.metadata = metadata;
+    public LineParser(List<Column> columns) {
+        this.columns = columns;
     }
 
-    private List<Object> parse(String line) {
-        assert metadata != null;
-        return parse(line, metadata.getColumnsCount());
-    }
-
-    /** parses first colCount columns, leaves the rest */
-    protected List<Object> parse(String line, int colCount) {
-        List<Column> columns = metadata.getColumns();
+    public List<Object> parse(String line, Logger log) {
         List<Object> data = new ArrayList<Object>(columns.size());
         StringScanner scanner = new StringScanner(line);
 
         try {
-            for (int i = 0; i < colCount; i++) {
+            for (int i = 0; i < columns.size(); i++) {
                 String stringValue = scanner.next();
 
-                if (stringValue == null && log.isLoggable(Level.INFO)) {
+                if (stringValue == null && log != null && log.isLoggable(Level.INFO)) {
                     log.log(Level.INFO, "Line \"{0}\" was split into {1} values while {2} expected", // NOI18N
-                            new Object[] {line, colCount, columns.size()});
+                            new Object[]{line, i, columns.size()});
                     return null;
                 }
 
@@ -105,29 +97,17 @@ public class DtraceParser {
 
                 data.add(value);
             }
-            return data;
-
         } catch (NumberFormatException ex) {
-            log.log(Level.WARNING, "Failed to parse number in line: " + line, ex); // NOI18N
+            if (log != null) {
+                log.log(Level.WARNING, "Failed to parse number in line: " + line, ex); // NOI18N
+            }
             return null;
         }
+
+        return data;
     }
 
-    public DataRow process(String line) {
-        List<Object> data = parse(line);
-        if (data == null) {
-            return null;
-        } else {
-            return new DataRow(metadata.getColumnNames(), data);
-        }
-    }
-
-    public DataRow processClose(){
-        return null;
-    }
-
-
-    private final class StringScanner {
+    private static class StringScanner {
 
         private final String str;
         private int pos;
