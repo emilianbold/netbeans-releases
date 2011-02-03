@@ -208,7 +208,6 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
                 break;
             }
         }
-        Collections.reverse(result);
         return result;
     }
 
