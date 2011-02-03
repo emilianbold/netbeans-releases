@@ -56,6 +56,7 @@ import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.ExploreFromHereAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
 
