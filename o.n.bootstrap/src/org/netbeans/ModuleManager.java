@@ -449,7 +449,7 @@ public final class ModuleManager extends Modules {
         try {
             JaveleonModule jm = (JaveleonModule) javeleonModule;
             // Calculate the parents to initialize the classloader with.
-            Dependency[] dependencies = jm.getJaveleonDependencies();
+            Dependency[] dependencies = jm.getDependenciesArray();
             Set<Module> parents = new HashSet<Module>(dependencies.length * 4 / 3 + 1);
             for (int i = 0; i < dependencies.length; i++) {
                 Dependency dep = dependencies[i];
