@@ -1456,6 +1456,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     static int PATTERN_LEN_LIMIT = 10; //consider backward match PATTER_LEN_LIMIT long as OK
 
     static int findBackwardDiff(CharSequence text, int tlen, char[] pattern, int pstart, int plen) {
+        assert text.length() >= tlen;
         assert plen > 0;
         int pend = pstart + plen - 1;
         int limitedpstart = plen - PATTERN_LEN_LIMIT > 0 ? pstart + (plen - PATTERN_LEN_LIMIT) : pstart;
