@@ -44,9 +44,11 @@
 
 package org.netbeans.core.startup;
 
+import java.lang.reflect.Field;
 import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -88,6 +90,31 @@ public final class MainLookup extends ProxyLookup {
                    Lookup.EMPTY, // will be moduleLookup
                    instanceLookup
                });
+    }
+    
+    /**
+     * Persisting all previously looked up
+     * service instances from META-INF/services.
+     * All new lookups will ask the new system class loader.
+     */    
+    public static void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
+        classLoader = nue;
+        MainLookup l = (MainLookup)Lookup.getDefault();
+        Lookup[] newDelegates = l.getLookups().clone();
+        
+        for (Lookup look : newDelegates) {
+            if (look.getClass().getName().contains("MetaInfServicesLookup")) {
+                try {
+                    Field field = look.getClass().getDeclaredField("loader");
+                    field.setAccessible(true);
+                    field.set(look, classLoader);
+                } catch (Exception x) {
+                    Exceptions.printStackTrace(x);
+                }
+            }
+        }
+        newDelegates[1] = Lookups.singleton(classLoader);
+        l.setLookups(newDelegates);
     }
 
     /** Called when a system classloader changes.
