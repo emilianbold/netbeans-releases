@@ -1338,6 +1338,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
     }
 
+    boolean isMutexAcquired() {
+        PriorityMutex mutex = getMutex();
+        return (mutex != null && mutex.getLockThread() == Thread.currentThread());
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         boolean releaseChildren = false;
