@@ -80,13 +80,13 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
 
     /*
+     *  V8 - NB 7.0
+     *    Don't save ARGS_ELEMENT. Args and Run command are now merged.
         Versions changes tracker (started from version 6):
-
         2010/12/09
             Run Command field is added (see Bug 154529). Version is not upgraded, because default value the property is provided.
-
      */
-    private final static int thisversion = 7;
+    private final static int thisversion = 8;
 
     public RunProfileXMLCodec(RunProfile profile) {
 	this.profile = profile;
@@ -209,7 +209,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
         xes.elementClose(RUNCOMMAND_PICKLIST_ELEMENT);
 
         xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand().getValue()); // FIXUP
-        xes.element(ARGS_ELEMENT, profile.getArgsFlat());
+        //xes.element(ARGS_ELEMENT, profile.getArgsFlat());
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
         if (profile.getConsoleType().getModified()) {
