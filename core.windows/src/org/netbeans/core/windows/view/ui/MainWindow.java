@@ -634,6 +634,15 @@ public final class MainWindow {
             isUndecorated = frame.isUndecorated();
             windowDecorationStyle = frame.getRootPane().getWindowDecorationStyle();
         }
+
+        GraphicsDevice device = null;
+        Graphics gc = frame.getGraphics();
+        if( gc instanceof Graphics2D ) {
+            GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
+            if( null != conf )
+                device = conf.getDevice();
+        }
+
         isFullScreenMode = fullScreenMode;
         if( Utilities.isWindows() )
             frame.setVisible( false );
@@ -655,14 +664,7 @@ public final class MainWindow {
         getToolbarComponent().setVisible( !isFullScreenMode );
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
 
-        GraphicsDevice device = null;
-        Graphics gc = frame.getGraphics();
-        if( gc instanceof Graphics2D ) {
-            GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
-            if( null != conf )
-                device = conf.getDevice();
-        }
-        if( null != device && device.isFullScreenSupported() ) {
+        if( null != device && device.isFullScreenSupported() && !Utilities.isMac() ) {
             device.setFullScreenWindow( isFullScreenMode ? frame : null );
         } else {
             frame.setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
