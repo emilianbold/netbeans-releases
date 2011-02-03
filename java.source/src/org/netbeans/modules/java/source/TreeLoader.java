@@ -92,7 +92,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -192,21 +191,26 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadParamNames(ClassSymbol clazz) {
-        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
-        if (clazz != null) {
-            JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
-            if (page != null && argsFromJavaDocAllowedFor(page)) {
-                if (getParamNamesFromJavadocText(page, clazz)) {
+        boolean contended = !attachTo(Thread.currentThread());
+        try {
+            assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked() || !contended;
+            if (clazz != null) {
+                JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
+                if (page != null && argsFromJavaDocAllowedFor(page)) {
+                    if (getParamNamesFromJavadocText(page, clazz)) {
+                        return true;
+                    }
+                }
+                if (!DISABLE_ARTIFICAL_PARAMETER_NAMES) {
+                    fillArtificalParamNames(clazz);
                     return true;
                 }
             }
-            if (!DISABLE_ARTIFICAL_PARAMETER_NAMES) {
-                fillArtificalParamNames(clazz);
-                return true;
-            }
+
+            return false;
+        } finally {
+            dettachFrom(Thread.currentThread());
         }
-        
-        return false;
     }
 
     @Override
@@ -647,32 +651,39 @@ public class TreeLoader extends LazyTreeLoader {
         return null;
     }
 
-    private synchronized boolean attachTo(final Thread owner) {
+    private synchronized boolean attachTo(final Thread thread) {
+        assert thread != null;
         if (!checkContention) {
             return true;
         } else if (this.owner == null) {
-            this.owner = owner;
+            assert this.depth == 0;
+            this.owner = thread;
             this.depth++;
             return true;
-        } else if (this.owner == owner) {
+        } else if (this.owner == thread) {
+            assert this.depth > 0;
             this.depth++;
             return true;
+        } else {
+            assert this.depth > 0;
+            return false;
         }
-        return false;
     }
 
     private synchronized boolean dettachFrom(final Thread thread) {
+        assert thread != null;
         if (!checkContention) {
             return true;
-        }
-        if (this.owner == thread) {
+        } else if (this.owner == thread) {
+            assert depth > 0;
             this.depth--;
-            if (depth == 0) {
+            if (this.depth == 0) {
                 this.owner = null;
             }
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
     
     private static boolean argsFromJavaDocAllowedFor(final JavadocHelper.TextStream page) {        
