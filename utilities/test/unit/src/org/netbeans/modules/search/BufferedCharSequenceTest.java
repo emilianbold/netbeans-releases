@@ -5,6 +5,8 @@
 
 package org.netbeans.modules.search;
 
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,9 +30,6 @@ public class BufferedCharSequenceTest {
     private static final String UTF_8 = "UTF-8"; //NOI18N
     private static final String EUC_JP = "EUC_JP"; //NOI18N
 
-    private static final String fc_10_bytes_content = "0123456789";
-    private  File fc_10_bytes_file = getFile("10_bytes");
-    private  FileInputStream fc_10_bytes_stream = getFileInputStream(fc_10_bytes_file);
     private  Charset cs_UTF_8 = Charset.forName(UTF_8);
 
 
@@ -47,14 +46,12 @@ public class BufferedCharSequenceTest {
     }
 
     @Before
-    public void setUp() {
-        fc_10_bytes_stream = getFileInputStream(fc_10_bytes_file);
+    public void setUp() {       
         cs_UTF_8 = Charset.forName(UTF_8);
     }
 
     @After
-    public void tearDown() {
-        fc_10_bytes_stream = null;
+    public void tearDown() {       
         cs_UTF_8 = null;
     }
 
@@ -91,116 +88,131 @@ public class BufferedCharSequenceTest {
      */
     @Test
     public void testLength() {
-        System.out.println("length");
-        File file;        
+        System.out.println("length");                
         Charset cs;
-        BufferedCharSequence instance;
-        int result;
-      
-        file = getFile("10_bytes");                
+        //BufferedCharSequence instance;
+        int result;                           
         cs = Charset.forName(UTF_8);
-        instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
-        instance.setMaxBufferSize(10);
-        result = instance.length();
-        assertEquals(10, result);
+        for(TypeOfStream stype: TypeOfStream.values()) {
+            result = getLenght(stype, TypeOfContent.BYTE_10, cs, 10);
+            assertEquals(10, result);
 
-        file = getFile("0_bytes");        
-        cs = Charset.forName(UTF_8);
-        instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
-        instance.setMaxBufferSize(10);
-        result = instance.length();
-        assertEquals(0, result);
+            result = getLenght(stype, TypeOfContent.BYTE_0, cs, 0);
+            assertEquals(0, result);
 
-        file = getFile("1_byte");                
-        cs = Charset.forName(UTF_8);
-        instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
+            result = getLenght(stype, TypeOfContent.BYTE_1, cs, 1);
+            assertEquals(1, result);
+        }
+    }
+    
+    private int getLenght(TypeOfStream stype, TypeOfContent ctype, Charset cs, int size){
+        InputStream stream = getInputStream(stype, ctype, cs);
+        BufferedCharSequence instance = new BufferedCharSequence(stream, cs, size);
         instance.setMaxBufferSize(10);
-        result = instance.length();
-        assertEquals(1, result);
+        return instance.length();
+    }
 
+   
+    /**
+     * Test of charAt method, of class BufferedCharSequence.
+     */
+    @Test(expected=IndexOutOfBoundsException.class)
+    public void testCharAt_File() {
+        System.out.println("charAt_File");
+        int index = 0;        
+        Charset cs = Charset.forName(UTF_8);
+        InputStream stream = getInputStream(TypeOfStream.FILE, TypeOfContent.BYTE_0, cs);
+        BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 0);
+        instance.charAt(index);
     }
 
     /**
      * Test of charAt method, of class BufferedCharSequence.
      */
     @Test(expected=IndexOutOfBoundsException.class)
-    public void testCharAt() {
-        System.out.println("charAt");
+    public void testCharAt_Byte() {
+        System.out.println("charAt_Byte");
         int index = 0;
-        File file = getFile("0_bytes");
         Charset cs = Charset.forName(UTF_8);
-        BufferedCharSequence instance =
-                new BufferedCharSequence(getFileInputStream(file), cs, file.length());
+        InputStream stream = getInputStream(TypeOfStream.BYTE, TypeOfContent.BYTE_0, cs);
+        BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 0);
         instance.charAt(index);
     }
+
 
     @Test
     public void testCharAt$1_byte() {
         System.out.println("testCharAt$1_byte");
-        int index = 0;
-        File file = getFile("1_byte");
+        int index = 0;       
         Charset cs = Charset.forName(UTF_8);
-        try {
-            BufferedCharSequence instance = 
-                    new BufferedCharSequence(getFileInputStream(file), cs, file.length());
-            char expResult = 'a';
-            char result = instance.charAt(index);
-            assertEquals(expResult, result);
-        } catch (IndexOutOfBoundsException ioobe) {
-            ioobe.printStackTrace();
-            fail(ioobe.toString());
-        } catch (BufferedCharSequence.SourceIOException bcse) {
-            bcse.printStackTrace();
-            fail(bcse.toString());
+        for(TypeOfStream stype: TypeOfStream.values()) {
+            try {
+                InputStream stream = getInputStream(stype, TypeOfContent.BYTE_1, cs);
+                BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 1);
+                char expResult = 'a';
+                char result = instance.charAt(index);
+                assertEquals(expResult, result);
+
+            } catch (IndexOutOfBoundsException ioobe) {
+                ioobe.printStackTrace();
+                fail(ioobe.toString());
+            } catch (BufferedCharSequence.SourceIOException bcse) {
+                bcse.printStackTrace();
+                fail(bcse.toString());
+            }
         }
-    }
+    }   
+
 
     @Test
     public void testCharAt$10_byte() {
         System.out.println("testCharAt$10_byte");
         File file = getFile("10_bytes");
         Charset cs = Charset.forName(UTF_8);
+        for(TypeOfStream stype: TypeOfStream.values()) {
+            InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 10);
+            instance.setMaxBufferSize(10);
+            char result;
 
-        BufferedCharSequence instance = 
-                new BufferedCharSequence(getFileInputStream(file), cs, file.length());
-        instance.setMaxBufferSize(10);
-        char result;
+            result = instance.charAt(0);
+            assertEquals('0', result);
 
-        result = instance.charAt(0);
-        assertEquals('0', result);
+            result = instance.charAt(9);
+            assertEquals('9', result);
 
-        result = instance.charAt(9);
-        assertEquals('9', result);
+            result = instance.charAt(5);
+            assertEquals('5', result);
 
-        result = instance.charAt(5);
-        assertEquals('5', result);
-
-        result = instance.charAt(9);
-        assertEquals('9', result);
+            result = instance.charAt(9);
+            assertEquals('9', result);
+        }
    }
+  
 
     @Test
     public void testCharAt_$10_byte$2() {
-        System.out.println("testCharAt$10_byte$2");
-        File file = getFile("10_bytes");
+        System.out.println("testCharAt$10_byte$2");       
         Charset cs = Charset.forName(UTF_8);
+        for(TypeOfStream stype: TypeOfStream.values()) {
+            InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs, 10);
+            instance.setMaxBufferSize(5);
+            char result;
 
-        BufferedCharSequence instance = 
-                new BufferedCharSequence(getFileInputStream(file), cs, file.length());
-        instance.setMaxBufferSize(5);
-        char result;
+            result = instance.charAt(0);
+            assertEquals('0', result);
 
-        result = instance.charAt(0);
-        assertEquals('0', result);
+            result = instance.charAt(9);
+            assertEquals('9', result);
 
-        result = instance.charAt(9);
-        assertEquals('9', result);
+            result = instance.charAt(5);
+            assertEquals('5', result);
 
-        result = instance.charAt(5);
-        assertEquals('5', result);
+            result = instance.charAt(9);
+            assertEquals('9', result);
+        }
 
-        result = instance.charAt(9);
-        assertEquals('9', result);
    }
 
     /**
@@ -225,12 +237,14 @@ public class BufferedCharSequenceTest {
     @Test
     public void testToString() {
         System.out.println("toString");
-        BufferedCharSequence instance = 
-                new BufferedCharSequence(fc_10_bytes_stream, cs_UTF_8, fc_10_bytes_file.length());
-        instance.setMaxBufferSize(5);
-        String expResult = fc_10_bytes_content;
-        String result = instance.toString();
-        assertEquals(expResult, result);
+        for(TypeOfStream stype: TypeOfStream.values()) {
+            InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs_UTF_8);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs_UTF_8, 10);
+            instance.setMaxBufferSize(5);
+            String expResult = TypeOfContent.BYTE_10.getContent();
+            String result = instance.toString();
+            assertEquals(expResult, result);
+        }
     }
 
     /**
@@ -282,13 +296,15 @@ public class BufferedCharSequenceTest {
     public void testNextLineText() {
         System.out.println("nextLineText");
         System.out.println("nextLineText@no line terminators in the file.");
-        BufferedCharSequence bcs = 
-                new BufferedCharSequence(fc_10_bytes_stream, cs_UTF_8, fc_10_bytes_file.length());
-        assertEquals(0, bcs.position());
-        String expResult = fc_10_bytes_content;
-        String result = bcs.nextLineText();
-        assertEquals(expResult, result);
-        assertEquals(11, bcs.position());
+        for(TypeOfStream stype: TypeOfStream.values()) {
+            InputStream stream = getInputStream(stype, TypeOfContent.BYTE_10, cs_UTF_8);
+            BufferedCharSequence instance = new BufferedCharSequence(stream, cs_UTF_8, 10);
+            assertEquals(0, instance.position());
+            String expResult = TypeOfContent.BYTE_10.getContent();
+            String result = instance.nextLineText();
+            assertEquals(expResult, result);
+            assertEquals(11, instance.position());
+        }
     }
 
     /**
@@ -299,6 +315,7 @@ public class BufferedCharSequenceTest {
      */
     public FileChannel getDataFileChannel(String fileName) {
         File file = getFile(fileName);
+
         FileInputStream fis = getFileInputStream(file);
         return fis.getChannel();
     }
@@ -327,6 +344,60 @@ public class BufferedCharSequenceTest {
         File dataSubPackage = new File(URI.create(url.toExternalForm()));
         assertTrue(dataSubPackage.isDirectory());
         return dataSubPackage;
+    }
+
+    public ByteArrayInputStream getByteArrayInputStream(byte[] buf) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(buf);
+        assertNotNull(bis);
+        return bis;
+    }
+    
+    public InputStream getInputStream(TypeOfStream type, TypeOfContent content, Charset cs) {        
+        switch (type) {
+            case FILE: 
+               return getFileInputStream(getFile(content.getFileName()));
+            case BYTE:              
+               return getByteArrayInputStream(content.getContent().getBytes(cs));
+            default: return null;
+        }                        
+    }
+    /**
+     * Enum describes a type of InputStream.
+     */
+    enum TypeOfStream{
+        FILE, //FileInputStream
+        BYTE  //ByteArrayInputStream
+    }
+    /**
+     * Enum describes a type of the content of the InputStream.
+     */
+    enum TypeOfContent{
+        BYTE_0(0, "0_bytes", ""), //InputStream contains 0 byte or is created from "0_bytes" file
+        BYTE_1(1, "1_byte", "a"),
+        BYTE_10(10, "10_bytes", "0123456789");
+
+        private final int buf_size;
+        private final String file_name;
+        private final String content;
+
+        private TypeOfContent(int size, String name, String content) {
+            this.buf_size = size;
+            this.file_name = name;
+            this.content = content;
+        }
+
+        public String getFileName() {
+            return file_name;
+        }
+
+        public int getBufSize() {
+            return buf_size;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
     }
 
 }
