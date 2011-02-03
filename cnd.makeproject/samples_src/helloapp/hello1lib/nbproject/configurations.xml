@@ -21,6 +21,7 @@
                    projectFiles="true">
     </logicalFolder>
   </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Debug" type="3">
