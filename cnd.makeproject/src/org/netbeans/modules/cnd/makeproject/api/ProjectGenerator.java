@@ -104,7 +104,7 @@ public class ProjectGenerator {
         public ProjectParameters(String projectName, File projectFolder) {            
             this.projectName = projectName;
             this.projectFolder = FileUtil.normalizeFile(projectFolder);
-            this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
+            //this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             this.configurations = new MakeConfiguration[0];
             this.openFlag = false;
             this.sourceFolders = null;
@@ -170,8 +170,9 @@ public class ProjectGenerator {
             return this;
         }
 
-        public void setFullRemote(boolean fullRemote) {
+        public ProjectParameters setFullRemote(boolean fullRemote) {
             this.fullRemote = fullRemote;
+            return this;
         }
 
         public boolean getFullRemote() {
