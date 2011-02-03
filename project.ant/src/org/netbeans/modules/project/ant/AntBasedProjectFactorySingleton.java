@@ -217,12 +217,16 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     
     public @Override Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         if (FileUtil.toFile(projectDirectory) == null) {
-            LOG.log(Level.FINE, "no disk dir {0}", projectDirectory);
+            LOG.log(Level.FINER, "no disk dir {0}", projectDirectory);
             return null;
         }
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
+        if (projectFile == null) {
+            LOG.log(Level.FINER, "no {0}/nbproject/project.xml", projectDirectory);
+            return null;
+        }
         //#54488: Added check for virtual
-        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
+        if (!projectFile.isData() || projectFile.isVirtual()) {
             LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
             return null;
         }
@@ -341,14 +345,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             }
             builder.setErrorHandler(XMLUtil.defaultErrorHandler());
             Document projectXml = builder.parse(src);
-            LOG.fine("parsed document");
+            LOG.finer("parsed document");
 //            dumpFields(projectXml);
             Element projectEl = projectXml.getDocumentElement();
-            LOG.fine("got document element");
+            LOG.finer("got document element");
 //            dumpFields(projectXml);
 //            dumpFields(projectEl);
             String namespace = projectEl.getNamespaceURI();
-            LOG.log(Level.FINE, "got namespace {0}", namespace);
+            LOG.log(Level.FINER, "got namespace {0}", namespace);
             if (!PROJECT_NS.equals(namespace)) {
                 LOG.log(Level.FINE, "{0} had wrong root element namespace {1} when parsed from {2}",
                         new Object[] {projectDiskFile, namespace, baos});
