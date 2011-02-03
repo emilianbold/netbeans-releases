@@ -168,15 +168,11 @@ class SftpSupport {
 
     private abstract class Worker implements Callable<Integer> {
 
-        protected final String srcFileName;
         protected final ExecutionEnvironment execEnv;
-        protected final String dstFileName;
         protected final Writer error;
 
         public Worker(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
-            this.srcFileName = srcFileName;
             this.execEnv = execEnv;
-            this.dstFileName = dstFileName;
             this.error = error;
         }
 
@@ -237,9 +233,13 @@ class SftpSupport {
 
         private final int mask;
         private final boolean checkMd5;
+        protected final String srcFileName;
+        protected final String dstFileName;
 
         public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error, boolean checkMd5) {
             super(srcFileName, execEnv, dstFileName, error);
+            this.srcFileName = srcFileName;
+            this.dstFileName = dstFileName;
             this.mask = mask;
             this.checkMd5 = checkMd5;
         }
@@ -333,8 +333,13 @@ class SftpSupport {
 
     private class Downloader extends Worker implements Callable<Integer> {
 
+        protected final String srcFileName;
+        protected final String dstFileName;
+        
         public Downloader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
             super(srcFileName, execEnv, dstFileName, error);
+            this.srcFileName = srcFileName;
+            this.dstFileName = dstFileName;
         }
 
         @Override
