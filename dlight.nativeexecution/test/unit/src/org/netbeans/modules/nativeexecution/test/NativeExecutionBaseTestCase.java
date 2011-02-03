@@ -60,6 +60,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -67,6 +68,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -236,6 +239,45 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             }
         }
         return res;
+    }
+
+    protected String runCommand(String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), command, args);
+        assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
+        return res.output;
+    }
+
+    protected String runCommandInDir(String dir, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, getTestExecutionEnvironment(), command, args);
+        assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
+                "\" in dir " + dir + " failed", res.isOK());
+        return res.output;
+    }
+    
+    private String stringArrayToString(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : args) {
+            sb.append(' ').append(arg);
+        }
+        return sb.toString();
+    }
+    
+    protected String runScript(String script) throws Exception {
+        final StringBuilder output = new StringBuilder();
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(getTestExecutionEnvironment(), script, new LineProcessor() {
+            @Override
+            public void processLine(String line) {
+                output.append(line).append('\n');
+                System.err.println(line);
+            }
+            @Override
+            public void reset() {}
+            @Override
+            public void close() {}
+        });
+        int rc = scriptRunner.execute();
+        assertEquals("Error running script", 0, rc);
+        return output.toString();
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {
