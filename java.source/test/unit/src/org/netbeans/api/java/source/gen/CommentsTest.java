@@ -64,7 +64,9 @@ import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.PositionEstimator;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 /**
  *
  * @author Pavel Flaska
@@ -1652,6 +1654,57 @@ public class CommentsTest extends GeneratorTest {
 
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testCommentPrinted195048() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n\n" +
+            "    /**test*/\n" +
+            "    private String t() {\n" +
+            "        String s;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker tm = wc.getTreeMaker();
+                MethodTree nue = tm.Method(tm.Modifiers(EnumSet.of(Modifier.PRIVATE)),
+                                           "t",
+                                           tm.MemberSelect(tm.MemberSelect(tm.Identifier("java"), "lang"), "String"),
+                                           Collections.<TypeParameterTree>emptyList(),
+                                           Collections.<VariableTree>emptyList(),
+                                           Collections.<ExpressionTree>emptyList(),
+                                           "{java.lang.String s;}",
+                                           null);
+                GeneratorUtilities gu = GeneratorUtilities.get(wc);
+
+                tm.addComment(nue, Comment.create(Style.JAVADOC, -2, -2, -2, "/**test*/"), true);
+                nue = gu.importFQNs(nue);
+
+                ClassTree clazz = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+
+                wc.rewrite(clazz, gu.insertClassMember(clazz, nue));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        //GeneratorUtilities.insertClassMember opens the Document:
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
