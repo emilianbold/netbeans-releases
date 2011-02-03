@@ -111,7 +111,7 @@ public class BufferedCharSequenceTest {
         result = instance.length();
         assertEquals(0, result);
 
-        file = getFile("1_bytes");                
+        file = getFile("1_byte");                
         cs = Charset.forName(UTF_8);
         instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.setMaxBufferSize(10);
@@ -138,7 +138,7 @@ public class BufferedCharSequenceTest {
     public void testCharAt$1_byte() {
         System.out.println("testCharAt$1_byte");
         int index = 0;
-        File file = getFile("1_bytes");
+        File file = getFile("1_byte");
         Charset cs = Charset.forName(UTF_8);
         try {
             BufferedCharSequence instance = 
