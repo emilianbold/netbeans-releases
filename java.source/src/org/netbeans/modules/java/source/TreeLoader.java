@@ -92,7 +92,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -118,8 +117,8 @@ import org.openide.util.Exceptions;
  */
 public class TreeLoader extends LazyTreeLoader {
 
-    public static void preRegister(final Context context, final ClasspathInfo cpInfo) {
-        context.put(lazyTreeLoaderKey, new TreeLoader(context, cpInfo));
+    public static void preRegister(final Context context, final ClasspathInfo cpInfo, final boolean detached) {
+        context.put(lazyTreeLoaderKey, new TreeLoader(context, cpInfo, detached));
     }
     
     public static TreeLoader instance (final Context ctx) {
@@ -136,66 +135,82 @@ public class TreeLoader extends LazyTreeLoader {
     private ClasspathInfo cpInfo;
     private Map<ClassSymbol, StringBuilder> couplingErrors;
     private boolean partialReparse;
+    //@GuardedBy("this")
+    private Thread owner;
+    //@GuardedBy("this")
+    private int depth;
+    private final boolean checkContention;
 
-    private TreeLoader(Context context, ClasspathInfo cpInfo) {
+    private TreeLoader(Context context, ClasspathInfo cpInfo, boolean detached) {
         this.context = context;
         this.cpInfo = cpInfo;
+        this.checkContention = detached;
     }
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz, boolean persist) {
-        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
-        if (clazz != null) {
-            try {
-                FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
-                JavacTaskImpl jti = context.get(JavacTaskImpl.class);
-                JavaCompiler jc = JavaCompiler.instance(context);
-                if (fo != null && jti != null) {
-                    final Log log = Log.instance(context);
-                    log.nerrors = 0;
-                    JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
-                    Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
-                    boolean oldSkipAPT = jc.skipAnnotationProcessing;
-                    try {
-                        couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
-                        jc.skipAnnotationProcessing = true;
-                        jti.analyze(jti.enter(jti.parse(jfo)));
-                        if (persist)
-                            dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
-                        return true;
-                    } finally {
-                        jc.skipAnnotationProcessing = oldSkipAPT;
+        boolean contended = !attachTo(Thread.currentThread());
+        try {
+            assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked() || !contended;
+            if (clazz != null) {
+                try {
+                    FileObject fo = SourceUtils.getFile(clazz, cpInfo);
+                    JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                    JavaCompiler jc = JavaCompiler.instance(context);
+                    if (fo != null && jti != null) {
+                        final Log log = Log.instance(context);
                         log.nerrors = 0;
-                        for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
-                            dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());
+                        JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
+                        Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
+                        boolean oldSkipAPT = jc.skipAnnotationProcessing;
+                        try {
+                            couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
+                            jc.skipAnnotationProcessing = true;
+                            jti.analyze(jti.enter(jti.parse(jfo)));
+                            if (persist)
+                                dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                            return true;
+                        } finally {
+                            jc.skipAnnotationProcessing = oldSkipAPT;
+                            log.nerrors = 0;
+                            for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
+                                dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());
+                            }
+                            couplingErrors = oldCouplingErrors;
                         }
-                        couplingErrors = oldCouplingErrors;
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
+            return false;
+        } finally {
+            dettachFrom(Thread.currentThread());
         }
-        return false;
     }
     
     @Override
     public boolean loadParamNames(ClassSymbol clazz) {
-        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
-        if (clazz != null) {
-            JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
-            if (page != null && argsFromJavaDocAllowedFor(page)) {
-                if (getParamNamesFromJavadocText(page, clazz)) {
+        boolean contended = !attachTo(Thread.currentThread());
+        try {
+            assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked() || !contended;
+            if (clazz != null) {
+                JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
+                if (page != null && argsFromJavaDocAllowedFor(page)) {
+                    if (getParamNamesFromJavadocText(page, clazz)) {
+                        return true;
+                    }
+                }
+                if (!DISABLE_ARTIFICAL_PARAMETER_NAMES) {
+                    fillArtificalParamNames(clazz);
                     return true;
                 }
             }
-            if (!DISABLE_ARTIFICAL_PARAMETER_NAMES) {
-                fillArtificalParamNames(clazz);
-                return true;
-            }
+
+            return false;
+        } finally {
+            dettachFrom(Thread.currentThread());
         }
-        
-        return false;
     }
 
     @Override
@@ -634,6 +649,41 @@ public class TreeLoader extends LazyTreeLoader {
         }
         
         return null;
+    }
+
+    private synchronized boolean attachTo(final Thread thread) {
+        assert thread != null;
+        if (!checkContention) {
+            return true;
+        } else if (this.owner == null) {
+            assert this.depth == 0;
+            this.owner = thread;
+            this.depth++;
+            return true;
+        } else if (this.owner == thread) {
+            assert this.depth > 0;
+            this.depth++;
+            return true;
+        } else {
+            assert this.depth > 0;
+            return false;
+        }
+    }
+
+    private synchronized boolean dettachFrom(final Thread thread) {
+        assert thread != null;
+        if (!checkContention) {
+            return true;
+        } else if (this.owner == thread) {
+            assert depth > 0;
+            this.depth--;
+            if (this.depth == 0) {
+                this.owner = null;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
     
     private static boolean argsFromJavaDocAllowedFor(final JavadocHelper.TextStream page) {        
