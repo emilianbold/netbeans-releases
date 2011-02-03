@@ -83,6 +83,7 @@ import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -805,10 +806,23 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String getName () {
             return NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemotesNode.name"); //NOI18N
         }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            return new Action[] {
+                new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemotesNode.refresh")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        ((AllRemotesChildren) getChildren()).refreshRemotes();
+                    }
+                }
+            };
+        }
     }
 
     private class AllRemotesChildren extends Children.Keys<GitRemoteConfig> implements PropertyChangeListener {
         private final File repository;
+        private boolean refreshing;
 
         private AllRemotesChildren (File repository) {
             this.repository = repository;
@@ -826,9 +840,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
-                    java.util.Map<String, GitRemoteConfig> remotes = RepositoryInfo.getInstance(repository).getRemotes();
-                    if (!isCanceled()) {
-                        refreshRemotes(remotes);
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    refreshing = true;
+                    try {
+                        info.refreshRemotes();
+                        java.util.Map<String, GitRemoteConfig> remotes = info.getRemotes();
+                        if (!isCanceled()) {
+                            refreshRemotes(remotes);
+                        }
+                    } finally {
+                        refreshing = false;
                     }
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingRemotes")); //NOI18N
@@ -840,7 +861,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public void propertyChange (final PropertyChangeEvent evt) {
-            if (RepositoryInfo.PROPERTY_REMOTES.equals(evt.getPropertyName())) {
+            if (!refreshing && RepositoryInfo.PROPERTY_REMOTES.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
                     public void run () {
@@ -877,6 +898,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 public void actionPerformed (ActionEvent e) {
                     FetchAction action = SystemAction.get(FetchAction.class);
                     action.fetch(currRepository, getLookup().lookup(GitRemoteConfig.class));
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    new RemoveRemoteConfig().removeRemote(currRepository, remoteName);
                 }
             });
             return actions.toArray(new Action[actions.size()]);
