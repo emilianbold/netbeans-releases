@@ -124,12 +124,13 @@ abstract class AbstractStandardModule extends Module {
     /** Count which release() call is really being checked. */
     protected transient int releaseCount = 0;
 
+    /** Used to reflectively register a class loader to the Javeleon
+     * runtime system. Invocation of this method must always be guarded
+     * by JaveleonModule.isJaveleonPresent.
+     */
     static Method javeleonFacadeMethod;
 
-    /*
-     * Method used by OneModuleClassLoader to register a class loader a
-     * to the Javeleon runtime. The associated module will be update-enabled
-     */
+    /** Setup the javeleonFacadeMethod in case of a Javeleon run. */
     static {
         if(JaveleonModule.isJaveleonPresent) {
             try {
@@ -479,7 +480,8 @@ abstract class AbstractStandardModule extends Module {
             */
         }
     }
-
+    /* Only FixedModule.class typed modules are fixed! */
+    @Override
     public boolean isFixed() {
         return false;
     }
@@ -514,6 +516,7 @@ abstract class AbstractStandardModule extends Module {
      * JARs already present in the classpath are <em>not</em> listed.
      * @return a <code>List&lt;File&gt;</code> of JARs
      */
+    @Override
     public List<File> getAllJars() {
         List<File> l = new ArrayList<File>();
         if (patches != null) l.addAll(patches);
@@ -599,8 +602,12 @@ abstract class AbstractStandardModule extends Module {
         }
     }
 
+    /** Setup a new module with the given class path and the set of parent
+     * class loaders.
+     */
     protected abstract ClassLoader createNewClassLoader(List<File> classp, List<ClassLoader> parents);
 
+    /** Get the class loader of a particular parent module. */
     protected ClassLoader getParentLoader(Module parent) {
         return parent.getClassLoader();
     }
@@ -747,11 +754,15 @@ abstract class AbstractStandardModule extends Module {
         return modulePermissions;
     }
 
-    protected class AbstractOneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
+    protected abstract class AbstractOneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
 
         public AbstractOneModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents, false, AbstractStandardModule.this);
-             try {
+
+            // register this loader with the associated code name base
+            // to the Javeleon runtime to allow the module to be updated
+            // by Javeleon.
+            try {
                 javeleonFacadeMethod.invoke(null, this, getCodeNameBase());
             } catch (Exception ex) {
                 // OK, give up. Javeleon is not enabled!

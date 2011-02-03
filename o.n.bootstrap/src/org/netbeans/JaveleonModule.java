@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
-import org.openide.modules.Dependency;
 
 /**
  *
@@ -79,18 +78,12 @@ public final class JaveleonModule extends AbstractStandardModule {
         }
     }
 
-    private Dependency[] dependenciesA;
-
     private static HashMap<String,ClassLoader> currentClassLoaders = new HashMap<String, ClassLoader>();
 
 
     JaveleonModule(ModuleManager mgr, File jar, Object history, Events ev) throws IOException {
         super(mgr, ev, jar, history, true, false, false);
     }
-
-
-
-
 
     @Override
     protected ClassLoader createNewClassLoader(List<File> classp, List<ClassLoader> parents) {

@@ -68,6 +68,9 @@ final class StandardModule extends AbstractStandardModule {
        super(mgr, ev, jar, history, reloadable, autoload, eager);
     }
 
+    /** Creates a new OneModuleClassLoader used for all modules being
+     * initially installed into the system.
+     */
     @Override
     protected ClassLoader createNewClassLoader(List<File> classp, List<ClassLoader> parents) {
         return new OneModuleClassLoader(classp, parents.toArray(new ClassLoader[parents.size()]));
