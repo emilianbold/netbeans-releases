@@ -36,6 +36,11 @@ if [ -z ${NB_BRANCH} ]; then
     export NB_BRANCH=default
 fi
 
+#L10N_BRANCH default
+if [ -z ${L10N_BRANCH} ]; then
+    export L10N_BRANCH=default
+fi
+
 #JAVAFX build 1/0
 if [ -z ${RUNJAVAFX} ]; then
     export RUNJAVAFX=0
