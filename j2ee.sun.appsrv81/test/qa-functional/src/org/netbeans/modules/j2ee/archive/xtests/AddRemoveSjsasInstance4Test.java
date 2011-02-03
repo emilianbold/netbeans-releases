@@ -47,6 +47,7 @@ import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.archive.wizard.*;
+import org.netbeans.modules.j2ee.archive.xtests.TestUtil;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
