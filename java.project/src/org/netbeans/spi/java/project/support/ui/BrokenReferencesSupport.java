@@ -48,11 +48,14 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.BrokenReferencesAlertPanel;
 import org.netbeans.modules.java.project.BrokenReferencesCustomizer;
 import org.netbeans.modules.java.project.BrokenReferencesModel;
@@ -64,6 +67,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 
@@ -133,6 +137,7 @@ public class BrokenReferencesSupport {
      *    name is one and it is "platform.active". The name of the default
      *    platform is expected to be "default_platform" and this platform
      *    always exists.
+     * @see LibraryDefiner
      */
     @Messages({
         "LBL_BrokenLinksCustomizer_Close=Close",
@@ -251,5 +256,19 @@ public class BrokenReferencesSupport {
         }
     }
     
+    /**
+     * Service which may be {@linkplain ServiceProvider registered} to download remote libraries or otherwise define them.
+     * @since org.netbeans.modules.java.project/1 1.35
+     */
+    public interface LibraryDefiner {
+
+        /**
+         * Checks to see if a missing library definition can be created.
+         * @param name a desired {@link Library#getName}
+         * @return a callback which may be run (asynchronously) to create and return a library with the given name, or null if not recognized
+         */
+        @CheckForNull Callable<Library> missingLibrary(String name);
+
+    }
     
 }

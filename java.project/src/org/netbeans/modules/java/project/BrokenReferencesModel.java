@@ -54,6 +54,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
@@ -63,6 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -71,10 +75,13 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.java.project.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 public final class BrokenReferencesModel extends AbstractListModel {
+
+    private static final Logger LOG = Logger.getLogger(BrokenReferencesModel.class.getName());
 
     private String[] props;
     private String[] platformsProps;
@@ -104,6 +111,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
 
     @Messages({
         "LBL_BrokenLinksCustomizer_BrokenLibrary=\"{0}\" library could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenDefinableLibrary=\"{0}\" library must be defined",
         "LBL_BrokenLinksCustomizer_BrokenLibraryContent=\"{0}\" library has missing items",
         "LBL_BrokenLinksCustomizer_BrokenProjectReference=\"{0}\" project could not be found",
         "LBL_BrokenLinksCustomizer_BrokenFileReference=\"{0}\" file/folder could not be found",
@@ -116,6 +124,8 @@ public final class BrokenReferencesModel extends AbstractListModel {
         switch (or.type) {
             case LIBRARY:
                 return LBL_BrokenLinksCustomizer_BrokenLibrary(or.getDisplayID());
+            case DEFINABLE_LIBRARY:
+                return LBL_BrokenLinksCustomizer_BrokenDefinableLibrary(or.getDisplayID());
             case LIBRARY_CONTENT:
                 return LBL_BrokenLinksCustomizer_BrokenLibraryContent(or.getDisplayID());
             case PROJECT:
@@ -169,6 +179,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
             if (prop == null) {
                 continue;
             }
+            LOG.log(Level.FINE, "Evaluated {0}={1}", new Object[] {p, prop});
             String[] vals = PropertyUtils.tokenizePath(prop);
                         
             // no check whether after evaluating there are still some 
@@ -280,6 +291,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
             String libraryName = libraryRef.substring(5,libraryRef.length()-10);
             Library lib = refHelper.findLibrary(libraryName);
             if (lib == null) {
+                // Should already have been caught before?
                 set.add(new OneReference(RefType.LIBRARY, libraryRef, true));
             }
             else {
@@ -358,6 +370,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
     }
     
     private static void updateReferencesList(List<OneReference> oldBroken, Set<OneReference> newBroken) {
+        LOG.log(Level.FINE, "References updated from {0} to {1}", new Object[] {oldBroken, newBroken});
         for (OneReference or : oldBroken) {
             if (newBroken.contains(or)) {
                 or.broken = true;
@@ -454,21 +467,35 @@ public final class BrokenReferencesModel extends AbstractListModel {
         FILE,
         PLATFORM,
         LIBRARY,
+        DEFINABLE_LIBRARY,
         LIBRARY_CONTENT,
         VARIABLE,
         VARIABLE_CONTENT,
     }
-    
-    public static class OneReference {
+
+    public static final class OneReference {
         
         private final RefType type;
         private boolean broken;
         private final String ID;
+        private final Callable<Library> definer;
 
         public OneReference(RefType type, String ID, boolean broken) {
+            Callable<Library> _definer = null;
+            if (type == RefType.LIBRARY) {
+                String name = ID.substring(5, ID.length() - 10);
+                for (LibraryDefiner ld : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
+                    _definer = ld.missingLibrary(name);
+                    if (_definer != null) {
+                        type = RefType.DEFINABLE_LIBRARY;
+                        break;
+                    }
+                }
+            }
             this.type = type;
             this.ID = ID;
             this.broken = broken;
+            definer = _definer;
         }
         
         public RefType getType() {
@@ -479,6 +506,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
             switch (type) {
                 
                 case LIBRARY:
+                case DEFINABLE_LIBRARY:
                 case LIBRARY_CONTENT:
                     // libs.<name>.classpath
                     return ID.substring(5, ID.length()-10);
@@ -504,6 +532,14 @@ public final class BrokenReferencesModel extends AbstractListModel {
                     assert false;
                     return ID;
             }
+        }
+
+        public Library define() throws Exception {
+            return definer.call();
+        }
+
+        public @Override String toString() {
+            return type + ":" + ID + (broken ? "" : "[fixed]");
         }
 
         public @Override boolean equals(Object o) {
