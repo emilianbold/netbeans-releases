@@ -83,6 +83,7 @@ import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -897,6 +898,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 public void actionPerformed (ActionEvent e) {
                     FetchAction action = SystemAction.get(FetchAction.class);
                     action.fetch(currRepository, getLookup().lookup(GitRemoteConfig.class));
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    new RemoveRemoteConfig().removeRemote(currRepository, remoteName);
                 }
             });
             return actions.toArray(new Action[actions.size()]);
