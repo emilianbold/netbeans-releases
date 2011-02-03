@@ -492,6 +492,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.web.core.api</package>
                 <package>org.netbeans.modules.web.core.jsploader.api</package>
                 <package>org.netbeans.modules.web.core.spi</package>
+                <package>org.netbeans.modules.web.wizards</package>
             </friend-packages>
         </data>
     </configuration>
