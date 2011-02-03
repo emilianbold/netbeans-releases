@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                 <pathelement location="${test.classes.dir}"/>
                 <path path="${extra.test.libs}"/>
                <path path="${test.run.cp}"/>
+               <fileset dir="${extra.test.libs.dir}" includes="junit-*.jar"/> <!-- workaround for anomalous cluster status of libs.junit -->
        </path> 
        <taskdef name="validatepath" classpath="../../../tasks.jar" classname="org.netbeans.nbbuild.testdist.ValidatePath"/>
 
