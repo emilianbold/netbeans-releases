@@ -136,7 +136,6 @@ public class RepositoryInfo {
 
     /**
      * Do NOT call from EDT
-     * @param repositoryRoot
      * @return
      */
     public void refresh () {
@@ -151,8 +150,7 @@ public class RepositoryInfo {
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
-                Map<String, GitRemoteConfig> newRemotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
-                setRemotes(newRemotes);
+                refreshRemotes(client);
                 GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
                 setActiveBranch(newBranches);
@@ -163,6 +161,26 @@ public class RepositoryInfo {
         }
     }
 
+    /**
+     * Do NOT call from EDT
+     * @return
+     */
+    public void refreshRemotes () {
+        assert !java.awt.EventQueue.isDispatchThread();
+        try {
+            File root = rootRef.get();
+            if (root == null) {
+                LOG.log(Level.WARNING, "refreshRemotes (): root is null, it has been collected in the meantime"); //NOI18N
+            } else {
+                LOG.log(Level.FINE, "refreshRemotes (): starting for {0}", root); //NOI18N
+                GitClient client = Git.getInstance().getClient(root);
+                refreshRemotes(client);
+            }
+        } catch (GitException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+    }
+    
     private void setActiveBranch (Map<String, GitBranch> branches) throws GitException {
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             if (e.getValue().isActive()) {
@@ -284,6 +302,11 @@ public class RepositoryInfo {
             }
         }
         return retval;
+    }
+
+    private void refreshRemotes (GitClient client) throws GitException {
+        Map<String, GitRemoteConfig> newRemotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        setRemotes(newRemotes);
     }
 
     private static class RepositoryRefreshTask implements Runnable {

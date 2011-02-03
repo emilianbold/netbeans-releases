@@ -730,8 +730,15 @@ public class FileObjectTestHid extends TestBaseHid {
         
         String[] arr = fold2.getPath().split("/");
         StringBuilder sb = new StringBuilder();
+        boolean first = true;
         for (String s : arr) {
-            sb.append(s).append("/../").append(s).append('/');
+            sb.append(s);
+            if (first) {
+                first = false;
+            } else {
+                sb.append("/../").append(s);
+            }
+            sb.append('/');
         }
         assertEquals(
             "Properly found", fold2,

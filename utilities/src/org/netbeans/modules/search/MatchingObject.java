@@ -382,7 +382,7 @@ final class MatchingObject
     
     /** Get the name (not the path) of the file */
     String getName() {        
-        return getFileObject().getName();
+        return getFileObject().getNameExt();
     }
 
     String getHtmlDisplayName() {
