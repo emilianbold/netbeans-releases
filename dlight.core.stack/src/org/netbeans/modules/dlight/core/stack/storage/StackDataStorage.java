@@ -68,7 +68,7 @@ public interface StackDataStorage {//extends StackSupport {
      * Submits new stack to the storage.
      *
      * @param stack  call stack represented as a list of function names,
-     *      leaf function of the stack goes last in the list
+     *      leaf function of the stack goes first in the list
      * @return stack id
      */
     long putStack(List<CharSequence> stack);
@@ -76,8 +76,8 @@ public interface StackDataStorage {//extends StackSupport {
     /**
      * Submits new sample to the storage.
      *
-     * @param stack  call stack represented as a list of function names,
-     *      leaf function of the stack goes last in the list
+     * @param stack call stack represented as a list of function names,
+     *      leaf function of the stack goes first in the list
      * @param timestamp  sample timestamp
      * @param duration  sample duration
      * @return stack id

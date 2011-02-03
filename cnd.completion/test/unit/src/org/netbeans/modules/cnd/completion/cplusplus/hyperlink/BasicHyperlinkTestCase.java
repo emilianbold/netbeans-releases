@@ -818,6 +818,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 188270 - Unable to resolve identifier in nested structs (C)
         performTest("bug188270.cpp", 13, 12, "bug188270.cpp", 2, 5);
     }
+
+    public void testBug189039() throws Exception {
+        // Bug 189039 - Unresolved unnamed enum constant in unnamed struct
+        performTest("bug189039.cpp", 11, 62, "bug189039.cpp", 4, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

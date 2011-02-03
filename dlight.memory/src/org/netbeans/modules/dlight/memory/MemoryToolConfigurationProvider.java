@@ -57,7 +57,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.api.storage.types.Time;
+import org.netbeans.modules.dlight.api.storage.StandardColumns;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
@@ -94,11 +94,11 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
 
     static {
-        final Column timestampColumn = new Column("timestamp", Time.class, loc("MemoryTool.ColumnName.timestamp"), null); // NOI18N
+        final Column timestampColumn = StandardColumns.TIMESTAMP_COLUMN;
         final Column kindColumn = new Column("kind", Integer.class, loc("MemoryTool.ColumnName.kind"), null); // NOI18N
         final Column sizeColumn = new Column("size", Integer.class, loc("MemoryTool.ColumnName.size"), null); // NOI18N
         final Column addressColumn = new Column("address", Long.class, loc("MemoryTool.ColumnName.address"), null); // NOI18N
-        final Column stackColumn = new Column("stackid", Long.class, loc("MemoryTool.ColumnName.stackid"), null); // NOI18N
+        final Column stackColumn = StandardColumns.STACK_COLUMN;
 
         totalColumn = new Column("total", Integer.class, loc("MemoryTool.ColumnName.total"), null); // NOI18N
 
@@ -243,7 +243,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 "SELECT func.func_id AS func_id, func.func_name AS func_name, node.offset AS offset, SUM(leak.size) AS leak " + // NOI18N
                 "FROM (SELECT MAX(timestamp) AS timestamp, address, SUM(kind * size) AS size FROM mem GROUP BY address HAVING SUM(kind * size) > 0) AS leak " + // NOI18N
                 "LEFT JOIN mem ON leak.timestamp = mem.timestamp AND leak.address = mem.address " + // NOI18N
-                "LEFT JOIN node ON mem.stackid = node.node_id " + // NOI18N
+                "LEFT JOIN node ON mem.stack_id = node.node_id " + // NOI18N
                 "LEFT JOIN func ON node.func_id = func.func_id " + // NOI18N
                 "GROUP BY func_id, func_name, offset " + // NOI18N
                 "ORDER BY leak DESC"; // NOI18N
@@ -253,7 +253,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 //                "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
 //                "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
 //                ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
-//                "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
+//                "AND stack_id = node.node_id and node.func_id = func.func_id " + // NOI18N
 //                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
 
         FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "func_id"); // NOI18N

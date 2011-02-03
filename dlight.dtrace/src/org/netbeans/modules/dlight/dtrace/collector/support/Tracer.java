@@ -1,9 +1,7 @@
-package org.netbeans.modules.dlight.dtrace.collector.support;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,48 +37,52 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-import static org.junit.Assert.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.dtrace.collector.DTraceEventData;
+package org.netbeans.modules.dlight.dtrace.collector.support;
+
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 
 /**
- *
- * @author Alexey Vladykin
+ * For debugging ...
+ * 
+ * @author ak119685
  */
-public class DtraceParserPerformanceTest {
+public final class Tracer {
 
-    @Test
-    public void testSimpleParser() {
-        List<Column> columns = Arrays.asList(
-                new Column("timestamp", Time.class),
-                new Column("foo", Integer.class),
-                new Column("bar", Integer.class));
-        DataTableMetadata table = new DataTableMetadata("table", columns, null);
-        DataOnlyParser parser = new DataOnlyParser(table);
+    private static PrintStream traceStream;
 
-        int iterations = 1200000;
-        List<DataRow> data = new ArrayList<DataRow>(iterations);
-
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < iterations; ++i) {
-            String line = (i + iterations) + " " + i + " -" + i;
-            DTraceEventData res = parser.parse(line);
-            assertNull(res.getEventCallStack());
-            DataRow row = res.getDataRow();
-            assertNotNull(row);
-            data.add(row);
+    public Tracer() {
+        String tmpDir = null;
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+            tmpDir = hostInfo.getTempDir();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
         }
-        long endTime = System.currentTimeMillis();
 
-        System.err.println(endTime - startTime);
+        if (tmpDir == null) {
+            tmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
+        }
+
+        try {
+            traceStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(tmpDir + "/dsp.log"), 32 * 1024)); // NOI18N
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+            traceStream = System.err;
+        }
+    }
+
+    public void trace(String line) {
+        traceStream.println(line);
     }
 }
