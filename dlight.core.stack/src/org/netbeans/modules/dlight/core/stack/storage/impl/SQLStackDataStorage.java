@@ -513,18 +513,26 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
 
             try {
-                PreparedStatement ps = stmtCache.getPreparedStatement(
+                final PreparedStatement ps = stmtCache.getPreparedStatement(
                         "SELECT id from SourceFiles where source_file=?"); // NOI18N
-                ps.setString(1, sourceFileInfo.getFileName());
-                ResultSet rs = ps.executeQuery();
+                ResultSet rs = null;
+                //syncronized is used as getPreparedStatement() method is not thread-safe
+                synchronized(ps){
+                    ps.setString(1, sourceFileInfo.getFileName());
+                    rs  = ps.executeQuery();
+                }
                 if (rs != null && rs.next()) {
                     //get the id
                     source_file_index = rs.getInt("id"); //NOI18N
                 } else {
-                    PreparedStatement stmt = stmtCache.getPreparedStatement(
+                    final PreparedStatement stmt = stmtCache.getPreparedStatement(
                             "INSERT INTO SourceFiles (source_file) VALUES (?)"); // NOI18N
-                    stmt.setString(1, sourceFileInfo.getFileName());
-                    int r = stmt.executeUpdate();
+                    int r = 0;
+                    //syncronized is used as getPreparedStatement() method is not thread-safe
+                    synchronized(stmt) {
+                        stmt.setString(1, sourceFileInfo.getFileName());
+                        r = stmt.executeUpdate();
+                    }
                     if (r > 0) {
                         ResultSet generatedKeys = stmt.getGeneratedKeys();
                         if (generatedKeys != null && generatedKeys.next() && generatedKeys.getMetaData().getColumnCount() > 0) {
