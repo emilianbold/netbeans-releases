@@ -168,11 +168,9 @@ class SftpSupport {
 
     private abstract class Worker implements Callable<Integer> {
 
-        protected final ExecutionEnvironment execEnv;
         protected final Writer error;
 
-        public Worker(ExecutionEnvironment execEnv, Writer error) {
-            this.execEnv = execEnv;
+        public Worker(Writer error) {
             this.error = error;
         }
 
@@ -181,7 +179,7 @@ class SftpSupport {
         protected abstract String getTraceName();
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call() throws InterruptedException {
             int rc = -1;
             try {
                 work();
@@ -208,8 +206,8 @@ class SftpSupport {
                 logException(ex);
                 rc = 3;
             } catch (InterruptedIOException ex) {
-                logException(ex);
                 rc = 4;
+                throw new InterruptedException(ex.getMessage());
             } catch (IOException ex) {
                 logException(ex);
                 rc = 5;
@@ -236,8 +234,8 @@ class SftpSupport {
         protected final String srcFileName;
         protected final String dstFileName;
 
-        public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error, boolean checkMd5) {
-            super(execEnv, error);
+        public Uploader(String srcFileName, String dstFileName, int mask, Writer error, boolean checkMd5) {
+            super(error);
             this.srcFileName = srcFileName;
             this.dstFileName = dstFileName;
             this.mask = mask;
@@ -336,8 +334,8 @@ class SftpSupport {
         protected final String srcFileName;
         protected final String dstFileName;
         
-        public Downloader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
-            super(execEnv, error);
+        public Downloader(String srcFileName, String dstFileName, Writer error) {
+            super(error);
             this.srcFileName = srcFileName;
             this.dstFileName = dstFileName;
         }
@@ -356,8 +354,9 @@ class SftpSupport {
     }
     
     private Future<Integer> uploadFileImpl(CommonTasksSupport.UploadParameters parameters) {
+        Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
         Uploader uploader = new Uploader(
-                parameters.srcFile.getAbsolutePath(), parameters.dstExecEnv,
+                parameters.srcFile.getAbsolutePath(),
                 parameters.dstFileName, parameters.mask, parameters.error, parameters.checkMd5);
         final FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
         RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
@@ -380,7 +379,7 @@ class SftpSupport {
             final String dstFileName,
             final Writer error) {
 
-        Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
+        Downloader downloader = new Downloader(srcFileName, dstFileName, error);
         FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
         requestProcessor.post(ftask);
         LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
