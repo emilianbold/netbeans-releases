@@ -171,7 +171,7 @@ class SftpSupport {
         protected final ExecutionEnvironment execEnv;
         protected final Writer error;
 
-        public Worker(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
+        public Worker(ExecutionEnvironment execEnv, Writer error) {
             this.execEnv = execEnv;
             this.error = error;
         }
@@ -183,7 +183,7 @@ class SftpSupport {
         @Override
         public Integer call() throws Exception {
             int rc = -1;
-            try {                
+            try {
                 work();
                 rc = 0;
             } catch (JSchException ex) {
@@ -237,7 +237,7 @@ class SftpSupport {
         protected final String dstFileName;
 
         public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error, boolean checkMd5) {
-            super(srcFileName, execEnv, dstFileName, error);
+            super(execEnv, error);
             this.srcFileName = srcFileName;
             this.dstFileName = dstFileName;
             this.mask = mask;
@@ -337,7 +337,7 @@ class SftpSupport {
         protected final String dstFileName;
         
         public Downloader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
-            super(srcFileName, execEnv, dstFileName, error);
+            super(execEnv, error);
             this.srcFileName = srcFileName;
             this.dstFileName = dstFileName;
         }
@@ -354,7 +354,7 @@ class SftpSupport {
             return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName; // NOI18N
         }
     }
-
+    
     private Future<Integer> uploadFileImpl(CommonTasksSupport.UploadParameters parameters) {
         Uploader uploader = new Uploader(
                 parameters.srcFile.getAbsolutePath(), parameters.dstExecEnv,
