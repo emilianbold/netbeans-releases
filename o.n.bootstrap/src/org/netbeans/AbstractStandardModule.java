@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,12 +40,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+
 package org.netbeans;
+
+// THIS CLASS OUGHT NOT USE NbBundle NOR org.openide CLASSES
+// OUTSIDE OF openide-util.jar! UI AND FILESYSTEM/DATASYSTEM
+// INTERACTIONS SHOULD GO ELSEWHERE.
+// (NbBundle.getLocalizedValue is OK here.)
 
 import java.io.File;
 import java.io.IOException;
@@ -72,18 +80,22 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-/**
- *
+/** Object representing one module, possibly installed.
+ * Responsible for opening of module JAR file; reading
+ * manifest; parsing basic information such as dependencies;
+ * and creating a classloader for use by the installer.
+ * Methods not defined in ModuleInfo must be called from within
+ * the module manager's read mutex as a rule.
  * @author Jesse Glick, Allan Gregersen
  */
 abstract class AbstractStandardModule extends Module {
-
+    
     /** JAR file holding the module */
     private final File jar;
     /** if reloadable, temporary JAR file actually loaded from */
     private File physicalJar = null;
-
     private Manifest manifest;
+    
     /** Map from extension JARs to sets of JAR that load them via Class-Path.
      * Used only for debugging purposes, so that a warning is printed if two
      * different modules try to load the same extension (which would cause them
@@ -95,6 +107,7 @@ abstract class AbstractStandardModule extends Module {
      * that no one is using Class-Path to refer to other modules.
      */
     protected static final Set<File> moduleJARs = new HashSet<File>();
+
     /** Set of locale-variants JARs for this module (or null).
      * Added explicitly to classloader, and can be used by execution engine.
      */
@@ -112,6 +125,7 @@ abstract class AbstractStandardModule extends Module {
      * Files are assumed to be JARs; directories are themselves.
      */
     private Set<File> patches = null;
+    
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
 
@@ -161,8 +175,7 @@ abstract class AbstractStandardModule extends Module {
         moduleJARs.add(jar);
     }
 
-    @Override
-    public Manifest getManifest() {
+    public @Override Manifest getManifest() {
         if (manifest == null) {
             try {
                 loadManifest();
