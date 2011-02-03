@@ -674,6 +674,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private static final Set<Object> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Object>();
 
+    //report REs only once per ide session and use lower log levels for known issues
     private void reportRuntimeExceptionOnce(RuntimeException e) {
         int hash = document.hashCode();
         hash = 21 * hash + e.getClass().hashCode();
@@ -694,8 +695,24 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
         };
         if(REPORTED_RUNTIME_EXCEPTIONS.add(marker)) {
-            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
+            Level level = isKnownProblem(e) ? Level.FINE : Level.INFO;
+            LOGGER.log(level, getDocumentInternalErrorMsg(), e);
         }
+    }
+
+    private static boolean isKnownProblem(RuntimeException e) {
+        //issue #194939
+        if(e.getClass().equals(StringIndexOutOfBoundsException.class)) {
+            StackTraceElement[] stelements = e.getStackTrace();
+            if(stelements.length >= 1) {
+                if(stelements[1].getClassName().equals("com.thaiopensource.validate.schematron.OutputHandler") //NOI18N
+                        && stelements[1].getMethodName().equals("startElement")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private String getDocumentErrorMsg() {
