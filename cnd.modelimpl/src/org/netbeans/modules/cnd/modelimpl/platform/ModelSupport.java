@@ -752,6 +752,8 @@ public class ModelSupport implements PropertyChangeListener {
                         ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
                         if (project != null) {
                             project.onFileExternalCreate(fo);
+                        } else {
+                            CndFileUtils.clearFileExistenceCache();
                         }
                    } else {
                         CsmFile[] files = CsmUtilities.getCsmFiles(fo, false);

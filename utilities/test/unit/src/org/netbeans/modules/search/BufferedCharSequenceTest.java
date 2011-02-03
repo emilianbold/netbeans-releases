@@ -29,7 +29,8 @@ public class BufferedCharSequenceTest {
     private static final String EUC_JP = "EUC_JP"; //NOI18N
 
     private static final String fc_10_bytes_content = "0123456789";
-    private  FileChannel fc_10_bytes = getDataFileChannel("10_bytes");
+    private  File fc_10_bytes_file = getFile("10_bytes");
+    private  FileInputStream fc_10_bytes_stream = getFileInputStream(fc_10_bytes_file);
     private  Charset cs_UTF_8 = Charset.forName(UTF_8);
 
 
@@ -47,13 +48,13 @@ public class BufferedCharSequenceTest {
 
     @Before
     public void setUp() {
-        fc_10_bytes = getDataFileChannel("10_bytes");
+        fc_10_bytes_stream = getFileInputStream(fc_10_bytes_file);
         cs_UTF_8 = Charset.forName(UTF_8);
     }
 
     @After
     public void tearDown() {
-        fc_10_bytes = null;
+        fc_10_bytes_stream = null;
         cs_UTF_8 = null;
     }
 
@@ -91,31 +92,32 @@ public class BufferedCharSequenceTest {
     @Test
     public void testLength() {
         System.out.println("length");
-        FileChannel fc;
+        File file;        
         Charset cs;
         BufferedCharSequence instance;
         int result;
-
-        fc = getDataFileChannel("10_bytes");
+      
+        file = getFile("10_bytes");                
         cs = Charset.forName(UTF_8);
-        instance = new BufferedCharSequence(fc, cs);
+        instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.setMaxBufferSize(10);
         result = instance.length();
         assertEquals(10, result);
 
-        fc = getDataFileChannel("0_bytes");
+        file = getFile("0_bytes");        
         cs = Charset.forName(UTF_8);
-        instance = new BufferedCharSequence(fc, cs);
+        instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.setMaxBufferSize(10);
         result = instance.length();
         assertEquals(0, result);
 
-        fc = getDataFileChannel("1_byte");
+        file = getFile("1_bytes");                
         cs = Charset.forName(UTF_8);
-        instance = new BufferedCharSequence(fc, cs);
+        instance = new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.setMaxBufferSize(10);
         result = instance.length();
         assertEquals(1, result);
+
     }
 
     /**
@@ -125,9 +127,10 @@ public class BufferedCharSequenceTest {
     public void testCharAt() {
         System.out.println("charAt");
         int index = 0;
-        FileChannel fc = getDataFileChannel("0_bytes");
+        File file = getFile("0_bytes");
         Charset cs = Charset.forName(UTF_8);
-        BufferedCharSequence instance = new BufferedCharSequence(fc, cs);
+        BufferedCharSequence instance =
+                new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.charAt(index);
     }
 
@@ -135,10 +138,11 @@ public class BufferedCharSequenceTest {
     public void testCharAt$1_byte() {
         System.out.println("testCharAt$1_byte");
         int index = 0;
-        FileChannel fc = getDataFileChannel("1_byte");
+        File file = getFile("1_bytes");
         Charset cs = Charset.forName(UTF_8);
         try {
-            BufferedCharSequence instance = new BufferedCharSequence(fc, cs);
+            BufferedCharSequence instance = 
+                    new BufferedCharSequence(getFileInputStream(file), cs, file.length());
             char expResult = 'a';
             char result = instance.charAt(index);
             assertEquals(expResult, result);
@@ -154,10 +158,11 @@ public class BufferedCharSequenceTest {
     @Test
     public void testCharAt$10_byte() {
         System.out.println("testCharAt$10_byte");
-        FileChannel fc = getDataFileChannel("10_bytes");
+        File file = getFile("10_bytes");
         Charset cs = Charset.forName(UTF_8);
 
-        BufferedCharSequence instance = new BufferedCharSequence(fc, cs);
+        BufferedCharSequence instance = 
+                new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.setMaxBufferSize(10);
         char result;
 
@@ -177,10 +182,11 @@ public class BufferedCharSequenceTest {
     @Test
     public void testCharAt_$10_byte$2() {
         System.out.println("testCharAt$10_byte$2");
-        FileChannel fc = getDataFileChannel("10_bytes");
+        File file = getFile("10_bytes");
         Charset cs = Charset.forName(UTF_8);
 
-        BufferedCharSequence instance = new BufferedCharSequence(fc, cs);
+        BufferedCharSequence instance = 
+                new BufferedCharSequence(getFileInputStream(file), cs, file.length());
         instance.setMaxBufferSize(5);
         char result;
 
@@ -219,7 +225,8 @@ public class BufferedCharSequenceTest {
     @Test
     public void testToString() {
         System.out.println("toString");
-        BufferedCharSequence instance = new BufferedCharSequence(fc_10_bytes, cs_UTF_8);
+        BufferedCharSequence instance = 
+                new BufferedCharSequence(fc_10_bytes_stream, cs_UTF_8, fc_10_bytes_file.length());
         instance.setMaxBufferSize(5);
         String expResult = fc_10_bytes_content;
         String result = instance.toString();
@@ -275,7 +282,8 @@ public class BufferedCharSequenceTest {
     public void testNextLineText() {
         System.out.println("nextLineText");
         System.out.println("nextLineText@no line terminators in the file.");
-        BufferedCharSequence bcs = new BufferedCharSequence(fc_10_bytes, cs_UTF_8);
+        BufferedCharSequence bcs = 
+                new BufferedCharSequence(fc_10_bytes_stream, cs_UTF_8, fc_10_bytes_file.length());
         assertEquals(0, bcs.position());
         String expResult = fc_10_bytes_content;
         String result = bcs.nextLineText();
@@ -294,6 +302,7 @@ public class BufferedCharSequenceTest {
         FileInputStream fis = getFileInputStream(file);
         return fis.getChannel();
     }
+
 
     public FileInputStream getFileInputStream(File f) {
         FileInputStream fis = null;
