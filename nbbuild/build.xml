@@ -88,6 +88,7 @@ made subject to such option by the copyright holder.
     <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
         <manifest dir="${nb_all}">
+            <include name="libs.junit4/external/binaries-list"/>
             <include name="javahelp/external/binaries-list"/>
         </manifest>
     </downloadbinaries>

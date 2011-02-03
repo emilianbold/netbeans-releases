@@ -71,6 +71,7 @@ public class ComboStringConfiguration {
     }
 
     public void setValue(String value) {
+        value = value.trim();
         this.value = value;
         if (master != null) {
             setModified(true);

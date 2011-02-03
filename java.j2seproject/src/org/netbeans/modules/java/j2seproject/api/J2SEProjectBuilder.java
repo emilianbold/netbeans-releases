@@ -466,6 +466,7 @@ public class J2SEProjectBuilder {
         if (buildXmlName != null) {
             ep.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
         }
+        ep.setProperty(J2SEProjectProperties.MKDIST_DISABLED, isLibrary ? "true" : "false");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N

@@ -196,7 +196,13 @@ public final class ProjectActionEvent {
                 result.addAll(Arrays.asList(Arrays.copyOfRange(params, 1, params.length)));
             }
         }
-        result.addAll(Arrays.asList(getProfile().getArgsArray()));
+        else if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
+            result.addAll(Arrays.asList(getProfile().getArgsArray()));
+            //???????? <===== Egor, need to do something here for debugging
+        }
+        else {
+            result.addAll(Arrays.asList(getProfile().getArgsArray()));
+        }
         return result;
     }
 

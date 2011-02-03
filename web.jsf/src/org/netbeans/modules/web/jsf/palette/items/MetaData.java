@@ -42,30 +42,17 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.jsfapi.spi.InputTextTagValueProvider;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
@@ -80,9 +67,6 @@ import org.openide.util.NbBundle;
 public class MetaData implements ActiveEditorDrop, PaletteItem {
 
     private HashMap<String, String> properties = new HashMap<String, String>();
-
-    private static final String TAG_NAME = ":inputText";   //NOI18N
-    private static final String VALUE_NAME = "value";   //NOI18N
 
     private JsfLibrariesSupport jsfLibrariesSupport;
 
@@ -118,7 +102,6 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
         handleTransfer(component);
     }
 
-
     private String createBody(JTextComponent targetComponent) {
         final StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append('<').append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE)).append(":metadata>\n");    //NOI18N
@@ -141,107 +124,16 @@ public class MetaData implements ActiveEditorDrop, PaletteItem {
         return properties.remove(key);
     }
     
-    private void findProperties(JTextComponent target){
+    private void findProperties(JTextComponent target) {
         BaseDocument doc = (BaseDocument) target.getDocument();
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         if (dobj != null) {
             FileObject fobj = (FileObject) NbEditorUtilities.getDataObject(doc).getPrimaryFile();
-            if(fobj.getMIMEType().equals("text/xhtml")) {   //NOI18N
-                //we are in an xhtml file
-                Source source = Source.create(doc);
-                final int offset = target.getCaretPosition();
-                try {
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            Result _result = resultIterator.getParserResult(offset);
-                            if(_result instanceof HtmlParserResult) {
-                                HtmlParserResult result = (HtmlParserResult)_result;
-//                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
-                                if (result.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getNamespace())) {
+            //finds an instance of the values provider and asks him for the result map
+            properties.putAll(InputTextTagValueProvider.Query.getInputTextValuesMap(fobj));
 
-                                    List<AstNode> foundNodes = findValue(result.root(DefaultLibraryInfo.HTML.getNamespace()).children(), getTagName(), new ArrayList<AstNode>());
-
-                                    for (AstNode node : foundNodes) {
-                                        String value = node.getAttribute(VALUE_NAME).unquotedValue();
-                                        String key = generateKey(value);
-                                        properties.put(key, value);
-                                    }
-                                }
-                            }
-                        }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-
-            } else {
-                //try if in a JSP...
-                JspContextInfo contextInfo = JspContextInfo.getContextInfo(fobj);
-                if (contextInfo != null) {
-                    JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fobj, false, true);
-                    if (result != null) {
-                        Node.Nodes nodes = result.getNodes();
-                        List<Node> foundNodes = new ArrayList<Node>();
-                        foundNodes=findValue(nodes, getTagName(), foundNodes);
-                        for (Node node: foundNodes) {
-                            String ref_val = node.getAttributeValue(VALUE_NAME);
-                            String key = generateKey(ref_val);
-                            properties.put(key, ref_val);
-                        }
-                    }
-                }
-
-            }
         }
 
     }
-    private List<AstNode> findValue(List<AstNode> nodes, String tagName, List<AstNode> foundNodes) {
-        if (nodes == null) {
-            return foundNodes;
-        }
-        for (int i = 0; i < nodes.size(); i++) {
-            AstNode node = nodes.get(i);
-            if (tagName.equals(node.name())) {
-                foundNodes.add(node);
-            } else {
-                foundNodes = findValue(node.children(), tagName, foundNodes);
-            }
-
-        }
-        return foundNodes;
-    }
-    private List<Node> findValue(Node.Nodes nodes, String tagName, List<Node> foundNodes) {
-        if (nodes == null)
-            return foundNodes;
-        for (int i=0;i<nodes.size();i++) {
-            Node node = nodes.getNode(i);
-            if (tagName.equals(node.getQName())){
-                foundNodes.add(node);
-            } else {
-                foundNodes = findValue(node.getBody(), tagName, foundNodes);
-            }
-        }
-        return foundNodes;
-    }
-
-    private String generateKey(String value) {
-        if (value.startsWith("#{")) {    //NOI18N
-            value = value.substring(2, value.length()-1);
-        }
-        String result = value.substring(value.lastIndexOf(".")+1,value.length()).toLowerCase();
-        int i=0;
-        String tmp = result;
-        while (properties.get(tmp) != null) {
-            i++;
-            tmp=result+i;
-        }
-        return result;
-    }
-
-    private String getTagName() {
-        return new StringBuilder().append(jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)).append(TAG_NAME).toString();
-    }
-
+   
 }

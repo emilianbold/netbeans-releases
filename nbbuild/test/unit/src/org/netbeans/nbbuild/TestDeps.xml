@@ -150,14 +150,14 @@ made subject to such option by the copyright holder.
         <fail message="Bad unit test compile cp">
             <condition>
                 <not>
-                    <equals arg1="${unit.compile.cp3}" arg2="platform/modules/org-netbeans-libs-junit4.jar"/>
+                    <equals arg1="${unit.compile.cp3}" arg2="extra/modules/org-netbeans-libs-junit4.jar"/>
                 </not>
             </condition>
         </fail>
         <fail message="Bad unit test runtime cp">
             <condition>
                 <not>
-                    <equals arg1="${unit.runtime.cp3}" arg2="platform/modules/org-netbeans-libs-junit4.jar"/>
+                    <equals arg1="${unit.runtime.cp3}" arg2="extra/modules/org-netbeans-libs-junit4.jar"/>
                 </not>
             </condition>
         </fail>

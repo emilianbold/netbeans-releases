@@ -49,6 +49,7 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
@@ -81,6 +82,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -196,6 +198,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private final Object                threadsCollectorLock = new Object();
     private final Map<Long, String>     markedObjects = new LinkedHashMap<Long, String>();
     private final Map<String, ObjectVariable> markedObjectLabels = new LinkedHashMap<String, ObjectVariable>();
+    private final Map<ClassType, List>  allInterfacesMap = new WeakHashMap<ClassType, List>();
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -2138,6 +2141,75 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return deadlockDetector;
         }
     }
+
+    public List<JPDAClassType> getAllInterfaces(ClassType ct) {
+        try {
+            List allInterfaces;
+            boolean toCompute = false;
+            synchronized (allInterfacesMap) {
+                allInterfaces = allInterfacesMap.get(ct);
+                if (allInterfaces == null) {
+                    allInterfaces = new ArrayList();
+                    allInterfaces.add("computing");             // NOI18N
+                    allInterfacesMap.put(ct, allInterfaces);
+                    toCompute = true;
+                }
+            }
+            if (toCompute) {
+                List<InterfaceType> interfaces = null;
+                try {
+                    //assert !javax.swing.SwingUtilities.isEventDispatchThread();
+                    interfaces = ClassTypeWrapper.allInterfaces0(ct);
+                } finally {
+                    if (interfaces == null) {
+                        synchronized (allInterfacesMap) {
+                            allInterfacesMap.remove(ct);
+                        }
+                    }
+                    synchronized (allInterfaces) {
+                        allInterfaces.clear();
+                        if (interfaces != null) {
+                            for (InterfaceType it : interfaces) {
+                                allInterfaces.add(new JPDAClassTypeImpl(this, it));
+                            }
+                        }
+                        allInterfaces.notifyAll();
+                    }
+                }
+            } else {
+                synchronized (allInterfaces) {
+                    if (allInterfaces.contains("computing")) {  // NOI18N
+                        try {
+                            allInterfaces.wait();
+                        } catch (InterruptedException ex) {
+                            return null;
+                        }
+                    }
+                }
+            }
+            return Collections.unmodifiableList(allInterfaces);
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+            return null;
+        }
+    }
+
+    public boolean hasAllInterfaces(ClassType ct) {
+        List allInterfaces;
+        synchronized (allInterfacesMap) {
+            allInterfaces = allInterfacesMap.get(ct);
+        }
+        if (allInterfaces == null) {
+            return false;
+        } else {
+            synchronized (allInterfaces) {
+                if (allInterfaces.contains("computing")) {      // NOI18N
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 
     private static class DebuggerReentrantReadWriteLock extends ReentrantReadWriteLock {
 
