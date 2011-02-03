@@ -150,6 +150,7 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
     public void closeConnection(Connection arg0) throws SQLException {
         if (connection != null) {
             connection.close();
+            connection = null;
         }
     }
 
@@ -157,6 +158,7 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
         if (connection != null) {
             try {
                 connection.close();
+                connection = null;
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
             }

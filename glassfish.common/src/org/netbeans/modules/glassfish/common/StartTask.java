@@ -356,7 +356,7 @@ public class StartTask extends BasicTask<OperationState> {
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
-                "MSG_START_SERVER_FAILED2", instanceName); // NOI18N
+                "MSG_START_SERVER_FAILED2", instanceName,host,port+""); // NOI18N
     }
 
     private String[] createEnvironment() {

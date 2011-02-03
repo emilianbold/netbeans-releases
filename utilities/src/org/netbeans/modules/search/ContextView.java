@@ -313,7 +313,7 @@ final class ContextView extends JPanel implements TreeSelectionListener {
                                             = matchingObj.checkValidity();
             if (invalidityStatus != null) {
                 displayMessage(invalidityStatus.getDescription(
-                                            matchingObj.getFile().getPath()));
+                                            matchingObj.getFileObject().getPath()));
                 return;
             }
             

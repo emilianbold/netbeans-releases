@@ -55,6 +55,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.WeakListeners;
 
 /**
  * Update paragraph views by document and view factory changes.
@@ -106,18 +107,12 @@ public final class ViewUpdates implements DocumentListener {
         // but the document listeners that are just being notified include a highlighting layer's document listener
         // BEFORE the BasicTextUI.RootView listener. At that point the highlighting layer would fire a highlighting
         // change and the view hierarchy would attempt to rebuild itself but that would fail.
-        DocumentUtilities.addDocumentListener(doc, incomingModificationListener, DocumentListenerPriority.FIRST);
-        DocumentUtilities.addDocumentListener(doc, this, DocumentListenerPriority.VIEW);
-    }
-
-    private void reinitFactories() {
-        if (viewFactories != null) {
-            for (int i = 0; i < viewFactories.length; i++) {
-                viewFactories[i].removeEditorViewFactoryListener(factoriesListener);
-            }
-            viewFactories = null;
-        }
-        initFactories();
+        DocumentUtilities.addDocumentListener(doc, 
+                WeakListeners.create(DocumentListener.class, incomingModificationListener, null),
+                DocumentListenerPriority.FIRST);
+        DocumentUtilities.addDocumentListener(doc,
+                WeakListeners.create(DocumentListener.class, this, doc),
+                DocumentListenerPriority.VIEW);
     }
 
     private void initFactories() {
@@ -128,7 +123,8 @@ public final class ViewUpdates implements DocumentListener {
         viewFactories = new EditorViewFactory[factoryFactories.size()];
         for (int i = 0; i < factoryFactories.size(); i++) {
             viewFactories[i] = factoryFactories.get(i).createEditorViewFactory(component);
-            viewFactories[i].addEditorViewFactoryListener(factoriesListener);
+            viewFactories[i].addEditorViewFactoryListener(WeakListeners.create(
+                    EditorViewFactoryListener.class, factoriesListener, viewFactories[i]));
         }
     }
     
