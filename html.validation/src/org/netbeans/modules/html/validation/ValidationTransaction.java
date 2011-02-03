@@ -25,6 +25,7 @@ package org.netbeans.modules.html.validation;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import org.netbeans.api.progress.ProgressHandle;
@@ -657,7 +658,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.schemaError(e);
         } catch (RuntimeException e) {
-            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
+            reportRuntimeExceptionOnce(e);
             errorHandler.internalError(
                     e,
                     "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
@@ -668,6 +669,32 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                     "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } finally {
             errorHandler.end(successMessage(), failureMessage());
+        }
+    }
+
+    private static final Set<Object> REPORTED_RUNTIME_EXCEPTIONS = new HashSet<Object>();
+
+    private void reportRuntimeExceptionOnce(RuntimeException e) {
+        int hash = document.hashCode();
+        hash = 21 * hash + e.getClass().hashCode();
+        hash = 21 * hash + e.getMessage().hashCode();
+
+        final int fhash = hash;
+        Object marker = new Object() {
+
+            @Override
+            public boolean equals(Object o) {
+                return o.hashCode() == hashCode();
+            }
+
+            @Override
+            public int hashCode() {
+                return fhash;
+            }
+
+        };
+        if(REPORTED_RUNTIME_EXCEPTIONS.add(marker)) {
+            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
         }
     }
 
@@ -1456,6 +1483,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     static int PATTERN_LEN_LIMIT = 10; //consider backward match PATTER_LEN_LIMIT long as OK
 
     static int findBackwardDiff(CharSequence text, int tlen, char[] pattern, int pstart, int plen) {
+        assert text.length() >= tlen;
         assert plen > 0;
         int pend = pstart + plen - 1;
         int limitedpstart = plen - PATTERN_LEN_LIMIT > 0 ? pstart + (plen - PATTERN_LEN_LIMIT) : pstart;
