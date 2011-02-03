@@ -375,67 +375,110 @@ public final class RunProfile implements ConfigurationAuxObject {
         defaultProfile = b;
     }
 
+    private int getArgIndex() {
+        return getRunCommand().getValue().indexOf(" "); // FIXUP <=== need a better check
+    }
+
+    private String getRunBinary() {
+        int argIndex = getArgIndex();
+        if (argIndex > 0) {
+            return getRunCommand().getValue().substring(0, argIndex);
+        }
+        else {
+            return getRunCommand().getValue();
+        }
+    }
+
+    private String getRunArgs() {
+        int argIndex = getArgIndex();
+        if (argIndex > 0) {
+            return getRunCommand().getValue().substring(argIndex+1);
+        }
+        else {
+            return "";
+        }
+    }
+
     // Args ...
     public void setArgs(String argsFlat) {
-        String oldArgsFlat = getArgsFlat();
-        this.argsFlat = argsFlat;
-        argsFlatValid = true;
-        argsArrayValid = false;
+        String runBinary = getRunBinary();
+        String oldArgsFlat = getRunArgs();
+        getRunCommand().setValue(runBinary + " " + argsFlat);
         if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
         needSave = true;
+
+//        String oldArgsFlat = getArgsFlat();
+//        this.argsFlat = argsFlat;
+//        argsFlatValid = true;
+//        argsArrayValid = false;
+//        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
+//            pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
+//        }
+//        needSave = true;
     }
 
     public void setArgs(String[] argsArray) {
-        String[] oldArgsArray = getArgsArray();
-        this.argsArray = argsArray;
-        argsFlatValid = false;
-        argsArrayValid = true;
-        if (pcs != null && !CndPathUtilitities.sameStringArray(oldArgsArray, argsArray)) {
-            pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsArray, argsArray);
-        }
-        needSave = true;
+        String oldArgsFlat = getRunArgs();
+        setArgs(oldArgsFlat);
+
+//        String[] oldArgsArray = getArgsArray();
+//        this.argsArray = argsArray;
+//        argsFlatValid = false;
+//        argsArrayValid = true;
+//        if (pcs != null && !CndPathUtilitities.sameStringArray(oldArgsArray, argsArray)) {
+//            pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsArray, argsArray);
+//        }
+//        needSave = true;
     }
 
     public void setArgsRaw(String argsFlat) {
-        this.argsFlat = argsFlat;
-        argsFlatValid = true;
-        argsArrayValid = false;
+        String runBinary = getRunBinary();
+        String oldArgsFlat = getRunArgs();
+        getRunCommand().setValue(runBinary + " " + argsFlat);
         needSave = true;
+//        this.argsFlat = argsFlat;
+//        argsFlatValid = true;
+//        argsArrayValid = false;
+//        needSave = true;
     }
 
     public String getArgsFlat() {
-        if (!argsFlatValid) {
-            argsFlat = ""; // NOI18N
-            for (int i = 0; i < argsArray.length; i++) {
-                argsFlat += CndPathUtilitities.quoteIfNecessary(argsArray[i]);
-                if (i < (argsArray.length - 1)) {
-                    argsFlat += " "; // NOI18N
-                }
-            }
-            argsFlatValid = true;
-        }
-        return argsFlat;
+        return getRunArgs();
+
+//        if (!argsFlatValid) {
+//            argsFlat = ""; // NOI18N
+//            for (int i = 0; i < argsArray.length; i++) {
+//                argsFlat += CndPathUtilitities.quoteIfNecessary(argsArray[i]);
+//                if (i < (argsArray.length - 1)) {
+//                    argsFlat += " "; // NOI18N
+//                }
+//            }
+//            argsFlatValid = true;
+//        }
+//        return argsFlat;
     }
 
     public String[] getArgsArray() {
-        if (!argsArrayValid) {
-            argsArray = Utilities.parseParameters(argsFlat);
-            argsArrayValid = true;
-        }
-        return argsArray;
+        return Utilities.parseParameters(getArgsFlat());
+
+//        if (!argsArrayValid) {
+//            argsArray = Utilities.parseParameters(argsFlat);
+//            argsArrayValid = true;
+//        }
+//        return argsArray;
     }
 
-    /*
-     * as array shifted one and executable as arg 0
-     */
-    public String[] getArgv(String ex) {
-        String[] argsArrayShifted = new String[getArgsArray().length + 1];
-        argsArrayShifted[0] = ex;
-        System.arraycopy(getArgsArray(), 0, argsArrayShifted, 1, getArgsArray().length);
-        return argsArrayShifted;
-    }
+//    /*
+//     * as array shifted one and executable as arg 0
+//     */
+//    public String[] getArgv(String ex) {
+//        String[] argsArrayShifted = new String[getArgsArray().length + 1];
+//        argsArrayShifted[0] = ex;
+//        System.arraycopy(getArgsArray(), 0, argsArrayShifted, 1, getArgsArray().length);
+//        return argsArrayShifted;
+//    }
 
     /*
      * Gets base directory. Base directory is always set and is always absolute.
@@ -701,7 +744,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
         RunProfile p = (RunProfile) profileAuxObject;
         setDefault(p.isDefault());
-        setArgs(p.getArgsFlat());
+        //setArgs(p.getArgsFlat());
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
         setRunCommand(p.getRunCommand());
@@ -724,7 +767,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         //p.setParent(getParent());
         p.setCloneOf(this);
         p.setDefault(isDefault());
-        p.setArgs(getArgsFlat());
+        //p.setArgs(getArgsFlat());
         p.setRunDir(getRunDir());
         p.setRunCommand(getRunCommand().clone());
         //p.setRawRunDirectory(getRawRunDirectory());
@@ -752,7 +795,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.setDisplayName(getString("GeneralName"));
         set.setShortDescription(getString("GeneralTT"));
         set.put(new ComboStringNodeProp(getRunCommand(), true, getString("RunCommandName"), getString("RunCommandHint")));
-        set.put(new ArgumentsNodeProp());
+        //set.put(new ArgumentsNodeProp());
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
@@ -859,23 +902,23 @@ public final class RunProfile implements ConfigurationAuxObject {
 //        }
 //
 //    }
-
-    private class ArgumentsNodeProp extends PropertySupport<String> {
-
-        public ArgumentsNodeProp() {
-            super("Arguments", String.class, getString("ArgumentsName"), getString("ArgumentsHint"), true, true); // NOI18N
-        }
-
-        @Override
-        public String getValue() {
-            return getArgsFlat();
-        }
-
-        @Override
-        public void setValue(String v) {
-            setArgs(v);
-        }
-    }
+//
+//    private class ArgumentsNodeProp extends PropertySupport<String> {
+//
+//        public ArgumentsNodeProp() {
+//            super("Arguments", String.class, getString("ArgumentsName"), getString("ArgumentsHint"), true, true); // NOI18N
+//        }
+//
+//        @Override
+//        public String getValue() {
+//            return getArgsFlat();
+//        }
+//
+//        @Override
+//        public void setValue(String v) {
+//            setArgs(v);
+//        }
+//    }
 
     private class RunDirectoryNodeProp extends PropertySupport<String> {
 
