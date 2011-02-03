@@ -206,7 +206,7 @@ fi
 #ML_BUILD
 if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
-    hg clone $ML_REPO $NB_ALL/l10n
+    hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
     cd $NB_ALL/l10n
     ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc -Dnbms.dist.dir=${DIST}/ml/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
     ERROR_CODE=$?
