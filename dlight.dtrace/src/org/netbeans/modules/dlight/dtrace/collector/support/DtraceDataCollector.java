@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
-import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
@@ -60,7 +64,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
@@ -74,6 +77,7 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.execution.DLightDeploymentService;
 import org.netbeans.modules.dlight.api.execution.DLightDeploymentTarget;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.dtrace.collector.DTraceOutputParser;
 import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -91,20 +95,20 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Collector which collects data using DTrace scripts.
+ * Collector that collects data using DTrace scripts.
  * You should describe data collected using list of
  * {@link org.netbeans.modules.dlight.core.storage.model.DataTableMetadata}.
  * You can define your own implementation of
- * {@link org.netbeans.modules.dlight.dtrace.collector.DtraceParser}
+ * {@link org.netbeans.modules.dlight.dtrace.collector.DTraceOutputParser}
  */
 public final class DtraceDataCollector
         extends IndicatorDataProvider<DTDCConfiguration>
@@ -128,19 +132,21 @@ public final class DtraceDataCollector
     private CollectorRunner dtraceRunner = null;
     private DTDCConfiguration configuration;
     private DataStorage storage;
+    private StackDataStorage stackStorage;
     private List<DataTableMetadata> dataTablesMetadata;
-    private DtraceParser parser;
+    private DTraceOutputParser parser;
     private final List<DataRow> indicatorDataBuffer = new ArrayList<DataRow>();
     private int indicatorFiringFactor;
-    private LineProcessor outputProcessor = new DefaultLineProcessor();
+    private OutputProcessor outputProcessor;
     private boolean isSlave;
     private final boolean multiScriptMode;
     private DtraceDataCollector parentCollector;
     private final Map<String, DtraceDataCollector> slaveCollectors;
-    private DtraceDataCollector lastSlaveCollector;
     private volatile boolean terminated = false;
     private boolean isDeploymentTarget = false;
     private final DataCollectorListenersSupport dclsupport = new DataCollectorListenersSupport(this);
+    private static final String bootstrapScript = "/org/netbeans/modules/dlight/dtrace/resources/bootstrap.d"; // NOI18N
+    private static final String eofMarker = "__EOF_MARKER__"; // NOI18N
 
     DtraceDataCollector(boolean multiScriptMode, DTDCConfiguration configuration) {
         super("DTrace"); // NOI18N
@@ -153,7 +159,7 @@ public final class DtraceDataCollector
             this.dataTablesMetadata = new ArrayList<DataTableMetadata>();
             this.tableMetaData = null;
             this.slaveCollectors = new HashMap<String, DtraceDataCollector>();
-            setOutputProcessor(new DemultiplexingLineProcessor());
+            this.outputProcessor = new DemultiplexingOutputProcessor(Collections.unmodifiableMap(slaveCollectors));
             addSlaveConfiguration(configuration);
         } else {
             assert cfgInfo.getScriptUrl(configuration) != null;
@@ -165,12 +171,14 @@ public final class DtraceDataCollector
                     ? dataTablesMetadata.get(0)
                     : null;
 
+            this.outputProcessor = new DefaultOutputProcessor(tableMetaData);
+
             if (cfgInfo.isStackSupportEnabled(configuration)) {
-                this.parser = new DtraceDataAndStackParser(tableMetaData);
+                this.parser = new DataAndStacksParser(tableMetaData);
             } else {
                 this.parser = cfgInfo.getParser(configuration) == null
-                        ? (tableMetaData != null ? new DtraceParser(tableMetaData)
-                        : (DtraceParser) null) : cfgInfo.getParser(configuration);
+                        ? (tableMetaData != null ? new DataOnlyParser(tableMetaData)
+                        : (DataOnlyParser) null) : cfgInfo.getParser(configuration);
             }
 
             // super(cmd_dtrace, null,
@@ -239,15 +247,10 @@ public final class DtraceDataCollector
         slaveCollector.setSlave(true);
         slaveCollector.setParentCollector(this);
         slaveCollectors.put(accessor.getOutputPrefix(configuration), slaveCollector);
-
     }
 
     void setParentCollector(DtraceDataCollector parentCollector) {
         this.parentCollector = parentCollector;
-    }
-
-    void setOutputProcessor(LineProcessor callback) {
-        this.outputProcessor = callback;
     }
 
     void setSlave(boolean isSlave) {
@@ -262,12 +265,36 @@ public final class DtraceDataCollector
         localScriptUrl = path;
     }
 
-    LineProcessor getOutputProcessor() {
+    OutputProcessor getOutputProcessor() {
         return outputProcessor;
     }
 
     protected DataStorage getStorage() {
         return storage;
+    }
+
+    /* package */ void addDataRow(final DataRow dataRow) {
+        if (dataRow == null || (isDeploymentTarget && terminated)) {
+            return;
+        }
+
+        if (storage != null && tableMetaData != null) {
+            storage.addData(tableMetaData.getName(), Arrays.asList(dataRow));
+        }
+
+        synchronized (indicatorDataBuffer) {
+            indicatorDataBuffer.add(dataRow);
+            if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
+                if (isSlave) {
+                    if (parentCollector != null) {
+                        parentCollector.notifyIndicators(indicatorDataBuffer);
+                    }
+                } else {
+                    notifyIndicators(indicatorDataBuffer);
+                }
+                indicatorDataBuffer.clear();
+            }
+        }
     }
 
     /**
@@ -293,56 +320,27 @@ public final class DtraceDataCollector
 
     @Override
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
-
         if (multiScriptMode) {
             for (DtraceDataCollector ddc : slaveCollectors.values()) {
                 ddc.init(storages, target);
             }
-            try {
-                setLocalScriptUrl(mergeScripts().toURI().toURL());
-            } catch (MalformedURLException ex) {
-            }
         }
 
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-        this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
-        StackDataStorage stackStorage = (StackDataStorage) storages.get(dstf.getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-        if (this.parser instanceof DtraceDataAndStackParser) {
-            ((DtraceDataAndStackParser) this.parser).setStackDataStorage(stackStorage);
-        }
+        storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        stackStorage = (StackDataStorage) storages.get(dstf.getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+
+        outputProcessor.init(this, stackStorage);
 
         if (isSlave) {
             return;
         }
 
-        File scriptFile;
+        ExecutionEnvironment trgExecEnv = target.getExecEnv();
         try {
-            scriptFile = Util.copyToTempDir(localScriptUrl);
-            if (!needsBootstrap()) {
-                DTraceScriptUtils.insertEOFMarker(scriptFile);
-            }
+            scriptPath = mergeAndUploadScripts(trgExecEnv);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            scriptPath = null;
-            return;
-        }
-
-        ExecutionEnvironment execEnv = target.getExecEnv();
-        scriptPath = DTraceScriptUtils.uploadScript(execEnv, scriptFile);
-
-        if (needsBootstrap()) {
-            ServiceInfoDataStorage info = getServiceInfoDataStorage();
-            assert info != null;
-
-            String pattern = info.getValue("DTraceTracingPattern"); // NOI18N
-            BootstrapScript bootstrap = new BootstrapScript(scriptPath, pattern);
-            try {
-                scriptPath = bootstrap.getScriptPath(execEnv);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                scriptPath = null;
-                return;
-            }
+            DLightLogger.getLogger(DtraceDataCollector.class).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -553,7 +551,7 @@ public final class DtraceDataCollector
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
         npb.setCommandLine(taskCommand);
 
-        this.dtraceRunner = new CollectorRunner(new FakeIndicatorNotificationListener(), npb, getOutputProcessor(), DTraceScriptUtils.EOF_MARKER, "DTrace"); // NOI18N
+        this.dtraceRunner = new CollectorRunner(new FakeIndicatorNotificationListener(), npb, outputProcessor, eofMarker, "DTrace"); // NOI18N
 
         log.log(Level.FINE, "DtraceDataCollector ({0}) for {1} STARTED", // NOI18N
                 new Object[]{dtraceRunner.toString(), taskCommand});
@@ -588,103 +586,141 @@ public final class DtraceDataCollector
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
-    private boolean needsBootstrap() {
+    private String mergeAndUploadScripts(ExecutionEnvironment trgEnv) throws IOException {
+        Map<String, URL> scriptsMap = new HashMap<String, URL>();
+
+        if (multiScriptMode) {
+            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+                scriptsMap.put(entry.getKey(), entry.getValue().getLocalScriptUrl());
+            }
+        } else {
+            scriptsMap.put("", localScriptUrl); // NOI18N
+        }
+
         ServiceInfoDataStorage info = getServiceInfoDataStorage();
-        if (info != null) {
-            String mode = info.getValue("DTraceMode"); // NOI18N
+        assert info != null;
 
-            if (mode == null || !mode.equals("tracing")) { // NOI18N
-                return false;
+        String mode = info.getValue("DTraceMode"); // NOI18N
+        String pattern = info.getValue("DTraceTracingPattern"); // NOI18N
+
+        boolean followForks = mode != null && mode.equalsIgnoreCase("tracing"); // NOI18N
+
+        String forkFollowCondition;
+
+        if (followForks) {
+            if (pattern != null && !pattern.trim().isEmpty()) {
+                forkFollowCondition = "strstr(execname, \"".concat(pattern).concat("\") != NULL/"); // NOI18N
+            } else {
+                forkFollowCondition = "1"; // NOI18N
             }
-
-            String pattern = info.getValue("DTraceTracingPattern"); // NOI18N
-            if (pattern == null || pattern.trim().length() == 0) {
-                return false;
-            }
-
-            return true;
+        } else {
+            forkFollowCondition = "0"; // NOI18N
         }
 
-        return false;
-    }
+        String finalPath;
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(trgEnv);
 
-    private final class DefaultLineProcessor implements LineProcessor {
-
-        @Override
-        public void processLine(String line) {
-            DataRow dataRow = parser.process(line);
-            addDataRow(dataRow);
+        File localTmpFile = File.createTempFile("dlight", ".d", hostInfo.getTempDirFile()); // NOI18N
+        if (trgEnv.isLocal()) {
+            finalPath = localTmpFile.getAbsolutePath();
+            localTmpFile.deleteOnExit();
+        } else {
+            finalPath = hostInfo.getTempDir() + "/" + localTmpFile.getName(); // NOI18N
         }
 
-        private void addDataRow(DataRow dataRow) {
-            if (isDeploymentTarget && terminated) {
-                return;
-            }
-            if (dataRow != null) {
-                if (storage != null && tableMetaData != null) {
-                    storage.addData(tableMetaData.getName(), Arrays.asList(dataRow));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(localTmpFile));
+        try {
+            InputStream is = DtraceDataCollector.class.getResourceAsStream(bootstrapScript);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+            String line;
+
+            // First, write bootstrap part with replacing macros... 
+
+            try {
+                while ((line = reader.readLine()) != null) {
+                    line = line.replaceAll("__FORK_FOLLOW_CONDITION__", forkFollowCondition); // NOI18N
+                    line = line.replaceAll("__DLIGHT_DSCRIPT__", finalPath); // NOI18N
+                    line = line.replaceAll("__EOF_MARKER__", eofMarker); // NOI18N
+                    writer.write(line);
+                    writer.write('\n');
                 }
-                synchronized (indicatorDataBuffer) {
-                    indicatorDataBuffer.add(dataRow);
-                    if (indicatorDataBuffer.size() >= indicatorFiringFactor) {
-                        if (isSlave) {
-                            if (parentCollector != null) {
-                                parentCollector.notifyIndicators(indicatorDataBuffer);
-                            }
-                        } else {
-                            notifyIndicators(indicatorDataBuffer);
+            } finally {
+                if (reader != null) {
+                    reader.close();
+                }
+            }
+
+            // Second, write all scripts with some filtering
+
+            for (Map.Entry<String, URL> entry : scriptsMap.entrySet()) {
+                String prefix = entry.getKey();
+                URL url = entry.getValue();
+
+                try {
+                    reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                    String replacement = "$1" + prefix; // NOI18N
+
+                    while ((line = reader.readLine()) != null) {
+                        // Skip the first line
+                        if (line.startsWith("#!")) { // NOI18N
+                            continue;
                         }
-                        indicatorDataBuffer.clear();
+
+                        /**
+                         * ts() is a special macro that MUST be in scripts to
+                         * repost a timestamp. It is 0-based value.
+                         * This macro is defined in bootstrap.d and should not 
+                         * be re-defined in scripts. However for debugging 
+                         * purposes most likely it will be defined in each 
+                         * script.
+                         */
+                        if (line.startsWith("#define ts()")) { // NOI18N
+                            continue;
+                        }
+
+                        // Replace print[af] to report script prefix and PID of 
+                        // the source ...
+
+                        line = line.replaceAll("(print[af]\\(\")", replacement); // NOI18N
+                        writer.write(line); // NOI18N
+                        writer.write('\n');
+                    }
+                } finally {
+                    if (reader != null) {
+                        reader.close();
                     }
                 }
             }
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
         }
 
-        @Override
-        public void reset() {
+        if (trgEnv.isLocal()) {
+            Util.setExecutionPermissions(Arrays.asList(finalPath));
+        } else {
+            try {
+                int rc = CommonTasksSupport.uploadFile(localTmpFile, trgEnv, finalPath, 0777, null).get();
+                if (rc != 0) {
+                    throw new IOException("Failed to upload dtrace script"); // NOI18N
+                }
+            } catch (InterruptedException ex) {
+                throw new IOException("Failed to upload dtrace script", ex); // NOI18N
+            } catch (ExecutionException ex) {
+                throw new IOException("Failed to upload dtrace script", ex); // NOI18N
+            }
+
+            // Don't need it anymore...
+            localTmpFile.delete();
         }
 
-        @Override
-        public void close() {
-            DataRow dataRow = parser.processClose();
-            addDataRow(dataRow);
-            suggestIndicatorsRepaint();
-        }
+        return finalPath;
     }
 
-    private class DemultiplexingLineProcessor implements LineProcessor {
-
-        @Override
-        public void processLine(String line) {
-            DtraceDataCollector target = lastSlaveCollector;
-            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                String prefix = entry.getKey();
-                if (line.startsWith(prefix)) {
-                    line = line.substring(prefix.length());
-                    target = entry.getValue();
-                    break;
-                }
-            }
-            if (target != null) {
-                target.getOutputProcessor().processLine(line);
-            }
-            lastSlaveCollector = target;
-        }
-
-        @Override
-        public void reset() {
-            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                entry.getValue().getOutputProcessor().reset();
-            }
-        }
-
-        @Override
-        public void close() {
-            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                entry.getValue().getOutputProcessor().close();
-            }
-            suggestIndicatorsRepaint();
-        }
+    /* package */ DTraceOutputParser getParser() {
+        return parser;
     }
 
     private class FakeIndicatorNotificationListener implements IndicatorNotificationsListener {
@@ -708,19 +744,6 @@ public final class DtraceDataCollector
                 return;
             }
             notifyIndicators(data);
-        }
-    }
-
-    private File mergeScripts() {
-        try {
-            Map<String, URL> scriptsMap = new HashMap<String, URL>();
-            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                scriptsMap.put(entry.getKey(), entry.getValue().getLocalScriptUrl());
-            }
-            return DTraceScriptUtils.mergeScripts(scriptsMap, needsBootstrap());
-        } catch (IOException ex) {
-            DLightLogger.getLogger(DtraceDataCollector.class).log(Level.SEVERE, null, ex);
-            return null;
         }
     }
 }

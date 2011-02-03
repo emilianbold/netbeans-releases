@@ -1,9 +1,7 @@
-package org.netbeans.modules.dlight.dtrace.collector.support;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,48 +37,28 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-import static org.junit.Assert.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Test;
-import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.dtrace.collector.DTraceEventData;
+package org.netbeans.modules.dlight.dtrace.collector;
 
 /**
- *
- * @author Alexey Vladykin
+ * DTraceOutputParser returns either a DTraceEventData as a result of output line 
+ * parsing.
+ * 
+ * @author ak119685
  */
-public class DtraceParserPerformanceTest {
+public interface DTraceOutputParser {
 
-    @Test
-    public void testSimpleParser() {
-        List<Column> columns = Arrays.asList(
-                new Column("timestamp", Time.class),
-                new Column("foo", Integer.class),
-                new Column("bar", Integer.class));
-        DataTableMetadata table = new DataTableMetadata("table", columns, null);
-        DataOnlyParser parser = new DataOnlyParser(table);
-
-        int iterations = 1200000;
-        List<DataRow> data = new ArrayList<DataRow>(iterations);
-
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < iterations; ++i) {
-            String line = (i + iterations) + " " + i + " -" + i;
-            DTraceEventData res = parser.parse(line);
-            assertNull(res.getEventCallStack());
-            DataRow row = res.getDataRow();
-            assertNotNull(row);
-            data.add(row);
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.err.println(endTime - startTime);
-    }
+    /**
+     * Each line of dtrace(1M) output will be feed to the parser.
+     * Parser creates and returns <code>DTraceEventData</code> object based on
+     * one or several parsed lines. 
+     * 
+     * @param line - a single line to parse
+     * @return <code>null</code> if data cannot be provided based on this line;
+     * <code>DTraceEventData</code> if data was recognized based on this and/or 
+     * previous lines.
+     * 
+     */
+    public DTraceEventData parse(String line);
 }

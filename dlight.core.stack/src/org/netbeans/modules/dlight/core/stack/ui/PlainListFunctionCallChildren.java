@@ -43,7 +43,6 @@
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
@@ -64,7 +63,6 @@ public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
         //create a copy and reverse copied
         this.functionCalls = new ArrayList<FunctionCall>();
         this.functionCalls.addAll(functionCalls);
-        Collections.reverse(this.functionCalls);
         this.sourceInfoProvider = sourceInfoProvider;
         this.useHtmlFormat = useHtmlFormat;
     }

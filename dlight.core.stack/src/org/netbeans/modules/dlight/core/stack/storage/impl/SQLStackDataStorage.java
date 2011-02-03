@@ -278,8 +278,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     public long putSample(List<CharSequence> stack, long timestamp, long duration) {
         long callerId = 0;
         Set<Long> funcs = new HashSet<Long>();
-        for (int i = 0; i < stack.size(); ++i) {
-            boolean isLeaf = i + 1 == stack.size();
+        boolean isLeaf;
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            isLeaf = i == 0;
             CharSequence funcName = stack.get(i);
             SourceFileInfo sourceFile = FunctionNameUtils.getSourceFileInfo(funcName.toString());
             long funcId = generateFuncId(funcName, sourceFile);
@@ -628,7 +629,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
-        PreparedStatement s = stmtCache.getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+        PreparedStatement s = stmtCache.getPreparedStatement("SELECT stack_id, mstate FROM CallStack WHERE thread_id = ? AND timestamp = ?"); // NOI18N
         s.setInt(1, threadId);
         s.setLong(2, timestamp);
         ResultSet rs = s.executeQuery();
@@ -668,10 +669,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         TimeFilter timeFilter = Util.firstInstanceOf(TimeFilter.class, query.getFilters());
         if (timeFilter != null) {
             if (0 <= timeFilter.getStartTime()) {
-                conditions.add(timeFilter.getStartTime() + " <= time_stamp"); // NOI18N
+                conditions.add(timeFilter.getStartTime() + " <= timestamp"); // NOI18N
             }
             if (0 <= timeFilter.getEndTime()) {
-                conditions.add("time_stamp <= " + timeFilter.getEndTime()); // NOI18N
+                conditions.add("timestamp <= " + timeFilter.getEndTime()); // NOI18N
             }
         }
 
@@ -679,16 +680,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         if (timeFilter != null) {
             switch (timeFilter.getMode()) {
                 case FIRST:
-                    select.append("MIN(time_stamp) "); // NOI18N
+                    select.append("MIN(timestamp) "); // NOI18N
                     break;
                 case LAST:
-                    select.append("MAX(time_stamp) "); // NOI18N
+                    select.append("MAX(timestamp) "); // NOI18N
                     break;
                 default:
-                    select.append("time_stamp "); // NOI18N
+                    select.append("timestamp "); // NOI18N
             }
         } else {
-            select.append("time_stamp "); // NOI18N
+            select.append("timestamp "); // NOI18N
         }
 
         select.append("FROM CallStack "); // NOI18N
@@ -917,7 +918,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             Exceptions.printStackTrace(ex);
         }
         demangle(result);
-        Collections.reverse(result);
         return result;
     }
 
