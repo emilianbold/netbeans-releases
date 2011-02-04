@@ -94,50 +94,65 @@ import org.netbeans.modules.cnd.apt.support.*;
         return out;
     }
 
+    @Override
     protected void onInclude(APT apt) {
         include(apt);
     }
 
+    @Override
     protected void onIncludeNext(APT apt) {
         include(apt);
     }
 
+    @Override
     protected boolean onIf(APT apt) {
         return onStartPreprocNode(apt);
     }
 
+    @Override
     protected boolean onIfdef(APT apt) {
         return onStartPreprocNode(apt);
     }
 
+    @Override
     protected boolean onIfndef(APT apt) {
         return onStartPreprocNode(apt);
     }
 
+    @Override
     protected void onDefine(APT apt) {
         onOtherPreprocNode(apt);
     }
 
+    @Override
     protected void onUndef(APT apt) {
         onOtherPreprocNode(apt);
     }
 
+    @Override
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
         onOtherPreprocNode(apt);
         return true;
     }
 
+    @Override
     protected boolean onElse(APT apt, boolean wasInPrevBranch) {
         onOtherPreprocNode(apt);
         return true;
     }
 
+    @Override
     protected void onEndif(APT apt, boolean wasInBranch) {
         createEndifFold(apt);
     }
 
     @Override
     protected void onErrorNode(APT apt) {
+        onOtherPreprocNode(apt);
+    }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
         onOtherPreprocNode(apt);
     }
 

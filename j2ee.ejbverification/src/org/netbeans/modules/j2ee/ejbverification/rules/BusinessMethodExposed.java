@@ -51,6 +51,7 @@ import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -194,6 +195,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
     
     private boolean isEligibleMethod(ExecutableElement method){
         return method.getModifiers().contains(Modifier.PUBLIC) 
-                && !method.getModifiers().contains(Modifier.STATIC);
+                && !method.getModifiers().contains(Modifier.STATIC)
+                && method.getReturnType().getKind() != TypeKind.ERROR;
     }
 }

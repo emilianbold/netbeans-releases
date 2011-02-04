@@ -352,7 +352,8 @@ public class CsmContextUtilities {
             int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
-                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION},
+                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION, 
+                    CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT},
                                    null, match, caseSensitive, true);
                 for (Iterator itFile = CsmSelect.getDeclarations(file, fileFilter); itFile.hasNext();) {
                     CsmDeclaration decl = (CsmDeclaration) itFile.next();
@@ -375,6 +376,19 @@ public class CsmContextUtilities {
                             }
                             if (CsmKindUtilities.isEnum(nsDecl)) {
                                 CsmEnum en = (CsmEnum)nsDecl;
+                                if (en.getName().length()==0){
+                                    addEnumerators(res, en, strPrefix, match, caseSensitive);
+                                }
+                            }
+                        }
+                    } else if (CsmKindUtilities.isClass(decl) && decl.getName().length()==0){
+                        CsmClass cls = (CsmClass) decl;
+                        for (CsmMember member : cls.getMembers()) {
+                            if (canBreak(offsetInScope, member, context)) {
+                                break;
+                            }                            
+                            if (CsmKindUtilities.isEnum(member)) {
+                                CsmEnum en = (CsmEnum)member;
                                 if (en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }

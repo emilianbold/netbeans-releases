@@ -244,6 +244,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {

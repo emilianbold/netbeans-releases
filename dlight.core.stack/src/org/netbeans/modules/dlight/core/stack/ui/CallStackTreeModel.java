@@ -44,7 +44,6 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -81,7 +80,6 @@ final class CallStackTreeModel extends DefaultTreeModel{
     void addStack(List<FunctionCall> stack){
         List<FunctionCall> functionCalls = new ArrayList<FunctionCall>();
         functionCalls.addAll(stack);
-        Collections.reverse(functionCalls);                
         add(rootNode, functionCalls);
     }
     

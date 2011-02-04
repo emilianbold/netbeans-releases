@@ -52,7 +52,6 @@ import org.netbeans.jellytools.actions.CustomizeActionTest;
 import org.netbeans.jellytools.actions.CutActionTest;
 import org.netbeans.jellytools.actions.DeleteActionTest;
 import org.netbeans.jellytools.actions.EditActionTest;
-import org.netbeans.jellytools.actions.ExploreFromHereActionTest;
 import org.netbeans.jellytools.actions.FindActionTest;
 import org.netbeans.jellytools.actions.HelpActionTest;
 import org.netbeans.jellytools.actions.MaximizeWindowActionTest;
@@ -87,7 +86,6 @@ public class JellyPlatformTests {
                 addTest(CutActionTest.class).
                 addTest(DeleteActionTest.class).
                 addTest(EditActionTest.class).
-                addTest(ExploreFromHereActionTest.class).
                 addTest(FindActionTest.class).
                 addTest(HelpActionTest.class).
                 addTest(MaximizeWindowActionTest.class).

@@ -563,7 +563,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (conf.isLibraryConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
-                path = conf.getProfile().getRunCommand();
+                path = conf.getProfile().getRunCommand().getValue();
                 if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
@@ -1196,6 +1196,7 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
                 if (CndUtils.isUnitTestMode()) {
+                    errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
                     new Exception(errormsg).printStackTrace();
                 } else {
                     if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {

@@ -473,6 +473,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     return null;
                 }
             }
+            if (CsmKindUtilities.isTemplate(element)) {
+                if (((CsmTemplate)element).isExplicitSpecialization()) {
+                    return null;
+                }
+            }
             node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model,lineNumberIndex);
             node.name = getClassifierName((CsmClassifier)element);
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);

@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.Arrays;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.StandardColumns;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,35 +55,26 @@ public final class CpuSamplingSupport {
 
     private CpuSamplingSupport() {
     }
-
+    
     public static final URL CPU_SAMPLING_SCRIPT_URL =
             CpuSamplingSupport.class.getResource("/org/netbeans/modules/dlight/core/stack/resources/calls.d"); // NOI18N
-
-    public static final Column TIMESTAMP_COLUMN =
-            new Column("time_stamp", Long.class, getMessage("CpuSampling.Column.time_stamp"), null); // NOI18N
-
+    
     public static final Column CPU_COLUMN =
             new Column("cpu_id", Integer.class, getMessage("CpuSampling.Column.cpu_id"), null); // NOI18N
-
+    
     public static final Column THREAD_COLUMN =
             new Column("thread_id", Integer.class, getMessage("CpuSampling.Column.thread_id"), null); // NOI18N
-
+    
     public static final Column STATE_COLUMN =
             new Column("state", Byte.class, getMessage("CpuSampling.Column.state"), null); // NOI18N
-
+    
     public static final Column MICROSTATE_COLUMN =
             new Column("mstate", Byte.class, getMessage("CpuSampling.Column.mstate"), null); // NOI18N
-
-    public static final Column DURATION_COLUMN =
-            new Column("duration", Long.class, getMessage("CpuSampling.Column.duration"), null); // NOI18N
-
-    public static final Column STACK_COLUMN =
-            new Column("leaf_id", Long.class, getMessage("CpuSampling.Column.leaf_id"), null); // NOI18N
-
+    
     public static final DataTableMetadata CPU_SAMPLE_TABLE =
             new DataTableMetadata("CallStack", // NOI18N
-            Arrays.asList(TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, STATE_COLUMN, MICROSTATE_COLUMN, DURATION_COLUMN, STACK_COLUMN),
-            Arrays.asList(TIMESTAMP_COLUMN));
+            Arrays.asList(StandardColumns.TIMESTAMP_COLUMN, CPU_COLUMN, THREAD_COLUMN, STATE_COLUMN, MICROSTATE_COLUMN, StandardColumns.DURATION_COLUMN, StandardColumns.STACK_COLUMN),
+            Arrays.asList(StandardColumns.TIMESTAMP_COLUMN));
 
     private static String getMessage(String key) {
         return NbBundle.getMessage(CpuSamplingSupport.class, key);

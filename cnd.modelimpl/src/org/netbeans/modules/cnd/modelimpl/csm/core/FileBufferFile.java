@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.filesystems.FileObject;
@@ -58,7 +57,7 @@ import org.openide.filesystems.FileObject;
  */
 public class FileBufferFile extends AbstractFileBuffer {
     
-    private volatile SoftReference<String> cachedString;
+    private volatile SoftReference<char[]> cachedArray;
     private volatile long lastModifiedWhenCachedString;
 
     public FileBufferFile(FileObject fileObject) {
@@ -67,104 +66,71 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     @Override
     public String getText() throws IOException {
-        return asString();
+        char[] buf = doGetChar();
+        return new String(buf, 0, buf.length);
     }
     
     @Override
     public String getText(int start, int end) {
         try {
-            String b = asString();
-            if( end > b.length() ) {
-                new IllegalArgumentException("").printStackTrace(System.err);
-                end = b.length();
+            char[] buf = doGetChar();
+            if( end > buf.length ) {
+                new IllegalArgumentException("").printStackTrace(System.err); // NOI18N
+                end = buf.length;
             }
-            return b.substring(start, end);
+            return new String(buf, start, end - start);
         } catch( IOException e ) {
             DiagnosticExceptoins.register(e);
-            return "";
+            return ""; // NOI18N
         }
     }
 
-    private synchronized String asString() throws IOException {
-        byte[] b;
-        long newLastModified = lastModified();
-        if( cachedString != null  ) {
-            Object o = cachedString.get();
-            if( o != null && (lastModifiedWhenCachedString == newLastModified)) {
-                return (String) o;
+    private synchronized char[] doGetChar() throws IOException {
+        SoftReference<char[]> aCachedArray = cachedArray;
+        if (aCachedArray != null) {
+            char[] res = aCachedArray.get();
+            if (res != null) {
+                if (lastModifiedWhenCachedString == lastModified()) {
+                    return res;
+                }
             }
         }
-        // either bytes == null or bytes.get() == null
-        AtomicReference<Integer> realLen = new AtomicReference<Integer>(0);
-        b = doGetBytes(realLen);
-        String str = new String(b, 0, realLen.get().intValue(), getEncoding());
-        if (lastModifiedWhenCachedString != newLastModified) {
-            clearLineCache();
-        }
-        lastModifiedWhenCachedString = newLastModified;
-        cachedString = new SoftReference<String>(str);
-        return str;
-    }
-
-    private byte[] doGetBytes(AtomicReference<Integer> outLen) throws IOException {
         FileObject fo = getFileObject();
         long length = fo.getSize();
         if (length > Integer.MAX_VALUE) {
             new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
         }
-        byte[] readBytes = new byte[(int)length];
+        if (length == 0) {
+            return new char[0];
+        }
+        char[] readChars = new char[(int)length+1];
         InputStream is = getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
         try {
-            int offset = 0;
-            int numRead = 0;
-            while (offset < readBytes.length && (numRead = is.read(readBytes, offset, readBytes.length-offset)) >= 0) {
-                offset += numRead;
+            String line;
+            int position = 0;
+            while((line = reader.readLine())!= null) {
+                for(int i = 0; i < line.length(); i++) {
+                    readChars[position++] = line.charAt(i);
+                }
+                readChars[position++] = '\n'; // NOI18N
+            }
+            // no need to copy if the same size
+            // TODO: can we also skip case readChars.length = position + 1 due to last '\n'?
+            if (readChars.length > position) {
+                char[] copyChars = new char[position];
+                System.arraycopy(readChars, 0, copyChars, 0, position);
+                readChars = copyChars;
             }
         } finally {
+            reader.close();
             is.close();
         }
-        outLen.set(Integer.valueOf(convertLSToLF(readBytes)));
-        return readBytes;
+        cachedArray = new SoftReference<char[]>(readChars);
+        lastModifiedWhenCachedString = lastModified();
+        return readChars;
     }
-    
-    private static int convertLSToLF(byte[] bytes) {
-        int len = bytes.length;
-        int tgtOffset = 0;
-        short lsLen = 0;
-        int moveStart = 0;
-        int moveLen;
-        for (int i = 0; i < len; i++) {
-            if (bytes[i] == '\r') {
-                if (i + 1 < len && bytes[i + 1] == '\n') {
-                    lsLen = 2;
-                } else  {
-                    lsLen = 1;
-                }
-            }
-            if (lsLen > 0) {
-                moveLen = i - moveStart;
-                if (moveLen > 0) {
-                    if (tgtOffset != moveStart) {
-                        System.arraycopy(bytes, moveStart, bytes, tgtOffset, moveLen);
-                    }
-                    tgtOffset += moveLen;
-                }
-                bytes[tgtOffset++] = '\n';
-                moveStart += moveLen + lsLen;
-                i += lsLen - 1;
-                lsLen = 0;
-            }
-        }
-        moveLen = len - moveStart;
-        if (moveLen > 0) {
-            if (tgtOffset != moveStart) {
-                System.arraycopy(bytes, moveStart, bytes, tgtOffset, moveLen);
-            }
-            tgtOffset += moveLen;
-        }
-        return tgtOffset;
-    }
-    
+
     private InputStream getInputStream() throws IOException {
         InputStream is;
         FileObject fo = getFileObject();
@@ -195,6 +161,6 @@ public class FileBufferFile extends AbstractFileBuffer {
 
     @Override
     public char[] getCharBuffer() throws IOException {
-        return asString().toCharArray();
+        return doGetChar();
     }
 }

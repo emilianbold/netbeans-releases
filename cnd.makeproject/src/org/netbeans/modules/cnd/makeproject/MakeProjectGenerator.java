@@ -272,7 +272,9 @@ public class MakeProjectGenerator {
 
         // Create new project descriptor with default configurations and save it to disk.
         final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
-        projectDescriptor.setProjectMakefileName(makefileName);
+        if (makefileName != null) {
+            projectDescriptor.setProjectMakefileName(makefileName);
+        }
         projectDescriptor.init(confs);
         projectDescriptor.setState(State.READY);
 

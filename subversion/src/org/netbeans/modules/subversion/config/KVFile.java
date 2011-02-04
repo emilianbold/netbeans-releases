@@ -210,6 +210,8 @@ public class KVFile {
                 throw new EOFException(file.getAbsolutePath());
             }
             // otherwise skip the exception, could be just an empty file
+        } catch (NumberFormatException nfe) {
+            throw new IOException(file.getAbsolutePath(), nfe);
         } finally {
             try {                 
                 if (is != null) {        

@@ -126,7 +126,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(PhpUnit.class);
     }
 
     @Override

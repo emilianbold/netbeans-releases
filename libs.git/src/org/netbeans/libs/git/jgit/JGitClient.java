@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
 import org.netbeans.libs.git.jgit.commands.ListBranchCommand;
@@ -54,7 +55,6 @@ import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,12 +79,15 @@ import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
 import org.netbeans.libs.git.jgit.commands.FetchCommand;
+import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
 import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
 import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
+import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
+import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -255,6 +258,19 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException {
+        return getRemotes(monitor).get(remoteName);
+    }
+
+    @Override
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        GetRemotesCommand cmd = new GetRemotesCommand(repository, monitor);
+        cmd.execute();
+        return cmd.getRemotes();
+    }
+    
+    @Override
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         RepositoryState state = repository.getRepositoryState();
@@ -361,6 +377,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         }
     }
 
+    @Override
+    public void removeRemote (String remote, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RemoveRemoteCommand cmd = new RemoveRemoteCommand(repository, remote, monitor);
+        cmd.execute();
+    }
+
     /**
      * Renames source file or folder to target
      * @param source file or folder to be renamed
@@ -388,7 +411,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
         cmd.execute();
     }
-    
+
+    @Override
+    public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        SetRemoteCommand cmd = new SetRemoteCommand(repository, remoteConfig, monitor, this);
+        cmd.execute();
+    }
+
     @Override
     public GitUser getUser() throws GitException {        
         return new JGitUserInfo(new PersonIdent(gitRepository.getRepository()));

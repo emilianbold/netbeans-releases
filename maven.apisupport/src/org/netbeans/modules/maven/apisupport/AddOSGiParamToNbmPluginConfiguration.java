@@ -86,7 +86,7 @@ class AddOSGiParamToNbmPluginConfiguration implements ModelOperation<POMModel> {
                 bld.addPlugin(plg);
                 plg.setGroupId(MavenNbModuleImpl.GROUPID_MOJO);
                 plg.setArtifactId(MavenNbModuleImpl.NBM_PLUGIN);
-                plg.setVersion("3.4");
+                plg.setVersion("3.5");
             }
         }
         Configuration cnf = plg.getConfiguration();
