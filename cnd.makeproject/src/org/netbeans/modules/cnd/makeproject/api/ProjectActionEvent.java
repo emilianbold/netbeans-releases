@@ -153,7 +153,7 @@ public final class ProjectActionEvent {
         String command = runCommand[0];
 
         // Use absolute path for shell commands. FIXUP: always a shell command here?
-        if (!FileSystemProvider.isAbsolute(command) && !command.contains("/")) {
+        if (!FileSystemProvider.isAbsolute(command) && !command.contains("/")) { // NOI18N
             ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();
             PlatformInfo pi = PlatformInfo.getDefault(execEnv);
             String qualifiedCommand = pi.findCommand(command);
