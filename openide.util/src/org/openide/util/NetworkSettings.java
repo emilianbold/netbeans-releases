@@ -59,6 +59,7 @@ import java.util.prefs.Preferences;
 public final class NetworkSettings {
 
     private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
+    private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication";
     private static final Logger LOGGER = Logger.getLogger(NetworkSettings.class.getName());
 
@@ -120,7 +121,7 @@ public final class NetworkSettings {
             return null;
         }
         if (getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false)) {
-            return PROXY_AUTHENTICATION_USERNAME;
+            return PROXY_AUTHENTICATION_PASSWORD;
         }
         return null;
     }
