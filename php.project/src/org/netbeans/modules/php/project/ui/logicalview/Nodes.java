@@ -44,8 +44,6 @@ package org.netbeans.modules.php.project.ui.logicalview;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
@@ -72,7 +70,7 @@ public final class Nodes {
 
         @Override
         protected boolean createKeys(List<Node> toPopulate) {
-            toPopulate.addAll(createNodeList().keys());
+            toPopulate.addAll(getNodes());
             return true;
         }
 
@@ -81,11 +79,6 @@ public final class Nodes {
             return key;
         }
 
-        @SuppressWarnings("unchecked")
-        NodeList<Node> createNodeList() {
-            List<Node> list = getNodes();
-            return NodeFactorySupport.fixedNodeList(list.toArray(new Node[list.size()]));
-        }
     }
 
     public static class FileNode extends DummyNode {
