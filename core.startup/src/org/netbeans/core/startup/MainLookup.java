@@ -97,7 +97,7 @@ public final class MainLookup extends ProxyLookup {
      * service instances from META-INF/services.
      * All new lookups will ask the new system class loader.
      */    
-    public static void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
+    static void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
         classLoader = nue;
         MainLookup l = (MainLookup)Lookup.getDefault();
         Lookup[] newDelegates = l.getLookups().clone();
