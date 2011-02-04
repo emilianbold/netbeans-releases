@@ -101,12 +101,12 @@ abstract class AbstractStandardModule extends Module {
      * different modules try to load the same extension (which would cause them
      * to both load their own private copy, which may not be intended).
      */
-    protected static final Map<File, Set<File>> extensionOwners = new HashMap<File, Set<File>>();
+    private static final Map<File,Set<File>> extensionOwners = new HashMap<File,Set<File>>();
     /** Simple registry of JAR files used as modules.
      * Used only for debugging purposes, so that we can be sure
      * that no one is using Class-Path to refer to other modules.
      */
-    protected static final Set<File> moduleJARs = new HashSet<File>();
+    private static final Set<File> moduleJARs = new HashSet<File>();
 
     /** Set of locale-variants JARs for this module (or null).
      * Added explicitly to classloader, and can be used by execution engine.
@@ -129,20 +129,11 @@ abstract class AbstractStandardModule extends Module {
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
 
-    /** Used as a flag to tell if this module was really successfully released.
-     * Currently does not work, so if it cannot be made to work, delete it.
-     * (Someone seems to be holding a strong reference to the classloader--who?!)
-     */
-    protected transient boolean released;
-
-    /** Count which release() call is really being checked. */
-    protected transient int releaseCount = 0;
-
     /** Used to reflectively register a class loader to the Javeleon
      * runtime system. Invocation of this method must always be guarded
      * by JaveleonModule.isJaveleonPresent.
      */
-    static Method javeleonFacadeMethod;
+    private static Method javeleonFacadeMethod;
 
     /** Setup the javeleonFacadeMethod in case of a Javeleon run. */
     static {
@@ -179,157 +170,23 @@ abstract class AbstractStandardModule extends Module {
         if (manifest == null) {
             try {
                 loadManifest();
-            } catch (IOException ex) {
+            } catch (IOException x) {
+                Util.err.log(Level.WARNING, "While loading manifest for " + this, x);
                 manifest = new Manifest();
             }
         }
         return manifest;
     }
 
-    protected void setManifest(Manifest manifest) {
+    protected final void setManifest(Manifest manifest) {
         this.manifest = manifest;
-    }
-
-    /** Open the JAR, load its manifest, and do related things. */
-    private void loadManifest() throws IOException {
-        Util.err.fine("loading manifest of " + getJarFile());
-        File jarBeingOpened = null; // for annotation purposes
-        try {
-            if (reloadable) {
-                // Never try to cache reloadable JARs.
-                jarBeingOpened = physicalJar; // might be null
-                ensurePhysicalJar();
-                jarBeingOpened = physicalJar; // might have changed
-                JarFile jarFile = new JarFile(physicalJar, false);
-                try {
-                    Manifest m = jarFile.getManifest();
-                    if (m == null) throw new IOException("No manifest found in " + physicalJar); // NOI18N
-                    manifest = m;
-                } finally {
-                    jarFile.close();
-                }
-            } else {
-                jarBeingOpened = getJarFile();
-                manifest = getManager().loadManifest(getJarFile());
-            }
-        } catch (IOException e) {
-            if (jarBeingOpened != null) {
-                Exceptions.attachMessage(e,
-                                         "While loading manifest from: " +
-                                         jarBeingOpened); // NOI18N
-            }
-            throw e;
-        }
     }
 
     public @Override void releaseManifest() {
         manifest = null;
     }
-
-    protected void scanForPatches(File patchdir) {
-        if (!patchdir.isDirectory()) {
-            return;
-        }
-        File[] jars = patchdir.listFiles(Util.jarFilter());
-        if (jars != null) {
-            for (File patchJar : jars) {
-                if (getPatches() == null) {
-                    setPatches(new HashSet<File>(5));
-                }
-                getPatches().add(patchJar);
-            }
-        } else {
-            Util.err.warning("Could not search for patches in " + patchdir);
-        }
-    }
-
-     /** Find any extensions loaded by the module, as well as any localized
-     * variants of the module or its extensions.
-     */
-    private void findExtensionsAndVariants(Manifest m) {
-        assert getJarFile() != null : "Cannot load extensions from classpath module " + getCodeNameBase();
-        localeVariants = null;
-        List<File> l = LocaleVariants.findLocaleVariantsOf(getJarFile(), getCodeNameBase());
-        if (!l.isEmpty()) {
-            localeVariants = new HashSet<File>(l);
-        }
-        plainExtensions = null;
-        localeExtensions = null;
-        String classPath = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
-        if (classPath != null) {
-            StringTokenizer tok = new StringTokenizer(classPath);
-            while (tok.hasMoreTokens()) {
-                String ext = tok.nextToken();
-                if (new File(ext).isAbsolute()) { // NOI18N
-                    Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[] {ext, getJarFile()});
-                }
-                File base = getJarFile().getParentFile();
-                while (ext.startsWith("../")) {
-                    // cannot access FileUtil.normalizeFile from here, and URI.normalize might be unsafe for UNC paths
-                    ext = ext.substring(3);
-                    base = base.getParentFile();
-                }
-                File extfile = new File(base, ext.replace('/', File.separatorChar));
-                //No need to sync on extensionOwners - we are in write mutex
-                Set<File> owners = extensionOwners.get(extfile);
-                if (owners == null) {
-                    owners = new HashSet<File>(2);
-                    owners.add(getJarFile());
-                    extensionOwners.put(extfile, owners);
-                } else if (! owners.contains(getJarFile())) {
-                    owners.add(getJarFile());
-                    events.log(Events.EXTENSION_MULTIPLY_LOADED, extfile, owners);
-                } // else already know about it (OK or warned)
-                // Also check to make sure it is not a module JAR! See constructor for the reverse case.
-                if (moduleJARs.contains(extfile)) {
-                    Util.err.warning("Class-Path value " + ext + " from " + getJarFile() + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
-                }
-                if (plainExtensions == null) plainExtensions = new HashSet<File>();
-                plainExtensions.add(extfile);
-                l = LocaleVariants.findLocaleVariantsOf(extfile, getCodeNameBase());
-                if (!l.isEmpty()) {
-                    if (localeExtensions == null) {
-                        localeExtensions = new HashSet<File>();
-                    }
-                    localeExtensions.addAll(l);
-                }
-            }
-        }
-        // #9273: load any modules/patches/this-code-name/*.jar files first:
-        File patchdir = new File(new File(getJarFile().getParentFile(), "patches"), // NOI18N
-                                 getCodeNameBase().replace('.', '-')); // NOI18N
-        scanForPatches(patchdir);
-        // Use of the following system property is not supported, but is used
-        // by e.g. XTest to influence installed modules without changing the build.
-        // Format is -Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir
-        String patchesClassPath = System.getProperty("netbeans.patches." + getCodeNameBase()); // NOI18N
-        if (patchesClassPath != null) {
-            StringTokenizer tokenizer = new StringTokenizer(patchesClassPath, File.pathSeparator);
-            while (tokenizer.hasMoreTokens()) {
-                String element = tokenizer.nextToken();
-                File fileElement = new File(element);
-                if (fileElement.exists()) {
-                    if (patches == null) {
-                        patches = new HashSet<File>(15);
-                    }
-                    patches.add(fileElement);
-                }
-            }
-        }
-        if (Util.err.isLoggable(Level.FINE)) {
-            Util.err.fine("localeVariants of " + getJarFile() + ": " + localeVariants);
-            Util.err.fine("plainExtensions of " + getJarFile() + ": " + plainExtensions);
-            Util.err.fine("localeExtensions of " + getJarFile() + ": " + localeExtensions);
-            Util.err.fine("patches of " + getJarFile() + ": " + patches);
-        }
-        if (patches != null) {
-            for (File patch : patches) {
-                events.log(Events.PATCH, patch);
-            }
-        }
-    }
-
-     /** Get a localized attribute.
+    
+    /** Get a localized attribute.
      * First, if OpenIDE-Module-Localizing-Bundle was given, the specified
      * bundle file (in all locale JARs as well as base JAR) is searched for
      * a key of the specified name.
@@ -344,7 +201,6 @@ abstract class AbstractStandardModule extends Module {
      * explicitly suppressed from this list; should only be used for
      * documented localizable attributes such as OpenIDE-Module-Name etc.
      */
-    @Override
     public Object getLocalizedAttribute(String attr) {
         String locb = getManifest().getMainAttributes().getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
         boolean usingLoader = false;
@@ -415,7 +271,180 @@ abstract class AbstractStandardModule extends Module {
             }
         }
     }
-
+    
+    public final boolean isFixed() {
+        return false;
+    }
+    
+    /** Get the JAR this module is packaged in.
+     * May be null for modules installed specially, e.g.
+     * automatically from the classpath.
+     * @see #isFixed
+     */
+    public final @Override File getJarFile() {
+        return jar;
+    }
+    
+    /** Create a temporary test JAR if necessary.
+     * This is primarily necessary to work around a Java bug,
+     * #4405789, which is marked as fixed so might be obsolete.
+     */
+    private void ensurePhysicalJar() throws IOException {
+        if (reloadable && physicalJar == null) {
+            physicalJar = Util.makeTempJar(jar);
+        }
+    }
+    private void destroyPhysicalJar() {
+        if (physicalJar != null) {
+            if (physicalJar.isFile()) {
+                if (! physicalJar.delete()) {
+                    Util.err.warning("temporary JAR " + physicalJar + " not currently deletable.");
+                } else {
+                    Util.err.fine("deleted: " + physicalJar);
+                }
+            }
+            physicalJar = null;
+        } else {
+            Util.err.fine("no physicalJar to delete for " + this);
+        }
+    }
+    
+    /** Open the JAR, load its manifest, and do related things. */
+    private void loadManifest() throws IOException {
+        Util.err.fine("loading manifest of " + jar);
+        File jarBeingOpened = null; // for annotation purposes
+        try {
+            if (reloadable) {
+                // Never try to cache reloadable JARs.
+                jarBeingOpened = physicalJar; // might be null
+                ensurePhysicalJar();
+                jarBeingOpened = physicalJar; // might have changed
+                JarFile jarFile = new JarFile(physicalJar, false);
+                try {
+                    Manifest m = jarFile.getManifest();
+                    if (m == null) throw new IOException("No manifest found in " + physicalJar); // NOI18N
+                    manifest = m;
+                } finally {
+                    jarFile.close();
+                }
+            } else {
+                jarBeingOpened = jar;
+                manifest = getManager().loadManifest(jar);
+            }
+        } catch (IOException e) {
+            if (jarBeingOpened != null) {
+                Exceptions.attachMessage(e,
+                                         "While loading manifest from: " +
+                                         jarBeingOpened); // NOI18N
+            }
+            throw e;
+        }
+    }
+    
+    /** Find any extensions loaded by the module, as well as any localized
+     * variants of the module or its extensions.
+     */
+    private void findExtensionsAndVariants(Manifest m) {
+        assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
+        localeVariants = null;
+        List<File> l = LocaleVariants.findLocaleVariantsOf(jar, getCodeNameBase());
+        if (!l.isEmpty()) {
+            localeVariants = new HashSet<File>(l);
+        }
+        plainExtensions = null;
+        localeExtensions = null;
+        String classPath = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+        if (classPath != null) {
+            StringTokenizer tok = new StringTokenizer(classPath);
+            while (tok.hasMoreTokens()) {
+                String ext = tok.nextToken();
+                if (new File(ext).isAbsolute()) { // NOI18N
+                    Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[] {ext, jar});
+                }
+                File base = jar.getParentFile();
+                while (ext.startsWith("../")) {
+                    // cannot access FileUtil.normalizeFile from here, and URI.normalize might be unsafe for UNC paths
+                    ext = ext.substring(3);
+                    base = base.getParentFile();
+                }
+                File extfile = new File(base, ext.replace('/', File.separatorChar));
+                //No need to sync on extensionOwners - we are in write mutex
+                Set<File> owners = extensionOwners.get(extfile);
+                if (owners == null) {
+                    owners = new HashSet<File>(2);
+                    owners.add(jar);
+                    extensionOwners.put(extfile, owners);
+                } else if (! owners.contains(jar)) {
+                    owners.add(jar);
+                    events.log(Events.EXTENSION_MULTIPLY_LOADED, extfile, owners);
+                } // else already know about it (OK or warned)
+                // Also check to make sure it is not a module JAR! See constructor for the reverse case.
+                if (moduleJARs.contains(extfile)) {
+                    Util.err.warning("Class-Path value " + ext + " from " + jar + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
+                }
+                if (plainExtensions == null) plainExtensions = new HashSet<File>();
+                plainExtensions.add(extfile);
+                l = LocaleVariants.findLocaleVariantsOf(extfile, getCodeNameBase());
+                if (!l.isEmpty()) {
+                    if (localeExtensions == null) {
+                        localeExtensions = new HashSet<File>();
+                    }
+                    localeExtensions.addAll(l);
+                }
+            }
+        }
+        // #9273: load any modules/patches/this-code-name/*.jar files first:
+        File patchdir = new File(new File(jar.getParentFile(), "patches"), // NOI18N
+                                 getCodeNameBase().replace('.', '-')); // NOI18N
+        scanForPatches(patchdir);
+        // Use of the following system property is not supported, but is used
+        // by e.g. XTest to influence installed modules without changing the build.
+        // Format is -Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir
+        String patchesClassPath = System.getProperty("netbeans.patches." + getCodeNameBase()); // NOI18N
+        if (patchesClassPath != null) {
+            StringTokenizer tokenizer = new StringTokenizer(patchesClassPath, File.pathSeparator);
+            while (tokenizer.hasMoreTokens()) {
+                String element = tokenizer.nextToken();
+                File fileElement = new File(element);
+                if (fileElement.exists()) {
+                    if (patches == null) {
+                        patches = new HashSet<File>(15);
+                    }
+                    patches.add(fileElement);
+                }
+            }
+        }
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("localeVariants of " + jar + ": " + localeVariants);
+            Util.err.fine("plainExtensions of " + jar + ": " + plainExtensions);
+            Util.err.fine("localeExtensions of " + jar + ": " + localeExtensions);
+            Util.err.fine("patches of " + jar + ": " + patches);
+        }
+        if (patches != null) {
+            for (File patch : patches) {
+                events.log(Events.PATCH, patch);
+            }
+        }
+    }
+    
+    /** Scans a directory for possible patch JARs. */
+    private void scanForPatches(File patchdir) {
+        if (!patchdir.isDirectory()) {
+            return;
+        }
+        File[] jars = patchdir.listFiles(Util.jarFilter());
+        if (jars != null) {
+            for (File patchJar : jars) {
+                if (patches == null) {
+                    patches = new HashSet<File>(5);
+                }
+                patches.add(patchJar);
+            }
+        } else {
+            Util.err.warning("Could not search for patches in " + patchdir);
+        }
+    }
+    
     /** Check if there is any need to load localized properties.
      * If so, try to load them. Throw an exception if they cannot
      * be loaded for some reason. Uses an open JAR file for the
@@ -493,32 +522,8 @@ abstract class AbstractStandardModule extends Module {
             */
         }
     }
-    /* Only FixedModule.class typed modules are fixed! */
-    @Override
-    public boolean isFixed() {
-        return false;
-    }
-
-    /** Get the JAR this module is packaged in.
-     * May be null for modules installed specially, e.g.
-     * automatically from the classpath.
-     * @see #isFixed
-     */
-    public @Override File getJarFile() {
-        return jar;
-    }
-
-    /** Create a temporary test JAR if necessary.
-     * This is primarily necessary to work around a Java bug,
-     * #4405789, which is marked as fixed so might be obsolete.
-     */
-    protected void ensurePhysicalJar() throws IOException {
-        if (reloadable && physicalJar == null) {
-            physicalJar = Util.makeTempJar(jar);
-        }
-    }
-
- /** Get all JARs loaded by this module.
+    
+    /** Get all JARs loaded by this module.
      * Includes the module itself, any locale variants of the module,
      * any extensions specified with Class-Path, any locale variants
      * of those extensions.
@@ -529,14 +534,13 @@ abstract class AbstractStandardModule extends Module {
      * JARs already present in the classpath are <em>not</em> listed.
      * @return a <code>List&lt;File&gt;</code> of JARs
      */
-    @Override
     public List<File> getAllJars() {
         List<File> l = new ArrayList<File>();
         if (patches != null) l.addAll(patches);
         if (physicalJar != null) {
             l.add(physicalJar);
-        } else if (getJarFile() != null) {
-            l.add(getJarFile());
+        } else if (jar != null) {
+            l.add(jar);
         }
         if (plainExtensions != null) l.addAll (plainExtensions);
         if (localeVariants != null) l.addAll (localeVariants);
@@ -544,11 +548,51 @@ abstract class AbstractStandardModule extends Module {
         return l;
     }
 
+    /** Set whether this module is supposed to be reloadable.
+     * Has no immediate effect, only impacts what happens the
+     * next time it is enabled (after having been disabled if
+     * necessary).
+     * Must be called from within a write mutex.
+     * @param r whether the module should be considered reloadable
+     */
+    public void setReloadable(boolean r) {
+        getManager().assertWritable();
+        if (reloadable != r) {
+            reloadable = r;
+            getManager().fireReloadable(this);
+        }
+    }
+    
+    /** Used as a flag to tell if this module was really successfully released.
+     * Currently does not work, so if it cannot be made to work, delete it.
+     * (Someone seems to be holding a strong reference to the classloader--who?!)
+     */
+    protected transient boolean released;
+    /** Count which release() call is really being checked. */
+    protected transient int releaseCount = 0;
+
+    /** Reload this module. Access from ModuleManager.
+     * If an exception is thrown, the module is considered
+     * to be in an invalid state.
+     */
+    public void reload() throws IOException {
+        // Probably unnecessary but just in case:
+        destroyPhysicalJar();
+        String codeNameBase1 = getCodeNameBase();
+        localizedProps = null;
+        loadManifest();
+        parseManifest();
+        findExtensionsAndVariants(manifest);
+        String codeNameBase2 = getCodeNameBase();
+        if (! codeNameBase1.equals(codeNameBase2)) {
+            throw new InvalidException("Code name base changed during reload: " + codeNameBase1 + " -> " + codeNameBase2); // NOI18N
+        }
+    }
+    
     // Access from ModuleManager:
     /** Turn on the classloader. Passed a list of parent modules to use.
      * The parents should already have had their classloaders initialized.
      */
-    @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
         if (Util.err.isLoggable(Level.FINE)) {
             Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
@@ -586,27 +630,27 @@ abstract class AbstractStandardModule extends Module {
             loaders.add(l);
         }
         List<File> classp = new ArrayList<File>(3);
-        if (getPatches() != null) classp.addAll(getPatches());
+        if (patches != null) classp.addAll(patches);
 
         if (reloadable) {
             ensurePhysicalJar();
             // Using OPEN_DELETE does not work well with test modules under 1.4.
             // Random code (URL handler?) still expects the JAR to be there and
             // it is not.
-            classp.add(getPhysicalJar());
+            classp.add(physicalJar);
         } else {
-            classp.add(getJarFile());
+            classp.add(jar);
         }
         // URLClassLoader would not otherwise find these, so:
-        if (getLocaleVariants() != null) classp.addAll(getLocaleVariants());
+        if (localeVariants != null) classp.addAll(localeVariants);
 
-        if (getLocaleExtensions() != null) classp.addAll(getLocaleExtensions());
+        if (localeExtensions != null) classp.addAll(localeExtensions);
 
-        if (getPlainExtensions() != null) classp.addAll(getPlainExtensions());
-
+        if (plainExtensions != null) classp.addAll(plainExtensions);
+        
         // #27853:
         getManager().refineClassLoader(this, loaders);
-
+        
         try {
             classloader = createNewClassLoader(classp, loaders);
         } catch (IllegalArgumentException iae) {
@@ -614,7 +658,7 @@ abstract class AbstractStandardModule extends Module {
             throw (IOException) new IOException(iae.toString()).initCause(iae);
         }
     }
-
+    
     /** Setup a new module with the given class path and the set of parent
      * class loaders.
      */
@@ -626,7 +670,6 @@ abstract class AbstractStandardModule extends Module {
     }
 
     /** Turn off the classloader and release all resources. */
-    @Override
     protected void classLoaderDown() {
         if (classloader instanceof ProxyClassLoader) {
             ((ProxyClassLoader)classloader).destroy();
@@ -635,126 +678,29 @@ abstract class AbstractStandardModule extends Module {
         Util.err.fine("classLoaderDown on " + this + ": releaseCount=" + releaseCount + " released=" + released);
         released = false;
     }
-
-    /** Set whether this module is supposed to be reloadable.
-     * Has no immediate effect, only impacts what happens the
-     * next time it is enabled (after having been disabled if
-     * necessary).
-     * Must be called from within a write mutex.
-     * @param r whether the module should be considered reloadable
-     */
-    @Override
-    public void setReloadable(boolean r) {
-        getManager().assertWritable();
-        if (reloadable != r) {
-            reloadable = r;
-            getManager().fireReloadable(this);
-        }
-    }
-
-    /** Reload this module. Access from ModuleManager.
-     * If an exception is thrown, the module is considered
-     * to be in an invalid state.
-     */
-    @Override
-    public void reload() throws IOException {
-        // Probably unnecessary but just in case:
-        destroyPhysicalJar();
-        String codeNameBase1 = getCodeNameBase();
-        setLocalizedProps(null);
-        loadManifest();
-        parseManifest();
-        findExtensionsAndVariants(getManifest());
-        String codeNameBase2 = getCodeNameBase();
-        if (! codeNameBase1.equals(codeNameBase2)) {
-            throw new InvalidException("Code name base changed during reload: " + codeNameBase1 + " -> " + codeNameBase2); // NOI18N
-        }
-    }
-
     /** Should be called after turning off the classloader of one or more modules & GC'ing. */
-    @Override
     protected void cleanup() {
         if (isEnabled()) throw new IllegalStateException("cleanup on enabled module: " + this); // NOI18N
         if (classloader != null) throw new IllegalStateException("cleanup on module with classloader: " + this); // NOI18N
         if (! released) {
-            Util.err.fine("Warning: not all resources associated with module " + getJarFile() + " were successfully released.");
+            Util.err.fine("Warning: not all resources associated with module " + jar + " were successfully released.");
             released = true;
         } else {
-            Util.err.fine("All resources associated with module " + getJarFile() + " were successfully released.");
+            Util.err.fine("All resources associated with module " + jar + " were successfully released.");
         }
         // XXX should this rather be done when the classloader is collected?
         destroyPhysicalJar();
     }
-
-        private void destroyPhysicalJar() {
-        if (getPhysicalJar() != null) {
-            if (getPhysicalJar().isFile()) {
-                if (! getPhysicalJar().delete()) {
-                    Util.err.warning("temporary JAR " + getPhysicalJar() + " not currently deletable.");
-                } else {
-                    Util.err.fine("deleted: " + getPhysicalJar());
-                }
-            }
-           setPhysicalJar(null);
-        } else {
-            Util.err.fine("no physicalJar to delete for " + this);
-        }
-    }
-
+    
     /** Notify the module that it is being deleted. */
-    @Override
     public void destroy() {
-        moduleJARs.remove(getJarFile());
+        moduleJARs.remove(jar);
     }
 
-    protected Set<File> getLocaleExtensions() {
-        return localeExtensions;
-    }
-
-    protected void setLocaleExtensions(Set<File> localeExtensions) {
-        this.localeExtensions = localeExtensions;
-    }
-
-    protected Set<File> getLocaleVariants() {
-        return localeVariants;
-    }
-
-    protected void setLocaleVariants(Set<File> localeVariants) {
-        this.localeVariants = localeVariants;
-    }
-
-    protected Properties getLocalizedProps() {
-        return localizedProps;
-    }
-
-    protected void setLocalizedProps(Properties localizedProps) {
-        this.localizedProps = localizedProps;
-    }
-
-    protected Set<File> getPatches() {
-        return patches;
-    }
-
-    protected void setPatches(Set<File> patches) {
-        this.patches = patches;
-    }
-
-    protected File getPhysicalJar() {
+    protected final File getPhysicalJar() {
         return physicalJar;
     }
-
-    protected void setPhysicalJar(File physicalJar) {
-        this.physicalJar = physicalJar;
-    }
-
-    protected Set<File> getPlainExtensions() {
-        return plainExtensions;
-    }
-
-    protected void setPlainExtensions(Set<File> plainExtensions) {
-        this.plainExtensions = plainExtensions;
-    }
-
+    
     /** PermissionCollection with an instance of AllPermission. */
     private static PermissionCollection modulePermissions;
     /** @return initialized @see #modulePermission */
@@ -787,17 +733,20 @@ abstract class AbstractStandardModule extends Module {
             return AbstractStandardModule.this;
         }
 
+        
+        /** Inherited.
+         * @param cs is ignored
+         * @return PermissionCollection with an AllPermission instance
+         */
         protected @Override PermissionCollection getPermissions(CodeSource cs) {
             return getAllPermission();
         }
-
+        
         /**
          * Look up a native library as described in modules documentation.
          * @see http://bits.netbeans.org/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html#jni
          */
-        protected
-        @Override
-        String findLibrary(String libname) {
+        protected @Override String findLibrary(String libname) {
             InstalledFileLocator ifl = InstalledFileLocator.getDefault();
             String arch = System.getProperty("os.arch"); // NOI18N
             String system = System.getProperty("os.name").toLowerCase(); // NOI18N
@@ -805,19 +754,13 @@ abstract class AbstractStandardModule extends Module {
             File lib;
 
             lib = ifl.locate("modules/lib/" + mapped, getCodeNameBase(), false); // NOI18N
-            if (lib != null) {
-                return lib.getAbsolutePath();
-            }
+            if (lib != null) return lib.getAbsolutePath();
 
             lib = ifl.locate("modules/lib/" + arch + "/" + mapped, getCodeNameBase(), false); // NOI18N
-            if (lib != null) {
-                return lib.getAbsolutePath();
-            }
+            if (lib != null) return lib.getAbsolutePath();
 
             lib = ifl.locate("modules/lib/" + arch + "/" + system + "/" + mapped, getCodeNameBase(), false); // NOI18N
-            if (lib != null) {
-                return lib.getAbsolutePath();
-            }
+            if (lib != null) return lib.getAbsolutePath();
 
             return null;
         }
@@ -834,7 +777,7 @@ abstract class AbstractStandardModule extends Module {
             }
             return getManager().shouldDelegateResource(AbstractStandardModule.this, other, pkg);
         }
-
+        
         public @Override String toString() {
             return "ModuleCL@" + Integer.toHexString(System.identityHashCode(this)) + "[" + getCodeNameBase() + "]"; // NOI18N
         }

@@ -65,7 +65,7 @@ final class StandardModule extends AbstractStandardModule {
 
     /** Use ModuleManager.create as a factory. */
     public StandardModule(ModuleManager mgr, Events ev, File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
-       super(mgr, ev, jar, history, reloadable, autoload, eager);
+        super(mgr, ev, jar, history, reloadable, autoload, eager);
     }
 
     /** Creates a new OneModuleClassLoader used for all modules being
