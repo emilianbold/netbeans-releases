@@ -45,6 +45,7 @@
 package org.netbeans;
 
 import java.io.Closeable;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -333,7 +334,7 @@ public abstract class CLIHandler extends Object {
     
     private static FileLock tryLock(RandomAccessFile raf) throws IOException {
         try {
-            return raf.getChannel().tryLock();
+            return raf.getChannel().tryLock(333L, 1L, false);
         } catch (OverlappingFileLockException ex) {
             OUTPUT.log(Level.INFO, "tryLock fails in the same VM", ex);
             // happens in CLIHandlerTest as it simulates running multiple
@@ -670,13 +671,13 @@ public abstract class CLIHandler extends Object {
                 byte[] key = null;
                 byte[] serverAddress = null;
                 int port = -1;
-                DataInputStream is = null;
+                DataInput is = null;
                 try {
                     enterState(21, block);
                     if (OUTPUT.isLoggable(Level.FINER)) {
                         OUTPUT.log(Level.FINER, "Reading lock file {0}", lockFile); // NOI18N
                     }
-                    is = new DataInputStream(new FileInputStream(lockFile));
+                    is = raf;
                     port = is.readInt();
                     enterState(22, block);
                     key = new byte[KEY_LENGTH];
@@ -710,9 +711,9 @@ public abstract class CLIHandler extends Object {
                     // ok, try to read it once more
                     enterState(26, block);
                 } finally {
-                    if (is != null) {
+                    if (is instanceof Closeable) {
                         try {
-                            is.close();
+                            ((Closeable)is).close();
                         } catch (IOException ex3) {
                             // ignore here
                         }
