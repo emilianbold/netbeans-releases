@@ -23,13 +23,12 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -43,51 +42,24 @@
  */
 package org.netbeans.modules.websvc.rest.codegen.model;
 
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * ClientStubModel
- *
- * @author Ayub Khan
- * @author ads
- */
-public class ClientStubModel {
+
+public abstract class ResourceModel {
+
+    private List<Resource> resourceList = new ArrayList<Resource>();
     
-    public static final int EXPAND_LEVEL_MAX = 2;
-
-    public ClientStubModel() {        
+    public List<Resource> getResources() {
+        return resourceList;
     }
+
+    public void addResource(Resource m) {
+        resourceList.add(m);
+    }
+
+    public abstract State validate();
     
-    public ResourceModel createModel(Project p) {
-        return new SourceModeler(p);
-    }
-    
-    public ResourceModel createModel(FileObject wadl) {
-        return new WadlModeler(wadl);
-    }
-
-    public static String normalizeName(final String name) {
-        return toValidJavaName(name);
-    }
-
-    private static String toValidJavaName(String name) {
-        if ( name == null || name.length() ==0 ){
-            return name;
-        }
-        StringBuilder sb = new StringBuilder(name.length());
-        if (Character.isJavaIdentifierStart(name.charAt(0))) {
-            sb.append(name.charAt(0));
-        } else {
-            sb.append("_");
-        }
-        for (int i=1; i<name.length(); i++) {
-            if (Character.isJavaIdentifierPart(name.charAt(i))) {
-                sb.append(name.charAt(i));
-            } else {
-                sb.append("_");
-            }
-        }
-        return sb.toString();
-    }
+    public abstract void build() throws IOException;
 }
