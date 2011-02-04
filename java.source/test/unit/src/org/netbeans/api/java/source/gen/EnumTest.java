@@ -61,7 +61,7 @@ import static org.netbeans.api.java.source.JavaSource.*;
  * 
  * @author Pavel Flaska
  */
-public class EnumTest extends GeneratorTest {
+public class EnumTest extends GeneratorTestBase {
     
     /** Creates a new instance of EnumTest */
     public EnumTest(String name) {

@@ -50,7 +50,7 @@ import java.util.List;
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
  * @todo documentation
  */
-public class CommentsManipulationTest extends GeneratorTest {
+public class CommentsManipulationTest extends GeneratorTestBase {
 //    private final String TEST_CONTENT
 
     public CommentsManipulationTest(String aName) {
@@ -146,7 +146,7 @@ String origin =
 
     }
     
-    private void testAddCommentOnClassTree() throws Exception {
+    public void testAddCommentOnClassTree() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String origin =
                 "public class EncapsulateField {\n" +

@@ -74,13 +74,13 @@ import org.openide.util.SharedClassObject;
  *
  * @author Pavel Flaska
  */
-public abstract class GeneratorTest extends NbTestCase {
+public abstract class GeneratorTestBase extends NbTestCase {
 
     private FileObject dataDir;
     
     File testFile = null;
     
-    public GeneratorTest(String aName) {
+    public GeneratorTestBase(String aName) {
         super(aName);
     }
     
