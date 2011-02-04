@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.platform;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -58,7 +59,11 @@ import org.openide.util.Utilities;
 public class PlatformSettings {
     private static final PlatformSettings INSTANCE = new PlatformSettings();
     private static final String PROP_PLATFORMS_FOLDER = "platformsFolder"; //NOI18N
-    private static final String APPLE_JAVAVM_FRAMEWORK_PATH = "/System/Library/Frameworks/JavaVM.framework/Versions/";//NOI18N
+    private static final String[] APPLE_JAVAVM_FRAMEWORK_PATHS = new String[] {
+        "/Library/Java/JavaVirtualMachines/",                       //NOI18N            // JDK bundles provided via the Developer package, developer previews, and 3rd party JVM
+        "/System/Library/Java/JavaVirtualMachines/",                //NOI18N            //The location of the Java SE runtime home
+        "/System/Library/Frameworks/JavaVM.framework/Versions/",    //NOI18N            //Old location
+    };
 
     public PlatformSettings () {
 
@@ -73,24 +78,35 @@ public class PlatformSettings {
     }
 
     public File getPlatformsFolder () {
-        String folderName = getPreferences().get(PROP_PLATFORMS_FOLDER, null);
+        File f = null;
+        final String folderName = getPreferences().get(PROP_PLATFORMS_FOLDER, null);
         if (folderName == null) {
-            File f;
             if (Utilities.isMac()) {
-                f = new File (APPLE_JAVAVM_FRAMEWORK_PATH);
+                final FilenameFilter filter = new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        return !name.startsWith(".");   //NOI18N
+                    }
+                };
+                for (String path : APPLE_JAVAVM_FRAMEWORK_PATHS) {
+                    final File tmp = new File (path);
+                    if (tmp.canRead() && tmp.list(filter).length > 0) {
+                        f = tmp;
+                        break;
+                    }
+                }
             }
-            else {
+            if (f == null) {
                 f = new File(System.getProperty("user.home"));  //NOI18N
                 File tmp;
                 while ((tmp = f.getParentFile())!=null) {
                     f = tmp;
                 }
             }
-            return f;
+        } else {
+            f = new File (folderName);
         }
-        else {
-            return new File (folderName);
-        }
+        return f;
     }
 
     public void setPlatformsFolder (File file) {
