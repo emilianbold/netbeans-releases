@@ -358,6 +358,8 @@ public class ImportProject implements PropertyChangeListener {
                 .setHostUID(hostUID);
         if (makefilePath != null) {
             prjParams.setMakefileName(makefilePath);
+        } else {
+            prjParams.setMakefileName(""); //NOI18N
         }
         makeProject = ProjectGenerator.createProject(prjParams);
         FileObject dir = CndFileUtils.toFileObject(projectFolder);

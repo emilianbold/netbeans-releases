@@ -367,7 +367,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     private int getArgIndex() {
-        return getRunCommand().getValue().indexOf(" "); // FIXUP <=== need a better check
+        return getRunCommand().getValue().indexOf(" "); // NOI18N // FIXUP <=== need a better check
     }
 
     private String getRunBinary() {
@@ -414,7 +414,7 @@ public final class RunProfile implements ConfigurationAuxObject {
 
     public void setArgsRaw(String argsFlat) {
         String runBinary = getRunBinary();
-        getRunCommand().setValue(runBinary + " " + argsFlat);
+        getRunCommand().setValue(runBinary + " " + argsFlat); // NOI18N
         needSave = true;
     }
 

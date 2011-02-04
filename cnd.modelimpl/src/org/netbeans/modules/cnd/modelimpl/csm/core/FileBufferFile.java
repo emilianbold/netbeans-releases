@@ -65,9 +65,9 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
     
     @Override
-    public String getText() throws IOException {
+    public CharSequence getText() throws IOException {
         char[] buf = doGetChar();
-        return new String(buf, 0, buf.length);
+        return new MyCharSequence(buf);
     }
     
     @Override
@@ -162,5 +162,36 @@ public class FileBufferFile extends AbstractFileBuffer {
     @Override
     public char[] getCharBuffer() throws IOException {
         return doGetChar();
+    }
+
+    private static final class MyCharSequence implements CharSequence {
+        private final char[] buf;
+        private final int start;
+        private final int end;
+
+        private MyCharSequence(char[] buf) {
+            this(buf, 0, buf.length);
+        }
+
+        private MyCharSequence(char[] buf, int start, int end) {
+            this.buf = buf;
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public int length() {
+            return end - start;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return buf[start+index];
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return new MyCharSequence(buf, start, end);
+        }
     }
 }

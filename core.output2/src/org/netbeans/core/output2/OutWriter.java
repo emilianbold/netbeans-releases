@@ -168,7 +168,7 @@ class OutWriter extends PrintWriter {
      * @param bb
      * @throws IOException
      */
-    public synchronized void write(ByteBuffer bb, int lineCharLengthWithTabs, boolean completeLine) {
+    private synchronized void write(ByteBuffer bb, int lineCharLengthWithTabs, boolean completeLine) {
         if (checkError()) {
             return;
         }
@@ -402,6 +402,7 @@ class OutWriter extends PrintWriter {
             boolean written = false;
             ByteBuffer byteBuff = getStorage().getWriteBuffer(WRITE_BUFF_SIZE * 2);
             CharBuffer charBuff = byteBuff.asCharBuffer();
+            int charOffset = AbstractLines.toCharIndex(getStorage().size());
             for (int i = off; i < off + len; i++) {
                 if (charBuff.position() + 1 >= WRITE_BUFF_SIZE) {
                     write((ByteBuffer) byteBuff.position(charBuff.position() * 2), lineCLVT, false);
@@ -416,7 +417,9 @@ class OutWriter extends PrintWriter {
                 char c = s.charAt(i);
                 if (c == '\t') {
                     charBuff.put(c);
-                    lineCLVT += 8 - ((this.lineCharLengthWithTabs + lineCLVT) % 8);
+                    int tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
+                    lines.addTabAt(charOffset + (i - off), tabLength);
+                    lineCLVT += tabLength;
                 } else if (c == '\r') {
                     // skip
                 } else if (c == '\n') {

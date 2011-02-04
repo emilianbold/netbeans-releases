@@ -595,7 +595,6 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
-            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);

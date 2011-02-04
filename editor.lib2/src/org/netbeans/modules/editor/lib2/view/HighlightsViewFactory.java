@@ -122,7 +122,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 } else {
                     insideRender = true;
                     try {
-                        Document doc = textComponent().getDocument();
+                        Document doc = HighlightsViewFactory.this.document();
                         doc.render(this);
                     } finally {
                         insideRender = false;
@@ -141,7 +141,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
-
         highlightsContainer = HighlightingManager.getInstance().getHighlights(component, null);
         highlightsContainer.addHighlightsChangeListener(WeakListeners.create(HighlightsChangeListener.class, this, highlightsContainer));
     }
@@ -152,9 +151,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             throw new IllegalStateException("Race condition: usageCount = " + usageCount); // NOI18N
         }
         usageCount++;
-        Document doc = textComponent().getDocument();
-        docText = DocumentUtilities.getText(doc);
-        lineElementRoot = doc.getDefaultRootElement();
+        docText = DocumentUtilities.getText(document());
+        lineElementRoot = document().getDefaultRootElement();
         assert (lineElementRoot != null) : "lineElementRoot is null."; // NOI18N
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();

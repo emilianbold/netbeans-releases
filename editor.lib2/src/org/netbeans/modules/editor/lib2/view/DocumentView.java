@@ -1372,7 +1372,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             String propName = evt.getPropertyName();
             if ("ancestor".equals(propName)) { // NOI18N
 
-            } else if ("font".equals(propName)) {
+            } else if ("document".equals(propName)) { // NOI18N
+                
+            } else if ("font".equals(propName)) { // NOI18N
                 if (!customFont && defaultFont != null) {
                     customFont = (textComponent != null) &&
                             !defaultFont.equals(textComponent.getFont());

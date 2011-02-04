@@ -132,9 +132,9 @@ public final class ViewUpdates implements DocumentListener {
         int startOffset, int endOffset,
         int modOffset, int offsetDelta, boolean createLocalViews)
     {
-        assert (DocumentUtilities.isReadLocked(documentView.getDocument())) :
-                "Document NOT READ-LOCKED: " + documentView.getDocument(); // NOI18N
-        assert documentView.isMutexAcquired() : "View hierarchy mutex not acquired";
+//        assert (DocumentUtilities.isReadLocked(documentView.getDocument())) :
+//                "Document NOT READ-LOCKED: " + documentView.getDocument(); // NOI18N
+//        assert documentView.isMutexAcquired() : "View hierarchy mutex not acquired";
         assert !buildingViews : "Already building views"; // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView,
                 paragraphViewIndex, viewFactories, startOffset, endOffset,
