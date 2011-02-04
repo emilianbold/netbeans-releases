@@ -63,7 +63,7 @@ import org.openide.filesystems.FileStateInvalidException;
  *
  * @author Dusan Balek
  */
-public class ClashingImportsTest extends GeneratorTest {
+public class ClashingImportsTest extends GeneratorTestBase {
 
     /** Creates a new instance of ClashingImportsTest */
     public ClashingImportsTest(String name) {
