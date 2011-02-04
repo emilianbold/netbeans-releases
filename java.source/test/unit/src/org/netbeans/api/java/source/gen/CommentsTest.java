@@ -71,7 +71,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Pavel Flaska
  */
-public class CommentsTest extends GeneratorTest {
+public class CommentsTest extends GeneratorTestBase {
 
     /** Creates a new instance of CommentsTest */
     public CommentsTest(String name) {
