@@ -1030,7 +1030,7 @@ public abstract class PositionEstimator {
                 }
                 maxLines = Math.max(maxLines, newlines);
                 for (Pair<Integer, Integer> comment : commentEndPos) {
-                    if (comment.first < maxLines) {
+                    if (comment.first < maxLines || comment.first == 0) {
                         wideEnd = comment.second;
                     } else {
                         break;
