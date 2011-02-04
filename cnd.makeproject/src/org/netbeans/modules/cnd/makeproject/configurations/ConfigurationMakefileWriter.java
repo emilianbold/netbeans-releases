@@ -448,9 +448,11 @@ public class ConfigurationMakefileWriter {
         bw.write("CND_BUILDDIR=" + MakeConfiguration.BUILD_FOLDER + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
-        bw.write("# Include project Makefile\n"); // NOI18N
-        bw.write("include " + projectDescriptor.getProjectMakefileName() + "\n"); // NOI18N
-        bw.write("\n"); // NOI18N
+        if (!projectDescriptor.getProjectMakefileName().isEmpty()) {
+            bw.write("# Include project Makefile\n"); // NOI18N
+            bw.write("include " + projectDescriptor.getProjectMakefileName() + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
         bw.write("# Object Directory\n"); // NOI18N
         bw.write(MakeConfiguration.OBJECTDIR_MACRO_NAME + "=" + getObjectDir(conf) + "\n"); // NOI18N
         bw.write("\n"); // NOI18N

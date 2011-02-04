@@ -90,6 +90,11 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * line index to physical (real) line index */
     private SparseIntList knownLogicalLineCounts = null;
 
+    /** Offset positions of tabs */
+    private IntList tabCharOffsets = new IntList(100);
+    /** Sums of length of all preceding tabs (length of extra spaces) */
+    private IntListSimple tabLengthSums = new IntListSimple(100);
+
     /** last storage size (after dispose), in bytes */
     private int lastStorageSize = -1;
 
@@ -488,7 +493,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         // compute how many logical lines is above our physical line
         int linesAbove = getLogicalLineCountAbove(physLineIdx, charsPerLine);
 
-        int len = length(physLineIdx);
+        int len = lengthWithTabs(physLineIdx);
         int wrapCount = lengthToLineCount(len, charsPerLine);
 
         info[0] = physLineIdx;
@@ -539,6 +544,94 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 calcLogicalLineCount(charsPerLine);
             }
             return knownLogicalLineCounts.get(lineCount-1);
+        }
+    }
+
+    /**
+     * Get number of physical characters for the given logical (expanded TABs) length.
+     * @param offset
+     * @param logicalLength
+     * @param tabShiftPtr
+     * @return number of physical characters
+     */
+    public int getNumPhysicalChars(int offset, int logicalLength, int[] tabShiftPtr) {
+        synchronized (readLock()) {
+            int tabIndex1 = tabCharOffsets.findNearest(offset);
+            int tabSum1;
+            if (tabIndex1 > 0) {
+                if (tabCharOffsets.get(tabIndex1) < offset) {
+                    tabSum1 = tabLengthSums.get(tabIndex1);
+                } else {
+                    tabSum1 = tabLengthSums.get(tabIndex1 - 1);
+                }
+            } else {
+                tabSum1 = 0;
+            }
+            int tabIndex2 = tabCharOffsets.findNearest(offset + logicalLength);
+            if (tabIndex2 < 0) {
+                return logicalLength;
+            }
+            int tabSum2 = (tabIndex2 >= 0) ? tabLengthSums.get(tabIndex2) : 0;
+            if (tabSum1 == tabSum2) {
+                return logicalLength;
+            }
+            int realLength = logicalLength + tabSum1 - tabSum2; // rough guess, might be too small
+            if (realLength < 0) realLength = 0;
+            int i = offset + realLength;
+            tabIndex2 = tabCharOffsets.findNearest(i);
+            if (tabIndex2 < 0) {
+                tabIndex2 = - 1;
+                tabSum2 = 0;
+            } else {
+                tabSum2 = tabLengthSums.get(tabIndex2);
+            }
+            int n = tabCharOffsets.size();
+            for (tabIndex2++; tabIndex2 < n; tabIndex2++) {
+                if (realLength + tabSum2 - tabSum1 < logicalLength) {
+                    int nextTabOffset = tabCharOffsets.get(tabIndex2);
+                    tabSum2 = tabLengthSums.get(tabIndex2);
+                    if (nextTabOffset - offset + tabSum2 - tabSum1 > logicalLength) {
+                        tabSum2 = (tabIndex2 > 0) ? tabLengthSums.get(tabIndex2 - 1) : 0;
+                        realLength = logicalLength + tabSum1 - tabSum2;
+                        if (realLength > (nextTabOffset - offset)) {
+                            realLength = nextTabOffset - offset;
+                        }
+                        break;
+                    } else {
+                        realLength = nextTabOffset - offset;
+                    }
+                } else {
+                    if (tabShiftPtr != null) {
+                        tabShiftPtr[0] = realLength + tabSum2 - tabSum1 - logicalLength;
+                    }
+                    break;
+                }
+            }
+            if (realLength < 0) realLength = 0;
+            return realLength;
+        }
+    }
+
+    public int getNumLogicalChars(int offset, int physicalLength) {
+        synchronized (readLock()) {
+            int tabIndex1 = tabCharOffsets.findNearest(offset);
+            int tabSum1;
+            if (tabIndex1 > 0) {
+                if (tabCharOffsets.get(tabIndex1) < offset) {
+                    tabSum1 = tabLengthSums.get(tabIndex1);
+                } else {
+                    tabSum1 = tabLengthSums.get(tabIndex1 - 1);
+                }
+            } else {
+                tabSum1 = 0;
+            }
+
+            int tabIndex2 = tabCharOffsets.findNearest(offset + physicalLength - 1);
+            if (tabIndex2 < 0) {
+                return physicalLength;
+            }
+            int tabSum2 = tabLengthSums.get(tabIndex2);
+            return physicalLength + tabSum2 - tabSum1;
         }
     }
 
@@ -882,7 +975,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return lineStartList.toString();
     }
 
-    int addSegment(CharSequence s, int offset, int lineIdx, int pos, OutputListener l, boolean important, boolean err, Color c) {
+    private int addSegment(CharSequence s, int offset, int lineIdx, int pos, OutputListener l, boolean important, boolean err, Color c) {
         int len = length(lineIdx);
         if (len > 0) {
             LineInfo info = (LineInfo) linesToInfos.get(lineIdx);
@@ -943,7 +1036,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     for (int k = i; k < s.length(); k++) {
                         if (s.charAt(k) == '\t') {
                             str.append(s, start, k);
-                            str.append("        "); // Max tab replacement    // NOI18N
+                            int tabLength;
+                            synchronized (readLock()) {
+                                int tabIndex = tabCharOffsets.findNearest(startPos + k);
+                                tabLength = getTabLength(tabIndex);
+                            }
+                            while (tabLength-- > 0) {
+                                str.append(' ');
+                            }
                             start = k + 1;
                         }
                     }
@@ -964,6 +1064,26 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         linesToInfos.put(idx, info);
         if (!info.getListeners().isEmpty()) {
             registerLineWithListener(idx, info, important);
+        }
+    }
+
+    private int getTabLength(int i) {
+        if (i == 0) {
+            return tabLengthSums.get(0);
+        } else {
+            return tabLengthSums.get(i) - tabLengthSums.get(i-1) + 1;
+        }
+    }
+
+    void addTabAt(int i, int tabLength) {
+        tabLength--;    // substract the tab character as such, to have the extra length
+        synchronized (readLock()) {
+            tabCharOffsets.add(i);
+            int n = tabLengthSums.size();
+            if (n > 0) {
+                tabLength += tabLengthSums.get(n - 1);
+            }
+            tabLengthSums.add(tabLength);
         }
     }
 }

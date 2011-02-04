@@ -59,6 +59,7 @@ import java.util.prefs.Preferences;
 public final class NetworkSettings {
 
     private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
+    private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication";
     private static final Logger LOGGER = Logger.getLogger(NetworkSettings.class.getName());
 
@@ -120,7 +121,7 @@ public final class NetworkSettings {
             return null;
         }
         if (getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false)) {
-            return PROXY_AUTHENTICATION_USERNAME;
+            return PROXY_AUTHENTICATION_PASSWORD;
         }
         return null;
     }
@@ -129,13 +130,11 @@ public final class NetworkSettings {
         return NbPreferences.root().node("org/netbeans/core"); // NOI18N
     }
     
-    private static InetSocketAddress analyzeProxy(URI u) {
-        if (u == null) {
-            throw new IllegalArgumentException("The URI parameter cannot be null.");
-        }
-        List<Proxy> proxies = ProxySelector.getDefault().select(u);
-        assert proxies != null : "ProxySelector cannot return null for " + u;
-        assert ! proxies.isEmpty() : "ProxySelector cannot return empty list for " + u;
+    private static InetSocketAddress analyzeProxy(URI uri) {
+        Parameters.notNull("uri", uri);
+        List<Proxy> proxies = ProxySelector.getDefault().select(uri);
+        assert proxies != null : "ProxySelector cannot return null for " + uri;
+        assert ! proxies.isEmpty() : "ProxySelector cannot return empty list for " + uri;
         Proxy p = proxies.get(0);
         if (Proxy.Type.DIRECT == p.type()) {
             // return null for DIRECT proxy

@@ -1,7 +1,0 @@
-<a:widget name="dojo.rest.__CONTAINER_PATH_NAME__table" 
-    service="__BASE_URL__/__CONTAINER_PATH_NAME__/" />
-<!-- Use below instead if using proxy for javascript cross-domain -->
-<!--
-<a:widget name="dojo.rest.__CONTAINER_PATH_NAME__table" 
-    service="__BASE_URL__/__CONTAINER_PATH_NAME__/" args="proxy=__BASE_URL__/../restproxy"/>
--->

@@ -186,7 +186,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     }
 
     @Override
-    public String getText() throws IOException {
+    public CharSequence getText() throws IOException {
         return getSnapshot().getText();
     }
 

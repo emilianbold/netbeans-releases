@@ -61,9 +61,12 @@ import org.openide.util.Exceptions;
  * All position/line calculations this view does are based on the integer array
  * of line offsets kept by the writer's Lines object.
  *
- * @author Tim Boudreau
+ * @author Tim Boudreau, Martin Entlicher
  */
 public class WrappedTextView extends View implements TabExpander {
+
+    static final int TAB_SIZE = 8;  // The default tab size
+
     /**
      * The component we will paint
      */
@@ -182,9 +185,10 @@ public class WrappedTextView extends View implements TabExpander {
     }
 
     private int getTabSize() {
-        Integer i = (Integer) getDocument().getProperty(PlainDocument.tabSizeAttribute);
-        int size = (i != null) ? i.intValue() : 8;
-        return size;
+        //Integer i = (Integer) getDocument().getProperty(PlainDocument.tabSizeAttribute);
+        //int size = (i != null) ? i.intValue() : TAB_SIZE;
+        //return size;
+        return TAB_SIZE;
     }
 
     @Override
@@ -302,10 +306,33 @@ public class WrappedTextView extends View implements TabExpander {
                     
                     // get current (first which we will draw) logical line
                     int currLogicalLine = (i == firstline && logicalLines > 0 && ln[1] > 0 ) ? ln[1] : 0;
+
+                    int charpos = 0;
+                    //int tabOverLine = 0;    // 0 or 1
+                    int charsWithTabs = 0;
+                    int arrowDrawn = currLogicalLine - 1;
+                    int x = 0;
+                    int remainCharsOnLogicalLine = charsPerLine;
                     
-                    // shift lineStart to position of first logical line that will be drawn
-                    int logLineOffset = currLogicalLine * charsPerLine;
-                    lineStart += logLineOffset;
+                    int logLineOffset;
+                    if (currLogicalLine > 0) {
+                        // shift lineStart to position of first logical line that will be drawn
+                        // we have lineStart - offset of the beginning of the physical line
+                        // we have to add (currLogicalLine * charsPerLine) characters with expanded TABs
+                        // this corresponds to a different real number of characters
+                        logLineOffset = currLogicalLine * charsPerLine;
+                        int[] tabShiftPtr = new int[] { 0 };
+                        logLineOffset = lines.getNumPhysicalChars(lineStart, logLineOffset, tabShiftPtr);
+                        lineStart += logLineOffset;
+                        if (tabShiftPtr[0] > 0) {
+                            //tabOverLine = 1;
+                            remainCharsOnLogicalLine -= tabShiftPtr[0];
+                            x = tabShiftPtr[0] * charWidth;
+                            charsWithTabs += tabShiftPtr[0];
+                        }
+                    } else {
+                        logLineOffset = 0;
+                    }
                     
                     // limit number of chars needed by estimation of maximum number of chars we need to repaint
                     length = Math.min(maxVisibleChars, length - logLineOffset);
@@ -314,23 +341,18 @@ public class WrappedTextView extends View implements TabExpander {
                     // get just small part of document we need (no need to get e.g. whole 10 MB line)
                     doc.getText(lineStart, sourceLength, seg);
 
-                    tabOffsetX = charWidth * logLineOffset;
-                    int charpos = 0;
-                    int tabOverLine = 0;    // 0 or 1
-                    int charsWithTabs = 0;
-                    int arrowDrawn = currLogicalLine - 1;
-                    int x = 0;
-                    int remainCharsOnLogicalLine = charsPerLine;
+                    tabOffsetX = charWidth * currLogicalLine * charsPerLine; //logLineOffset;
                     for (LineInfo.Segment ls : info.getLineSegments()) {
                         if (ls.getEnd() < logLineOffset) {
                             continue;
                         }
                         g.setColor(ls.getColor());
+                        int shift = 0;
                         while (charpos < ls.getEnd() - logLineOffset && currLogicalLine < logicalLines) {
                             int lenToDraw = Math.min(remainCharsOnLogicalLine, ls.getEnd() - logLineOffset - charpos);
                             int charsToDraw = lenToDraw;
                             if (lenToDraw > 0) {
-                                charsToDraw = getCharsForLengthWithTabs(seg.array, charpos - tabOverLine, currLogicalLine * charsPerLine, lenToDraw + tabOverLine, charsPerLine/*remainCharsOnLogicalLine*/) - tabOverLine;
+                                charsToDraw = getCharsForLengthWithTabs(seg.array, charpos, currLogicalLine * charsPerLine + shift, lenToDraw, remainCharsOnLogicalLine);// - tabOverLine;
                                 if (currLogicalLine != logicalLines - 1 && arrowDrawn != currLogicalLine) {
                                     arrowDrawn = currLogicalLine;
                                     drawArrow(g, y, currLogicalLine == logicalLines - 2);
@@ -340,14 +362,15 @@ public class WrappedTextView extends View implements TabExpander {
                                     underline(g, seg, charpos, charsToDraw, x, y);
                                 }
                             }
-                            lenToDraw = getCharLengthWithTabs(seg.array, charpos - tabOverLine, currLogicalLine * charsPerLine, charsToDraw + tabOverLine);// - tabOverLine;
+                            lenToDraw = getCharLengthWithTabs(seg.array, charpos, currLogicalLine * charsPerLine + shift, charsToDraw);
                             charpos += charsToDraw;
-                            charsWithTabs += (lenToDraw > charsPerLine) ? charsPerLine : lenToDraw;
-                            remainCharsOnLogicalLine = charsPerLine - lenToDraw;
+                            charsWithTabs += lenToDraw;
+                            remainCharsOnLogicalLine -= lenToDraw;
                             x += lenToDraw * charWidth;
-                            tabOverLine = (remainCharsOnLogicalLine < 0) ? 1 : 0;
+                            shift += lenToDraw;
+                            //tabOverLine = (remainCharsOnLogicalLine < 0) ? 1 : 0;
                             while(remainCharsOnLogicalLine <= 0) {
-                                int shift = -remainCharsOnLogicalLine;
+                                shift = -remainCharsOnLogicalLine;
                                 remainCharsOnLogicalLine += charsPerLine;
                                 currLogicalLine++;
                                 x = shift * charWidth;
@@ -355,6 +378,16 @@ public class WrappedTextView extends View implements TabExpander {
                                 y += charHeight;
                                 if (y > clip.y + clip.height) {
                                     return;
+                                }
+                                if (shift > 0) {
+                                    if (selStart != selEnd) {
+                                        int realPos = lineStart + charpos;
+                                        int a = Math.max(selStart, realPos);
+                                        int b = Math.min(selEnd, realPos + charsToDraw);
+                                        if (a < b) {
+                                            drawSelection(g, 0, x, y);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -388,8 +421,15 @@ public class WrappedTextView extends View implements TabExpander {
             int a = Math.max(selStart, realPos);
             int b = Math.min(selEnd, realPos + lenToDraw);
             if (a < b) {
+                realPos = odoc().getLines().getNumLogicalChars(lineStart, realPos - lineStart) + lineStart;
+                a = odoc().getLines().getNumLogicalChars(lineStart, a - lineStart) + lineStart;
+                b = odoc().getLines().getNumLogicalChars(lineStart, b - lineStart) + lineStart;
                 int start = x + margin() + (a - realPos) * charWidth;
                 int len = (b - a) * charWidth;
+                int w = charsPerLine * charWidth;
+                if (start - margin() + len > w) {
+                    len = w - start + margin();
+                }
                 Color c = g.getColor();
                 g.setColor (comp.getSelectionColor());
                 g.fillRect (start, y + fontDescent - charHeight, len, charHeight);
@@ -404,6 +444,13 @@ public class WrappedTextView extends View implements TabExpander {
         Utilities.drawTabbedText(seg, margin() + x, y, g, this, charpos);
         seg.count = count;
         seg.offset = offset;
+    }
+
+    private void drawSelection(Graphics g, int x1, int x2, int y) {
+        Color c = g.getColor();
+        g.setColor (comp.getSelectionColor());
+        g.fillRect (x1 + margin(), y + fontDescent - charHeight, x2 - x1, charHeight);
+        g.setColor (c);
     }
 
     private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int x, int y) {
@@ -478,6 +525,8 @@ public class WrappedTextView extends View implements TabExpander {
 
             int column = pos - start;
 
+            column = od.getLines().getNumLogicalChars(start, column);
+
             int row = od.getLines().getLogicalLineCountAbove(line, charsPerLine);
             //#104307
             if (column > charsPerLine && charsPerLine != 0) {
@@ -512,16 +561,19 @@ public class WrappedTextView extends View implements TabExpander {
             }
 
             int lineStart = od.getLineStart(logicalLine);
-            int lineEnd = od.getLineEnd(logicalLine);
+            int lineLength = od.getLines().lengthWithTabs(logicalLine);
+            int lineEnd = lineStart + lineLength;//od.getLineEnd(logicalLine);
 
             int column = ix / charWidth;
-            if (column > lineEnd) {
-                column = lineEnd;
+            if (column > lineLength) {
+                column = lineLength;
             }
 
             int result = wraps > 0 ?
                 Math.min(lineEnd, lineStart + (ln[1] * charsPerLine) + column)
                 : Math.min(lineStart + column, lineEnd);
+            Lines lines = od.getLines();
+            result = lines.getNumPhysicalChars(lineStart, result - lineStart, null) + lineStart;
             result = Math.min (od.getLength(), result);
             return result;
 /*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
@@ -539,7 +591,7 @@ public class WrappedTextView extends View implements TabExpander {
         int tabExpand = 0;
         for (int i = charpos; i < n; i++) {
             if ('\t' == array[i]) {
-                int numSpaces = 8 - (((i - charpos + tabLineOffset) + tabExpand) % 8);
+                int numSpaces = TAB_SIZE - (((i - charpos + tabLineOffset) + tabExpand) % TAB_SIZE);
                 tabExpand += numSpaces - 1;
                 lenToDraw += numSpaces - 1;
             }
@@ -554,7 +606,7 @@ public class WrappedTextView extends View implements TabExpander {
         int i;
         for (i = charpos; i < n && lengthWithTab < length; i++) {
             if ('\t' == array[i]) {
-                int numSpaces = 8 - (((i - charpos + tabLineOffset) + tabExpand) % 8);
+                int numSpaces = TAB_SIZE - (((i - charpos + tabLineOffset) + tabExpand) % TAB_SIZE);
                 tabExpand += numSpaces - 1;
                 lengthWithTab += numSpaces;
             } else {
