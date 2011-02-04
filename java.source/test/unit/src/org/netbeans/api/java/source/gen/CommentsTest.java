@@ -1658,6 +1658,48 @@ public class CommentsTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void test186923b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void op() {\n" +
+            "        String s1;/*\n" +
+            "*/      String s2;\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void op() {\n" +
+            "        String s1;/*\n" +
+            "*/      s1 = 0;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker tm = wc.getTreeMaker();
+                ClassTree clazz = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+                StatementTree orig = mt.getBody().getStatements().get(1);
+                ExpressionStatementTree nue = tm.ExpressionStatement(tm.Assignment(tm.Identifier("s1"), tm.Literal(0)));
+                GeneratorUtilities.get(wc).copyComments(orig, nue, true);
+                GeneratorUtilities.get(wc).copyComments(orig, nue, false);
+                wc.rewrite(orig, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     public void testCommentPrinted195048() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
