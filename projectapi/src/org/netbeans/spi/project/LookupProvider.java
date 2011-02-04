@@ -48,6 +48,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -84,6 +85,7 @@ public interface LookupProvider {
     public @interface Registration {
         /**
          * Token(s) denoting one or more project types, e.g. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
+         * {@link LookupProviderSupport#createCompositeLookup} may be used with the path {@code Projects/TYPE/Lookup}.
          */
         String[] projectType() default {};
         /**
@@ -101,6 +103,7 @@ public interface LookupProvider {
         @interface ProjectType {
             /**
              * Token denoting project type.
+             * @see org.netbeans.spi.project.LookupProvider.Registration#projectType
              */
             String id();
             /**
