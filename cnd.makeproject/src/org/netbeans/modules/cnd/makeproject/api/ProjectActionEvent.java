@@ -50,9 +50,12 @@ import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -147,7 +150,19 @@ public final class ProjectActionEvent {
         if (runCommand.length == 0) {
             return "";
         }
-        return runCommand[0];
+        String command = runCommand[0];
+
+        // Use absolute path for shell commands. FIXUP: always a shell command here?
+        if (!FileSystemProvider.isAbsolute(command) && !command.contains("/")) {
+            ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();
+            PlatformInfo pi = PlatformInfo.getDefault(execEnv);
+            String qualifiedCommand = pi.findCommand(command);
+            if (qualifiedCommand != null) {
+                command = qualifiedCommand;
+            }
+        }
+
+        return command;
     }
 
     public String getExecutable() {
@@ -198,7 +213,7 @@ public final class ProjectActionEvent {
         }
         else if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             result.addAll(Arrays.asList(getProfile().getArgsArray()));
-            //???????? <===== Egor, need to do something here for debugging
+            //???????? <===== Egor, need to do something here for debugging ????
         }
         else {
             result.addAll(Arrays.asList(getProfile().getArgsArray()));
