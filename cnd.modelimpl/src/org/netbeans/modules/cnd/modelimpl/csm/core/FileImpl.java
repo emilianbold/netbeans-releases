@@ -1251,7 +1251,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     @Override
-    public String getText() {
+    public CharSequence getText() {
         try {
             return fileBuffer.getText();
         } catch (IOException e) {
@@ -1835,7 +1835,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public int[] getLineColumn(int offset) {
         if (offset == Integer.MAX_VALUE) {
-            offset = getText().length();
+            try {
+                offset = fileBuffer.getCharBuffer().length;
+            } catch (IOException e) {
+                DiagnosticExceptoins.register(e);
+                offset = 0;
+            }
         }
         try {
             return fileBuffer.getLineColumnByOffset(offset);

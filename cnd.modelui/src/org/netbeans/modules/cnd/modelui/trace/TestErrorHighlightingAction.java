@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -223,21 +224,20 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
     }
 
     private static int getLineCount(CsmFile file) {
-        CharSequence text = file.getText();
-        String lfString = System.getProperty("line.separator");
-        char lfChar = lfString.length() > 1 ? lfString.charAt(1) : lfString.charAt(0);
-        int lines = 1;
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == lfChar) {
-                lines++;
-            }
+        try {
+            char[] charBuffer = ((FileImpl) file).getBuffer().getCharBuffer();
+            return ((FileImpl) file).getBuffer().getLineColumnByOffset(charBuffer.length)[0];
+        } catch (IOException ex) {
+            return 1;
         }
-        return lines;
     }
 
     private static class OutputAdapter implements OutputListener {
+        @Override
         public void outputLineAction(OutputEvent ev) {}
+        @Override
         public void outputLineCleared(OutputEvent ev) {}
+        @Override
         public void outputLineSelected(OutputEvent ev) {}
     }
 
@@ -251,26 +251,32 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             this.errorInfo = errorInfo;
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return fileUID.getObject();
         }
 
+        @Override
         public int getEndOffset() {
             return errorInfo.getEndOffset();
         }
 
+        @Override
         public Position getEndPosition() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         public int getStartOffset() {
             return errorInfo.getEndOffset();
         }
 
+        @Override
         public Position getStartPosition() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
+        @Override
         public CharSequence getText() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
@@ -287,14 +293,17 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             this.cancelled = cancelled;
         }
 
+        @Override
         public CsmFile getFile() {
             return file;
         }
 
+        @Override
         public boolean isCancelled() {
             return cancelled.get();
         }
 
+        @Override
         public Document getDocument() {
             return null;
         }
@@ -313,29 +322,19 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
     private static class LineConverter {
 
-        private CsmFile file;
-        private CharSequence text;
+        private final  CsmFile file;
 
         public LineConverter(CsmFile file) {
             this.file = file;
         }
 
         public LineColumn getLineColumn(int offset) {
-            if (text == null) {
-                text = file.getText();
+            try {
+                int[] lineColumnByOffset = ((FileImpl) file).getBuffer().getLineColumnByOffset(offset);
+                return new LineColumn(lineColumnByOffset[0], lineColumnByOffset[1]);
+            } catch (IOException ex) {
+                return new LineColumn(1,1);
             }
-            int line = 1;
-            int col = 1;
-            char nl = System.getProperty("line.separator").charAt(0); //NOI18N
-            for (int i = 0; i < offset; i++) {
-                if( text.charAt(i) == nl)  { //NOI18N
-                    line++;
-                    col = 1;
-                } else {
-                    col++;
-                }
-            }
-            return new LineColumn(line, col);
         }
     }
 
@@ -411,6 +410,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             List<Map.Entry<CharSequence, Element>> entries = new ArrayList<Map.Entry<CharSequence, Element>>(data.entrySet());
 
             Collections.sort(entries, new Comparator<Map.Entry<CharSequence, Element>>() {
+                @Override
                 public int compare(Map.Entry<CharSequence, Element> o1, Map.Entry<CharSequence, Element> o2) {
                     return o2.getValue().getCount() - o1.getValue().getCount();
                 }

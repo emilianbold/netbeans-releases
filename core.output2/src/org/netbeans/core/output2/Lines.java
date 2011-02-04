@@ -176,6 +176,17 @@ public interface Lines {
     int getLogicalLineCountIfWrappedAt (int charCount);
 
     /**
+     * Get number of physical characters for the given logical (expanded TABs) length.
+     * @param offset
+     * @param logicalLength
+     * @param tabShiftPtr
+     * @return
+     */
+    public int getNumPhysicalChars(int offset, int logicalLength, int[] tabShiftPtr);
+
+    public int getNumLogicalChars(int offset, int physicalLength);
+    
+    /**
      * Determine if a character position indicates the first character of a line.
      *
      * @param chpos A character index in the stored text

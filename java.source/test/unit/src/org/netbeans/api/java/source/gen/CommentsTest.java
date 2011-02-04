@@ -44,9 +44,9 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -59,14 +59,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Comment.Style;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
-import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.PositionEstimator;
-import org.openide.filesystems.FileObject;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 /**
  *
  * @author Pavel Flaska
@@ -1580,6 +1580,173 @@ public class CommentsTest extends GeneratorTest {
 
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveDocCommentAndAddAnnotation186923() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    // start comment\n" +
+            "    private void op() {\n" +
+            "    }// end comment\n" +
+            "    // start comment\n" +
+            "    private String name;\n" +
+            "    // end comment\n" +
+            "\n" +
+            "    /**\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    // start comment\n" +
+            "    @Deprecated\n" +
+            "    private void op() {\n" +
+            "    }// end comment\n" +
+            "    // start comment\n" +
+            "    private String name;\n" +
+            "    // end comment\n" +
+            "\n" +
+            "    @Deprecated\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker tm = wc.getTreeMaker();
+                final TreeUtilities tu = wc.getTreeUtilities();
+                wc.getCompilationUnit().accept(new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree mt, Void p) {
+                        Tree nt = tm.setLabel(mt, mt.getName());
+                        GeneratorUtilities.get(wc).copyComments(mt, nt, true);
+                        final List<Comment> comments = tu.getComments(nt, true);
+                        int size = comments.size();
+                        if (size > 0) {
+                            wc.rewrite(mt.getModifiers(), tm.addModifiersAnnotation(
+                                mt.getModifiers(), tm.Annotation(tm.QualIdent(
+                                wc.getElements().getTypeElement(Deprecated.class.
+                                getName())), Collections.<ExpressionTree>emptyList())));
+                            for (int i = size - 1; i >= 0; i--) {
+                                if (comments.get(i).isDocComment()) {
+                                    tm.removeComment(nt, i, true);
+                                }
+                            }
+                            wc.rewrite(mt, nt);
+                        }
+                        return super.visitMethod(mt, p);
+                    }
+
+                }, null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test186923b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void op() {\n" +
+            "        String s1;/*\n" +
+            "*/      String s2;\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    private void op() {\n" +
+            "        String s1;/*\n" +
+            "*/      s1 = 0;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker tm = wc.getTreeMaker();
+                ClassTree clazz = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+                StatementTree orig = mt.getBody().getStatements().get(1);
+                ExpressionStatementTree nue = tm.ExpressionStatement(tm.Assignment(tm.Identifier("s1"), tm.Literal(0)));
+                GeneratorUtilities.get(wc).copyComments(orig, nue, true);
+                GeneratorUtilities.get(wc).copyComments(orig, nue, false);
+                wc.rewrite(orig, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testCommentPrinted195048() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n\n" +
+            "    /**test*/\n" +
+            "    private String t() {\n" +
+            "        String s;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker tm = wc.getTreeMaker();
+                MethodTree nue = tm.Method(tm.Modifiers(EnumSet.of(Modifier.PRIVATE)),
+                                           "t",
+                                           tm.MemberSelect(tm.MemberSelect(tm.Identifier("java"), "lang"), "String"),
+                                           Collections.<TypeParameterTree>emptyList(),
+                                           Collections.<VariableTree>emptyList(),
+                                           Collections.<ExpressionTree>emptyList(),
+                                           "{java.lang.String s;}",
+                                           null);
+                GeneratorUtilities gu = GeneratorUtilities.get(wc);
+
+                tm.addComment(nue, Comment.create(Style.JAVADOC, -2, -2, -2, "/**test*/"), true);
+                nue = gu.importFQNs(nue);
+
+                ClassTree clazz = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+
+                wc.rewrite(clazz, gu.insertClassMember(clazz, nue));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        //GeneratorUtilities.insertClassMember opens the Document:
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);

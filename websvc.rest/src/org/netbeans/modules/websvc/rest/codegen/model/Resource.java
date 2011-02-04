@@ -23,13 +23,12 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -43,51 +42,91 @@
  */
 package org.netbeans.modules.websvc.rest.codegen.model;
 
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.netbeans.api.java.source.JavaSource;
+
 
 /**
- * ClientStubModel
+ * @author (changed by)ads
  *
- * @author Ayub Khan
- * @author ads
  */
-public class ClientStubModel {
-    
-    public static final int EXPAND_LEVEL_MAX = 2;
+public class Resource {
 
-    public ClientStubModel() {        
-    }
-    
-    public ResourceModel createModel(Project p) {
-        return new SourceModeler(p);
-    }
-    
-    public ResourceModel createModel(FileObject wadl) {
-        return new WadlModeler(wadl);
-    }
+        private String name;
+        private String path;
+        private String desc;
+        private boolean hasDefaultGet;
+        private Set<String> entities;
 
-    public static String normalizeName(final String name) {
-        return toValidJavaName(name);
-    }
+        private JavaSource src;
 
-    private static String toValidJavaName(String name) {
-        if ( name == null || name.length() ==0 ){
+        private List<Method> methodList = Collections.emptyList();
+
+        public Resource(String name, String path, String desc) {
+            this.name = name;
+            this.path = path;
+            this.desc = desc;
+            this.methodList = new ArrayList<Method>();
+        }
+
+        public Resource(String name, String path) {
+            this(name, path , name );
+        }  
+
+        public String getName() {
             return name;
         }
-        StringBuilder sb = new StringBuilder(name.length());
-        if (Character.isJavaIdentifierStart(name.charAt(0))) {
-            sb.append(name.charAt(0));
-        } else {
-            sb.append("_");
+        
+        public String getPath() {
+            return path;
         }
-        for (int i=1; i<name.length(); i++) {
-            if (Character.isJavaIdentifierPart(name.charAt(i))) {
-                sb.append(name.charAt(i));
-            } else {
-                sb.append("_");
-            }
+
+        public String getDescription() {
+            return desc;
         }
-        return sb.toString();
+
+        public void setDescription(String desc) {
+            this.desc = desc;
+        }        
+
+        public List<Method> getMethods() {
+            return methodList;
+        }
+
+        public void addMethod(Method m) {
+            methodList.add(m);
+        }
+        
+        public void setDefaultGet(){
+            hasDefaultGet = true;
+        }
+        
+        public boolean hasDefaultGet(){
+            return hasDefaultGet;
+        }
+        
+        public Set<String> getEntities(){
+            return entities;
+        }
+        
+        public void setEntities(Set<String> set){
+            entities = set;
+        }
+
+        protected JavaSource getSource() {
+            return this.src;
+        }
+
+        protected void setSource(JavaSource src) {
+            this.src = src;
+        }     
+
+        @Override
+        public String toString() {
+            return getName()+" : "+getPath();
+        }
     }
-}
