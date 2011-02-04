@@ -143,15 +143,15 @@ abstract class AbstractStandardModule extends Module {
     }
 
     protected AbstractStandardModule(ModuleManager mgr, Events ev, File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
-        super(mgr, ev, history, reloadable, autoload, eager);
+        super(mgr, ev, history, JaveleonModule.isJaveleonPresent || reloadable, autoload, eager);
         this.jar = jar;
 
-        if (reloadable) {
+        if (JaveleonModule.isJaveleonPresent || reloadable) {
             physicalJar = Util.makeTempJar(jar);
         }
         loadManifest();
         parseManifest();
-        findExtensionsAndVariants(getManifest());
+        findExtensionsAndVariants(manifest);
         // Check if some other module already listed this one in Class-Path.
         // For the chronologically reverse case, see findExtensionsAndVariants().
         Set<File> bogoOwners = extensionOwners.get(jar);
