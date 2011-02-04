@@ -84,6 +84,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 
 /**
  * This Panel launches autoconfiguration during the New J2SE Platform sequence.
@@ -483,6 +484,11 @@ public class DetectPanel extends javax.swing.JPanel {
         JFileChooser chooser = new JFileChooser ();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        if (Utilities.isMac()) {
+            //New JDKs and JREs are bundled into package, allow JFileChooser to navigate in
+            chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
+        }
+        chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter (new FileFilter () {
             @Override
             public boolean accept(File f) {

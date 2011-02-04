@@ -61,7 +61,7 @@ import org.netbeans.junit.NbTestSuite;
  * Tests indentation of newly added elements
  * @author Max Sauer
  */
-public class IndentAddedElemTest extends GeneratorTest {
+public class IndentAddedElemTest extends GeneratorTestBase {
     
     public IndentAddedElemTest(String name) {
         super(name);

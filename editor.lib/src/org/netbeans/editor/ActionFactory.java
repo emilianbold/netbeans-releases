@@ -68,6 +68,7 @@ import javax.swing.ButtonModel;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
@@ -1710,7 +1711,12 @@ public class ActionFactory {
                                     } catch (BadLocationException e) {
                                         Utilities.annotateLoggable(e);
                                     } finally {
-                                        target.setCursor(origCursor);
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    target.setCursor(origCursor);
+                                                }
+                                            });
                                     }
                                 }
                             });
