@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -287,6 +287,8 @@ public abstract class ServerCommand {
         @Override
         public boolean processResponse() {
             if(info == null) {
+                Logger.getLogger("glassfish").log(Level.WARNING,
+                        "info is null for GetProperty command with \"{0}\"",query); // NOI18N
                 return false;
             }
 
@@ -296,9 +298,13 @@ public abstract class ServerCommand {
                     try {
                         propertyMap.put(key.substring(0, equalsIndex), URLDecoder.decode(URLDecoder.decode(key.substring(equalsIndex + 1), "UTF-8"),"UTF-8"));
                     } catch (UnsupportedEncodingException ex) {
-                        ///Exceptions.printStackTrace(ex);
+                        Logger.getLogger("glassfish").log(Level.WARNING,  // NOI18N
+                                "UnsupportedEncodingException for value \"{0}\"",  // NOI18N
+                                key.substring(equalsIndex + 1));
                     }
                 } else {
+                        Logger.getLogger("glassfish").log(Level.WARNING,  // NOI18N
+                                "Inserting empty string as value for key=\"{0}\"",key); // NOI18N
                     propertyMap.put(key, "");
                 }
             }
