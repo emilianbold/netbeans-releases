@@ -62,7 +62,7 @@ public class J2SEProjectTest extends NbTestCase {
      * Regarding projectimport.eclipse.core subpatch in #146582.
      */
     public void testGetLookup() throws Exception {
-        MockLookup.setLayersAndInstances(new J2SEProjectType());
+        MockLookup.setLayersAndInstances();
         clearWorkDir();
         Project p = ProjectManager.getDefault().findProject(J2SEProjectGenerator.createProject(
                 getWorkDir(), "test", null, null, null).getProjectDirectory());
