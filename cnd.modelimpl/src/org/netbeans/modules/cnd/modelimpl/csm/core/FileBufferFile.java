@@ -100,6 +100,9 @@ public class FileBufferFile extends AbstractFileBuffer {
         if (length > Integer.MAX_VALUE) {
             new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
         }
+        if (length == 0) {
+            return new char[0];
+        }
         char[] readChars = new char[(int)length+1];
         InputStream is = getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
@@ -112,9 +115,13 @@ public class FileBufferFile extends AbstractFileBuffer {
                 }
                 readChars[position++] = '\n'; // NOI18N
             }
-            char[] copyChars = new char[position];
-            System.arraycopy(readChars, 0, copyChars, 0, position);
-            readChars = copyChars;
+            // no need to copy if the same size
+            // TODO: can we also skip case readChars.length = position + 1 due to last '\n'?
+            if (readChars.length > position) {
+                char[] copyChars = new char[position];
+                System.arraycopy(readChars, 0, copyChars, 0, position);
+                readChars = copyChars;
+            }
         } finally {
             reader.close();
             is.close();
