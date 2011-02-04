@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
@@ -292,7 +293,8 @@ public class ShorterPaths extends Task {
             try {
                 JarFile jf = new JarFile(file);
                 try {
-                    cp = jf.getManifest().getMainAttributes().getValue(Name.CLASS_PATH);
+                    Manifest manifest = jf.getManifest();
+                    cp = manifest != null ? manifest.getMainAttributes().getValue(Name.CLASS_PATH) : null;
                 } finally {
                     jf.close();
                 }
