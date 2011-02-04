@@ -84,7 +84,6 @@ public class SourceRootsTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances(
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         );
         scratch = TestUtil.makeScratchDir(this);
@@ -187,11 +186,11 @@ public class SourceRootsTest extends NbTestCase {
     public static FileObject addSourceRoot (AntProjectHelper helper, FileObject projdir,
                                             String propName, String folderName) throws Exception {
         Element data = helper.getPrimaryConfigurationData(true);
-        NodeList nl = data.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+        NodeList nl = data.getElementsByTagNameNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
         assert nl.getLength() == 1;
         Element roots = (Element) nl.item(0);
         Document doc = roots.getOwnerDocument();
-        Element root = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");
+        Element root = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");
         root.setAttribute("id", propName);
         roots.appendChild (root);
         helper.putPrimaryConfigurationData (data,true);
