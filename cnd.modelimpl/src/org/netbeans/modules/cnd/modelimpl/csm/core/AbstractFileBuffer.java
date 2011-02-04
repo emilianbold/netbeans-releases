@@ -167,7 +167,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             lines2Offset = aLines.get();
         }
         if (lines2Offset == null) {
-            lines2Offset = new Line2Offset(getText());
+            lines2Offset = new Line2Offset(getCharBuffer());
             lines = new WeakReference<Line2Offset>(lines2Offset);
         }
         return lines2Offset;
