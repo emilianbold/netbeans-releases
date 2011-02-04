@@ -640,9 +640,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-reflection">
-  <p>
-   XXX no answer for exec-reflection
-  </p>
+        <api category="friend" group="java" name="Javeleon" type="import" url="https://netbeans.org/bugzilla/show_bug.cgi?id=195074">
+            <p>When present as a Java agent on the boot classpath, Javeleon is invoked reflectively to enhance module reloading.</p>
+        </api>
  </answer>
 
 
