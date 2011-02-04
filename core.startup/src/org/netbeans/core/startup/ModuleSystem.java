@@ -362,7 +362,7 @@ public final class ModuleSystem {
         // setup the class loader for the new Javeleon module
         // That's all we need to do to update the module with Javeleon!
         mgr.setupClassLoaderForJaveleonModule(tm);
-        checkForLayerChanges(m, tm);
+        refreshLayer(m, tm);
 
         // OK so far, then create new Javeleon modules for the
         // dependent modules and create new classloaders for
@@ -370,8 +370,8 @@ public final class ModuleSystem {
         for (Module m3 : dependents) {
             File moduleJar = m3.getJarFile();
             Module toRefresh = mgr.createJaveleonModule(moduleJar, new ModuleHistory(moduleJar.getAbsolutePath()));
-            mgr.setupClassLoaderForJaveleonModule(toRefresh);          
-            checkForLayerChanges(m3, toRefresh);
+            mgr.setupClassLoaderForJaveleonModule(toRefresh);
+            refreshLayer(m3, toRefresh);
         }
         // done...
         System.err.println("Javeleon finished module update...");
@@ -379,65 +379,22 @@ public final class ModuleSystem {
         return true;
     }
 
-    private void checkForLayerChanges(Module m, Module tm) throws InvalidException {
-        // before reloading the module, check declarative layer files for changes
-        boolean changed = (CRC32Layer(m) != CRC32Layer(tm)) ||
-                (CRC32GeneratedLayer(m) != CRC32GeneratedLayer(tm));
-        if(changed)
-            // OK, refresh layer
-            installer.unload(Collections.singletonList(m));
-        mgr.replaceJaveleonModule(m, tm);
-        MainLookup.systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
-        if (changed) {
-            installer.prepare(tm);          
-            installer.load(Collections.singletonList(tm));
+    private void refreshLayer(Module original, Module newModule) {
+        try {
+            // Always refresh the layer. Exsitng instances created from the
+            // layer will be retained and their identity preserved in the updated
+            // module.
+            installer.unload(Collections.singletonList(original));
+            installer.dispose(original);
+            mgr.replaceJaveleonModule(original, newModule);
+            MainLookup.systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
+            installer.prepare(newModule);
+            installer.load(Collections.singletonList(newModule));
+        } catch (InvalidException ex) {
+            // shouldn't happen ever
         }
     }
-
-    private long CRC32Layer(Module m) {
-        try {
-            String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-            String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
-            if (layerResource != null && osgi == null) {
-                URL layer = m.getClassLoader().getResource(layerResource);
-                if (layer != null) {
-                    CheckedInputStream cis = null;
-
-                    // Compute the CRC32 checksum
-                    cis = new CheckedInputStream(
-                            layer.openStream(), new CRC32());
-
-                    byte[] buf = new byte[128];
-                    while (cis.read(buf) >= 0) {
-                    }
-                    return cis.getChecksum().getValue();
-                }
-            }
-        } catch (IOException e) {} // ignore
-        return 0;
-    }
-
-    private long CRC32GeneratedLayer(Module m) {
-        try {
-                String layerRessource = "META-INF/generated-layer.xml";
-                URL layer = m.getClassLoader().getResource(layerRessource);
-                if (layer != null) {
-                    CheckedInputStream cis = null;
-
-                    // Compute the CRC32 checksum
-                    cis = new CheckedInputStream(
-                            layer.openStream(), new CRC32());
-
-                    byte[] buf = new byte[128];
-                    while (cis.read(buf) >= 0) {
-                    }
-                    return cis.getChecksum().getValue();
-                }
-        } catch (IOException e) {} // ignore
-        return 0;
-    }
-
-    
+  
     /** Load a module in test (reloadable) mode.
      * If there is an existing module with a different JAR, get
      * rid of it and load this one instead.
