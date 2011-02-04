@@ -61,8 +61,12 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 import org.netbeans.DuplicateException;
 import org.netbeans.Events;
+import org.netbeans.InvalidException;
+import org.netbeans.JaveleonModule;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
@@ -318,7 +322,79 @@ public final class ModuleSystem {
         }
         return res;
     }
-    
+
+    final boolean reloadJaveleonModule(File jar) throws IOException {
+        if(!JaveleonModule.isJaveleonPresent) return false;
+
+        try {
+            JaveleonModule.javeleonReloadMethod.invoke(null);
+        } catch (Exception ex) {
+            // oops, we shouldn't end up in here, since Javeleon was
+            // supposed to be present given the above test succeeeded!
+            // Oh well, just fall back to normal reload operation then
+            return false;
+        }
+        System.err.println("Start Javeleon module update...");
+
+        // the existing module if any
+        Module m = null;
+        // the new updated module
+        Module tm = null;
+        // Anything that needs to have class loaders refreshed
+        List<Module> dependents;
+        // First see if this refers to an existing module.
+        for (Module module : mgr.getModules()) {
+            if (module.getJarFile() != null) {
+                if (jar.equals(module.getJarFile())) {
+                    // Hah, found it.
+                    m = module;
+                    tm = mgr.createJaveleonModule(jar, new ModuleHistory(jar.getAbsolutePath()));
+                    break;
+                }
+            }
+        }
+        if(m == null)
+            return false;
+
+        // now find dependent modules which need to be class loader migrated
+        dependents = mgr.simulateJaveleonReload(m);
+                  
+        // setup the class loader for the new Javeleon module
+        // That's all we need to do to update the module with Javeleon!
+        mgr.setupClassLoaderForJaveleonModule(tm);
+        refreshLayer(m, tm);
+
+        // OK so far, then create new Javeleon modules for the
+        // dependent modules and create new classloaders for
+        // them as well
+        for (Module m3 : dependents) {
+            File moduleJar = m3.getJarFile();
+            Module toRefresh = mgr.createJaveleonModule(moduleJar, new ModuleHistory(moduleJar.getAbsolutePath()));
+            mgr.setupClassLoaderForJaveleonModule(toRefresh);
+            refreshLayer(m3, toRefresh);
+        }
+        // done...
+        System.err.println("Javeleon finished module update...");
+        ev.log(Events.FINISH_DEPLOY_TEST_MODULE, jar);
+        return true;
+    }
+
+    private void refreshLayer(Module original, Module newModule) {
+        try {
+            // Always refresh the layer. Exsitng instances created from the
+            // layer will be retained and their identity preserved in the updated
+            // module.
+            installer.unload(Collections.singletonList(original));
+            installer.dispose(original);
+            mgr.replaceJaveleonModule(original, newModule);
+            MainLookup.systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
+            installer.prepare(newModule);
+            installer.load(Collections.singletonList(newModule));
+        } catch (InvalidException ex) {
+            // shouldn't happen ever
+        }
+    }
+  
     /** Load a module in test (reloadable) mode.
      * If there is an existing module with a different JAR, get
      * rid of it and load this one instead.
@@ -329,6 +405,8 @@ public final class ModuleSystem {
      */
     final void deployTestModule(File jar) throws IOException {
         if (! jar.isAbsolute()) throw new IOException("Absolute paths only please"); // NOI18N
+        if(reloadJaveleonModule(jar)) return;
+        
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_DEPLOY_TEST_MODULE, jar);
         // For now, just print to stderr directly; could also go thru Events.
