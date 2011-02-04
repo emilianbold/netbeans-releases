@@ -295,12 +295,31 @@ public abstract class ServerCommand {
             for (String key : info.getEntries().keySet()) {
                 int equalsIndex = key.indexOf('=');
                 if(equalsIndex >= 0) {
+                    String keyPart = key.substring(0, equalsIndex);
+                    String valuePart = key.substring(equalsIndex + 1);
+                    Level logLevel = Level.WARNING;
                     try {
-                        propertyMap.put(key.substring(0, equalsIndex), URLDecoder.decode(URLDecoder.decode(key.substring(equalsIndex + 1), "UTF-8"),"UTF-8"));
+                        // around Sept. 2008... 3.x servers were double encoding their
+                        // responces.  It appears that has stopped (See http://netbeans.org/bugzilla/show_bug.cgi?id=195015)
+                        // The open question is, "When did 3.x stop doing the double encode?"
+                        // since we don't know... this strategy will work for us
+                        //   Belt and suspenders, like
+                        propertyMap.put(keyPart,valuePart); // raw form
+                        propertyMap.put(keyPart, URLDecoder.decode(valuePart, "UTF-8")); // single decode
+                        //
+                        // If this next application of decoding generates an exception,
+                        // don't make a big deal of it.
+                        //
+                        logLevel = Level.FINE;
+                        propertyMap.put(keyPart, URLDecoder.decode(propertyMap.get(keyPart),"UTF-8"));
                     } catch (UnsupportedEncodingException ex) {
                         Logger.getLogger("glassfish").log(Level.WARNING,  // NOI18N
                                 "UnsupportedEncodingException for value \"{0}\"",  // NOI18N
-                                key.substring(equalsIndex + 1));
+                                propertyMap.get(keyPart));
+                    } catch (IllegalArgumentException iae) {
+                        Logger.getLogger("glassfish").log(logLevel,  // NOI18N
+                                "IllegalArgumentException for value \"{0}\" : inserted into propertyMap as \"{1}\"",  // NOI18N
+                                new Object[] { valuePart, propertyMap.get(keyPart) });
                     }
                 } else {
                         Logger.getLogger("glassfish").log(Level.WARNING,  // NOI18N
