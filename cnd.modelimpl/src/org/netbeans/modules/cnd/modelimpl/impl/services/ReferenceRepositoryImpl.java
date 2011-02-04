@@ -308,13 +308,13 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                         }
                         if (i > 0) {
                             char prev = charBuffer[i-1];
-                            if (prev == '_' || Character.isLetterOrDigit(prev)) {
+                            if (prev == '_' || prev == '$' || prev == '~' || Character.isLetterOrDigit(prev)) {
                                 continue;
                             }
                         }
                         if (i + nameLength + 1 < bufLength) {
                             char next = charBuffer[i + nameLength];
-                            if (next == '_' || Character.isLetterOrDigit(next)) {
+                            if (next == '_' || next == '$' || Character.isLetterOrDigit(next)) {
                                 continue;
                             }
                         }
