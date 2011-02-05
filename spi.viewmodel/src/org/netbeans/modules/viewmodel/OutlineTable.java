@@ -491,6 +491,19 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     private Node.Property[] createColumns (ColumnModel[] cs, String[] nodesColumnNameAndDescription) {
         int i, k = cs.length;
+        // Check column IDs:
+        {
+            Map<String, ColumnModel> IDs = new HashMap<String, ColumnModel>(k);
+            for (i = 0; i < k; i++) {
+                String id = cs[i].getID();
+                if (IDs.containsKey(id)) {
+                    ColumnModel csi = IDs.get(id);
+                    logger.severe("\nHave two columns with identical IDs \""+id+"\": "+csi+" ["+csi.getDisplayName()+"] and "+cs[i]+" ["+cs[i].getDisplayName()+"]\n");
+                } else {
+                    IDs.put(id, cs[i]);
+                }
+            }
+        }
         columns = new Column[k];
         //icolumns = new IndexedColumn[k];
         columnVisibleMap = new int[k];
