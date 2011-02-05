@@ -187,6 +187,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                                 columnVisibleMap[i]++;
                             }
                         }
+                        if (logger.isLoggable(Level.FINE)) {
+                            dumpColumnVisibleMap();
+                        }
                         if (prefferedVisibleIndex >= 0 && prefferedVisibleIndex != visibleIndex) {
                             logger.fine("moveColumn("+visibleIndex+", "+prefferedVisibleIndex+")");
                             ignoreMove = true;
@@ -244,40 +247,15 @@ ExplorerManager.Provider, PropertyChangeListener {
                     logger.fine(" column headers = '"+tcme.getColumn(e.getFromIndex()).getHeaderValue()+"' => '"+tcme.getColumn(e.getToIndex()).getHeaderValue()+"'");
                     dumpColumnVisibleMap();
                 }
+                
                 int toColumnOrder = getColumnOrder(columns[tc]);
-                if (from < to) {
-                    for (int i = from + 1; i <= to; i++) {
-                        // Iterate through columns whose visible index is 'i'
-                        // and whose order is between 'from order' and 'to order'
-                        // and adjust the order and visible map
-                        for (int ic = 0; ic < columnVisibleMap.length; ic++) {
-                            if (ic != fc && i == columnVisibleMap[ic]) {
-                                int order = getColumnOrder(columns[ic]);
-                                if (order <= toColumnOrder && order > getColumnOrder(columns[fc])) {
-                                    setColumnOrder(columns[ic], order - 1);
-                                    columnVisibleMap[ic]--;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    for (int i = from - 1; i >= to; i--) {
-                        // Iterate through columns whose visible index is 'i'
-                        // and whose order is between 'from order' and 'to order'
-                        // and adjust the order and visible map
-                        for (int ic = 0; ic < columnVisibleMap.length; ic++) {
-                            if (i == columnVisibleMap[ic]) {
-                                int order = getColumnOrder(columns[ic]);
-                                if (order < getColumnOrder(columns[fc]) && order >= toColumnOrder) {
-                                    setColumnOrder(columns[ic], getColumnOrder(columns[ic]) + 1);
-                                    columnVisibleMap[ic]++;
-                                }
-                            }
-                        }
-                    }
-                }
+                int fromColumnOrder = getColumnOrder(columns[fc]);
                 setColumnOrder(columns[fc], toColumnOrder);
-                columnVisibleMap[fc] = to;
+                setColumnOrder(columns[tc], fromColumnOrder);
+                fromColumnOrder = columnVisibleMap[fc];
+                columnVisibleMap[fc] = columnVisibleMap[tc];
+                columnVisibleMap[tc] = fromColumnOrder;
+
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("After move:");
                     dumpColumnVisibleMap();
@@ -300,7 +278,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         logger.fine("");
         logger.fine("Column Visible Map ("+columnVisibleMap.length+"):");
         for (int i = 0; i < columnVisibleMap.length; i++) {
-            logger.fine(" map["+i+"] = "+columnVisibleMap[i]+"; columnOrder["+i+"] = "+getColumnOrder(columns[i]));
+            logger.fine(" {"+columns[i].getDisplayName()+"} \tvisible map["+i+"] = "+columnVisibleMap[i]+"; columnOrder["+i+"] = "+getColumnOrder(columns[i])+"\t"+(columns[i].isHidden() ? "hidden" : ""));
         }
         logger.fine("");
     }
@@ -519,6 +497,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             //IndexedColumn ic = new IndexedColumn(c, i, cs[i].getCurrentOrderNumber());
             //icolumns[i] = ic;
             int order = cs[i].getCurrentOrderNumber();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("createColumns(): column {"+c.getDisplayName()+"}: order = "+order+", i = "+i+", d = "+d);
+            }
             if (order == -1) {
                 order = i;
             } else {
@@ -564,8 +545,16 @@ ExplorerManager.Provider, PropertyChangeListener {
         if (treeColumn != null) {
             treeTable.setTreeSortable(treeColumn.isSortable());
         }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("createColumns(): columns before checkOrder()");
+            dumpColumnVisibleMap();
+        }
         // Check visible map (order) for duplicities and gaps
         checkOrder(columnVisibleMap, originalOrder);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("createColumns(): columns after checkOrder()");
+            dumpColumnVisibleMap();
+        }
 
         int[] columnOrder = new int[columnVisibleMap.length];
         System.arraycopy(columnVisibleMap, 0, columnOrder, 0, columnOrder.length);
