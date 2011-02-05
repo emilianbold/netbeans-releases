@@ -801,7 +801,8 @@ ExplorerManager.Provider, PropertyChangeListener {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 logger.log(Level.SEVERE,
-                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder+
+                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap),
                         aioobex);
                 continue ;
             }
@@ -848,7 +849,8 @@ ExplorerManager.Provider, PropertyChangeListener {
                 tc = tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 logger.log(Level.SEVERE,
-                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder+
+                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap),
                         aioobex);
                 continue ;
             }
@@ -879,7 +881,8 @@ ExplorerManager.Provider, PropertyChangeListener {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 logger.log(Level.SEVERE,
-                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder,
+                        "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder+
+                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap),
                         aioobex);
                 continue ;
             }
