@@ -219,10 +219,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         return p;
     }
 
-    private void addDiff(InsertInfo declInsert, CharSequence text, final String mtdName, String bundle, ModificationResult mr, FileObject fo) throws MissingResourceException {
+    private void addDiff(InsertInfo declInsert, DeclarationGenerator.Kind kind, CharSequence text, final String mtdName, String bundle, ModificationResult mr, FileObject fo) throws MissingResourceException {
         CharSequence declText = FormattingSupport.getFormattedText(CsmUtilities.openDocument(declInsert.ces), declInsert.dot, text);
         String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, bundle, mtdName); // NOI8N
-        Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, bundle, "\n" + declText, descr); // NOI18N
+        String prefix = "\n"; // NOI8N
+        if (kind == DeclarationGenerator.Kind.EXTERNAL_DEFINITION || kind == DeclarationGenerator.Kind.INLINE_DEFINITION) {
+            prefix = "\n\n";// NOI8N
+        }
+        Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, bundle, prefix + declText, descr); // NOI18N
         mr.addDifference(fo, declDiff);
     }
     
@@ -605,14 +609,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 InsertInfo declInsert = insertPositons[0];
                 if (getterName != null && refactoring.getDefaultGetter() == null) {
                     CharSequence text = DeclarationGenerator.createGetter(field, getterName, declKind);
-                    addDiff(declInsert, text,
+                    addDiff(declInsert, declKind, text,
                             getterName,
                             refactoring.isMethodInline() ? "EncapsulateFieldInlineDefinition" : "EncapsulateFieldInsertDeclartion", // NOI18N
                             mr, fo);
                 }
                 if (setterName != null && refactoring.getDefaultSetter() == null) {
                     CharSequence text = DeclarationGenerator.createSetter(field, setterName, declKind);
-                    addDiff(declInsert, text,
+                    addDiff(declInsert, declKind, text,
                             setterName,
                             refactoring.isMethodInline() ? "EncapsulateFieldInlineDefinition" : "EncapsulateFieldInsertDeclartion", // NOI18N
                             mr, fo);
@@ -624,14 +628,14 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 InsertInfo defInsert = insertPositons[1];
                 if (getterName != null && refactoring.getDefaultGetter() == null) {
                     CharSequence text = DeclarationGenerator.createGetter(field, getterName, defKind);
-                    addDiff(defInsert, text,
+                    addDiff(defInsert, defKind, text,
                             getterName,
                             "EncapsulateFieldInsertDefinition", // NOI18N
                             mr, fo);
                 }
                 if (setterName != null && refactoring.getDefaultSetter() == null) {
                     CharSequence text = DeclarationGenerator.createSetter(field, setterName, defKind);
-                    addDiff(defInsert, text,
+                    addDiff(defInsert, defKind, text,
                             setterName,
                             "EncapsulateFieldInsertDefinition", // NOI18N
                             mr, fo);
