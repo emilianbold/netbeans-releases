@@ -222,9 +222,9 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     private void addDiff(InsertInfo declInsert, DeclarationGenerator.Kind kind, CharSequence text, final String mtdName, String bundle, ModificationResult mr, FileObject fo) throws MissingResourceException {
         CharSequence declText = FormattingSupport.getFormattedText(CsmUtilities.openDocument(declInsert.ces), declInsert.dot, text);
         String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, bundle, mtdName); // NOI8N
-        String prefix = "\n"; // NOI8N
+        String prefix = "\n"; // NOI18N
         if (kind == DeclarationGenerator.Kind.EXTERNAL_DEFINITION || kind == DeclarationGenerator.Kind.INLINE_DEFINITION) {
-            prefix = "\n\n";// NOI8N
+            prefix = "\n\n";// NOI18N
         }
         Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, bundle, prefix + declText, descr); // NOI18N
         mr.addDifference(fo, declDiff);
