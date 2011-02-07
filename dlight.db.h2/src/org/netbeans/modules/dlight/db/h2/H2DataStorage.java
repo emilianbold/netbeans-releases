@@ -82,7 +82,6 @@ public final class H2DataStorage extends SQLDataStorage {
     private static final String url;
     private static String persistentURL;
     final String dbURL;
-    private final List<DataTableMetadata> tableMetadatas;
     boolean isPersistent = false;
 
     static {
@@ -169,7 +168,6 @@ public final class H2DataStorage extends SQLDataStorage {
     H2DataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
-        this.tableMetadatas = new ArrayList<DataTableMetadata>();
         initStorageTypes();
     }
 
@@ -212,7 +210,7 @@ public final class H2DataStorage extends SQLDataStorage {
             //if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
             createTable(tdmd);
             //}
-            this.tableMetadatas.add(tdmd);
+            this.tables.put(tdmd.getName(), tdmd);
         }
     }
 
@@ -298,7 +296,8 @@ public final class H2DataStorage extends SQLDataStorage {
 //    }
     @Override
     public boolean hasData(DataTableMetadata data) {
-        return data.isProvidedBy(tableMetadatas);
+        List<DataTableMetadata> toCheck = new ArrayList<DataTableMetadata>(tables.values());
+        return data.isProvidedBy(toCheck);
     }
 
     @Override
@@ -334,7 +333,7 @@ public final class H2DataStorage extends SQLDataStorage {
             }
             DataTableMetadata result = new DataTableMetadata(tableName, columns, null);
             super.loadTable(result);
-            this.tableMetadatas.add(result);
+            tables.put(result.getName(), result);
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
         }
