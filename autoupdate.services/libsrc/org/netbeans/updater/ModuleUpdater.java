@@ -45,6 +45,8 @@
 package org.netbeans.updater;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 import java.util.jar.*;
 
@@ -424,6 +426,17 @@ public final class ModuleUpdater extends Thread {
                                     filesToChmod.add(destFile);
                                 }
                                 long crc = entry.getCrc();
+                                if (pathTo.endsWith(".jar.external")) {
+                                    File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
+                                    final InputStream spec = jarFile.getInputStream(entry);
+                                    InputStream is = externalDownload(spec);
+                                    spec.close();
+                                    FileOutputStream os = new FileOutputStream(downloaded);
+                                    copyStreams(is, os, -1);
+                                    is.close();
+                                    os.close();
+                                    crc = UpdateTracking.getFileCRC(downloaded);
+                                }
                                 if(pathTo.endsWith(".jar.pack.gz") &&
                                         jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
                                      //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
@@ -515,6 +528,42 @@ public final class ModuleUpdater extends Thread {
             }
             t.deleteUnusedFiles ();            
         }
+    }
+    private InputStream externalDownload(InputStream is) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        URLConnection conn;
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("URL:")) {
+                String url = line.substring(4).trim();
+                for (;;) {
+                    int index = url.indexOf("${");
+                    if (index == -1) {
+                        break;
+                    }
+                    int end = url.indexOf("}", index);
+                    String propName = url.substring(index + 2, end);
+                    final String propVal = System.getProperty(propName);
+                    if (propVal == null) {
+                        throw new IOException("Can't find property " + propName);
+                    }
+                    url = url.substring(0, index) + propVal + url.substring(end + 1);
+                }
+                XMLUtil.LOG.log(Level.INFO, "Trying external URL: {0}", url);
+                try {
+                    conn = new URL(url).openConnection();
+                    conn.connect();
+                    return conn.getInputStream();
+                } catch (IOException ex) {
+                    XMLUtil.LOG.log(Level.WARNING, "Cannot connect to {0}", url);
+                    XMLUtil.LOG.log(Level.INFO, "Details", ex);
+                }
+            }
+        }
+        throw new IOException("Cannot resolve external references");
     }
     
     private boolean unpack200(File src, File dest) {
