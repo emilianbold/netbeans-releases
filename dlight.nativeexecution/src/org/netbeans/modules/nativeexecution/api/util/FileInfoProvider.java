@@ -119,11 +119,11 @@ public class FileInfoProvider {
     }
     
     public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath) {
-        return SftpSupport.stat(env, absPath, new PrintWriter(System.err));
+        return SftpSupport.getInstance(env).stat(absPath, new PrintWriter(System.err));
     }
     
     public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath, Writer error) {
-        return SftpSupport.stat(env, absPath, error);
+        return SftpSupport.getInstance(env).stat(absPath, error);
     }
 
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath) {
@@ -131,9 +131,9 @@ public class FileInfoProvider {
     }
         
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath, Writer error) {
-        return SftpSupport.ls(env, absPath, error);
+        return SftpSupport.getInstance(env).ls(absPath, error);
     }
-
+    
     private static final short USR_R = 256;
     private static final short USR_W = 128;
     private static final short USR_X = 64;
