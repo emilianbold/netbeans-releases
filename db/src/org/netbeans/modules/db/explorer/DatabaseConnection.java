@@ -1085,7 +1085,8 @@ public final class DatabaseConnection implements DBConnection {
 
     public void showConnectionDialog() {
         try {
-            final ConnectionNode cni = findConnectionNode(getName());
+            final ConnectionNode cni = findConnectionNode(getDisplayName());
+            assert cni != null : "DatabaseConnection node found for " + this;
             if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override
