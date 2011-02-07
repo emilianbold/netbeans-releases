@@ -713,9 +713,9 @@ abstract class AbstractStandardModule extends Module {
         return modulePermissions;
     }
 
-    protected abstract class AbstractOneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
+    protected class BaseModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
 
-        public AbstractOneModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
+        public BaseModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents, false, AbstractStandardModule.this);
 
             // register this loader with the associated code name base

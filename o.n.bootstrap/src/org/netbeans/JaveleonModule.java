@@ -87,7 +87,7 @@ public final class JaveleonModule extends AbstractStandardModule {
 
     @Override
     protected ClassLoader createNewClassLoader(List<File> classp, List<ClassLoader> parents) {
-        ClassLoader cl = new JaveleonModuleClassLoader(classp, parents.toArray(new ClassLoader[parents.size()]));
+        ClassLoader cl = new BaseModuleClassLoader(classp, parents.toArray(new ClassLoader[parents.size()]));
         currentClassLoaders.put(getCodeNameBase(), cl);
         return cl;
     }
@@ -129,12 +129,5 @@ public final class JaveleonModule extends AbstractStandardModule {
     @Override
     public void destroy() {
         // do nothing
-    }
-
-    class JaveleonModuleClassLoader extends AbstractOneModuleClassLoader {
-
-        public JaveleonModuleClassLoader(List<File> allJars, ClassLoader[] parents) {
-            super(allJars, parents);
-        }
     }
 }
