@@ -101,6 +101,7 @@ import org.netbeans.spi.viewmodel.TableRendererModel;
 import org.netbeans.spi.viewmodel.TableRendererModelFilter;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -354,7 +355,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     if (ch != null) {
                         for (int x = 0; x < ch.length; x++) {
                             // exclude HistoryNode
-                            if ("HistoryNode".equals(ch[x].getClass().getSimpleName())) { // NOI18N [TODO]
+                            if (ch[x] == null || "HistoryNode".equals(ch[x].getClass().getSimpleName())) { // NOI18N [TODO]
+                                if (ch[x] == null) {
+                                    Exceptions.printStackTrace(new NullPointerException("Null child at index "+x+", parent: "+parent+", model: "+original));
+                                }
                                 Object[] nch = new Object[ch.length - 1];
                                 System.arraycopy(ch, 0, nch, 0, x);
                                 if ((x+1) < ch.length) {
