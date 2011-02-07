@@ -546,8 +546,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++){
                         View view = rootView.getView(i);                
-                        Rectangle rec = textUI.modelToView(component, view.getStartOffset());
-                        int y = (rec == null) ? 0 : rec.y;
+                        int y = textUI.getYFromPos(view.getStartOffset());
                         if (y >= clipEndY) {
                             break;
                         }
@@ -589,9 +588,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 Element lineElem = rootElem.getElement(line);
                 if (lineElem == null) return;
                 int lineOffset = lineElem.getStartOffset();
-                Rectangle mtvRect = textUI.modelToView(component, lineOffset);
-                if (mtvRect == null) return;
-                repaint(0, mtvRect.y, (int)getSize().getWidth(), 3*editorUI.getLineHeight());
+                int y = textUI.getYFromPos(lineOffset);
+                repaint(0, y, (int)getSize().getWidth(), 3*editorUI.getLineHeight());
                 checkSize();
             }catch(BadLocationException ble){
                 ErrorManager.getDefault().notify(ble);
