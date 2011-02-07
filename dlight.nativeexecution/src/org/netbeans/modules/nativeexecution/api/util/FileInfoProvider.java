@@ -114,7 +114,7 @@ public class FileInfoProvider {
         
         @Override
         public String toString() {
-            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(access) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : "");
+            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(access) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : ""); // NOI18N
         }                
     }
     
