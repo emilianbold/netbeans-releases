@@ -133,7 +133,7 @@ final class MatchingObject
     /** */
     private boolean valid = true;
     /** */
-    private String text;
+    private StringBuilder text;
     
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
@@ -413,7 +413,8 @@ final class MatchingObject
     /**
      */
     String getText() throws IOException {
-        return text(false);
+         StringBuilder txt = text(false);
+         return (txt != null)?  txt.toString() : null;
     }
 
     /**
@@ -429,12 +430,12 @@ final class MatchingObject
      * @author  Marian Petras
      */
  
-    private String text(boolean refreshCache) throws IOException {
+    private StringBuilder text(boolean refreshCache) throws IOException {
         assert !EventQueue.isDispatchThread();
-        
+
         if (refreshCache || (text == null)) {     
-            text = getFileObject().asText();
-        }
+            text = new StringBuilder(getFileObject().asText());            
+        }      
         return text;
     }
 
@@ -602,13 +603,12 @@ final class MatchingObject
         
         Boolean uniformSelection = checkSubnodesSelection();
         final boolean shouldReplaceNone = (uniformSelection == Boolean.FALSE);
-        
+
         if (shouldReplaceNone) {
             return null;
         }
        
-        StringBuilder content = new StringBuilder(text(true));   //refresh the cache, reads the file
-        
+        StringBuilder content = text(true);   //refresh the cache, reads the file      
         List<TextDetail> textMatches = 
                 resultModel.basicCriteria.getTextDetails(getFileObject());
 
@@ -675,7 +675,7 @@ final class MatchingObject
     /**
      */
     private String makeStringToWrite() {
-        return text;
+        return makeStringToWrite(text);
     }
     
     /**
