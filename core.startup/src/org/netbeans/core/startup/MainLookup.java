@@ -92,31 +92,6 @@ public final class MainLookup extends ProxyLookup {
                });
     }
     
-    /**
-     * This method is specific to Javeleon, and used only
-     * by Javeleon.
-     * Persisting all previously looked up
-     * service instances from META-INF/services.
-     * All new lookups will ask the new system class loader.
-     */
-    static void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
-        classLoader = nue;
-        MainLookup l = (MainLookup)Lookup.getDefault();
-        Lookup[] newDelegates = l.getLookups().clone();
-        
-        // The MetaInf/services lookup instance is always placed at index 0.
-        Lookup metaServicesLookup = newDelegates[0];
-            try {
-                Field field = metaServicesLookup.getClass().getDeclaredField("loader");
-                field.setAccessible(true);
-                field.set(metaServicesLookup, classLoader);
-            } catch (Exception x) {
-                Exceptions.printStackTrace(x);
-            }
-        newDelegates[1] = Lookups.singleton(classLoader);
-        l.setLookups(newDelegates);
-    }
-
     /** Called when a system classloader changes.
      */
     public static final void systemClassLoaderChanged (ClassLoader nue) {
