@@ -45,9 +45,17 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
+import javax.swing.SwingUtilities;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.JaveleonModule;
@@ -64,11 +72,17 @@ import org.openide.util.lookup.ProxyLookup;
  */
 class JaveleonModuleReloader {
 
-    private static JaveleonModuleReloader  reloader = new JaveleonModuleReloader();
+    private static JaveleonModuleReloader reloader = new JaveleonModuleReloader();
 
     static JaveleonModuleReloader getDefault() {
         return reloader;
     }
+
+    /** This map ensures that the layer handling done by
+     * NBInstaller.loadLayer()is consistent with the modules
+     * registered with the currently installed layers.
+     */
+    private HashMap<String, Module> registeredModules = new HashMap<String, Module>();
 
     // Use JaveleonModuleReloader.getDefault() to get the singleton instance
     private JaveleonModuleReloader() {
@@ -130,62 +144,208 @@ class JaveleonModuleReloader {
         return true;
     }
 
-    private static void refreshLayer(Module original, Module newModule, NbInstaller installer, ModuleManager mgr) {
-        try {
-            // Always refresh the layer. Exsitng instances created from the
-            // layer will be retained and their identity preserved in the updated
-            // module.
-            installer.unload(Collections.singletonList(original));
-            installer.dispose(original);
-            mgr.replaceJaveleonModule(original, newModule);
-            systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
-            installer.prepare(newModule);
-            installer.load(Collections.singletonList(newModule));
-        } catch (InvalidException ex) {
-            // shouldn't happen ever
-        }
-    }
-
     /**
      * Persisting all previously looked up
      * service instances from META-INF/services.
      * All new lookups will ask the new system class loader.
      */
-    static void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
+    private void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
 
         // We need to change the class loader of the main lookup instance.
         // For now there's no API to do this so use reflection.
         try {
             // get the default main loookup instance
-            MainLookup l = (MainLookup) Lookup.getDefault();
+            MainLookup mainLookup = (MainLookup) Lookup.getDefault();
 
             // obtain a reference to the current lookups and clone them
-            Method getLookups = ProxyLookup.class.getDeclaredMethod("getLookups");
+            Method getLookups = ProxyLookup.class.getDeclaredMethod("getLookups"); // NOI18N
             getLookups.setAccessible(true);
-            Lookup[] newDelegates = ((Lookup[])getLookups.invoke(l)).clone();
+            Lookup[] newDelegates = ((Lookup[])getLookups.invoke(mainLookup)).clone();
 
             // now actually change the current class loader of the default main lookup
-            Field mainLookupClassLoader = MainLookup.class.getDeclaredField("classLoader");
+            Field mainLookupClassLoader = MainLookup.class.getDeclaredField("classLoader"); // NOI18N
             mainLookupClassLoader.setAccessible(true);
-            mainLookupClassLoader.set(l, nue);
+            mainLookupClassLoader.set(mainLookup, nue);
 
             // The MetaInfservices lookup instance is always placed at index 0.
             Lookup metaServicesLookup = newDelegates[0];
 
             // replace the class loader of the MetaInfservices instance in-place.
-            Field field = metaServicesLookup.getClass().getDeclaredField("loader");
+            Field field = metaServicesLookup.getClass().getDeclaredField("loader"); // NOI18N
             field.setAccessible(true);
             field.set(metaServicesLookup, nue);
 
             // now set the changed lookups
             newDelegates[1] = Lookups.singleton(nue);
-            Method setLookups = ProxyLookup.class.getDeclaredMethod("setLookups", Lookup[].class);
+            Method setLookups = ProxyLookup.class.getDeclaredMethod("setLookups", Lookup[].class); // NOI18N
             setLookups.setAccessible(true);
-            setLookups.invoke(l, (Object)newDelegates);
+            setLookups.invoke(mainLookup, (Object)newDelegates);
         } catch (Exception x) {
             // shouldn't happen as long as the classLoader
             // and loader field names don't change.
             Exceptions.printStackTrace(x);
         }
     }
+
+    private Map<Object, Object[]> retainOpenTopComponents(ClassLoader loader) {
+
+            /*
+            WindowManager manager = WindowManager.getDefault();
+            HashMap<Mode, TopComponent[]> map = new HashMap<Mode, TopComponent[]>();
+            for (Mode mode: WindowManager.getDefault().getModes())
+            map.put(mode, manager.getOpenedTopComponents(mode));
+            return map;
+             */
+         try {
+            Class classWindowManager = loader.loadClass("org.openide.windows.WindowManager");
+            Class classMode = loader.loadClass("org.openide.windows.Mode");
+            Object manager = classWindowManager.getDeclaredMethod("getDefault").invoke(null);
+            Set modes = (Set) classWindowManager.getDeclaredMethod("getModes").invoke(manager);
+            HashMap<Object, Object[]> map = new HashMap<Object, Object[]>();
+            for (Object mode : modes) {
+                map.put(mode, (Object[]) classWindowManager.getDeclaredMethod("getOpenedTopComponents", classMode).invoke(manager, mode));
+            }
+            return map;
+        } catch (Exception ex) {
+            //Exceptions.printStackTrace(ex);
+            return Collections.emptyMap();
+        }
+    }
+
+    private void restoreOpenTopComponents(final ClassLoader loader, final Map<Object, Object[]> map) {
+        /*
+         for (Map.Entry<Mode, TopComponent[]> entry: map.entrySet())
+            for (TopComponent topComponent: entry.getValue())
+                topComponent.open();
+         */
+
+        if (map == null || map.isEmpty())
+            return;
+
+        // TopComponent.open must be called from the AWT thread
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Class classTopComponent = loader.loadClass("org.openide.windows.TopComponent");
+                    for (Map.Entry<Object, Object[]> entry : map.entrySet()) {
+                        for (Object topComponent : entry.getValue()) {
+                            classTopComponent.getDeclaredMethod("open").invoke(topComponent);
+                        }
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+        });
+    }
+
+    private void refreshLayer(Module original, Module newModule, NbInstaller installer, ModuleManager mgr) {
+        try {            
+            boolean changed = layersChanged(original, newModule);
+            Map<Object, Object[]> map = null;
+            // Always refresh the layer. Exsitng instances created from the
+            // layer will be retained and their identity preserved in the updated
+            // module.
+
+            if (changed) {
+                map = retainOpenTopComponents(mgr.getClassLoader());
+                Module registeredModule = getAndClearRegisteredModule(original);
+                System.err.println("Change detected, unloading layer for " + original + " (but actually for " + registeredModule + ")");
+                loadLayers(installer, registeredModule, false);
+                //installer.unload(Collections.singletonList(registeredModule));
+                installer.dispose(registeredModule);
+            }
+            mgr.replaceJaveleonModule(original, newModule);
+            systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
+            if (changed) {
+                System.err.println("Change detected, loading layer for " + newModule);
+                installer.prepare(newModule);
+                loadLayers(installer, newModule, true);
+                //installer.load(Collections.singletonList(newModule));
+                registerModule(newModule);
+                
+                restoreOpenTopComponents(mgr.getClassLoader(), map);
+            }
+            if (!changed && !(original instanceof JaveleonModule)) {
+                // make sure to register the original module for later unloading
+                // of the original module that installed the layer.
+                registerModule(original);
+            }
+        }
+        catch (InvalidException ex) {
+            // shouldn't happen ever
+        }
+        catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+        }
+    }
+
+    private void loadLayers(NbInstaller installer, Module m, boolean load) {
+        try {
+            Method loadLayers = NbInstaller.class.getDeclaredMethod("loadLayers", List.class, boolean.class);
+            loadLayers.setAccessible(true);
+            loadLayers.invoke(installer, Collections.singletonList(m), load);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+    }
+
+    private boolean layersChanged(Module m1, Module m2) {
+        return ((CRC32Layer(m1) != CRC32Layer(m2)) || (CRC32GeneratedLayer(m1) != CRC32GeneratedLayer(m2)));
+    }
+
+    private long calculateChecksum(URL layer) {
+        if (layer == null) {
+            return -1;
+        }
+        try {
+            CheckedInputStream cis = new CheckedInputStream(layer.openStream(), new CRC32());
+            // Compute the CRC32 checksum
+
+            byte[] buf = new byte[1024];
+            while (cis.read(buf) >= 0) {
+            }
+            return cis.getChecksum().getValue();
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+
+    private long CRC32Layer(Module m) {
+        String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+        String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        if (layerResource != null && osgi == null) {
+            URL layer = m.getClassLoader().getResource(layerResource);
+            return calculateChecksum(layer);
+        }
+        return -1;
+    }
+
+    private long CRC32GeneratedLayer(Module m) {
+        String layerRessource = "META-INF/generated-layer.xml"; // NOI18N
+        URL layer = m.getClassLoader().getResource(layerRessource);
+        return calculateChecksum(layer);
+    }
+
+    private Module getAndClearRegisteredModule(Module original) {
+        return (registeredModules.containsKey(original.getCodeNameBase())) ?
+            registeredModules.remove(original.getCodeNameBase()) :
+            original;
+    }
+
+    private void registerModule(Module newModule) {
+        registeredModules.put(newModule.getCodeNameBase(), newModule);
+    }
+
 }
