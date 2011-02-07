@@ -303,6 +303,8 @@ public class NbmExternalTest extends NbTestCase {
         File module = new File(new File(getWorkDir(), "modules"), "org-netbeans-modules-mymodule.jar");
         assertTrue("module file exists", module.exists());
         assertTrue("module was not installed from NBM external", moduleUnit.getInstalled() != null);
+        // XXX verify that update_tracking/*.xml points to the real thing
+        // XXX verify that *.external file not written to target cluster (currently broken)
     }
 
     

@@ -426,7 +426,7 @@ public final class ModuleUpdater extends Thread {
                                     filesToChmod.add(destFile);
                                 }
                                 long crc = entry.getCrc();
-                                if (pathTo.endsWith(".jar.external")) {
+                                if (pathTo.endsWith(".external")) {
                                     File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
                                     final InputStream spec = jarFile.getInputStream(entry);
                                     InputStream is = externalDownload(spec);
@@ -436,7 +436,8 @@ public final class ModuleUpdater extends Thread {
                                     is.close();
                                     os.close();
                                     crc = UpdateTracking.getFileCRC(downloaded);
-                                }
+                                    pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
+                                } else
                                 if(pathTo.endsWith(".jar.pack.gz") &&
                                         jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
                                      //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
@@ -484,7 +485,7 @@ public final class ModuleUpdater extends Thread {
                     }
                 }
                 catch ( java.io.IOException e ) {
-                    // Ignore non readable files
+                    // XXX this should rather roll back: delete everything written so far
                     XMLUtil.LOG.log(Level.INFO, "Ignore non-readable files ", e);
                 }
                 finally {
