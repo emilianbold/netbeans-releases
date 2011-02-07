@@ -252,7 +252,6 @@ class JaveleonModuleReloader {
             if (changed) {
                 map = retainOpenTopComponents(mgr.getClassLoader());
                 Module registeredModule = getAndClearRegisteredModule(original);
-                System.err.println("Change detected, unloading layer for " + original + " (but actually for " + registeredModule + ")");
                 loadLayers(installer, registeredModule, false);
                 //installer.unload(Collections.singletonList(registeredModule));
                 installer.dispose(registeredModule);
@@ -260,7 +259,6 @@ class JaveleonModuleReloader {
             mgr.replaceJaveleonModule(original, newModule);
             systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
             if (changed) {
-                System.err.println("Change detected, loading layer for " + newModule);
                 installer.prepare(newModule);
                 loadLayers(installer, newModule, true);
                 //installer.load(Collections.singletonList(newModule));
@@ -298,7 +296,6 @@ class JaveleonModuleReloader {
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
-
     }
 
     private boolean layersChanged(Module m1, Module m2) {
