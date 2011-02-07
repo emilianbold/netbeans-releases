@@ -85,9 +85,9 @@ public abstract class CommonStackDataStorageTests {
     @Test
     public void testSimple() {
         db.putSample(Arrays.<CharSequence>asList("func1"), 0, 10);
-        db.putSample(Arrays.<CharSequence>asList("func1", "func2"), 1, 10);
-        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3"), 2, 10);
-        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3", "func4"), 3, 10);
+        db.putSample(Arrays.<CharSequence>asList("func2", "func1"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("func3", "func2", "func1"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("func4", "func3", "func2", "func1"), 3, 10);
         flush(db);
 
         List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
@@ -121,9 +121,9 @@ public abstract class CommonStackDataStorageTests {
     @Test
     public void testCallersCallees() {
         db.putSample(Arrays.<CharSequence>asList("func1", "func1"), 0, 10);
-        db.putSample(Arrays.<CharSequence>asList("func2", "func1"), 1, 10);
-        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3"), 2, 10);
-        db.putSample(Arrays.<CharSequence>asList("func3", "func2", "func1"), 3, 10);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func2"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("func3", "func2", "func1"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("func1", "func2", "func3"), 3, 10);
         flush(db);
 
         List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
@@ -168,11 +168,11 @@ public abstract class CommonStackDataStorageTests {
 
     @Test
     public void testDeepCallers() {
-        db.putSample(Arrays.<CharSequence>asList("x", "a", "b", "c", "x"), 0, 10);
-        db.putSample(Arrays.<CharSequence>asList("x", "a", "b", "x"), 1, 10);
-        db.putSample(Arrays.<CharSequence>asList("a", "b", "c"), 2, 10);
-        db.putSample(Arrays.<CharSequence>asList("x", "x", "a", "b", "c"), 3, 10);
-        db.putSample(Arrays.<CharSequence>asList("x", "b", "c"), 4, 10);
+        db.putSample(Arrays.<CharSequence>asList("x", "c", "b", "a", "x"), 0, 10);
+        db.putSample(Arrays.<CharSequence>asList("x", "b", "a", "x"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("c", "b", "a"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("c", "b", "a", "x", "x"), 3, 10);
+        db.putSample(Arrays.<CharSequence>asList("c", "b", "x"), 4, 10);
         flush(db);
 
         List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
@@ -203,12 +203,12 @@ public abstract class CommonStackDataStorageTests {
 
     @Test
     public void testDeepCallees() {
-        db.putSample(Arrays.<CharSequence>asList("a", "b", "c", "d", "e"), 0, 10);
-        db.putSample(Arrays.<CharSequence>asList("a", "b", "c", "d", "f"), 1, 10);
-        db.putSample(Arrays.<CharSequence>asList("b", "c", "d", "e"), 2, 10);
-        db.putSample(Arrays.<CharSequence>asList("b", "c", "d", "f"), 3, 10);
-        db.putSample(Arrays.<CharSequence>asList("c", "d", "e"), 4, 10);
-        db.putSample(Arrays.<CharSequence>asList("c", "d", "f"), 5, 10);
+        db.putSample(Arrays.<CharSequence>asList("e", "d", "c", "b", "a"), 0, 10);
+        db.putSample(Arrays.<CharSequence>asList("f", "d", "c", "b", "a"), 1, 10);
+        db.putSample(Arrays.<CharSequence>asList("e", "d", "c", "b"), 2, 10);
+        db.putSample(Arrays.<CharSequence>asList("f", "d", "c", "b"), 3, 10);
+        db.putSample(Arrays.<CharSequence>asList("e", "d", "c"), 4, 10);
+        db.putSample(Arrays.<CharSequence>asList("f", "d", "c"), 5, 10);
         flush(db);
 
         List<FunctionCallWithMetric> hotSpots = db.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Collections.<DataFilter>emptyList(), 10);
