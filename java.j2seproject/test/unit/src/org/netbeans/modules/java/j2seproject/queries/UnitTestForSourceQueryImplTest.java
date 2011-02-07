@@ -83,7 +83,6 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances(
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.UnitTestForSourceQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         );

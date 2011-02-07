@@ -47,8 +47,8 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -103,7 +103,7 @@ public abstract class CndFileSystemProvider {
 
     public static FileObject toFileObject(CharSequence absPath) {
         FileObject result = getDefault().toFileObjectImpl(absPath);
-        CndUtils.assertNotNull(result, "Null file object"); //NOI18N
+        CndUtils.assertNotNull(result, "Null file object for " + absPath); //NOI18N
         return result;
     }
 
@@ -121,7 +121,7 @@ public abstract class CndFileSystemProvider {
 
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
-        CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
+        CndUtils.assertNotNull(result, "Null URL for file object " + fileObject); //NOI18N
         return result;
     }
     
@@ -129,7 +129,7 @@ public abstract class CndFileSystemProvider {
         CndUtils.assertAbsolutePathInConsole(absPath.toString());
         return getDefault().getCanonicalPathImpl(fileSystem, absPath);
     }
-
+    
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -196,7 +196,7 @@ public abstract class CndFileSystemProvider {
             File file = new File(FileUtil.normalizePath(absPath.toString()));
             fo = FileUtil.toFileObject(file);
             if (fo == null) {
-                fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
+                fo = InvalidFileObjectSupport.getInvalidFileObject(file);
             }
             return fo;
         }
@@ -299,6 +299,6 @@ public abstract class CndFileSystemProvider {
                 }
             }
             return absPath;
-        }        
+        }
     }
 }

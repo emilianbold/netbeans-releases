@@ -70,10 +70,10 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -752,6 +752,8 @@ public class ModelSupport implements PropertyChangeListener {
                         ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
                         if (project != null) {
                             project.onFileExternalCreate(fo);
+                        } else {
+                            CndFileUtils.clearFileExistenceCache();
                         }
                    } else {
                         CsmFile[] files = CsmUtilities.getCsmFiles(fo, false);

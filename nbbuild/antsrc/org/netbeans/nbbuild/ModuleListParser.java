@@ -138,6 +138,12 @@ final class ModuleListParser {
                         String clusterName = tok.nextToken();
                         String moduleList = properties.get(clusterName);
                         if (moduleList != null) {
+                            // Hack to treat libs.junit4 as if it were in platform for purposes of building, yet build to another cluster.
+                            if (clusterName.equals("nb.cluster.platform")) {
+                                moduleList += ",libs.junit4";
+                            }
+
+
                             StringTokenizer tok2 = new StringTokenizer(moduleList, ", ");
                             while (tok2.hasMoreTokens()) {
                                 String module = tok2.nextToken();

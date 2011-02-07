@@ -120,6 +120,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
@@ -183,8 +184,7 @@ import org.openide.util.Exceptions;
 		MIValue addrValue = frameTuple.valueOf("addr");	// NOI18N
 		if (addrValue != null) {
 		    String addr = addrValue.asConst().value();
-		    addr = addr.substring(2);	// skip 0x
-		    pc = Long.parseLong(addr, 16);
+                    pc = Address.parseAddr(addr);
 		}
 
                 MIValue funcValue = frameTuple.valueOf("func"); // NOI18N
@@ -362,7 +362,7 @@ import org.openide.util.Exceptions;
             connectExisting = false;
         }
 
-
+        profileBridge.setup(gdi);
 	if (!connectExisting) {
 	    int flags = 0;
 	    if (Log.Startup.nopty)
@@ -3180,6 +3180,7 @@ import org.openide.util.Exceptions;
         }
         
         String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        outputFile = localToRemote("symbol-file", outputFile); //NOI18N
         if (!CndPathUtilitities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531
             send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
@@ -3701,7 +3702,7 @@ import org.openide.util.Exceptions;
 	    */
 	    bm().noteNewHandler(rt, bp, handler);
         } catch (Exception x) {
-            x.printStackTrace();
+            Exceptions.printStackTrace(x);
 	    /* LATER
             // something went wrong, create a "broken" breakpoint
             if (created != null) {

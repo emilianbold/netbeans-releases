@@ -85,7 +85,6 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances(
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceForBinaryQuery(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         );

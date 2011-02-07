@@ -74,6 +74,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public boolean isAbsolute(String path) {
+        return path.startsWith("/"); //NOI18N
+    }
+    
+    @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();

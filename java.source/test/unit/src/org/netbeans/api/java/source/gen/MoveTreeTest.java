@@ -77,7 +77,7 @@ import org.netbeans.modules.java.ui.FmtOptions;
  * 
  * @author Pavel Flaska
  */
-public class MoveTreeTest extends GeneratorTest {
+public class MoveTreeTest extends GeneratorTestBase {
 
     static {
         System.setProperty("org.netbeans.api.java.source.WorkingCopy.keep-old-trees", "true");

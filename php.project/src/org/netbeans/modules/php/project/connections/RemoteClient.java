@@ -674,7 +674,7 @@ public final class RemoteClient implements Cancellable {
                 }
             } finally {
                 os.close();
-                FileObject FO = FileUtil.toFileObject(tmpLocalFile);
+                FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
                 if (FO != null) FO.refresh();
                 if (success) {
                     // move the file
@@ -688,7 +688,7 @@ public final class RemoteClient implements Cancellable {
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                     try {
-                        FileUtil.toFileObject(tmpLocalFile).delete();
+                        FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile)).delete();
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
                         }
@@ -733,7 +733,7 @@ public final class RemoteClient implements Cancellable {
                 // intentional usage of java.io.File!!
                 //  (if the file is opened in the editor, it's not closed, just refreshed)
                 moved[0] = target.renameTo(oldPath);
-                FileObject FO = FileUtil.toFileObject(target);
+                FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(target));
                 if (FO != null) FO.refresh();
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
@@ -765,7 +765,7 @@ public final class RemoteClient implements Cancellable {
             return localFile;
         }
         File newFile = new File(localFile, transferFile.getRelativePath(true));
-        FileObject FO = FileUtil.toFileObject(newFile);
+        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
         if (FO != null) FO.refresh();
         return newFile;
     }
@@ -773,7 +773,7 @@ public final class RemoteClient implements Cancellable {
     // #169778
     private File getLocalFile(File localFile, TransferFile parent, RemoteFile file) {
         File newFile = new File(getLocalFile(localFile, parent), file.getName());
-        FileObject FO = FileUtil.toFileObject(newFile);
+        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
         if (FO != null) FO.refresh();
         return newFile;
     }
@@ -1063,7 +1063,7 @@ public final class RemoteClient implements Cancellable {
         assert source.exists() : "Source file must exist " + source;
         assert !target.exists() : "Target file cannot exist " + target;
 
-        FileObject sourceFO = FileUtil.toFileObject(source);
+        FileObject sourceFO = FileUtil.toFileObject(FileUtil.normalizeFile(source));
         assert sourceFO != null : "Source fileobject must exist " + source;
 
         String name = getName(target.getName());
@@ -1094,7 +1094,7 @@ public final class RemoteClient implements Cancellable {
             return;
         }
         try {
-            FileUtil.toFileObject(file).delete();
+            FileUtil.toFileObject(FileUtil.normalizeFile(file)).delete();
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", file.getName()));
             }

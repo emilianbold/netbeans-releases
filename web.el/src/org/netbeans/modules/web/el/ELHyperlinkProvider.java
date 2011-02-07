@@ -83,6 +83,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -153,13 +154,13 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     private String getTooltipTextForElement(Pair<Node, ELElement> pair) {
-        FileObject context = pair.second.getParserResult().getFileObject();
+        FileObject context = pair.second.getSnapshot().getSource().getFileObject();
         final Element resolvedElement = ELTypeUtilities.create(context).resolveElement(pair.second, pair.first);
         if (resolvedElement == null) {
             return null;
         }
         final String[] result = new String[1];
-        ClasspathInfo cp = ClasspathInfo.create(pair.second.getParserResult().getFileObject());
+        ClasspathInfo cp = ClasspathInfo.create(pair.second.getSnapshot().getSource().getFileObject());
         try {
             JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
 
@@ -178,7 +179,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     }
     
     private String getTooltipTextForBundleKey(Pair<Node, ELElement> pair) {
-        FileObject context = pair.second.getParserResult().getFileObject();
+        FileObject context = pair.second.getSnapshot().getSource().getFileObject();
         ResourceBundles resourceBundles = ResourceBundles.get(context);
         if (!resourceBundles.canHaveBundles()) {
             return null;
@@ -246,7 +247,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         if (nodeElem == null) {
             return;
         }
-        FileObject context = nodeElem.second.getParserResult().getFileObject();
+        FileObject context = nodeElem.second.getSnapshot().getSource().getFileObject();
         Element javaElement = ELTypeUtilities.create(context).resolveElement(nodeElem.second, nodeElem.first);
         if (javaElement != null) {
             ElementOpen.open(ClasspathInfo.create(context), javaElement);
@@ -254,15 +255,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     private int[] getELIdentifierSpan(Document doc, int offset) {
-        TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
-        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-        tokenSequence.move(offset);
-        if (!tokenSequence.moveNext()) {
-            return null; //no token
-        }
-
-        //check expression language
-        TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        TokenSequence<?> elTokenSequence = LexerUtils.getTokenSequence(doc, offset, ELTokenId.language(), false);
         if (elTokenSequence == null) {
             return null;
         }

@@ -91,23 +91,18 @@ public class MakeConfiguration extends Configuration {
     public static final String EXT_FOLDER = "_ext"; // NOI18N
     public static final String OBJECTDIR_MACRO_NAME = "OBJECTDIR"; // NOI18N
     public static final String OBJECTDIR_MACRO = "${" + OBJECTDIR_MACRO_NAME + "}"; // NOI18N
-
     public static final String CND_CONF_MACRO = "${CND_CONF}"; // NOI18N
     public static final String CND_PLATFORM_MACRO = "${CND_PLATFORM}"; // NOI18N
     public static final String CND_DISTDIR_MACRO = "${CND_DISTDIR}"; // NOI18N
     public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
-
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
     };
-
     private static String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),
-    };
-
+        getString("StaticLibraryName"),};
     private static String[] TYPE_NAMES_MANAGED_QT = {
         getString("QtApplicationName"),
         getString("QtDynamicLibraryName"),
@@ -163,8 +158,7 @@ public class MakeConfiguration extends Configuration {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null, TYPE_APPLICATION);
         } else if (configurationTypeValue == TYPE_QT_APPLICATION || configurationTypeValue == TYPE_QT_DYNAMIC_LIB || configurationTypeValue == TYPE_QT_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_QT, null, TYPE_QT_APPLICATION);
-        }
-        else {
+        } else {
             assert false;
         }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
@@ -942,7 +936,7 @@ public class MakeConfiguration extends Configuration {
 
     public String expandMacros(String val) {
         // Substitute macros
-        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' +MakeConfiguration.CND_CONF_MACRO+ '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
@@ -958,6 +952,7 @@ public class MakeConfiguration extends Configuration {
      * Names are shifted by offset to match value and limit choice
      */
     private final static class ManagedIntConfiguration extends IntConfiguration {
+
         private int offset;
 
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options, int offset) {

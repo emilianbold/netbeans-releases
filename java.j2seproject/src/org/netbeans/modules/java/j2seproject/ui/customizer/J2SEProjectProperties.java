@@ -87,7 +87,6 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -180,6 +179,8 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    //Disables copying of dependencies to dist folder
+    public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     
     ClassPathSupport cs;
     
@@ -226,6 +227,7 @@ public class J2SEProjectProperties {
     Document BUILD_CLASSES_EXCLUDES_MODEL; 
     ButtonModel JAR_COMPRESS_MODEL;
     ButtonModel DO_JAR_MODEL;
+    ButtonModel COPY_LIBS_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -382,6 +384,7 @@ public class J2SEProjectProperties {
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
         DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, kind);
         doJarBooleanKind = kind[0];
+        COPY_LIBS_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, MKDIST_DISABLED);
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -558,7 +561,7 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
                                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N

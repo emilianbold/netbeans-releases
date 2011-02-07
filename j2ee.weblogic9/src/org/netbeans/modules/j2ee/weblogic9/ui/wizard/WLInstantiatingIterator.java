@@ -79,7 +79,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * The default debugger port for the instance, it will be assigned to it
      * at creation time and can be changed via the properties sheet
      */
-    private static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
+    public static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
 
     public static final String DEFAULT_MAC_MEM_OPTS = "-Xmx1024m -XX:PermSize=256m"; // NOI18N
 
