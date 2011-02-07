@@ -42,7 +42,9 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +52,9 @@ import java.io.InterruptedIOException;
 import java.io.Writer;
 import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -63,6 +67,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
@@ -385,4 +390,102 @@ class SftpSupport {
         LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
         return ftask;
     }
+
+    private class StatLoader implements Callable<StatInfo> {
+
+        private final String path;
+
+        public StatLoader(String path) {
+            assert path.startsWith("/"); //NOI18N
+            this.path = path;
+        }
+                
+        @Override
+        public StatInfo call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            LOG.log(Level.FINE, "{0} started", getTraceName());
+            ChannelSftp cftp = getChannel();
+            SftpATTRS attrs = cftp.lstat(path);            
+            String dirName, baseName;
+            int slashPos = path.lastIndexOf('/');
+            if (slashPos == 0) {
+                dirName = "";
+                baseName = path.substring(1);
+            } else {
+                dirName = path.substring(0, slashPos);
+                baseName = path.substring(slashPos + 1);
+            }
+            StatInfo result = createStatInfo(dirName, baseName, attrs, cftp);
+            LOG.log(Level.FINE, "{0} finished", getTraceName());
+            return result;
+        }
+
+        public String getTraceName() {
+            return "Getting stat for " + path; //NOI18N
+        }
+    }
+
+    private class LsLoader implements Callable<StatInfo[]> {
+
+        private final String path;
+
+        public LsLoader(String path) {
+            assert path.startsWith("/"); //NOI18N
+            this.path = path;
+        }
+                
+        @Override
+        public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            LOG.log(Level.FINE, "{0} started", getTraceName());
+            ChannelSftp cftp = getChannel();
+            List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
+            StatInfo[] result = new StatInfo[entries.size()];
+            int i = 0;
+            for (LsEntry entry : entries) {
+                SftpATTRS attrs = entry.getAttrs();
+                result[i++] = createStatInfo(path, entry.getFilename(), attrs, cftp);
+            }            
+            LOG.log(Level.FINE, "{0} finished", getTraceName());
+            return result;
+        }
+
+        public String getTraceName() {
+            return "Getting stat for " + path; //NOI18N
+        }
+    }
+    
+    private StatInfo createStatInfo(String dirName, String baseName, SftpATTRS attrs, ChannelSftp cftp) throws SftpException {
+        String linkTarget = null;
+        if (attrs.isLink()) {
+            String path = dirName + '/' + baseName;
+            LOG.log(Level.FINE, "performing readlink {0}", path);
+            linkTarget = cftp.readlink(path);
+        }
+        Date lastModified = new Date(attrs.getMTime()*1000L);
+        StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.isDir(), attrs.isLink(), linkTarget, attrs.getPermissions(), lastModified);
+        return result;
+    }
+    
+   static /*package*/ Future<FileInfoProvider.StatInfo> stat(ExecutionEnvironment env, String absPath, Writer error) {
+       return getInstance(env).statImpl(absPath, error);
+   } 
+
+    private Future<StatInfo> statImpl(String absPath, Writer error) {
+        StatLoader loader = new StatLoader(absPath);
+        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
+        requestProcessor.post(ftask);
+        LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
+        return ftask;
+    }
+
+    private Future<StatInfo[]> lsImpl(ExecutionEnvironment env, String absPath, Writer error) {
+        LsLoader loader = new LsLoader(absPath);
+        FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
+        requestProcessor.post(ftask);
+        LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
+        return ftask;
+    }
+    
+    static /*package*/ Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath, Writer error) {
+        return getInstance(env).lsImpl(env, absPath, error);
+    }    
 }
