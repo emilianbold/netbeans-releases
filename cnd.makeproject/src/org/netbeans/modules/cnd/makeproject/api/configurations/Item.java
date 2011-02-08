@@ -162,7 +162,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     private void renameTo(String newPath) {
         Folder f = getFolder();
-        String oldPath = getAbsPath();
+        String oldPath;
+        if (fileObject != null) {
+            try {
+                oldPath = CndFileUtils.normalizeAbsolutePath(fileObject.getFileSystem(), getAbsPath());
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                oldPath = CndFileUtils.normalizeAbsolutePath(getAbsPath());
+            }
+        } else {
+            oldPath = CndFileUtils.normalizeAbsolutePath(getAbsPath());
+        }
         Item item = f.addItem(new Item(newPath));
         if (item != null && item.getFolder() != null) {
             if (item.getFolder().isProjectFiles()) {
