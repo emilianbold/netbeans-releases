@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -168,11 +169,23 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     private void checkAccess(String path, String chmod, ExecutionEnvironment env, boolean read, boolean write, boolean execute) throws Exception {
         runScript("chmod " + chmod + ' ' + path);
         StatInfo statInfo = getStatInfo(path);
-        assertEquals("canRead for " + path, read, statInfo.canRead(env));        
-        assertEquals("canWrite for " + path, write, statInfo.canWrite(env));        
-        assertEquals("canExecute for " + path, execute, statInfo.canExecute(env));
+        checkAccess("canRead", path, env, read, statInfo.canRead(env));        
+        checkAccess("canWrite", path, env, write, statInfo.canWrite(env));        
+        checkAccess("canExecute", path, env, execute, statInfo.canExecute(env));
     }
-            
+    
+    private void checkAccess(String prefix, String path, ExecutionEnvironment env, boolean expected, boolean actual) throws Exception {
+        if (expected != actual) {
+            StringBuilder sb = new StringBuilder(prefix).append(" differs for ").append(path).append(": ");
+            sb.append("expected ").append(expected).append(" but was ").append(actual).append('\n');
+            try {
+                sb.append(runScript(env, "id; ls -ld " + path));
+            } catch (Throwable ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            assertTrue(sb.toString(), false);
+        }
+    }            
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testLs() throws Exception {
@@ -236,7 +249,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
             assertEquals("link target for " + path, link, statInfo.getLinkTarget());
         }
         long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
-        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > Math.abs(skew) + 1000*60*5) {
+        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > skew + 1000*60*5) {
             assertTrue("last modified differs too much: " + creationDate +  " vs " + statInfo.getLastModified(), false);
         }
     }

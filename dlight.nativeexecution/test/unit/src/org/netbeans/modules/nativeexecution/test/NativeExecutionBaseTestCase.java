@@ -242,13 +242,22 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     protected String runCommand(String command, String... args) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), command, args);
+        return runCommand(getTestExecutionEnvironment(), command, args);
+    }
+
+    protected String runCommand(ExecutionEnvironment env, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, command, args);
         assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
         return res.output;
     }
 
     protected String runCommandInDir(String dir, String command, String... args) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, getTestExecutionEnvironment(), command, args);
+        return runCommandInDir(getTestExecutionEnvironment(), dir, command, args);
+        
+    }
+    
+    protected String runCommandInDir(ExecutionEnvironment env, String dir, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
         assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
                 "\" in dir " + dir + " failed", res.isOK());
         return res.output;
@@ -263,8 +272,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
     
     protected String runScript(String script) throws Exception {
-        final StringBuilder output = new StringBuilder();
-        ShellScriptRunner scriptRunner = new ShellScriptRunner(getTestExecutionEnvironment(), script, new LineProcessor() {
+        return runScript(getTestExecutionEnvironment(), script);
+    }
+
+    protected String runScript(ExecutionEnvironment env, String script) throws Exception {
+        final StringBuilder output = new StringBuilder();        
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(env, script, new LineProcessor() {
             @Override
             public void processLine(String line) {
                 output.append(line).append('\n');
