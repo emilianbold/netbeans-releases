@@ -100,7 +100,7 @@ class SftpSupport {
         return uploadCount.get();
     }
 
-    private static SftpSupport getInstance(ExecutionEnvironment execEnv) {
+    /*package*/ static SftpSupport getInstance(ExecutionEnvironment execEnv) {
         SftpSupport instance = null;
         synchronized (instancesLock) {
             instance = instances.get(execEnv);
@@ -112,25 +112,14 @@ class SftpSupport {
         return instance;
     }
 
-    static Future<Integer> uploadFile(CommonTasksSupport.UploadParameters parameters) {
-        return getInstance(parameters.dstExecEnv).uploadFileImpl(parameters);
-    }
-
-    static Future<Integer> downloadFile(
-            final String srcFileName,
-            final ExecutionEnvironment execEnv,
-            final String dstFileName,
-            final Writer error) {
-        return getInstance(execEnv).downloadFile(srcFileName, dstFileName, error);
-    }
+    //private final RequestProcessor requestProcessor;
+    // Trying to work around #184068 -  Instable remote unit tests failure
+    private static final RequestProcessor requestProcessor = new RequestProcessor("SFTP request processor"); // NOI18N;
+    
     //
     // Instance stuff
     //
     private final ExecutionEnvironment execEnv;
-
-    //private final RequestProcessor requestProcessor;
-    // Trying to work around #184068 -  Instable remote unit tests failure
-    private static final RequestProcessor requestProcessor = new RequestProcessor("SFTP request processor"); // NOI18N;
 
     // its's ok to hav a single one since we have only single-threaded request processor
     private ChannelSftp channel;
@@ -358,7 +347,7 @@ class SftpSupport {
         }
     }
     
-    private Future<Integer> uploadFileImpl(CommonTasksSupport.UploadParameters parameters) {
+    /*package*/ Future<Integer> uploadFile(CommonTasksSupport.UploadParameters parameters) {
         Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
         Uploader uploader = new Uploader(
                 parameters.srcFile.getAbsolutePath(),
@@ -379,7 +368,7 @@ class SftpSupport {
         return ftask;
     }
 
-    private Future<Integer> downloadFile(
+    /*package*/ Future<Integer> downloadFile(
             final String srcFileName,
             final String dstFileName,
             final Writer error) {
@@ -434,6 +423,7 @@ class SftpSupport {
         }
                 
         @Override
+        @SuppressWarnings("unchecked")
         public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
@@ -465,11 +455,7 @@ class SftpSupport {
         return result;
     }
     
-   static /*package*/ Future<FileInfoProvider.StatInfo> stat(ExecutionEnvironment env, String absPath, Writer error) {
-       return getInstance(env).statImpl(absPath, error);
-   } 
-
-    private Future<StatInfo> statImpl(String absPath, Writer error) {
+    /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
         StatLoader loader = new StatLoader(absPath);
         FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
         requestProcessor.post(ftask);
@@ -477,15 +463,11 @@ class SftpSupport {
         return ftask;
     }
 
-    private Future<StatInfo[]> lsImpl(ExecutionEnvironment env, String absPath, Writer error) {
+    /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
         LsLoader loader = new LsLoader(absPath);
         FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
         requestProcessor.post(ftask);
         LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
         return ftask;
     }
-    
-    static /*package*/ Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath, Writer error) {
-        return getInstance(env).lsImpl(env, absPath, error);
-    }    
 }
