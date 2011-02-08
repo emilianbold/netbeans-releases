@@ -1059,6 +1059,13 @@ public class Gdb {
         public MyMIProxy(MICommandInjector injector, String encoding) {
             super(injector, "(gdb)", encoding); // NOI18N
         }
+    
+        @Override
+        protected void dispatch(MIRecord record) {
+            if (!debugger.postedKillEngine()) {
+                super.dispatch(record);
+            }
+        }
 
         private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
         
