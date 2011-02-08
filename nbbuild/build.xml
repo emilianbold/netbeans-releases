@@ -1386,61 +1386,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <createlicensesummary report="build/createlicensesummary.xml" nball=".." build="${netbeans.dest.dir}" summary="${netbeans.dest.dir}/THIRDPARTYLICENSE-generated.txt"/>
     </target>
 
-  <target name="sanity-build-from-source-pkg" depends="build-source">
-    <available file="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"
-               property="pkg.available"/>
-    <fail message="Source package ${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip not available" unless="pkg.available"/>
-    <delete dir="testbuild"/>
-    <mkdir dir="testbuild"/>
-    <unzip dest="testbuild" src="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"/>
-    <property name="one.cluster.name" value="${cluster.name}"/>
-    <propertyset id="sanity-build">
-      <propertyref name="one.cluster.name"/>
-    </propertyset>
-    <echoproperties destfile="testbuild/nbbuild/user.properties">
-        <propertyset refid="sanity-build"/>
-    </echoproperties>
-
-    <!-- it should call build of the refered cluster and not just hardcoded platform -->
-    <ant antfile="testbuild/nbbuild/build.xml" inheritall="false" target="build-one-cluster">
-      <property file="testbuild/nbbuild/user.properties"/>
-    </ant>
-    <delete dir="testbuild"/>
-  </target>
-
-  <target name="build-source"
-    depends="init,set-buildnumber"
-    description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
-    if="cluster.name"
-  >
-    <fail message="Specify cluster.name property!" unless="cluster.name"/>
-    <property name="buildnum" value="dev-${buildnumber}"/>
-    <echo message="Packaging sources of ${cluster.name} modules"/>
-    <resolve name="cluster-modules" value="${cluster.name}"/>
-    <resolve name="harness-modules" value="nb.cluster.harness"/>
-    
-    <mkdir dir="${netbeans.build.dir}"/>
-    <dirset 
-        id="source.dirset" dir="${nb_all}"
-        includes="${cluster-modules},${harness-modules},ide,nbbuild,nbi"
-        excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
-    />
-    <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
-      <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
-    </pathconvert>
-    <zip zipfile="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip" duplicate="preserve">
-      <zipfileset dir="${nb_all}" includes="${source.dirs}">
-          <exclude name="*/build/**/*"/>
-          <exclude name="nbbuild/netbeans/**"/>
-	  <exclude name="nbbuild/licenses/**"/>
-      </zipfileset>
-      <zipfileset dir="${nb_all}">
-          <include name="nbbuild/licenses/CDDL-GPL-2-CP"/>
-          <include name="build.xml"/>
-      </zipfileset>
-    </zip>
-  </target>
-
   <target name="build-source-config"
     depends="init,set-buildnumber"
     description="Packages sources needed to compile one cluster.config">
