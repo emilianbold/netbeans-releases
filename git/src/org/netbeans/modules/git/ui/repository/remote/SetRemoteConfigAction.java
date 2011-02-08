@@ -43,9 +43,9 @@
 package org.netbeans.modules.git.ui.repository.remote;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -53,99 +53,78 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author ondra
  */
-public class SetRemoteConfig {
+public class SetRemoteConfigAction extends SingleRepositoryAction {
 
-    public void updateRemote (File repository, final RemoteConfig remote, final Runnable runnable) {
+    public void updateRemote (File repository, final GitRemoteConfig remote, final Runnable runnable) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
                 try {
                     GitClient client = getClient();
                     client.setRemote(remote, this);
-                    runnable.run();
+                    if (runnable != null) {
+                        runnable.run();
+                    }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SetRemoteConfig.class, "LBL_SetRemoteConfig.progressName")); //NOI18N
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SetRemoteConfigAction.class, "LBL_SetRemoteConfig.progressName")); //NOI18N
     }
 
+    @Override
+    protected void performAction (File repository, File[] roots, VCSContext context) {
+        String selectedRemote = getSelectedRemote(context.getElements().lookupAll(Node.class));
+        setRemote(repository, selectedRemote);
+    }
+
+    public void setRemote (File repository, String selectedRemote) {
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        info.refreshRemotes();
+        Map<String, GitRemoteConfig> remotes = info.getRemotes();
+        SetupRemoteWizard wiz = new SetupRemoteWizard(repository, remotes, selectedRemote);
+        if (wiz.show()) {
+            GitRemoteConfig remote = wiz.getRemote();
+            updateRemote(repository, remote, null);
+        }
+    }
+
+    @Override
+    public String getName () {
+        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (getSelectedRemote(nodes == null ? Collections.<Node>emptySet() : Arrays.asList(nodes)) == null) {
+            return super.getName();
+        } else {
+            return NbBundle.getMessage(getClass(), "LBL_" + getClass().getSimpleName() + "_Name.remoteKnown"); //NOI18N
+        }
+    }
     
-    public static class RemoteConfig implements GitRemoteConfig {
-        private final String remoteName;
-        private final LinkedList<String> pushRefSpecs;
-        private final LinkedList<String> pushUris;
-        private final LinkedList<String> fetchRefSpecs;
-        private final LinkedList<String> fetchUris;
-
-        public RemoteConfig (String remoteName) {
-            this(remoteName, Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList());
-        }
-        
-        private RemoteConfig (String remoteName, List<String> fetchUris, List<String> pushUris, List<String> fetchRefSpecs, List<String> pushRefSpecs) {
-            this.remoteName = remoteName;
-            this.fetchUris = new LinkedList<String>(fetchUris);
-            this.fetchRefSpecs = new LinkedList<String>(fetchRefSpecs);
-            this.pushUris = new LinkedList<String>(pushUris);
-            this.pushRefSpecs = new LinkedList<String>(pushRefSpecs);
-        }
-
-        private RemoteConfig (GitRemoteConfig originalConfig) {
-            this(originalConfig.getRemoteName(), originalConfig.getUris(), originalConfig.getPushUris(), originalConfig.getFetchRefSpecs(), originalConfig.getPushRefSpecs());
-        }
-
-        @Override
-        public String getRemoteName () {
-            return remoteName;
-        }
-
-        @Override
-        public List<String> getUris () {
-            return Collections.unmodifiableList(fetchUris);
-        }
-
-        @Override
-        public List<String> getPushUris () {
-            return Collections.unmodifiableList(pushUris);
-        }
-
-        @Override
-        public List<String> getFetchRefSpecs () {
-            return Collections.unmodifiableList(fetchRefSpecs);
-        }
-
-        @Override
-        public List<String> getPushRefSpecs () {
-            return Collections.unmodifiableList(pushRefSpecs);
-        }
-        
-        public static RemoteConfig createUpdatableRemote (File repository, String remoteName) {
-            RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            Map<String, GitRemoteConfig> remotes = info.getRemotes();
-            RemoteConfig config;
-            if (remotes.containsKey(remoteName)) {
-                config = new RemoteConfig(remotes.get(remoteName));
-            } else {
-                config = new RemoteConfig(remoteName);
+    private String getSelectedRemote (Collection<? extends Node> nodes) {
+        String selectedRemote = null;
+        for (Node node : nodes) {
+            GitRemoteConfig config = node.getLookup().lookup(GitRemoteConfig.class);
+            if (config != null) {
+                if (selectedRemote == null) {
+                    selectedRemote = config.getRemoteName();
+                } else {
+                    // only one remote can be updated
+                    selectedRemote = null;
+                    break;
+                }
             }
-            return config;
         }
-
-        public void setFetchUris (List<String> uris) {
-            update(fetchUris, uris);            
-        }
-
-        private void update (LinkedList<String> toUpdate, List<String> newValues) {
-            toUpdate.clear();
-            toUpdate.addAll(newValues);
-        }
+        return selectedRemote;
     }
 }

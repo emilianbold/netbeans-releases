@@ -164,16 +164,16 @@ public class FileBufferFile extends AbstractFileBuffer {
         return doGetChar();
     }
 
-    private static final class MyCharSequence implements CharSequence {
+    static final class MyCharSequence implements CharSequence {
         private final char[] buf;
         private final int start;
         private final int end;
 
-        private MyCharSequence(char[] buf) {
+        MyCharSequence(char[] buf) {
             this(buf, 0, buf.length);
         }
 
-        private MyCharSequence(char[] buf, int start, int end) {
+        MyCharSequence(char[] buf, int start, int end) {
             this.buf = buf;
             this.start = start;
             this.end = end;
@@ -191,7 +191,12 @@ public class FileBufferFile extends AbstractFileBuffer {
 
         @Override
         public CharSequence subSequence(int start, int end) {
-            return new MyCharSequence(buf, start, end);
+            return new MyCharSequence(buf, this.start + start, this.start + end);
+        }
+
+        @Override
+        public String toString() {
+            return new String(buf, start, end - start);
         }
     }
 }

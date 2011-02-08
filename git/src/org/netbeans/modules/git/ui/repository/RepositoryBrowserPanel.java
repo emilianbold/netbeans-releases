@@ -84,6 +84,7 @@ import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
+import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfigAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -794,7 +795,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class RemotesNode extends RepositoryBrowserNode {
 
         public RemotesNode (File repository) {
-            super(new AllRemotesChildren(repository));
+            super(new AllRemotesChildren(repository), Lookups.fixed(repository));
         }
 
         @Override
@@ -815,7 +816,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     public void actionPerformed (ActionEvent e) {
                         ((AllRemotesChildren) getChildren()).refreshRemotes();
                     }
-                }
+                },
+                SystemAction.get(SetRemoteConfigAction.class)
             };
         }
     }
@@ -873,16 +875,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Node[] createNodes (GitRemoteConfig key) {
-            return new Node[] { new RemoteNode(key) };
+            return new Node[] { new RemoteNode(repository, key) };
         }
     }
 
     private class RemoteNode extends RepositoryBrowserNode {
         private final String remoteName;
+        private final File repository;
 
-        public RemoteNode (GitRemoteConfig remote) {
-            super(new RemoteChildren(remote), Lookups.fixed(remote));
-            remoteName = remote.getRemoteName();
+        public RemoteNode (File repository, GitRemoteConfig remote) {
+            super(new RemoteChildren(remote), Lookups.fixed(remote, repository));
+            this.repository = repository;
+            this.remoteName = remote.getRemoteName();
         }
 
         @Override
@@ -897,13 +901,14 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 @Override
                 public void actionPerformed (ActionEvent e) {
                     FetchAction action = SystemAction.get(FetchAction.class);
-                    action.fetch(currRepository, getLookup().lookup(GitRemoteConfig.class));
+                    action.fetch(repository, getLookup().lookup(GitRemoteConfig.class));
                 }
             });
+            actions.add(SystemAction.get(SetRemoteConfigAction.class));
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
-                    new RemoveRemoteConfig().removeRemote(currRepository, remoteName);
+                    new RemoveRemoteConfig().removeRemote(repository, remoteName);
                 }
             });
             return actions.toArray(new Action[actions.size()]);

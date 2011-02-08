@@ -188,6 +188,7 @@ public class Gdb {
 	private Map<String, String> additionalEnv;
 	private IOPack ioPack;
 	private boolean remote;
+        private final String runDir;
 	private NativeDebuggerInfo ndi;	// TMP
 
 	public Factory(Executor executor,
@@ -198,6 +199,7 @@ public class Gdb {
 		       String gdbInitFile,
 		       Host host,
 		       boolean connectExisting,
+                       String runDir,
 		       GdbDebuggerInfo gdi) {
 	    this.executor = executor;
 	    this.additionalArgv = additionalArgv;
@@ -207,6 +209,7 @@ public class Gdb {
 	    this.gdbInitFile = gdbInitFile;
 	    this.host = host;
 	    this.connectExisting = connectExisting;
+            this.runDir = runDir;
 	    this.ndi = gdi;
 	}
 
@@ -463,7 +466,8 @@ public class Gdb {
                 if (!executor.isRemote() && Utilities.isWindows()) {
                     env = ndi.getProfile().getEnvironment().getenvAsMap();
                 }
-		pid = executor.startEngine(gdbname, gdb_argv, env, ndi.getProfile().getRunDirectory(),
+                
+		pid = executor.startEngine(gdbname, gdb_argv, env, runDir,
 		    ioPack.console(), false, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
@@ -1058,6 +1062,13 @@ public class Gdb {
 
         public MyMIProxy(MICommandInjector injector, String encoding) {
             super(injector, "(gdb)", encoding); // NOI18N
+        }
+    
+        @Override
+        protected void dispatch(MIRecord record) {
+            if (!debugger.postedKillEngine()) {
+                super.dispatch(record);
+            }
         }
 
         private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N
