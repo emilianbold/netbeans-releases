@@ -57,12 +57,13 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.remote.FetchUrisPanelController;
-import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfig;
-import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfig.RemoteConfig;
+import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfigAction;
+import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -83,7 +84,7 @@ public class FetchAction extends SingleRepositoryAction {
             if (controller.showDialog()) {
                 final RemoteConfig config = RemoteConfig.createUpdatableRemote(repository, remote.getRemoteName());
                 config.setFetchUris(Arrays.asList(controller.getURIs()));
-                new SetRemoteConfig().updateRemote(repository, config, new Runnable() {
+                SystemAction.get(SetRemoteConfigAction.class).updateRemote(repository, config, new Runnable() {
                     @Override
                     public void run () {
                         fetch(repository, controller.getSelectedURI(), config.getFetchRefSpecs());

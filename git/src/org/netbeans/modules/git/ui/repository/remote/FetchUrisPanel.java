@@ -48,6 +48,8 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ondra
@@ -57,6 +59,7 @@ public class FetchUrisPanel extends javax.swing.JPanel {
     /** Creates new form FetchUrisPanel */
     public FetchUrisPanel() {
         initComponents();
+        setName(NbBundle.getMessage(FetchUrisPanel.class, "LBL_FetchUrisPanel.name")); //NOI18N
     }
 
     /** This method is called from within the constructor to
