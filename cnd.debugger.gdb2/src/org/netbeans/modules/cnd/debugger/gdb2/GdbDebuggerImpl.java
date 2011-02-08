@@ -406,12 +406,15 @@ import org.openide.util.Exceptions;
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
+        String runDir = gdi.getProfile().getRunDirectory();
+        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
 	    gdbInitFile,
 	    getHost(),
 	    connectExisting,
+            runDir,
 	    gdi);
 	factory.start();
     }
