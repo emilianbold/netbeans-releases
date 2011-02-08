@@ -44,7 +44,10 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
@@ -77,7 +80,7 @@ public class FileInfoProvider {
             this.name = name;
             this.gid = gid;
             this.uid = uid;
-            this.access = access;
+            this.access = access & ACCESS_MASK;
             this.directory = directory;
             this.link = link;
             this.linkTarget = linkTarget;
@@ -114,6 +117,32 @@ public class FileInfoProvider {
 
         public boolean isLink() {
             return link;
+        }
+        
+        public String toExternalForm() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(escape(name)).append(' '); // 0
+            sb.append(accessToString(access)).append(' '); // 1
+            sb.append(directory).append(' '); // 2
+            sb.append(link).append(' '); // 3
+            sb.append(gid).append(' '); // 4
+            sb.append(uid).append(' '); // 5
+            sb.append(lastModified.getTime()).append(' '); // 6
+            sb.append(escape(linkTarget)).append(' '); // 7
+            return sb.toString();
+        }
+        
+        public static StatInfo fromExternalForm(String externalForm) {
+            String[] parts = externalForm.split(" +");
+            String name = unescape(parts[0]);
+            int acc = stringToAcces(parts[1]);
+            boolean dir = Boolean.parseBoolean(parts[2]);
+            boolean link = Boolean.parseBoolean(parts[3]);
+            int gid = Integer.parseInt(parts[4]);
+            int uid = Integer.parseInt(parts[5]);
+            long time = Long.parseLong(parts[6]);
+            String linkTarget = unescape(parts[7]);
+            return new StatInfo(name, uid, gid, dir, link, linkTarget, acc, new Date(time));
         }
         
         private boolean can(ExecutionEnvironment env, short all_mask, short grp_mask, short usr_mask) {
@@ -162,7 +191,9 @@ public class FileInfoProvider {
         @Override
         public String toString() {
             return name + ' ' + uid + ' ' + gid + ' '+ accessToString(access) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : ""); // NOI18N
-        }                
+        }
+        
+        
     }
     
     public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath) {
@@ -181,6 +212,7 @@ public class FileInfoProvider {
         return SftpSupport.getInstance(env).ls(absPath, error);
     }
         
+    private static final short ACCESS_MASK = 0x1FF;
     private static final short USR_R = 256;
     private static final short USR_W = 128;
     private static final short USR_X = 64;
@@ -191,24 +223,26 @@ public class FileInfoProvider {
     private static final short ALL_W = 2;
     private static final short ALL_X = 1;    
     
-//    private static short stringToAcces(String accessString) {
-//        short result = 0;
-//
-//        // 0-th character is file type => start with 1
-//        result |= (accessString.charAt(1) == 'r') ? USR_R : 0;
-//        result |= (accessString.charAt(2) == 'w') ? USR_W : 0;
-//        result |= (accessString.charAt(3) == 'x') ? USR_X : 0;
-//
-//        result |= (accessString.charAt(4) == 'r') ? GRP_R : 0;
-//        result |= (accessString.charAt(5) == 'w') ? GRP_W : 0;
-//        result |= (accessString.charAt(6) == 'x') ? GRP_X : 0;
-//
-//        result |= (accessString.charAt(7) == 'r') ? ALL_R : 0;
-//        result |= (accessString.charAt(8) == 'w') ? ALL_W : 0;
-//        result |= (accessString.charAt(9) == 'x') ? ALL_X : 0;
-//
-//        return result;
-//    }    
+    private static short stringToAcces(String accessString) {
+        if (accessString.length() < 9) {
+            throw new IllegalArgumentException("wrong access string: " + accessString);
+        }
+        short result = 0;
+
+        result |= (accessString.charAt(0) == 'r') ? USR_R : 0;
+        result |= (accessString.charAt(1) == 'w') ? USR_W : 0;
+        result |= (accessString.charAt(2) == 'x') ? USR_X : 0;
+
+        result |= (accessString.charAt(3) == 'r') ? GRP_R : 0;
+        result |= (accessString.charAt(4) == 'w') ? GRP_W : 0;
+        result |= (accessString.charAt(5) == 'x') ? GRP_X : 0;
+
+        result |= (accessString.charAt(6) == 'r') ? ALL_R : 0;
+        result |= (accessString.charAt(7) == 'w') ? ALL_W : 0;
+        result |= (accessString.charAt(8) == 'x') ? ALL_X : 0;
+
+        return result;
+    }    
     
     private static String accessToString(int access) {
         char[] accessChars = new char[9];
@@ -228,4 +262,23 @@ public class FileInfoProvider {
         return new String(accessChars);
     }
     
+    private static String escape(String text) {
+        try {
+            return URLEncoder.encode(text, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            text = text.replace(" ", "\\ ");
+            return text;
+        }
+    }
+
+    private static String unescape(String text) {
+        try {
+            return URLDecoder.decode(text, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            text = text.replace("\\ ", " ");
+            return text;
+        }
+    }
 }

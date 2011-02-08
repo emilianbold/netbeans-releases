@@ -48,7 +48,6 @@ import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -145,6 +144,25 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         checkAccess(remoteFile, "001", env, false, false, true);
         
         // TODO: test (other) groups
+    }
+    
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testExternalForm() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        StatInfo statInfo1 = getStatInfo(remoteLink);
+        String extForm = statInfo1.toExternalForm();
+        StatInfo statInfo2 = StatInfo.fromExternalForm(extForm);
+        assertEquals("getName()", statInfo1.getName(), statInfo2.getName());
+        assertEquals("getAccess()", statInfo1.getAccess(), statInfo2.getAccess());
+        assertEquals("getGropupId()", statInfo1.getGropupId(), statInfo2.getGropupId());
+        assertEquals("getLastModified()", statInfo1.getLastModified(), statInfo2.getLastModified());
+        assertEquals("getLinkTarget()", statInfo1.getLinkTarget(), statInfo2.getLinkTarget());
+        assertEquals("getUserId()", statInfo1.getUserId(), statInfo2.getUserId());        
+        assertEquals("isDirectory()", statInfo1.isDirectory(), statInfo2.isDirectory());
+        assertEquals("isLink()", statInfo1.isLink(), statInfo2.isLink());        
+        assertEquals("canRead()", statInfo1.canRead(env), statInfo2.canRead(env));
+        assertEquals("canWrite()", statInfo1.canWrite(env), statInfo2.canWrite(env));
+        assertEquals("canExecute()", statInfo1.canExecute(env), statInfo2.canExecute(env));
     }
     
     private void checkAccess(String path, String chmod, ExecutionEnvironment env, boolean read, boolean write, boolean execute) throws Exception {
