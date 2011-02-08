@@ -42,12 +42,16 @@ package org.netbeans.modules.nativeexecution.api.util;
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Date;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -112,6 +116,49 @@ public class FileInfoProvider {
             return link;
         }
         
+        private boolean can(ExecutionEnvironment env, short all_mask, short grp_mask, short usr_mask) {
+            if ((access & all_mask) > 0) {
+                return true;
+            }
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    if ((access & usr_mask) > 0) {
+                        if (this.uid == hostInfo.getUserId()) {
+                            return true;
+                        }
+                    }
+                    if ((access & grp_mask) > 0) {
+                        for (int currGid : hostInfo.getAllGroupIDs()) {
+                            if (gid == currGid) {
+                                return true;
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    // should be never thrown, since we checked isHostInfoAvailable() first
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    // should be never thrown, since we checked isHostInfoAvailable() first
+                    // however we never report CancellationException
+                }
+            }
+            return false;
+        }
+
+        public boolean canRead(ExecutionEnvironment env) {
+            return can(env, ALL_R, GRP_R, USR_R);
+        }
+
+        
+        public boolean canWrite(ExecutionEnvironment env) {
+            return can(env, ALL_W, GRP_W, USR_W);
+        }
+
+        public boolean canExecute(ExecutionEnvironment env) {
+            return can(env, ALL_X, GRP_X, USR_X);
+        }        
+
         @Override
         public String toString() {
             return name + ' ' + uid + ' ' + gid + ' '+ accessToString(access) + ' ' + directory + ' ' + lastModified + ' ' + (link ? " -> " + linkTarget : ""); // NOI18N
@@ -133,7 +180,7 @@ public class FileInfoProvider {
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath, Writer error) {
         return SftpSupport.getInstance(env).ls(absPath, error);
     }
-    
+        
     private static final short USR_R = 256;
     private static final short USR_W = 128;
     private static final short USR_X = 64;

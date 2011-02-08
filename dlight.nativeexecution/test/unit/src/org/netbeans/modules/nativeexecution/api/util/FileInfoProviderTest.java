@@ -121,9 +121,40 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         System.err.printf("Stat for %s: %s\n", remoteSubdirLink, statInfo);
         assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir, true, true, true);
     }
+    
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testAccessMode() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        
+        checkAccess(remoteFile, "700", env, true, true, true);
+        checkAccess(remoteFile, "400", env, true, false, false);
+        checkAccess(remoteFile, "200", env, false, true, false);
+        checkAccess(remoteFile, "100", env, false, false, true);
+        
+        checkAccess(remoteFile, "070", env, true, true, true);
+        checkAccess(remoteFile, "040", env, true, false, false);
+        checkAccess(remoteFile, "020", env, false, true, false);
+        checkAccess(remoteFile, "010", env, false, false, true);
+        
+        checkAccess(remoteFile, "007", env, true, true, true);
+        checkAccess(remoteFile, "004", env, true, false, false);
+        checkAccess(remoteFile, "002", env, false, true, false);
+        checkAccess(remoteFile, "001", env, false, false, true);
+        
+        // TODO: test (other) groups
+    }
+    
+    private void checkAccess(String path, String chmod, ExecutionEnvironment env, boolean read, boolean write, boolean execute) throws Exception {
+        runScript("chmod " + chmod + ' ' + path);
+        StatInfo statInfo = getStatInfo(path);
+        assertEquals("canRead", read, statInfo.canRead(env));        
+        assertEquals("canWrite", write, statInfo.canWrite(env));        
+        assertEquals("canExecute", execute, statInfo.canExecute(env));
+    }
+            
 
     @ForAllEnvironments(section = "remote.platforms")
-    public void testLs_1() throws Exception {
+    public void testLs() throws Exception {
         StatInfo[] res = getLs(remoteTmpDir);
         System.err.printf("LS for %s\n", remoteTmpDir);
         for (StatInfo info : res) {                        
