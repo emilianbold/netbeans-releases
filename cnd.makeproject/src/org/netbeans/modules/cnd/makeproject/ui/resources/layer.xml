@@ -473,6 +473,9 @@ made subject to such option by the copyright holder.
                 <file name="build">
                     <attr name="position" intvalue="400"/>
                 </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="450"/>
+                </file>
                 <file name="debug-test">
                     <attr name="position" intvalue="500"/>
                 </file>
@@ -505,6 +508,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="build">
                     <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="450"/>
                 </file>
                 <file name="debug-stepinto-test">
                     <attr name="position" intvalue="500"/>
