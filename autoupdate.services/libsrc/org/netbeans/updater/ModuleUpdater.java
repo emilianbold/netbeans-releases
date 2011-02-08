@@ -427,18 +427,24 @@ public final class ModuleUpdater extends Thread {
                                     File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
                                     final InputStream spec = jarFile.getInputStream(entry);
                                     AtomicLong assumedCRC = new AtomicLong();
-                                    InputStream is = externalDownload(spec, assumedCRC);
-                                    spec.close();
-                                    FileOutputStream os = new FileOutputStream(downloaded);
-                                    bytesRead = copyStreams(is, os, -1);
-                                    is.close();
-                                    os.close();
+                                    pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
+                                    InputStream is = externalDownload(spec, assumedCRC, pathTo);
+                                    try {
+                                        spec.close();
+                                        FileOutputStream os = new FileOutputStream(downloaded);
+                                        try {
+                                            bytesRead = copyStreams(is, os, -1);
+                                        } finally {
+                                            os.close();
+                                        }
+                                    } finally {
+                                        is.close();
+                                    }
                                     crc = UpdateTracking.getFileCRC(downloaded);
                                     if (assumedCRC.get() != -1 && assumedCRC.get() != crc) {
                                         downloaded.delete();
-                                        throw new IOException("Wrong CRC for " + downloaded);
+                                        throw new FileNotFoundException("Wrong CRC for " + downloaded);
                                     }
-                                    pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
                                 } else {
                                     bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
                                     crc = entry.getCrc();
@@ -491,9 +497,12 @@ public final class ModuleUpdater extends Thread {
                         }
                     }
                     }
+                } catch (FileNotFoundException x) {
+                    XMLUtil.LOG.log(Level.WARNING, "Missing NBM contents: {0}", x);
+                    // XXX this should rather roll back: delete everything written so far
+                    return; // do not write update tracking
                 }
                 catch ( java.io.IOException e ) {
-                    // XXX this should rather roll back: delete everything written so far
                     XMLUtil.LOG.log(Level.INFO, "Ignore non-readable files ", e);
                 }
                 finally {
@@ -540,7 +549,7 @@ public final class ModuleUpdater extends Thread {
     }
     
     // copied from nbbuild/antsrc/org/netbeans/nbbuild/AutoUpdate.java:
-    private InputStream externalDownload(InputStream is, AtomicLong crc) throws IOException {
+    private InputStream externalDownload(InputStream is, AtomicLong crc, String pathTo) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         URLConnection conn;
         crc.set(-1L);
@@ -578,7 +587,7 @@ public final class ModuleUpdater extends Thread {
                 }
             }
         }
-        throw new IOException("Cannot resolve external references");
+        throw new FileNotFoundException("Cannot resolve external reference to " + pathTo);
     }
     
     private boolean unpack200(File src, File dest) {
