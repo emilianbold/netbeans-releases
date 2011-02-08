@@ -68,6 +68,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -206,6 +207,7 @@ public class NbmExternalTest extends NbTestCase {
         jos.close();
         File ext = new File(jar.getParentFile(), jar.getName() + ".external");
         FileOutputStream os = new FileOutputStream(ext);
+        os.write(("CRC: " + UpdateTracking.getFileCRC(jar) + "\n").getBytes());
         os.write(("URL: " + jar.toURI().toString() + "\n").getBytes());
         os.close();
 
@@ -315,6 +317,9 @@ public class NbmExternalTest extends NbTestCase {
             fail("Wrong content:\n" + content);
         }
         if (content.contains("\"modules/org-netbeans-modules-mymodule.jar.external\"")) {
+            fail("Wrong content:\n" + content);
+        }
+        if (!content.contains("crc=\"" + UpdateTracking.getFileCRC(module) + "\"")) {
             fail("Wrong content:\n" + content);
         }
     }
