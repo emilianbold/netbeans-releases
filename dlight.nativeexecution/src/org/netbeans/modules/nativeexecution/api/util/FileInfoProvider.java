@@ -133,7 +133,7 @@ public class FileInfoProvider {
         }
         
         public static StatInfo fromExternalForm(String externalForm) {
-            String[] parts = externalForm.split(" +");
+            String[] parts = externalForm.split(" +"); // NOI18N
             String name = unescape(parts[0]);
             int acc = stringToAcces(parts[1]);
             boolean dir = Boolean.parseBoolean(parts[2]);
@@ -225,7 +225,7 @@ public class FileInfoProvider {
     
     private static short stringToAcces(String accessString) {
         if (accessString.length() < 9) {
-            throw new IllegalArgumentException("wrong access string: " + accessString);
+            throw new IllegalArgumentException("wrong access string: " + accessString); // NOI18N
         }
         short result = 0;
 
@@ -264,20 +264,20 @@ public class FileInfoProvider {
     
     private static String escape(String text) {
         try {
-            return URLEncoder.encode(text, "UTF-8");
+            return URLEncoder.encode(text, "UTF-8"); // NOI18N
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);
-            text = text.replace(" ", "\\ ");
+            text = text.replace(" ", "\\ "); // NOI18N
             return text;
         }
     }
 
     private static String unescape(String text) {
         try {
-            return URLDecoder.decode(text, "UTF-8");
+            return URLDecoder.decode(text, "UTF-8"); // NOI18N
         } catch (UnsupportedEncodingException ex) {
             Exceptions.printStackTrace(ex);
-            text = text.replace("\\ ", " ");
+            text = text.replace("\\ ", " "); // NOI18N
             return text;
         }
     }
