@@ -268,7 +268,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             @Override
             public void processLine(String line) {
                 output.append(line).append('\n');
-                System.err.println(line);
+                //System.err.println(line);
             }
             @Override
             public void reset() {}
