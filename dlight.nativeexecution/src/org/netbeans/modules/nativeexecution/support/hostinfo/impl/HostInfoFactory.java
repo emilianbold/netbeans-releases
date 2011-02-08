@@ -115,17 +115,17 @@ public final class HostInfoFactory {
         if (id == null) {
             return;
         }
-        String[] parts = id.split(" +");
+        String[] parts = id.split(" +"); // NOI18N
         boolean error = false;
         StringBuilder sb;
-        if (parts.length > 0 && parts[0].startsWith("uid=")) {
+        if (parts.length > 0 && parts[0].startsWith("uid=")) { // NOI18N
             sb = new StringBuilder();
             info.uid = parseIdAndName(parts[0].substring(4), sb);
             error |= (info.uid < 0);
         } else {
             error = true;
         }
-        if (parts.length > 1 && parts[1].startsWith("gid=")) {
+        if (parts.length > 1 && parts[1].startsWith("gid=")) { // NOI18N
             sb = new StringBuilder();
             info.gid = parseIdAndName(parts[1].substring(4), sb);
             error |= (info.uid < 0);
@@ -134,7 +134,7 @@ public final class HostInfoFactory {
             error = true;
         }
         if (parts.length > 2) {
-            if (parts[2].startsWith("groups=")) {
+            if (parts[2].startsWith("groups=")) { // NOI18N
                 String[] groupPairs = parts[2].substring(7).split(", *"); //NOI18N
                 if (groupPairs.length > 0) {
                     List<Integer> gids = new ArrayList<Integer>(groupPairs.length);
@@ -183,7 +183,7 @@ public final class HostInfoFactory {
         } catch (NumberFormatException e) {
             return -1;
         }        
-        if (!text.endsWith(")")) {
+        if (!text.endsWith(")")) { // NOI18N
             return -1;
         }
         sb.append(text.substring(bracketPos + 1, text.length() - 1));
