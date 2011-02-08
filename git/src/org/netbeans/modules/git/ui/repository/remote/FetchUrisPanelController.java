@@ -54,8 +54,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -63,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class FetchUrisPanelController implements ActionListener, ListSelectionListener, DocumentListener {
+public class FetchUrisPanelController extends AbstractWizardPanel implements ActionListener, ListSelectionListener, DocumentListener, FinishablePanel<WizardDescriptor> {
     private final FetchUrisPanel panel;
     private GitRemoteConfig remote;
     private JButton okButton;
@@ -74,18 +77,30 @@ public class FetchUrisPanelController implements ActionListener, ListSelectionLi
         this.remote = remote;
         fillPanel();
         attachListeners();
+        validateBeforeNext();
     }
     
-    public FetchUrisPanel getPanel () {
+    void setRemote (GitRemoteConfig remote) {
+        if (this.remote != remote && (this.remote == null || remote == null || !remote.getUris().equals(this.remote.getUris()))) {
+            this.remote = remote;
+            fillPanel();
+            validateBeforeNext();
+        }
+    }
+
+    @Override
+    public FetchUrisPanel getJComponent () {
         return panel;
     }
 
     private void fillPanel () {
         DefaultListModel model = new DefaultListModel();
-        model.setSize(remote.getUris().size());
-        int i = 0;
-        for (String uri : remote.getUris()) {
-            model.set(i++, uri);
+        if (remote != null) {
+            model.setSize(remote.getUris().size());
+            int i = 0;
+            for (String uri : remote.getUris()) {
+                model.set(i++, uri);
+            }
         }
         panel.lstURIs.setModel(model);
     }
@@ -117,7 +132,7 @@ public class FetchUrisPanelController implements ActionListener, ListSelectionLi
     public void valueChanged (ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
             panel.btnRemoveSelected.setEnabled(panel.lstURIs.getSelectedIndices().length > 0);
-            validate();
+            validateBeforeNext();
         }
     }
 
@@ -127,13 +142,21 @@ public class FetchUrisPanelController implements ActionListener, ListSelectionLi
         dd = new DialogDescriptor(panel, NbBundle.getMessage(FetchUrisPanelController.class, "LBL_FetchUrisPanel.title"), true,  //NOI18N
                 new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(FetchUrisPanel.class), null);
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        validate();
+        validateBeforeNext();
         d.setVisible(true);
         return okButton == dd.getValue();
     }
 
-    private void validate () {
-        if (dd != null) {
+    @Override
+    protected final void validateBeforeNext () {
+        panel.lblMessage.setVisible(false);
+        if (dd == null) {
+            if (panel.lstURIs.getModel().getSize() == 0) {
+                setValid(false, new Message(NbBundle.getMessage(FetchUrisPanelController.class, "MSG_FetchUrisPanel.errorEmptyList"), true)); //NOI18N
+            } else {
+                setValid(true, null);
+            }
+        } else {
             boolean enabled = panel.lstURIs.getSelectedValues().length == 1;
             okButton.setEnabled(enabled);
             dd.setValid(enabled);
@@ -169,6 +192,11 @@ public class FetchUrisPanelController implements ActionListener, ListSelectionLi
     }
 
     private void validateAdd () {
-        panel.btnAddNew.setEnabled(!panel.txtNewURI.getText().isEmpty());
+        panel.btnAddNew.setEnabled(!panel.txtNewURI.getText().trim().isEmpty());
+    }
+
+    @Override
+    public boolean isFinishPanel () {
+        return true;
     }
 }
