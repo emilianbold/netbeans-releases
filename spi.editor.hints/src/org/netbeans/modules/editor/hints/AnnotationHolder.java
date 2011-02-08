@@ -652,8 +652,9 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         if (errorDescriptions == null) {
             //nothing to do, remove old:
             Annotation ann = line2Annotations.remove(line);
-
-            detachAnnotation(ann);
+            if (ann != null) {
+                detachAnnotation(ann);
+            }
             return;
         }
 
