@@ -76,7 +76,7 @@ class ConfigUtil {
             if (cfolder == null) {
                 File parentFile = file.getParentFile();
                 try {
-                    cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
+                    cfolder = FileUtil.createFolder(parentFile);
                 } catch (IOException ioe) {
                     String msg = NbBundle.getMessage(ConfigUtil.class, "MSG_FailedToCreateConfigFolder", parentFile.getPath());
                     throw new ConfigurationException(msg, ioe);
