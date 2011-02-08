@@ -290,3 +290,12 @@ org.apache.xerces.xs.XSWildcard
 org.apache.xerces.xs.datatypes.XSDateTime
 org.apache.xerces.xs.datatypes.XSDecimal
 org.apache.xerces.xs.datatypes.XSQName
+javax.xml.datatype.DatatypeFactory
+javax.xml.transform.dom.DOMSource
+javax.xml.transform.sax.SAXSource
+javax.xml.validation.Schema
+javax.xml.validation.Validator
+org.w3c.dom.DOMConfiguration
+org.w3c.dom.TypeInfo
+org.w3c.dom.ls.LSResourceResolver
+
