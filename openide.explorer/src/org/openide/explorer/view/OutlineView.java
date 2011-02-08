@@ -1442,68 +1442,6 @@ public class OutlineView extends JScrollPane {
             this.treeSortable = treeSortable;
         }
 
-        private JToolTip toolTip = null;
-
-        @Override
-        public String getToolTipText(MouseEvent event) {
-            try {
-                // Required to really get the tooltip text:
-                putClientProperty("ComputingTooltip", Boolean.TRUE);
-
-                toolTip = null;
-                String tipText = null;
-                Point p = event.getPoint();
-
-                // Locate the renderer under the event location
-                int hitColumnIndex = columnAtPoint(p);
-                int hitRowIndex = rowAtPoint(p);
-
-                if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
-                    TableCellRenderer renderer = getCellRenderer(hitRowIndex, hitColumnIndex);
-                    Component component = prepareRenderer(renderer, hitRowIndex, hitColumnIndex);
-
-                    // Now have to see if the component is a JComponent before
-                    // getting the tip
-                    if (component instanceof JComponent) {
-                        // Convert the event to the renderer's coordinate system
-                        Rectangle cellRect = getCellRect(hitRowIndex, hitColumnIndex, false);
-                        p.translate(-cellRect.x, -cellRect.y);
-                        MouseEvent newEvent = new MouseEvent(component, event.getID(),
-                                                  event.getWhen(), event.getModifiers(),
-                                                  p.x, p.y,
-                                                  event.getXOnScreen(),
-                                                  event.getYOnScreen(),
-                                                  event.getClickCount(),
-                                                  event.isPopupTrigger(),
-                                                  MouseEvent.NOBUTTON);
-
-                        tipText = ((JComponent)component).getToolTipText(newEvent);
-                        toolTip = ((JComponent)component).createToolTip();
-                    }
-                }
-
-                // No tip from the renderer get our own tip
-                if (tipText == null)
-                    tipText = getToolTipText();
-                
-                return tipText;
-            } finally {
-                putClientProperty("ComputingTooltip", Boolean.FALSE);
-            }
-            //return super.getToolTipText(event);
-        }
-
-        @Override
-        public JToolTip createToolTip() {
-            JToolTip t = toolTip;
-            toolTip = null;
-            if (t != null) {
-                return t;
-            } else {
-                return super.createToolTip();
-            }
-        }
-
         private void setNodesColumnDescription(String description) {
             nodesColumnDescription = description;
         }
@@ -1607,7 +1545,7 @@ public class OutlineView extends JScrollPane {
 
         }
 
-        private class TranslatedTableCellRenderer extends Component implements TableCellRenderer {
+        private class TranslatedTableCellRenderer extends JComponent implements TableCellRenderer {
 
             private OutlineViewOutline outline;
             private TableCellRenderer delegate;
@@ -1653,6 +1591,42 @@ public class OutlineView extends JScrollPane {
                                 ", with outsideBorder = "+((javax.swing.border.CompoundBorder) border).getOutsideBorder()+
                                 " and insideBorder = "+((javax.swing.border.CompoundBorder) border).getInsideBorder() : "")
                     ));
+                }
+            }
+
+            @Override
+            public String getToolTipText() {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).getToolTipText();
+                } else {
+                    return super.getToolTipText();
+                }
+            }
+
+            @Override
+            public Point getToolTipLocation(MouseEvent event) {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).getToolTipLocation(event);
+                } else {
+                    return super.getToolTipLocation(event);
+                }
+            }
+
+            @Override
+            public String getToolTipText(MouseEvent event) {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).getToolTipText(event);
+                } else {
+                    return super.getToolTipText(event);
+                }
+            }
+
+            @Override
+            public JToolTip createToolTip() {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).createToolTip();
+                } else {
+                    return super.createToolTip();
                 }
             }
 
