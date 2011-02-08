@@ -72,6 +72,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -303,9 +304,21 @@ public class NbmExternalTest extends NbTestCase {
         File module = new File(new File(getWorkDir(), "modules"), "org-netbeans-modules-mymodule.jar");
         assertTrue("module file exists", module.exists());
         assertTrue("module was not installed from NBM external", moduleUnit.getInstalled() != null);
-        // XXX verify that update_tracking/*.xml points to the real thing
         File ext = new File(new File(getWorkDir(), "modules"), "org-netbeans-modules-mymodule.jar.external");
         assertFalse("Ext file is not written", ext.exists());
+        File utf = new File(new File(getWorkDir(), "update_tracking"), "org-netbeans-modules-mymodule.xml");
+        assertTrue("Update tracking exists", utf.exists());
+        String content;
+        {
+            byte[] arr = new byte[(int)utf.length()];
+            FileInputStream is = new FileInputStream(utf);
+            is.read(arr);
+            is.close();
+            content = new String(arr);
+        }
+        if (!content.contains("\"modules/org-netbeans-modules-mymodule.jar\"")) {
+            fail("Wrong content:\n" + content);
+        }
     }
 
     
