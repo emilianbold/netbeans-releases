@@ -934,8 +934,8 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
-                    new ProjectOpenedHookImpl(this),
                     // default mergers..        
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
