@@ -421,23 +421,25 @@ public final class ModuleUpdater extends Thread {
                                     destFile.getParentFile ().mkdirs ();
                                 }
                                 
-                                bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
-                                if(executableFiles.contains(pathTo)) {
-                                    filesToChmod.add(destFile);
-                                }
-                                long crc = entry.getCrc();
+                                long crc;
                                 if (pathTo.endsWith(".external")) {
                                     File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
                                     final InputStream spec = jarFile.getInputStream(entry);
                                     InputStream is = externalDownload(spec);
                                     spec.close();
                                     FileOutputStream os = new FileOutputStream(downloaded);
-                                    copyStreams(is, os, -1);
+                                    bytesRead = copyStreams(is, os, -1);
                                     is.close();
                                     os.close();
                                     crc = UpdateTracking.getFileCRC(downloaded);
                                     pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
-                                } else
+                                } else {
+                                    bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                                    crc = entry.getCrc();
+                                }
+                                if(executableFiles.contains(pathTo)) {
+                                    filesToChmod.add(destFile);
+                                }
                                 if(pathTo.endsWith(".jar.pack.gz") &&
                                         jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
                                      //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
