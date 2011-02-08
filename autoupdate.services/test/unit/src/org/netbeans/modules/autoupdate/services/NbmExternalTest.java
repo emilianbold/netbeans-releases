@@ -45,19 +45,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.jar.Pack200;
 import java.util.logging.Level;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -72,7 +68,6 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
-import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -317,6 +312,9 @@ public class NbmExternalTest extends NbTestCase {
             content = new String(arr);
         }
         if (!content.contains("\"modules/org-netbeans-modules-mymodule.jar\"")) {
+            fail("Wrong content:\n" + content);
+        }
+        if (content.contains("\"modules/org-netbeans-modules-mymodule.jar.external\"")) {
             fail("Wrong content:\n" + content);
         }
     }
