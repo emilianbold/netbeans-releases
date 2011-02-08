@@ -42,11 +42,27 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.mozilla.nb.javascript.Node;
+
 public class JsFormatterTest extends JsTestBase {
     
     public JsFormatterTest(String testName) {
         super(testName);
     }            
+
+
+    public static Test Xsuite() throws IOException, BadLocationException {
+        System.err.println("Beware, only selected tests runs!!!");
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JsFormatterTest("testIssue190613"));
+        suite.addTest(new JsFormatterTest("testIssue190613b"));
+        return suite;
+    }
+
 
     // Used to test arbitrary source trees
     //public void testReformatSourceTree() {
@@ -898,6 +914,44 @@ public class JsFormatterTest extends JsTestBase {
          );
     }
 
+//    //Bug 190613 - reformatting of code blocks doesn't work well
+//    public void testIssue190613() throws Exception {
+//        format(
+//           "    {\n" +
+//           "        {\n" +
+//           "            \n" +
+//           "        }\n" +
+//           "    }\n",
+//           "    {\n" +
+//           "        {\n" +
+//           "            \n" +
+//           "        }\n" +
+//           "    }\n", null);
+//    }
+//
+//    //Bug 190613 - reformatting of code blocks doesn't work well
+//    public void testIssue190613b() throws Exception {
+//        format(
+//           "{\n" +
+//           "{\n" +
+//           "            \n" +
+//           "        }\n" +
+//           "}\n",
+//           "{\n" +
+//           "    {\n" +
+//           "        \n" +
+//           "    }\n" +
+//           "}\n", null);
+//    }
+//
+//    private void dump(Node node) {
+//        StringBuilder out = new StringBuilder();
+//        DumpTreeVisitor visitor = new DumpTreeVisitor(out);
+//        ParseTreeWalker walker = new ParseTreeWalker(visitor);
+//        walker.walk(node);
+//
+//        System.out.println(out);
+//    }
     
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
@@ -1067,4 +1121,39 @@ public class JsFormatterTest extends JsTestBase {
 //        format("x\n",
 //               "x\n", null);
 //    }
+
+        private static class DumpTreeVisitor implements ParseTreeVisitor {
+
+        private int indent = 0;
+
+        private StringBuilder output;
+        private static final String INDENT_STRING = "    ";
+
+        public DumpTreeVisitor(StringBuilder output) {
+            this.output = output;
+        }
+
+        @Override
+        public boolean visit(Node node) {
+            indent++;
+            dump(node);
+            return false;
+        }
+
+        @Override
+        public boolean unvisit(Node node) {
+            indent--;
+            return false;
+        }
+
+        private void dump(Node node) {
+            for(int i = 0; i < indent; i++) {
+                output.append(INDENT_STRING);
+            }
+            output.append(node.toString()).append('\n');
+        }
+
+    }
+
+
 }
