@@ -174,19 +174,17 @@ public final class HostInfoFactory {
             return -1;
         }
         int bracketPos = text.indexOf('(');
-        if (bracketPos < 1) {
-            return -1;
-        }
+        String idText = (bracketPos >= 0) ? text.substring(0, bracketPos) : text;
+        String nameText = (bracketPos >= 0 && text.endsWith(")")) ? text.substring(bracketPos + 1, text.length() - 1) : null;
         int id;
         try {
-            id = Integer.parseInt(text.substring(0, bracketPos));
+            id = Integer.parseInt(idText);
         } catch (NumberFormatException e) {
             return -1;
         }        
-        if (!text.endsWith(")")) { // NOI18N
-            return -1;
+        if (nameText != null) {
+            sb.append(nameText);
         }
-        sb.append(text.substring(bracketPos + 1, text.length() - 1));
         return id;
     }
 
