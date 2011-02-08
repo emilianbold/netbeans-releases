@@ -40,18 +40,22 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.repository.remote;
+package org.netbeans.modules.git.ui.fetch;
 
 import java.awt.Component;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.modules.git.ui.repository.remote.FetchRefsStep;
+import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
+import org.netbeans.modules.git.ui.repository.remote.SelectUriStep;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -61,27 +65,25 @@ import org.openide.WizardDescriptor.Panel;
  *
  * @author ondra
  */
-public class SetupRemoteWizard implements ChangeListener {
+class FetchWizard  implements ChangeListener {
 
     private final Map<String, GitRemoteConfig> remotes;
-    private final String selectedRemote;
     private PanelsIterator wizardIterator;
     private WizardDescriptor wizardDescriptor;
     private final File repository;
 
-    public SetupRemoteWizard (File repository, Map<String, GitRemoteConfig> remotes, String selectedRemote) {
+    public FetchWizard (File repository, Map<String, GitRemoteConfig> remotes) {
         this.repository = repository;
         this.remotes = remotes;
-        this.selectedRemote = selectedRemote;
     }
 
     boolean show () {
         wizardIterator = new PanelsIterator();
         wizardDescriptor = new WizardDescriptor(wizardIterator);        
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
-        wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(SetupRemoteWizard.class, "LBL_SetRemoteWizard.title")); // NOI18N
+        wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(FetchWizard.class, "LBL_FetchWizard.title")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
-        setErrorMessage(wizardIterator.selectRemoteStep.getErrorMessage());
+        setErrorMessage(wizardIterator.selectUriStep.getErrorMessage());
         dialog.setVisible(true);
         dialog.toFront();
         Object value = wizardDescriptor.getValue();
@@ -90,24 +92,14 @@ public class SetupRemoteWizard implements ChangeListener {
             // wizard wasn't properly finnished ...
             if (value == WizardDescriptor.CLOSED_OPTION || value == WizardDescriptor.CANCEL_OPTION ) {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
+                wizardIterator.selectUriStep.cancelBackgroundTasks();
                 wizardIterator.fetchRefsStep.cancelBackgroundTasks();
             }            
         }
         return finnished;
     }
 
-    public GitRemoteConfig getRemote () {
-        RemoteConfig remote = RemoteConfig.createUpdatableRemote(repository, wizardIterator.selectRemoteStep.getSelectedRemote());
-        Panel<WizardDescriptor> currentPanel = wizardIterator.current();
-        remote.setFetchUris(Arrays.asList(wizardIterator.fetchUrisStep.getURIs()));
-        if (currentPanel != wizardIterator.fetchUrisStep) {
-            // fetch ref specs panel accepted
-            remote.setFetchRefSpecs(wizardIterator.fetchRefsStep.getRefSpecs());
-        }
-        return remote;
-    }
-
-    private void setErrorMessage (SelectRemoteStep.Message msg) {
+    private void setErrorMessage (AbstractWizardPanel.Message msg) {
         if (wizardDescriptor != null) {
             if (msg == null) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null); // NOI18N
@@ -128,20 +120,25 @@ public class SetupRemoteWizard implements ChangeListener {
         setErrorMessage(step.getErrorMessage());
     }
     
+    String getFetchUri () {
+        return wizardIterator.selectUriStep.getSelectedUri();
+    }
+    
+    List<String> getFetchRefSpecs () {
+        return wizardIterator.fetchRefsStep.getSelectedRefSpecs();
+    }
+    
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
-        private SelectRemoteStep selectRemoteStep;
-        private FetchUrisPanelController fetchUrisStep;
+        private SelectUriStep selectUriStep;
         private FetchRefsStep fetchRefsStep;
 
         @Override
         protected Panel<WizardDescriptor>[] initializePanels () {
-            selectRemoteStep = new SelectRemoteStep(remotes, selectedRemote);
-            selectRemoteStep.addChangeListener(SetupRemoteWizard.this);
-            fetchUrisStep = new FetchUrisPanelController(null);
-            fetchUrisStep.addChangeListener(SetupRemoteWizard.this);
-            fetchRefsStep = new FetchRefsStep(FetchRefsStep.Mode.ACCEPT_EMPTY_SELECTION);
-            fetchRefsStep.addChangeListener(SetupRemoteWizard.this);
-            Panel[] panels = new Panel[] { selectRemoteStep, fetchUrisStep, fetchRefsStep };
+            selectUriStep = new SelectUriStep(repository, remotes);
+            selectUriStep.addChangeListener(FetchWizard.this);
+            fetchRefsStep = new FetchRefsStep(FetchRefsStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY_VALIDATE_SELECTED);
+            fetchRefsStep.addChangeListener(FetchWizard.this);
+            Panel[] panels = new Panel[] { selectUriStep, fetchRefsStep };
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -169,15 +166,19 @@ public class SetupRemoteWizard implements ChangeListener {
 
         @Override
         public synchronized void nextPanel () {
-            if (current() == selectRemoteStep) {
-                fetchUrisStep.setRemote(remotes.get(selectRemoteStep.getSelectedRemote()));
-            } else if (current() == fetchUrisStep) {
-                String selectedUri = fetchUrisStep.getSelectedURI();
-                if (selectedUri == null) {
-                    selectedUri = fetchUrisStep.getURIs()[0];
+            if (current() == selectUriStep) {
+                String selectedUri = selectUriStep.getSelectedUri();
+                String selectedRemote = selectUriStep.getSelectedRemote();
+                Map<String, GitBranch> remoteBranches = selectUriStep.getRemoteBranches();
+                GitRemoteConfig remote = remotes.get(selectedRemote);
+                if (remote == null) {
+                    remote = RemoteConfig.createUpdatableRemote(repository, selectedUri);
                 }
-                fetchRefsStep.setRemote(remotes.get(selectRemoteStep.getSelectedRemote()));
-                fetchRefsStep.setFetchUri(selectedUri, true);
+                fetchRefsStep.setRemote(remote);
+                fetchRefsStep.setFetchUri(selectedUri, false);
+                if (remoteBranches != null) {
+                    fetchRefsStep.fillRemoteBranches(remoteBranches);
+                }
             }
             super.nextPanel();
         }
