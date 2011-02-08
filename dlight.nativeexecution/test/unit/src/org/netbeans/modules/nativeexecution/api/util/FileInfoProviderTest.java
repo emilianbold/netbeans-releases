@@ -168,9 +168,9 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     private void checkAccess(String path, String chmod, ExecutionEnvironment env, boolean read, boolean write, boolean execute) throws Exception {
         runScript("chmod " + chmod + ' ' + path);
         StatInfo statInfo = getStatInfo(path);
-        assertEquals("canRead", read, statInfo.canRead(env));        
-        assertEquals("canWrite", write, statInfo.canWrite(env));        
-        assertEquals("canExecute", execute, statInfo.canExecute(env));
+        assertEquals("canRead for " + path, read, statInfo.canRead(env));        
+        assertEquals("canWrite for " + path, write, statInfo.canWrite(env));        
+        assertEquals("canExecute for " + path, execute, statInfo.canExecute(env));
     }
             
 
@@ -236,7 +236,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
             assertEquals("link target for " + path, link, statInfo.getLinkTarget());
         }
         long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
-        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > skew + 1000*60*5) {
+        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > Math.abs(skew) + 1000*60*5) {
             assertTrue("last modified differs too much: " + creationDate +  " vs " + statInfo.getLastModified(), false);
         }
     }
