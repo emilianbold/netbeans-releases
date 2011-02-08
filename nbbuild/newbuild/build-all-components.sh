@@ -32,7 +32,7 @@ else
     mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-src.zip
 fi
 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.name=nb.cluster.platform build-source
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=platform build-source-config
 ERROR_CODE=$?
 
 create_test_result "build.source.platform" "Build Platform Source package" $ERROR_CODE
