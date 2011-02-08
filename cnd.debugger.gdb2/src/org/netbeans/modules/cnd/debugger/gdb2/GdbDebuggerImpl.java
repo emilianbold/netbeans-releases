@@ -636,16 +636,19 @@ import org.openide.util.Exceptions;
             ioPack.close();
         }
 
+        postedKillEngine = true;
         session = null;
 	state().isLoaded = false;
 	stateChanged();
-
-        postedKillEngine = true;
 
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
 
 	// It all ends here
+    }
+    
+    boolean postedKillEngine() {
+        return postedKillEngine;
     }
 
     public void postKill() {
