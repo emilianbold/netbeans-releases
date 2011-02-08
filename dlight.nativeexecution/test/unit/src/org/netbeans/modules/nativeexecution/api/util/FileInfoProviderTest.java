@@ -129,22 +129,45 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     public void testAccessMode() throws Exception {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         
-        checkAccess(remoteFile, "700", env, true, true, true);
-        checkAccess(remoteFile, "400", env, true, false, false);
-        checkAccess(remoteFile, "200", env, false, true, false);
-        checkAccess(remoteFile, "100", env, false, false, true);
+        checkAccess(remoteFile, "700", env);
+        checkAccess(remoteFile, "400", env);
+        checkAccess(remoteFile, "200", env);
+        checkAccess(remoteFile, "100", env);
+               
+        checkAccess(remoteFile, "007", env);
+        checkAccess(remoteFile, "004", env);
+        checkAccess(remoteFile, "002", env);
+        checkAccess(remoteFile, "001", env);
         
-        checkAccess(remoteFile, "070", env, true, true, true);
-        checkAccess(remoteFile, "040", env, true, false, false);
-        checkAccess(remoteFile, "020", env, false, true, false);
-        checkAccess(remoteFile, "010", env, false, false, true);
+        checkAccess(remoteFile, "070", env);
+        checkAccess(remoteFile, "040", env);
+        checkAccess(remoteFile, "020", env);
+        checkAccess(remoteFile, "010", env);
         
-        checkAccess(remoteFile, "007", env, true, true, true);
-        checkAccess(remoteFile, "004", env, true, false, false);
-        checkAccess(remoteFile, "002", env, false, true, false);
-        checkAccess(remoteFile, "001", env, false, false, true);
+//        String oldGroup = HostInfoUtils.getHostInfo(env).getGroup();
+//        boolean groupChanged = false;
+//        try {
+//            try {
+//               runScript("chgrp nobody " + remoteFile);
+//               groupChanged = true;
+//            } catch (Throwable thr) {
+//                thr.printStackTrace();
+//            }
+//            if (groupChanged) {
+//                checkAccess(remoteFile, "070", env);
+//                checkAccess(remoteFile, "040", env);
+//                checkAccess(remoteFile, "020", env);
+//                checkAccess(remoteFile, "010", env);
+//            }
+//        } finally {
+//            if (groupChanged) {
+//                runScript("chgrp " + oldGroup + ' ' + remoteFile);
+//            }
+//        }
         
         // TODO: test (other) groups
+        checkAccess("/usr/include", null, env);
+        checkAccess("/etc/shadow", null, env);
     }
     
     @ForAllEnvironments(section = "remote.platforms")
@@ -166,8 +189,13 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         assertEquals("canExecute()", statInfo1.canExecute(env), statInfo2.canExecute(env));
     }
     
-    private void checkAccess(String path, String chmod, ExecutionEnvironment env, boolean read, boolean write, boolean execute) throws Exception {
-        runScript("chmod " + chmod + ' ' + path);
+    private void checkAccess(String path, String chmod, ExecutionEnvironment env) throws Exception {
+        if (chmod != null) {
+            runScript("chmod " + chmod + ' ' + path);
+        }
+        boolean read = canRead(env, path);
+        boolean write = canWrite(env, path);
+        boolean execute = canExecute(env, path);
         StatInfo statInfo = getStatInfo(path);
         checkAccess("canRead", path, env, read, statInfo.canRead(env));        
         checkAccess("canWrite", path, env, write, statInfo.canWrite(env));        

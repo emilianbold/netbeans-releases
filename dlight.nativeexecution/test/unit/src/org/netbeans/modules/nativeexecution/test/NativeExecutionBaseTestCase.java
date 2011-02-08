@@ -65,6 +65,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -291,6 +292,24 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         int rc = scriptRunner.execute();
         assertEquals("Error running script", 0, rc);
         return output.toString();
+    }
+    
+    protected boolean canRead(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-r", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    protected boolean canWrite(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-w", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    protected boolean canExecute(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-x", path);
+        return npb.call().waitFor() == 0;        
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {
