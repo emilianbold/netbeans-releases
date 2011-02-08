@@ -73,7 +73,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
@@ -87,7 +86,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
@@ -103,11 +101,12 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
 
 /**
  * @author Tomas Musil
@@ -120,12 +119,20 @@ final class UnitTestLibrariesNode extends AbstractNode {
     private final NbModuleProject project;
     private boolean missingJUnit4;
     
+    @Messages({
+        "LBL_unit_test_libraries=Unit Test Libraries",
+        "LBL_qa-functional_test_libraries=Functional Test Libraries"
+    })
     public UnitTestLibrariesNode(String testType, final NbModuleProject project) {
         super(new LibrariesChildren(testType, project), org.openide.util.lookup.Lookups.fixed(project));
         this.testType = testType;
         this.project = project;
         setName(testType);
-        setDisplayName(getMessage("LBL_" + testType + "_test_libraries"));
+        if (testType.equals("unit")) {
+            setDisplayName(LBL_unit_test_libraries());
+        } else if (testType.equals("qa-functional")) {
+            setDisplayName(LBL_qa_functional_test_libraries());
+        }
     }
     
     public @Override Image getIcon(int type) {
@@ -162,33 +169,34 @@ final class UnitTestLibrariesNode extends AbstractNode {
         return actions.toArray(new Action[actions.size()]);
     }
 
+    @Messages("HINT_missing_junit4=Incomplete test libraries. Use context menu to resolve.")
     public @Override String getShortDescription() {
         if (missingJUnit4) {
-            return NbBundle.getMessage(UnitTestLibrariesNode.class, "HINT_missing_junit4");
+            return HINT_missing_junit4();
         } else {
             return null;
         }
     }
     
+    @Messages({
+        "CTL_test=Include also tests of module",
+        "CTL_compile=Compile-time dependency",
+        "CTL_recursive=Include dependencies recursively"
+    })
     private static String createHtmlDescription(final TestModuleDependency dep) {
-        StringBuffer shortDesc = new StringBuffer("<html><u>" + dep.getModule().getCodeNameBase() + "</u><br>"); // NOI18N
+        StringBuilder shortDesc = new StringBuilder("<html><u>" + dep.getModule().getCodeNameBase() + "</u><br>"); // NOI18N
         if (dep.isTest()) {
-            shortDesc.append("<br>" + getMessage("CTL_test"));
+            shortDesc.append("<br>").append(CTL_test());
         }
         if (dep.isCompile()) {
-            shortDesc.append("<br>").append(getMessage("CTL_compile"));
+            shortDesc.append("<br>").append(CTL_compile());
         }
         if (dep.isRecursive()) {
-            shortDesc.append("<br>").append(getMessage("CTL_recursive"));
+            shortDesc.append("<br>").append(CTL_recursive());
         }
         shortDesc.append("</html>"); // NOI18N
         return shortDesc.toString();
     }
-    
-    private static String getMessage(String bundleKey) {
-        return NbBundle.getMessage(UnitTestLibrariesNode.class, bundleKey);
-    }
-    
     
     private static final class LibrariesChildren extends Children.Keys<TestModuleDependency> implements AntProjectListener {
         
@@ -248,7 +256,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             }
         }
         
-        protected Node[] createNodes(TestModuleDependency dep) {
+        protected @Override Node[] createNodes(TestModuleDependency dep) {
             Node node = null;
             File srcF = dep.getModule().getSourceLocation();
             if (srcF == null) {
@@ -272,12 +280,12 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
 
         private boolean refreshScheduled = false;
-        public void configurationXmlChanged(AntProjectEvent ev) {
+        public @Override void configurationXmlChanged(AntProjectEvent ev) {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
             if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
                 Runnable r = new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         refreshKeys();
                         refreshScheduled = false;
                     }
@@ -293,10 +301,10 @@ final class UnitTestLibrariesNode extends AbstractNode {
             }
         }
         
-        public void propertiesChanged(AntProjectEvent ev) {
+        public @Override void propertiesChanged(AntProjectEvent ev) {
             // do not need
             Logger LOG = Logger.getLogger(UnitTestLibrariesNode.class.getName());
-            LOG.log(Level.FINE, "propertiesChanged: " + ev.getPath() + ", expected: " + ev.isExpected());
+            LOG.log(Level.FINE, "propertiesChanged: {0}, expected: {1}", new Object[] {ev.getPath(), ev.isExpected()});
         }
         
         
@@ -395,23 +403,31 @@ final class UnitTestLibrariesNode extends AbstractNode {
         private final String testType;
         private final NbModuleProject project;
         
+        @Messages({
+            "CTL_AddTestDependency_unit=Add Unit Test Dependency",
+            "CTL_AddTestDependency_qa-functional=Add Functional Test Dependency"
+        })
         AddUnitTestDependencyAction(String testType, final NbModuleProject project) {
-            super(getMessage("CTL_AddTestDependency_" + testType));
+            if (testType.equals("unit")) {
+                putValue(NAME, CTL_AddTestDependency_unit());
+            } else if (testType.equals("qa-functional")) {
+                putValue(NAME, CTL_AddTestDependency_qa_functional());
+            }
             this.testType = testType;
             this.project = project;
         }
         
         //COPIED FROM LIBRARIES MOSTLY
-        public void actionPerformed(ActionEvent ev) {
+        public @Override void actionPerformed(ActionEvent ev) {
             SingleModuleProperties props = SingleModuleProperties.getInstance(project);
             final AddModulePanel addPanel = new AddModulePanel(props);
-            final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
-                    getMessage("CTL_AddTestDependency_" + testType));
+            String title = testType.equals("unit") ? CTL_AddTestDependency_unit() : CTL_AddTestDependency_qa_functional();
+            final DialogDescriptor descriptor = new DialogDescriptor(addPanel, title);
             descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
             descriptor.setClosingOptions(new Object[0]);
             final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
             descriptor.setButtonListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public @Override void actionPerformed(ActionEvent e) {
                     if (DialogDescriptor.OK_OPTION.equals(e.getSource()) &&
                             addPanel.getSelectedDependencies().length == 0) {
                         return;
@@ -433,9 +449,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
                         ProjectManager.getDefault().saveProject(project);
                     }
                 } catch (Exception e) {
-                    //IOEX
-                    ErrorManager.getDefault().annotate(e, "Cannot add dependencies, probably IO error: " + Arrays.asList(newDeps)); // NOI18N
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.attachMessage(e, "Cannot add dependencies, probably IO error: " + Arrays.asList(newDeps)); // NOI18N
+                    Exceptions.printStackTrace(e);
                 }
             }
             d.dispose();
@@ -444,17 +459,23 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
 
     private static class AddJUnit4Action extends AbstractAction {
-            private final String testType;
+        private final String testType;
         private final NbModuleProject project;
+        @Messages("LBL_resolve_missing_junit4=Add Missing Dependencies")
         AddJUnit4Action(String testType, NbModuleProject project) {
-            super(NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_resolve_missing_junit4"));
+            super(LBL_resolve_missing_junit4());
             this.testType = testType;
             this.project = project;
         }
-        public void actionPerformed(ActionEvent e) {
+        @Messages({
+            "LBL_also_add_nbjunit_question=Adding JUnit 4. Also add NB JUnit (and dependencies)?",
+            "LBL_also_add_nbjunit_title=Adding Missing Dependencies",
+            "LBL_cannot_resolve_missing_junit4=JUnit 4 and/or NB JUnit test libraries cannot be found in platform."
+        })
+        public @Override void actionPerformed(ActionEvent e) {
             Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_question"),
-                    NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_title")));
+                    LBL_also_add_nbjunit_question(),
+                    LBL_also_add_nbjunit_title()));
             boolean addNBJUnit;
             if (result == NotifyDescriptor.NO_OPTION) {
                 addNBJUnit = false;
@@ -468,7 +489,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             } catch (IOException ex) {
                 String msg = Exceptions.findLocalizedMessage(ex);
                 if (msg == null) {
-                    msg = NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_cannot_resolve_missing_junit4");
+                    msg = LBL_cannot_resolve_missing_junit4();
                 }
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                 return;
@@ -481,6 +502,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
         private static final String JUNIT_MODULE = "org.netbeans.libs.junit4";
         private static final String NBJUNIT_MODULE = "org.netbeans.modules.nbjunit";
+        @Messages({"# {0} - code name of module", "ERR_could_not_find_module=Could not find module {0} to depend on. Make sure it is included in your platform and not excluded from your suite."})
         private static void resolveJUnitDependencies(NbModuleProject project, String testType, boolean addNBJUnit) throws IOException {
             ModuleList moduleList = project.getModuleList();
             ModuleEntry junit4 = moduleList.getEntry(JUNIT_MODULE);
@@ -488,7 +510,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             if (junit4 == null || (addNBJUnit && nbjunit == null)) {
                 String m = (junit4 == null) ? JUNIT_MODULE : NBJUNIT_MODULE;
                 IOException e = new IOException("no module " + m); // NOI18N
-                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", m));
+                Exceptions.attachLocalizedMessage(e, ERR_could_not_find_module(m));
                 throw e;
             }
             ProjectXMLManager pxm = new ProjectXMLManager(project);
@@ -509,7 +531,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
     
     static final class RemoveDependencyAction extends CookieAction {
-        protected void performAction(Node[] activatedNodes) {
+        protected @Override void performAction(Node[] activatedNodes) {
             Map<NbModuleProject, Set<Pair<TestModuleDependency, String>>> map =
                     new HashMap<NbModuleProject, Set<Pair<TestModuleDependency, String>>>();
             for (int i = 0; i < activatedNodes.length; i++) {
@@ -537,18 +559,19 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
-                    ErrorManager.getDefault().annotate(e, "Problem during test dependencies removing"); // NOI18N
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.attachMessage(e, "Problem during test dependencies removing"); // NOI18N
+                    Exceptions.printStackTrace(e);
                 }
             }
             
         }
         
-        public String getName() {
-            return getMessage("CTL_RemoveDependency");
+        @Messages("CTL_RemoveDependency=Remove")
+        public @Override String getName() {
+            return CTL_RemoveDependency();
         }
         
-        public HelpCtx getHelpCtx() {
+        public @Override HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }
         
@@ -556,12 +579,12 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return false;
         }
         
-        protected int mode() {
+        protected @Override int mode() {
             return CookieAction.MODE_ALL;
         }
         
-        protected Class[] cookieClasses() {
-            return new Class[] {TestModuleDependency.class, NbModuleProject.class };
+        protected @Override Class<?>[] cookieClasses() {
+            return new Class<?>[] {TestModuleDependency.class, NbModuleProject.class};
         }
         
         
@@ -574,19 +597,20 @@ final class UnitTestLibrariesNode extends AbstractNode {
         private final String testType;
         private final NbModuleProject project;
         
+        @Messages("CTL_EditDependency=Edit...")
         EditTestDependencyAction(final TestModuleDependency testDep, String testType, final NbModuleProject project) {
-            super(getMessage("CTL_EditDependency"));
+            super(CTL_EditDependency());
             this.testDep = testDep;
             this.testType = testType;
             this.project = project;
         }
         
         
-        public void actionPerformed(ActionEvent ev) {
+        @Messages("CTL_EditModuleDependencyTitle=Edit \"{0}\" Dependency")
+        public @Override void actionPerformed(ActionEvent ev) {
             final EditTestDependencyPanel editTestPanel = new EditTestDependencyPanel(testDep);
             DialogDescriptor descriptor = new DialogDescriptor(editTestPanel,
-                    NbBundle.getMessage(LibrariesNode.class, "CTL_EditModuleDependencyTitle",
-                    testDep.getModule().getLocalizedName()));
+                    CTL_EditModuleDependencyTitle(testDep.getModule().getLocalizedName()));
             descriptor.setHelpCtx(new HelpCtx(EditTestDependencyPanel.class));
             Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
             d.setVisible(true);
@@ -600,8 +624,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     
                     
                 } catch (IOException e) {
-                    ErrorManager.getDefault().annotate(e, "Cannot store dependency: " + editedDep); // NOI18N
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.attachMessage(e, "Cannot store dependency: " + editedDep); // NOI18N
+                    Exceptions.printStackTrace(e);
                 }
                 
                 
