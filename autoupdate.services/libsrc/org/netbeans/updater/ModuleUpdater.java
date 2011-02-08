@@ -443,7 +443,7 @@ public final class ModuleUpdater extends Thread {
                                     crc = UpdateTracking.getFileCRC(downloaded);
                                     if (assumedCRC.get() != -1 && assumedCRC.get() != crc) {
                                         downloaded.delete();
-                                        throw new FileNotFoundException("Wrong CRC for " + downloaded);
+                                        throw new FileNotFoundException("Wrong CRC for " + downloaded + ": expected " + assumedCRC + " but got " + crc);
                                     }
                                 } else {
                                     bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
@@ -498,7 +498,7 @@ public final class ModuleUpdater extends Thread {
                     }
                     }
                 } catch (FileNotFoundException x) {
-                    XMLUtil.LOG.log(Level.WARNING, "Missing NBM contents: {0}", x);
+                    XMLUtil.LOG.log(Level.WARNING, "Missing NBM contents: " + x);
                     // XXX this should rather roll back: delete everything written so far
                     return; // do not write update tracking
                 }
