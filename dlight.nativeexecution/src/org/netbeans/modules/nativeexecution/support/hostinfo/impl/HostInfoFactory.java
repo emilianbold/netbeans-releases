@@ -175,7 +175,7 @@ public final class HostInfoFactory {
         }
         int bracketPos = text.indexOf('(');
         String idText = (bracketPos >= 0) ? text.substring(0, bracketPos) : text;
-        String nameText = (bracketPos >= 0 && text.endsWith(")")) ? text.substring(bracketPos + 1, text.length() - 1) : null;
+        String nameText = (bracketPos >= 0 && text.endsWith(")")) ? text.substring(bracketPos + 1, text.length() - 1) : null; // NOI18N
         int id;
         try {
             id = Integer.parseInt(idText);
