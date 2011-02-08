@@ -83,8 +83,16 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
     private static final String ALL_BRANCHES_FETCH_REF_SPEC = "+refs/heads/*:refs/remotes/{0}/*"; //NOI18N
     private static final String BRANCH_FETCH_REF_SPEC = "+refs/heads/{0}:refs/remotes/{1}/{2}"; //NOI18N
     private JComponent[] inputComponents;
+    private final Mode mode;
+    
+    public static enum Mode {
+        ACCEPT_EMPTY_SELECTION,
+        ACCEPT_NON_EMPTY_SELECTION_ONLY,
+        ACCEPT_NON_EMPTY_SELECTION_ONLY_VALIDATE_SELECTED
+    }
 
-    public FetchRefsStep () {
+    public FetchRefsStep (Mode mode) {
+        this.mode = mode;
         this.panel = new FetchRefsPanel();
         fillPanel();
         setInputComponents();
@@ -105,7 +113,10 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
     @Override
     protected final void validateBeforeNext () {
         if (EventQueue.isDispatchThread()) {
-            if (panel.lstRefs.getModel().getSize() == 0) {
+            boolean acceptEmptySelection = mode == Mode.ACCEPT_EMPTY_SELECTION;
+            if (!acceptEmptySelection && panel.lstRefs.getSelectedValues().length == 0) {
+                setValid(false, new Message(NbBundle.getMessage(FetchRefsPanel.class, "MSG_FetchRefsPanel.errorNoSpecSelected"), false)); //NOI18N
+            } else if (acceptEmptySelection && panel.lstRefs.getModel().getSize() == 0) {
                 setValid(true, new Message(NbBundle.getMessage(FetchRefsPanel.class, "MSG_FetchRefsPanel.errorNoSpec"), true)); //NOI18N
             } else {
                 setValid(true, null);
@@ -122,7 +133,10 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
                             client.init(this);
                             RemoteConfig remote = RemoteConfig.createUpdatableRemote(tempRepo, FetchRefsStep.this.remote.getRemoteName());
                             List<String> refs = new LinkedList<String>();
-                            for (Object o : ((DefaultListModel) panel.lstRefs.getModel()).toArray()) {
+                            Object[] toValidate = mode == Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY_VALIDATE_SELECTED
+                                    ? panel.lstRefs.getSelectedValues()
+                                    : ((DefaultListModel) panel.lstRefs.getModel()).toArray();
+                            for (Object o : toValidate) {
                                 refs.add((String) o);
                             }
                             remote.setFetchRefSpecs(refs);
@@ -147,14 +161,14 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
                 if (validatingSupp.isCanceled()) {
                     setValid(false, new Message(null, true));
                 }
-                //enable input
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run () {
-                        setEnabled(true);
-                    }
-                });
             }
+            //enable input
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    setEnabled(true);
+                }
+            });
         }
     }
 
@@ -168,19 +182,30 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
         return panel;
     }
 
-    void setFetchUri (String fetchUri) {
+    public void setFetchUri (String fetchUri, boolean loadRemoteBranches) {
         if (fetchUri != null && !fetchUri.equals(this.fetchUri) || fetchUri == null && this.fetchUri != null) {
             this.fetchUri = fetchUri;
-            refreshRemoteBranches();
+            if (loadRemoteBranches) {
+                refreshRemoteBranches();
+            }
         }
     }
 
-    void setRemote (GitRemoteConfig remote) {
+    public void setRemote (GitRemoteConfig remote) {
         if (this.remote != remote && (this.remote == null || remote == null || !remote.getFetchRefSpecs().equals(this.remote.getFetchRefSpecs()))) {
             this.remote = remote;
             fillPanel();
         }
         validateBeforeNext();
+    }
+
+    public void fillRemoteBranches (Map<String, GitBranch> branches) {
+        DefaultListModel model = new DefaultListModel();
+        for (GitBranch branch : branches.values()) {
+            model.addElement(branch.getName());
+        }
+        panel.lstRemoteBranches.setModel(model);
+        panel.lstRemoteBranches.setEnabled(true);
     }
     
     private void fillPanel () {
@@ -242,6 +267,9 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
         if (!e.getValueIsAdjusting()) {
             panel.btnAddSelected.setEnabled(panel.lstRemoteBranches.getSelectedIndices().length > 0);
             panel.btnRemoveSelected.setEnabled(panel.lstRefs.getSelectedIndices().length > 0);
+            if (e.getSource() == panel.lstRefs.getSelectionModel() && mode != Mode.ACCEPT_EMPTY_SELECTION) {
+                validateBeforeNext();
+            }
         }
     }
 
@@ -275,12 +303,7 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
                                     @Override
                                     public void run () {
                                         if (!supp.isCanceled()) {
-                                            DefaultListModel model = new DefaultListModel();
-                                            panel.lstRemoteBranches.setModel(model);
-                                            panel.lstRemoteBranches.setEnabled(true);
-                                            for (GitBranch branch : branches.values()) {
-                                                model.addElement(branch.getName());
-                                            }
+                                            fillRemoteBranches(branches);
                                         }
                                     }
                                 });
@@ -293,7 +316,7 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
         }
     }
 
-    void cancelBackgroundTasks () {
+    public void cancelBackgroundTasks () {
         if (supp != null) {
             supp.cancel();
         }
@@ -306,6 +329,14 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
         DefaultListModel m = (DefaultListModel) panel.lstRefs.getModel();
         List<String> specs = new LinkedList<String>();
         for (Object spec : m.toArray()) {
+            specs.add((String) spec);
+        }
+        return specs;
+    }
+    
+    public List<String> getSelectedRefSpecs () {
+        List<String> specs = new LinkedList<String>();
+        for (Object spec : panel.lstRefs.getSelectedValues()) {
             specs.add((String) spec);
         }
         return specs;
