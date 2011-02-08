@@ -168,15 +168,6 @@ public final class ProjectActionEvent {
     }
 
     public String getExecutable() {
-        /*
-         * This is a hack to get debugging of tests working again. Once it has been verified that it fixes the problem, a real fix will be
-         * implememted: introduce DEBUG_TEST and DEBUG_TEST_STEPINTO action types. Then this hack can be removed.
-         */
-        // Hack begin...
-        if (executable.contains("tests/TestFiles")) { // NOI18N
-            return executable;
-        }
-        // Hack end....
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             return getExecutableFromRunCommand();
         }
