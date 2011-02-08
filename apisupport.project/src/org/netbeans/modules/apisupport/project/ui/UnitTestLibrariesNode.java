@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +72,8 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
@@ -80,6 +83,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SingleModulePropert
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -102,6 +106,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -303,7 +308,6 @@ final class UnitTestLibrariesNode extends AbstractNode {
         
         public @Override void propertiesChanged(AntProjectEvent ev) {
             // do not need
-            Logger LOG = Logger.getLogger(UnitTestLibrariesNode.class.getName());
             LOG.log(Level.FINE, "propertiesChanged: {0}, expected: {1}", new Object[] {ev.getPath(), ev.isExpected()});
         }
         
@@ -459,6 +463,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
 
     private static class AddJUnit4Action extends AbstractAction {
+        private static final RequestProcessor RP = new RequestProcessor(AddJUnit4Action.class);
         private final String testType;
         private final NbModuleProject project;
         @Messages("LBL_resolve_missing_junit4=Add Missing Dependencies")
@@ -476,7 +481,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                     LBL_also_add_nbjunit_question(),
                     LBL_also_add_nbjunit_title()));
-            boolean addNBJUnit;
+            final boolean addNBJUnit;
             if (result == NotifyDescriptor.NO_OPTION) {
                 addNBJUnit = false;
             } else if (result == NotifyDescriptor.YES_OPTION) {
@@ -484,8 +489,37 @@ final class UnitTestLibrariesNode extends AbstractNode {
             } else {
                 return; // cancelled
             }
+            ModuleList moduleList;
             try {
-                resolveJUnitDependencies(project, testType, addNBJUnit);
+                moduleList = project.getModuleList();
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
+                return;
+            }
+            if (moduleList.getEntry(JUNIT_MODULE) == null && LibraryManager.getDefault().getLibrary("junit_4") == null) {
+                for (LibraryDefiner definer : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
+                    final Callable<Library> download = definer.missingLibrary("junit_4");
+                    if (download != null) {
+                        RP.post(new Runnable() {
+                            public @Override void run() {
+                                try {
+                                    download.call();
+                                    ModuleList.refresh();
+                                    resolve(project.getModuleList(), addNBJUnit);
+                                } catch (Exception x) {
+                                    LOG.log(Level.INFO, null, x);
+                                }
+                            }
+                        });
+                        return;
+                    }
+                }
+            }
+            resolve(moduleList, addNBJUnit);
+        }
+        private void resolve(ModuleList moduleList, boolean addNBJUnit) {
+            try {
+                resolveJUnitDependencies(project, moduleList, testType, addNBJUnit);
             } catch (IOException ex) {
                 String msg = Exceptions.findLocalizedMessage(ex);
                 if (msg == null) {
@@ -502,15 +536,21 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
         private static final String JUNIT_MODULE = "org.netbeans.libs.junit4";
         private static final String NBJUNIT_MODULE = "org.netbeans.modules.nbjunit";
-        @Messages({"# {0} - code name of module", "ERR_could_not_find_module=Could not find module {0} to depend on. Make sure it is included in your platform and not excluded from your suite."})
-        private static void resolveJUnitDependencies(NbModuleProject project, String testType, boolean addNBJUnit) throws IOException {
-            ModuleList moduleList = project.getModuleList();
+        @Messages({
+            "ERR_could_not_find_junit4=Could not find the JUnit 4 library in the target platform; you need to install JUnit.",
+            "ERR_could_not_find_nbjunit=Could not find the NB JUnit library in the target platform; perhaps the harness cluster is missing?"
+        })
+        private static void resolveJUnitDependencies(NbModuleProject project, ModuleList moduleList, String testType, boolean addNBJUnit) throws IOException {
             ModuleEntry junit4 = moduleList.getEntry(JUNIT_MODULE);
+            if (junit4 == null) {
+                IOException e = new IOException("no libs.junit4");
+                Exceptions.attachLocalizedMessage(e, ERR_could_not_find_junit4());
+                throw e;
+            }
             ModuleEntry nbjunit = moduleList.getEntry(NBJUNIT_MODULE);
-            if (junit4 == null || (addNBJUnit && nbjunit == null)) {
-                String m = (junit4 == null) ? JUNIT_MODULE : NBJUNIT_MODULE;
-                IOException e = new IOException("no module " + m); // NOI18N
-                Exceptions.attachLocalizedMessage(e, ERR_could_not_find_module(m));
+            if (addNBJUnit && nbjunit == null) {
+                IOException e = new IOException("no nbjunit");
+                Exceptions.attachLocalizedMessage(e, ERR_could_not_find_nbjunit());
                 throw e;
             }
             ProjectXMLManager pxm = new ProjectXMLManager(project);
