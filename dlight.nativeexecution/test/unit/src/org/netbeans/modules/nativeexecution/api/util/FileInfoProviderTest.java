@@ -277,7 +277,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
             assertEquals("link target for " + path, link, statInfo.getLinkTarget());
         }
         long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
-        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > skew + 1000*60*5) {
+        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > Math.abs(skew) + 1000*60*5) {
             assertTrue("last modified differs too much: " + creationDate +  " vs " + statInfo.getLastModified(), false);
         }
     }
