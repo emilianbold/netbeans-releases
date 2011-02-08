@@ -48,6 +48,7 @@ import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -64,6 +65,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     private String remoteLink;
     private String remoteSubdir;
     private String remoteSubdirLink;
+    private Date creationDate;
     
     public FileInfoProviderTest(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
@@ -93,6 +95,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
                 " mkdir -p " + remoteSubdir + ";" + 
                 "ln -s " + remoteSubdir + ' ' + remoteSubdirLink;
         runScript(script);
+        creationDate = new Date();
     }
 
     @Override
@@ -107,19 +110,19 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
 
         statInfo = getStatInfo(remoteFile);
         System.err.printf("Stat for %s: %s\n", remoteFile, statInfo);
-        assertExpected(statInfo, remoteFile, false, null, true, true, true);
+        assertExpected(statInfo, remoteFile, false, null);
         
         statInfo = getStatInfo(remoteLink);
         System.err.printf("Stat for %s: %s\n", remoteLink, statInfo);
-        assertExpected(statInfo, remoteLink, false, remoteFile, true, true, true);
+        assertExpected(statInfo, remoteLink, false, remoteFile);
 
         statInfo = getStatInfo(remoteSubdir);
         System.err.printf("Stat for %s: %s\n", remoteSubdir, statInfo);
-        assertExpected(statInfo, remoteSubdir, true, null, true, true, true);
+        assertExpected(statInfo, remoteSubdir, true, null);
         
         statInfo = getStatInfo(remoteSubdirLink);
         System.err.printf("Stat for %s: %s\n", remoteSubdirLink, statInfo);
-        assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir, true, true, true);
+        assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir);
     }
     
     @ForAllEnvironments(section = "remote.platforms")
@@ -162,19 +165,19 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         }
         StatInfo statInfo;        
         statInfo = find(res, PathUtilities.getBaseName(remoteFile));
-        assertExpected(statInfo, remoteFile, false, null, true, true, true);
+        assertExpected(statInfo, remoteFile, false, null);
         
         statInfo = getStatInfo(remoteLink);
         statInfo = find(res, PathUtilities.getBaseName(remoteLink));
-        assertExpected(statInfo, remoteLink, false, remoteFile, true, true, true);
+        assertExpected(statInfo, remoteLink, false, remoteFile);
 
         statInfo = getStatInfo(remoteSubdir);
         statInfo = find(res, PathUtilities.getBaseName(remoteSubdir));
-        assertExpected(statInfo, remoteSubdir, true, null, true, true, true);
+        assertExpected(statInfo, remoteSubdir, true, null);
         
         statInfo = getStatInfo(remoteSubdirLink);
         statInfo = find(res, PathUtilities.getBaseName(remoteSubdirLink));
-        assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir, true, true, true);
+        assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir);
     }
     
     private StatInfo find(StatInfo[] infList, String name) throws Exception {
@@ -205,7 +208,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         return statInfo;
     }
         
-    private static void assertExpected(StatInfo statInfo, String path, boolean dir, String link, boolean canRead, boolean canWrite, boolean canExecute) {
+    private void assertExpected(StatInfo statInfo, String path, boolean dir, String link) throws Exception {
         int slashPos = path.lastIndexOf('/');
         String name = slashPos < 0 ? path : path.substring(slashPos + 1);
         assertEquals("name for " + path, name, statInfo.getName());
@@ -214,10 +217,9 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         if (link != null) {
             assertEquals("link target for " + path, link, statInfo.getLinkTarget());
         }
-        
-        Date d = new Date();
-        if (Math.abs(d.getTime() - statInfo.getLastModified().getTime()) > 1000*60*60*12) {
-            assertTrue("last modified differs too much: " + d +  " vs " + statInfo.getLastModified(), false);
+        long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
+        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > skew + 1000*60*5) {
+            assertTrue("last modified differs too much: " + creationDate +  " vs " + statInfo.getLastModified(), false);
         }
     }
 }
