@@ -426,10 +426,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING)) {
                         modules.add (new TomcatModule (t, ctx, path));
                     }
-                }
-                catch (java.util.NoSuchElementException e) {
+                } catch (java.util.NoSuchElementException e) {
                     // invalid value
-                    e.printStackTrace ();
+                    LOGGER.log(Level.FINE, line, e);
+                    System.err.println(line);
+                    e.printStackTrace();
                 }
             }
         }
