@@ -48,6 +48,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.*;
 
 //import org.openide.util.NbBundle;
@@ -425,13 +426,18 @@ public final class ModuleUpdater extends Thread {
                                 if (pathTo.endsWith(".external")) {
                                     File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
                                     final InputStream spec = jarFile.getInputStream(entry);
-                                    InputStream is = externalDownload(spec);
+                                    AtomicLong assumedCRC = new AtomicLong();
+                                    InputStream is = externalDownload(spec, assumedCRC);
                                     spec.close();
                                     FileOutputStream os = new FileOutputStream(downloaded);
                                     bytesRead = copyStreams(is, os, -1);
                                     is.close();
                                     os.close();
                                     crc = UpdateTracking.getFileCRC(downloaded);
+                                    if (assumedCRC.get() != -1 && assumedCRC.get() != crc) {
+                                        downloaded.delete();
+                                        throw new IOException("Wrong CRC for " + downloaded);
+                                    }
                                     pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
                                 } else {
                                     bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
@@ -532,13 +538,19 @@ public final class ModuleUpdater extends Thread {
             t.deleteUnusedFiles ();            
         }
     }
-    private InputStream externalDownload(InputStream is) throws IOException {
+    
+    // copied from nbbuild/antsrc/org/netbeans/nbbuild/AutoUpdate.java:
+    private InputStream externalDownload(InputStream is, AtomicLong crc) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         URLConnection conn;
+        crc.set(-1L);
         for (;;) {
             String line = br.readLine();
             if (line == null) {
                 break;
+            }
+            if (line.startsWith("CRC:")) {
+                crc.set(Long.parseLong(line.substring(4).trim()));
             }
             if (line.startsWith("URL:")) {
                 String url = line.substring(4).trim();

@@ -42,11 +42,14 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.w3c.dom.Document;
@@ -189,8 +192,24 @@ public class AutoUpdateTest extends TestBase {
         extractResource(f, "org-netbeans-api-annotations-common.xml");
         
         File ext = extractString("external content");
+        BufferedInputStream bsrc = null;
+        CRC32 crc = new CRC32();
+        try {
+            bsrc = new BufferedInputStream( new FileInputStream( ext ) );
+            byte[] bytes = new byte[1024];
+            int i;
+            while( (i = bsrc.read(bytes)) != -1 ) {
+                crc.update(bytes, 0, i );
+            }
+        }
+        finally {
+            if ( bsrc != null )
+                bsrc.close();
+        }
+        
         
         String extRef =
+            "CRC: " + crc.getValue() + "\n" +
             "URL: file:/I/dont/exist/At/All\n" +
             "URL: " + ext.toURI().toString() + "\n";
 
@@ -232,6 +251,36 @@ public class AutoUpdateTest extends TestBase {
 
         File lastM = new File(new File(target, "platform"), ".lastModified");
         assertTrue("Last modified file created", lastM.exists());
+    }
+
+    public void testFailOnWrongCRCExternal() throws Exception {
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
+        
+        File ext = extractString("external content");
+        
+        String extRef =
+            "CRC: 42\n" +
+            "URL: " + ext.toURI().toString() + "\n";
+
+        File nbm = generateNBMContent("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml", "empty",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar.external", extRef,
+            "netbeans/docs/My Manager's So-Called \"README\"", "empty");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        try {
+            execute(
+                "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+                "-Dincludes=org.netbeans.api.annotations.common",
+                "-Dtarget=" + target
+            );
+            fail("Execution shall fail, as the CRC is wrong");
+        } catch (ExecutionError ok) {
+            // OK
+        }
     }
     
     public void testDownloadAndExtractExternalWithProperty() throws Exception {

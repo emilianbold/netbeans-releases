@@ -260,8 +260,13 @@ public class AutoUpdate extends Task {
                         doUnpack200 = true;
                     }
                     OutputStream os;
+                    AtomicLong assumedCRC = null;
                     if (relName.endsWith(".external")) {
-                        is = externalDownload(is);
+                        assumedCRC = new AtomicLong();
+                        is = externalDownload(is, assumedCRC);
+                        if (assumedCRC.longValue() == -1L) {
+                            assumedCRC = null;
+                        }
                         File dest = new File(trgt.getParentFile(), trgt.getName().substring(0, trgt.getName().length() - 9));
                         os = new FileOutputStream(dest);
                     } else {
@@ -289,6 +294,9 @@ public class AutoUpdate extends Task {
                         crcValue = getFileCRC(dest);
                         relName = relName.substring(0, relName.length() - 8);
                     }
+                    if (assumedCRC != null && assumedCRC.get() != crcValue) {
+                        throw new BuildException("Expecting CRC " + assumedCRC.get() + " but was " + crcValue);
+                    }
                     Element file = (Element) module_version.appendChild(doc.createElement("file"));
                     file.setAttribute("crc", String.valueOf(crcValue));
                     file.setAttribute("name", relName);
@@ -315,13 +323,17 @@ public class AutoUpdate extends Task {
         }
     }
     
-    private InputStream externalDownload(InputStream is) throws IOException {
+    private InputStream externalDownload(InputStream is, AtomicLong crc) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         URLConnection conn;
+        crc.set(-1L);
         for (;;) {
             String line = br.readLine();
             if (line == null) {
                 break;
+            }
+            if (line.startsWith("CRC:")) {
+                crc.set(Long.parseLong(line.substring(4).trim()));
             }
             if (line.startsWith("URL:")) {
                 String url = line.substring(4).trim();
