@@ -109,6 +109,7 @@ public class Utils {
                     try {
                         // request
                         out.println("HEAD /netbeans-tomcat-status-test HTTP/1.1\r\nHost: localhost:" + port + "\r\n"); // NOI18N
+                        out.flush();
 
                         // response
                         String text = in.readLine();
