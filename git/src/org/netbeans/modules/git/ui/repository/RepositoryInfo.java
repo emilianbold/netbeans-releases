@@ -140,8 +140,8 @@ public class RepositoryInfo {
      */
     public void refresh () {
         assert !java.awt.EventQueue.isDispatchThread();
+        File root = rootRef.get();
         try {
-            File root = rootRef.get();
             if (root == null) {
                 LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
             } else {
@@ -157,7 +157,8 @@ public class RepositoryInfo {
                 setRepositoryState(newState);
             }
         } catch (GitException ex) {
-            LOG.log(Level.INFO, null, ex);
+            Level level = root.exists() ? Level.INFO : Level.FINE; // do not polute the message log with messages concerning temporary or deleted repositories
+            LOG.log(level, null, ex);
         }
     }
 
