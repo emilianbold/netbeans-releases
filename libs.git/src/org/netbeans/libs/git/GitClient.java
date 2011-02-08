@@ -257,7 +257,7 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException;
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
