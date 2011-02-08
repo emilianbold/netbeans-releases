@@ -210,39 +210,4 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 //        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
 //    }
 
-    protected String runCommand(String command, String... args) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, command, args);
-        assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
-        return res.output;
-    }
-
-    protected String runCommandInDir(String dir, String command, String... args) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, execEnv, command, args);
-        assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
-                "\" in dir " + dir + " failed", res.isOK());
-        return res.output;
-    }
-
-    private String stringArrayToString(String[] args) {
-        StringBuilder sb = new StringBuilder();
-        for (String arg : args) {
-            sb.append(' ').append(arg);
-        }
-        return sb.toString();
-    }
-
-    protected String runScript(String script) throws Exception {
-        final StringBuilder output = new StringBuilder();
-        ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
-            public void processLine(String line) {
-                output.append(line).append('\n');
-                System.err.println(line);
-            }
-            public void reset() {}
-            public void close() {}
-        });
-        int rc = scriptRunner.execute();
-        assertEquals("Error running script", 0, rc);
-        return output.toString();
-    }
 }
