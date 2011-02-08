@@ -146,24 +146,23 @@ public class FileInfoProvider {
         }
         
         private boolean can(ExecutionEnvironment env, short all_mask, short grp_mask, short usr_mask) {
-            if ((access & all_mask) > 0) {
-                return true;
-            }
             if (HostInfoUtils.isHostInfoAvailable(env)) {
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                    if ((access & usr_mask) > 0) {
-                        if (this.uid == hostInfo.getUserId()) {
-                            return true;
+                    if (this.uid == hostInfo.getUserId()) {
+                        return (access & usr_mask) > 0;
+                    }
+                    boolean isGroupClass = false;
+                    for (int currGid : hostInfo.getAllGroupIDs()) {
+                        if (gid == currGid) {
+                            isGroupClass = true;
+                            break;
                         }
                     }
-                    if ((access & grp_mask) > 0) {
-                        for (int currGid : hostInfo.getAllGroupIDs()) {
-                            if (gid == currGid) {
-                                return true;
-                            }
-                        }
+                    if (isGroupClass) {
+                        return (access & grp_mask) > 0;
                     }
+                    return (access & all_mask) > 0;
                 } catch (IOException ex) {
                     // should be never thrown, since we checked isHostInfoAvailable() first
                     Exceptions.printStackTrace(ex);

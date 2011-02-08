@@ -65,6 +65,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -242,13 +243,22 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     protected String runCommand(String command, String... args) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), command, args);
+        return runCommand(getTestExecutionEnvironment(), command, args);
+    }
+
+    protected String runCommand(ExecutionEnvironment env, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, command, args);
         assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
         return res.output;
     }
 
     protected String runCommandInDir(String dir, String command, String... args) throws Exception {
-        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, getTestExecutionEnvironment(), command, args);
+        return runCommandInDir(getTestExecutionEnvironment(), dir, command, args);
+        
+    }
+    
+    protected String runCommandInDir(ExecutionEnvironment env, String dir, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
         assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
                 "\" in dir " + dir + " failed", res.isOK());
         return res.output;
@@ -263,8 +273,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
     
     protected String runScript(String script) throws Exception {
-        final StringBuilder output = new StringBuilder();
-        ShellScriptRunner scriptRunner = new ShellScriptRunner(getTestExecutionEnvironment(), script, new LineProcessor() {
+        return runScript(getTestExecutionEnvironment(), script);
+    }
+
+    protected String runScript(ExecutionEnvironment env, String script) throws Exception {
+        final StringBuilder output = new StringBuilder();        
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(env, script, new LineProcessor() {
             @Override
             public void processLine(String line) {
                 output.append(line).append('\n');
@@ -278,6 +292,24 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         int rc = scriptRunner.execute();
         assertEquals("Error running script", 0, rc);
         return output.toString();
+    }
+    
+    protected boolean canRead(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-r", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    protected boolean canWrite(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-w", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    protected boolean canExecute(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-x", path);
+        return npb.call().waitFor() == 0;        
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {

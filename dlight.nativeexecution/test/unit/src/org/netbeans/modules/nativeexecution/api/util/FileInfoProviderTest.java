@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -128,22 +129,45 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     public void testAccessMode() throws Exception {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         
-        checkAccess(remoteFile, "700", env, true, true, true);
-        checkAccess(remoteFile, "400", env, true, false, false);
-        checkAccess(remoteFile, "200", env, false, true, false);
-        checkAccess(remoteFile, "100", env, false, false, true);
+        checkAccess(remoteFile, "700", env);
+        checkAccess(remoteFile, "400", env);
+        checkAccess(remoteFile, "200", env);
+        checkAccess(remoteFile, "100", env);
+               
+        checkAccess(remoteFile, "007", env);
+        checkAccess(remoteFile, "004", env);
+        checkAccess(remoteFile, "002", env);
+        checkAccess(remoteFile, "001", env);
         
-        checkAccess(remoteFile, "070", env, true, true, true);
-        checkAccess(remoteFile, "040", env, true, false, false);
-        checkAccess(remoteFile, "020", env, false, true, false);
-        checkAccess(remoteFile, "010", env, false, false, true);
+        checkAccess(remoteFile, "070", env);
+        checkAccess(remoteFile, "040", env);
+        checkAccess(remoteFile, "020", env);
+        checkAccess(remoteFile, "010", env);
         
-        checkAccess(remoteFile, "007", env, true, true, true);
-        checkAccess(remoteFile, "004", env, true, false, false);
-        checkAccess(remoteFile, "002", env, false, true, false);
-        checkAccess(remoteFile, "001", env, false, false, true);
+//        String oldGroup = HostInfoUtils.getHostInfo(env).getGroup();
+//        boolean groupChanged = false;
+//        try {
+//            try {
+//               runScript("chgrp nobody " + remoteFile);
+//               groupChanged = true;
+//            } catch (Throwable thr) {
+//                thr.printStackTrace();
+//            }
+//            if (groupChanged) {
+//                checkAccess(remoteFile, "070", env);
+//                checkAccess(remoteFile, "040", env);
+//                checkAccess(remoteFile, "020", env);
+//                checkAccess(remoteFile, "010", env);
+//            }
+//        } finally {
+//            if (groupChanged) {
+//                runScript("chgrp " + oldGroup + ' ' + remoteFile);
+//            }
+//        }
         
         // TODO: test (other) groups
+        checkAccess("/usr/include", null, env);
+        checkAccess("/etc/shadow", null, env);
     }
     
     @ForAllEnvironments(section = "remote.platforms")
@@ -165,14 +189,31 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         assertEquals("canExecute()", statInfo1.canExecute(env), statInfo2.canExecute(env));
     }
     
-    private void checkAccess(String path, String chmod, ExecutionEnvironment env, boolean read, boolean write, boolean execute) throws Exception {
-        runScript("chmod " + chmod + ' ' + path);
+    private void checkAccess(String path, String chmod, ExecutionEnvironment env) throws Exception {
+        if (chmod != null) {
+            runScript("chmod " + chmod + ' ' + path);
+        }
+        boolean read = canRead(env, path);
+        boolean write = canWrite(env, path);
+        boolean execute = canExecute(env, path);
         StatInfo statInfo = getStatInfo(path);
-        assertEquals("canRead for " + path, read, statInfo.canRead(env));        
-        assertEquals("canWrite for " + path, write, statInfo.canWrite(env));        
-        assertEquals("canExecute for " + path, execute, statInfo.canExecute(env));
+        checkAccess("canRead", path, env, read, statInfo.canRead(env));        
+        checkAccess("canWrite", path, env, write, statInfo.canWrite(env));        
+        checkAccess("canExecute", path, env, execute, statInfo.canExecute(env));
     }
-            
+    
+    private void checkAccess(String prefix, String path, ExecutionEnvironment env, boolean expected, boolean actual) throws Exception {
+        if (expected != actual) {
+            StringBuilder sb = new StringBuilder(prefix).append(" differs for ").append(path).append(": ");
+            sb.append("expected ").append(expected).append(" but was ").append(actual).append('\n');
+            try {
+                sb.append(runScript(env, "id; ls -ld " + path));
+            } catch (Throwable ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            assertTrue(sb.toString(), false);
+        }
+    }            
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testLs() throws Exception {
@@ -236,7 +277,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
             assertEquals("link target for " + path, link, statInfo.getLinkTarget());
         }
         long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
-        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > Math.abs(skew) + 1000*60*5) {
+        if (Math.abs(creationDate.getTime() - statInfo.getLastModified().getTime()) > skew + 1000*60*5) {
             assertTrue("last modified differs too much: " + creationDate +  " vs " + statInfo.getLastModified(), false);
         }
     }
