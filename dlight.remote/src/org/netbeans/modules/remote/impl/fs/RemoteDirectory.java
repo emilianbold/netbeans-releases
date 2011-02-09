@@ -53,7 +53,6 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -84,11 +83,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
     private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
+    private static boolean LS_VIA_SFTP = ! Boolean.getBoolean("remote.parse.ls");
 
     private Reference<DirectoryStorage> storageRef;
     private static final class RefLock {}
-    private final Object refLock = new RefLock();
-    private static boolean wrongDateFormatReported = false;
+    private final Object refLock = new RefLock();    
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -120,6 +119,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (InterruptedIOException ex) {
             RemoteLogger.finest(ex);
             return false; // don't report
+        } catch (ExecutionException ex) {
+            RemoteLogger.finest(ex);
+            return false; // don't report
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
             return false; // don't report
@@ -136,6 +138,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedIOException ex) {
+            RemoteLogger.finest(ex);
+            return false; // don't report
+        } catch (ExecutionException ex) {
             RemoteLogger.finest(ex);
             return false; // don't report
         } catch (InterruptedException ex) {
@@ -176,6 +181,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);            
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
@@ -225,6 +232,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (IOException ex) {
                 throw ex;
+            } catch (ExecutionException ex) {
+                throw new IOException("Can not create " + path + ": exception occurred", ex); // NOI18N
             } catch (InterruptedException ex) {
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (CancellationException ex) {
@@ -298,6 +307,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (CancellationException ex) {
             RemoteLogger.finest(ex);
             return null;
+        } catch (ExecutionException ex) {
+            RemoteLogger.finest(ex);
+            return null;
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
             RemoteLogger.finest(ex);
@@ -338,6 +350,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (InterruptedIOException ex) {
             // don't report, for example FileChooser UI can interrupt us
             RemoteLogger.finest(ex);
+        } catch (ExecutionException ex) {
+            RemoteLogger.finest(ex);
+            // should we report it?
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
             RemoteLogger.finest(ex);
@@ -353,12 +368,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException {
+    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         getDirectoryStorage(true);
     }
 
     private DirectoryStorage getDirectoryStorage(boolean sync) throws
-            ConnectException, IOException, InterruptedException, CancellationException {
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(sync);
@@ -370,7 +385,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private DirectoryStorage getDirectoryStorageImpl(boolean sync) throws
-            ConnectException, IOException, InterruptedException, CancellationException {
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         DirectoryStorage storage = null;
 
@@ -485,7 +500,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (!cache.exists()) {
                 throw new IOException("Can not create cache directory " + cache); // NOI18N
             }
-            DirectoryReader directoryReader = new DirectoryReader(execEnv, remotePath);
+            DirectoryReader directoryReader = getLsViaSftp() ? 
+                    new DirectoryReaderSftp(execEnv, remotePath) : new DirectoryReaderLs(execEnv, remotePath);
             if (trace) { trace("synchronizing"); } // NOI18N
             try {
                 directoryReader.readDirectory();
@@ -498,9 +514,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     fileSystem.getRemoteFileSupport().addPendingFile(this);
                     if (loaded && storage != null) {
                         return storage;
+                    } else {
+                        throw new ConnectException(ex.getMessage());
                     }
                 }
-                throw new ConnectException(ex.getMessage());
+                
+            }  catch (ExecutionException ex) {
+                if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    // connection was broken while we read directory content -
+                    // add notification and return cache if available
+                    fileSystem.getRemoteFileSupport().addPendingFile(this);
+                    if (loaded && storage != null) {
+                        return storage;
+                    } else {
+                        throw ex;
+                    }
+                }                
             }
             fileSystem.incrementDirSyncCount();
             Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
@@ -521,7 +550,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     if (oldEntry.isSameType(newEntry)) {
                         cacheName = oldEntry.getCache();
                         keepCacheNames.add(newEntry);
-                        if (!newEntry.getTimestamp().equals(oldEntry.getTimestamp())) {
+                        if (!newEntry.isSameLastModified(oldEntry)) {
                             if (newEntry.isPlainFile()) {
                                 changed = true;
                                 File entryCache = new File(cache, oldEntry.getCache());
@@ -763,6 +792,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.finest(ex);
         } catch (IOException ex) {
             RemoteLogger.finest(ex);
+        } catch (ExecutionException ex) {
+            RemoteLogger.finest(ex);
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
         } catch (CancellationException ex) {
@@ -779,25 +810,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return 0;
     }
 
-    Date lastModified(RemoteFileObjectBase child) {
+    /*package*/ Date lastModified(RemoteFileObjectBase child) {
         DirEntry childEntry = getChildEntry(child);
         if (childEntry != null) {
-            String timestamp = childEntry.getTimestamp();
-            try {
-                if (timestamp != null) {
-                    Date date = DirectoryReader.getDate(timestamp);
-                    if (date != null) {
-                        return date;
-                    }
-                }
-            } catch (ParseException ex) {
-                // it can be normal, for example, for not fully supported remote OS (FreeBSD, Mac, AIX, etc)
-                if (!wrongDateFormatReported) {
-                    wrongDateFormatReported = true;
-                    RemoteLogger.getInstance().log(Level.INFO, "Error parsing date string for " + child.remotePath + ": " + timestamp, ex);
-                }
-            }
+            return childEntry.getLastModified();
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
+    }
+    
+    /*package*/ static boolean getLsViaSftp() {
+        return LS_VIA_SFTP;
+    }
+    
+    /*package*/ static void testSetLsViaSftp(boolean value) {
+        LS_VIA_SFTP = value;
     }
 }

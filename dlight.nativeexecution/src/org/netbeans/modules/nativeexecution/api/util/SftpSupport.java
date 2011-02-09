@@ -451,7 +451,8 @@ class SftpSupport {
             linkTarget = cftp.readlink(path);
         }
         Date lastModified = new Date(attrs.getMTime()*1000L);
-        StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.isDir(), attrs.isLink(), linkTarget, attrs.getPermissions(), lastModified);
+        StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.getSize(), 
+                attrs.isDir(), attrs.isLink(), linkTarget, attrs.getPermissions(), lastModified);
         return result;
     }
     
