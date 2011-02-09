@@ -42,41 +42,23 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-
 /**
  *
  * @author Vladimir Kvashin
  */
-public interface DirEntry {
+public class FormatException extends Exception {
+    private final boolean expexted;
 
-    String getName();
+    public FormatException(String text, boolean expected) {
+        this.expexted = expected;
+    }
 
-    long getSize();
+    public FormatException(String string, Throwable thrwbl) {
+        expexted = false;
+    }
 
-    String getTimestamp();
-    
-    boolean canExecute(ExecutionEnvironment execEnv);
-    boolean canRead(ExecutionEnvironment execEnv);
-    boolean canWrite(ExecutionEnvironment execEnv);
+    public boolean isExpexted() {
+        return expexted;
+    }
 
-    String getAccessAsString();
-
-    boolean isLink();
-    boolean isDirectory();
-    boolean isPlainFile();
-    boolean isSameType(DirEntry other);
-    FileType getFileType();
-
-    boolean isSameUser(DirEntry other);
-    boolean isSameGroup(DirEntry other);
-
-    String getLinkTarget();
-
-    String getCache();
-    void setCache(String cache);
-
-    String toExternalForm();
 }

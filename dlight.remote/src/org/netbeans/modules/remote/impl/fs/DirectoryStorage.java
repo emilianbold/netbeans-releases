@@ -60,25 +60,6 @@ import java.util.Map;
  */
 public class DirectoryStorage {
 
-    public static class FormatException extends Exception {
-
-        private final boolean expexted;
-
-        public FormatException(String text, boolean expected) {
-            super(text);
-            this.expexted = expected;
-        }
-
-        public FormatException(String string, Throwable thrwbl) {
-            super(string, thrwbl);
-            expexted = false;
-        }
-
-        public boolean isExpexted() {
-            return expexted;
-        }
-    }
-
     private final Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
     private final File file;
     private static final int VERSION = 2;
@@ -100,7 +81,7 @@ public class DirectoryStorage {
      * @throws IOException
      */
     public void load() throws IOException, FormatException {
-        synchronized (this) {
+        synchronized (DirectoryStorage.this) {
             BufferedReader br = null;
             try {
                 br = new BufferedReader(new FileReader(file));
@@ -108,7 +89,7 @@ public class DirectoryStorage {
                 String line = br.readLine();
                 String prefix = "VERSION="; // NOI18N
                 if (line == null || ! line.startsWith(prefix)) {
-                    throw wrongFormatException(line);
+                    throw new FormatException("Wrong file format " + file.getAbsolutePath() + " line " + line, false); //NOI18N)
                 }
                 int version;
                 try {
@@ -128,7 +109,7 @@ public class DirectoryStorage {
                     if (line.length() == 0) {
                         continue; // just in case, ignore empty lines
                     }
-                    DirEntry entry = parseLine(line);
+                    DirEntry entry = DirEntryImpl.fromExternalForm(line);
                     entries.put(entry.getName(), entry);
                 }
              } finally {
@@ -139,81 +120,6 @@ public class DirectoryStorage {
         }
     }
 
-    private DirEntry parseLine(String line) throws FormatException {
-        // array of entity creation parameters
-        String[] params = new String[8];
-        FileType fileType;
-        // this array indices
-        int name = 0;
-        int cache = 1;
-        int access = 2;
-        int user = 3;
-        int group = 4;
-        int size = 5;
-        int timestamp = 6;
-        int link = 7;
-        // buffer to accumulate current text
-        StringBuilder currText = new StringBuilder();
-        // index aka state
-        int currIndex = name;
-        boolean escape = false;
-        cycle:
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            switch (c) {
-                case '\\':
-                    if (((currIndex == name) || (currIndex == cache)) && ! escape) {
-                        escape = true;
-                    } else {
-                        currText.append(c);
-                        escape = false;
-                    }
-                    break;
-                case ' ':
-                    if (currIndex == timestamp || escape) {
-                        currText.append(c);
-                    } else {
-                        params[currIndex] = currText.toString();
-                        currText = new StringBuilder();
-                        currIndex++;
-                    }
-                    escape = false;
-                    break;
-                case '"':
-                    if (currIndex == timestamp ) {
-                        if (currText.length() == 0) {
-                            // first quote - just skip it
-                        } else {
-                            params[timestamp] = currText.toString();
-                            String t = line.substring(i+1).trim();
-                            params[link] = (t.length() == 0) ? null : t;
-                            break cycle;
-                        }
-                    } else if (currIndex + 1 == timestamp ) {
-                        currIndex = timestamp;
-                    } else {
-                        currText.append(c);
-                    }
-                    escape = false;
-                    break;
-                default:
-                    currText.append(c);
-                    escape = false;
-                    break;
-            }
-        }
-        if (currIndex < link - 1) {
-            throw wrongFormatException(line);
-        }
-        long sz;
-        try {
-            sz = Long.parseLong(params[size]);
-        } catch (NumberFormatException ex) {
-            throw wrongFormatException(line);
-        }
-        return new DirEntryImpl(params[name], params[cache], params[access], params[user], params[group], sz, params[timestamp], params[link]);
-    }
-
     public void store() throws IOException {
         BufferedWriter wr = null;
         synchronized (this) {
@@ -221,7 +127,7 @@ public class DirectoryStorage {
                 wr = new BufferedWriter(new FileWriter(file));
                 wr.write("VERSION=" + VERSION + "\n"); //NOI18N
                 for (DirEntry entry : entries.values()) {
-                    entry.write(wr);
+                    wr.write(entry.toExternalForm());
                     wr.write('\n');
                 }
                 wr.close();
@@ -271,9 +177,5 @@ public class DirectoryStorage {
         synchronized (this) {
             entries.put(entry.getName(), entry);
         }
-    }
-
-    private FormatException wrongFormatException(String line) {
-        return new FormatException("Wrong file format " + file.getAbsolutePath() + " line " + line, false); //NOI18N)
     }
 }

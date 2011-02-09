@@ -414,7 +414,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     try {
                         storage.load();
                         loaded = true;
-                    } catch (DirectoryStorage.FormatException e) {
+                    } catch (FormatException e) {
                         Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
                         RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
                         storageFile.delete();

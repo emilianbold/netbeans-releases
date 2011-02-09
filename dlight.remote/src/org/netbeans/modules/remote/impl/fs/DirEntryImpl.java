@@ -323,28 +323,105 @@ import org.openide.util.Exceptions;
         return name + ' ' + getAccessAsString() + ' ' + user + ' ' + group + ' ' + timestamp + ' ' + link;
     }
     
-    @Override
-    public void write(BufferedWriter wr) throws IOException {
-        wr.write(escape(name));
-        wr.write(' ');
-        wr.write(escape(cache));
-        wr.write(' ');
-        wr.write(type);
-        wr.write(getAccessAsString());
-        wr.write(' ');
-        wr.write(user);
-        wr.write(' ');
-        wr.write(group);
-        wr.write(' ');
-        wr.write(Long.toString(size));
-        wr.write(' ');
-        wr.write('"');
-        wr.write(timestamp);
-        wr.write('"');
-        if (link != null && link.length() > 0) {
-            wr.write(' ');
-            wr.write(link);
+    public static DirEntry fromExternalForm(String line) throws FormatException {
+        // array of entity creation parameters
+        String[] params = new String[8];
+        FileType fileType;
+        // this array indices
+        int name = 0;
+        int cache = 1;
+        int access = 2;
+        int user = 3;
+        int group = 4;
+        int size = 5;
+        int timestamp = 6;
+        int link = 7;
+        // buffer to accumulate current text
+        StringBuilder currText = new StringBuilder();
+        // index aka state
+        int currIndex = name;
+        boolean escape = false;
+        cycle:
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            switch (c) {
+                case '\\':
+                    if (((currIndex == name) || (currIndex == cache)) && ! escape) {
+                        escape = true;
+                    } else {
+                        currText.append(c);
+                        escape = false;
+                    }
+                    break;
+                case ' ':
+                    if (currIndex == timestamp || escape) {
+                        currText.append(c);
+                    } else {
+                        params[currIndex] = currText.toString();
+                        currText = new StringBuilder();
+                        currIndex++;
+                    }
+                    escape = false;
+                    break;
+                case '"':
+                    if (currIndex == timestamp ) {
+                        if (currText.length() == 0) {
+                            // first quote - just skip it
+                        } else {
+                            params[timestamp] = currText.toString();
+                            String t = line.substring(i+1).trim();
+                            params[link] = (t.length() == 0) ? null : t;
+                            break cycle;
+                        }
+                    } else if (currIndex + 1 == timestamp ) {
+                        currIndex = timestamp;
+                    } else {
+                        currText.append(c);
+                    }
+                    escape = false;
+                    break;
+                default:
+                    currText.append(c);
+                    escape = false;
+                    break;
+            }
         }
+        if (currIndex < link - 1) {
+            throw new FormatException("Wrong format: " + line, false); //NOI18N
+        }
+        long sz;
+        try {
+            sz = Long.parseLong(params[size]);
+        } catch (NumberFormatException ex) {
+            throw new FormatException("Wrong format: " + line, false); //NOI18N
+        }
+        return new DirEntryImpl(params[name], params[cache], params[access], params[user], params[group], sz, params[timestamp], params[link]);
+    }
+
+    @Override
+    public String toExternalForm() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(escape(name));
+        sb.append(' ');
+        sb.append(escape(cache));
+        sb.append(' ');
+        sb.append(type);
+        sb.append(getAccessAsString());
+        sb.append(' ');
+        sb.append(user);
+        sb.append(' ');
+        sb.append(group);
+        sb.append(' ');
+        sb.append(Long.toString(size));
+        sb.append(' ');
+        sb.append('"');
+        sb.append(timestamp);
+        sb.append('"');
+        if (link != null && link.length() > 0) {
+            sb.append(' ');
+            sb.append(link);
+        }
+        return sb.toString();
     }
     
     private String escape(String text) {
