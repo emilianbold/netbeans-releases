@@ -110,6 +110,7 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.etable.ETable;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.etable.TableColumnSelector;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
@@ -448,6 +449,22 @@ public class OutlineView extends JScrollPane {
      */
     @Deprecated
     public void setProperties(Node.Property[] newProperties) {
+        setProperties(newProperties, true);
+    }
+
+    private void setProperties(Node.Property[] newProperties, boolean doCleanColumns) {
+        if (doCleanColumns) {
+            TableColumnModel tcm = outline.getColumnModel();
+            if (tcm instanceof ETableColumnModel) {
+                try {
+                    java.lang.reflect.Method cleanMethod = ETableColumnModel.class.getDeclaredMethod("clean");
+                    cleanMethod.setAccessible(true);
+                    cleanMethod.invoke(tcm);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         rowModel.setProperties(newProperties);
         outline.tableChanged(null);
     }
@@ -482,7 +499,7 @@ public class OutlineView extends JScrollPane {
         Property[] nue = new Property[p.length + 1];
         System.arraycopy(p, 0, nue, 0, p.length);
         nue[p.length] = new PrototypeProperty(name, displayName, description);
-        setProperties (nue);
+        setProperties (nue, false);
     }
 
     /**
@@ -508,7 +525,7 @@ public class OutlineView extends JScrollPane {
         }
         if (found) {
             props = nue.toArray(new Property[props.length - 1]);
-            setProperties (props);
+            setProperties (props, false);
         }
         return found;
     }
@@ -551,7 +568,7 @@ public class OutlineView extends JScrollPane {
         for (int i = 0; i < namesAndDisplayNames.length; i+=2) {
             props[i / 2] = new PrototypeProperty (namesAndDisplayNames[i], namesAndDisplayNames[i+1]);
         }
-        setProperties (props);
+        setProperties (props, true);
     }
     
     /** Enable/disable displaying popup menus on tree view items.
