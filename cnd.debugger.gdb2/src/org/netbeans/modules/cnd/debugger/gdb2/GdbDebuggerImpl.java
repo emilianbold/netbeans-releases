@@ -3622,7 +3622,6 @@ import org.openide.util.Exceptions;
     }
 
     public void registerEvaluationWindow(EvaluationWindow w) {
-        notImplemented("registerEvaluationWindow()");	// NOI18N
     }
 
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
@@ -4331,8 +4330,35 @@ import org.openide.util.Exceptions;
     }
 
     // interface NativeDebugger
-    public void exprEval(String format, String expr) {
-        notImplemented("exprEval");	// NOI18N
+    public void exprEval(String format, final String expr) {
+        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        MICommand cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                final String res;
+                if (!record.isError()) {
+                    MIValue val = record.results().valueOf("value"); //NOI18N
+                    if (val != null) {
+                        res = val.asConst().value();
+                    } else {
+                        res = "";
+                    }
+                } else {
+                    res = record.error();
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        EvaluationWindow evalWindow = EvaluationWindow.getDefault();
+                        evalWindow.open();
+                        evalWindow.requestActive();
+                        evalWindow.componentShowing();
+                        evalWindow.evalResult(expr + " = " + res + "\n"); //NOI18N
+                    }
+                });
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 
     // interface NativeDebugger

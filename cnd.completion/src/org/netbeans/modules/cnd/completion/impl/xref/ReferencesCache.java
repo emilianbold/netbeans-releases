@@ -99,7 +99,7 @@ public class ReferencesCache {
         }
     }
 
-    void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
+    void putReferencedObject(CsmFile file, int offset, CsmObject object, long fileVersionOnStartResolving) {
         synchronized (cacheLock) {
             Map<Integer, CacheEntry> entry = cache.get(file);
             if (entry == null) {
@@ -112,21 +112,22 @@ public class ReferencesCache {
             }
             CacheEntry cacheEntry = entry.get(offset);
             if (cacheEntry == null) {
-                cacheEntry = new CacheEntry();
-                cacheEntry.csmObject = object;
-                cacheEntry.fileVersion = oldVersion;
+                cacheEntry = new CacheEntry(fileVersionOnStartResolving, object);
                 entry.put(offset, cacheEntry);
             } else {
                 if (object == UNRESOLVED) {
-                    long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-                    if (oldVersion != fileVersion) {
+                    long currentFileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+                    if (fileVersionOnStartResolving != currentFileVersion) {
                         // we don't beleive in such fake
                         // System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
                         return;
                     }
                 }
-                cacheEntry.csmObject = object;
-                cacheEntry.fileVersion = oldVersion;
+                // replace only by newer version of resolved object
+                if (cacheEntry.fileVersion < fileVersionOnStartResolving) {
+                    cacheEntry = new CacheEntry(fileVersionOnStartResolving, object);
+                    entry.put(offset, cacheEntry);
+                }
             }
         }
     }
@@ -193,7 +194,12 @@ public class ReferencesCache {
 
     private static final class CacheEntry {
 
-        private long fileVersion;
-        private CsmObject csmObject;
+        private final long fileVersion;
+        private final CsmObject csmObject;
+
+        public CacheEntry(long fileVersion, CsmObject csmObject) {
+            this.fileVersion = fileVersion;
+            this.csmObject = csmObject;
+        }
     }
 }

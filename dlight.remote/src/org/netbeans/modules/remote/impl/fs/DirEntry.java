@@ -42,19 +42,41 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import java.util.Date;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
-public interface DirectoryReader {
+public interface DirEntry {
 
-    List<DirEntry> getEntries();
+    String getName();
 
-    void readDirectory() throws IOException, InterruptedException, CancellationException, ExecutionException;
+    long getSize();
+    
+    boolean canExecute(ExecutionEnvironment execEnv);
+    boolean canRead(ExecutionEnvironment execEnv);
+    boolean canWrite(ExecutionEnvironment execEnv);
 
+    String getAccessAsString();
+    
+    Date getLastModified();
+
+    boolean isLink();
+    boolean isDirectory();
+    boolean isPlainFile();
+    boolean isSameLastModified(DirEntry other);
+    boolean isSameType(DirEntry other);
+    FileType getFileType();
+
+    boolean isSameUser(DirEntry other);
+    boolean isSameGroup(DirEntry other);
+
+    String getLinkTarget();
+
+    String getCache();
+    void setCache(String cache);
+
+    String toExternalForm();
 }

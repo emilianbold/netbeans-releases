@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,6 +66,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JToolTip;
 import javax.swing.JViewport;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -366,6 +368,85 @@ public class Outline extends ETable {
     @Override
     protected TableColumn createColumn(int modelIndex) {
         return new OutlineColumn(modelIndex);
+    }
+
+    private JToolTip toolTip = null;
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        try {
+            // Required to really get the tooltip text:
+            putClientProperty("ComputingTooltip", Boolean.TRUE);
+
+            toolTip = null;
+            String tipText = null;
+            Point p = event.getPoint();
+
+            // Locate the renderer under the event location
+            int hitColumnIndex = columnAtPoint(p);
+            int hitRowIndex = rowAtPoint(p);
+
+            if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
+                //Outline tbl = (Outline) table;
+                if (convertColumnIndexToModel(hitColumnIndex) == 0) {   // tree column index
+                    // For tree column get the tooltip directly from the renderer data provider
+                    RenderDataProvider rendata = getRenderDataProvider();
+                    if (rendata != null) {
+                        Object value = getValueAt(hitRowIndex, hitColumnIndex);
+                        if (value != null) {
+                            String toolT = rendata.getTooltipText(value);
+                            if (toolT != null && (toolT = toolT.trim ()).length () > 0) {
+                                tipText = toolT;
+                            }
+                        }
+                    }
+                }
+
+                TableCellRenderer renderer = getCellRenderer(hitRowIndex, hitColumnIndex);
+                Component component = prepareRenderer(renderer, hitRowIndex, hitColumnIndex);
+
+                // Now have to see if the component is a JComponent before
+                // getting the tip
+                if (component instanceof JComponent) {
+                    // Convert the event to the renderer's coordinate system
+                    Rectangle cellRect = getCellRect(hitRowIndex, hitColumnIndex, false);
+                    p.translate(-cellRect.x, -cellRect.y);
+                    MouseEvent newEvent = new MouseEvent(component, event.getID(),
+                                              event.getWhen(), event.getModifiers(),
+                                              p.x, p.y,
+                                              event.getXOnScreen(),
+                                              event.getYOnScreen(),
+                                              event.getClickCount(),
+                                              event.isPopupTrigger(),
+                                              MouseEvent.NOBUTTON);
+
+                    if (tipText == null) {
+                        tipText = ((JComponent)component).getToolTipText(newEvent);
+                    }
+                    toolTip = ((JComponent)component).createToolTip();
+                }
+            }
+
+            // No tip from the renderer get our own tip
+            if (tipText == null)
+                tipText = getToolTipText();
+
+            return tipText;
+        } finally {
+            putClientProperty("ComputingTooltip", Boolean.FALSE);
+        }
+        //return super.getToolTipText(event);
+    }
+
+    @Override
+    public JToolTip createToolTip() {
+        JToolTip t = toolTip;
+        toolTip = null;
+        if (t != null) {
+            return t;
+        } else {
+            return super.createToolTip();
+        }
     }
 
     /**

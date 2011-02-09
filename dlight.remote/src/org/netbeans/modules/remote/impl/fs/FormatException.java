@@ -42,19 +42,23 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
-public interface DirectoryReader {
+public class FormatException extends Exception {
+    private final boolean expexted;
 
-    List<DirEntry> getEntries();
+    public FormatException(String text, boolean expected) {
+        this.expexted = expected;
+    }
 
-    void readDirectory() throws IOException, InterruptedException, CancellationException, ExecutionException;
+    public FormatException(String string, Throwable thrwbl) {
+        expexted = false;
+    }
+
+    public boolean isExpexted() {
+        return expexted;
+    }
 
 }

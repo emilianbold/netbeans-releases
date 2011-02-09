@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
@@ -152,22 +151,22 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         });
         int rc = scriptRunner.execute();
         assertEquals("Error running script", 0, rc);
-        DirectoryReader directoryReader = new DirectoryReader(execEnv, remoteDir);
+        DirectoryReaderLs directoryReader = new DirectoryReaderLs(execEnv, remoteDir);
         directoryReader.readDirectory();
-        List<Entry> entries = directoryReader.getEntries();
+        List<DirEntry> entries = directoryReader.getEntries();
         assertEntriesEqual(referenceEntries, entries);
     }
 
     private void doTestLsParser(HostInfo.OSFamily oSFamily, String[] lines, RefEntry[] refEntries) {
-        List<DirectoryStorage.Entry> entries = DirectoryReader.testLsLineParser(oSFamily, lines);
+        List<DirEntry> entries = DirectoryReaderLs.testLsLineParser(oSFamily, lines);
         assertEntriesEqual(refEntries, entries);
     }
 
-    private void assertEntriesEqual(RefEntry[] refEntries, List<DirectoryStorage.Entry> entries) {
+    private void assertEntriesEqual(RefEntry[] refEntries, List<DirEntry> entries) {
         assertEquals("Entries count differs: ", refEntries.length, entries.size());
         for (RefEntry refEntry : refEntries) {
-            DirectoryStorage.Entry entry = null;
-            for (DirectoryStorage.Entry e : entries) {
+            DirEntry entry = null;
+            for (DirEntry e : entries) {
                 if (e.getName().equals(refEntry.name)) {
                     entry = e;
                     break;
@@ -176,13 +175,13 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             assertNotNull("Entry not found for " + refEntry.name, entry);
             assertEquals("File type differs for " + refEntry.name, FileType.fromChar(refEntry.fileType), entry.getFileType());
             assertEquals("Access differs for " + refEntry.name, refEntry.access, entry.getAccessAsString());
-            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
-            if (entry.getFileType() != FileType.Directory && entry.getFileType() != FileType.Symlink) {
+//            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
+            if (!entry.isDirectory() && !entry.isLink()) {
                 assertEquals("Size differs for " + refEntry.name, refEntry.size, entry.getSize());
             }
 
-            assertEquals("Link differs for " + refEntry.name, refEntry.link, entry.getLink());
-            assertEquals("User differs for " + refEntry.name, refEntry.user, entry.getUser());
+            assertEquals("Link differs for " + refEntry.name, refEntry.link, entry.getLinkTarget());
+//            assertEquals("User differs for " + refEntry.name, refEntry.user, entry.getUser());
         }
     }
 

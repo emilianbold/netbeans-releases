@@ -187,7 +187,7 @@ public final class ReferencesSupport {
     
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
             final int offset, TokenItem<TokenId> jumpToken, FileReferencesContext fileReferencesContext) {
-        long oldVersion = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
+        long fileVersionOnStartResolving = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
@@ -227,13 +227,13 @@ public final class ReferencesSupport {
             if (key < 0) {
                 key = offset;
             }
-            csmItem = getReferencedObject(csmFile, key, oldVersion);
+            csmItem = getReferencedObject(csmFile, key, fileVersionOnStartResolving);
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, ReferencesCache.UNRESOLVED, oldVersion);
+                    putReferencedObject(csmFile, key, ReferencesCache.UNRESOLVED, fileVersionOnStartResolving);
                 } else {
-                    putReferencedObject(csmFile, key, csmItem, oldVersion);
+                    putReferencedObject(csmFile, key, csmItem, fileVersionOnStartResolving);
                 }
             } else if (csmItem == ReferencesCache.UNRESOLVED) {
                 csmItem = null;
@@ -574,12 +574,12 @@ public final class ReferencesSupport {
     private final CsmProgressListener progressListener;
     private final ReferencesCache cache = new ReferencesCache();
 
-    private CsmObject getReferencedObject(CsmFile file, int offset, long oldVersion) {
-        return cache.getReferencedObject(file, offset, oldVersion);
+    private CsmObject getReferencedObject(CsmFile file, int offset, long callTimeVersion) {
+        return cache.getReferencedObject(file, offset, callTimeVersion);
     }
 
-    private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
-        cache.putReferencedObject(file, offset, object, oldVersion);
+    private void putReferencedObject(CsmFile file, int offset, CsmObject object, long fileVersionOnStartResolving) {
+        cache.putReferencedObject(file, offset, object, fileVersionOnStartResolving);
     }
 
     private void clearFileReferences(CsmFile file) {
