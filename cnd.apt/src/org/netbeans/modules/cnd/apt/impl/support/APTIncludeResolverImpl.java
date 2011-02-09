@@ -178,6 +178,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                         if (file.exists()) {
                             System.err.println("File "+file.getAbsolutePath()+" exist! CndFileUtils.exist()=" +CndFileUtils.exists(file)); // NOI18N
                             System.err.println("Check of CndFileUtils.isExistingDirectory()="+CndFileUtils.isExistingDirectory(next.getFileSystem(), dir.getAbsolutePath())); // NOI18N
+                            System.err.println("Check of SupportAPIAccessor.isExistingDirectory()="+SupportAPIAccessor.get().isExistingDirectory(next)); // NOI18N
                         }
                     }
                 }
