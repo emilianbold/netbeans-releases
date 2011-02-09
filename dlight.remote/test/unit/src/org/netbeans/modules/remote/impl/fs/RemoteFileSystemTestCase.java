@@ -48,6 +48,7 @@ import java.util.Date;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -249,8 +250,13 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         assertNotNull("getDate() returned null for " + fo, lastMod);
         System.out.println("local file creation date:  " + localDate);
         System.out.println("remote last modified date: " + lastMod);
-        // time can differ, so I can't compare it; make sure it's not differ in many days :)
-        assertTrue("Dates differ to much: " + localDate + " vs " + lastMod, Math.abs(localDate.getTime() - lastMod.getTime()) < 1000*60*60*24);        
+        
+        long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
+        long delta = Math.abs(localDate.getTime() - lastMod.getTime());
+        if (delta > Math.abs(skew) + (long)(1000*60*5)) {
+            assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
+                    " delta " + delta + " ms; skew " + skew, false);
+        }
         fo.delete();
         assertTrue("isValid should return false for " + fo, !fo.isValid());
         Date lastMod2 = fo.lastModified();
