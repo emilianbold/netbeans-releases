@@ -136,6 +136,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static int getParseCount() {
         return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
+
+    public static long getLongParseCount() {
+        return parseCount.get();
+    }
+
     private FileBuffer fileBuffer;
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be parsed.
