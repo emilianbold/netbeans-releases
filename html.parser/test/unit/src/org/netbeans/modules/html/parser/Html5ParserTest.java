@@ -74,7 +74,7 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
+    public static Test Xsuite() {
         String testName = "testIsAttributeQuoted";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
@@ -191,7 +191,7 @@ public class Html5ParserTest extends NbTestCase {
         Attribute attr = body.getAttributes().iterator().next();
         assertNotNull(attr);
         assertEquals("onclick", attr.name());
-        assertEquals("alert()", attr.value());
+        assertEquals("\"alert()\"", attr.value());
     }
 
 //    public void testProblemsReporting() throws ParseException {
@@ -747,32 +747,48 @@ public class Html5ParserTest extends NbTestCase {
 
     }
     
-//    //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
-//    public void testIsAttributeQuoted() throws ParseException {
-//        String code = "<!doctype html>"
-//                + "<html>"
-//                + "<head>"
-//                + "<title></title>"
-//                + "</head>"
-//                + "<body>"
-//                + "<div onclick=\"alert()\">x</div>"
-//                + "</body>"
-//                + "</html>";
-//        
-//        HtmlParseResult result = parse(code);
-//        AstNode root = result.root();
-//
-//        assertNotNull(root);
+    //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
+    public void testIsAttributeQuoted() throws ParseException {
+        String code = "<!doctype html>"
+                + "<html>"
+                + "<head>"
+                + "<title></title>"
+                + "</head>"
+                + "<body>"
+                + "<div onclick=\"alert()\">x</div>"
+                + "<p onclick='alert()'>x</p>"
+                + "<a onclick=alert>x</a>"
+                + "</body>"
+                + "</html>";
+        
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
 //        AstNodeUtils.dumpTree(root);
-//
-//        AstNode div = AstNodeUtils.query(root, "html/body/div");
-//        assertNotNull(div);
-//
-//        AstNode.Attribute attr = div.getAttribute("onclick");
-//        assertNotNull(attr);
-//        assertTrue(attr.isValueQuoted());
-//
-//    }
+
+        AstNode div = AstNodeUtils.query(root, "html/body/div");
+        assertNotNull(div);
+
+        AstNode.Attribute attr = div.getAttribute("onclick");
+        assertNotNull(attr);
+        assertTrue(attr.isValueQuoted());
+        
+        AstNode p = AstNodeUtils.query(root, "html/body/p");
+        assertNotNull(p);
+
+        attr = p.getAttribute("onclick");
+        assertNotNull(attr);
+        assertTrue(attr.isValueQuoted());
+        
+        AstNode a = AstNodeUtils.query(root, "html/body/a");
+        assertNotNull(a);
+
+        attr = a.getAttribute("onclick");
+        assertNotNull(attr);
+        assertFalse(attr.isValueQuoted());
+
+    }
 
 
     //fails
