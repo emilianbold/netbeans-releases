@@ -253,7 +253,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         
         long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
         long delta = Math.abs(localDate.getTime() - lastMod.getTime());
-        if (delta > Math.abs(skew) + (long)(1000*60*5)) {
+        if (delta > Math.abs(skew) + (long)(1000*60*15)) {
             assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
                     " delta " + delta + " ms; skew " + skew, false);
         }

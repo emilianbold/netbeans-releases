@@ -279,7 +279,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
         Date lastMod = statInfo.getLastModified();
         long delta = Math.abs(creationDate.getTime() - lastMod.getTime());
-        if (delta > Math.abs(skew) + (long)(1000*60*5)) {
+        if (delta > Math.abs(skew) + (long)(1000*60*15)) {
             assertTrue("last modified differs too much: " + creationDate +  " vs " + lastMod + 
                     " delta " + delta + " ms; skew " + skew, false);
         }
