@@ -143,6 +143,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             public void columnAdded(TableColumnModelEvent e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("columnAdded("+e+") to = "+e.getToIndex());
+                    //logger.log(Level.FINE, "  called from", new IllegalStateException("TEST"));
                     TableColumnModel tcme = (TableColumnModel) e.getSource();
                     logger.fine(" column header = '"+tcme.getColumn(e.getToIndex()).getHeaderValue()+"'");
                     dumpColumnVisibleMap();
@@ -203,12 +204,14 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
                 if (logger.isLoggable(Level.FINE)) {
                     dumpColumnVisibleMap();
+                    logger.fine("columnAdded() done.");
                 }
             }
 
             public void columnRemoved(TableColumnModelEvent e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("columnRemoved("+e+") from = "+e.getFromIndex());
+                    //logger.log(Level.FINE, "  called from", new IllegalStateException("TEST"));
                     dumpColumnVisibleMap();
                 }
                 if (tableColumns != null && e.getFromIndex() >= 0) {
@@ -226,6 +229,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
                 if (logger.isLoggable(Level.FINE)) {
                     dumpColumnVisibleMap();
+                    logger.fine("columnRemoved() done.");
                 }
             }
 
@@ -333,12 +337,24 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 4) set columns for given model
         String[] nodesColumnName = new String[] { null, null };
         ColumnModel[] cs = model.getColumns ();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("setModel(): creating columns: ("+cs.length+")");
+            for (int i = 0; i < cs.length; i++) {
+                logger.fine("  ColumnModel["+i+"] = "+cs[i].getDisplayName()+", ID = "+cs[i].getID()+", visible = "+cs[i].isVisible());
+            }
+        }
         Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
         treeTable.setNodesColumnName(nodesColumnName[0], nodesColumnName[1]);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("setModel(): setNodesColumnName("+Arrays.toString(nodesColumnName)+") done");
+        }
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
         getExplorerManager ().setRootContext (rootNode);
         // The root node must be ready when setting the columns
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("setModel(): setProperties("+Arrays.toString(columnsToSet)+")");
+        }
         treeTable.setProperties (columnsToSet);
         updateTableColumns(columnsToSet);
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
@@ -350,7 +366,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         
         // 5) set root node for given model
         // Moved to 4), because the new root node must be ready when setting columns
-        
+
         // 6) update column widths & expanded nodes
         updateColumnWidthsAndSorting();
         //treeTable.expandNodes (expandedPaths);
@@ -720,7 +736,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("updateTableColumns("+columns.length+"):");
             for (int i = 0; i < columns.length; i++) {
-                logger.fine("Column["+i+"] ("+columns[i].getDisplayName()+") = "+tableColumns[i].getHeaderValue());
+                logger.fine("Column["+i+"] ("+columns[i].getDisplayName()+") = "+((tableColumns[i] != null) ? tableColumns[i].getHeaderValue() : "null")+"\t"+(columns[i].isHidden() ? "hidden" : ""));
             }
         }
         setColumnsOrder();
@@ -802,7 +818,8 @@ ExplorerManager.Provider, PropertyChangeListener {
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 logger.log(Level.SEVERE,
                         "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder+
-                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap),
+                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap)+
+                        ", num of columns = "+tcm.getColumnCount(),
                         aioobex);
                 continue ;
             }
@@ -850,7 +867,8 @@ ExplorerManager.Provider, PropertyChangeListener {
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 logger.log(Level.SEVERE,
                         "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder+
-                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap),
+                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap)+
+                        ", num of columns = "+tcm.getColumnCount(),
                         aioobex);
                 continue ;
             }
@@ -882,7 +900,8 @@ ExplorerManager.Provider, PropertyChangeListener {
             } catch (ArrayIndexOutOfBoundsException aioobex) {
                 logger.log(Level.SEVERE,
                         "Column("+i+") "+columns[i].getName()+" visible index = "+visibleOrder+
-                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap),
+                        ", columnVisibleMap = "+java.util.Arrays.toString(columnVisibleMap)+
+                        ", num of columns = "+tcm.getColumnCount(),
                         aioobex);
                 continue ;
             }
