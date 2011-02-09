@@ -338,7 +338,7 @@ is divided into following sections:
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
-                    <property name="javac.fork" value="false"/>
+                    <property name="javac.fork" value="true"/>  <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
                 </xsl:if>
                 <property name="jar.index" value="false"/>
                 <property name="jar.index.metainf" value="${{jar.index}}"/>
