@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
+import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -493,6 +494,8 @@ public class ImportProject implements PropertyChangeListener {
                             if (createdFolder != null) {
                                 ses.setRunDirectory(createdFolder.getPath());
                             }
+                        } else {
+                            ses.setRunDirectory(configureFileObject.getParent().getPath());
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -515,6 +518,8 @@ public class ImportProject implements PropertyChangeListener {
                             if (createdFolder != null) {
                                 ses.setRunDirectory(createdFolder.getPath());
                             }
+                        } else {
+                            ses.setRunDirectory(configureFileObject.getParent().getPath());
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -528,6 +533,8 @@ public class ImportProject implements PropertyChangeListener {
                             if (createdFolder != null) {
                                 ses.setRunDirectory(createdFolder.getPath());
                             }
+                        } else {
+                            ses.setRunDirectory(configureFileObject.getParent().getPath());
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -723,6 +730,8 @@ public class ImportProject implements PropertyChangeListener {
             try {
                 dObj = DataObject.find(makeFileObject);
                 Node node = dObj.getNodeDelegate();
+                MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+                mes.setBuildDirectory(makeFileObject.getParent().getPath());
                 if (doClean) {
                     postClean(node);
                 } else {
