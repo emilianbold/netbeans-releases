@@ -42,8 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.util.Date;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -55,18 +54,19 @@ public interface DirEntry {
     String getName();
 
     long getSize();
-
-    String getTimestamp();
     
     boolean canExecute(ExecutionEnvironment execEnv);
     boolean canRead(ExecutionEnvironment execEnv);
     boolean canWrite(ExecutionEnvironment execEnv);
 
     String getAccessAsString();
+    
+    Date getLastModified();
 
     boolean isLink();
     boolean isDirectory();
     boolean isPlainFile();
+    boolean isSameLastModified(DirEntry other);
     boolean isSameType(DirEntry other);
     FileType getFileType();
 

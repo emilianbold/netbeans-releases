@@ -70,16 +70,18 @@ public class FileInfoProvider {
         
         private final int gid;
         private final int uid;
+        private final long size;
 
         private final String linkTarget;
 
         private final int access;
         private final Date lastModified;
 
-        /*package*/ StatInfo(String name, int uid, int gid, boolean directory, boolean link, String linkTarget, int access, Date lastModified) {
+        /*package*/ StatInfo(String name, int uid, int gid, long size, boolean directory, boolean link, String linkTarget, int access, Date lastModified) {
             this.name = name;
             this.gid = gid;
             this.uid = uid;
+            this.size = size;
             this.access = access & ACCESS_MASK;
             this.directory = directory;
             this.link = link;
@@ -89,6 +91,14 @@ public class FileInfoProvider {
         
         public int getAccess() {
             return access;
+        }
+
+        public String getAccessAsString() {
+            return accessToString(access);
+        }
+
+        public long getSize() {
+            return size;
         }
 
         public int getGropupId() {
@@ -128,7 +138,10 @@ public class FileInfoProvider {
             sb.append(gid).append(' '); // 4
             sb.append(uid).append(' '); // 5
             sb.append(lastModified.getTime()).append(' '); // 6
-            sb.append(escape(linkTarget)).append(' '); // 7
+            sb.append(size).append(' '); // 7
+            if (linkTarget != null) {
+                sb.append(escape(linkTarget)).append(' '); // 8
+            }
             return sb.toString();
         }
         
@@ -141,8 +154,9 @@ public class FileInfoProvider {
             int gid = Integer.parseInt(parts[4]);
             int uid = Integer.parseInt(parts[5]);
             long time = Long.parseLong(parts[6]);
-            String linkTarget = unescape(parts[7]);
-            return new StatInfo(name, uid, gid, dir, link, linkTarget, acc, new Date(time));
+            long size = Long.parseLong(parts[7]);            
+            String linkTarget = (parts.length < 9) ? null : unescape(parts[8]);
+            return new StatInfo(name, uid, gid, size, dir, link, linkTarget, acc, new Date(time));
         }
         
         private boolean can(ExecutionEnvironment env, short all_mask, short grp_mask, short usr_mask) {

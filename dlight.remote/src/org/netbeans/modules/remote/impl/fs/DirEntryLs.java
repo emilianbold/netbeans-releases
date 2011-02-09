@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -54,7 +56,7 @@ import org.openide.util.Exceptions;
  *
  * @author Vladimir Kvashin
  */
-/*package*/ class DirEntryImpl implements DirEntry {
+/*package*/ class DirEntryLs implements DirEntry {
 
     private static final short USR_R = 256;
     private static final short USR_W = 128;
@@ -77,7 +79,9 @@ import org.openide.util.Exceptions;
 
     private String cache;
     
-    public DirEntryImpl(String name, String cache, String access, String user, String group, long size, String timestamp, String link) {
+    private static boolean wrongDateFormatReported = false;    
+    
+    public DirEntryLs(String name, String cache, String access, String user, String group, long size, String timestamp, String link) {
         if (name == null) {
             throw new NullPointerException("Null name"); //NOI18N
         }
@@ -141,18 +145,45 @@ import org.openide.util.Exceptions;
     }
 
     public boolean isSameGroup(DirEntry other) {
-        if (other instanceof DirEntryImpl) {
-            return group.equals(((DirEntryImpl) other).group);
+        if (other instanceof DirEntryLs) {
+            return group.equals(((DirEntryLs) other).group);
         }
         return false;
     }
 
     public boolean isSameUser(DirEntry other) {
-        if (other instanceof DirEntryImpl) {
-            return user.equals(((DirEntryImpl) other).user);
+        if (other instanceof DirEntryLs) {
+            return user.equals(((DirEntryLs) other).user);
         }
         return false;        
     }
+
+    public boolean isSameLastModified(DirEntry other) {
+        if (other instanceof DirEntryLs) {
+            return timestamp.equals(((DirEntryLs) other).timestamp);
+        }
+        return false;        
+    }
+    
+    @Override
+    public Date getLastModified() {
+        try {
+            if (timestamp != null) {
+                Date date = DirectoryReaderLs.getDate(timestamp);
+                if (date != null) {
+                    return date;
+                }
+            }
+        } catch (ParseException ex) {
+            // it can be normal, for example, for not fully supported remote OS (FreeBSD, Mac, AIX, etc)
+            if (!wrongDateFormatReported) {
+                wrongDateFormatReported = true;
+                RemoteLogger.getInstance().log(Level.INFO, "Error parsing date string : " + timestamp, ex);
+            }
+        }
+        return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
+    }
+    
 
     @Override
     public String getName() {
@@ -185,11 +216,6 @@ import org.openide.util.Exceptions;
     @Override
     public long getSize() {
         return size;
-    }
-
-    @Override
-    public String getTimestamp() {
-        return timestamp;
     }
 
     private HostInfo getHostInfo(ExecutionEnvironment execEnv) {
@@ -326,7 +352,6 @@ import org.openide.util.Exceptions;
     public static DirEntry fromExternalForm(String line) throws FormatException {
         // array of entity creation parameters
         String[] params = new String[8];
-        FileType fileType;
         // this array indices
         int name = 0;
         int cache = 1;
@@ -387,15 +412,15 @@ import org.openide.util.Exceptions;
             }
         }
         if (currIndex < link - 1) {
-            throw new FormatException("Wrong format: " + line, false); //NOI18N
+            throw new FormatException("Wrong directory entry format: " + line, false); //NOI18N
         }
         long sz;
         try {
             sz = Long.parseLong(params[size]);
         } catch (NumberFormatException ex) {
-            throw new FormatException("Wrong format: " + line, false); //NOI18N
+            throw new FormatException("Wrong directory entry format: " + line, false); //NOI18N
         }
-        return new DirEntryImpl(params[name], params[cache], params[access], params[user], params[group], sz, params[timestamp], params[link]);
+        return new DirEntryLs(params[name], params[cache], params[access], params[user], params[group], sz, params[timestamp], params[link]);
     }
 
     @Override
