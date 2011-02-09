@@ -81,6 +81,7 @@ import org.openide.util.Utilities;
  * @author Vladimir Voskresensky
  */
 public final class CndFileUtils {
+    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
     private static final FileSystem fileFileSystem;
@@ -333,6 +334,15 @@ public final class CndFileUtils {
 
     public static boolean isExistingDirectory(FileSystem fs, String filePath) {
         Flags flags = getFlags(fs, filePath, false);
+        if (EXTRA_TRACE_FAILED_INCLUDES) {
+            if (!(flags.exist && flags.directory)) {
+                System.err.println("CndFileUtils.isExistingDirectory("+filePath+")="+flags);
+                ConcurrentMap<String, Flags> filesMap = getFilesMap(fs);
+                for(Map.Entry<String, Flags> entry : filesMap.entrySet()) {
+                    System.err.println("\t"+entry.getKey()+"->"+entry.getValue());
+                }
+            }
+        }
         return flags.exist && flags.directory;
     }
 

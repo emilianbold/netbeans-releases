@@ -118,7 +118,7 @@ public final class IncludeDirEntry {
                         Exceptions.printStackTrace(ex);
                     }
                 } else if (EXTRA_TRACE_FAILED_INCLUDES) {
-                    System.err.println("NOT EXISTING IncludeDirEntry " + dir + "File.exists()=" + new File(dir).exists()); // NOI18N
+                    System.err.println("NOT EXISTING IncludeDirEntry " + dir + " File.exists()=" + new File(dir).exists()); // NOI18N
                 }
                 CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
                 out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq);
