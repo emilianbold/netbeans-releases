@@ -144,58 +144,15 @@ class JaveleonModuleReloader {
         return true;
     }
 
-    /**
-     * Persisting all previously looked up
-     * service instances from META-INF/services.
-     * All new lookups will ask the new system class loader.
-     */
-    private void systemClassLoaderChangedForJaveleon(ClassLoader nue) {
-
-        // We need to change the class loader of the main lookup instance.
-        // For now there's no API to do this so use reflection.
-        try {
-            // get the default main loookup instance
-            MainLookup mainLookup = (MainLookup) Lookup.getDefault();
-
-            // obtain a reference to the current lookups and clone them
-            Method getLookups = ProxyLookup.class.getDeclaredMethod("getLookups"); // NOI18N
-            getLookups.setAccessible(true);
-            Lookup[] newDelegates = ((Lookup[])getLookups.invoke(mainLookup)).clone();
-
-            // now actually change the current class loader of the default main lookup
-            Field mainLookupClassLoader = MainLookup.class.getDeclaredField("classLoader"); // NOI18N
-            mainLookupClassLoader.setAccessible(true);
-            mainLookupClassLoader.set(mainLookup, nue);
-
-            // The MetaInfservices lookup instance is always placed at index 0.
-            Lookup metaServicesLookup = newDelegates[0];
-
-            // replace the class loader of the MetaInfservices instance in-place.
-            Field field = metaServicesLookup.getClass().getDeclaredField("loader"); // NOI18N
-            field.setAccessible(true);
-            field.set(metaServicesLookup, nue);
-
-            // now set the changed lookups
-            newDelegates[1] = Lookups.singleton(nue);
-            Method setLookups = ProxyLookup.class.getDeclaredMethod("setLookups", Lookup[].class); // NOI18N
-            setLookups.setAccessible(true);
-            setLookups.invoke(mainLookup, (Object)newDelegates);
-        } catch (Exception x) {
-            // shouldn't happen as long as the classLoader
-            // and loader field names don't change.
-            Exceptions.printStackTrace(x);
-        }
-    }
-
     private Map<Object, Object[]> retainOpenTopComponents(ClassLoader loader) {
 
-            /*
-            WindowManager manager = WindowManager.getDefault();
-            HashMap<Mode, TopComponent[]> map = new HashMap<Mode, TopComponent[]>();
-            for (Mode mode: WindowManager.getDefault().getModes())
-            map.put(mode, manager.getOpenedTopComponents(mode));
-            return map;
-             */
+        /*
+        WindowManager manager = WindowManager.getDefault();
+        HashMap<Mode, TopComponent[]> map = new HashMap<Mode, TopComponent[]>();
+        for (Mode mode: WindowManager.getDefault().getModes())
+        map.put(mode, manager.getOpenedTopComponents(mode));
+        return map;
+         */
          try {
             Class classWindowManager = loader.loadClass("org.openide.windows.WindowManager");
             Class classMode = loader.loadClass("org.openide.windows.Mode");
@@ -257,7 +214,7 @@ class JaveleonModuleReloader {
                 installer.dispose(registeredModule);
             }
             mgr.replaceJaveleonModule(original, newModule);
-            systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
+            MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
             if (changed) {
                 installer.prepare(newModule);
                 loadLayers(installer, newModule, true);

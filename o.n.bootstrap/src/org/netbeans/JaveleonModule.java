@@ -54,15 +54,17 @@ import java.util.List;
  */
 public final class JaveleonModule extends AbstractStandardModule {
 
-    public static boolean isJaveleonPresent;
+    public static final boolean isJaveleonPresent;
 
     static {
+        boolean present = false;
         try {
             Thread.currentThread().getContextClassLoader().loadClass("org.javeleon.reload.ReloadFacade");
-            isJaveleonPresent = true;
+            present = true;
         } catch (ClassNotFoundException ex) {
             // Javeleon was not present... nothing to do then!
         }
+        isJaveleonPresent = present;
     }
 
     public static Method javeleonReloadMethod;
