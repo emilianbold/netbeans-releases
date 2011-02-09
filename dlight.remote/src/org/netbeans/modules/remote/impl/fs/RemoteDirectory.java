@@ -71,7 +71,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -114,7 +113,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ boolean canWrite(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            Entry entry = storage.getEntry(childNameExt);
+            DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
@@ -132,7 +131,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            Entry entry = storage.getEntry(childNameExt);
+            DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
@@ -277,7 +276,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         RemoteLogger.assertTrue(slashPos == -1);
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            DirectoryStorage.Entry entry = storage.getEntry(relativePath);
+            DirEntry entry = storage.getEntry(relativePath);
             if (entry == null) {
                 return null;
             }
@@ -317,10 +316,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     public RemoteFileObjectBase[] getChildren() {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            List<DirectoryStorage.Entry> entries = storage.list();
+            List<DirEntry> entries = storage.list();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
-                DirectoryStorage.Entry entry = entries.get(i);
+                DirEntry entry = entries.get(i);
                 String childPath = remotePath + '/' + entry.getName(); //NOI18N
                 File childCache = new File(cache, entry.getCache());
                 if (entry.getFileType() == FileType.Directory) {
@@ -504,17 +503,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 throw new ConnectException(ex.getMessage());
             }
             fileSystem.incrementDirSyncCount();
-            Map<String, List<DirectoryStorage.Entry>> dupLowerNames = new HashMap<String, List<DirectoryStorage.Entry>>();
+            Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
             boolean hasDups = false;
-            Map<String, DirectoryStorage.Entry> entries = new HashMap<String, DirectoryStorage.Entry>();
-            for (DirectoryStorage.Entry entry : directoryReader.getEntries()) {
+            Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
+            for (DirEntry entry : directoryReader.getEntries()) {
                 entries.put(entry.getName(), entry);
             }
             boolean changed = false;
-            Set<DirectoryStorage.Entry> keepCacheNames = new HashSet<DirectoryStorage.Entry>();
-            for (DirectoryStorage.Entry newEntry : entries.values()) {
+            Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
+            for (DirEntry newEntry : entries.values()) {
                 String cacheName;
-                DirectoryStorage.Entry oldEntry = storage.getEntry(newEntry.getName());
+                DirEntry oldEntry = storage.getEntry(newEntry.getName());
                 if (oldEntry == null) {
                     changed = true;
                     cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
@@ -552,9 +551,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 newEntry.setCache(cacheName);
                 if (!RemoteFileSystemUtils.isSystemCaseSensitive()) {
                     String lowerCacheName = newEntry.getCache().toLowerCase();
-                    List<DirectoryStorage.Entry> dupEntries = dupLowerNames.get(lowerCacheName);
+                    List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
-                        dupEntries = new ArrayList<Entry>();
+                        dupEntries = new ArrayList<DirEntry>();
                         dupLowerNames.put(lowerCacheName, dupEntries);
                     } else {
                         hasDups = true;
@@ -564,7 +563,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             if (changed || entries.size() != storage.size()) {
                 // Check for removal
-                for (DirectoryStorage.Entry oldEntry : storage.list()) {
+                for (DirEntry oldEntry : storage.list()) {
                     if (!entries.containsKey(oldEntry.getName())) {
                         changed = true;
                         invalidate(oldEntry);
@@ -574,13 +573,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
             if (changed) {
                 if (hasDups) {
-                    for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry :
-                        new ArrayList<Map.Entry<String, List<DirectoryStorage.Entry>>>(dupLowerNames.entrySet())) {
+                    for (Map.Entry<String, List<DirEntry>> mapEntry :
+                        new ArrayList<Map.Entry<String, List<DirEntry>>>(dupLowerNames.entrySet())) {
 
-                        List<DirectoryStorage.Entry> dupEntries = mapEntry.getValue();
+                        List<DirEntry> dupEntries = mapEntry.getValue();
                         if (dupEntries.size() > 1) {
                             for (int i = 0; i < dupEntries.size(); i++) {
-                                DirectoryStorage.Entry entry = dupEntries.get(i);
+                                DirEntry entry = dupEntries.get(i);
                                 if (keepCacheNames.contains(entry) || i == 0) {
                                     continue; // keep the one that already exists or otherwise 0-th one
                                 }
@@ -691,7 +690,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         throw new IOException(getPath());
     }
 
-    private void invalidate(DirectoryStorage.Entry oldEntry) {
+    private void invalidate(DirEntry oldEntry) {
         fileSystem.getFactory().invalidate(remotePath + '/' + oldEntry.getName());
         File oldEntryCache = new File(cache, oldEntry.getCache());
         removeFile(oldEntryCache);
@@ -749,11 +748,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return (s1 == null) ? (s2 == null) : s1.equals(s2);
     }
 
-    private Entry getChildEntry(RemoteFileObjectBase child) {
+    private DirEntry getChildEntry(RemoteFileObjectBase child) {
         try {
             DirectoryStorage directoryStorage = getDirectoryStorage(false);
             if (directoryStorage != null) {
-                Entry entry = directoryStorage.getEntry(child.getNameExt());
+                DirEntry entry = directoryStorage.getEntry(child.getNameExt());
                 if (entry != null) {
                     return entry;
                 } else {
@@ -773,7 +772,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     long getSize(RemoteFileObjectBase child) {
-        Entry childEntry = getChildEntry(child);
+        DirEntry childEntry = getChildEntry(child);
         if (childEntry != null) {
             return childEntry.getSize();
         }
@@ -781,7 +780,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     Date lastModified(RemoteFileObjectBase child) {
-        Entry childEntry = getChildEntry(child);
+        DirEntry childEntry = getChildEntry(child);
         if (childEntry != null) {
             String timestamp = childEntry.getTimestamp();
             try {

@@ -59,7 +59,7 @@ public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
         File file = File.createTempFile("directoryStorage", ".dat");
         try {
             DirectoryStorage ds1 = new DirectoryStorage(file);
-            DirectoryStorage.Entry entry1;
+            DirEntry entry1;
             final String name = "name";
             final String cacheName = "name.cache";
             final String access = "-rwxrwxrwx";
@@ -68,12 +68,12 @@ public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
             final int size = 1024;
             final String timestamp = "t i m e s t a m p";
             final String link = null;
-            entry1 = new DirectoryStorage.Entry(name, cacheName, access, user, group, size, timestamp, link);
+            entry1 = new DirEntryImpl(name, cacheName, access, user, group, size, timestamp, link);
             ds1.testAddEntry(entry1);
             ds1.store();
             DirectoryStorage ds2 = new DirectoryStorage(file);
             ds2.load();
-            DirectoryStorage.Entry entry2 = ds2.getEntry(entry1.getName());
+            DirEntry entry2 = ds2.getEntry(entry1.getName());
             assertNotNull("No entry restored for " + entry1.getName(), entry2);
             assertEquals("Name", name, entry2.getName());
             assertEquals("Cache", cacheName, entry2.getCache());
@@ -133,8 +133,8 @@ public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
     }
     
     private void doTestReadWriteAccess(TestData td) throws Exception {
-        DirectoryStorage.Entry entry;
-        entry = new DirectoryStorage.Entry("name", "name.cache", td.fileAccess, td.fileUser, td.fileGroup, 1024, "t i m e s t a m p", null);
+        DirEntry entry;
+        entry = new DirEntryImpl("name", "name.cache", td.fileAccess, td.fileUser, td.fileGroup, 1024, "t i m e s t a m p", null);
         assertEquals(
                 "CanRead differs for \"" + td.fileAccess + ' ' + td.fileUser + ' ' + td.fileGroup + "\" for " + td.testUser + ' ' + td.testGroup,
                 td.canRead, entry.canRead(td.testUser, td.testGroup));

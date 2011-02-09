@@ -62,7 +62,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -78,7 +77,7 @@ public class DirectoryReader {
     
     private final ExecutionEnvironment execEnv;
     private final String remoteDirectory;
-    private final List<DirectoryStorage.Entry> entries = new ArrayList<DirectoryStorage.Entry>();
+    private final List<DirEntry> entries = new ArrayList<DirEntry>();
     private final AtomicReference<IOException> criticalException = new AtomicReference<IOException>();
     private final AtomicReference<IOException> nonCriticalException = new AtomicReference<IOException>();
     private final StringBuilder errorOutput = new StringBuilder();
@@ -144,7 +143,7 @@ public class DirectoryReader {
             return DUMMY_TIMESTAMP;
         }
 
-        public DirectoryStorage.Entry parseLine(String line) {
+        public DirEntry parseLine(String line) {
 //            StringBuilder curr = new StringBuilder();
 //            for (int i = 0; i < line.length(); i++) {
 //                char c = line.charAt(i);
@@ -187,7 +186,7 @@ public class DirectoryReader {
                 }
             }
 
-            DirectoryStorage.Entry result = new DirectoryStorage.Entry(
+            DirEntry result = new DirEntryImpl(
                     name.toString(), null, words[0], words[2],
                     words[3], size, convertTimestamp(timestamp.toString()),
                     (link.length() == 0) ? null : link.toString());
@@ -215,7 +214,7 @@ public class DirectoryReader {
                             if (first) {
                                 first = false;
                             } else { // 1-st line is "Total NNN"
-                                DirectoryStorage.Entry entry = lineParser.parseLine(line);
+                                DirEntry entry = lineParser.parseLine(line);
                                 if (entry != null) {
                                     entries.add(entry);
                                 }
@@ -297,7 +296,7 @@ public class DirectoryReader {
         }
     }
 
-    public List<DirectoryStorage.Entry> getEntries() {
+    public List<DirEntry> getEntries() {
         return entries;
     }
     
@@ -330,11 +329,11 @@ public class DirectoryReader {
         return new LsLineParser(oSFamily, remoteDir);
     }
 
-    /*package*/ static List<DirectoryStorage.Entry> testLsLineParser(HostInfo.OSFamily oSFamily, String[] lines) {
+    /*package*/ static List<DirEntry> testLsLineParser(HostInfo.OSFamily oSFamily, String[] lines) {
         LsLineParser lp = createLsLineParser(oSFamily, "/dummy"); // NOI18N
-        List<DirectoryStorage.Entry> result = new ArrayList<Entry>();
+        List<DirEntry> result = new ArrayList<DirEntry>();
         for (String line : lines) {
-            DirectoryStorage.Entry entry = lp.parseLine(line);
+            DirEntry entry = lp.parseLine(line);
             result.add(entry);
         }
         return result;
