@@ -110,8 +110,7 @@ public class Gdb {
         void clearCancelListener() {
             super.setCancelListener(null);
         }
-        public void startProgress(final PhasedProgress.CancelListener cancelListener,
-                                  final boolean shortNames,
+        public void startProgress(final boolean shortNames,
                                   final String hostname) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -156,7 +155,7 @@ public class Gdb {
         }
     }
 
-    protected final PhasedProgress.CancelListener cancelListener =
+    private final PhasedProgress.CancelListener cancelListener =
         new PhasedProgress.CancelListener() {
             public void cancelled() {
                 interrupt();
@@ -270,8 +269,7 @@ public class Gdb {
 	    if (remote)
 		hostName = host.getHostName();
 	    
-	    tentativeGdb.startProgressManager().startProgress(null, 
-							      shortNames,
+	    tentativeGdb.startProgressManager().startProgress(shortNames,
 							      hostName);
 	    tentativeGdb.startProgressManager().setCancelListener();
 	    tentativeGdb.startProgressManager().updateProgress('>', 1,
