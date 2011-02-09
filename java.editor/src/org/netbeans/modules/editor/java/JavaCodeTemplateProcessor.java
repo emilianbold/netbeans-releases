@@ -45,7 +45,6 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
 
 import java.io.IOException;
@@ -476,7 +475,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private VariableElement instanceOf(String typeName, String name) {
         try {
             if (cInfo != null) {
-                TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
+                TypeMirror type = tu.attributeTree(ex, scope);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
                 if (type != null) {
@@ -506,7 +507,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         try {
             if (cInfo != null) {
                 final TreeUtilities tu = cInfo.getTreeUtilities();
-                TypeMirror type = tu.parseType(typeName, enclClass);
+                ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
+                TypeMirror type = tu.attributeTree(ex, scope);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
                 if (type != null) {
@@ -572,7 +574,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private String valueOf(String typeName) {
         try {
             if (cInfo != null) {
-                TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
+                TypeMirror type = tu.attributeTree(ex, scope);
                 if (type != null) {
                     if (type.getKind() == TypeKind.DECLARED)
                         return NULL;
@@ -611,7 +615,12 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private TypeMirror type(String typeName) {
         typeName = typeName.trim();
-        return cInfo != null && typeName.length() > 0 ? cInfo.getTreeUtilities().parseType(typeName, enclClass) : null;
+        if (cInfo != null && typeName.length() > 0) {
+            TreeUtilities tu = cInfo.getTreeUtilities();
+            ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
+            return tu.attributeTree(ex, scope);
+        }
+        return null;
     }
     
     private TypeMirror iterableElementType(int caretOffset) {
