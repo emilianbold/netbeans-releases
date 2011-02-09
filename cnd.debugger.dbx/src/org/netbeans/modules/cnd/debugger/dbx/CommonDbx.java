@@ -138,8 +138,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    super.setCancelListener(null);
 	}
 
-	public boolean startProgress(PhasedProgress.CancelListener cancelListener,
-				     boolean shortNames, String hostname) {
+	public boolean startProgress(boolean shortNames, String hostname) {
 
 	    if (super.startProgress(cancelListener, shortNames)) {
 		phasedProgress().setCancelMsg(Catalog.get("CancelNoted"));// NOI18N
@@ -622,9 +621,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 
 	    final HostInfo hostInfo;
 
-	    tentativeDbx.startProgressManager().startProgress(null,
-							      shortNames,
-							      hostName);
+	    tentativeDbx.startProgressManager().startProgress(shortNames, hostName);
 	    tentativeDbx.startProgressManager().setCancelListener();
 
 	    tentativeDbx.startProgressManager().updateProgress('>', 1, 
