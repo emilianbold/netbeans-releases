@@ -122,7 +122,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 
         Runnable loadProgram = new Runnable() {
             public void run() {
-                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG) {
+                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
 		    dm.setAction(DebuggerManager.RUN);
 		    dm.removeAction(DebuggerManager.STEP);
 		    DebuggerManager.get().debug(executable,
@@ -132,7 +132,7 @@ public class DbgActionHandler implements ProjectActionHandler {
                                                 DbgActionHandler.this,
                                                 profile);
 
-                } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
+                } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
 		    dm.setAction(DebuggerManager.STEP);
 		    dm.removeAction(DebuggerManager.RUN);
 		    DebuggerManager.get().debug(executable,

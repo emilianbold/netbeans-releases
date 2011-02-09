@@ -463,6 +463,23 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="500"/>
                 </file>
             </folder>
+            <folder name="debug.test">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="450"/>
+                </file>
+                <file name="debug-test">
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
             <folder name="debug.single">
                 <file name="debug-single">
                     <attr name="position" intvalue="100"/>
@@ -479,6 +496,23 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="debug-stepinto">
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+            <folder name="debug.stepinto.test">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="450"/>
+                </file>
+                <file name="debug-stepinto-test">
                     <attr name="position" intvalue="500"/>
                 </file>
             </folder>
