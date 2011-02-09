@@ -43,18 +43,54 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
-public interface DirectoryReader {
+class DirectoryReaderSftp implements DirectoryReader {
 
-    List<DirEntry> getEntries();
+    private final ExecutionEnvironment execEnv;
+    private final String remotePath;
+    private List<DirEntry> entries = new ArrayList<DirEntry>();
+    private final Object lock = new Object();
+    
+    public DirectoryReaderSftp(ExecutionEnvironment execEnv, String remotePath) {    
+        this.execEnv = execEnv;        
+        if (remotePath.length() == 0) {
+            this.remotePath = "/"; //NOI18N
+        } else  {
+            if (!remotePath.startsWith("/")) { //NOI18N
+                throw new IllegalArgumentException("path should be absolute: " + remotePath);
+            }
+            this.remotePath = remotePath;
+        }
+    }
 
-    void readDirectory() throws IOException, InterruptedException, CancellationException, ExecutionException;
+    public List<DirEntry> getEntries() {
+        synchronized (lock) {
+            return Collections.<DirEntry>unmodifiableList(entries);
+        }
+    }
 
+    public void readDirectory() throws IOException, InterruptedException, CancellationException, ExecutionException {
+        Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
+        StatInfo[] infos = res.get();
+        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
+        for (StatInfo statInfo : infos) {
+            newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
+        }
+        synchronized (lock) {
+            entries = newEntries;
+        }
+    }
 }

@@ -109,7 +109,8 @@ public class DirectoryStorage {
                     if (line.length() == 0) {
                         continue; // just in case, ignore empty lines
                     }
-                    DirEntry entry = DirEntryImpl.fromExternalForm(line);
+                    DirEntry entry = RemoteDirectory.getLsViaSftp() ? 
+                            DirEntrySftp.fromExternalForm(line) : DirEntryLs.fromExternalForm(line);
                     entries.put(entry.getName(), entry);
                 }
              } finally {

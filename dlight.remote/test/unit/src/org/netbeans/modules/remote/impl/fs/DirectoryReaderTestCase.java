@@ -151,14 +151,14 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         });
         int rc = scriptRunner.execute();
         assertEquals("Error running script", 0, rc);
-        DirectoryReader directoryReader = new DirectoryReader(execEnv, remoteDir);
+        DirectoryReaderLs directoryReader = new DirectoryReaderLs(execEnv, remoteDir);
         directoryReader.readDirectory();
         List<DirEntry> entries = directoryReader.getEntries();
         assertEntriesEqual(referenceEntries, entries);
     }
 
     private void doTestLsParser(HostInfo.OSFamily oSFamily, String[] lines, RefEntry[] refEntries) {
-        List<DirEntry> entries = DirectoryReader.testLsLineParser(oSFamily, lines);
+        List<DirEntry> entries = DirectoryReaderLs.testLsLineParser(oSFamily, lines);
         assertEntriesEqual(refEntries, entries);
     }
 

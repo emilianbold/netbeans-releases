@@ -169,11 +169,8 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         checkAccess("/usr/include", null, env);
         checkAccess("/etc/shadow", null, env);
     }
-    
-    @ForAllEnvironments(section = "remote.platforms")
-    public void testExternalForm() throws Exception {
-        ExecutionEnvironment env = getTestExecutionEnvironment();
-        StatInfo statInfo1 = getStatInfo(remoteLink);
+
+    private static void doTestExternalForm(StatInfo statInfo1, ExecutionEnvironment env) throws Exception {    
         String extForm = statInfo1.toExternalForm();
         StatInfo statInfo2 = StatInfo.fromExternalForm(extForm);
         assertEquals("getName()", statInfo1.getName(), statInfo2.getName());
@@ -187,6 +184,12 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
         assertEquals("canRead()", statInfo1.canRead(env), statInfo2.canRead(env));
         assertEquals("canWrite()", statInfo1.canWrite(env), statInfo2.canWrite(env));
         assertEquals("canExecute()", statInfo1.canExecute(env), statInfo2.canExecute(env));
+    }
+    
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testExternalForm() throws Exception {
+        doTestExternalForm(getStatInfo(remoteLink), getTestExecutionEnvironment());
+        doTestExternalForm(getStatInfo(remoteFile), getTestExecutionEnvironment());
     }
     
     private void checkAccess(String path, String chmod, ExecutionEnvironment env) throws Exception {

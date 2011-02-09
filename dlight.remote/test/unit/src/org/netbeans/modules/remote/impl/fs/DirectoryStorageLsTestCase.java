@@ -49,13 +49,28 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
  *
  * @author Vladimir Kvashin
  */
-public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
+public class DirectoryStorageLsTestCase extends NativeExecutionBaseTestCase {
 
-    public DirectoryStorageTestCase(String testName) {
+    private boolean oldLsViaSftp;
+    
+    public DirectoryStorageLsTestCase(String testName) {
         super(testName);
     }
 
-    public void testDirectoryStorage() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        oldLsViaSftp = RemoteDirectory.getLsViaSftp();
+        RemoteDirectory.testSetLsViaSftp(false);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        RemoteDirectory.testSetLsViaSftp(oldLsViaSftp);
+    }
+    
+    public void testDirectoryStorageLs() throws Exception {
         File file = File.createTempFile("directoryStorage", ".dat");
         try {
             DirectoryStorage ds1 = new DirectoryStorage(file);
@@ -66,9 +81,9 @@ public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
             final String user = "vk";
             final String group = "staff";
             final int size = 1024;
-            final String timestamp = "t i m e s t a m p";
+            final String timestamp = "2011-01-28 07:58:12 +0300";
             final String link = null;
-            entry1 = new DirEntryImpl(name, cacheName, access, user, group, size, timestamp, link);
+            entry1 = new DirEntryLs(name, cacheName, access, user, group, size, timestamp, link);
             ds1.testAddEntry(entry1);
             ds1.store();
             DirectoryStorage ds2 = new DirectoryStorage(file);
@@ -81,7 +96,7 @@ public class DirectoryStorageTestCase extends NativeExecutionBaseTestCase {
 //            assertEquals("User", user, entry2.getUser());
 //            assertEquals("Group", group, entry2.getGroup());
             assertEquals("Size", size, entry2.getSize());
-            assertEquals("Timestamp", timestamp, entry2.getTimestamp());
+            assertEquals("Timestamp", entry1.getLastModified(), entry2.getLastModified());
             assertEquals("Link", link, entry2.getLinkTarget());
         } finally {
             file.delete();
