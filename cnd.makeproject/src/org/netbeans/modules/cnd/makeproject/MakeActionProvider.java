@@ -151,6 +151,8 @@ public final class MakeActionProvider implements ActionProvider {
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
+    public static final String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
+    public static final String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,

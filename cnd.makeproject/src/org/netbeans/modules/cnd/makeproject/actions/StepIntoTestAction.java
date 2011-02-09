@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.actions;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -91,7 +92,7 @@ public class StepIntoTestAction extends NodeAction {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            ap.invokeAction(ActionProvider.COMMAND_DEBUG_STEP_INTO_TEST, Lookups.fixed(new Object[]{project, n}));
+            ap.invokeAction(MakeActionProvider.COMMAND_DEBUG_STEP_INTO_TEST, Lookups.fixed(new Object[]{project, n}));
         }
 
     }
