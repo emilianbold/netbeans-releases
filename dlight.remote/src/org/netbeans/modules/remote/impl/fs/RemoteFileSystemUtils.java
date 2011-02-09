@@ -47,17 +47,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import javax.imageio.IIOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -324,5 +321,5 @@ public class RemoteFileSystemUtils {
     
     public static InputStream createDummyInputStream() {
         return new DummyInputStream();
-    }
+    }    
 }

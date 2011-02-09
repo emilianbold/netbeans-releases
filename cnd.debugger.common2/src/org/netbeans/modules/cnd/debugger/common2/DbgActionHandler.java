@@ -45,8 +45,8 @@
 package org.netbeans.modules.cnd.debugger.common2;
 
 import java.io.File;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
-import org.openide.util.Utilities;
 import org.openide.loaders.DataNode;
 import org.openide.windows.InputOutput;
 
@@ -115,29 +115,32 @@ public class DbgActionHandler implements ProjectActionHandler {
 
     private void doExecute(final String executable, final DebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
+        final RunProfile profile = pae.getProfile();
 	// DefaultProjectActionHandler's executionStarted is a no-op.
 
 	executionStarted();
 
         Runnable loadProgram = new Runnable() {
             public void run() {
-                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG) {
+                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
 		    dm.setAction(DebuggerManager.RUN);
 		    dm.removeAction(DebuggerManager.STEP);
 		    DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
-                                                DbgActionHandler.this);
+                                                DbgActionHandler.this,
+                                                profile);
 
-                } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
+                } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
 		    dm.setAction(DebuggerManager.STEP);
 		    dm.removeAction(DebuggerManager.RUN);
 		    DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
                                                 io,
-                                                DbgActionHandler.this);
+                                                DbgActionHandler.this,
+                                                profile);
 		} else {
                     assert false;
                 }

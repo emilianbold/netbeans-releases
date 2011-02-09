@@ -52,10 +52,7 @@ Other names may be trademarks of their respective owners.
 	<mapID target="test_ws" url="webservice/expose/test_ws.html" />
         <mapID target="test_rest" url="webservice/expose/test_rest.html" />
 	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
-	<mapID target="deploy_test_axis" url="webservice/expose/deploy_test_axis.html" />
 	<mapID target="as_setup" url="webservice/expose/as_setup_axis.html" />
-	<mapID target="deploy_axis" url="webservice/expose/deploy_axis.html" />
-	<mapID target="test_axis" url="webservice/expose/test_axis.html" />
         <mapID target="glassfish_tester-ws" url="webservice/expose/glassfish_tester-ws.html" />
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->
@@ -412,7 +409,6 @@ PK - if help ID arrives for the first below, please make sure it gets in the jav
     <mapID target="sjs_manageuser"                              url="server/glassfish/general/sjs_manage_users.html" />
     <mapID target="sjs_security"                                url="server/glassfish/general/sjs_configure_security.html" />
     <mapID target="adminconsole"                                url="server/glassfish/general/adminconsole.html" />
-    <mapID target="jsp_connectionpool_tomcatmodule"             url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
     
     
     <!-- CMP pages -->

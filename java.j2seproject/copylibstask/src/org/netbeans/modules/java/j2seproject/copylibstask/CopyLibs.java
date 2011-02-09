@@ -47,17 +47,29 @@ package org.netbeans.modules.java.j2seproject.copylibstask;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.taskdefs.Manifest;
+import org.apache.tools.ant.taskdefs.Manifest.Section;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
+import org.apache.tools.zip.ZipOutputStream;
 
 /**
  *
@@ -66,11 +78,17 @@ import org.apache.tools.ant.util.FileUtils;
 public class CopyLibs extends Jar {
 
     private static final String LIB = "lib";    //NOI18N
+    private static final String ATTR_CLASS_PATH = "Class-Path"; //NOI18N
+    private static final String MANIFEST = "META-INF/MANIFEST.MF";  //NOI18N
+    private static final String INDEX = "META-INF/INDEX.LIST";  //NOI18N
 
     Path runtimePath;
 
+    private boolean rebase;
+
     /** Creates a new instance of CopyLibs */
     public CopyLibs () {
+        this.rebase = true;
     }
     
     public void setRuntimeClassPath (final Path path) {
@@ -81,7 +99,16 @@ public class CopyLibs extends Jar {
     public Path getRuntimeClassPath () {
         return this.runtimePath;
     }
+
+    public boolean isRebase() {
+        return this.rebase;
+    }
+
+    public void setRebase(final boolean rebase) {
+        this.rebase = rebase;
+    }
     
+    @Override
     public void execute() throws BuildException {
         if (this.runtimePath == null) {
             throw new BuildException ("RuntimeClassPath must be set.");
@@ -132,8 +159,11 @@ public class CopyLibs extends Jar {
             for (final File fileToCopy : filesToCopy) {
                 this.log("Copy " + fileToCopy.getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);
                 try {
-                    File libFile = new File (libFolder,fileToCopy.getName());
-                    utils.copyFile(fileToCopy,libFile);
+                    File libFile = new File (libFolder,fileToCopy.getName());                    
+                    if (!rebase(fileToCopy, libFile)) {
+                        libFile.delete();
+                        utils.copyFile(fileToCopy,libFile);
+                    }
                 } catch (IOException ioe) {
                     throw new BuildException (ioe);
                 }
@@ -149,5 +179,113 @@ public class CopyLibs extends Jar {
         }
 
         super.execute();
+    }
+
+    private boolean rebase(final File source, final File target) {
+        if (!rebase) {
+            return false;
+        }
+        try {
+            Manifest manifest = null;
+            final ZipFile zf = new ZipFile(source);
+            try {
+                if (zf.getEntry(INDEX) != null) {
+                    return false;
+                }
+                final ZipEntry manifestEntry = zf.getEntry(MANIFEST);
+                if (manifestEntry != null) {
+                    final Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName("UTF-8"));    //NOI18N
+                    try {
+                        manifest = new Manifest(in);
+                    } finally {
+                        in.close();
+                    }
+                }
+                if (manifest == null) {
+                    return false;
+                }
+                final Section mainSection = manifest.getMainSection();
+                final String classPath = mainSection.getAttributeValue(ATTR_CLASS_PATH);   //NOI18N
+                if (classPath == null) {
+                    return false;
+                }
+                if (isSigned(manifest)) {
+                    return false;
+                }
+                final StringBuilder result = new StringBuilder();
+                boolean changed = false;
+                for (String path : classPath.split(" ")) {  //NOI18N
+                    if (result.length() > 0) {
+                        result.append(' ');                 //NOI18N
+                    }
+                    int index = path.lastIndexOf('/');      //NOI18N
+                    if (index >=0 && index < path.length()-1) {
+                        path = path.substring(index+1);
+                        changed = true;
+                    }
+                    result.append(path);
+                }
+                if (!changed) {
+                    return false;
+                }
+                final Enumeration<? extends ZipEntry> zent = zf.entries();
+                final ZipOutputStream out = new ZipOutputStream(target);
+                try {
+                    while (zent.hasMoreElements()) {
+                        final ZipEntry entry = zent.nextElement();
+                        final InputStream in = zf.getInputStream(entry);
+                        try {
+                            
+                            if (MANIFEST.equals(entry.getName())) {
+                                out.putNextEntry(new org.apache.tools.zip.ZipEntry(entry));
+                                mainSection.removeAttribute(ATTR_CLASS_PATH);
+                                mainSection.addAttributeAndCheck(new Manifest.Attribute(ATTR_CLASS_PATH, result.toString()));
+                                final PrintWriter manifestOut = new PrintWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+                                manifest.write(manifestOut);
+                                manifestOut.flush();
+                            } else {
+                                out.putNextEntry(new org.apache.tools.zip.ZipEntry(entry));
+                                copy(in,out);
+                            }
+                        } finally {
+                            in.close();
+                        }
+                    }
+                    return true;
+                } finally {
+                    out.close();
+                }
+            } finally {
+                zf.close();
+            }
+        } catch (Exception e) {
+            this.log("Cannot fix dependencies for: " + target.getAbsolutePath(), Project.MSG_WARN);   //NOI18N
+        }
+        return false;
+    }
+
+    private static boolean isSigned(final Manifest manifest) {        
+        Section section = manifest.getSection(MANIFEST);
+        if (section != null) {
+            final Enumeration<String> sectionKeys = (Enumeration<String>) section.getAttributeKeys();
+            while (sectionKeys.hasMoreElements()) {
+                if (sectionKeys.nextElement().endsWith("-Digest")) {    //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void copy(final InputStream in, final OutputStream out) throws IOException {
+        final byte[] BUFFER = new byte[4096];
+        int len;
+        for (;;) {
+            len = in.read(BUFFER);
+            if (len == -1) {
+                return;
+            }
+            out.write(BUFFER, 0, len);
+        }
     }
 }

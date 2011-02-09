@@ -43,6 +43,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.List;
 import org.junit.Test;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot.MemoryAccessType;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
@@ -99,11 +100,14 @@ public class DataraceImplTest {
         ThreadDump td1 = r1.getThreadDumps().get(0);
         assertEquals(2, td1.getThreadStates().size());
         assertEquals(MemoryAccessType.WRITE, td1.getThreadStates().get(0).getMemoryAccessType());
-        assertEquals(5, td1.getThreadStates().get(0).getStack().size());
-        assertEquals("clone", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
-        assertEquals("work", td1.getThreadStates().get(0).getStack().get(4).getFunction().getName());
-        assertEquals(54, td1.getThreadStates().get(0).getStack().get(4).getOffset());
-        assertEquals("pi_pthreads.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(4)).getSourceFile());
+        int stackSize = td1.getThreadStates().get(0).getStack().size();
+        assertEquals(5, stackSize);
+        FunctionCall firstStackElement = td1.getThreadStates().get(0).getStack().get(stackSize-1);
+        FunctionCall lastStackElement = td1.getThreadStates().get(0).getStack().get(0);
+        assertEquals("clone", firstStackElement.getFunction().getName());
+        assertEquals("work", lastStackElement.getFunction().getName());
+        assertEquals(54, lastStackElement.getOffset());
+        assertEquals("pi_pthreads.c", ((FunctionCallImpl)lastStackElement).getSourceFile());
         assertEquals(5, td1.getThreadStates().get(1).getStack().size());
 
         ThreadDump td2 = r1.getThreadDumps().get(1);
@@ -154,11 +158,14 @@ public class DataraceImplTest {
         ThreadDump td1 = r1.getThreadDumps().get(0);
         assertEquals(2, td1.getThreadStates().size());
         assertEquals(MemoryAccessType.WRITE, td1.getThreadStates().get(0).getMemoryAccessType());
-        assertEquals(3, td1.getThreadStates().get(0).getStack().size());
-        assertEquals("_start", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
-        assertEquals("main", td1.getThreadStates().get(0).getStack().get(2).getFunction().getName());
-        assertEquals(57, td1.getThreadStates().get(0).getStack().get(2).getOffset());
-        assertEquals("pi_omp.c", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(2)).getSourceFile());
+        int stackSize = td1.getThreadStates().get(0).getStack().size();
+        assertEquals(3, stackSize);
+        FunctionCall firstStackElement = td1.getThreadStates().get(0).getStack().get(stackSize-1);
+        FunctionCall lastStackElement = td1.getThreadStates().get(0).getStack().get(0);
+        assertEquals("_start", firstStackElement.getFunction().getName());
+        assertEquals("main", lastStackElement.getFunction().getName());
+        assertEquals(57, lastStackElement.getOffset());
+        assertEquals("pi_omp.c", ((FunctionCallImpl)lastStackElement).getSourceFile());
         assertEquals(3, td1.getThreadStates().get(1).getStack().size());
 
         ThreadDump td2 = r1.getThreadDumps().get(1);
@@ -214,10 +221,12 @@ public class DataraceImplTest {
         assertEquals(2, td1.getThreadStates().size());
         assertEquals(MemoryAccessType.WRITE, td1.getThreadStates().get(0).getMemoryAccessType());
         assertEquals(4, td1.getThreadStates().get(0).getStack().size());
-        assertEquals("_lwp_start", td1.getThreadStates().get(0).getStack().get(0).getFunction().getName());
-        assertEquals("MAIN_ -- OMP parallel region from line 16 [_$p1A16.MAIN_]", td1.getThreadStates().get(0).getStack().get(3).getFunction().getName());
-        assertEquals(17, td1.getThreadStates().get(0).getStack().get(3).getOffset());
-        assertEquals("test.f", ((FunctionCallImpl)td1.getThreadStates().get(0).getStack().get(3)).getSourceFile());
+        FunctionCall firstStackElement = td1.getThreadStates().get(0).getStack().get(3);
+        FunctionCall lastStackElement = td1.getThreadStates().get(0).getStack().get(0);
+        assertEquals("_lwp_start", firstStackElement.getFunction().getName());
+        assertEquals("MAIN_ -- OMP parallel region from line 16 [_$p1A16.MAIN_]", lastStackElement.getFunction().getName());
+        assertEquals(17, lastStackElement.getOffset());
+        assertEquals("test.f", ((FunctionCallImpl)lastStackElement).getSourceFile());
         assertEquals(4, td1.getThreadStates().get(1).getStack().size());
 
         ThreadDump td2 = r1.getThreadDumps().get(1);

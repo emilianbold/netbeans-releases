@@ -44,10 +44,11 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.Date;
 import junit.framework.Test;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -62,13 +63,15 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
+    public RemoteFileSystemTestCase(String testName) {
+        super(testName);
+    }
+    
     public RemoteFileSystemTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    // Disabled, see IZ 190453
-    @RandomlyFails
     public void testRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
@@ -155,8 +158,6 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 //    }
 
     @ForAllEnvironments
-    // Disabled, see IZ 190453
-    @RandomlyFails
     public void testMultipleRead() throws Exception {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/errno.h";
@@ -238,6 +239,31 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             }
         }
     }
+    
+    @ForAllEnvironments
+    public void testDate() throws Exception {
+        String path = mkTemp();
+        Date localDate = new Date();
+        FileObject fo = getFileObject(path);
+        assertTrue("Invalid file object " + path, fo.isValid());
+        Date lastMod = fo.lastModified();
+        assertNotNull("getDate() returned null for " + fo, lastMod);
+        System.out.println("local file creation date:  " + localDate);
+        System.out.println("remote last modified date: " + lastMod);
+        
+        long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
+        long delta = Math.abs(localDate.getTime() - lastMod.getTime());
+        if (delta > Math.abs(skew) + (long)(1000*60*5)) {
+            assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
+                    " delta " + delta + " ms; skew " + skew, false);
+        }
+        fo.delete();
+        assertTrue("isValid should return false for " + fo, !fo.isValid());
+        Date lastMod2 = fo.lastModified();
+        System.out.println("remote date after deletion: " + lastMod2);
+        assertNotNull("getDate() should never return null", lastMod2);
+    }
+
     
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteFileSystemTestCase.class);

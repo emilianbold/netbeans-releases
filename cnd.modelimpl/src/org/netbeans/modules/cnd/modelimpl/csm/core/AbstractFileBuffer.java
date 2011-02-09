@@ -47,19 +47,16 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -72,6 +69,7 @@ import org.openide.util.Exceptions;
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
+    private Reference<Line2Offset> lines = new WeakReference<Line2Offset>(null);
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
@@ -154,125 +152,29 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public int[] getLineColumnByOffset(int offset) throws IOException {
-        int[] lineCol = new int[]{1, 1};
-        int line = _getLineByOffset(offset);
-        int start = _getStartLineOffset(line);
-        lineCol[0] = line;
-        // find line and column
-        String text = getText();
-        int TABSIZE = ModelSupport.getTabSize();
-        for (int curOffset = start; curOffset < offset; curOffset++) {
-            char curChar = text.charAt(curOffset);
-            switch (curChar) {
-                case '\n':
-                    // just increase line number
-                    lineCol[0] = lineCol[0] + 1;
-                    lineCol[1] = 1;
-                    break;
-                case '\t':
-                    int col = lineCol[1];
-                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
-                    lineCol[1] = newCol;
-                    break;
-                default:
-                    lineCol[1]++;
-                    break;
-            }
-        }
-        return lineCol;
+        return getLine2Offset().getLineColumnByOffset(offset);
     }
 
     @Override
     public int getOffsetByLineColumn(int line, int column) throws IOException {
-        int startOffset = _getStartLineOffset(line);
-        String text = getText();
-        int TABSIZE = ModelSupport.getTabSize();
-        int currCol = 1;
-        int outOffset;
-        loop:for (outOffset = startOffset; outOffset < text.length(); outOffset++) {
-            if (currCol >= column) {
-                break;
-            }
-            char curChar = text.charAt(outOffset);
-            switch (curChar) {
-                case '\n':
-                    break loop;
-                case '\t':
-                    int col = currCol;
-                    int newCol = (((col - 1) / TABSIZE) + 1) * TABSIZE + 1;
-                    currCol = newCol;
-                    break;
-                default:
-                    currCol++;
-                    break;
-            }
-        }
-        return outOffset;
+        return getLine2Offset().getOffsetByLineColumn(line, column);
     }
 
-    private int _getStartLineOffset(int line) throws IOException {
-        line--;
-        int[] list = getLineOffsets();
-        if (line < list.length) {
-            return list[line];
-        }
-        return list[list.length-1];
-    }
-
-    private int _getLineByOffset(int offset) throws IOException {
-        int[] list = getLineOffsets();
-	int low = 0;
-	int high = list.length - 1;
-	while (low <= high) {
-	    int mid = (low + high) >>> 1;
-	    int midVal = list[mid];
-	    if (midVal < offset) {
-                if (low == high) {
-                    return low + 1;
-                }
-                low = mid + 1;
-            } else if (midVal > offset) {
-                if (low == high) {
-                    return low;
-                }
-                high = mid - 1;
-            } else {
-                return mid + 1;
-            }
-	}
-	return low;
-    }
-    
-    private WeakReference<Object> lines = new WeakReference<Object>(null);
-    private int[] getLineOffsets() throws IOException {
-        WeakReference<Object> aLines = lines;
-        int[] res = null;
+    private Line2Offset getLine2Offset() throws IOException{
+        Line2Offset lines2Offset = null;
+        Reference<Line2Offset> aLines = lines;
         if (aLines != null) {
-            res = (int[]) aLines.get();
+            lines2Offset = aLines.get();
         }
-        if (res == null) {
-            String text = getText();
-            int length = text.length();
-            ArrayList<Integer> list = new ArrayList<Integer>(length/10);
-            // find line and column
-            list.add(Integer.valueOf(0));
-            for (int curOffset = 0; curOffset < length; curOffset++) {
-                char curChar = text.charAt(curOffset);
-                if (curChar == '\n') {
-                    list.add(Integer.valueOf(curOffset+1));
-                }
-            }
-            res = new int[list.size()];
-            for (int i = 0; i < list.size(); i++){
-                res[i] = list.get(i);
-            }
-            lines = new WeakReference<Object>(res);
+        if (lines2Offset == null) {
+            lines2Offset = new Line2Offset(getCharBuffer());
+            lines = new WeakReference<Line2Offset>(lines2Offset);
         }
-        return res;
+        return lines2Offset;
     }
 
     protected void clearLineCache() {
-        WeakReference<Object> aLines = lines;
+        Reference<Line2Offset> aLines = lines;
         if (aLines != null) {
             aLines.clear();
         }

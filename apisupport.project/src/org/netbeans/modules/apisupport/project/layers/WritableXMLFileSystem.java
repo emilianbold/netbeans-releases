@@ -1309,16 +1309,13 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
      */
     private static void deleteWithIndent(TreeChild child) throws ReadOnlyException {
         TreeChild next = child.getNextSibling();
-        // XXX better might be to delete any maximal [ \t]+ previous plus \n next (means splitting up TreeText's)
-        if (next instanceof TreeText && ((TreeText) next).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
+        TreeChild previous = child.getPreviousSibling();
+        if (previous instanceof TreeText && ((TreeText) previous).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
+            previous.removeFromContext();
+        } else if (next instanceof TreeText && ((TreeText) next).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
             next.removeFromContext();
         } else {
-            TreeChild previous = child.getPreviousSibling();
-            if (previous instanceof TreeText && ((TreeText) previous).getData().matches("(\r|\n|\r\n)[ \t]+")) { // NOI18N
-                previous.removeFromContext();
-            } else {
-                // Well, not sure what is here, so skip it.
-            }
+            // Well, not sure what is here, so skip it.
         }
         TreeElement parent = (TreeElement) child.getParentNode();
         TreeObjectList list = parent.getChildNodes();

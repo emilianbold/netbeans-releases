@@ -59,10 +59,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -83,6 +83,25 @@ import org.openide.util.Utilities;
 public final class CndFileUtils {
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
+    private static final FileSystem fileFileSystem;
+    static {
+        FileSystem afileFileSystem = null;
+        File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); //NOI18N
+        tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+        FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!
+        if (tmpDirFo != null) {
+            try {
+                afileFileSystem = tmpDirFo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (afileFileSystem == null) {
+            afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            Exceptions.printStackTrace(new Exception("Cannot get local file system")); //NOI18N
+        }
+        fileFileSystem = afileFileSystem;
+    }
 
     private CndFileUtils() {
     }
@@ -113,6 +132,9 @@ public final class CndFileUtils {
     public static void clearFileExistenceCache() {
         try {
             maRefLock.lock();
+            for(Reference<ConcurrentMap<String, Flags>> mapRef : maps.values()) {
+                mapRef.clear();
+            }
             maps.clear();
         } finally {
             maRefLock.unlock();
@@ -437,7 +459,14 @@ public final class CndFileUtils {
 //    private static int hits = 0;
 
     private static ConcurrentMap<String, Flags> getFilesMap(FileSystem fs) {
-        ConcurrentMap<String, Flags> map;        
+        ConcurrentMap<String, Flags> map;
+        L1Cache aCache = l1Cache;
+        if (aCache != null) {
+            map = aCache.get(fs);
+            if (map != null) {
+                return map;
+            }
+        }
         try {
             maRefLock.lock();
             Reference<ConcurrentMap<String, Flags>> mapRef = maps.get(fs);
@@ -445,11 +474,28 @@ public final class CndFileUtils {
                 map = new ConcurrentHashMap<String, Flags>();
                 mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
                 maps.put(fs, mapRef);
+                l1Cache = new L1Cache(fs, mapRef);
             }
         } finally {
             maRefLock.unlock();
         }
         return map;
+    }
+
+    private static L1Cache l1Cache;
+    private final static class L1Cache {
+        private FileSystem fs;
+        private Reference<ConcurrentMap<String, Flags>> mapRef;
+        private L1Cache(FileSystem fs, Reference<ConcurrentMap<String, Flags>> mapRef) {
+            this.fs = fs;
+            this.mapRef = mapRef;
+        }
+        private ConcurrentMap<String, Flags> get(FileSystem fs) {
+            if (this.fs == fs) {
+                return mapRef.get();
+            }
+            return null;
+        }
     }
 
     private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
@@ -464,22 +510,7 @@ public final class CndFileUtils {
        return info;
     }
     
-    public static synchronized FileSystem getLocalFileSystem() {
-        if (fileFileSystem == null) {
-            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
-            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
-            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
-            if (tmpDirFo != null) {
-                try {
-                    fileFileSystem = tmpDirFo.getFileSystem();
-                } catch (FileStateInvalidException ex) {
-                    // it's no use to log it here
-                }
-            }
-            if (fileFileSystem == null) {
-                fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
-            }
-        }
+    public static FileSystem getLocalFileSystem() {
         return fileFileSystem;
     }
     
@@ -514,8 +545,7 @@ public final class CndFileUtils {
     }
     
     private static final Lock maRefLock = new ReentrantLock();
-    private static FileSystem fileFileSystem;
-    
+
     private static final Map<FileSystem, Reference<ConcurrentMap<String, Flags>>> maps = 
             new WeakHashMap<FileSystem, Reference<ConcurrentMap<String, Flags>>>();
 

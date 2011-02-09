@@ -91,7 +91,7 @@ public class StepIntoTestAction extends NodeAction {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            ap.invokeAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, Lookups.fixed(new Object[]{project, n}));
+            ap.invokeAction(ActionProvider.COMMAND_DEBUG_STEP_INTO_TEST, Lookups.fixed(new Object[]{project, n}));
         }
 
     }

@@ -3069,8 +3069,15 @@ public class CasualDiff {
                 return oldBounds[1];
             }
         }
-
-        elementBounds[1] = Math.min(elementBounds[1], Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING)));
+        
+        int commentsStart = Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING));
+        if (commentsStart < elementBounds[1]) {
+            int lastIndex;
+            tokenSequence.move(commentsStart);
+            elementBounds[1] = tokenSequence.movePrevious() && tokenSequence.token().id() == JavaTokenId.WHITESPACE &&
+                    (lastIndex = tokenSequence.token().text().toString().lastIndexOf('\n')) > -1 ?
+                    tokenSequence.offset() + lastIndex + 1 : commentsStart;
+        }
 
         switch (oldT.getTag()) {
           case JCTree.TOPLEVEL:

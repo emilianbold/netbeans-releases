@@ -100,6 +100,16 @@ public interface ActionProvider {
      * Standard command for running tests on given projects
      */
     String COMMAND_TEST = "test"; // NOI18N
+
+    /**
+     * Standard command for running tests on given projects
+     */
+    String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
+
+    /**
+     * Standard command for running tests on given projects
+     */
+    String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     
     /** 
      * Standard command for running one test file

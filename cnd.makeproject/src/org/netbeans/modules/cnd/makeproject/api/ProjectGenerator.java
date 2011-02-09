@@ -170,8 +170,9 @@ public class ProjectGenerator {
             return this;
         }
 
-        public void setFullRemote(boolean fullRemote) {
+        public ProjectParameters setFullRemote(boolean fullRemote) {
             this.fullRemote = fullRemote;
+            return this;
         }
 
         public boolean getFullRemote() {

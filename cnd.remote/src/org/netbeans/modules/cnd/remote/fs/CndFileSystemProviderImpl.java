@@ -246,7 +246,7 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     public void postConnectDownloadFinished(ExecutionEnvironment env) {
         RemoteCodeModelUtils.scheduleReparse(env);
     }
-
+    
     private static class FileSystemAndString {
 
         public final FileSystem fileSystem;

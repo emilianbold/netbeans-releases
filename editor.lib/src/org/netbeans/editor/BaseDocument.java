@@ -129,10 +129,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
 
     // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
-    private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + ".listener");
+    private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + "-listener");
 
     // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
-    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + ".EDT");
+    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + "-EDT");
 
     /**
      * Mime type of the document. This property can be used for determining

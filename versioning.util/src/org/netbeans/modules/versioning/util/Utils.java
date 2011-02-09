@@ -856,14 +856,26 @@ public final class Utils {
             return;
         }
         Charset c = FileEncodingQuery.getEncoding(fo);
-        if(c == null) {
+        associateEncoding(file, c);
+    }
+
+    /**
+     * Associates a given charset weakly with
+     * the given file. A following getAssociatedEncoding() call for
+     * the file will then return the referenceFile-s Charset.
+     *
+     * @param file file to be encoded with the referenceFile-s charset
+     *
+     */
+    public static void associateEncoding (File file, Charset charset) {
+        if(charset == null) {
             return;
         }
         if(fileToCharset == null) {
             fileToCharset = new WeakHashMap<File, Charset>();
         }
         synchronized(fileToCharset) {
-            fileToCharset.put(file, c);
+            fileToCharset.put(file, charset);
         }
     }
 

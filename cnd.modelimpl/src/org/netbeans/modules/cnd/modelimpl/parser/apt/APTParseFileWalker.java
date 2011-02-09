@@ -88,6 +88,8 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     public interface EvalCallback {
 
         void onEval(APT apt, boolean result);
+
+        void onStoppedDirective(APT apt);
     }
     private boolean createMacroAndIncludes;
     private final boolean triggerParsingActivity;
@@ -150,6 +152,19 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         super.onErrorNode(apt);
         if (needMacroAndIncludes()) {
             getFile().addError(createError((APTError)apt));
+            if (evalCallback != null) {
+                evalCallback.onStoppedDirective(apt);
+            }
+        }
+    }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
+        super.onPragmaNode(apt);
+        if (isStopped()) {
+            if (evalCallback != null) {
+                evalCallback.onStoppedDirective(apt);
+            }
         }
     }
 

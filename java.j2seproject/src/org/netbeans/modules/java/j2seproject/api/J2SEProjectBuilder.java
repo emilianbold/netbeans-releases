@@ -68,7 +68,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -353,24 +352,24 @@ public class J2SEProjectBuilder {
             String[] compileClassPath,
             String[] runtimeClassPath) throws IOException {
         
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, librariesDefinition);
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProject.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+        Element nameEl = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+        Element sourceRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
         }
         data.appendChild (sourceRoots);
-        Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+        Element testRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
         if (testRoot != null) {
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","test.src.dir");   //NOI18N
             testRoots.appendChild (root);
             ep.setProperty("test.src.dir", testRoot); // NOI18N
@@ -466,6 +465,7 @@ public class J2SEProjectBuilder {
         if (buildXmlName != null) {
             ep.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
         }
+        ep.setProperty(J2SEProjectProperties.MKDIST_DISABLED, isLibrary ? "true" : "false");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
@@ -486,7 +486,7 @@ public class J2SEProjectBuilder {
         final Element data = helper.getPrimaryConfigurationData(true);
         final Document doc = data.getOwnerDocument();
         NodeList nl = data.getElementsByTagNameNS(
-                J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
                 tests ? "test-roots" : "source-roots");
         assert nl.getLength() == 1;
         final Element sourceRoots = (Element) nl.item(0);
@@ -508,7 +508,7 @@ public class J2SEProjectBuilder {
                 propName = (tests ? "test." : "") + name + rootIndex + ".dir";   //NOI18N
             }
             String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id",propName);   //NOI18N
             sourceRoots.appendChild(root);
             props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

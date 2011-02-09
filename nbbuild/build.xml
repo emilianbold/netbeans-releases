@@ -88,6 +88,7 @@ made subject to such option by the copyright holder.
     <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
         <manifest dir="${nb_all}">
+            <include name="libs.junit4/external/binaries-list"/>
             <include name="javahelp/external/binaries-list"/>
         </manifest>
     </downloadbinaries>
@@ -400,7 +401,7 @@ Hg ID:    ${hg.id}
     <resolve name="test1.prop" value="${one.cluster.name}-is-built"/>
   </target>
 
-  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check,-build-external-cluster">
+  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">
     <echo message="Building ${one.cluster.name} modules"/>
     <resolve name="one-cluster-modules" value="${one.cluster.name}"/>
     <resolve name="one-cluster-dependencies" value="${one.cluster.name}.depends"/>
@@ -422,35 +423,6 @@ Hg ID:    ${hg.id}
              mergedependentmodules="false">
     </nbmerge>
     <touch file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
-  </target>
-
-  <target name="-external-cluster-check">
-    <condition property="${one.cluster.name}-is-external">
-      <isset property="${one.cluster.name}.sources"/>
-    </condition>
-  </target>
-
-  <target name="-external-no-sources" unless="${one.cluster.name}-has-sources" if="${one.cluster.name}-is-external" depends="-external-cluster-check,-external-cluster-sources-check">
-    <property name="${one.cluster.name}-is-built" value="true"/>
-  </target>
-
-  <target name="-external-cluster-sources-check">
-    <resolve name="cluster.sources" value="${one.cluster.name}.sources"/>
-    <condition property="${one.cluster.name}-has-sources">
-      <available file="${nb_all}/${cluster.sources}" type="dir"/>
-    </condition>
-  </target>
-
-  <target name="-build-external-cluster" if="${one.cluster.name}-is-external" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check,-external-cluster-check,-external-no-sources">
-    <resolve name="cluster.sources" value="${one.cluster.name}.sources"/>
-    <resolve name="cluster.dir" value="${one.cluster.name}.dir"/>
-    <subant buildpath="${nb_all}/${cluster.sources}/build.xml" inheritAll="false"/>
-    <copy todir="${netbeans.dest.dir}/">
-      <fileset dir="${nb_all}/${cluster.sources}/build/netbeans/">
-        <include name="${cluster.dir}/**"/>
-      </fileset>
-    </copy>
-    <property name="${one.cluster.name}-is-built" value="true"/>
   </target>
 
   <target name="zip-cluster-config" depends="init,-define-cluster-path">
@@ -1414,61 +1386,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <createlicensesummary report="build/createlicensesummary.xml" nball=".." build="${netbeans.dest.dir}" summary="${netbeans.dest.dir}/THIRDPARTYLICENSE-generated.txt"/>
     </target>
 
-  <target name="sanity-build-from-source-pkg" depends="build-source">
-    <available file="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"
-               property="pkg.available"/>
-    <fail message="Source package ${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip not available" unless="pkg.available"/>
-    <delete dir="testbuild"/>
-    <mkdir dir="testbuild"/>
-    <unzip dest="testbuild" src="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"/>
-    <property name="one.cluster.name" value="${cluster.name}"/>
-    <propertyset id="sanity-build">
-      <propertyref name="one.cluster.name"/>
-    </propertyset>
-    <echoproperties destfile="testbuild/nbbuild/user.properties">
-        <propertyset refid="sanity-build"/>
-    </echoproperties>
-
-    <!-- it should call build of the refered cluster and not just hardcoded platform -->
-    <ant antfile="testbuild/nbbuild/build.xml" inheritall="false" target="build-one-cluster">
-      <property file="testbuild/nbbuild/user.properties"/>
-    </ant>
-    <delete dir="testbuild"/>
-  </target>
-
-  <target name="build-source"
-    depends="init,set-buildnumber"
-    description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
-    if="cluster.name"
-  >
-    <fail message="Specify cluster.name property!" unless="cluster.name"/>
-    <property name="buildnum" value="dev-${buildnumber}"/>
-    <echo message="Packaging sources of ${cluster.name} modules"/>
-    <resolve name="cluster-modules" value="${cluster.name}"/>
-    <resolve name="harness-modules" value="nb.cluster.harness"/>
-    
-    <mkdir dir="${netbeans.build.dir}"/>
-    <dirset 
-        id="source.dirset" dir="${nb_all}"
-        includes="${cluster-modules},${harness-modules},ide,nbbuild,nbi"
-        excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
-    />
-    <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
-      <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
-    </pathconvert>
-    <zip zipfile="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip" duplicate="preserve">
-      <zipfileset dir="${nb_all}" includes="${source.dirs}">
-          <exclude name="*/build/**/*"/>
-          <exclude name="nbbuild/netbeans/**"/>
-	  <exclude name="nbbuild/licenses/**"/>
-      </zipfileset>
-      <zipfileset dir="${nb_all}">
-          <include name="nbbuild/licenses/CDDL-GPL-2-CP"/>
-          <include name="build.xml"/>
-      </zipfileset>
-    </zip>
-  </target>
-
   <target name="build-source-config"
     depends="init,set-buildnumber"
     description="Packages sources needed to compile one cluster.config">
@@ -1479,7 +1396,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     <mkdir dir="${netbeans.build.dir}"/>
     <dirset id="source.dirset" dir="${nb_all}"
-            includes="${allmodules},${harness-modules},nbbuild,ide,nbi,libs.antlr3.devel"
+            includes="${allmodules},${harness-modules},nbbuild,ide,nbi,libs.antlr3.devel,libs.junit4"
             excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
     />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 
@@ -140,16 +142,62 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
         }
         return result;
+    }      
+
+    public void resolveFilePathTrace(String includedFile, boolean system, boolean includeNext) {
+        ResolvedPath result = null;
+        if (includedFile != null && (includedFile.length() > 0)) {
+            result = APTIncludeUtils.resolveAbsFilePath(fileSystem, includedFile);
+            if (result == null) {
+                System.err.println("Not resolved path "+includedFile); // NOI18N
+            }
+            if (result == null && !system && !includeNext) {
+                // for <system> "current dir" has lowest priority
+                // for #include_next should start from another dir
+                result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
+                if (result == null) {
+                    System.err.println("Not resolved file "+includedFile+" in folder "+CndPathUtilitities.getDirName(baseFile.toString())); // NOI18N
+                    File file = new File(baseFile.toString(), includedFile);
+                    if (file.exists()) {
+                        System.err.println("File "+file.getAbsolutePath()+" exist! CndFileUtils.exist()=" +CndFileUtils.exists(file)); // NOI18N
+                    }
+                }
+            }
+            if ( result == null) {
+                int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
+                PathsCollectionIterator paths =
+                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
+                result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
+                if (result == null) {
+                    paths = new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
+                    while(paths.hasNext()) {
+                        IncludeDirEntry next = paths.next();
+                        System.err.println("Not resolved file "+includedFile+" in folder "+next.getPath()); // NOI18N
+                        File file = new File(next.getPath(), includedFile);
+                        if (file.exists()) {
+                            System.err.println("File "+file.getAbsolutePath()+" exist! CndFileUtils.exist()=" +CndFileUtils.exists(file)); // NOI18N
+                        }
+                    }
+                }
+            }
+            if ( result == null && system && !includeNext) {
+                // <system> was skipped above, check now, but not for #include_next
+                result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
+            }
+        }
+        if (result == null && fileSearch != null) {
+            String path = fileSearch.searchInclude(includedFile, baseFile);
+            if (path != null) {
+                result = APTIncludeUtils.resolveFilePath(fileSystem, CndPathUtilitities.getBaseName(path), path);
+            }
+        }
     }
 
-//    private String resolveNextFilePath(String file, boolean system) {
-//        String result = null;
-//        if (result == null) {
-//            result = APTIncludeUtils.resolveFilePath(file, system ? systemIncludePaths : userIncludePaths, baseFile, true);
-//        }
-//        if (result == null) {
-//            result = APTIncludeUtils.resolveFilePath(file, system ? userIncludePaths : systemIncludePaths, baseFile, true);
-//        }
-//        return result;
-//    }      
+    @Override
+    public String toString() {
+        return "APTIncludeResolverImpl{\n" + "baseFileIncludeDirIndex=" + baseFileIncludeDirIndex + ",\nbaseFile=" + baseFile + ",\nfileSystem=" + fileSystem.getDisplayName() +  // NOI18N
+                ",\nsystemIncludePaths=" + systemIncludePaths + ",\nuserIncludePaths=" + userIncludePaths + ",\nfileSearch=" + fileSearch + "\n}"; // NOI18N
+    }
+
+    
 }

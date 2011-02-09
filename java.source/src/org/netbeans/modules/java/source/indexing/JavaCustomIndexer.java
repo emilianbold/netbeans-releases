@@ -48,7 +48,6 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -109,7 +108,6 @@ import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -911,23 +909,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                         final Set<URL> toRefresh = new HashSet<URL>();
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
-                            ffl.stopListeningOn(removedRoot);
+                            ffl.stopListeningOn(removedRoot);                            
                             final FileObject root = URLMapper.findFileObject(removedRoot);
                             if (root == null) {
                                 JavaIndex.setAttribute(removedRoot, DIRTY_ROOT, Boolean.TRUE.toString());
-                                final String srcPathStr = JavaIndex.getAttribute(removedRoot, SOURCE_PATH, "");
-                                for (String pathElement : srcPathStr.split(" ")) {
-                                    try {
-                                        toRefresh.add(new URL(pathElement));
-                                    } catch (MalformedURLException mue) {
-                                        JavaIndex.LOG.log(Level.INFO, "Malformed URL in sourcePath attribute", pathElement);
-                                    }
-                                }                                
-                            } else if (ensureSourcePath(root)){
-                                final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
-                                for (final FileObject srcRoot : srcPath.getRoots()) {
-                                    toRefresh.add(srcRoot.getURL());
-                                }
+                            } else {
+                                ensureSourcePath(root);
                             }
                         }
                         for (URL removedRoot : removedRoots) {

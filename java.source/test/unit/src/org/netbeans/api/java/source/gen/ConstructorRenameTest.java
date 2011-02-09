@@ -59,7 +59,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Pavel Flaska
  */
-public class ConstructorRenameTest extends GeneratorTest {
+public class ConstructorRenameTest extends GeneratorTestBase {
 
     /** Creates a new instance of ClassMemberTest */
     public ConstructorRenameTest(String testName) {

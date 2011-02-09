@@ -4,6 +4,7 @@ import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import javax.el.ELException;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Represents the parse result of a single EL expression.
@@ -16,28 +17,28 @@ public final class ELElement {
     private final OffsetRange embeddedOffset;
     private final ELException error;
     private final String expression;
-    private final ELParserResult parserResult;
+    private final Snapshot snapshot;
     private final OffsetRange originalOffset;
 
-    private ELElement(Node node, ELException error, String expression, OffsetRange embeddedOffset, ELParserResult parserResult) {
+    private ELElement(Node node, ELException error, String expression, OffsetRange embeddedOffset, Snapshot snapshot) {
         assert node == null || error == null;
         this.node = node;
         this.embeddedOffset = embeddedOffset;
-        this.parserResult = parserResult;
+        this.snapshot = snapshot;
         this.error = error;
         this.expression = expression;
 
-        int origStart = parserResult.getSnapshot().getOriginalOffset(embeddedOffset.getStart());
-        int origEnd = parserResult.getSnapshot().getOriginalOffset(embeddedOffset.getEnd());
+        int origStart = snapshot.getOriginalOffset(embeddedOffset.getStart());
+        int origEnd = snapshot.getOriginalOffset(embeddedOffset.getEnd());
         this.originalOffset = new OffsetRange(origStart, origEnd);
     }
 
-    static ELElement valid(Node node, String expression, OffsetRange embeddedOffset, ELParserResult parserResult) {
-        return new ELElement(node, null, expression, embeddedOffset, parserResult);
+    static ELElement valid(Node node, String expression, OffsetRange embeddedOffset, Snapshot snapshot) {
+        return new ELElement(node, null, expression, embeddedOffset, snapshot);
     }
 
-    static ELElement error(ELException error, String expression, OffsetRange embeddedOffset, ELParserResult parserResult) {
-        return new ELElement(null, error, expression, embeddedOffset, parserResult);
+    static ELElement error(ELException error, String expression, OffsetRange embeddedOffset, Snapshot snapshot) {
+        return new ELElement(null, error, expression, embeddedOffset, snapshot);
     }
 
     /**
@@ -51,7 +52,7 @@ public final class ELElement {
      */
     public ELElement makeValidCopy(Node node, String expression) {
         assert !isValid();
-        return valid(node, expression, embeddedOffset, parserResult);
+        return valid(node, expression, embeddedOffset, snapshot);
     }
 
     /**
@@ -128,8 +129,8 @@ public final class ELElement {
         return result[0];
     }
 
-    public ELParserResult getParserResult() {
-        return parserResult;
+    public Snapshot getSnapshot() {
+        return snapshot;
     }
 
     @Override

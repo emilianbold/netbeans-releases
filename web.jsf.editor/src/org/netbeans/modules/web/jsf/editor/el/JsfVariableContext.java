@@ -77,6 +77,10 @@ public class JsfVariableContext implements Comparable {
         return from;
     }
 
+    public String getResolvedExpression() {
+        return new StringBuilder().append("#{").append(getResolvedType()).append('}').toString();
+    }
+
     public String getResolvedType() {
         return resolvedType;
     }

@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.util.ListenerList;
 
@@ -91,16 +92,36 @@ public abstract class EditorViewFactory {
     }
 
     private final JTextComponent component;
+    
+    private final Document doc;
 
     private ListenerList<EditorViewFactoryListener> listenerList = new ListenerList<EditorViewFactoryListener>();
 
     protected EditorViewFactory(JTextComponent component) {
         assert (component != null) : "Null component prohibited"; // NOI18N
         this.component = component;
+        this.doc = component.getDocument();
     }
 
+    /**
+     * Text component for which this view factory was constructed.
+     *
+     * @return non-null text component.
+     */
     protected final JTextComponent textComponent() {
         return component;
+    }
+    
+    /**
+     * Document for which this view factory was constructed.
+     * <b>Note</b>: Do not use <code>textComponent().getDocument()</code> since
+     * it may differ from <code>document()</code> result at certain points
+     * and it could lead to incorrect behavior.
+     *
+     * @return non-null document for which the view hierarchy was constructed.
+     */
+    protected final Document document() {
+        return doc;
     }
 
     /**

@@ -71,6 +71,7 @@ import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.ignore.UnignoreAction;
 import org.netbeans.modules.git.ui.init.InitAction;
@@ -171,6 +172,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(a);
                 }
                 actions.add(SystemAction.get(ResetAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(FetchAction.class));
             }
         } else {
             Lookup lkp = context.getElements();
@@ -216,6 +219,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(null);
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName"), lkp)); //NOI18N
             }
         }
 
