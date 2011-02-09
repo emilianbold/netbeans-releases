@@ -1258,7 +1258,7 @@ is divided into following sections:
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
                 <tempfile destdir="${{build.dir}}" deleteonexit="true" property="tmp.manifest.file"/>
-                <touch file="${{tmp.manifest.file}}"/>
+                <touch file="${{tmp.manifest.file}}" verbose="false"/>
             </target>
 
             <target name="-do-jar-with-libraries-copy-manifest">
