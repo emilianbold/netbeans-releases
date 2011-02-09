@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTIncludeResolverImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -103,6 +104,10 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (EXTRA_TRACE_FAILED_INCLUDES) {
                     APTUtils.LOG.log(Level.SEVERE, "failed to resolve {0}\nusing resolver:\n{1}\nand cache entry {2}", new Object[]{apt, resolver, cacheEntry}); // NOI18N
+                    if (resolver instanceof APTIncludeResolverImpl) {
+                        APTIncludeResolverImpl resolverImpl = (APTIncludeResolverImpl) resolver;
+                        resolverImpl.resolveFilePathTrace(((APTInclude)apt).getFileName(null), false, false);
+                    }
                 }
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {

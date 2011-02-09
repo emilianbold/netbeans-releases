@@ -357,7 +357,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final File repository;
 
         public RepositoryNode (final File repository, RepositoryInfo info) {
-            super(new RepositoryChildren());
+            super(new RepositoryChildren(), Lookups.fixed(repository));
             this.repository = repository;
             if (info == null) {
                 setDisplayName(repository.getName());
@@ -409,6 +409,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         public File getRepository() {
             return repository;
+        }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            return new Action[] {
+                SystemAction.get(FetchAction.class)
+            };
         }
     }
 

@@ -56,6 +56,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.remote.FetchUrisPanelController;
 import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfigAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
@@ -75,7 +76,13 @@ public class FetchAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
-        throw new UnsupportedOperationException("Not yet possible");
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        info.refreshRemotes();
+        Map<String, GitRemoteConfig> remotes = info.getRemotes();
+        FetchWizard wiz = new FetchWizard(repository, remotes);
+        if (wiz.show()) {
+            fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs());
+        }
     }
     
     public void fetch (final File repository, GitRemoteConfig remote) {

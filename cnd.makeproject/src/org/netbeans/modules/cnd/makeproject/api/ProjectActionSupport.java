@@ -464,6 +464,8 @@ public class ProjectActionSupport {
             if (type == PredefinedType.RUN
                     || type == PredefinedType.DEBUG
                     || type == PredefinedType.DEBUG_STEPINTO
+                    || type == PredefinedType.DEBUG_TEST
+                    || type == PredefinedType.DEBUG_STEPINTO_TEST
                     || type == PredefinedType.CHECK_EXECUTABLE
                     || type == PredefinedType.CUSTOM_ACTION) {
                 if (!checkExecutable(pae) || type == PredefinedType.CHECK_EXECUTABLE) {

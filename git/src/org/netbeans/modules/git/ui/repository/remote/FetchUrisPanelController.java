@@ -141,8 +141,8 @@ public class FetchUrisPanelController extends AbstractWizardPanel implements Act
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
         dd = new DialogDescriptor(panel, NbBundle.getMessage(FetchUrisPanelController.class, "LBL_FetchUrisPanel.title"), true,  //NOI18N
                 new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(FetchUrisPanel.class), null);
-        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         validateBeforeNext();
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);
         return okButton == dd.getValue();
     }

@@ -43,6 +43,7 @@ package org.netbeans.modules.gsf.codecoverage;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -368,6 +369,7 @@ final class CoverageReportTopComponent extends TopComponent {
     }
 
     void updateData(List<FileCoverageSummary> results) {
+        assert EventQueue.isDispatchThread();
         model = new CoverageTableModel(results);
         table.setModel(model);
         totalCoverage.setCoveragePercentage(model.getTotalCoverage());

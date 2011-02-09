@@ -92,7 +92,7 @@ public class DebugTestAction extends NodeAction {
 
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookups.fixed(new Object[]{project, n}));
+            ap.invokeAction(ActionProvider.COMMAND_DEBUG_TEST, Lookups.fixed(new Object[]{project, n}));
         }
 
 
