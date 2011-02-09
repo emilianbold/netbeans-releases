@@ -62,7 +62,6 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
-import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXException;
 
 /**
@@ -75,8 +74,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
-        String testName = "testIssue194037";
+    public static Test suite() {
+        String testName = "testIsAttributeQuoted";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -747,6 +746,34 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(130, scriptEnd.endOffset());
 
     }
+    
+//    //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
+//    public void testIsAttributeQuoted() throws ParseException {
+//        String code = "<!doctype html>"
+//                + "<html>"
+//                + "<head>"
+//                + "<title></title>"
+//                + "</head>"
+//                + "<body>"
+//                + "<div onclick=\"alert()\">x</div>"
+//                + "</body>"
+//                + "</html>";
+//        
+//        HtmlParseResult result = parse(code);
+//        AstNode root = result.root();
+//
+//        assertNotNull(root);
+//        AstNodeUtils.dumpTree(root);
+//
+//        AstNode div = AstNodeUtils.query(root, "html/body/div");
+//        assertNotNull(div);
+//
+//        AstNode.Attribute attr = div.getAttribute("onclick");
+//        assertNotNull(attr);
+//        assertTrue(attr.isValueQuoted());
+//
+//    }
+
 
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
