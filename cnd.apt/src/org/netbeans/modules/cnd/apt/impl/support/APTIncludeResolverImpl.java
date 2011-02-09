@@ -172,10 +172,12 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                     paths = new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
                     while(paths.hasNext()) {
                         IncludeDirEntry next = paths.next();
-                        System.err.println("Not resolved file "+includedFile+" in folder "+next.getPath()); // NOI18N
-                        File file = new File(next.getPath(), includedFile);
+                        File dir = new File(next.getPath());
+                        System.err.println("Not resolved file "+includedFile+" in folder "+dir.getAbsolutePath()); // NOI18N
+                        File file = new File(dir, includedFile);
                         if (file.exists()) {
                             System.err.println("File "+file.getAbsolutePath()+" exist! CndFileUtils.exist()=" +CndFileUtils.exists(file)); // NOI18N
+                            System.err.println("Check of CndFileUtils.isExistingDirectory()="+CndFileUtils.isExistingDirectory(next.getFileSystem(), dir.getAbsolutePath())); // NOI18N
                         }
                     }
                 }
