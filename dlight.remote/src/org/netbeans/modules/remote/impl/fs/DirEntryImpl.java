@@ -43,7 +43,12 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -117,6 +122,39 @@ import org.netbeans.modules.remote.support.RemoteLogger;
     }
 
     @Override
+    public boolean isLink() {
+        return type == FileType.Symlink.toChar();
+    }
+
+    public boolean isPlainFile() {
+        return ! isLink() && ! isDirectory();
+    }
+    
+    @Override
+    public boolean isDirectory() {
+        return type == FileType.Directory.toChar();
+    }
+    
+    @Override
+    public boolean isSameType(DirEntry other) {
+        return (other != null) && isLink() == other.isLink() && isDirectory() == other.isDirectory();
+    }
+
+    public boolean isSameGroup(DirEntry other) {
+        if (other instanceof DirEntryImpl) {
+            return group.equals(((DirEntryImpl) other).group);
+        }
+        return false;
+    }
+
+    public boolean isSameUser(DirEntry other) {
+        if (other instanceof DirEntryImpl) {
+            return user.equals(((DirEntryImpl) other).user);
+        }
+        return false;        
+    }
+
+    @Override
     public String getName() {
         return name;
     }
@@ -131,13 +169,16 @@ import org.netbeans.modules.remote.support.RemoteLogger;
         this.cache = cache;
     }
 
-    @Override
-    public String getGroup() {
-        return group;
-    }
+//    public String getGroup() {
+//        return group;
+//    }
+//    
+//    public String getUser() {
+//        return user;
+//    }    
 
     @Override
-    public String getLink() {
+    public String getLinkTarget() {
         return link;
     }
 
@@ -151,18 +192,31 @@ import org.netbeans.modules.remote.support.RemoteLogger;
         return timestamp;
     }
 
-    @Override
-    public String getUser() {
-        return user;
+    private HostInfo getHostInfo(ExecutionEnvironment execEnv) {
+        if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            try {
+                return HostInfoUtils.getHostInfo(execEnv);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
     }
-
+    
     @Override
-    public boolean canRead(String user, String... groups) {
+    public boolean canRead(ExecutionEnvironment execEnv) {
+        HostInfo hostInfo = getHostInfo(execEnv);
+        if (hostInfo == null) {
+            return false;
+        }
+        String[] groups = hostInfo.getAllGroups();
         if ((access & ALL_R) > 0) {
             return true;
         }
         if ((access & USR_R) > 0) {
-            if (this.user.equals(user)) {
+            if (this.user.equals(execEnv.getUser())) {
                 return true;
             }
         }
@@ -177,12 +231,17 @@ import org.netbeans.modules.remote.support.RemoteLogger;
     }
 
     @Override
-    public boolean canWrite(String user, String... groups) {
+    public boolean canWrite(ExecutionEnvironment execEnv) {
+        HostInfo hostInfo = getHostInfo(execEnv);
+        if (hostInfo == null) {
+            return false;
+        }
+        String[] groups = hostInfo.getAllGroups();
         if ((access & ALL_W) > 0) {
             return true;
         }
         if ((access & USR_W) > 0) {
-            if (this.user.equals(user)) {
+            if (this.user.equals(execEnv.getUser())) {
                 return true;
             }
         }
@@ -197,12 +256,17 @@ import org.netbeans.modules.remote.support.RemoteLogger;
     }
 
     @Override
-    public boolean canExecute(String user, String... groups) {
+    public boolean canExecute(ExecutionEnvironment execEnv) {
+        HostInfo hostInfo = getHostInfo(execEnv);
+        if (hostInfo == null) {
+            return false;
+        }
+        String[] groups = hostInfo.getAllGroups();
         if ((access & ALL_X) > 0) {
             return true;
         }
         if ((access & USR_X) > 0) {
-            if (this.user.equals(user)) {
+            if (this.user.equals(execEnv.getUser())) {
                 return true;
             }
         }

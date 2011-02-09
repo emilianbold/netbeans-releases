@@ -175,13 +175,13 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             assertNotNull("Entry not found for " + refEntry.name, entry);
             assertEquals("File type differs for " + refEntry.name, FileType.fromChar(refEntry.fileType), entry.getFileType());
             assertEquals("Access differs for " + refEntry.name, refEntry.access, entry.getAccessAsString());
-            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
-            if (entry.getFileType() != FileType.Directory && entry.getFileType() != FileType.Symlink) {
+//            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
+            if (!entry.isDirectory() && !entry.isLink()) {
                 assertEquals("Size differs for " + refEntry.name, refEntry.size, entry.getSize());
             }
 
-            assertEquals("Link differs for " + refEntry.name, refEntry.link, entry.getLink());
-            assertEquals("User differs for " + refEntry.name, refEntry.user, entry.getUser());
+            assertEquals("Link differs for " + refEntry.name, refEntry.link, entry.getLinkTarget());
+//            assertEquals("User differs for " + refEntry.name, refEntry.user, entry.getUser());
         }
     }
 

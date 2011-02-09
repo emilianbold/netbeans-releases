@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
@@ -57,18 +58,22 @@ public interface DirEntry {
 
     String getTimestamp();
     
-    boolean canExecute(String user, String... groups);
-    boolean canRead(String user, String... groups);
-    boolean canWrite(String user, String... groups);
+    boolean canExecute(ExecutionEnvironment execEnv);
+    boolean canRead(ExecutionEnvironment execEnv);
+    boolean canWrite(ExecutionEnvironment execEnv);
 
     String getAccessAsString();
 
+    boolean isLink();
+    boolean isDirectory();
+    boolean isPlainFile();
+    boolean isSameType(DirEntry other);
     FileType getFileType();
 
-    String getUser();
-    String getGroup();
+    boolean isSameUser(DirEntry other);
+    boolean isSameGroup(DirEntry other);
 
-    String getLink();
+    String getLinkTarget();
 
     String getCache();
     void setCache(String cache);

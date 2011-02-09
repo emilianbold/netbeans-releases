@@ -114,7 +114,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
             DirEntry entry = storage.getEntry(childNameExt);
-            return entry != null && entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
+            return entry != null && entry.canWrite(execEnv); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedIOException ex) {
@@ -132,7 +132,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
             DirEntry entry = storage.getEntry(childNameExt);
-            return entry != null && entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
+            return entry != null && entry.canRead(execEnv);
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedIOException ex) {
@@ -282,12 +282,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             File childCache = new File(cache, entry.getCache());
             String remoteAbsPath = remotePath + '/' + relativePath;
-            if (entry.getFileType() == FileType.Directory) {
+            if (entry.isDirectory()) {
                 return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
-            }  else if (entry.getFileType() == FileType.Symlink) {
-                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, entry.getLink());
+            }  else if (entry.isLink()) {
+                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, entry.getLinkTarget());
             } else {
-                return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
+                return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, FileType.File);
             }
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
@@ -322,12 +322,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 DirEntry entry = entries.get(i);
                 String childPath = remotePath + '/' + entry.getName(); //NOI18N
                 File childCache = new File(cache, entry.getCache());
-                if (entry.getFileType() == FileType.Directory) {
+                if (entry.isDirectory()) {
                     childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childCache);
-                } else if(entry.getFileType() == FileType.Symlink) {
-                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, entry.getLink());
+                } else if(entry.isLink()) {
+                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
                 } else {
-                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, entry.getFileType());
+                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
                 }
             }
             return childrenFO;
@@ -518,25 +518,25 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     changed = true;
                     cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
                 } else {
-                    if (oldEntry.getFileType() == newEntry.getFileType()) {
+                    if (oldEntry.isSameType(newEntry)) {
                         cacheName = oldEntry.getCache();
                         keepCacheNames.add(newEntry);
                         if (!newEntry.getTimestamp().equals(oldEntry.getTimestamp())) {
-                            if (newEntry.getFileType() == FileType.File) {
+                            if (newEntry.isPlainFile()) {
                                 changed = true;
                                 File entryCache = new File(cache, oldEntry.getCache());
                                 if (entryCache.exists()) {
                                     if (trace) { trace("removing cache for updated file {0}", entryCache.getAbsolutePath()); } // NOI18N
                                     entryCache.delete();
                                 }
-                            } else if (!equals(newEntry.getLink(), oldEntry.getLink())) {
+                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
                                 changed = true;
-                                fileSystem.getFactory().setLink(this, remotePath + '/' + newEntry.getName(), newEntry.getLink());
+                                fileSystem.getFactory().setLink(this, remotePath + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
                                 changed = true;
-                            } else if (!newEntry.getUser().equals(oldEntry.getUser())) {
+                            } else if (!newEntry.isSameUser(oldEntry)) {
                                 changed = true;
-                            } else if (!newEntry.getGroup().equals(oldEntry.getGroup())) {
+                            } else if (!newEntry.isSameGroup(oldEntry)) {
                                 changed = true;
                             } else if (newEntry.getSize() != oldEntry.getSize()) {
                                 changed = true;
