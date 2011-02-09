@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -48,6 +49,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import java.util.prefs.PreferencesFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
@@ -81,9 +84,16 @@ public class TestBaseForTestProject extends TestBase {
 
         //disable info exceptions from j2eeserver
         Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
-
+        
         //so InstalledFileLocatorImpl finds the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
-        System.setProperty("netbeans.dirs", "/Volumes/Mercurial/web-main/nbbuild/netbeans/enterprise");
+        
+        //xxx Isn't there a more elegant way to do this?:
+        String unitTestRelativePath = "web.jsf.editor/build/test/unit/data";
+        String dataDir = getDataDir().getAbsolutePath();
+        String nbhome = dataDir.substring(0, dataDir.length() - unitTestRelativePath.length());
+        String entClusterDir = nbhome + "nbbuild/netbeans/enterprise";
+        
+        System.setProperty("netbeans.dirs", entClusterDir);
 
         this.projectFo = getTestFile("testWebProject");
         assertNotNull(projectFo);
