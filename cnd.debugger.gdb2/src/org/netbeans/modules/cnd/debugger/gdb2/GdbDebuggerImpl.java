@@ -2398,7 +2398,7 @@ import org.openide.util.Exceptions;
     private void attrMIVar(final GdbVariable v, final boolean evalValue) {
         String expr = v.getMIName();
 	// editable ?
-        String cmdString = "-var-show-attributes " + expr; // NOI18N
+        String cmdString = "-var-show-attributes \"" + expr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
             @Override
@@ -2494,7 +2494,7 @@ import org.openide.util.Exceptions;
 			      String expr,
 			      final int level) {
 
-        String cmdString = "-var-list-children --all-values " + expr; // NOI18N
+        String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 		    @Override
