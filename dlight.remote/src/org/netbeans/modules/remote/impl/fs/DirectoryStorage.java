@@ -62,9 +62,9 @@ public class DirectoryStorage {
 
     private final Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
     private final File file;
-    private static final int VERSION = 2;
+    private static final int VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
     /* Incompatible version to discard */
-    private static final int ODD_VERSION = 1;
+    private static final int ODD_VERSION = RemoteDirectory.getLsViaSftp() ? 3 : 2;
 
     public DirectoryStorage(File file) {
         this.file = file;
