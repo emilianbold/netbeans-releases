@@ -632,6 +632,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 storage.setEntries(entries.values());
                 storage.store();
+            } else {
+                storage.touch();
             }
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
