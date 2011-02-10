@@ -138,6 +138,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 
 // for rebuildOnNextDebug
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryFormat;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RTCWindowAction;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcTopComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
@@ -256,14 +257,14 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
 
             if (memoryWindow != null) {
-                ((MemoryWindow) MemoryWindow.getDefault()).setDebugger(this);
+                MemoryWindow.getDefault().setDebugger(this);
                 // will call requestMems() in setControlPanelData
-                ((MemoryWindow) MemoryWindow.getDefault()).setControlPanelData(memory_start, memory_length, memory_format_index);
+                MemoryWindow.getDefault().setControlPanelData(memory_start, memory_length, memory_format);
             } else if (MemoryWindow.getDefault().isShowing()) {
-                registerMemoryWindow((MemoryWindow) MemoryWindow.getDefault());
-                ((MemoryWindow) MemoryWindow.getDefault()).setDebugger(this);
+                registerMemoryWindow(MemoryWindow.getDefault());
+                MemoryWindow.getDefault().setDebugger(this);
                 // will call requestMems() in setControlPanelData
-                ((MemoryWindow) MemoryWindow.getDefault()).setControlPanelData("main", "80", 0); // NOI18N
+                MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
             }
 
             if (registersWindow != null) {
@@ -825,7 +826,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             memoryWindow.setDebugger(null);
             // CR 6660966
             //currentMemoryWindow = null;
-            ((MemoryWindow) MemoryWindow.getDefault()).setControlPanelData("main", "80", 0); // NOI18N
+            MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
         }
     }
     private RtcController rtcController;
@@ -3554,8 +3555,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     
     private String memory_start;
     private String memory_length;
-    private String memory_format;
-    private int memory_format_index;
+    private MemoryFormat memory_format;
 
     @Override
     public void registerMemoryWindow(MemoryWindow mw) {
@@ -3599,7 +3599,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                             k = s.indexOf('\n', j);
                             if (k < j) break;
                             memvalue = s.substring(j, k);
-                            memvalue = memoryWindow.align_memvalue(memvalue);
+                            memvalue = align_memvalue(memvalue);
                             break;
                         }
                     }
@@ -3609,8 +3609,71 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	    memoryWindow.updateData(res);
         }
     }
+    
+    private String align_memvalue(String memvalue) {
+        int i, j, valuelen, maxvaluelen, total_len;
+        String value, new_memvalue;
+        char c;
+        
+        if ((memory_format == DbxMemoryFormat.DECIMAL) || (memory_format == DbxMemoryFormat.OCTAL)) {
+            total_len = memvalue.length();
+            j = memvalue.indexOf(':', 0);
+            new_memvalue = "";		// NOI18N
+       	    if (j >= 0) {
+       	        // Symbol information
+       	        j++;
+       	        new_memvalue = memvalue.substring(0, j);
+       	    } else {
+       	        j = 0;
+       	    }
+       	    for (i = 0 ; i < 4 ; i++) {
+       	        for ( ; j < total_len ; j++) {
+       	            c = memvalue.charAt(j);
+       	            if ((c == ' ') || (c == '\t')) {
+       	                new_memvalue = new_memvalue + " ";	// NOI18N
+       	                continue;
+       	            }
+       	            break;
+       	        }
+       	        if (total_len <= j) break;
+       	        value = "";	// NOI18N
+       	        valuelen = 0;
+       	        maxvaluelen = 12;
+       	        if (memory_format == DbxMemoryFormat.DECIMAL) {
+       	            if (memvalue.charAt(j) == '-') {
+       	                value = "-"; // NOI18N
+       	                j++;
+       	            } else {
+       	                value = "+"; // NOI18N
+       	            }
+       	            valuelen = 1;
+       	            maxvaluelen = 11;
+       	        }
+       	        for ( ; j < total_len ; j++) {
+       	            c = memvalue.charAt(j);
+       	            if ((c >= '0') && (c <= '9')) {
+       	                value = value + c;
+       	                valuelen++;
+       	                continue;
+       	            }
+       	            break;
+       	        }
+       	        if (valuelen > maxvaluelen) return memvalue; // something wrong
+       	        for ( ; valuelen < maxvaluelen ; valuelen++) {
+       	            value = " " + value; // NOI18N
+       	        }
+       	        new_memvalue = new_memvalue + value;
+            }
+            return new_memvalue;
+        }
+        return memvalue;
+    }
+    
+    public MemoryFormat[] getMemoryFormats() {
+        return DbxMemoryFormat.values();
+    }
 
-    public void requestMems(String start, String length, String format, int index) {
+    public void requestMems(String start, String length, MemoryFormat format) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("DbxDebuggerImpl.requestMems() ready %s\n", // NOI18N
                     isConnected());
@@ -3621,8 +3684,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         memory_start = start;
         memory_length = length;
         memory_format = format;
-        memory_format_index = index;
-        dbx.mem_format(start, length, format);
+        dbx.mem_format(start, length, format.getOption());
     }
 
     /**
