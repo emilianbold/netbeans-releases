@@ -108,13 +108,15 @@ public class JUnitLibraryDefiner implements LibraryDefiner {
             return null;
         }
         return new Callable<Library>() {
-            Map<String,File> downloads = new HashMap<String,File>();
-            int count = 0;
+            Map<String,File> downloads;
+            int count;
             ProgressHandle handle;
             MavenEmbedder online;
             List<ArtifactRepository> remoteArtifactRepositories;
             @SuppressWarnings("SleepWhileInLoop")
             public @Override Library call() throws Exception {
+                downloads = new HashMap<String,File>();
+                count = 0;
                 handle = ProgressHandleFactory.createHandle(MSG_Downloading_all()/*, XXX cancelable; see comment in MavenEmbedder.resolve */);
                 handle.start(6);
                 try {
@@ -128,6 +130,9 @@ public class JUnitLibraryDefiner implements LibraryDefiner {
                     }
                 } finally {
                     handle.finish();
+                    handle = null;
+                    online = null;
+                    remoteArtifactRepositories = null;
                 }
                 File junit4Module = new JARBuilder(File.createTempFile("o-n-l-ju4", ".jar")).
                         entry("org/netbeans/libs/junit4/Bundle.properties", "OpenIDE-Module-Name=JUnit 4\n").
