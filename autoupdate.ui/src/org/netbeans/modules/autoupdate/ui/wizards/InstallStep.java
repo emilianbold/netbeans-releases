@@ -427,6 +427,11 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         String certs = "";
         for (UpdateElement el : model.getAllUpdateElements ()) {
             if (! support.isSigned (inst, el)) {
+                // XXX: a hot workaround #195122, remove it after impl. #195041
+                if ("org.netbeans.modules.junitlib".equals(el.getCodeName())) { // NOI18N
+                    continue;
+                }
+                // end of #195122
                 unsigned.add (el);
             } else if (! support.isTrusted (inst, el)) {
                 untrusted.add (el);
