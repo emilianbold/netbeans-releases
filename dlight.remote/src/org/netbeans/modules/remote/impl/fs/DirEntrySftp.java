@@ -166,7 +166,7 @@ public class DirEntrySftp implements DirEntry {
             StatInfo statInfo = FileInfoProvider.StatInfo.fromExternalForm(externalForm.substring(pos + 1));
             return new DirEntrySftp(statInfo, cache);
         } catch (Exception ex) {
-            throw new FormatException("Wrong directory entry format: " + externalForm, ex);
+            throw new FormatException("Wrong directory entry format: " + externalForm, ex); // NOI18N
         }        
     }
     

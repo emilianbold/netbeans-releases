@@ -45,6 +45,7 @@ package org.netbeans.modules.editor.hints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.spi.editor.hints.Severity;
@@ -115,12 +116,11 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (fixes.isComputed()) {
-            try {
-                holder.detachAnnotation(this);
-                holder.attachAnnotation(lineStart, this);
-            } catch (BadLocationException ex) {
-                throw new IllegalStateException(ex);
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    firePropertyChange(PROP_ANNOTATION_TYPE, null, getAnnotationType());
+                }
+            });
         }
     }
     
