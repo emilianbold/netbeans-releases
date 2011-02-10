@@ -435,6 +435,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         storageFile.delete();
                     } catch (InterruptedIOException e) {
                         throw e;
+                    } catch (FileNotFoundException e) {
+                        // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
+                        RemoteLogger.finest(e);
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
                     }
