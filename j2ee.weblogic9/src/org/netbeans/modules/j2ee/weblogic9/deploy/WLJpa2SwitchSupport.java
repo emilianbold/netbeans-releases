@@ -80,20 +80,20 @@ public final class WLJpa2SwitchSupport {
     private static final Version SWITCH_SUPPORTED_VERSION = Version.fromJsr277NotationWithFallback("10.3.4");
 
     private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar"; // NO18N
-    
+
     private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar"; // NO18N
-    
+
     private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar"; // NO18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
-    
+
     private final File serverRoot;
-    
+
     private final WLDeploymentManager dm;
-    
+
     /** GuardedBy("this")*/
     private Version serverVersion;
-    
+
     private boolean proggessSuccess = true;
 
     public WLJpa2SwitchSupport(File serverRoot) {
@@ -299,7 +299,7 @@ public final class WLJpa2SwitchSupport {
                 URL file = FileUtil.getArchiveFile(url);
                 if (file.getFile().endsWith(JPA_JAR_1)) {
                     return true;
-                }                
+                }
             }
             return false;
         }
@@ -321,7 +321,7 @@ public final class WLJpa2SwitchSupport {
             return isEnabledViaSmartUpdate(urls);
         }
     }
-    
+
     private boolean isEnabledViaSmartUpdate(List<URL> urls) {
         if (urls != null) {
             for (URL url : urls) {
