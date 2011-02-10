@@ -378,7 +378,7 @@ public final class CndFileUtils {
                     if (parentDirFlags == null) {
                         // not yet checked
                         parentDirFlags = Flags.get(fs, parent);
-                        files.put(parent, parentDirFlags);
+                        files.putIfAbsent(parent, parentDirFlags);
                     }
                     if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.FILE) {
                         // no need to check non existing file
@@ -391,14 +391,18 @@ public final class CndFileUtils {
                         exists = files.get(absolutePath);
                     }
                 } else {
-                    // no need to check non existing file
-                    exists = Flags.NOT_FOUND;
-//                    files.put(path, exists);
+                    if (parentDirFlags == Flags.NOT_FOUND) {
+                        // no need to check non existing file
+                        exists = Flags.NOT_FOUND;
+                    } else {
+                        // may be our parent was indexed in parallel thread
+                        exists = files.get(absolutePath);
+                    }
                 }
             }
             if (exists == null) {
                 exists = Flags.get(fs, absolutePath);
-                files.put(absolutePath, exists);
+                files.putIfAbsent(absolutePath, exists);
             }
             if (exists == Flags.DIRECTORY) {
                 // let's index not indexed directory
@@ -571,7 +575,6 @@ public final class CndFileUtils {
         private static final Flags DIRECTORY = new Flags(true,true);
         private static final Flags INDEXED_DIRECTORY = new Flags(true,true);
         private static final Flags NOT_FOUND = new Flags(false,true);
-        private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
         
         private static Flags get(FileSystem fs, String absPath) {
             FileObject fo;
@@ -600,8 +603,6 @@ public final class CndFileUtils {
         public String toString() {
             if (this == NOT_FOUND) {
                 return "NOT_FOUND"; // NOI18N
-            } else if (this == NOT_FOUND_INDEXED_DIRECTORY) {
-                return "NOT_FOUND_INDEXED_DIRECTORY"; // NOI18N
             } else if (this == INDEXED_DIRECTORY) {
                 return "INDEXED_DIRECTORY"; // NOI18N
             } else if (this == DIRECTORY) {
