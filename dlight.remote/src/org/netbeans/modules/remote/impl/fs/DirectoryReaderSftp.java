@@ -70,7 +70,7 @@ class DirectoryReaderSftp implements DirectoryReader {
             this.remotePath = "/"; //NOI18N
         } else  {
             if (!remotePath.startsWith("/")) { //NOI18N
-                throw new IllegalArgumentException("path should be absolute: " + remotePath);
+                throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
             }
             this.remotePath = remotePath;
         }

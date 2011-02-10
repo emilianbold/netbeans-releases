@@ -99,7 +99,7 @@ public class DirectoryStorage {
                 }
                 if (version > VERSION) {
                     throw new FormatException("attributes file version " + version +  //NNOI18N
-                            " not supported: " + file.getAbsolutePath(), false); //NOI18N
+                            " not supported: " + file.getAbsolutePath(), true); //NOI18N
                 }
                 if (version < ODD_VERSION) {
                     throw new FormatException("Discarding old attributes file version " + version +  //NNOI18N
