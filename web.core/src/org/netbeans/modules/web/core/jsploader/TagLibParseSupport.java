@@ -51,8 +51,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.web.core.api.ErrorInfo;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
-import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
+import org.netbeans.modules.web.core.spi.ErrorAnnotation;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -60,8 +61,9 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
+import org.netbeans.modules.web.core.api.JspColoringData;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.spi.ErrorAnnotationFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -133,7 +135,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         //allow max 10 requests to run in parallel & have one RP for all taglib parsings
         if(requestProcessor == null)
             requestProcessor = new RequestProcessor("background jsp parsing", 10); // NOI18N
-        annotations = new ErrorAnnotation (jspFile);
+        annotations = ErrorAnnotationFactory.Query.create(jspFile);
     }
 
     /** Gets the tag library data relevant for the editor. */
@@ -377,7 +379,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                             //remove all errors
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
+                                    annotations.annotate(new ErrorInfo[] {});
                                 }
                             });
                             hasError = false;
@@ -385,17 +387,17 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                     } else {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                ArrayList<ErrorAnnotation.ErrorInfo> errors = new ArrayList<ErrorAnnotation.ErrorInfo>(locResult.getErrors().length);
+                                ArrayList<ErrorInfo> errors = new ArrayList<ErrorInfo>(locResult.getErrors().length);
                                 for (int i = 0; i < locResult.getErrors().length; i ++){
                                     JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
                                     if(checkError(err)) {
-                                        errors.add(new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()),
+                                        errors.add(new ErrorInfo(translate(err.getErrorMessage()),
                                                 err.getLine(),
                                                 err.getColumn(),
-                                                ErrorAnnotation.JSP_ERROR));
+                                                ErrorInfo.JSP_ERROR));
                                     }
                                 }
-                                annotations.annotate(errors.toArray(new ErrorAnnotation.ErrorInfo[]{}));
+                                annotations.annotate(errors.toArray(new ErrorInfo[]{}));
                                 
                                 // set icon with error.
                                 if (!hasError){

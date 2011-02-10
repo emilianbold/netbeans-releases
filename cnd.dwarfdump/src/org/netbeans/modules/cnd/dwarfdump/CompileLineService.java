@@ -124,7 +124,7 @@ public class CompileLineService {
                     break;
                 case 2:
                     compileLine = line;
-                    list.add(new SourceFile(compileDir, sourceFile, compileLine));
+                    list.add(createSourceFile(compileDir, sourceFile, compileLine));
                     break;
             }
             i++;
@@ -167,7 +167,7 @@ public class CompileLineService {
                             || LANG.DW_LANG_C89.toString().equals(lang)
                             || LANG.DW_LANG_C99.toString().equals(lang)
                             || LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        list.add(new SourceFile(cu));
+                        list.add(createSourceFile(cu));
                     } else {
                         if (TRACE_READ_EXCEPTIONS) {
                             System.out.println("Unknown language: " + lang);  // NOI18N
@@ -200,6 +200,14 @@ public class CompileLineService {
             }
         }
         return list;
+    }
+
+    public static SourceFile createSourceFile(String compileDir, String sourceFile, String compileLine) {
+        return new SourceFile(compileDir, sourceFile, compileLine);
+    }
+
+    public static SourceFile createSourceFile(CompilationUnit cu) throws IOException, Exception {
+        return new SourceFile(cu);
     }
 
     public static final class SourceFile {

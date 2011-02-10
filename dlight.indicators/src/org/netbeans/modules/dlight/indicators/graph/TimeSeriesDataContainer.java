@@ -211,8 +211,9 @@ public final class TimeSeriesDataContainer {
                     break;
                 case AVERAGE:
                     for (int i = 0; i < data.length; ++i) {
-                        this.data[i] = (count * this.data[i] + data[i]) / ++count;
+                        this.data[i] = (count * this.data[i] + data[i]) / (count + 1);
                     }
+                    count++;
                     break;
                 case MAX:
                     for (int i = 0; i < data.length; ++i) {

@@ -813,6 +813,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 194453 - Static C Structure initialization incorrectly reports as erroneous syntax
         performTest("bug194453.cpp", 9, 62, "bug194453.cpp", 7, 6);
     }
+
+    public void testBug188270() throws Exception {
+        // Bug 188270 - Unable to resolve identifier in nested structs (C)
+        performTest("bug188270.cpp", 13, 12, "bug188270.cpp", 2, 5);
+    }
+
+    public void testBug189039() throws Exception {
+        // Bug 189039 - Unresolved unnamed enum constant in unnamed struct
+        performTest("bug189039.cpp", 11, 62, "bug189039.cpp", 4, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

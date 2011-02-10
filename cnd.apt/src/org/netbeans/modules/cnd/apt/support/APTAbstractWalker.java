@@ -47,12 +47,14 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTIncludeResolverImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
+import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -64,6 +66,7 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public abstract class APTAbstractWalker extends APTWalker {
+    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
     
     private final APTPreprocHandler preprocHandler;
     private final CharSequence startPath;
@@ -99,6 +102,13 @@ public abstract class APTAbstractWalker extends APTWalker {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath);
             ResolvedPath resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             if (resolvedPath == null) {
+                if (EXTRA_TRACE_FAILED_INCLUDES) {
+                    APTUtils.LOG.log(Level.SEVERE, "failed to resolve {0}\nusing resolver:\n{1}\nand cache entry {2}", new Object[]{apt, resolver, cacheEntry}); // NOI18N
+                    if (resolver instanceof APTIncludeResolverImpl) {
+                        APTIncludeResolverImpl resolverImpl = (APTIncludeResolverImpl) resolver;
+                        resolverImpl.resolveFilePathTrace(((APTInclude)apt).getFileName(null), false, false);
+                    }
+                }
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
                         System.err.println("FAILED INCLUDE: from " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
@@ -178,7 +188,26 @@ public abstract class APTAbstractWalker extends APTWalker {
             }
         }
     }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
+        APTPragma pragma = (APTPragma) apt;
+        APTToken name = pragma.getName();
+        if (name != null && APTPragma.PRAGMA_ONCE.contentEquals(name.getTextID())) {
+            if (getMacroMap().isDefined(getFileOnceMacroName())) {
+                // if already included => stop
+                super.stop();
+            } else {
+                APTDefine fileOnce = APTUtils.createAPTDefineOnce(getFileOnceMacroName());
+                getMacroMap().define(getRootFile(), fileOnce, Kind.DEFINED);
+            }
+        }
+    }
     
+    protected String getFileOnceMacroName() {
+        return "\""+getRootFile().getPath().toString()+"\""; //NOI18N
+    }
+
     @Override
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;

@@ -78,6 +78,7 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
         navigatorPane.setRootVisible(false);
         navigatorPane.setDropTarget(false);
         navigatorPane.setDragSource(false);
+        navigatorPane.setUseSubstringInQuickSearch(true);
         add(navigatorPane, java.awt.BorderLayout.CENTER);
         explorerManager.setRootContext(content.getRoot());
         expandAll();

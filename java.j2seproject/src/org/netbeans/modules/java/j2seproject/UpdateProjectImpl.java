@@ -153,15 +153,15 @@ public class UpdateProjectImpl implements UpdateImplementation {
             Element  oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true);    //NOI18N
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
-                Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                XMLUtil.copyDocument (oldRoot, newRoot, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE);
-                Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-                Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                Element newRoot = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+                XMLUtil.copyDocument (oldRoot, newRoot, J2SEProject.PROJECT_CONFIGURATION_NAMESPACE);
+                Element sourceRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+                Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","src.dir");   //NOI18N
                 sourceRoots.appendChild(root);
                 newRoot.appendChild (sourceRoots);
-                Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                Element testRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","test.src.dir");   //NOI18N
                 testRoots.appendChild (root);
                 newRoot.appendChild (testRoots);
@@ -170,8 +170,8 @@ public class UpdateProjectImpl implements UpdateImplementation {
                 oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
-                    Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                    XMLUtil.copyDocument (oldRoot, newRoot, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE);
+                    Element newRoot = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+                    XMLUtil.copyDocument (oldRoot, newRoot, J2SEProject.PROJECT_CONFIGURATION_NAMESPACE);
                     cachedElement = newRoot;
                 }
             }
@@ -206,7 +206,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
     }
 
     private static void deleteMinAntVersion(final Element root) {
-        NodeList list = root.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,MINIMUM_ANT_VERSION_ELEMENT);
+        NodeList list = root.getElementsByTagNameNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,MINIMUM_ANT_VERSION_ELEMENT);
         if (list.getLength() == 1) {
             Node me = list.item(0);
             me.getParentNode().removeChild(me);

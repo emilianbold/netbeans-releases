@@ -53,6 +53,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes.Name;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
@@ -68,6 +71,7 @@ public class ShorterPaths extends Task {
     public static class Replacement {
         String name; 
         File dir;
+        File excluded;
         
         public void setName(String name) {
             this.name = name;
@@ -75,10 +79,13 @@ public class ShorterPaths extends Task {
         public void setDir(File dir) {
             this.dir = dir;
         }
+        public void setExcluded(File excluded) {
+            this.excluded = excluded;
+        }
 
         @Override
         public String toString() {
-            return dir + " => ${" + name + "}";
+            return dir + (excluded != null ? " - " + excluded : "") + " => ${" + name + "}";
         }
     }
     private List<Replacement> replacements = new LinkedList<Replacement>(); // List<Nestme>
@@ -226,7 +233,7 @@ public class ShorterPaths extends Task {
            path = file.getAbsolutePath();
            for (Replacement repl: replacements) {
                 String dirCan = repl.dir.getCanonicalPath();
-                if (path.startsWith(dirCan)) {
+                if (path.startsWith(dirCan) && (repl.excluded == null || !path.startsWith(repl.excluded.getCanonicalPath()))) {
                     if (nbLibBuff.length() > 0 ) {
                         nbLibBuff.append(":\\\n");
                     }  
@@ -280,6 +287,26 @@ public class ShorterPaths extends Task {
             }
             fos.close();
             fis.close();
+        }
+        if (file.getName().endsWith(".jar")) {
+            String cp;
+            try {
+                JarFile jf = new JarFile(file);
+                try {
+                    Manifest manifest = jf.getManifest();
+                    cp = manifest != null ? manifest.getMainAttributes().getValue(Name.CLASS_PATH) : null;
+                } finally {
+                    jf.close();
+                }
+            } catch (IOException x) {
+                log("Could not parse " + file + " for Class-Path", Project.MSG_WARN);
+                cp = null;
+            }
+            if (cp != null) {
+                for (String ext : cp.split(" ")) {
+                    copyExtraLib(new File(file.getParentFile(), ext));
+                }
+            }
         }
         return name;
     }

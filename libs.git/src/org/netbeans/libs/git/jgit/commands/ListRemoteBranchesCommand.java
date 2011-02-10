@@ -43,7 +43,6 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,9 +66,9 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class ListRemoteBranchesCommand extends GitCommand {
     private HashMap<String, GitBranch> remoteBranches;
-    private final URL remoteUrl;
+    private final String remoteUrl;
 
-    public ListRemoteBranchesCommand (Repository repository, URL remoteRepositoryUrl, ProgressMonitor monitor) {
+    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
         super(repository, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
@@ -81,7 +80,7 @@ public class ListRemoteBranchesCommand extends GitCommand {
         FetchConnection conn = null;
         Map<String, Ref> refs;
         try {
-            t = Transport.open(repository, new URIish(remoteUrl.toString()));
+            t = Transport.open(repository, new URIish(remoteUrl));
             conn = t.openFetch();
             refs = conn.getRefsMap();
         } catch (URISyntaxException ex) {

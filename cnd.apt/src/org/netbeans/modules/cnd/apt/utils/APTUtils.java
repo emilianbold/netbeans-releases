@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
@@ -67,11 +68,13 @@ import org.netbeans.modules.cnd.apt.impl.support.generated.APTExprParser;
 import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.util.CharSequences;
@@ -171,6 +174,50 @@ public class APTUtils {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
             _token.setText(new String(buf, start, count));
         }
+    }
+
+    private static final String DEFINE_PREFIX = "#define "; // NOI18N
+
+    public static APTDefine createAPTDefineOnce(String filePath) {
+        APTDefineNode defNode = null;
+        filePath = DEFINE_PREFIX + filePath;
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(filePath, APTLanguageSupport.UNKNOWN);
+        try {
+            APTToken next = (APTToken) stream.nextToken();
+            // use define node to initialize #define directive from stream
+            APTToken fileName = (APTToken) stream.nextToken();
+            defNode = new APTDefineNode(next, fileName);
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, "error on lexing macros {0}\n\t{1}", new Object[]{filePath, ex.getMessage()});
+        }
+        return defNode;
+    }
+
+    public static APTDefine createAPTDefine(String macroText) {
+        APTDefineNode defNode = null;
+        macroText = DEFINE_PREFIX + macroText;
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
+        try {
+            APTToken next = (APTToken) stream.nextToken();
+            // use define node to initialize #define directive from stream
+            defNode = new APTDefineNode(next);
+            boolean look4Equal = true;
+            do {
+                next = (APTToken) stream.nextToken();
+                if (look4Equal && (next.getType() == APTTokenTypes.ASSIGNEQUAL)) {
+                    // skip the first equal token, it's delimeter
+                    look4Equal = false;
+                    next = (APTToken) stream.nextToken();
+                }
+            } while (defNode.accept(null, next));
+            // special check for macros without values, we must set it to be 1
+            if (defNode.getBody().isEmpty() && look4Equal) {
+                defNode.accept(null, APTUtils.DEF_MACRO_BODY);
+            }
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, "error on lexing macros {0}\n\t{1}", new Object[]{macroText, ex.getMessage()});
+        }
+        return defNode;
     }
 
     public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
@@ -288,7 +335,7 @@ public class APTUtils {
     
     public static String macros2String(Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros) {
         StringBuilder retValue = new StringBuilder();
-        retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
+        retValue.append("MACROS (sorted ").append(macros.size()).append("):\n"); // NOI18N
         List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros.keySet());
         Collections.sort(macrosSorted, CharSequences.comparator());
         for (CharSequence key : macrosSorted) {
@@ -619,6 +666,7 @@ public class APTUtils {
     public static final APTToken EOF_TOKEN2 = new APTEOFToken2();
     
     public static final TokenStream EMPTY_STREAM = new TokenStream() {
+        @Override
         public Token nextToken() throws TokenStreamException {
             return EOF_TOKEN;
         }

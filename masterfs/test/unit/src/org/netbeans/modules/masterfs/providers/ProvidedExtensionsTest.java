@@ -61,6 +61,7 @@ import java.util.Set;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.ProvidedExtensionsAccessor;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
@@ -83,9 +84,10 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProvidedExtensionsTest extends NbTestCase {
     private ProvidedExtensionsImpl iListener;
+    private ProvidedExtensionsImpl iListenerNoCanWrite;
 
     static {
-        MockServices.setServices(AnnotationProviderImpl.class);
+        MockServices.setServices(AnnotationProviderImpl.class, AnnotationProviderImplNoCanWrite.class);
     }
 
     @Override
@@ -94,21 +96,26 @@ public class ProvidedExtensionsTest extends NbTestCase {
         AnnotationProvider provider = (AnnotationProvider)Lookups.metaInfServices(
                 Thread.currentThread().getContextClassLoader()).lookup(AnnotationProvider.class);
         assertNotNull(provider);
-        iListener = lookupImpl();
+        iListener = lookupImpl(true);
         assertNotNull(iListener);
+        iListenerNoCanWrite = lookupImpl(false);
+        assertNotNull(iListenerNoCanWrite);
         clearWorkDir();
     }
     
-    private ProvidedExtensionsImpl lookupImpl() {
+    private ProvidedExtensionsImpl lookupImpl(boolean providesCanWrite) {
         Lookup.Result result = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()).
                 lookup(new Lookup.Template(AnnotationProvider.class));
         Collection all = result.allInstances();
         for (Iterator it = all.iterator(); it.hasNext();) {
             AnnotationProvider ap = (AnnotationProvider) it.next();
             InterceptionListener iil = ap.getInterceptionListener();
-            if (iil instanceof ProvidedExtensions) {
+            if (iil instanceof ProvidedExtensionsImpl) {
+                ProvidedExtensionsImpl extension = (ProvidedExtensionsImpl)iil;
+                if(ProvidedExtensionsAccessor.IMPL.providesCanWrite(extension) == providesCanWrite) {
                 return (ProvidedExtensionsImpl)iil;
             }
+        }
         }
         return null;
     }
@@ -154,11 +161,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);
         assertNotNull(iListener);
+        assertNotNull(iListenerNoCanWrite);
         int nCalls = iListener.implsCanWriteCalls;
         FileObject toChange = fo.createData("cw");
         assertNotNull(toChange);
         boolean cw = toChange.canWrite();
         assertEquals(nCalls + 1, iListener.implsCanWriteCalls);
+        assertEquals(0, iListenerNoCanWrite.implsCanWriteCalls);
     }
     
     public void testImplsMove() throws IOException {
@@ -570,8 +579,15 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
 
     
+    public static class AnnotationProviderImplNoCanWrite extends InterceptionListenerTest.AnnotationProviderImpl  {
+        private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl(this, false);
+        public InterceptionListener getInterceptionListener() {
+            return impl;
+        }
+    }
+    
     public static class AnnotationProviderImpl extends InterceptionListenerTest.AnnotationProviderImpl  {
-        private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl(this);
+        private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl(this, true);
         public InterceptionListener getInterceptionListener() {
             return impl;
         }
@@ -608,13 +624,14 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static int cnt;
         
         public static FileLock lock;
-        private final AnnotationProviderImpl provider;
+        private final AnnotationProvider provider;
 
         public ProvidedExtensionsImpl() {
-            this(null);
+            this(null, false);
         }
 
-        public ProvidedExtensionsImpl(AnnotationProviderImpl p) {
+        public ProvidedExtensionsImpl(AnnotationProvider p, boolean provideCanWrite) {
+            super(provideCanWrite);
             this.provider = p;
             cnt++;
         }

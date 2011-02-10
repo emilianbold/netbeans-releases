@@ -1607,6 +1607,12 @@ public class Reformatter implements ReformatTask {
                 accept(LPAREN);
                 spaces(cs.spaceWithinTryParens() ? 1 : 0, true);
                 wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, SEMICOLON, res);
+                int index = tokens.index();
+                int c = col;
+                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                if (accept(SEMICOLON) == null) {
+                    rollback(index, c, d);
+                }
                 spaces(cs.spaceWithinTryParens() ? 1 : 0);
                 accept(RPAREN);
                 indent = old;

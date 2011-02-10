@@ -58,6 +58,7 @@ import javax.lang.model.type.NullType;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -73,7 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.core.syntax.deprecated.HtmlSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
+import org.netbeans.modules.web.core.api.JspColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
@@ -92,6 +93,7 @@ import org.netbeans.spi.lexer.MutableTextInput;
  * @author Marek.Fukala@Sun.COM
  * @version 1.5
  */
+//@MimeRegistration(mimeType="text/x-jsp", service=EditorKit.class, position=1)
 public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
 
     private static final WeakHashMap<Document, String /* source level id */> SOURCE_LEVEL_MAP = new WeakHashMap<Document, String>();
@@ -106,6 +108,10 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     private final String mimeType;
 
     private static final String NULL_SOURCE_LEVEL = "NullSourceLevel"; //NOI18N
+
+    public JspKit() {
+        this(JSP_MIME_TYPE);
+    }
 
     // called from the XML layer
     private static JspKit createKitForJsp() {

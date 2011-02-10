@@ -58,11 +58,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -110,7 +108,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             return null;
         }
         this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
-        this.typeUtilities = ELTypeUtilities.create(refactoring.getContext().lookup(ClasspathInfo.class));
+        this.typeUtilities = ELTypeUtilities.create(info.getFileObject(), refactoring.getContext().lookup(ClasspathInfo.class));
         Element element = resolveElement(handle);
         if (element == null) {
             LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
@@ -174,7 +172,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         for (ELElement each : getMatchingElements(result)) {
             List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(),
                     targetType,
-                    each.getParserResult().getFileObject());
+                    each.getSnapshot().getSource().getFileObject());
             addElements(each, matchingNodes, refactoringElementsBag);
             handleVariableReferences(each, targetType, refactoringElementsBag);
         }
@@ -183,31 +181,33 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     }
 
     private void handleVariableReferences(ELElement elElement, Element targetType, RefactoringElementsBag refactoringElementsBag) {
-        final List<Node> matchingNodes = new ArrayList<Node>();
-        elElement.getNode().accept(new NodeVisitor() {
+        //fix by using ELVariableResolver.getVariables(...)
 
-            @Override
-            public void visit(Node node) throws ELException {
-                if (node instanceof AstPropertySuffix || node instanceof AstMethodSuffix) {
-                    matchingNodes.add(node);
-                }
-            }
-        });
-
-        for (ELVariableResolver resolver : getResolvers()) {
-            for (Node n : matchingNodes) {
-                String expression = resolver.getReferredExpression(elElement.getParserResult().getSnapshot(),
-                        elElement.getOriginalOffset().getStart() + n.startOffset());
-                if (expression != null) {
-                    Node expressionNode = ELParser.parse(expression);
-                    if (refersToType(expressionNode, 
-                            targetType.getEnclosingElement().asType(),
-                            elElement.getParserResult().getFileObject())) {
-                        addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
-                    }
-                }
-            }
-        }
+//        final List<Node> matchingNodes = new ArrayList<Node>();
+//        elElement.getNode().accept(new NodeVisitor() {
+//
+//            @Override
+//            public void visit(Node node) throws ELException {
+//                if (node instanceof AstPropertySuffix || node instanceof AstMethodSuffix) {
+//                    matchingNodes.add(node);
+//                }
+//            }
+//        });
+//
+//        for (ELVariableResolver resolver : getResolvers()) {
+//            for (Node n : matchingNodes) {
+//                String expression = resolver.getReferredExpression(elElement.getSnapshot(),
+//                        elElement.getOriginalOffset().getStart() + n.startOffset());
+//                if (expression != null) {
+//                    Node expressionNode = ELParser.parse(expression);
+//                    if (refersToType(expressionNode,
+//                            targetType.getEnclosingElement().asType(),
+//                            elElement.getSnapshot().getSource().getFileObject())) {
+//                        addElements(elElement, Collections.singletonList(n), refactoringElementsBag);
+//                    }
+//                }
+//            }
+//        }
     }
 
     private Collection<? extends ELVariableResolver> getResolvers() {
@@ -217,7 +217,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         for (Node property : matchingNodes) {
             WhereUsedQueryElement wuqe =
-                    new WhereUsedQueryElement(elem.getParserResult().getFileObject(), property.getImage(), elem, property, getParserResult(elem.getParserResult().getFileObject()));
+                    new WhereUsedQueryElement(elem.getSnapshot().getSource().getFileObject(), property.getImage(), elem, property, getParserResult(elem.getSnapshot().getSource().getFileObject()));
             refactoringElementsBag.add(refactoring, wuqe);
         }
     }

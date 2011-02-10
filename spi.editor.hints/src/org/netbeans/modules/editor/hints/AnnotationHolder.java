@@ -245,10 +245,17 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
     final class NbDocumentAttacher implements Attacher {
         public void attachAnnotation(Position lineStart, ParseErrorAnnotation a) throws BadLocationException {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("addAnnotation: pos=" + lineStart.getOffset() + ", a="+ a + ", doc=" +
+                        System.identityHashCode(doc) + "\n");
+            }
             NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, a);
         }
         public void detachAnnotation(Annotation a) {
             if (doc != null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("removeAnnotation: a=" + a + ", doc=" + System.identityHashCode(doc) + "\n");
+                }
                 NbDocument.removeAnnotation((StyledDocument) doc, a);
             }
         }
@@ -259,6 +266,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         for (ParseErrorAnnotation a : line2Annotations.values()) {
             detachAnnotation(a);
         }
+        line2Annotations.clear();
 
         file2Holder.remove(od);
         doc.removeDocumentListener(this);
@@ -644,8 +652,9 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         if (errorDescriptions == null) {
             //nothing to do, remove old:
             Annotation ann = line2Annotations.remove(line);
-
-            detachAnnotation(ann);
+            if (ann != null) {
+                detachAnnotation(ann);
+            }
             return;
         }
 

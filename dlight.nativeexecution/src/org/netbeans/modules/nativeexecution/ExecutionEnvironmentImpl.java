@@ -42,21 +42,26 @@
 
 package org.netbeans.modules.nativeexecution;
 import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  * The configuration of the environment for a {@link NativeProcess} execution.
- * ExecutionEnvirenment is about "<b>where</b>" to start a native proccess.
+ * ExecutionEnvirenment is about "<b>where</b>" to start a native process.
  */
-final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
+final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Serializable {
 
     private final String user;
     private final String host;
     private final int sshPort;
     private final String toString;
+
+    static final long serialVersionUID = 2098997126628923682L;
 
     /**
      * Creates a new instance of <tt>ExecutionEnvironment</tt> for local
@@ -124,10 +129,12 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      * @return the same host name/ip string that was used for this
      * <tt>ExecutionEnvironment</tt> creation.
      */
+    @Override
     public String getHost() {
         return host;
     }
 
+    @Override
     public String getHostAddress() {
         return getHost();
     }
@@ -136,6 +143,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      * Gets a string representation of the environment to show in the UI
      * @return a string representation of the environment for showing in UI
      */
+    @Override
     public String getDisplayName() {
         if (isLocal()) {
             return HostInfoUtils.LOCALHOST;
@@ -163,6 +171,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      * Returns username that is used for ssh connection.
      * @return username for ssh connection establishment.
      */
+    @Override
     public String getUser() {
         return user;
     }
@@ -172,6 +181,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      * @return port that is used for ssh connection in this environment.
      * <tt>0</tt> means that no ssh connection is required for this environment.
      */
+    @Override
     public int getSSHPort() {
         return sshPort;
     }
@@ -186,6 +196,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      * @see #isLocal()
      *
      */
+    @Override
     public boolean isRemote() {
         return !isLocal();
     }
@@ -197,6 +208,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      * @return true if no ssh connection is required for this environment.
      * @see #isRemote()
      */
+    @Override
     public boolean isLocal() {
         return sshPort == 0;
     }
@@ -241,6 +253,24 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
         return hash;
     }
 
+    @Override
     public void prepareForConnection() throws IOException, CancellationException {
+    }
+    
+    /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
+        return new SerializedForm(ExecutionEnvironmentFactory.toUniqueID(this));
+    }
+    
+    private static class SerializedForm implements Serializable {
+        
+        private final String id;
+
+        public SerializedForm(String id) {
+            this.id = id;
+        }
+        
+        /* Java serialization*/ Object readResolve() throws ObjectStreamException {
+            return ExecutionEnvironmentFactory.fromUniqueID(id);
+        }
     }
 }

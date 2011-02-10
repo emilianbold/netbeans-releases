@@ -15,16 +15,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -85,6 +89,7 @@ public class SvnConfigFilesTest extends NbTestCase {
     String svnUserPath = "";
     String svnNbPath = "";
     String svnGoldenPath = "";
+    private ProxySelector defaultPS;
 
     public SvnConfigFilesTest(String testName) {
         super(testName);
@@ -92,10 +97,16 @@ public class SvnConfigFilesTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        
+        if (defaultPS == null) {
+            defaultPS = ProxySelector.getDefault();
+        }
+        
     }
-
+    
     protected void tearDown() throws Exception {
         super.tearDown();
+        ProxySelector.setDefault(defaultPS);
         System.setProperty("netbeans.t9y.svn.user.config.path", "");
         System.setProperty("netbeans.t9y.svn.nb.config.path", "");
     }
@@ -162,7 +173,7 @@ public class SvnConfigFilesTest extends NbTestCase {
     public void testProxy() throws IOException {
         String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", "", "my.proxy", "my.proxy", "my.proxy", null, null};       
         //for (int i = 1; i < proxy.length + 1; i++) {
-        for (int i = 1; i < proxy.length + 1; i++) {
+        for (int i = 1; i < proxy.length + 1; i++) {           
             //changeSvnConfigLocation("svn" + i, "golden" + i, "my.proxy", "8080");
             changeSvnConfigLocation("svn" + i, "golden" + i, proxy[i-1], "8080");           
             //Compare and verify
@@ -213,18 +224,7 @@ public class SvnConfigFilesTest extends NbTestCase {
         }
         //tmp.deleteOnExit();
         System.setProperty("netbeans.t9y.svn.nb.config.path", svnNbPath);
-
-        //Proxy        
-        if(proxyHost == null) {
-            proxyPreferences.putInt("proxyType", 1);
-        } else {
-            setProxy(proxyHost, proxyPort);
-            if (proxyHost.length() == 0 || proxyPort.length() == 0) {
-                proxyPreferences.putInt("proxyType", 0);
-            } else {
-                proxyPreferences.putInt("proxyType", 2);
-            }    
-        }
+        setupProxy(proxyHost, proxyPort);
                 
         SvnConfigFiles scf = SvnConfigFiles.getInstance();
         try {
@@ -232,6 +232,26 @@ public class SvnConfigFilesTest extends NbTestCase {
         } catch (MalformedURLException me) {
         }
 
+    }
+
+    private void setupProxy(final String proxyHost, final String proxyPort) {
+        ProxySelector ps = new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                if (uri == null) {
+                    return Collections.singletonList(Proxy.NO_PROXY);
+                }
+                if(proxyHost == null) {
+                    return Collections.singletonList(Proxy.NO_PROXY);
+                }
+                return Collections.singletonList(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort))));
+            }
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        ProxySelector.setDefault(ps);                
     }
 
     private Section getSection(File serversFile) throws FileNotFoundException, IOException {
@@ -243,19 +263,6 @@ public class SvnConfigFilesTest extends NbTestCase {
             is.close();
         }
         return ini.get("global");
-    }
-
-    private void setProxy(String proxyHost, String proxyPort) {
-        System.setProperty("netbeans.system_http_proxy", proxyHost + ":" + proxyPort);
-        System.setProperty("netbeans.system_socks_proxy", proxyHost + ":" + proxyPort);
-        System.setProperty("netbeans.system_http_non_proxy_hosts", "*.other.org");
-        System.setProperty("http.nonProxyHosts", "*.netbeans.org");
-        selector = ProxySelector.getDefault();
-        proxyPreferences = NbPreferences.root().node("/org/netbeans/core");
-        proxyPreferences.put("proxyHttpHost", proxyHost);
-        proxyPreferences.put("proxyHttpPort", proxyPort);
-        proxyPreferences.put("proxySocksHost", proxyHost);
-        proxyPreferences.put("proxySocksPort", proxyPort);
     }
 
     private String getContent(String fileName) {

@@ -102,6 +102,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -143,21 +144,17 @@ import org.w3c.dom.Text;
 /**
  * Represents one plain Make project.
  */
-@AntBasedProjectRegistration(
-    iconResource=MakeConfigurationDescriptor.ICON,
-    type=MakeProjectType.TYPE,
-    sharedNamespace=MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateNamespace=MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE
-)
+@AntBasedProjectRegistration(iconResource = MakeConfigurationDescriptor.ICON,
+type = MakeProjectType.TYPE,
+sharedNamespace = MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+privateNamespace = MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE)
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
     public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
     public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
     public static final String REMOTE_FILESYSTEM_BASE_DIR = "remote-filesystem-base-dir"; // NOI18N
-
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
@@ -177,7 +174,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private String sourceEncoding = null;
     private boolean isOpenHookDone = false;
     private AtomicBoolean isDeleted = new AtomicBoolean(false);
-
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
@@ -219,7 +215,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             if (mode != null) {
                 remoteMode = mode;
             }
-        } else if(remoteModeNodeList.getLength() > 0) {
+        } else if (remoteModeNodeList.getLength() > 0) {
             CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
 
@@ -230,16 +226,16 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             String hostID = remoteFSHostNodeList.item(0).getNodeValue();
             // XXX:fullRemote: separate user from host!
             remoteFileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
-        } else if(remoteFSHostNodeList.getLength() > 0) {
+        } else if (remoteFSHostNodeList.getLength() > 0) {
             CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
 
         NodeList remoteFSMountPoint = data.getElementsByTagName(REMOTE_FILESYSTEM_BASE_DIR);
         if (remoteFSMountPoint.getLength() > 0) {
             remoteBaseDir = remoteFSMountPoint.item(0).getTextContent();
-            CndUtils.assertTrueInConsole(remoteFSMountPoint.getLength() == 1, 
+            CndUtils.assertTrueInConsole(remoteFSMountPoint.getLength() == 1,
                     "Wrong project.xml structure: too many remote base dirs " + remoteFSMountPoint); //NOI18N
-        } else {            
+        } else {
             remoteBaseDir = null;
         }
 
@@ -276,7 +272,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     public ExecutionEnvironment getRemoteFileSystemHost() {
         return remoteFileSystemHost;
     }
-    
+
     private FileSystem getSourceFileSystem() {
         if (remoteFileSystemHost == null || remoteFileSystemHost.isLocal()) {
             return CndFileUtils.getLocalFileSystem();
@@ -323,8 +319,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
+        Info info = new Info();
         Lookup lkp = Lookups.fixed(new Object[]{
-                    new Info(),
+                    info,
                     aux,
                     helper.createCacheDirectoryProvider(),
                     spp,
@@ -338,13 +335,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     sources,
                     helper,
                     projectDescriptorProvider,
-                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
+                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
                     new NativeProjectProvider(this, projectDescriptorProvider),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
                     kind,
-                    new MakeProjectEncodingQueryImpl(this), 
+                    new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
@@ -506,7 +503,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     private boolean addNewExtensionDialog(Set<String> usedExtension, String type) {
-        if (UNIT_TEST_MODE){
+        if (UNIT_TEST_MODE) {
             return true;
         }
         String message = getString("ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N
@@ -606,7 +603,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
-
         private final ConfigurationDescriptorProvider configurationProvider;
 
         public RecommendedTemplatesImpl(ConfigurationDescriptorProvider configurationProvider) {
@@ -652,7 +648,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     public String getSourceEncoding() {
         if (sourceEncoding == null) {
             // Read configurations.xml. That's where encoding is stored for project version < 50)
-            if (!projectDescriptorProvider.gotDescriptor()){
+            if (!projectDescriptorProvider.gotDescriptor()) {
                 return FileEncodingQuery.getDefaultEncoding().name();
             }
         }
@@ -668,20 +664,77 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     /**
      * @return active configuration type (doesn't force reading configuration metadata)
-     * If metadata already read, get typw from the active configuration ((it may have changed)
-     * If not read, get type from project.xml file. This works only for >= V77
-     * If < V77 return -1.
+     * If metadata already read, get type from the active configuration (it may have changed)
+     * If not read, try private.xml (V >= V77)
+     * If not found, try project.xml (V >= V78)
      */
-    public int getActiveConfigurationType() {
+    private int getActiveConfigurationType() {
+        int type = -1;
+
         // If configurations already read, get it from active configuration (it may have changed)
         MakeConfiguration makeConfiguration = getActiveConfiguration();
         if (makeConfiguration != null) {
             return makeConfiguration.getConfigurationType().getValue();
         }
-        // Get it from xml (version >= V77)
-        Element data = helper.getPrimaryConfigurationData(true);
 
+        // Get it from private.xml (version >= V77)
+        type = getActiveConfigurationTypeFromPrivateXML();
+        if (type >= 0) {
+            return type;
+        }
+
+        // Get it from project.xml (version >= V77)
+        type = getActiveConfigurationTypeFromProjectXML();
+        if (type >= 0) {
+            return type;
+        }
+
+        return type;
+    }
+
+    /**
+     * @return active configuration type (doesn't force reading configuration metadata) (V >= V78). Returns -1 if not found.
+     */
+    private int getActiveConfigurationTypeFromProjectXML() {
+        Element data = helper.getPrimaryConfigurationData(true);
+        data = helper.getPrimaryConfigurationData(true);
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            Node typeNode = nodeList.item(0).getFirstChild();
+            if (typeNode != null) {
+                String type = typeNode.getNodeValue();
+                try {
+                    return new Integer(type).intValue();
+                } catch (NumberFormatException nfe) {
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @return active configuration type from private.xml (doesn't force reading configuration metadata) (V >= V77). Returns -1 if not found.
+     */
+    private int getActiveConfigurationTypeFromPrivateXML() {
+        Element data = helper.getPrimaryConfigurationData(false);
         NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                return new Integer(node.getTextContent()).intValue();
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @return active configuration index (doesn't force reading configuration metadata) from private.xml, if exists. Returns -1 if not found.
+     */
+    public int getActiveConfigurationIndexFromPrivateXML() {
+        // Get it from xml (version >= V77)
+        Element data = helper.getPrimaryConfigurationData(false);
+
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT);
         if (nodeList != null && nodeList.getLength() > 0) {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
@@ -692,6 +745,24 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         return -1;
     }
 
+//    private void dumpNode(Node node, int indent) {
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("-----------------------------");
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("nodeName    " + node.getNodeName());
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("nodeValue   " + node.getNodeValue());
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("localName   " + node.getLocalName());
+//        System.out.print("            ".subSequence(0, indent));
+//        System.out.println("prefix      " + node.getPrefix());
+////        System.out.print("            ".subSequence(0, indent));
+////        System.out.println("textContent " + node.getTextContent());
+//        NodeList nodeList = node.getChildNodes();
+//        for (int i = 0; i < nodeList.getLength(); i++) {
+//            dumpNode(nodeList.item(i), indent+2);
+//        }
+//    }
     /** NPE-safe method for getting active configuration */
     public MakeConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.gotDescriptor()) {
@@ -785,24 +856,32 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public void removeChangeListener(ChangeListener listener) {
         }
     }
-
     /**
      * if specified => project name will have information about directory in project view
      */
     private final static String PROJECT_NAME_WITH_HIDDEN_PATHS = System.getProperty("cnd.project.name.hidden.paths"); //NOI18N
     private final static int PROJECT_NAME_NUM_SHOWN_FOLDERS = Integer.getInteger("cnd.project.name.folders.num", 1); //NOI18N
 
-    interface InfoInterface extends ProjectInformation {
-        public void firePropertyChange(String prop);
-        public void setName(String name);
+    interface InfoInterface extends ProjectInformation, PropertyChangeListener {
+
+        void firePropertyChange(String prop);
+
+        void setName(String name);
     }
-    
+
     private final class Info implements InfoInterface {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private String name;
 
         Info() {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
+                firePropertyChange(ProjectInformation.PROP_ICON);
+            }
         }
 
         @Override
@@ -902,7 +981,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                         int nextSep = prjDirDispName.indexOf('\\', sep);
                         nextSep = (nextSep == -1) ? prjDirDispName.indexOf('/', sep) : nextSep;
                         if (nextSep > 0) {
-                            sep = nextSep+1;
+                            sep = nextSep + 1;
                         } else {
                             // name has less elements than asked
                             sep = prjDirDispName.length();
@@ -930,21 +1009,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return aName;
         }
 
+        private int getProjectType() {
+            int aProjectType = getActiveConfigurationType();
+            if (aProjectType != -1) {
+                return aProjectType;
+            }
+            return -1;
+        }
+
         @Override
         public Icon getIcon() {
-            Icon icon = null;
-            icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
-            MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
-            if (activeConfiguration != null) {
-                int type = activeConfiguration.getConfigurationType().getValue();
-                switch (type) {
-                    case MakeConfiguration.TYPE_MAKEFILE:
-                    {
+            int type = getProjectType();
+            Icon icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
+            switch (type) {
+                case MakeConfiguration.TYPE_MAKEFILE: {
+                    MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
+                    if (activeConfiguration != null) {
                         String outputValue = activeConfiguration.getOutputValue();
                         if (outputValue != null) {
                             if (outputValue.endsWith(".so") || // NOI18N
-                                outputValue.endsWith(".dll") || // NOI18N
-                                outputValue.endsWith(".dylib")) { // NOI18N
+                                    outputValue.endsWith(".dll") || // NOI18N
+                                    outputValue.endsWith(".dylib")) { // NOI18N
                                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-dynamic.png", false); // NOI18N
                             } else if (outputValue.endsWith(".a")) { // NOI18N
                                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-static.png", false); // NOI18N
@@ -954,27 +1039,27 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                         } else {
                             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
                         }
-                        break;
                     }
-                    case MakeConfiguration.TYPE_APPLICATION:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_STATIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_APPLICATION:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
-                        break;
-                    case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
-                        break;
+                    break;
                 }
+                case MakeConfiguration.TYPE_APPLICATION:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_STATIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_QT_APPLICATION:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
+                    break;
+                case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
+                    break;
             }
             return icon;
         }
@@ -1028,7 +1113,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         onProjectOpened();
     }
 
-    private synchronized void onProjectOpened(){
+    private synchronized void onProjectOpened() {
         if (!isOpenHookDone) {
             checkNeededExtensions();
             if (openedTasks != null) {
@@ -1046,12 +1131,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
-    void setDeleted(){
+    void setDeleted() {
         LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         isDeleted.set(true);
     }
 
-    private synchronized void onProjectClosed(){
+    private synchronized void onProjectClosed() {
         LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         save();
         if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
@@ -1065,7 +1150,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         MakeProjectFileProviderFactory.removeSearchBase(this);
     }
 
-    public synchronized void save(){
+    public synchronized void save() {
         if (!isDeleted.get()) {
             if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
                 projectDescriptorProvider.getConfigurationDescriptor().save();
@@ -1073,7 +1158,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
-    public synchronized void markDeleted(){
+    public synchronized void markDeleted() {
         isDeleted.compareAndSet(false, true);
     }
 
@@ -1138,7 +1223,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
         private void addFolder(Set<DataObject> res, FileObject fo) {
             if (fo != null && fo.isFolder() && fo.isValid()) {
-                for(FileObject f : fo.getChildren()) {
+                for (FileObject f : fo.getChildren()) {
                     DataObject dataObject;
                     try {
                         dataObject = DataObject.find(f);
@@ -1168,7 +1253,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     private class RemoteProjectImpl implements RemoteProject {
-        
+
         @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
@@ -1208,7 +1293,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public String getBaseDir() {
             return (remoteBaseDir == null) ? helper.getProjectDirectory().getPath() : remoteBaseDir;
         }
-        
+
         @Override
         public String resolveRelativeRemotePath(String path) {
             if (!CndPathUtilitities.isPathAbsolute(path)) {
@@ -1217,14 +1302,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     if (!resolved.endsWith("/")) { //NOI18N
                         resolved += "/"; //NOI18N
                     }
-                    resolved = resolved+path;
+                    resolved = resolved + path;
                     return CndFileUtils.normalizeAbsolutePath(getSourceFileSystem(), resolved);
                 }
             }
             return path;
         }
     }
-    
+
     private class ToolchainProjectImpl implements ToolchainProject {
 
         @Override
@@ -1243,7 +1328,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         private final MakeSources sources;
         private List<PathResourceImplementation> resources = null;
         private long eventId = 0;
-        private ClassPath [] classpath = null;
+        private ClassPath[] classpath = null;
 
         public MutableCP(MakeSources sources) {
             this.sources = sources;
@@ -1261,8 +1346,8 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             }
 
             List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
-            SourceGroup [] groups = sources.getSourceGroups("generic"); // NOI18N
-            for(SourceGroup g : groups) {
+            SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
+            for (SourceGroup g : groups) {
                 try {
                     list.add(new PathResourceImpl(ClassPathSupport.createResource(g.getRootFolder().getURL())));
                 } catch (FileStateInvalidException ex) {
@@ -1298,15 +1383,16 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             pcs.firePropertyChange(PROP_RESOURCES, null, null);
         }
 
-        public synchronized ClassPath [] getClassPath() {
+        public synchronized ClassPath[] getClassPath() {
             if (classpath == null) {
-                classpath = new ClassPath [] { ClassPathFactory.createClassPath(this) };
+                classpath = new ClassPath[]{ClassPathFactory.createClassPath(this)};
             }
             return classpath;
         }
     } // End of ClassPathImplementation class
 
     private static final class PathResourceImpl implements FilteringPathResourceImplementation, PropertyChangeListener {
+
         private final PathResourceImplementation delegate;
 
         public PathResourceImpl(PathResourceImplementation delegate) {
@@ -1328,7 +1414,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public ClassPathImplementation getContent() {
             return delegate.getContent();
         }
-
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         @Override
@@ -1348,6 +1433,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     private static final class CPPImpl implements ClassPathProvider {
+
         private final MakeSources sources;
 
         public CPPImpl(MakeSources sources) {
@@ -1370,7 +1456,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
             return null;
         }
-
     }
 
     private final class IndexerOptionsListener implements PropertyChangeListener {
@@ -1381,6 +1466,5 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
             }
         }
-
     }
 }

@@ -59,10 +59,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -81,8 +81,28 @@ import org.openide.util.Utilities;
  * @author Vladimir Voskresensky
  */
 public final class CndFileUtils {
+    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
+    private static final FileSystem fileFileSystem;
+    static {
+        FileSystem afileFileSystem = null;
+        File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); //NOI18N
+        tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+        FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!
+        if (tmpDirFo != null) {
+            try {
+                afileFileSystem = tmpDirFo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (afileFileSystem == null) {
+            afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            Exceptions.printStackTrace(new Exception("Cannot get local file system")); //NOI18N
+        }
+        fileFileSystem = afileFileSystem;
+    }
 
     private CndFileUtils() {
     }
@@ -113,6 +133,9 @@ public final class CndFileUtils {
     public static void clearFileExistenceCache() {
         try {
             maRefLock.lock();
+            for(Reference<ConcurrentMap<String, Flags>> mapRef : maps.values()) {
+                mapRef.clear();
+            }
             maps.clear();
         } finally {
             maRefLock.unlock();
@@ -311,6 +334,17 @@ public final class CndFileUtils {
 
     public static boolean isExistingDirectory(FileSystem fs, String filePath) {
         Flags flags = getFlags(fs, filePath, false);
+        if (EXTRA_TRACE_FAILED_INCLUDES) {
+            if (!(flags.exist && flags.directory)) {
+                if (filePath.contains("pkg-config-0.25")) {
+                    System.err.println("CndFileUtils.isExistingDirectory("+filePath+")="+flags);
+                    ConcurrentMap<String, Flags> filesMap = getFilesMap(fs);
+                    for(Map.Entry<String, Flags> entry : filesMap.entrySet()) {
+                        System.err.println("\t"+entry.getKey()+"->"+entry.getValue());
+                    }
+                }
+            }
+        }
         return flags.exist && flags.directory;
     }
 
@@ -389,6 +423,11 @@ public final class CndFileUtils {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
                 for (int i = 0; i < listFiles.length; i++) {
                     CndFileSystemProvider.FileInfo curFile = listFiles[i];
+                    if (EXTRA_TRACE_FAILED_INCLUDES) {
+                        if (path.contains("pkg-config-0.25")) {
+                            System.err.println("index: "+curFile.absolutePath);
+                        }
+                    }
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
                     if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
@@ -404,6 +443,11 @@ public final class CndFileUtils {
             FileObject file = fs.findResource(path);
             if (file != null && file.isFolder() && file.canRead()) {
                 for (FileObject child : file.getChildren()) {
+                    if (EXTRA_TRACE_FAILED_INCLUDES) {
+                        if (path.contains("pkg-config-0.25")) {
+                            System.err.println("index: "+child.getPath());
+                        }
+                    }
                     String absPath = child.getPath();
                     if (child.isFolder()) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
@@ -437,7 +481,14 @@ public final class CndFileUtils {
 //    private static int hits = 0;
 
     private static ConcurrentMap<String, Flags> getFilesMap(FileSystem fs) {
-        ConcurrentMap<String, Flags> map;        
+        ConcurrentMap<String, Flags> map;
+        L1Cache aCache = l1Cache;
+        if (aCache != null) {
+            map = aCache.get(fs);
+            if (map != null) {
+                return map;
+            }
+        }
         try {
             maRefLock.lock();
             Reference<ConcurrentMap<String, Flags>> mapRef = maps.get(fs);
@@ -445,6 +496,7 @@ public final class CndFileUtils {
                 map = new ConcurrentHashMap<String, Flags>();
                 mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
                 maps.put(fs, mapRef);
+                l1Cache = new L1Cache(fs, mapRef);
             }
         } finally {
             maRefLock.unlock();
@@ -452,34 +504,44 @@ public final class CndFileUtils {
         return map;
     }
 
-    private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
-       CndFileSystemProvider.FileInfo[] info = CndFileSystemProvider.getChildInfo(file.getAbsolutePath());
-       if (info == null) {
-            File[] children = file.listFiles();
-            info = new CndFileSystemProvider.FileInfo[(children == null) ? 0 : children.length];
-            for (int i = 0; i < children.length; i++) {
-                info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
+    private static L1Cache l1Cache;
+    private final static class L1Cache {
+        private FileSystem fs;
+        private Reference<ConcurrentMap<String, Flags>> mapRef;
+        private L1Cache(FileSystem fs, Reference<ConcurrentMap<String, Flags>> mapRef) {
+            this.fs = fs;
+            this.mapRef = mapRef;
+        }
+        private ConcurrentMap<String, Flags> get(FileSystem fs) {
+            if (this.fs == fs) {
+                return mapRef.get();
             }
-       }
-       return info;
+            return null;
+        }
     }
-    
-    public static synchronized FileSystem getLocalFileSystem() {
-        if (fileFileSystem == null) {
-            File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
-            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
-            FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
-            if (tmpDirFo != null) {
-                try {
-                    fileFileSystem = tmpDirFo.getFileSystem();
-                } catch (FileStateInvalidException ex) {
-                    // it's no use to log it here
+
+    private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
+        CndFileSystemProvider.FileInfo[] info = CndFileSystemProvider.getChildInfo(file.getAbsolutePath());
+        if (info == null) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                info = new CndFileSystemProvider.FileInfo[children.length];
+                for (int i = 0; i < children.length; i++) {
+                    info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
+                    if (EXTRA_TRACE_FAILED_INCLUDES) {
+                        if (file.getAbsolutePath().contains("pkg-config-0.25")) {
+                            System.err.println("listFiles: "+children[i].getAbsolutePath());
+                        }
+                    }
                 }
-            }
-            if (fileFileSystem == null) {
-                fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
+            } else {
+                info = new CndFileSystemProvider.FileInfo[0];
             }
         }
+        return info;
+    }
+    
+    public static FileSystem getLocalFileSystem() {
         return fileFileSystem;
     }
     
@@ -514,8 +576,7 @@ public final class CndFileUtils {
     }
     
     private static final Lock maRefLock = new ReentrantLock();
-    private static FileSystem fileFileSystem;
-    
+
     private static final Map<FileSystem, Reference<ConcurrentMap<String, Flags>>> maps = 
             new WeakHashMap<FileSystem, Reference<ConcurrentMap<String, Flags>>>();
 

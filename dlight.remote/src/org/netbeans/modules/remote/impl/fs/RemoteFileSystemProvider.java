@@ -74,6 +74,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public boolean isAbsolute(String path) {
+        return path.startsWith("/"); //NOI18N
+    }
+    
+    @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObjectBase) {
             ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
@@ -163,7 +168,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public FileObject urlToFileObject(String path) {
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
-            // path is like "rfs:,hostname:22/tmp/filename.ext"
+            // path is like "rfs:hostname:22/tmp/filename.ext"
             int port = 0;
             StringBuilder hostName = new StringBuilder();
             CharSequence remotePath = "";
@@ -214,7 +219,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
     
     private String getUrlPrefix(ExecutionEnvironment env) {
-        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort();
+        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getUser() + '@' + env.getHost() + ':' + env.getSSHPort();
     }
 
     @Override

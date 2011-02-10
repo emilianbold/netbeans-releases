@@ -87,8 +87,6 @@ final class ViewBuilder {
 
     private int lineIndex;
 
-    private int lineStartOffset;
-
     private int lineEndOffset;
     
     private int paragraphViewEndOffset = Integer.MIN_VALUE;
@@ -270,7 +268,6 @@ final class ViewBuilder {
         lineRoot = doc.getDefaultRootElement();
         lineIndex = lineRoot.getElementIndex(startOffset);
         Element line = lineRoot.getElement(lineIndex);
-        lineStartOffset = line.getStartOffset();
         lineEndOffset = line.getEndOffset();
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -288,7 +285,6 @@ final class ViewBuilder {
             }
             sb.append("dReplace=").append(dReplace);
             sb.append("lineIndex=").append(lineIndex);
-            sb.append(", lineStartOffset=").append(lineStartOffset);
             sb.append(", createLocalViews=").append(createLocalViews);
             sb.append('\n');
 
@@ -305,9 +301,10 @@ final class ViewBuilder {
     }
 
     void createViews() {
-        assert (prevViewEndOffset <= matchOffset) :
-            "prevViewEndOffset=" + prevViewEndOffset + " > matchOffset=" + // NOI18N
-            matchOffset;
+        if (prevViewEndOffset > matchOffset) {
+            throw new IllegalStateException(
+                "prevViewEndOffset=" + prevViewEndOffset + " > matchOffset=" + matchOffset); // NOI18N
+        }
 
         boolean doCreateViews = (prevViewEndOffset < matchOffset);
         if (prevViewEndOffset == matchOffset) {
@@ -334,8 +331,15 @@ final class ViewBuilder {
         }
 
         if (doCreateViews) {
-            // Create all new views
-            while (createNextView()) {
+            try {
+                // Create all new views
+                while (createNextView()) {
+                }
+            } catch (IllegalStateException ex) { // Re-throw with more info
+                throw new IllegalStateException("ViewBuilder: Error in view creation: prevViewEndOffset=" +
+                        prevViewEndOffset + ", matchOffset=" + matchOffset +
+                        ", docViewEndOffset=" + docViewEndOffset + ", lineEndOffset=" + lineEndOffset +
+                        ", viewRemovalFinished=" + viewRemovalFinished, ex);
             }
         }
 
@@ -377,6 +381,10 @@ final class ViewBuilder {
      */
     boolean createNextView() {
         int limitOffset = matchOffset;
+        if (limitOffset > docViewEndOffset) {
+            throw new IllegalStateException("matchOffset=" + matchOffset + // NOI18N
+                    " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+        }
         for (int i = factoryStates.length - 1; i >= 0; i--) {
             FactoryState state = factoryStates[i];
             int cmp = state.nextViewStartOffset - prevViewEndOffset;
@@ -387,13 +395,16 @@ final class ViewBuilder {
             if (cmp == 0) { // Candidate for the next view
                 // Create new view. Note that the limitOffset is only a suggestion.
                 // Only the bottommost highlights-view-factory should always respect the the limitOffset.
-                assert (prevViewEndOffset >= 0) :
-                    "prevViewEndOffset=" + prevViewEndOffset + " < 0"; // NOI18N
-                assert (prevViewEndOffset < limitOffset) :
-                    "prevViewEndOffset=" + prevViewEndOffset + // NOI18N
-                    " >= limitOffset=" + limitOffset + ", docTextLength=" + docViewEndOffset; // NOI18N
-                assert (limitOffset <= docViewEndOffset) :
-                    "limitOffset=" + limitOffset + " > docTextLength=" + docViewEndOffset; // NOI18N
+                if (prevViewEndOffset < 0) {
+                    throw new IllegalStateException("prevViewEndOffset=" + prevViewEndOffset + " < 0"); // NOI18N
+                }
+                if (prevViewEndOffset >= limitOffset) {
+                    throw new IllegalStateException("prevViewEndOffset=" + prevViewEndOffset + // NOI18N
+                            " >= limitOffset=" + limitOffset + ", docTextLength=" + docViewEndOffset); // NOI18N
+                }
+                if (limitOffset > docViewEndOffset) {
+                    throw new IllegalStateException("limitOffset=" + limitOffset + " > docTextLength=" + docViewEndOffset); // NOI18N
+                }
                 EditorView view = null;
                 int createdViewEndOffset;
                 if (createLocalViews) { // Regular views creation
@@ -427,6 +438,10 @@ final class ViewBuilder {
                         // Check if remove till end of paragraph
                         if (createdViewEndOffset > paragraphViewEndOffset || eolView) {
                             fReplace.removeTillEnd();
+                            if (paragraphViewEndOffset > docViewEndOffset) {
+                                throw new IllegalStateException("paragraphViewEndOffset=" + paragraphViewEndOffset + // NOI18N
+                                        " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+                            }
                             matchOffset = paragraphViewEndOffset;
                             // Possibly need to remove next paragraph views
                             checkRemoveParagraphs(createdViewEndOffset, eolView);
@@ -438,6 +453,12 @@ final class ViewBuilder {
                                 // Use getLength() instead of getEndOffset() since for intra-line mods
                                 // with offsetDelta != 0 the views do not have updated offsets
                                 matchOffset += pReplace.view.getEditorView(index).getLength();
+                                if (matchOffset > docViewEndOffset) {
+                                    throw new IllegalStateException("matchOffset=" + matchOffset + // NOI18N
+                                            " > docViewEndOffset=" + docViewEndOffset + // NOI18N
+                                            ", pReplace-view-length=" + pReplace.view.getEditorView(index).getLength() + // NOI18N
+                                            "\ndocView:\n" + dReplace.view); // NOI18N
+                                }
                                 pReplace.removeCount++;
                                 if (createdViewEndOffset <= matchOffset) {
                                     break;
@@ -462,7 +483,7 @@ final class ViewBuilder {
                     try {
                         startPos = dReplace.view.getDocument().createPosition(prevViewEndOffset);
                     } catch (BadLocationException e) {
-                        throw new IllegalStateException("Cannot create position at offset=" + lineStartOffset);
+                        throw new IllegalStateException("Cannot create position at offset=" + prevViewEndOffset);
                     }
                     ParagraphView paragraphView = new ParagraphView(startPos);
                     dReplace.add(paragraphView);
@@ -496,6 +517,10 @@ final class ViewBuilder {
                 // that lay below this factory
                 if (state.nextViewStartOffset < docViewEndOffset) { // Can be Integer.MAX_VALUE
                     limitOffset = state.nextViewStartOffset;
+                    if (limitOffset > docViewEndOffset) {
+                        throw new IllegalStateException("state: limitOffset=" + limitOffset + // NOI18N
+                                " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+                    }
                 }
             }
         }
@@ -514,6 +539,10 @@ final class ViewBuilder {
                 dReplace.removeCount++;
                 paragraphViewEndOffset += removeView.getLength();
                 // Do not remove individual views
+                if (paragraphViewEndOffset > docViewEndOffset) {
+                    throw new IllegalStateException("paragraphViewEndOffset=" + paragraphViewEndOffset + // NOI18N
+                            " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+                }
                 matchOffset = paragraphViewEndOffset;
             } else { // No more views to remove
                 viewRemovalFinished = true; // Allow to finish the loop
@@ -561,6 +590,7 @@ final class ViewBuilder {
                 textLayoutCache.remove(paragraphView);
             }
         }
+//        String err = textLayoutCache.findIntegrityError(); if (err != null) throw new IllegalStateException(err);
 
         // Repaint removed paragraph views
         dReplace.retainSpans(); // Attempt to retain spans of paragraph views
@@ -645,7 +675,6 @@ final class ViewBuilder {
         while (offset > lineEndOffset) {
             lineIndex++;
             Element line = lineRoot.getElement(lineIndex);
-            lineStartOffset = line.getStartOffset();
             lineEndOffset = line.getEndOffset();
         }
     }
@@ -658,7 +687,6 @@ final class ViewBuilder {
         sb.append("offsetDelta=").append(offsetDelta).append('\n');
         sb.append("docTextLength=").append(docViewEndOffset).append('\n');
         sb.append("lineIndex=").append(lineIndex).append('\n');
-        sb.append("lineStartOffset=").append(lineStartOffset).append('\n');
         sb.append("lineEndOffset=").append(lineEndOffset).append('\n');
         sb.append("paragraphViewEndOffset=").append(paragraphViewEndOffset).append('\n');
         sb.append("matchOffset=").append(matchOffset).append('\n');

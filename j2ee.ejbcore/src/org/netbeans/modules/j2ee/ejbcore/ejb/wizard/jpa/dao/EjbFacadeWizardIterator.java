@@ -74,6 +74,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -84,10 +89,13 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -108,6 +116,8 @@ import org.netbeans.modules.j2ee.persistence.wizard.WizardProperties;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -195,7 +205,7 @@ import org.openide.util.NbBundle;
 
         for (String entity : entities) {
             handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_GenSessionBean", entity), step++);
-            createdFiles.addAll(generate(project, targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), false));
+            createdFiles.addAll(generate(project, targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), panel.getRemoteInterfaceProject(), panel.getEntityProject(), false));
         }
 
         PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});
@@ -214,8 +224,8 @@ import org.openide.util.NbBundle;
      *
      * @return a set containing the generated files.
      */
-    private Set<FileObject> generate(final Project project,final FileObject targetFolder, final String entityClass, String pkg, final boolean hasRemote, final boolean hasLocal, boolean overrideExisting) throws IOException {
-        return generate(project, targetFolder, entityClass, pkg, hasRemote, hasLocal, ContainerManagedJTAInjectableInEJB.class, overrideExisting);
+    private Set<FileObject> generate(final Project project,final FileObject targetFolder, final String entityClass, String pkg, final boolean hasRemote, final boolean hasLocal, Project remoteProject, Project entityProject, boolean overrideExisting) throws IOException {
+        return generate(project, targetFolder, entityClass, pkg, hasRemote, hasLocal, remoteProject, entityProject, ContainerManagedJTAInjectableInEJB.class, overrideExisting);
     }
 
 
@@ -234,6 +244,8 @@ import org.openide.util.NbBundle;
      */
     Set<FileObject> generate(final Project project, final FileObject targetFolder, final String entityFQN,
             final String pkg, final boolean hasRemote, final boolean hasLocal,
+            final Project remoteProject,
+            final Project entityProject,
             final Class<? extends EntityManagerGenerationStrategy> strategyClass,
             boolean overrideExisting) throws IOException {
 
@@ -321,6 +333,7 @@ import org.openide.util.NbBundle;
             }).commit();
 
             waiter = new Task<CompilationController>(){
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
                 }
@@ -357,9 +370,30 @@ import org.openide.util.NbBundle;
             createdFiles.add(local);
         }
         if (hasRemote) {
-            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, targetFolder);
+            FileObject remotePackage = SessionGenerator.createRemoteInterfacePackage(remoteProject, pkg, targetFolder);
+            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, remotePackage);
             addMethodToInterface(intfOptions, remote);
             createdFiles.add(remote);
+            if (entityProject != null && !entityProject.getProjectDirectory().equals(remoteProject.getProjectDirectory())) {
+                SourceGroup[] groups = ProjectUtils.getSources(remoteProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (groups != null && groups.length > 0) {
+                    FileObject fo = groups[0].getRootFolder();
+                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                    if (cp != null) {
+                        try {
+                            ProjectClassPathModifier.addProjects(new Project[]{entityProject}, fo, ClassPath.COMPILE);
+                        } catch (Throwable e) {
+                            NotifyDescriptor d = new NotifyDescriptor.Message(
+                                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "WARN_UpdateClassPath",
+                                    ProjectUtils.getInformation(remoteProject).getDisplayName(),
+                                    ProjectUtils.getInformation(entityProject).getDisplayName()),
+                                    NotifyDescriptor.INFORMATION_MESSAGE);
+                            DialogDisplayer.getDefault().notify(d);
+                        }
+                    }
+                }
+            }
+            
         }
 
         // add the @stateless annotation
@@ -731,11 +765,11 @@ import org.openide.util.NbBundle;
         System.arraycopy(thisSteps, 0, steps, stepsStartPos, thisSteps.length);
     }
 
-    public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote) throws IOException {
-        return generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, local, remote, false);
+    public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote, Project remoteProject, Project entityProject) throws IOException {
+        return generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, local, remote, remoteProject, entityProject, false);
     }
 
-    public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote, boolean overrideExisting) throws IOException {
+    public static FileObject[] generateSessionBeans(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, boolean local, boolean remote, Project remoteProject, Project entityProject, boolean overrideExisting) throws IOException {
         int progressIndex = 0;
         String progressMsg =  NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Pre"); //NOI18N;
         progressContributor.progress(progressMsg, progressIndex++);
@@ -752,7 +786,7 @@ import org.openide.util.NbBundle;
             progressMsg = NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Now_Generating", entitySimpleName + FACADE_SUFFIX + ".java");//NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
-            sbFileObjects[i]=iterator.generate(project, jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote, overrideExisting).iterator().next();
+            sbFileObjects[i]=iterator.generate(project, jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote, remoteProject, entityProject, overrideExisting).iterator().next();
         }
 
         PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});

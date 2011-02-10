@@ -42,7 +42,9 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +52,9 @@ import java.io.InterruptedIOException;
 import java.io.Writer;
 import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -63,6 +67,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
@@ -95,7 +100,7 @@ class SftpSupport {
         return uploadCount.get();
     }
 
-    private static SftpSupport getInstance(ExecutionEnvironment execEnv) {
+    /*package*/ static SftpSupport getInstance(ExecutionEnvironment execEnv) {
         SftpSupport instance = null;
         synchronized (instancesLock) {
             instance = instances.get(execEnv);
@@ -107,25 +112,14 @@ class SftpSupport {
         return instance;
     }
 
-    static Future<Integer> uploadFile(CommonTasksSupport.UploadParameters parameters) {
-        return getInstance(parameters.dstExecEnv).uploadFileImpl(parameters);
-    }
-
-    static Future<Integer> downloadFile(
-            final String srcFileName,
-            final ExecutionEnvironment execEnv,
-            final String dstFileName,
-            final Writer error) {
-        return getInstance(execEnv).downloadFile(srcFileName, dstFileName, error);
-    }
+    //private final RequestProcessor requestProcessor;
+    // Trying to work around #184068 -  Instable remote unit tests failure
+    private static final RequestProcessor requestProcessor = new RequestProcessor("SFTP request processor"); // NOI18N;
+    
     //
     // Instance stuff
     //
     private final ExecutionEnvironment execEnv;
-
-    //private final RequestProcessor requestProcessor;
-    // Trying to work around #184068 -  Instable remote unit tests failure
-    private static final RequestProcessor requestProcessor = new RequestProcessor("SFTP request processor"); // NOI18N;
 
     // its's ok to hav a single one since we have only single-threaded request processor
     private ChannelSftp channel;
@@ -168,15 +162,9 @@ class SftpSupport {
 
     private abstract class Worker implements Callable<Integer> {
 
-        protected final String srcFileName;
-        protected final ExecutionEnvironment execEnv;
-        protected final String dstFileName;
         protected final Writer error;
 
-        public Worker(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
-            this.srcFileName = srcFileName;
-            this.execEnv = execEnv;
-            this.dstFileName = dstFileName;
+        public Worker(Writer error) {
             this.error = error;
         }
 
@@ -185,9 +173,9 @@ class SftpSupport {
         protected abstract String getTraceName();
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call() throws InterruptedException {
             int rc = -1;
-            try {                
+            try {
                 work();
                 rc = 0;
             } catch (JSchException ex) {
@@ -212,8 +200,8 @@ class SftpSupport {
                 logException(ex);
                 rc = 3;
             } catch (InterruptedIOException ex) {
-                logException(ex);
                 rc = 4;
+                throw new InterruptedException(ex.getMessage());
             } catch (IOException ex) {
                 logException(ex);
                 rc = 5;
@@ -237,9 +225,13 @@ class SftpSupport {
 
         private final int mask;
         private final boolean checkMd5;
+        protected final String srcFileName;
+        protected final String dstFileName;
 
-        public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error, boolean checkMd5) {
-            super(srcFileName, execEnv, dstFileName, error);
+        public Uploader(String srcFileName, String dstFileName, int mask, Writer error, boolean checkMd5) {
+            super(error);
+            this.srcFileName = srcFileName;
+            this.dstFileName = dstFileName;
             this.mask = mask;
             this.checkMd5 = checkMd5;
         }
@@ -333,8 +325,13 @@ class SftpSupport {
 
     private class Downloader extends Worker implements Callable<Integer> {
 
-        public Downloader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, Writer error) {
-            super(srcFileName, execEnv, dstFileName, error);
+        protected final String srcFileName;
+        protected final String dstFileName;
+        
+        public Downloader(String srcFileName, String dstFileName, Writer error) {
+            super(error);
+            this.srcFileName = srcFileName;
+            this.dstFileName = dstFileName;
         }
 
         @Override
@@ -349,10 +346,11 @@ class SftpSupport {
             return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName; // NOI18N
         }
     }
-
-    private Future<Integer> uploadFileImpl(CommonTasksSupport.UploadParameters parameters) {
+    
+    /*package*/ Future<Integer> uploadFile(CommonTasksSupport.UploadParameters parameters) {
+        Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
         Uploader uploader = new Uploader(
-                parameters.srcFile.getAbsolutePath(), parameters.dstExecEnv,
+                parameters.srcFile.getAbsolutePath(),
                 parameters.dstFileName, parameters.mask, parameters.error, parameters.checkMd5);
         final FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
         RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
@@ -370,15 +368,107 @@ class SftpSupport {
         return ftask;
     }
 
-    private Future<Integer> downloadFile(
+    /*package*/ Future<Integer> downloadFile(
             final String srcFileName,
             final String dstFileName,
             final Writer error) {
 
-        Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
+        Downloader downloader = new Downloader(srcFileName, dstFileName, error);
         FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
         requestProcessor.post(ftask);
         LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
+        return ftask;
+    }
+
+    private class StatLoader implements Callable<StatInfo> {
+
+        private final String path;
+
+        public StatLoader(String path) {
+            assert path.startsWith("/"); //NOI18N
+            this.path = path;
+        }
+                
+        @Override
+        public StatInfo call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            LOG.log(Level.FINE, "{0} started", getTraceName());
+            ChannelSftp cftp = getChannel();
+            SftpATTRS attrs = cftp.lstat(path);            
+            String dirName, baseName;
+            int slashPos = path.lastIndexOf('/');
+            if (slashPos == 0) {
+                dirName = "";
+                baseName = path.substring(1);
+            } else {
+                dirName = path.substring(0, slashPos);
+                baseName = path.substring(slashPos + 1);
+            }
+            StatInfo result = createStatInfo(dirName, baseName, attrs, cftp);
+            LOG.log(Level.FINE, "{0} finished", getTraceName());
+            return result;
+        }
+
+        public String getTraceName() {
+            return "Getting stat for " + path; //NOI18N
+        }
+    }
+
+    private class LsLoader implements Callable<StatInfo[]> {
+
+        private final String path;
+
+        public LsLoader(String path) {
+            assert path.startsWith("/"); //NOI18N
+            this.path = path;
+        }
+                
+        @Override
+        @SuppressWarnings("unchecked")
+        public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            LOG.log(Level.FINE, "{0} started", getTraceName());
+            ChannelSftp cftp = getChannel();
+            List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
+            StatInfo[] result = new StatInfo[entries.size()];
+            int i = 0;
+            for (LsEntry entry : entries) {
+                SftpATTRS attrs = entry.getAttrs();
+                result[i++] = createStatInfo(path, entry.getFilename(), attrs, cftp);
+            }            
+            LOG.log(Level.FINE, "{0} finished", getTraceName());
+            return result;
+        }
+
+        public String getTraceName() {
+            return "Getting stat for " + path; //NOI18N
+        }
+    }
+    
+    private StatInfo createStatInfo(String dirName, String baseName, SftpATTRS attrs, ChannelSftp cftp) throws SftpException {
+        String linkTarget = null;
+        if (attrs.isLink()) {
+            String path = dirName + '/' + baseName;
+            LOG.log(Level.FINE, "performing readlink {0}", path);
+            linkTarget = cftp.readlink(path);
+        }
+        Date lastModified = new Date(attrs.getMTime()*1000L);
+        StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.getSize(), 
+                attrs.isDir(), attrs.isLink(), linkTarget, attrs.getPermissions(), lastModified);
+        return result;
+    }
+    
+    /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
+        StatLoader loader = new StatLoader(absPath);
+        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
+        requestProcessor.post(ftask);
+        LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
+        return ftask;
+    }
+
+    /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
+        LsLoader loader = new LsLoader(absPath);
+        FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
+        requestProcessor.post(ftask);
+        LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
         return ftask;
     }
 }

@@ -169,7 +169,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     
     private VersioningManager() {
         systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-        filesystemInterceptor = new FilesystemInterceptor();
+        filesystemInterceptor = new FilesystemInterceptor(true);
     }
     
     private void init() {
