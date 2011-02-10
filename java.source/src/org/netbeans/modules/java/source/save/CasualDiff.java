@@ -605,6 +605,10 @@ public class CasualDiff {
             parameterPrint = false;
             printer.setPrec(old);
         }
+        //make sure the ')' is printed:
+        moveFwdToToken(tokenSequence, posHint, JavaTokenId.RPAREN);
+        tokenSequence.moveNext();
+        posHint = tokenSequence.offset();
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
         // if abstract, hint is before ending semi-colon, otherwise before method body
@@ -631,7 +635,8 @@ public class CasualDiff {
         } else {
             posHint = oldT.thrown.iterator().next().getStartPosition();
         }
-        copyTo(localPointer, localPointer = posHint);
+        if (!newT.thrown.isEmpty()) //do not copy the "throws" keyword:
+            copyTo(localPointer, localPointer = posHint);
         PositionEstimator est = EstimatorFactory.throwz(oldT.getThrows(), newT.getThrows(), diffContext);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
         if (oldT.defaultValue != newT.defaultValue) {
