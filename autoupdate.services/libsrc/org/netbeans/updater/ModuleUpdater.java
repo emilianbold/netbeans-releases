@@ -426,9 +426,10 @@ public final class ModuleUpdater extends Thread {
                                 if (pathTo.endsWith(".external")) {
                                     File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
                                     final InputStream spec = jarFile.getInputStream(entry);
-                                    AtomicLong assumedCRC = new AtomicLong();
                                     pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
-                                    InputStream is = externalDownload(spec, assumedCRC, pathTo);
+                                    long expectedCRC = externalDownload(spec, nbm);
+                                    File external = new File(nbm + "." + Long.toHexString(expectedCRC));
+                                    InputStream is = new FileInputStream(external);
                                     try {
                                         spec.close();
                                         FileOutputStream os = new FileOutputStream(downloaded);
@@ -438,12 +439,13 @@ public final class ModuleUpdater extends Thread {
                                             os.close();
                                         }
                                     } finally {
+                                        external.delete();
                                         is.close();
                                     }
                                     crc = UpdateTracking.getFileCRC(downloaded);
-                                    if (assumedCRC.get() != -1 && assumedCRC.get() != crc) {
+                                    if (crc != expectedCRC) {
                                         downloaded.delete();
-                                        throw new FileNotFoundException("Wrong CRC for " + downloaded + ": expected " + assumedCRC + " but got " + crc);
+                                        throw new IOException("Wrong CRC for " + downloaded);
                                     }
                                 } else {
                                     bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
@@ -546,48 +548,6 @@ public final class ModuleUpdater extends Thread {
             }
             t.deleteUnusedFiles ();            
         }
-    }
-    
-    // copied from nbbuild/antsrc/org/netbeans/nbbuild/AutoUpdate.java:
-    private InputStream externalDownload(InputStream is, AtomicLong crc, String pathTo) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        URLConnection conn;
-        crc.set(-1L);
-        for (;;) {
-            String line = br.readLine();
-            if (line == null) {
-                break;
-            }
-            if (line.startsWith("CRC:")) {
-                crc.set(Long.parseLong(line.substring(4).trim()));
-            }
-            if (line.startsWith("URL:")) {
-                String url = line.substring(4).trim();
-                for (;;) {
-                    int index = url.indexOf("${");
-                    if (index == -1) {
-                        break;
-                    }
-                    int end = url.indexOf("}", index);
-                    String propName = url.substring(index + 2, end);
-                    final String propVal = System.getProperty(propName);
-                    if (propVal == null) {
-                        throw new IOException("Can't find property " + propName);
-                    }
-                    url = url.substring(0, index) + propVal + url.substring(end + 1);
-                }
-                XMLUtil.LOG.log(Level.INFO, "Trying external URL: {0}", url);
-                try {
-                    conn = new URL(url).openConnection();
-                    conn.connect();
-                    return conn.getInputStream();
-                } catch (IOException ex) {
-                    XMLUtil.LOG.log(Level.WARNING, "Cannot connect to {0}", url);
-                    XMLUtil.LOG.log(Level.INFO, "Details", ex);
-                }
-            }
-        }
-        throw new FileNotFoundException("Cannot resolve external reference to " + pathTo);
     }
     
     private boolean unpack200(File src, File dest) {
@@ -957,6 +917,19 @@ public final class ModuleUpdater extends Thread {
          params.copyInto(ret);
          return ret;
      }
+
+    private long externalDownload(InputStream spec, File nbm) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(spec));
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                throw new IOException("No CRC in the .external file!");
+            }
+            if (line.startsWith("CRC:")) {
+                return Long.parseLong(line.substring(4).trim());
+            }
+        }
+    }
 
 
     
