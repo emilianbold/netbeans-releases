@@ -52,4 +52,8 @@ made subject to such option by the copyright holder.
         <ext name="txt"/>
         <resolver mime="text/x-cmake"/>
     </file>
+    <file>
+        <name name="core" substring="true"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>
 </MIME-resolver>
