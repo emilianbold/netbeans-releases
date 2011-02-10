@@ -453,7 +453,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
     private String printArg(final TypeMirror tm, final boolean varArg) {
         if (varArg) {
-            assert tm.getKind() == TypeKind.ARRAY;
+            assert tm.getKind() == TypeKind.ARRAY : "Expected array: " + tm.toString() + " ( " +tm.getKind() + " )"; //NOI18N
             final ArrayType at = (ArrayType)tm;
             final StringBuilder sb = new StringBuilder( print(at.getComponentType()) );
             sb.append("...");   //NOI18N
