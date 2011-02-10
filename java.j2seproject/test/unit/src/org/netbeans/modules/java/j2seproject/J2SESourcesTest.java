@@ -107,7 +107,7 @@ public class J2SESourcesTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null); //NOI18N        
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         sources = getFileObject(projdir, "src");
         build = getFileObject (scratch, "build");
