@@ -43,20 +43,24 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -251,10 +255,22 @@ public class AutoUpdate extends Task {
                     log("Writing " + trgt, Project.MSG_VERBOSE);
 
                     InputStream is = zf.getInputStream(zipEntry);
-                    OutputStream os = new FileOutputStream(trgt);
                     boolean doUnpack200 = false;
                     if(relName.endsWith(".jar.pack.gz") && zf.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length() - 8))==null) {
                         doUnpack200 = true;
+                    }
+                    OutputStream os;
+                    AtomicLong assumedCRC = null;
+                    if (relName.endsWith(".external")) {
+                        assumedCRC = new AtomicLong();
+                        is = externalDownload(is, assumedCRC);
+                        if (assumedCRC.longValue() == -1L) {
+                            assumedCRC = null;
+                        }
+                        File dest = new File(trgt.getParentFile(), trgt.getName().substring(0, trgt.getName().length() - 9));
+                        os = new FileOutputStream(dest);
+                    } else {
+                        os = new FileOutputStream(trgt);
                     }
                     CRC32 crc = new CRC32();
                     for (;;) {
@@ -277,6 +293,9 @@ public class AutoUpdate extends Task {
                         trgt.delete();
                         crcValue = getFileCRC(dest);
                         relName = relName.substring(0, relName.length() - 8);
+                    }
+                    if (assumedCRC != null && assumedCRC.get() != crcValue) {
+                        throw new BuildException("Expecting CRC " + assumedCRC.get() + " but was " + crcValue);
                     }
                     Element file = (Element) module_version.appendChild(doc.createElement("file"));
                     file.setAttribute("crc", String.valueOf(crcValue));
@@ -302,6 +321,47 @@ public class AutoUpdate extends Task {
                 }
             }
         }
+    }
+    
+    private InputStream externalDownload(InputStream is, AtomicLong crc) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        URLConnection conn;
+        crc.set(-1L);
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("CRC:")) {
+                crc.set(Long.parseLong(line.substring(4).trim()));
+            }
+            if (line.startsWith("URL:")) {
+                String url = line.substring(4).trim();
+                for (;;) {
+                    int index = url.indexOf("${");
+                    if (index == -1) {
+                        break;
+                    }
+                    int end = url.indexOf("}", index);
+                    String propName = url.substring(index + 2, end);
+                    final String propVal = System.getProperty(propName);
+                    if (propVal == null) {
+                        throw new IOException("Can't find property " + propName);
+                    }
+                    url = url.substring(0, index) + propVal + url.substring(end + 1);
+                }
+                log("Trying external URL: " + url, Project.MSG_INFO);
+                try {
+                    conn = new URL(url).openConnection();
+                    conn.connect();
+                    return conn.getInputStream();
+                } catch (IOException ex) {
+                    log("Cannot connect to " + url, Project.MSG_WARN);
+                    log("Details", ex, Project.MSG_VERBOSE);
+                }
+            }
+        }
+        throw new IOException("Cannot resolve external references");
     }
 
     
