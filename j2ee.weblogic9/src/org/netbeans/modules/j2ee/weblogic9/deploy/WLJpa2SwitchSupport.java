@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Conte
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -292,23 +293,41 @@ public final class WLJpa2SwitchSupport {
         if (dm != null) {
             return dm.getJ2eePlatformImpl().isJpa2Available();
         } else {
-            // TODO parse jar cp
+            List<URL> classpath = WLJ2eePlatformFactory.getWLSClassPath(serverRoot,
+                    WLPluginProperties.getMiddlewareHome(serverRoot), null);
+            for (URL url : classpath) {
+                URL file = FileUtil.getArchiveFile(url);
+                if (file.getFile().endsWith(JPA_JAR_1)) {
+                    return true;
+                }                
+            }
             return false;
         }
     }
 
     public boolean isEnabledViaSmartUpdate() {
-        //check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
         if (dm != null) {
+            dm.getJ2eePlatformImpl().getLibraries();
             for (LibraryImplementation lib : dm.getJ2eePlatformImpl().getLibraries()) {
                 List<URL> urls = lib.getContent("classpath"); // NOI18N
-                if (urls != null) {
-                    for (URL url : urls) {
-                        String file = url.getFile();
-                        if (file.endsWith("BUG9923849_WLS103MP4.jar!/")) { // NOI18N
-                            return true;
-                        }
-                    }
+                if (isEnabledViaSmartUpdate(urls)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            List<URL> urls = WLJ2eePlatformFactory.getWLSClassPath(serverRoot,
+                    WLPluginProperties.getMiddlewareHome(serverRoot), null);
+            return isEnabledViaSmartUpdate(urls);
+        }
+    }
+    
+    private boolean isEnabledViaSmartUpdate(List<URL> urls) {
+        if (urls != null) {
+            for (URL url : urls) {
+                URL file = FileUtil.getArchiveFile(url);
+                if (file.getFile().endsWith("BUG9923849_WLS103MP4.jar")) { // NOI18N
+                    return true;
                 }
             }
         }
