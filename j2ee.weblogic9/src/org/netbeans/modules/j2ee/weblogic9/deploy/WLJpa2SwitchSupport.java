@@ -62,9 +62,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
-import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -76,12 +76,23 @@ import org.openide.util.Exceptions;
  */
 public final class WLJpa2SwitchSupport {
 
-    private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar";//NO18N
-    private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
-    private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
+    private static final Version SWITCH_SUPPORTED_VERSION = Version.fromJsr277NotationWithFallback("10.3.4");
+
+    private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar"; // NO18N
+    
+    private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar"; // NO18N
+    
+    private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar"; // NO18N
+    
     private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
+    
     private final File serverRoot;
+    
     private final WLDeploymentManager dm;
+    
+    /** GuardedBy("this")*/
+    private Version serverVersion;
+    
     private boolean proggessSuccess = true;
 
     public WLJpa2SwitchSupport(File serverRoot) {
@@ -94,7 +105,30 @@ public final class WLJpa2SwitchSupport {
         this.serverRoot = WLPluginProperties.getServerRoot(dm, true);
     }
 
+    public boolean isSwitchSupported() {
+        Version version = null;
+        synchronized (this) {
+            if (serverVersion != null) {
+                version = serverVersion;
+            } else {
+                if (dm != null) {
+                    version = dm.getServerVersion();
+                } else {
+                    version = WLPluginProperties.getServerVersion(serverRoot);
+                }
+                serverVersion = version;
+            }
+        }
+        return SWITCH_SUPPORTED_VERSION.getMajor().equals(version.getMajor())
+                && SWITCH_SUPPORTED_VERSION.getMinor().equals(version.getMinor())
+                && SWITCH_SUPPORTED_VERSION.getMicro().equals(version.getMicro());
+    }
+
     public void enable() {
+        if (!isSwitchSupported()) {
+            throw new IllegalStateException("JPA2 switching is not supported for WebLogic " + serverRoot);
+        }
+
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
         proggessSuccess = true;
         try {
@@ -207,6 +241,10 @@ public final class WLJpa2SwitchSupport {
     }
 
     public void disable() {
+        if (!isSwitchSupported()) {
+            throw new IllegalStateException("JPA2 switching is not supported for WebLogic " + serverRoot);
+        }
+
         try {
             File libDir = WLPluginProperties.getServerLibDirectory(serverRoot);
             if (libDir != null) {
@@ -263,12 +301,12 @@ public final class WLJpa2SwitchSupport {
         //check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
         if (dm != null) {
             for (LibraryImplementation lib : dm.getJ2eePlatformImpl().getLibraries()) {
-                List<URL> urls = lib.getContent("classpath"); //NOI18N
+                List<URL> urls = lib.getContent("classpath"); // NOI18N
                 if (urls != null) {
                     for (URL url : urls) {
                         String file = url.getFile();
-                        if (file.endsWith("BUG9923849_WLS103MP4.jar!/")) {
-                            return true;//NOI18N
+                        if (file.endsWith("BUG9923849_WLS103MP4.jar!/")) { // NOI18N
+                            return true;
                         }
                     }
                 }

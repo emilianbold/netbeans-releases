@@ -180,8 +180,9 @@ class CustomizerJVM extends javax.swing.JPanel {
         updateJPA20Button();
     }
 
-    private void updateJPA20Button(){
-        if (support.isEnabledViaSmartUpdate()) {
+    private void updateJPA20Button() {
+        // TODO do not show button when not supported
+        if (!support.isSwitchSupported() || support.isEnabledViaSmartUpdate()) {
             jpa2Button.setEnabled(false);
         } else {
             jpa2Button.setEnabled(true);
