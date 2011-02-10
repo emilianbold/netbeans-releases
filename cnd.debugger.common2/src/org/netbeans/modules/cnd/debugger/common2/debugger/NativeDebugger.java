@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryFormat;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 
@@ -194,7 +195,8 @@ public interface NativeDebugger {
     public Line getCurrentDisLine();
     public void registerRegistersWindow(RegistersWindow w);
     public void registerMemoryWindow(MemoryWindow w);
-    public void requestMems(String start, String length, String format, int index);  
+    public void requestMems(String start, String length, MemoryFormat format);
+    MemoryFormat[] getMemoryFormats();
     public void registerEvaluationWindow(EvaluationWindow w);
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w);
 
