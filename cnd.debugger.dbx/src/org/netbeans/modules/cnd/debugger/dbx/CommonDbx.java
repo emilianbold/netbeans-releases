@@ -812,10 +812,6 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 		    remote);
 	    }
 
-	    String hostName = null;
-	    if (remote)
-		hostName = host.getHostName();
-
 	    tentativeDbx.startProgressManager().updateProgress('<', 1, null, 0, 0);
 
 	    tentativeDbx.startProgressManager().updateProgress('>', 1,
