@@ -370,7 +370,7 @@ public class PhysicalView {
     private static final class ProjectIconNode extends FilterNode { // #194068
         private final boolean root;
         public ProjectIconNode(Node orig, boolean root) {
-            super(orig, new ProjectBadgingChildren(orig));
+            super(orig, orig.isLeaf() ? Children.LEAF : new ProjectBadgingChildren(orig));
             this.root = root;
         }
         public @Override Image getIcon(int type) {
