@@ -57,18 +57,49 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="nbm-external">
+            <api name="general"/>
+            <summary>External NBM contents</summary>
+            <version major="1" minor="24"/>
+            <date day="10" month="2" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" />
+            <description>
+                <p>
+                    You can now ask that publicly downloadable files be included in an NBM.
+                    Just replace <code>netbeans/file</code> with a text file <code>netbeans/file.external</code>
+                    with lines:
+                </p>
+                <ol>
+                    <li><code>CRC:123456789</code> to specify an expected CRC-32 checksum (nonnegative decimal format)</li>
+                    <li><code>URL:http://.../...</code> to specify a download location (may be repeated to offer alternatives)</li>
+                </ol>
+                <p>
+                    The <code>&lt;makenbm&gt;</code> Ant task will automatically
+                    avoid packing the actual file if the <code>*.external</code>
+                    variant is also in the input cluster.
+                </p>
+                <p>
+                    For convenience, the <code>org.netbeans.modules.maven.embedder</code>
+                    module (if present) can also handle URLs of the forms
+                    <code>m2:/org.grp:art:1.0:jar</code> or <code>m2:/org.grp:art:1.0:jar:javadoc</code>
+                    which can take advantage of the local repository as a cache.
+                </p>
+            </description>
+            <issue number="195041"/>
+        </change>
         <change id="custom-icons">
             <api name="general"/>
             <summary>Icons for update centers</summary>
             <version major="1" minor="23"/>
             <date day="10" month="1" year="2011"/>
-            <author login="jtulach"/>   
+            <author login="jtulach"/>
             <compatibility addition="yes" binary="compatible" deletion="no"
-                deprecation="yes" semantic="compatible" source="compatible"  
+                deprecation="yes" semantic="compatible" source="compatible"
             />
             <description>
                 <p>
-                Define icon when specifying an update center using 
+                Define icon when specifying an update center using
                 <code>categoryIconBase</code> attribute.
                 </p>
             </description>

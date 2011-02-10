@@ -12,10 +12,12 @@
         <type>javadoc</type>
         <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-3.8.2-api.zip!/</resource>
     </volume>
+    <!-- Not currently bundled:
     <volume>
         <type>src</type>
         <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-3.8.2-src.jar!/</resource>
     </volume>
+    -->
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
