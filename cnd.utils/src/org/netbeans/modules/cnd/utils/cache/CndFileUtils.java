@@ -425,7 +425,7 @@ public final class CndFileUtils {
                     CndFileSystemProvider.FileInfo curFile = listFiles[i];
                     if (EXTRA_TRACE_FAILED_INCLUDES) {
                         if (path.contains("pkg-config-0.25")) {
-                            System.err.println("index: "+curFile.absolutePath);
+                            System.err.println("index File: "+curFile);
                         }
                     }
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
@@ -445,7 +445,7 @@ public final class CndFileUtils {
                 for (FileObject child : file.getChildren()) {
                     if (EXTRA_TRACE_FAILED_INCLUDES) {
                         if (path.contains("pkg-config-0.25")) {
-                            System.err.println("index: "+child.getPath());
+                            System.err.println("index FileObject: "+child.getPath()+"->"+child.isFolder());
                         }
                     }
                     String absPath = child.getPath();
@@ -454,6 +454,13 @@ public final class CndFileUtils {
                     } else {
                         files.put(absPath, Flags.FILE);
                     }
+                }
+            }
+        }
+        if (EXTRA_TRACE_FAILED_INCLUDES) {
+            if (path.contains("pkg-config-0.25")) {
+                for (Map.Entry<String, Flags> entry : files.entrySet()) {
+                    System.err.println("\t" + entry.getKey() + "->" + entry.getValue());
                 }
             }
         }
