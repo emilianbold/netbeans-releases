@@ -121,6 +121,14 @@ public class DirectoryStorage {
         }
     }
 
+    public void touch() throws IOException {
+        if (file.exists()) {
+            file.setLastModified(System.currentTimeMillis());
+        } else {
+            store();
+        }
+    }
+    
     public void store() throws IOException {
         BufferedWriter wr = null;
         synchronized (this) {
