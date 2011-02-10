@@ -45,10 +45,7 @@
 package org.netbeans.updater;
 
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.*;
 
 //import org.openide.util.NbBundle;
@@ -499,12 +496,9 @@ public final class ModuleUpdater extends Thread {
                         }
                     }
                     }
-                } catch (FileNotFoundException x) {
-                    XMLUtil.LOG.log(Level.WARNING, "Missing NBM contents: " + x);
-                    // XXX this should rather roll back: delete everything written so far
-                    return; // do not write update tracking
                 }
                 catch ( java.io.IOException e ) {
+                    // Ignore non readable files
                     XMLUtil.LOG.log(Level.INFO, "Ignore non-readable files ", e);
                 }
                 finally {
