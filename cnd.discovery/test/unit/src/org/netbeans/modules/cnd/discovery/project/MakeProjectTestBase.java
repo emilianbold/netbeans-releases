@@ -124,7 +124,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     protected boolean optimizeSimpleProjects() {
-        return true;
+        return false;
     }
 
     @Override
