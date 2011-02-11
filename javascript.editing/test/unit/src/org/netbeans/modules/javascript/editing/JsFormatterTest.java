@@ -944,15 +944,7 @@ public class JsFormatterTest extends JsTestBase {
 //           "}\n", null);
 //    }
 //
-//    private void dump(Node node) {
-//        StringBuilder out = new StringBuilder();
-//        DumpTreeVisitor visitor = new DumpTreeVisitor(out);
-//        ParseTreeWalker walker = new ParseTreeWalker(visitor);
-//        walker.walk(node);
-//
-//        System.out.println(out);
-//    }
-    
+//   
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
 //               "def foo\n  foo\n  if true\n    x\n  end\nend", null);
@@ -1122,38 +1114,5 @@ public class JsFormatterTest extends JsTestBase {
 //               "x\n", null);
 //    }
 
-        private static class DumpTreeVisitor implements ParseTreeVisitor {
-
-        private int indent = 0;
-
-        private StringBuilder output;
-        private static final String INDENT_STRING = "    ";
-
-        public DumpTreeVisitor(StringBuilder output) {
-            this.output = output;
-        }
-
-        @Override
-        public boolean visit(Node node) {
-            indent++;
-            dump(node);
-            return false;
-        }
-
-        @Override
-        public boolean unvisit(Node node) {
-            indent--;
-            return false;
-        }
-
-        private void dump(Node node) {
-            for(int i = 0; i < indent; i++) {
-                output.append(INDENT_STRING);
-            }
-            output.append(node.toString()).append('\n');
-        }
-
-    }
-
-
+     
 }
