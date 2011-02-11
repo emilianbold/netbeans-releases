@@ -75,6 +75,9 @@ made subject to such option by the copyright holder.
                     <li><code>URL:http://.../...</code> to specify a download location (may be repeated to offer alternatives)</li>
                 </ol>
                 <p>
+                    You can embed system properties in a URL using Ant-like syntax: <samp>http://.../feature-for-${java.specification.version}.nbm</samp>
+                </p>
+                <p>
                     The <code>&lt;makenbm&gt;</code> Ant task will automatically
                     avoid packing the actual file if the <code>*.external</code>
                     variant is also in the input cluster.
