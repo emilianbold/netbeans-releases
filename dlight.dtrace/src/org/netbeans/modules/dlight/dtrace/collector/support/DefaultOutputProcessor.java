@@ -110,11 +110,13 @@ final class DefaultOutputProcessor implements OutputProcessor {
                 Long stackID;
 
                 if (timestampColumnIdx == -1 || durationColumnIdx == -1) {
-                    stackID = stackStorage.putStack(callStack);
+                    //TODO: define context
+                    stackID = stackStorage.putStack(-1, callStack);
                 } else {
                     long time = DataUtil.toLong(dataRow.getData().get(timestampColumnIdx));
                     long duration = DataUtil.toLong(dataRow.getData().get(durationColumnIdx));
-                    stackID = stackStorage.putSample(callStack, time, duration);
+                    //TODO: define context
+                    stackID = stackStorage.putSample(-1, callStack, time, duration);
                 }
 
                 if (stackRefColumnIdx >= 0) {

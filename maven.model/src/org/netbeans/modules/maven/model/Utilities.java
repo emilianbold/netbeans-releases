@@ -57,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
@@ -135,7 +136,7 @@ public class Utilities {
             } else {
                 logger.log(Level.FINE, "Got document of unexpected {0} from {1}", new Object[] {doc.getClass(), modelSourceDataObject});
                 // Replace with a BaseDocument. Mostly useful for unit test.
-                final BaseDocument doc2 = new BaseDocument(false, "text/xml");
+                final BaseDocument doc2 = new GuardedDocument("text/xml");
                 try {
                     String str = doc.getText(0, doc.getLength());
                     doc2.insertString(0, str, null);
@@ -160,6 +161,7 @@ public class Utilities {
                     }
                     public @Override void changedUpdate(DocumentEvent e) {}
                 });
+                doc2.putProperty(Document.StreamDescriptionProperty, doc.getProperty(Document.StreamDescriptionProperty));
                 return doc2;
             }
         } else {

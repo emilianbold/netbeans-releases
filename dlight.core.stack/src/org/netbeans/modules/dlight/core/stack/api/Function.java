@@ -48,28 +48,30 @@ package org.netbeans.modules.dlight.core.stack.api;
  */
 public interface Function {
 
+    long getContextID();
+
     /**
      * @return [type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
      */
-    public String getName();
+    String getName();
 
     /**
      *
      * @return [q-name-namespace::][q-name-class::]name
      */
-    public String getQuilifiedName();
+    String getQuilifiedName();
 
     /**
      *
      * @return [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
      */
-    public String getSignature();
+    String getSignature();
     
     
-    public String getModuleName();
+    String getModuleName();
     
-    public String getModuleOffset();
+    String getModuleOffset();
     
-    public  String getSourceFile();
+    String getSourceFile();
     
 }

@@ -57,14 +57,16 @@ public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
     private final List<FunctionCall> functionCalls;
     private final SourceFileInfoDataProvider sourceInfoProvider;
     private final boolean useHtmlFormat;
+    private final GoToSourceCallbackAction callbackAction;
 
     PlainListFunctionCallChildren(SourceFileInfoDataProvider sourceInfoProvider, 
-            List<FunctionCall> functionCalls, boolean useHtmlFormat) {
+            List<FunctionCall> functionCalls, boolean useHtmlFormat, GoToSourceCallbackAction callbackAction) {
         //create a copy and reverse copied
         this.functionCalls = new ArrayList<FunctionCall>();
         this.functionCalls.addAll(functionCalls);
         this.sourceInfoProvider = sourceInfoProvider;
         this.useHtmlFormat = useHtmlFormat;
+        this.callbackAction = callbackAction;
     }
 
     @Override
@@ -77,6 +79,6 @@ public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
 
     @Override
     protected Node[] createNodes(FunctionCall key) {
-        return new PlainListFunctionCallNode[]{new PlainListFunctionCallNode(sourceInfoProvider, key, useHtmlFormat)};
+        return new PlainListFunctionCallNode[]{new PlainListFunctionCallNode(sourceInfoProvider, key, useHtmlFormat, callbackAction)};
     }
 }

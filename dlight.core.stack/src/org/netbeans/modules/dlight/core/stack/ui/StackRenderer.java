@@ -67,22 +67,27 @@ public final class StackRenderer implements Renderer<DataRow> {
     private final Lock lock = new Lock();
     private final List<Column> stackColumns;
     private final boolean useHMTL;
+    private final GoToSourceCallbackAction callbackAction;
 
     public StackRenderer(List<Column> stackColumns) {
-        this(stackColumns, false);
+        this(stackColumns, false, null);
+    }
+    public StackRenderer(List<Column> stackColumns, boolean useHtml){
+        this(stackColumns, useHtml, null);
     }
 
-    public StackRenderer(List<Column> stackColumns, boolean useHtml) {
+    public StackRenderer(List<Column> stackColumns, boolean useHtml, GoToSourceCallbackAction callbackAction) {
         this.stackColumns = Collections.unmodifiableList(
                 new ArrayList<Column>(stackColumns)); // yes, it's paranoia :)
         this.useHMTL = useHtml;
+        this.callbackAction = callbackAction;
     }
 
     @Override
     public JComponent render(final DataRow data) {
         synchronized (lock) {
             final StackDataProvider stackProvider = findStackDataProvider();
-            final MultipleCallStackPanel resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
+            final MultipleCallStackPanel resultPanel = MultipleCallStackPanel.createInstance(stackProvider, false, callbackAction);
             if (stackProvider != null) {
                 DLightExecutorService.submit(new Runnable() {
 

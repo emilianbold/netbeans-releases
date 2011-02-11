@@ -1210,6 +1210,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         TypeMirror exTm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), exMemberType));
                         String newType = m.getMemberType();
                         TypeElement newTE = copy.getElements().getTypeElement(newType);
+                        if (newTE == null)Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.SEVERE, "Can't find type element for new memember type: " + newType + ". (old type: " + exTm.toString() + ", member name: " + memberName + ")"); //NOI18N
                         TypeMirror newTm = newTE.asType();
                         //first if type is the same, just return and keep all as is
                         if(exTm.equals(newTm)){
