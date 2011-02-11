@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api.impl;
+package org.netbeans.modules.dlight.core.stack.storage;
 
-import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.core.stack.api.FunctionContext;
 
 /**
- * This class is a storage for the sessions
- * We will keep here  dir + env
- * @author Maria Tishkova
+ *  Client can implement it and keep the storage
+ *  to get  the information about the function
  */
-public final class DLightSessionsStorage {
-
-
-    private static class DLightSessionsStorageHolder {
-        public static DLightSessionsStorage instance = new DLightSessionsStorage();
-    }
-
-    private DLightSessionsStorage(){
-        //read an XML file with the sessions list info: sessionID + dir + env
-    }
-
-    public static DLightSessionsStorage getInstance(){
-        return DLightSessionsStorageHolder.instance;
-    }
-
-    public final DLightSession openSession(String pathToFolder){
-        //it will open the session and set its state to analyze
-        return null;
-    }
+public interface FunctionContextStorage {
+    FunctionContext getFunctionContext(long contextID);
 }

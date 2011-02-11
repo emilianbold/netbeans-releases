@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api.impl;
+package org.netbeans.modules.dlight.management.api;
 
-import org.netbeans.modules.dlight.management.api.DLightSession;
+import java.sql.SQLException;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
+import org.openide.util.Exceptions;
 
 /**
- * This class is a storage for the sessions
- * We will keep here  dir + env
- * @author Maria Tishkova
+ *
+ * @author masha
  */
-public final class DLightSessionsStorage {
-
-
-    private static class DLightSessionsStorageHolder {
-        public static DLightSessionsStorage instance = new DLightSessionsStorage();
+public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactory<DLightSessionServiceInfoStorage> {
+    /* use holder to prevent connect during lookup of service */
+    private final static class InstanceHolder{
+        public static final DLightSessionServiceInfoStorage serviceInfoStorage  = new DLightSessionServiceInfoStorage("test");
+        static{
+            try {
+                serviceInfoStorage.connect();
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
-    private DLightSessionsStorage(){
-        //read an XML file with the sessions list info: sessionID + dir + env
+    static final String ANALYTICS_SERVICE_INFO_DATA_STORAGE_TYPE = "analytics:serviceinfo";
+
+    public static DLightSessionServiceInfoStorage getStorageInstance(){
+        return InstanceHolder.serviceInfoStorage;
     }
 
-    public static DLightSessionsStorage getInstance(){
-        return DLightSessionsStorageHolder.instance;
+
+    public DLightSessionServiceInfoStorage openStorage(String uniqueKey) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public final DLightSession openSession(String pathToFolder){
-        //it will open the session and set its state to analyze
-        return null;
+    public DLightSessionServiceInfoStorage createStorage(String uniqueKey) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public DLightSessionServiceInfoStorage openStorage(String uniqueKey, Mode mode) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getUniqueKey(DLightSessionServiceInfoStorage storage) {
+        return DLightSessionServiceInfoStorage.DLIGHT_SERVICE_INFO_H2_DATABASE_URL;
+    }
+
+    public synchronized DLightSessionServiceInfoStorage createStorage() {
+         return InstanceHolder.serviceInfoStorage;
     }
 }
