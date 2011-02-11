@@ -81,7 +81,6 @@ import org.openide.util.Utilities;
  * @author Vladimir Voskresensky
  */
 public final class CndFileUtils {
-    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
     private static final FileSystem fileFileSystem;
@@ -334,17 +333,6 @@ public final class CndFileUtils {
 
     public static boolean isExistingDirectory(FileSystem fs, String filePath) {
         Flags flags = getFlags(fs, filePath, false);
-        if (EXTRA_TRACE_FAILED_INCLUDES) {
-            if (!(flags.exist && flags.directory)) {
-                if (filePath.contains("pkg-config-0.25")) {
-                    System.err.println("CndFileUtils.isExistingDirectory("+filePath+")="+flags);
-                    ConcurrentMap<String, Flags> filesMap = getFilesMap(fs);
-                    for(Map.Entry<String, Flags> entry : filesMap.entrySet()) {
-                        System.err.println("\t"+entry.getKey()+"->"+entry.getValue());
-                    }
-                }
-            }
-        }
         return flags.exist && flags.directory;
     }
 
@@ -427,11 +415,6 @@ public final class CndFileUtils {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
                 for (int i = 0; i < listFiles.length; i++) {
                     CndFileSystemProvider.FileInfo curFile = listFiles[i];
-                    if (EXTRA_TRACE_FAILED_INCLUDES) {
-                        if (path.contains("pkg-config-0.25")) {
-                            System.err.println("index File: "+curFile);
-                        }
-                    }
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
                     if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
@@ -447,24 +430,12 @@ public final class CndFileUtils {
             FileObject file = fs.findResource(path);
             if (file != null && file.isFolder() && file.canRead()) {
                 for (FileObject child : file.getChildren()) {
-                    if (EXTRA_TRACE_FAILED_INCLUDES) {
-                        if (path.contains("pkg-config-0.25")) {
-                            System.err.println("index FileObject: "+child.getPath()+"->"+child.isFolder());
-                        }
-                    }
                     String absPath = child.getPath();
                     if (child.isFolder()) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
                     } else {
                         files.put(absPath, Flags.FILE);
                     }
-                }
-            }
-        }
-        if (EXTRA_TRACE_FAILED_INCLUDES) {
-            if (path.contains("pkg-config-0.25")) {
-                for (Map.Entry<String, Flags> entry : files.entrySet()) {
-                    System.err.println("\t" + entry.getKey() + "->" + entry.getValue());
                 }
             }
         }
@@ -539,11 +510,6 @@ public final class CndFileUtils {
                 info = new CndFileSystemProvider.FileInfo[children.length];
                 for (int i = 0; i < children.length; i++) {
                     info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
-                    if (EXTRA_TRACE_FAILED_INCLUDES) {
-                        if (file.getAbsolutePath().contains("pkg-config-0.25")) {
-                            System.err.println("listFiles: "+children[i].getAbsolutePath());
-                        }
-                    }
                 }
             } else {
                 info = new CndFileSystemProvider.FileInfo[0];
