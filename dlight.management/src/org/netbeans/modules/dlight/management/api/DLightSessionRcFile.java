@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
  */
 public final class DLightSessionRcFile {
 
-    public static final String SESSION_PERSISTENCE_FOLDER  = "sessions";
+    public static final String SESSION_PERSISTENCE_FOLDER  = "sessions"; // NOI18N
 
      static class FormatException extends Exception {
         public FormatException(String message) {

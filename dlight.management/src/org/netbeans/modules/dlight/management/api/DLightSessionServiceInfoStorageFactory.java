@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
 public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactory<DLightSessionServiceInfoStorage> {
     /* use holder to prevent connect during lookup of service */
     private final static class InstanceHolder{
-        public static final DLightSessionServiceInfoStorage serviceInfoStorage  = new DLightSessionServiceInfoStorage("test");
+        public static final DLightSessionServiceInfoStorage serviceInfoStorage  = new DLightSessionServiceInfoStorage("test"); // NOI18N
         static{
             try {
                 serviceInfoStorage.connect();
@@ -64,7 +64,7 @@ public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactor
         }
     }
 
-    static final String ANALYTICS_SERVICE_INFO_DATA_STORAGE_TYPE = "analytics:serviceinfo";
+    static final String ANALYTICS_SERVICE_INFO_DATA_STORAGE_TYPE = "analytics:serviceinfo"; // NOI18N
 
     public static DLightSessionServiceInfoStorage getStorageInstance(){
         return InstanceHolder.serviceInfoStorage;
@@ -72,15 +72,15 @@ public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactor
 
 
     public DLightSessionServiceInfoStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public DLightSessionServiceInfoStorage createStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public DLightSessionServiceInfoStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public String getUniqueKey(DLightSessionServiceInfoStorage storage) {

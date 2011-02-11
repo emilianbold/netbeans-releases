@@ -226,7 +226,7 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
         String sqlString = "";//NOI18N
         if (oldValue == null) {
             sqlString = "INSERT INTO " + SERVICE_INFO_TABLE.getName() + "("//NOI18N
-                    + SERVICE_INFO_NAME.getColumnName() + ", "
+                    + SERVICE_INFO_NAME.getColumnName() + ", " // NOI18N
                     + SERVICE_INFO_VALUE.getColumnName() + ") " + " VALUES ("//NOI18N
                     + "'" + name + "', '" + value + "'" + ")";//NOI18N
         } else {
