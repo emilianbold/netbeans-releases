@@ -622,7 +622,6 @@ public final class DtraceDataCollector
         File localTmpFile = File.createTempFile("dlight", ".d", // NOI18N
                 HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getTempDirFile()); // NOI18N
 
-        File localTmpFile = File.createTempFile("dlight", ".d", localHost.getTempDirFile()); // NOI18N
         if (trgEnv.isLocal()) {
             finalPath = localTmpFile.getAbsolutePath();
             localTmpFile.deleteOnExit();
