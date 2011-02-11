@@ -62,13 +62,26 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author ads
+ * @author Petr Hejl
  */
 class CustomizerGeneral extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 748111929912200475L;
     
+    private final WLDeploymentManager manager;
+    
+    private final WLJpa2SwitchSupport support;
+    
+    private boolean passwordVisible;
+    
+    private char originalEchoChar;
+    
+    private Font originalFont;
+    
     CustomizerGeneral(WLDeploymentManager manager) {
         this.manager = manager;
+        this.support = new WLJpa2SwitchSupport(manager);
+
         initComponents();
         
         initValues();
@@ -109,6 +122,13 @@ class CustomizerGeneral extends javax.swing.JPanel {
         if ( port!= null){
             serverPort.setText( port );
         }
+        
+        boolean visible = support.isSwitchSupported()
+                && !support.isEnabledViaSmartUpdate();
+
+        jpa2SwitchLabel.setVisible(visible);
+        jpa2SwitchButton.setVisible(visible);
+        jpa2SwitchButton.setSelected(support.isEnabled());        
     }
 
     /** This method is called from within the constructor to
@@ -133,6 +153,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
         serverPortLabel = new javax.swing.JLabel();
         NoteChangesLabel = new javax.swing.JLabel();
         serverPort = new javax.swing.JTextField();
+        jpa2SwitchLabel = new javax.swing.JLabel();
+        jpa2SwitchButton = new javax.swing.JToggleButton();
 
         domainNameLabel.setLabelFor(domainName);
         org.openide.awt.Mnemonics.setLocalizedText(domainNameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizerDomainName")); // NOI18N
@@ -166,6 +188,15 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
         serverPort.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchButton.text", new Object[] {})); // NOI18N
+        jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jpa2SwitchButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -174,7 +205,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(adminInfoLabel)
-                    .addComponent(NoteChangesLabel)
+                    .addComponent(NoteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(domainNameLabel)
@@ -192,7 +223,9 @@ class CustomizerGeneral extends javax.swing.JPanel {
                                     .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(userName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(showButton)))))
+                                .addComponent(showButton))))
+                    .addComponent(jpa2SwitchButton)
+                    .addComponent(jpa2SwitchLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -221,7 +254,11 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverPortLabel)
                     .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 85, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                .addComponent(jpa2SwitchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jpa2SwitchButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(NoteChangesLabel)
                 .addContainerGap())
         );
@@ -274,6 +311,14 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
         }
     }//GEN-LAST:event_showButtonActionPerformed
+
+    private void jpa2SwitchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2SwitchButtonActionPerformed
+        if (jpa2SwitchButton.isSelected()) {
+            support.enable();
+        } else {
+            support.disable();
+        }
+    }//GEN-LAST:event_jpa2SwitchButtonActionPerformed
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -283,6 +328,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel domainFolderLabel;
     private javax.swing.JTextField domainName;
     private javax.swing.JLabel domainNameLabel;
+    private javax.swing.JToggleButton jpa2SwitchButton;
+    private javax.swing.JLabel jpa2SwitchLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField serverPort;
@@ -292,8 +339,4 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables
 
-    private boolean passwordVisible;
-    private char originalEchoChar;
-    private Font originalFont;
-    private WLDeploymentManager manager;
 }
