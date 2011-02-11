@@ -42,14 +42,14 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryFormat;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Egor Ushakov
  */
-public enum GdbMemoryFormat implements MemoryFormat {
+public enum GdbMemoryFormat implements FormatOption {
     HEXADECIMAL(NbBundle.getMessage(GdbMemoryFormat.class, "Format_Hexadecimal"), "x"), //NOI18N
     DECIMAL(NbBundle.getMessage(GdbMemoryFormat.class, "Format_Decimal"), "d"), //NOI18N
     UNSIGNED_DECIMAL(NbBundle.getMessage(GdbMemoryFormat.class, "Format_UnsignedDecimal"), "u"), //NOI18N

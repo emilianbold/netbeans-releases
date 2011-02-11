@@ -46,6 +46,17 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
  *
  * @author Egor Ushakov
  */
-public interface MemoryFormat {
+public interface FormatOption {
     String getOption();
+    
+    public static FormatOption EMPTY = new FormatOption() {
+        public String getOption() {
+            return "";
+        }
+
+        @Override
+        public String toString() {
+            return "";
+        }
+    };
 }
