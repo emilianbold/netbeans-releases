@@ -62,8 +62,6 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 public final class IncludeDirEntry {
-    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
-    
     static {
         SupportAPIAccessor.register(new AccessorImpl());
     }
@@ -117,8 +115,6 @@ public final class IncludeDirEntry {
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-                } else if (EXTRA_TRACE_FAILED_INCLUDES) {
-                    System.err.println("NOT EXISTING IncludeDirEntry " + dir + " File.exists()=" + new File(dir).exists()); // NOI18N
                 }
                 CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
                 out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq);

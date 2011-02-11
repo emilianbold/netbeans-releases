@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -169,15 +168,20 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public FileObject urlToFileObject(String path) {
         if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             // path is like "rfs:hostname:22/tmp/filename.ext"
+            // or           "rfs:username@hostname:22/tmp/filename.ext"
             int port = 0;
             StringBuilder hostName = new StringBuilder();
+            String userName = null;
             CharSequence remotePath = "";
-            boolean insideHost = true;
+            boolean insideHostOrUser = true;
             for (int i = RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length(); i < path.length(); i++) {
                 char c = path.charAt(i);
-                if (insideHost) {
-                    if (c == ':') {
-                        insideHost = false;
+                if (insideHostOrUser) {
+                    if (c == '@') {
+                        userName = hostName.toString(); // it was user, not host
+                        hostName = new StringBuilder();
+                    } else if (c == ':') {
+                        insideHostOrUser = false;
                     } else {
                         hostName.append(c);
                     }
@@ -196,11 +200,18 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             }
             FileObject fo = null;
             RemoteFileSystem fs = null;
-            ExecutionEnvironment env = RemoteFileSystemUtils.getExecutionEnvironment(hostName.toString(), 0);
-            if (env != null) {
-                fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
-                fo = fs.findResource(remotePath.toString());
+            ExecutionEnvironment env;
+            if (userName == null) {
+                RemoteLogger.assertTrueInConsole(false, "Trying to access remote file system without user name");
+                env = RemoteFileSystemUtils.getExecutionEnvironment(hostName.toString(), 0);
+                if (env == null) {
+                    env = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), hostName.toString());
+                }
+            } else {
+                env = ExecutionEnvironmentFactory.createNew(userName, hostName.toString());
             }
+            fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+            fo = fs.findResource(remotePath.toString());
 //            if (fo == null) {
 //                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
 //            }
