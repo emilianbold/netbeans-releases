@@ -48,6 +48,8 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ondra
@@ -57,6 +59,7 @@ public class SelectUriPanel extends javax.swing.JPanel {
     /** Creates new form SelectUriPanel */
     public SelectUriPanel() {
         initComponents();
+        setName(NbBundle.getMessage(SelectUriPanel.class, "LBL_SelectUriPanel.name")); //NOI18N
     }
 
     /** This method is called from within the constructor to

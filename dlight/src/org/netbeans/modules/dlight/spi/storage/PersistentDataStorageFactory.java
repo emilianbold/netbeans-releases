@@ -50,6 +50,10 @@ package org.netbeans.modules.dlight.spi.storage;
  */
 public interface PersistentDataStorageFactory<T extends PersistentDataStorage> extends DataStorageFactory<T> {
 
+    static final String PERSISTENT_DATA_STORAGE_FOLDER =  System.getProperty("dlight.storages.folder");//NOI18N
+
+    static final String PERSISTENT_DATA_STORAGE_HOST = System.getProperty("dlight.storages.host");//NOI18N
+
      /**
       * Opens storage with the unique key <code>uniqueKey</code>
       * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
