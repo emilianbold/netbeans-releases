@@ -508,7 +508,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 
     private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
         if (version.isXhtml()) {
-            return ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION;
+            return ParserMode.XML_NO_EXTERNAL_ENTITIES; //we do not use the parser for validation, no need to load external entities
         } else {
             switch (version) {
                 case HTML41_STRICT:
