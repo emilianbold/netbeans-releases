@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
-import org.netbeans.modules.cnd.apt.impl.support.APTIncludeResolverImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -66,8 +65,6 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public abstract class APTAbstractWalker extends APTWalker {
-    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
-    
     private final APTPreprocHandler preprocHandler;
     private final CharSequence startPath;
     private final FileSystem startFileSystem;
@@ -102,13 +99,6 @@ public abstract class APTAbstractWalker extends APTWalker {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startFileSystem, startPath);
             ResolvedPath resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             if (resolvedPath == null) {
-                if (EXTRA_TRACE_FAILED_INCLUDES) {
-                    APTUtils.LOG.log(Level.SEVERE, "failed to resolve {0}\nusing resolver:\n{1}\nand cache entry {2}", new Object[]{apt, resolver, cacheEntry}); // NOI18N
-                    if (resolver instanceof APTIncludeResolverImpl) {
-                        APTIncludeResolverImpl resolverImpl = (APTIncludeResolverImpl) resolver;
-                        resolverImpl.resolveFilePathTrace(((APTInclude)apt).getFileName(null), false, false);
-                    }
-                }
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
                         System.err.println("FAILED INCLUDE: from " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N

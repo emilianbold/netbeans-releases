@@ -90,6 +90,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -192,7 +193,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
         getBag(doc);
 
-        this.doc.addDocumentListener(this);
+        DocumentUtilities.addPriorityDocumentListener(this.doc, this, DocumentListenerPriority.AFTER_CARET_UPDATE);
         editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
         this.editorCookie = editorCookie;
 

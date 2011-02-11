@@ -499,9 +499,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             if (!cache.exists()) {
                 cache.mkdirs();
-            }
-            if (!cache.exists()) {
-                throw new IOException("Can not create cache directory " + cache); // NOI18N
+                if (!cache.exists()) {
+                    throw new IOException("Can not create cache directory " + cache); // NOI18N
+                }
             }
             DirectoryReader directoryReader = getLsViaSftp() ? 
                     new DirectoryReaderSftp(execEnv, remotePath) : new DirectoryReaderLs(execEnv, remotePath);
@@ -632,6 +632,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 storage.setEntries(entries.values());
                 storage.store();
+            } else {
+                storage.touch();
             }
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
@@ -679,6 +681,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             if (child.cache.exists()) {
                 return;
+            }
+            final File cacheParentFile = child.cache.getParentFile();
+            if (!cacheParentFile.exists()) {
+                cacheParentFile.mkdirs();
+                if (!cacheParentFile.exists()) {
+                    throw new IOException("Unable to create parent firectory " + cacheParentFile.getAbsolutePath()); //NOI18N
+                }
             }
             Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
             int rc = task.get().intValue();

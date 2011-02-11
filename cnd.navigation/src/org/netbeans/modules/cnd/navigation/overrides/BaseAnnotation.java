@@ -208,9 +208,10 @@ import org.openide.util.NbBundle;
     }
     
     public void attach() {
-        if(pos.getOffset() != -1) {
-            NbDocument.addAnnotation(document, pos, -1, this);
+        if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
+            return;
         }
+         NbDocument.addAnnotation(document, pos, -1, this);
     }
     
     public void detachImpl() {

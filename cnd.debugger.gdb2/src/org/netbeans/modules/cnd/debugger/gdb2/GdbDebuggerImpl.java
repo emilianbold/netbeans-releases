@@ -122,6 +122,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
@@ -643,6 +644,10 @@ import org.openide.util.Exceptions;
         session = null;
 	state().isLoaded = false;
 	stateChanged();
+        
+        if (memoryWindow != null) {
+            memoryWindow.setDebugger(null);
+        }
 
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
@@ -3528,17 +3533,22 @@ import org.openide.util.Exceptions;
     public void requestDisassembly() {
         Disassembly.open();
     }
+    
+    public FormatOption[] getMemoryFormats() {
+        return GdbMemoryFormat.values();
+    }
 
     private static final int MEMORY_READ_WIDTH = 16;
     
-    public void requestMems(String start, String length, String format, int index) {
+    public void requestMems(String start, String length, FormatOption format) {
         int lines;
         try {
             lines = (Integer.valueOf(length)-1)/MEMORY_READ_WIDTH+1;
         } catch (Exception e) {
             return;
         }
-        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " .") { // NOI18N
+        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + ' ' + format.getOption() + //NOI18N
+                " 1 " + lines + ' ' + MEMORY_READ_WIDTH + " .") { // NOI18N
             @Override
             protected void onDone(MIRecord record) {
                 if (memoryWindow != null) {
@@ -4329,8 +4339,12 @@ import org.openide.util.Exceptions;
         notImplemented("fix");	// NOI18N
     }
 
+    public FormatOption[] getEvalFormats() {
+        return null; // gdb does not support eval formats
+    }
+
     // interface NativeDebugger
-    public void exprEval(String format, final String expr) {
+    public void exprEval(FormatOption format, final String expr) {
         String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
         MICommand cmd = new MiCommandImpl(cmdString) {
             @Override

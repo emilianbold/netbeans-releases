@@ -859,6 +859,7 @@ public class OutlineView extends JScrollPane {
                 // display the context menu of the root node
                 JPopupMenu popup = manager.getRootContext().getContextMenu();
                 if (popup != null && popup.getSubElements().length > 0) {
+                    popupFactory.addNoFilterItem(outline, popup);
                     return popup;
                 }
             }
