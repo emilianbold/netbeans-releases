@@ -26,17 +26,15 @@
                           <Component id="vmOptionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="javaHomeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="memoryOptionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jpaOptionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="vendorName" alignment="0" min="-2" pref="111" max="-2" attributes="0"/>
-                          <Component id="javaHome" alignment="0" pref="634" max="32767" attributes="1"/>
-                          <Component id="vmOptions" alignment="0" pref="634" max="32767" attributes="1"/>
-                          <Component id="memoryOptions" alignment="0" pref="634" max="32767" attributes="0"/>
+                          <Component id="javaHome" alignment="0" pref="432" max="32767" attributes="1"/>
+                          <Component id="vmOptions" alignment="0" pref="432" max="32767" attributes="1"/>
+                          <Component id="memoryOptions" alignment="0" pref="432" max="32767" attributes="0"/>
                           <Component id="vmOptionsSampleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="memoryOptionsCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jpa2Button" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -71,12 +69,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="memoryOptionsCommentLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jpa2Button" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jpaOptionsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace pref="98" max="32767" attributes="0"/>
+              <EmptySpace pref="164" max="32767" attributes="0"/>
               <Component id="noteChangesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -235,26 +228,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="LBL_VmMemoryOptionsComment" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="jpa2Button">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="CustomizerJVM.jpa2Button.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jpa2ButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jpaOptionsLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jpa2Button"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="LBL_JPAOptions" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

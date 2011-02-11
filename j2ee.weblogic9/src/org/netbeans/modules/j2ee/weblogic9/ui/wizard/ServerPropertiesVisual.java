@@ -496,7 +496,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void jpa2SwitchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2SwitchButtonActionPerformed
-        // TODO add your handling code here:
         if (jpa2SwitchButton.isSelected()) {
             support.enable();
         } else {
