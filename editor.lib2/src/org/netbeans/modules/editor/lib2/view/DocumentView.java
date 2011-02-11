@@ -119,6 +119,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.DebugRepaintManager.level=FINE
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
+    
+    // True to log real source chars
+    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text");
 
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
@@ -1461,8 +1464,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification);
         sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit);
-        Document doc = getDocument();
-        sb.append("\nDoc: ").append(ViewUtils.toString(doc));
+        if (LOG_SOURCE_TEXT) {
+            Document doc = getDocument();
+            sb.append("\nDoc: ").append(ViewUtils.toString(doc));
+        }
         return sb;
     }
 
