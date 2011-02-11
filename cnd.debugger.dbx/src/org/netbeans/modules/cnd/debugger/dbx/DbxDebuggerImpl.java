@@ -138,7 +138,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 
 // for rebuildOnNextDebug
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryFormat;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RTCWindowAction;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcTopComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
@@ -1456,7 +1456,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
-    public void exprEval(String format, String expr) {
+    public FormatOption[] getEvalFormats() {
+        return DbxEvalFormat.values();
+    }
+
+    public void exprEval(FormatOption format, String expr) {
         // CR 6574620
         if (currentEvaluationWindow == null) {
             currentEvaluationWindow = EvaluationWindow.getDefault();
@@ -1464,7 +1468,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         currentEvaluationWindow.open();
         currentEvaluationWindow.requestActive();
         currentEvaluationWindow.componentShowing();
-        dbx.expr_eval("EvaluationWindow".hashCode(), format + expr); // NOI18N
+        dbx.expr_eval("EvaluationWindow".hashCode(), format.getOption() + ' ' + expr); // NOI18N
     }
 
     public void evalResult(int rt, String value) {
@@ -3555,7 +3559,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     
     private String memory_start;
     private String memory_length;
-    private MemoryFormat memory_format;
+    private FormatOption memory_format;
 
     @Override
     public void registerMemoryWindow(MemoryWindow mw) {
@@ -3669,11 +3673,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         return memvalue;
     }
     
-    public MemoryFormat[] getMemoryFormats() {
+    public FormatOption[] getMemoryFormats() {
         return DbxMemoryFormat.values();
     }
 
-    public void requestMems(String start, String length, MemoryFormat format) {
+    public void requestMems(String start, String length, FormatOption format) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("DbxDebuggerImpl.requestMems() ready %s\n", // NOI18N
                     isConnected());

@@ -5,13 +5,13 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryFormat;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 
 /**
  *
  * @author Egor Ushakov
  */
-public enum DbxMemoryFormat implements MemoryFormat {
+public enum DbxMemoryFormat implements FormatOption {
     HEXADECIMAL8(Catalog.get("L_Hexadecimal"), "lX"), //NOI18N
     HEXADECIMAL4(Catalog.get("l_Hexadecimal"), "X"), //NOI18N
     HEXADECIMAL2(Catalog.get("w_Hexadecimal"), "x"), //NOI18N
