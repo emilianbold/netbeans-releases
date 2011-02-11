@@ -81,7 +81,6 @@ import org.openide.util.Utilities;
  * @author Vladimir Voskresensky
  */
 public final class CndFileUtils {
-    private final static boolean EXTRA_TRACE_FAILED_INCLUDES = Boolean.getBoolean("cnd.apt.extra.trace.failed.includes"); // NOI18N
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
     private static final FileSystem fileFileSystem;
@@ -334,17 +333,6 @@ public final class CndFileUtils {
 
     public static boolean isExistingDirectory(FileSystem fs, String filePath) {
         Flags flags = getFlags(fs, filePath, false);
-        if (EXTRA_TRACE_FAILED_INCLUDES) {
-            if (!(flags.exist && flags.directory)) {
-                if (filePath.contains("pkg-config-0.25")) {
-                    System.err.println("CndFileUtils.isExistingDirectory("+filePath+")="+flags);
-                    ConcurrentMap<String, Flags> filesMap = getFilesMap(fs);
-                    for(Map.Entry<String, Flags> entry : filesMap.entrySet()) {
-                        System.err.println("\t"+entry.getKey()+"->"+entry.getValue());
-                    }
-                }
-            }
-        }
         return flags.exist && flags.directory;
     }
 
@@ -380,7 +368,7 @@ public final class CndFileUtils {
                     if (parentDirFlags == null) {
                         // not yet checked
                         parentDirFlags = Flags.get(fs, parent);
-                        files.put(parent, parentDirFlags);
+                        files.putIfAbsent(parent, parentDirFlags);
                     }
                     if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.FILE) {
                         // no need to check non existing file
@@ -393,14 +381,18 @@ public final class CndFileUtils {
                         exists = files.get(absolutePath);
                     }
                 } else {
-                    // no need to check non existing file
-                    exists = Flags.NOT_FOUND;
-//                    files.put(path, exists);
+                    if (parentDirFlags == Flags.NOT_FOUND) {
+                        // no need to check non existing file
+                        exists = Flags.NOT_FOUND;
+                    } else {
+                        // may be our parent was indexed in parallel thread
+                        exists = files.get(absolutePath);
+                    }
                 }
             }
             if (exists == null) {
                 exists = Flags.get(fs, absolutePath);
-                files.put(absolutePath, exists);
+                files.putIfAbsent(absolutePath, exists);
             }
             if (exists == Flags.DIRECTORY) {
                 // let's index not indexed directory
@@ -423,11 +415,6 @@ public final class CndFileUtils {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
                 for (int i = 0; i < listFiles.length; i++) {
                     CndFileSystemProvider.FileInfo curFile = listFiles[i];
-                    if (EXTRA_TRACE_FAILED_INCLUDES) {
-                        if (path.contains("pkg-config-0.25")) {
-                            System.err.println("index: "+curFile.absolutePath);
-                        }
-                    }
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
                     if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
@@ -443,11 +430,6 @@ public final class CndFileUtils {
             FileObject file = fs.findResource(path);
             if (file != null && file.isFolder() && file.canRead()) {
                 for (FileObject child : file.getChildren()) {
-                    if (EXTRA_TRACE_FAILED_INCLUDES) {
-                        if (path.contains("pkg-config-0.25")) {
-                            System.err.println("index: "+child.getPath());
-                        }
-                    }
                     String absPath = child.getPath();
                     if (child.isFolder()) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
@@ -528,11 +510,6 @@ public final class CndFileUtils {
                 info = new CndFileSystemProvider.FileInfo[children.length];
                 for (int i = 0; i < children.length; i++) {
                     info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
-                    if (EXTRA_TRACE_FAILED_INCLUDES) {
-                        if (file.getAbsolutePath().contains("pkg-config-0.25")) {
-                            System.err.println("listFiles: "+children[i].getAbsolutePath());
-                        }
-                    }
                 }
             } else {
                 info = new CndFileSystemProvider.FileInfo[0];
@@ -592,7 +569,6 @@ public final class CndFileUtils {
         private static final Flags DIRECTORY = new Flags(true,true);
         private static final Flags INDEXED_DIRECTORY = new Flags(true,true);
         private static final Flags NOT_FOUND = new Flags(false,true);
-        private static final Flags NOT_FOUND_INDEXED_DIRECTORY = new Flags(false, true);
         
         private static Flags get(FileSystem fs, String absPath) {
             FileObject fo;
@@ -621,8 +597,6 @@ public final class CndFileUtils {
         public String toString() {
             if (this == NOT_FOUND) {
                 return "NOT_FOUND"; // NOI18N
-            } else if (this == NOT_FOUND_INDEXED_DIRECTORY) {
-                return "NOT_FOUND_INDEXED_DIRECTORY"; // NOI18N
             } else if (this == INDEXED_DIRECTORY) {
                 return "INDEXED_DIRECTORY"; // NOI18N
             } else if (this == DIRECTORY) {

@@ -70,6 +70,11 @@ public abstract class CndFileSystemProvider {
             this.absolutePath = absolutePath;
             this.directory = directory;
         }
+
+        @Override
+        public String toString() {
+            return "FileInfo{" + "absolutePath=" + absolutePath + "directory=" + directory + '}';//NOI18N
+        }
     }
 
     private static CndFileSystemProvider getDefault() {

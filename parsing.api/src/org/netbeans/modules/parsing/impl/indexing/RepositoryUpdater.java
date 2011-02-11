@@ -1192,7 +1192,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return true;
     }
 
-    private boolean isCacheFile(FileObject f) {
+    public boolean isCacheFile(FileObject f) {
         return FileUtil.isParentOf(CacheFolder.getCacheFolder(), f);
     }
 

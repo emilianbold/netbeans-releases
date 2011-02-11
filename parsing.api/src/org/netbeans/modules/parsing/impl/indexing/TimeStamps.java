@@ -44,6 +44,9 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -86,13 +89,13 @@ public final class TimeStamps {
 
     //where
     private void load () throws IOException {
-        FileObject cacheDir = CacheFolder.getDataFolder(root);
-        FileObject f = cacheDir.getFileObject(TIME_STAMPS_FILE);
-        if (f != null) {
+        final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
+        final File f = new File (cacheDir, TIME_STAMPS_FILE);
+        if (f.exists()) {
             try {
                 boolean readOldPropertiesFormat = false;
                 {
-                    final BufferedReader in = new BufferedReader(new InputStreamReader(f.getInputStream(), "UTF-8")); //NOI18N
+                    final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
                     try {
                         String line = in.readLine();
                         if (line != null && line.startsWith(VERSION)) {
@@ -122,7 +125,7 @@ public final class TimeStamps {
                 if (readOldPropertiesFormat) {
                     LOG.log(Level.FINE, "{0}: reading old Properties timestamps", f.getPath()); //NOI18N
                     final Properties p = new Properties();
-                    final InputStream in = f.getInputStream();
+                    final InputStream in = new FileInputStream(f);
                     try {
                         p.load(in);
                     } finally {
@@ -164,11 +167,11 @@ public final class TimeStamps {
 
     public void store () throws IOException {
         if (true) {
-            FileObject cacheDir = CacheFolder.getDataFolder(root);
-            FileObject f = FileUtil.createData(cacheDir, TIME_STAMPS_FILE);
+            final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
+            final File f = new File(cacheDir, TIME_STAMPS_FILE);
             assert f != null;
             try {
-                final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(f.getOutputStream(), "UTF-8")); //NOI18N
+                final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8")); //NOI18N
                 try {
                     if (unseen != null) {
                         timestamps.keySet().removeAll(unseen);
@@ -237,10 +240,7 @@ public final class TimeStamps {
 
         FileObject cacheDir = CacheFolder.getDataFolder(root, true);
         if (cacheDir != null) {
-            FileObject f = cacheDir.getFileObject(TIME_STAMPS_FILE);
-            if (f != null) {
-                return true;
-            }
+            return new File (FileUtil.toFile(cacheDir),TIME_STAMPS_FILE).exists();
         }
         
         return false;
