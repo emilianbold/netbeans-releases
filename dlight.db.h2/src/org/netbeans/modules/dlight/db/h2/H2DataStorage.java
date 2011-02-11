@@ -62,6 +62,7 @@ import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.Util;
@@ -107,10 +108,10 @@ public final class H2DataStorage extends SQLDataStorage {
             tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
         }
 
-        storagesDir = System.getProperty("dlight.storages.folder") == null ? tempDir : System.getProperty("dlight.storages.folder"); // NOI18N
+        storagesDir = PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_FOLDER == null ? tempDir : PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_FOLDER ; // NOI18N
         url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
-        if (System.getProperty("dlight.storages.host") != null) {
-            persistentURL = "jdbc:h2:tcp://" + System.getProperty("dlight.storages.host") + storagesDir;
+        if (PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_HOST != null) {
+            persistentURL = "jdbc:h2:tcp://" + PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_HOST + storagesDir;
         } else {
             persistentURL = url;//use EMBEDDED version if dlight.storages.host is not defined
         }
@@ -136,7 +137,7 @@ public final class H2DataStorage extends SQLDataStorage {
                 }
             }
             dbIndex.getAndSet(newValue);
-            if (System.getProperty("dlight.storages.folder") == null) { // NOI18N
+            if (PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_FOLDER == null) { // NOI18N
                 DLightExecutorService.submit(new Runnable() {
 
                     @Override
