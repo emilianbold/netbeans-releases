@@ -3547,8 +3547,8 @@ import org.openide.util.Exceptions;
         } catch (Exception e) {
             return;
         }
-        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " " + format.getOption() +
-                " 1 " + lines + " " + MEMORY_READ_WIDTH + " .") { // NOI18N
+        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + ' ' + format.getOption() + //NOI18N
+                " 1 " + lines + ' ' + MEMORY_READ_WIDTH + " .") { // NOI18N
             @Override
             protected void onDone(MIRecord record) {
                 if (memoryWindow != null) {
