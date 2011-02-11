@@ -258,6 +258,11 @@ final class ViewBuilder {
             matchOffset += offsetDelta;
             paragraphViewEndOffset += offsetDelta;
         }
+        
+        // Possible hotfix for #191620
+        if (matchOffset > docViewEndOffset) {
+            matchOffset = docViewEndOffset;
+        }
 
         assert (matchOffset >= 0) : "matchOffset=" + matchOffset; // NOI18N
         assert (paragraphViewEndOffset >= 0) : "paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
