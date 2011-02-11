@@ -102,7 +102,7 @@ public final class MemoryWindow extends TopComponent
     private JTextField controlLengthText;
     private JComboBox controlFormatCombo;
     private FormatListener format_listener;
-    private MemoryFormat memory_format;
+    private FormatOption memory_format;
 
     private boolean needInitData=true;
     private JComboBox controlAddressCombo;
@@ -165,7 +165,7 @@ public final class MemoryWindow extends TopComponent
         controlAddressCombo.requestFocusInWindow();
     }
 
-    public void setControlPanelData (String start, String length, MemoryFormat format) {
+    public void setControlPanelData (String start, String length, FormatOption format) {
 	memory_start = start;
 	memory_length = length;
 	memory_format = format;
@@ -180,9 +180,13 @@ public final class MemoryWindow extends TopComponent
         
         if (update && controlFormatCombo != null && debugger != null) {
             // set memory formats
-            controlFormatCombo.setModel(new DefaultComboBoxModel(debugger.getMemoryFormats()));
-            updateSelectedFormat();
+            updateFormats();
         }
+    }
+    
+    private void updateFormats() {
+        controlFormatCombo.setModel(new DefaultComboBoxModel(debugger.getMemoryFormats()));
+        updateSelectedFormat();
     }
     
     private void updateSelectedFormat() {
@@ -237,7 +241,7 @@ public final class MemoryWindow extends TopComponent
 
     private void updateMems() {
         memory_length = controlLengthText.getText();
-        memory_format = (MemoryFormat)controlFormatCombo.getSelectedItem();
+        memory_format = (FormatOption)controlFormatCombo.getSelectedItem();
 	if (validate(memory_length) && memory_format != null && debugger != null) {
             debugger.requestMems(memory_start, memory_length, memory_format);
         }
@@ -335,8 +339,8 @@ public final class MemoryWindow extends TopComponent
 		new JLabel(Catalog.get("Mem_LBL_Format"));	// NOI18N
             controlFormatLabel.setToolTipText(Catalog.get("TIP_MemFormat"));	// NOI18N
 	    format_listener = new FormatListener();
-            controlFormatCombo = new JComboBox(debugger.getMemoryFormats());
-            updateSelectedFormat();
+            controlFormatCombo = new JComboBox();
+            updateFormats();
             controlFormatCombo.addActionListener(format_listener);
 
 	    // 6754292
@@ -442,7 +446,7 @@ public final class MemoryWindow extends TopComponent
 	    if (ac.equals("comboBoxChanged")) {		// NOI18N
 		// Changed start address
 		JComboBox cb = (JComboBox)ev.getSource();
-                memory_format = (MemoryFormat)cb.getSelectedItem();
+                memory_format = (FormatOption)cb.getSelectedItem();
                 updateMems();
 	    }
         }
