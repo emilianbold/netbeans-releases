@@ -54,6 +54,7 @@ import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -94,7 +95,7 @@ class SftpSupport {
     private static AtomicInteger uploadCount = new AtomicInteger(0);
 
     private static final int PUT_RETRY_COUNT = Integer.getInteger("sftp.put.retries", 1); // NOI18N
-
+    
     /** for test purposes only */
     /*package-local*/ static int getUploadCount() {
         return uploadCount.get();
@@ -112,17 +113,23 @@ class SftpSupport {
         return instance;
     }
 
-    //private final RequestProcessor requestProcessor;
-    // Trying to work around #184068 -  Instable remote unit tests failure
-    private static final RequestProcessor requestProcessor = new RequestProcessor("SFTP request processor"); // NOI18N;
-    
+    private static final int CONCURRENCY_LEVEL = 
+            Integer.getInteger("remote.sftp.threads", Runtime.getRuntime().availableProcessors() + 2); // NOI18N
+
+    private static final String RP_NAME = "SFTP request processor"; // NOI18N;
+    private final RequestProcessor requestProcessor = new RequestProcessor(RP_NAME, CONCURRENCY_LEVEL);
+        
     //
     // Instance stuff
     //
     private final ExecutionEnvironment execEnv;
 
-    // its's ok to hav a single one since we have only single-threaded request processor
-    private ChannelSftp channel;
+    private LinkedList<ChannelSftp> spareChannels = new LinkedList<ChannelSftp>();
+    
+    // just a primitive statistics
+    private int currBusyChannels = 0;
+    private int maxBusyChannels = 0;
+    
     private final Object channelLock = new Object();
 
     private SftpSupport(ExecutionEnvironment execEnv) {
@@ -132,31 +139,54 @@ class SftpSupport {
         // requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
     }
 
-    private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException {
-
+    private void incrementStatistics() {
         synchronized (channelLock) {
-            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                channel = null;
-                ConnectionManager.getInstance().connectTo(execEnv);
-            }
-            if (channel != null && !channel.isConnected()) {
-                channel = null;
-            }
-            if (channel == null) {
-                ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
-                if (cmAccess == null) { // is it a paranoja?
-                    throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
-                }
-                
-                channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
-
-                if (channel == null) {
-                    return null;
-                }
-
-                channel.connect();
+            currBusyChannels++;
+            if (currBusyChannels > maxBusyChannels) {
+                maxBusyChannels = currBusyChannels;
+                Logger.getInstance().log(Level.FINEST, "SFTP max. busy channels reached: {0}", maxBusyChannels);
             }
         }
+    }
+    
+    private void decrementStatistics() {
+        synchronized (channelLock) {
+            currBusyChannels--;
+        }
+    }
+    
+    private void releaseChannel(ChannelSftp channel) {
+        synchronized (channelLock) {
+            spareChannels.push(channel);
+            decrementStatistics();
+        }
+    }
+
+    private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException {
+        // try to reuse channel
+        synchronized (channelLock) {
+            if (!spareChannels.isEmpty()) {
+                ChannelSftp channel = spareChannels.pop();
+                if (channel.isConnected()) {
+                    incrementStatistics();
+                    return channel;
+                }
+            }
+        }
+        // no spare channels - create a new one            
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            ConnectionManager.getInstance().connectTo(execEnv);
+        }
+        ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+        if (cmAccess == null) { // is it a paranoja?
+            throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
+        }                
+        ChannelSftp channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
+        if (channel == null) {
+            throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
+        }
+        channel.connect();
+        incrementStatistics();
         return channel;
     }
 
@@ -175,7 +205,8 @@ class SftpSupport {
         @Override
         public Integer call() throws InterruptedException {
             int rc = -1;
-            try {
+            try {                
+                Thread.currentThread().setName(RP_NAME + ": " + getTraceName());
                 work();
                 rc = 0;
             } catch (JSchException ex) {
@@ -273,16 +304,20 @@ class SftpSupport {
             }
             LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
-            if (checkDir) {
-                int slashPos = dstFileName.lastIndexOf('/'); //NOI18N
-                if (slashPos >= 0) {
-                    String remoteDir = dstFileName.substring(0, slashPos);
-                    CommonTasksSupport.mkDir(execEnv, remoteDir, error).get();
+            try {
+                if (checkDir) {
+                    int slashPos = dstFileName.lastIndexOf('/'); //NOI18N
+                    if (slashPos >= 0) {
+                        String remoteDir = dstFileName.substring(0, slashPos);
+                        CommonTasksSupport.mkDir(execEnv, remoteDir, error).get();
+                    }
                 }
-            }
-            put(cftp);
-            if (mask >= 0) {
-                cftp.chmod(mask, dstFileName);
+                put(cftp);
+                if (mask >= 0) {
+                    cftp.chmod(mask, dstFileName);
+                }
+            } finally {
+                releaseChannel(cftp);
             }
             uploadCount.incrementAndGet();
         }
@@ -338,7 +373,11 @@ class SftpSupport {
         protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException, InterruptedException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
-            cftp.get(srcFileName, dstFileName);
+            try {
+                cftp.get(srcFileName, dstFileName);
+            } finally {
+                releaseChannel(cftp);
+            }
         }
 
         @Override
@@ -392,18 +431,24 @@ class SftpSupport {
         @Override
         public StatInfo call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
+            StatInfo result;
             ChannelSftp cftp = getChannel();
-            SftpATTRS attrs = cftp.lstat(path);            
-            String dirName, baseName;
-            int slashPos = path.lastIndexOf('/');
-            if (slashPos == 0) {
-                dirName = "";
-                baseName = path.substring(1);
-            } else {
-                dirName = path.substring(0, slashPos);
-                baseName = path.substring(slashPos + 1);
+            try {
+                Thread.currentThread().setName(RP_NAME + ": " + getTraceName());
+                SftpATTRS attrs = cftp.lstat(path);            
+                String dirName, baseName;
+                int slashPos = path.lastIndexOf('/');
+                if (slashPos == 0) {
+                    dirName = "";
+                    baseName = path.substring(1);
+                } else {
+                    dirName = path.substring(0, slashPos);
+                    baseName = path.substring(slashPos + 1);
+                }
+                result = createStatInfo(dirName, baseName, attrs, cftp);
+            } finally {
+                releaseChannel(cftp);
             }
-            StatInfo result = createStatInfo(dirName, baseName, attrs, cftp);
             LOG.log(Level.FINE, "{0} finished", getTraceName());
             return result;
         }
@@ -426,14 +471,20 @@ class SftpSupport {
         @SuppressWarnings("unchecked")
         public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
+            StatInfo[] result;
             ChannelSftp cftp = getChannel();
-            List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
-            StatInfo[] result = new StatInfo[entries.size()];
-            int i = 0;
-            for (LsEntry entry : entries) {
-                SftpATTRS attrs = entry.getAttrs();
-                result[i++] = createStatInfo(path, entry.getFilename(), attrs, cftp);
-            }            
+            try {
+                Thread.currentThread().setName(RP_NAME + ": " + getTraceName());
+                List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
+                result = new StatInfo[entries.size()];
+                int i = 0;
+                for (LsEntry entry : entries) {
+                    SftpATTRS attrs = entry.getAttrs();
+                    result[i++] = createStatInfo(path, entry.getFilename(), attrs, cftp);
+                }            
+            } finally {
+                releaseChannel(cftp);
+            }
             LOG.log(Level.FINE, "{0} finished", getTraceName());
             return result;
         }

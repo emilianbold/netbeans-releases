@@ -266,7 +266,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
                 int docViewStartOffset = documentView.getStartOffset();
                 int docViewEndOffset = documentView.getEndOffset();
-                rRegion.intersection(docViewStartOffset, docViewEndOffset);
+                rRegion = rRegion.intersection(docViewStartOffset, docViewEndOffset);
                 if (rRegion.isEmpty()) {
                     // Outside of area covered by document view
                     return;
@@ -359,7 +359,7 @@ public final class ViewUpdates implements DocumentListener {
                 if (docViewOrigEndOffset >= removeOffset) {
                     docViewOrigEndOffset += removeLength;
                 }
-                rRegion.intersection(docViewStartOffset, docViewOrigEndOffset);
+                rRegion = rRegion.intersection(docViewStartOffset, docViewOrigEndOffset);
                 if (rRegion.isEmpty()) {
                     // Outside of area covered by document view
                     return;

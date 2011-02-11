@@ -53,6 +53,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.remote.support.RemoteLogger;
 
 /**
  *
@@ -140,6 +141,7 @@ final class CachedRemoteInputStream extends InputStream {
             } catch (CancellationException ex) {
                 return -1;
             } catch (ExecutionException ex) {
+                RemoteLogger.finest(ex);
                 return -1;
             } finally {
                 if (delegate == null) {
