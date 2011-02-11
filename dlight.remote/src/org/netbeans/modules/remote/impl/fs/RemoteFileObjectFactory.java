@@ -58,7 +58,6 @@ public class RemoteFileObjectFactory {
     private final ExecutionEnvironment env;
     private final RemoteFileSystem fileSystem;
     private final WeakCache<String, RemoteFileObjectBase> fileObjectsCache = new WeakCache<String, RemoteFileObjectBase>();
-    private final Object lock = new Object();
 
     private final RequestProcessor.Task cleaningTask;
     private static RequestProcessor RP = new RequestProcessor("File objects cache dead entries cleanup", 1); //NOI18N
@@ -85,10 +84,7 @@ public class RemoteFileObjectFactory {
     private void cleanDeadEntries() {        
         boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
         if (trace)         {
-            int size;
-            synchronized (lock) {
-                size = fileObjectsCache.size();
-            }
+            int size = fileObjectsCache.size();
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
                 RemoteLogger.getInstance().log(Level.FINEST, "Cleaning file objects dead entries for {0} ... {1} entries and {2}% ({3} of {4}) hits so far",
                         new Object[] {env, size, (cacheRequests == 0) ? 0 : ((cacheHits*100)/cacheRequests), cacheHits, cacheRequests});
@@ -97,101 +93,82 @@ public class RemoteFileObjectFactory {
 
         fileObjectsCache.cleanDeadEntries();
 
-
         if (trace)         {
-            int size;
-            synchronized (lock) {
-                size = fileObjectsCache.size();
-            }
+            int size = fileObjectsCache.size();
             RemoteLogger.getInstance().log(Level.FINEST, "Cleaning file objects dead entries for {0} ... {1} entries left", new Object[] {env, size});
         }
 
-        synchronized (lock) {
-            if (fileObjectsCache.size() > 0) {
-                scheduleCleanDeadEntries();
-            }
+        if (fileObjectsCache.size() > 0) {
+            scheduleCleanDeadEntries();
         }
     }
 
     public RemoteDirectory createRemoteDirectory(FileObject parent, String remotePath, File cacheFile) {
         cacheRequests++;
-        synchronized (lock) {
-            if (fileObjectsCache.size() == 0) {
-                scheduleCleanDeadEntries(); // schedule on 1-st request
-            }
-            RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-            if (fo instanceof RemoteDirectory && fo.isValid() && fo.cache.equals(cacheFile)) {
-                cacheHits++;
-                return (RemoteDirectory) fo;
-            }
-            if (fo != null) {
-                fo.invalidate();
-            }
-            fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
-            fileObjectsCache.put(remotePath, fo);
+        if (fileObjectsCache.size() == 0) {
+            scheduleCleanDeadEntries(); // schedule on 1-st request
+        }
+        RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
+        if (fo instanceof RemoteDirectory && fo.isValid() && fo.cache.equals(cacheFile)) {
+            cacheHits++;
             return (RemoteDirectory) fo;
-        }        
+        }
+        if (fo != null) {
+            fo.invalidate();
+        }
+        fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
+        return (RemoteDirectory) fileObjectsCache.putIfAbsent(remotePath, fo);
     }
 
     public RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
         cacheRequests++;
-        synchronized (lock) {
-            if (fileObjectsCache.size() == 0) {
-                scheduleCleanDeadEntries(); // schedule on 1-st request
-            }
-            RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-            if (fo instanceof RemotePlainFile && fo.isValid() && fo.cache.equals(cacheFile) && fo.getType() == fileType) {
-                cacheHits++;
-                return (RemotePlainFile) fo;
-            }
-            if (fo != null) {
-                fo.invalidate();
-            }
-            fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);
-            fileObjectsCache.put(remotePath, fo);
+        if (fileObjectsCache.size() == 0) {
+            scheduleCleanDeadEntries(); // schedule on 1-st request
+        }
+        RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
+        if (fo instanceof RemotePlainFile && fo.isValid() && fo.cache.equals(cacheFile) && fo.getType() == fileType) {
+            cacheHits++;
             return (RemotePlainFile) fo;
         }
+        if (fo != null) {
+            fo.invalidate();
+        }
+        fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);        
+        return (RemotePlainFile) fileObjectsCache.putIfAbsent(remotePath, fo);
     }
 
     public RemoteLink createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link) {
         cacheRequests++;
-        synchronized (lock) {
-            if (fileObjectsCache.size() == 0) {
-                scheduleCleanDeadEntries(); // schedule on 1-st request
-            }
-            RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-            if (fo instanceof RemotePlainFile && fo.isValid() && fo.getType() == FileType.Symlink) {
-                cacheHits++;
-                return (RemoteLink) fo;
-            }
-            if (fo != null) {
-                fo.invalidate();
-            }
-            fo = new RemoteLink(fileSystem, env, parent, remotePath, link);
-            fileObjectsCache.put(remotePath, fo);
+        if (fileObjectsCache.size() == 0) {
+            scheduleCleanDeadEntries(); // schedule on 1-st request
+        }
+        RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
+        if (fo instanceof RemotePlainFile && fo.isValid() && fo.getType() == FileType.Symlink) {
+            cacheHits++;
             return (RemoteLink) fo;
         }
+        if (fo != null) {
+            fo.invalidate();
+        }
+        fo = new RemoteLink(fileSystem, env, parent, remotePath, link);        
+        return (RemoteLink) fileObjectsCache.putIfAbsent(remotePath, fo);
     }
 
     public void invalidate(String remotePath) {
-        synchronized (lock) {
-            RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
-            if (fo != null) {
-                fo.invalidate();
-            }
+        RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
+        if (fo != null) {
+            fo.invalidate();
         }
     }
 
     public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {
-        synchronized (lock) {
-            RemoteFileObjectBase fo = fileObjectsCache.get(linkRemotePath);
-            if (fo != null) {
-                if (fo instanceof RemoteLink) {
-                    ((RemoteLink) fo).setLink(linkTarget, parent);
-                } else {
-                    RemoteLogger.getInstance().log(Level.FINE, "Called setLink on {0} - invalidating", fo.getClass().getSimpleName());
-                    fo.invalidate();
-                }
+        RemoteFileObjectBase fo = fileObjectsCache.get(linkRemotePath);
+        if (fo != null) {
+            if (fo instanceof RemoteLink) {
+                ((RemoteLink) fo).setLink(linkTarget, parent);
+            } else {
+                RemoteLogger.getInstance().log(Level.FINE, "Called setLink on {0} - invalidating", fo.getClass().getSimpleName());
+                fo.invalidate();
             }
         }
     }

@@ -519,11 +519,6 @@ public class Gdb {
 		    remote);
 	    }
 
-	    String hostName = null;
-	    if (remote) {
-		hostName = host.getHostName();
-	    }
-
 	    tentativeGdb.startProgressManager().updateProgress('<', 1, null, 0, 0);
 
 	    // unlike dbx there is no network connection phase

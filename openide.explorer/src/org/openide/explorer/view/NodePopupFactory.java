@@ -88,15 +88,21 @@ public class NodePopupFactory {
                     String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
                     res.add(et.getQuickFilterPopup(column, val, s));
                 } else if (et.getQuickFilterColumn() == column) {
-                    String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
-                    JMenu menu = new JMenu(s);
-                    JMenuItem noFilterItem = et.getQuickFilterNoFilterItem(et.getQuickFilterFormatStrings()[6]);
-                    menu.add(noFilterItem);
-                    res.add(menu);
+                    addNoFilterItem(et, res);
                 }
             }
         }
         return res;
+    }
+
+    void addNoFilterItem(ETable et, JPopupMenu popup) {
+        if (showQuickFilter && et.getQuickFilterColumn() != -1) {
+            String s = NbBundle.getBundle(NodePopupFactory.class).getString("LBL_QuickFilter");
+            JMenu menu = new JMenu(s);
+            JMenuItem noFilterItem = et.getQuickFilterNoFilterItem(et.getQuickFilterFormatStrings()[6]);
+            menu.add(noFilterItem);
+            popup.add(menu);
+        }
     }
 
     /**
