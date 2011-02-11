@@ -258,9 +258,16 @@ final class ViewBuilder {
             matchOffset += offsetDelta;
             paragraphViewEndOffset += offsetDelta;
         }
+        
+        // Possible hotfix for #191620
+        if (matchOffset > docViewEndOffset) {
+            matchOffset = docViewEndOffset;
+        }
 
         assert (matchOffset >= 0) : "matchOffset=" + matchOffset; // NOI18N
         assert (paragraphViewEndOffset >= 0) : "paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
+        assert (matchOffset <= docViewEndOffset) : "matchOffset=" + matchOffset + // NOI18N
+                " > docViewEndOffset=" + docViewEndOffset; // NOI18N
 
         this.prevViewEndOffset = startOffset;
         this.offsetDelta = offsetDelta;
@@ -538,11 +545,9 @@ final class ViewBuilder {
                 ParagraphView removeView = (ParagraphView) dReplace.view.getEditorView(index);
                 dReplace.removeCount++;
                 paragraphViewEndOffset += removeView.getLength();
-                // Do not remove individual views
-                if (paragraphViewEndOffset > docViewEndOffset) {
-                    throw new IllegalStateException("paragraphViewEndOffset=" + paragraphViewEndOffset + // NOI18N
-                            " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
-                }
+                // Here the matchOffset > docViewEndOffset is allowed
+                // since checkRemoveParagraphs() can be used from ViewBuilder's constructor
+                // to compute paragraph views affected by just performed removal.
                 matchOffset = paragraphViewEndOffset;
             } else { // No more views to remove
                 viewRemovalFinished = true; // Allow to finish the loop
