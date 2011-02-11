@@ -301,7 +301,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (info.isLocal()) { // #164593
                     creators.add(new NbIndexCreator());
                 } else {
-                    creators.add(new NotifyingIndexCreator());
+                    creators.add(new NotifyingIndexCreator(info));
                 }
                 try {
                     indexer.addIndexingContextForced(
@@ -500,18 +500,22 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     // XXX would use WagonHelper.getWagonResourceFetcher if that were not limited to http protocol
                     ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, URI.create(repo.getRepositoryUrl()).getScheme()), listener, null, null);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
-                    NotifyingIndexCreator.beingIndexed = repo;
-                    NotifyingIndexCreator.handle = null;
-                    NotifyingIndexCreator.canceled.set(false);
+                    NotifyingIndexCreator nic = null;
+                    for (IndexCreator ic : indexingContext.getIndexCreators()) {
+                        if (ic instanceof NotifyingIndexCreator) {
+                            nic = (NotifyingIndexCreator) ic;
+                            break;
+                        }
+                    }
+                    if (nic != null) {
+                        nic.start();
+                    }
                     try {
                         remoteIndexUpdater.fetchAndUpdateIndex(iur);
                     } finally {
-                        NotifyingIndexCreator.beingIndexed = null;
-                        if (NotifyingIndexCreator.handle != null) {
-                            NotifyingIndexCreator.handle.finish();
-                            NotifyingIndexCreator.handle = null;
+                        if (nic != null) {
+                            nic.end();
                         }
-                        NotifyingIndexCreator.canceled.set(false);
                     }
                 } finally {
                     listener.close();
@@ -539,9 +543,23 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     /** Just tracks what is being unpacked after a remote index has been downloaded. */
     private static final class NotifyingIndexCreator implements IndexCreator {
-        static RepositoryInfo beingIndexed;
-        static ProgressHandle handle;
-        static final AtomicBoolean canceled = new AtomicBoolean();
+        private final RepositoryInfo beingIndexed;
+        private ProgressHandle handle;
+        private final AtomicBoolean canceled = new AtomicBoolean();
+        NotifyingIndexCreator(RepositoryInfo info) {
+            beingIndexed = info;
+        }
+        private void start() {
+            handle = null;
+            canceled.set(false);
+        }
+        private void end() {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+            canceled.set(false);
+        }
         public @Override void updateDocument(ArtifactInfo artifactInfo, Document document) {
             if (canceled.get()) {
                 throw new Cancellation();
