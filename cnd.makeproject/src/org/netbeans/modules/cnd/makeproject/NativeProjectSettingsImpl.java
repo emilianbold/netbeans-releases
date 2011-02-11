@@ -41,13 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelimpl.options;
+package org.netbeans.modules.cnd.makeproject;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.util.Mutex;
@@ -60,35 +61,31 @@ import org.w3c.dom.NodeList;
  *
  * @author Sergey Grinev
  */
-public class CodeAssistanceOptions {
+public final class NativeProjectSettingsImpl implements NativeProjectSettings {
 
-    private AuxiliaryConfiguration aux;
+    private final Project project;
     private static final String CodeAssistanceData = "code-assistance-data"; //NOI18N
     private static final String CodeModelEnabled = "code-model-enabled"; //NOI18N
     private final String namespace;
     private final boolean shared;
 
     // constructors
-    public CodeAssistanceOptions(Project project, boolean shared) {
+    public NativeProjectSettingsImpl(MakeProject prj, String namespace, boolean shared) {
         this.shared = shared;
-        aux = ProjectUtils.getAuxiliaryConfiguration(project);
-
-        AntBasedProjectType antPrj = (project.getLookup().lookup(AntBasedProjectType.class));
-        namespace = antPrj.getPrimaryConfigurationDataElementNamespace(shared);
-    }
-
-    public CodeAssistanceOptions(Project project) {
-        this(project, false);
+        this.project = prj;
+        this.namespace = namespace;
     }
 
     // options
-    public boolean getCodeAssistanceEnabled() {
+    @Override
+    public boolean isCodeAssistanceEnabled() {
         String value = doLoad(CodeModelEnabled);
         return str2bool(value);
     }
 
-    public void setCodeAssistanceEnabled(Boolean enabled) {
-        doSave(CodeModelEnabled, enabled.toString());
+    @Override
+    public void setCodeAssistanceEnabled(boolean enabled) {
+        doSave(CodeModelEnabled, Boolean.toString(enabled));
     }
 
     // private methods
@@ -97,6 +94,7 @@ public class CodeAssistanceOptions {
     }
 
     private Element getConfigurationFragment() {
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         Element data = aux.getConfigurationFragment(CodeAssistanceData, namespace, shared);
         if (data == null) {
             data = createDocument(namespace, shared ? "project" : "project-private").createElementNS(namespace, CodeAssistanceData); //NOI18N
@@ -123,6 +121,7 @@ public class CodeAssistanceOptions {
     private String doLoad(final String name) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
 
+            @Override
             public String run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment == null) {
@@ -136,11 +135,13 @@ public class CodeAssistanceOptions {
     private void doSave(final String name, final String value) {
         ProjectManager.mutex().writeAccess(new Runnable() {
 
+            @Override
             public void run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment != null) {
                     Element el = getNode(configurationFragment, name);
                     el.setTextContent(value);
+                    AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
                     aux.putConfigurationFragment(configurationFragment, shared);
                 }
             }

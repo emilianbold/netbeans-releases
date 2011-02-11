@@ -337,6 +337,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
                     new NativeProjectProvider(this, projectDescriptorProvider),
+                    new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
