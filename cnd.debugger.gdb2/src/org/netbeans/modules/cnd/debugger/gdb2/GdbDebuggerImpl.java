@@ -2545,7 +2545,6 @@ import org.openide.util.Exceptions;
      */
     // SHOULD factor with DbxDebuggerImpl's localsMasked
     private boolean get_locals = false; // indicate Locals View open/close
-    private int local_count;
     private GdbVariable[] local_vars = new GdbVariable[0];
 
     public void registerLocalModel(LocalModel model) {
@@ -2569,7 +2568,7 @@ import org.openide.util.Exceptions;
     }
 
     public int getLocalsCount() {
-        return local_count;
+        return local_vars.length;
     }
 
     @Override
@@ -2609,7 +2608,7 @@ import org.openide.util.Exceptions;
         MITList localsresults = locals.results();
         MITList locals_list = (MITList) localsresults.valueOf("locals"); // NOI18N
         int size = locals_list.size();
-        local_count = size;
+        int local_count = size;
 
         MITList param_list = null;
         int params_count = 0;
@@ -2632,7 +2631,7 @@ import org.openide.util.Exceptions;
         }
 
         // iterate through local list
-        local_vars = new GdbVariable[local_count];
+        GdbVariable[] new_local_vars = new GdbVariable[local_count];
         for (int vx = 0; vx < size; vx++) {
             MIValue localvar = (MIValue) locals_list.get(vx);
             GdbLocal loc = new GdbLocal(localvar);
@@ -2640,12 +2639,12 @@ import org.openide.util.Exceptions;
             GdbVariable gv = variableBag.get(var_name, 
                   false, VariableBag.FROM_LOCALS);
             if (gv == null) {
-                local_vars[vx] = new GdbVariable(this, localUpdater, null, 
+                new_local_vars[vx] = new GdbVariable(this, localUpdater, null, 
                         var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(local_vars[vx]);
+                createMIVar(new_local_vars[vx]);
             } else {
 		gv.setValue(loc.getValue()); // update value
-                local_vars[vx] = gv;
+                new_local_vars[vx] = gv;
             }
         }
 
@@ -2669,13 +2668,16 @@ import org.openide.util.Exceptions;
                     gv.setValue(var_value); // update value
             }
             if (gv == null) {
-                local_vars[size + vx] = new GdbVariable(this, localUpdater, 
+                new_local_vars[size + vx] = new GdbVariable(this, localUpdater, 
                         null, var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(local_vars[size + vx]);
+                createMIVar(new_local_vars[size + vx]);
             } else {
-                local_vars[size + vx] = gv;
+                new_local_vars[size + vx] = gv;
             }
         }
+        // need to update local_vars with fully filled array
+        local_vars = new_local_vars;
+        
         if (update_var) {
             updateMIVar(); // call var-update * , but results are not reliable
         }

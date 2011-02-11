@@ -92,6 +92,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
@@ -618,14 +619,15 @@ public final class DtraceDataCollector
         }
 
         String finalPath;
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(trgEnv);
+        File localTmpFile = File.createTempFile("dlight", ".d", // NOI18N
+                HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getTempDirFile()); // NOI18N
 
-        File localTmpFile = File.createTempFile("dlight", ".d", hostInfo.getTempDirFile()); // NOI18N
         if (trgEnv.isLocal()) {
             finalPath = localTmpFile.getAbsolutePath();
             localTmpFile.deleteOnExit();
         } else {
-            finalPath = hostInfo.getTempDir() + "/" + localTmpFile.getName(); // NOI18N
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(trgEnv);
+            finalPath = hostInfo.getTempDir() + "/" + localTmpFile.getName(); // NOI18N            
         }
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(localTmpFile));
