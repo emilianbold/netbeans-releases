@@ -42,9 +42,14 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.w3c.dom.Document;
@@ -131,7 +136,202 @@ public class AutoUpdateTest extends TestBase {
         File lastM = new File(new File(target, "platform"), ".lastModified");
         assertTrue("Last modified file created", lastM.exists());
     }
+    
+    
+    public void testDownloadAndExtractExternal() throws Exception {
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
+        
+        File ext = extractString("external content");
+        
+        String extRef =
+            "URL: " + ext.toURI().toString() + "\n";
 
+        File nbm = generateNBMContent("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml", "empty",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar.external", extRef,
+            "netbeans/docs/My Manager's So-Called \"README\"", "empty");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target
+        );
+
+        File xml = new File(
+            new File(new File(target, "platform"), "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+        Document doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, null);
+        NodeList nl = doc.getElementsByTagName("file");
+        assertEquals(3, nl.getLength());
+        assertEquals("docs/My Manager's So-Called \"README\"", ((Element) nl.item(2)).getAttribute("name"));
+
+        File jar = new File(
+            new File(new File(target, "platform"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        File jarExt = new File(
+            new File(new File(target, "platform"), "modules"),
+            "org-netbeans-api-annotations-common.jar.external"
+        );
+        assertFalse("no external file created", jarExt.exists());
+        assertTrue("jar file created", jar.exists());
+        assertEquals("Contains expected", "external content", readFile(jar));
+
+        File lastM = new File(new File(target, "platform"), ".lastModified");
+        assertTrue("Last modified file created", lastM.exists());
+    }
+
+    public void testDownloadAndExtractExternalWithFirstURLBroken() throws Exception {
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
+        
+        File ext = extractString("external content");
+        BufferedInputStream bsrc = null;
+        CRC32 crc = new CRC32();
+        try {
+            bsrc = new BufferedInputStream( new FileInputStream( ext ) );
+            byte[] bytes = new byte[1024];
+            int i;
+            while( (i = bsrc.read(bytes)) != -1 ) {
+                crc.update(bytes, 0, i );
+            }
+        }
+        finally {
+            if ( bsrc != null )
+                bsrc.close();
+        }
+        
+        
+        String extRef =
+            "CRC: " + crc.getValue() + "\n" +
+            "URL: file:/I/dont/exist/At/All\n" +
+            "URL: " + ext.toURI().toString() + "\n";
+
+        File nbm = generateNBMContent("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml", "empty",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar.external", extRef,
+            "netbeans/docs/My Manager's So-Called \"README\"", "empty");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target
+        );
+
+        File xml = new File(
+            new File(new File(target, "platform"), "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+        Document doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, null);
+        NodeList nl = doc.getElementsByTagName("file");
+        assertEquals(3, nl.getLength());
+        assertEquals("docs/My Manager's So-Called \"README\"", ((Element) nl.item(2)).getAttribute("name"));
+
+        File jar = new File(
+            new File(new File(target, "platform"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        File jarExt = new File(
+            new File(new File(target, "platform"), "modules"),
+            "org-netbeans-api-annotations-common.jar.external"
+        );
+        assertFalse("no external file created", jarExt.exists());
+        assertTrue("jar file created", jar.exists());
+        assertEquals("Contains expected", "external content", readFile(jar));
+
+        File lastM = new File(new File(target, "platform"), ".lastModified");
+        assertTrue("Last modified file created", lastM.exists());
+    }
+
+    public void testFailOnWrongCRCExternal() throws Exception {
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
+        
+        File ext = extractString("external content");
+        
+        String extRef =
+            "CRC: 42\n" +
+            "URL: " + ext.toURI().toString() + "\n";
+
+        File nbm = generateNBMContent("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml", "empty",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar.external", extRef,
+            "netbeans/docs/My Manager's So-Called \"README\"", "empty");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        try {
+            execute(
+                "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+                "-Dincludes=org.netbeans.api.annotations.common",
+                "-Dtarget=" + target
+            );
+            fail("Execution shall fail, as the CRC is wrong");
+        } catch (ExecutionError ok) {
+            // OK
+        }
+    }
+    
+    public void testDownloadAndExtractExternalWithProperty() throws Exception {
+        File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
+        
+        File ext = extractString("external content");
+        System.setProperty("my.ref", ext.getParent());
+        
+        String extRef =
+            "URL: file:${my.ref}/" + ext.getName() + "\n";
+
+        File nbm = generateNBMContent("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml", "empty",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar.external", extRef,
+            "netbeans/docs/My Manager's So-Called \"README\"", "empty");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        execute(
+            "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target
+        );
+
+        File xml = new File(
+            new File(new File(target, "platform"), "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+        Document doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, null);
+        NodeList nl = doc.getElementsByTagName("file");
+        assertEquals(3, nl.getLength());
+        assertEquals("docs/My Manager's So-Called \"README\"", ((Element) nl.item(2)).getAttribute("name"));
+
+        File jar = new File(
+            new File(new File(target, "platform"), "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        File jarExt = new File(
+            new File(new File(target, "platform"), "modules"),
+            "org-netbeans-api-annotations-common.jar.external"
+        );
+        assertFalse("no external file created", jarExt.exists());
+        assertTrue("jar file created", jar.exists());
+        assertEquals("Contains expected", "external content", readFile(jar));
+
+        File lastM = new File(new File(target, "platform"), ".lastModified");
+        assertTrue("Last modified file created", lastM.exists());
+    }
 
     public void testUpdateAlreadyInstalled() throws Exception {
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
@@ -438,12 +638,20 @@ public class AutoUpdateTest extends TestBase {
     }
 
     public File generateNBM (String name, String... files) throws IOException {
+        List<String> filesAndContent = new ArrayList<String>();
+        for (String s : files) {
+            filesAndContent.add(s);
+            filesAndContent.add("empty");
+        }
+        return generateNBMContent(name, filesAndContent.toArray(new String[0]));
+    }
+    public File generateNBMContent (String name, String... filesAndContent) throws IOException {
         File f = new File (getWorkDir (), name);
 
         ZipOutputStream os = new ZipOutputStream (new FileOutputStream (f));
-        for (String n : files) {
-            os.putNextEntry(new ZipEntry(n));
-            os.write("empty".getBytes());
+        for (int i = 0; i < filesAndContent.length; i += 2) {
+            os.putNextEntry(new ZipEntry(filesAndContent[i]));
+            os.write(filesAndContent[i + 1].getBytes());
             os.closeEntry();
         }
         os.putNextEntry(new ZipEntry("Info/info.xml"));

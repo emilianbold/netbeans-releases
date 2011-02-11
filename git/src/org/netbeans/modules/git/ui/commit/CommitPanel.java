@@ -48,9 +48,12 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.text.JTextComponent;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -95,6 +98,7 @@ public class CommitPanel extends javax.swing.JPanel {
         } else if(user != null) {
             authorComboBox.setModel(new DefaultComboBoxModel(new String[] {user}));
         }
+        setCaretPosition(authorComboBox);
         
         List<String> commiters = GitModuleConfig.getDefault().getRecentCommiters();
         if(commiters != null && !commiters.isEmpty()) {
@@ -102,9 +106,17 @@ public class CommitPanel extends javax.swing.JPanel {
         } else if(user != null) {
             commiterComboBox.setModel(new DefaultComboBoxModel(new String[] {user}));            
         }
+        setCaretPosition(commiterComboBox);
         
         Spellchecker.register (messageTextArea);  
         
+    }
+
+    private void setCaretPosition(JComboBox cbo) {
+        Component cmp = cbo.getEditor().getEditorComponent();
+        if(cmp instanceof JTextComponent) {
+            ((JTextComponent)cmp).setCaretPosition(1);
+        }
     }
     
     @Override

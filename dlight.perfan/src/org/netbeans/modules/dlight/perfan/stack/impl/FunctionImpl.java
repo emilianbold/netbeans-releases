@@ -62,10 +62,17 @@ public class FunctionImpl implements Function {
         this.objRef = objRef;
     }
 
+    @Override
+    public long getContextID() {
+        return objRef;
+    }
+
+    @Override
     public String getName() {
         return longName;
     }
 
+    @Override
     public String getSignature() {
         return longName;
     }
@@ -79,6 +86,7 @@ public class FunctionImpl implements Function {
         return "Function: " + longName + " [" + objRef + "]"; // NOI18N
     }
 
+    @Override
     public String getQuilifiedName() {
         if (longName.startsWith("<")) { // NOI18N
             return longName;
