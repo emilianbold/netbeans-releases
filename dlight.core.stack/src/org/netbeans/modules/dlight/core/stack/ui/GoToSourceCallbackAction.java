@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.dlight.core.stack.ui;
 
 /**
- * This is a factory to be registered in the ServiceProvider which can open the storage using the unique
- * key which is returned by the 
- * @param <T> Storage instance this factory is responsible for
- * @author Maria Tishkova
+ *
+ * @author masha
  */
-public interface PersistentDataStorageFactory<T extends PersistentDataStorage> extends DataStorageFactory<T> {
-
-    static final String PERSISTENT_DATA_STORAGE_FOLDER =  System.getProperty("dlight.storages.folder");//NOI18N
-
-    static final String PERSISTENT_DATA_STORAGE_HOST = System.getProperty("dlight.storages.host");//NOI18N
-
-     /**
-      * Opens storage with the unique key <code>uniqueKey</code>
-      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
-      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
-      */
-     T openStorage(String uniqueKey);
-
-     /**
-      * Creates storage with the unique key <code>uniqueKey</code>
-      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
-      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
-      */
-     T createStorage(String uniqueKey);
-
-
-     /**
-      * Opens storage with the unique key <code>uniqueKey</code>
-      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
-      * @param mode the mode the storage will be opened: ReadOnly, ReadWrite
-      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
-      */
-     T openStorage(String uniqueKey, Mode mode);
-
-
-     /**
-      * Unique key which can be used later to
-      * @param storage
-      * @return unique key
-      */
-     String getUniqueKey(T storage);
-
-     enum Mode{
-         ReadOnly,
-         ReadWrite
-     }
+public interface GoToSourceCallbackAction {
+    void goToSource(boolean successed);
 }
