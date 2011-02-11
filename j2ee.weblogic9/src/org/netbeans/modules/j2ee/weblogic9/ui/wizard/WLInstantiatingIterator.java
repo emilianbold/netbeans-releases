@@ -234,6 +234,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
         // reinit the instances list
         serverPropertiesPanel.getVisual().updateInstancesList();
+        serverPropertiesPanel.getVisual().updateJpa2Button();
     }
 
     /**

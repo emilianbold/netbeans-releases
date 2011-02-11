@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -83,6 +84,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     private final List<Instance> instances = new ArrayList<Instance>();
+    
+    private WLJpa2SwitchSupport support;
     
     /**
      * Creates a new instance of the ServerPropertiesVisual. It initializes all
@@ -103,7 +106,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 ServerPropertiesPanel.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
 
         initComponents();
-
+        
         localInstancesCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
 
             @Override
@@ -327,6 +330,17 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         instances.addAll(getServerInstances());
         localInstancesCombo.setModel(new DefaultComboBoxModel(instances.toArray()));
     }
+    
+    public void updateJpa2Button() {
+        File root = new File(instantiatingIterator.getServerRoot());
+        support = new WLJpa2SwitchSupport(root);
+        boolean visible = support.isSwitchSupported()
+                && !support.isEnabledViaSmartUpdate();
+
+        jpa2SwitchLabel.setVisible(visible);
+        jpa2SwitchButton.setVisible(visible);
+        jpa2SwitchButton.setSelected(support.isEnabled());
+    }
 
     /**
      * Adds a listener
@@ -370,6 +384,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         passwordField = new javax.swing.JPasswordField();
         browseButton = new javax.swing.JButton();
         explanationLabel = new javax.swing.JLabel();
+        jpa2SwitchLabel = new javax.swing.JLabel();
+        jpa2SwitchButton = new javax.swing.JToggleButton();
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
@@ -400,6 +416,15 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
         explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.explanationLabel.text")); // NOI18N
 
+        jpa2SwitchLabel.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.text", new Object[] {})); // NOI18N
+        jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jpa2SwitchButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -410,6 +435,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .add(localInstancesCombo, 0, 293, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton))
+            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -419,8 +445,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(passwordField, 0, 0, Short.MAX_VALUE)
                     .add(usernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
-                .add(208, 208, 208))
-            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                .add(223, 223, 223))
+            .add(jpa2SwitchLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jpa2SwitchButton)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -438,7 +467,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(passwordLabel)
-                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jpa2SwitchLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jpa2SwitchButton))
         );
 
         localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
@@ -462,10 +495,21 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
+    private void jpa2SwitchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2SwitchButtonActionPerformed
+        // TODO add your handling code here:
+        if (jpa2SwitchButton.isSelected()) {
+            support.enable();
+        } else {
+            support.disable();
+        }
+    }//GEN-LAST:event_jpa2SwitchButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel explanationLabel;
+    private javax.swing.JToggleButton jpa2SwitchButton;
+    private javax.swing.JLabel jpa2SwitchLabel;
     private javax.swing.JComboBox localInstancesCombo;
     private javax.swing.JLabel localInstancesLabel;
     private javax.swing.JPasswordField passwordField;
