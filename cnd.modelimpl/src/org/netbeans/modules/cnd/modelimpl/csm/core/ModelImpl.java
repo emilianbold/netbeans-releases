@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
@@ -64,7 +65,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryNotifier;
-import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
@@ -571,9 +571,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private void disableProject2(final ProjectBase csmProject) {
         csmProject.setDisposed();
         Project project = findProjectByNativeProject(ModelSupport.getNativeProject(csmProject.getPlatformProject()));
-        if (project != null) {
-            new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.FALSE);
-        }
+        setCodeAssistanceEnabled(project, false);
         // that's a caller's responsibility to launch disabling in a separate thread
         disableProject3(csmProject);
     }
@@ -628,7 +626,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 //	}
 //	return lastLibs;
 //    }
-    /** Enables/disables code model for the particular ptoject */
+    /** Enables/disables code model for the particular project */
     public void enableProject(NativeProject nativeProject) {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.enableProject " + nativeProject.getProjectDisplayName());
@@ -637,15 +635,22 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             disabledProjects.remove(nativeProject);
         }
         Project project = findProjectByNativeProject(nativeProject);
-        if (project != null) {
-            new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.TRUE);
-        }
+        setCodeAssistanceEnabled(project, true);
         addProject(nativeProject, nativeProject.getProjectDisplayName(), Boolean.TRUE);
     //ProjectBase csmProject = (ProjectBase) _getProject(nativeProject);
     //fireProjectOpened(csmProject);
     //new CodeAssistanceOptions(findProjectByNativeProject(nativeProject)).setCodeAssistanceEnabled(Boolean.TRUE);
     }
 
+    private void setCodeAssistanceEnabled(Project project, boolean enable) {
+        if (project != null) {
+            NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
+            if (settings != null) {
+                settings.setCodeAssistanceEnabled(enable);
+            }
+        }
+    }
+    
     public static Project findProjectByNativeProject(NativeProject nativeProjectToSearch) {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {

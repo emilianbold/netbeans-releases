@@ -64,10 +64,10 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
-import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -347,7 +347,9 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
-                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
+                    NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
+                    // enable by default
+                    boolean enableModel = (settings == null) ? true : settings.isCodeAssistanceEnabled();
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
             };
