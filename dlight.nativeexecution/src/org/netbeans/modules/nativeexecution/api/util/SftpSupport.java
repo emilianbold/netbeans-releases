@@ -206,7 +206,7 @@ class SftpSupport {
         public Integer call() throws InterruptedException {
             int rc = -1;
             try {                
-                Thread.currentThread().setName(RP_NAME + ": " + getTraceName());
+                Thread.currentThread().setName(RP_NAME + ": " + getTraceName()); // NOI18N
                 work();
                 rc = 0;
             } catch (JSchException ex) {
@@ -434,7 +434,7 @@ class SftpSupport {
             StatInfo result;
             ChannelSftp cftp = getChannel();
             try {
-                Thread.currentThread().setName(RP_NAME + ": " + getTraceName());
+                Thread.currentThread().setName(RP_NAME + ": " + getTraceName()); // NOI18N
                 SftpATTRS attrs = cftp.lstat(path);            
                 String dirName, baseName;
                 int slashPos = path.lastIndexOf('/');
@@ -474,7 +474,7 @@ class SftpSupport {
             StatInfo[] result;
             ChannelSftp cftp = getChannel();
             try {
-                Thread.currentThread().setName(RP_NAME + ": " + getTraceName());
+                Thread.currentThread().setName(RP_NAME + ": " + getTraceName()); // NOI18N
                 List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
                 result = new StatInfo[entries.size()];
                 int i = 0;
