@@ -115,7 +115,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private void setCaretPosition(JComboBox cbo) {
         Component cmp = cbo.getEditor().getEditorComponent();
         if(cmp instanceof JTextComponent) {
-            ((JTextComponent)cmp).setCaretPosition(1);
+            ((JTextComponent)cmp).setCaretPosition(0);
         }
     }
     
