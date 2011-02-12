@@ -130,10 +130,11 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         if (recordsToNotify.isEmpty()) {
             // inlined RemoteServerListUI.revalidate
             ServerRecord record = get(env);
-            addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
-            if (!record.isOnline()) {
+            if (record.isDeleted()) {
+                addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+            } else if (!record.isOnline()) {
                 record.validate(true);
-            }
+            }            
         } else {
             for (RemoteServerRecord rec : recordsToNotify) {
                 rec.checkHostInfo();
