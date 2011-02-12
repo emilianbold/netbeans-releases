@@ -431,6 +431,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 if ("org.netbeans.modules.junitlib".equals(el.getCodeName())) { // NOI18N
                     continue;
                 }
+                if ("org.netbeans.libs.junit4".equals(el.getCodeName())) { // NOI18N
+                    continue;
+                }
                 // end of #195122
                 unsigned.add (el);
             } else if (! support.isTrusted (inst, el)) {
