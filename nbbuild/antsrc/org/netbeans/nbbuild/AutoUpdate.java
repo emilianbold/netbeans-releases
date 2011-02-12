@@ -269,6 +269,7 @@ public class AutoUpdate extends Task {
                         }
                         File dest = new File(trgt.getParentFile(), trgt.getName().substring(0, trgt.getName().length() - 9));
                         os = new FileOutputStream(dest);
+                        relName = relName.substring(0, relName.length() - ".external".length());
                     } else {
                         os = new FileOutputStream(trgt);
                     }
