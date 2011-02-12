@@ -170,6 +170,10 @@ public class AutoUpdateTest extends TestBase {
         NodeList nl = doc.getElementsByTagName("file");
         assertEquals(3, nl.getLength());
         assertEquals("docs/My Manager's So-Called \"README\"", ((Element) nl.item(2)).getAttribute("name"));
+        String noExternal = readFile(xml);
+        if (noExternal.contains(".external")) {
+            fail("There shall be no external:\n" + noExternal);
+        }
 
         File jar = new File(
             new File(new File(target, "platform"), "modules"),
