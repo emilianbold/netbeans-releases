@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -185,12 +186,21 @@ public class BusinessMethodExposed extends EJBVerificationRule {
 
                 if (clazz != null) {
                     result.add(clazz);
+                    addInterfaces(info, result, clazz.getInterfaces());
                 }
             }
         }
 
         
         return result;
+    }
+    
+    private void addInterfaces(CompilationInfo info, Collection<TypeElement> result, List<? extends TypeMirror> interfaces){
+        for (TypeMirror inter : interfaces) {
+            TypeElement te = (TypeElement)info.getTypes().asElement(inter);
+            result.add(te);
+            addInterfaces(info, result, te.getInterfaces());
+        }
     }
     
     private boolean isEligibleMethod(ExecutableElement method){
