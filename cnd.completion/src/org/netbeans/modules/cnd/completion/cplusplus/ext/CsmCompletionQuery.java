@@ -1482,12 +1482,19 @@ abstract public class CsmCompletionQuery {
                                             if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {
                                                 needToCheckNS = true;
                                             } else {
+                                                CsmResultItem.SubstitutionHint hint = CsmResultItem.SubstitutionHint.NONE;
+                                                if ((kind == ExprKind.DOT) && (lastType != null) && lastType.isPointer()) {
+                                                    hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
+                                                }
                                                 result = new CsmCompletionResult(
                                                         component, getBaseDocument(),
                                                         //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
                                                         res,
+                                                        hint,
                                                         formatType(lastType, true, true, false) + var + '*',
                                                         item,
+                                                        item.getTokenOffset(0),
+                                                        item.getTokenLength(0),
                                                         0/*cls.getName().length() + 1*/,
                                                         isProjectBeeingParsed(), contextElement, instantiateTypes);
                                             }
