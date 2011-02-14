@@ -491,6 +491,8 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             if(CsmKindUtilities.isFunction(element)){
                 node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
                 node.name = CharSequences.create(CsmUtilities.getSignature((CsmFunction)element, true));
+            } else if(CsmKindUtilities.isFunctionExplicitInstantiation(element)) {
+                return null;
             } else {
                 CharSequence name = ((CsmDeclaration)element).getName();
                 if (name.length() == 0 && CsmKindUtilities.isVariable(element)){

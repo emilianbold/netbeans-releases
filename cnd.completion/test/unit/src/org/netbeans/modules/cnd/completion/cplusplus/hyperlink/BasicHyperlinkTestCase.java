@@ -823,6 +823,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 189039 - Unresolved unnamed enum constant in unnamed struct
         performTest("bug189039.cpp", 11, 62, "bug189039.cpp", 4, 5);
     }
+
+    public void testBug195307() throws Exception {
+        // Bug 195307 - Unresolved function parameters in function pointer with composed return type
+        performTest("bug195307.cpp", 6, 47, "bug195307.cpp", 6, 43);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
