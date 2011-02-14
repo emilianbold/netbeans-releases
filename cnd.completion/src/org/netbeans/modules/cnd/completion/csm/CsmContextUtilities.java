@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -270,6 +271,9 @@ public class CsmContextUtilities {
                     // if it wasn't necessary to include all file local variables, but now 
                     // we jump in function => mark that from now include all
                     if (CsmKindUtilities.isFunction(entry.getScope())) {
+                        incAll = include = true;
+                    }
+                    if (CsmKindUtilities.isFunctionExplicitInstantiation(entry.getScope())) {
                         incAll = include = true;
                     }
                 } else if (!includeFunctionVars) {
@@ -564,6 +568,18 @@ public class CsmContextUtilities {
         return null;
     }    
 
+    public static CsmFunctionInstantiation getFunctionInstantiation(CsmContext context, boolean inScope) {
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            int offset = context.getOffset();
+            if (CsmKindUtilities.isFunctionExplicitInstantiation(scope)
+                    && (!inScope || CsmOffsetUtilities.isInObject(scope, offset))) {
+                return (CsmFunctionInstantiation)scope;
+            }
+        }
+        return null;
+    }    
+    
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
         CsmFunctionDefinition fun = null;
         for (Iterator it = context.iterator(); it.hasNext();) {
@@ -639,6 +655,11 @@ public class CsmContextUtilities {
         return fun != null;
     }     
 
+    public static boolean isInFunctionInstantiation(CsmContext context, int offset) {
+        CsmFunctionInstantiation fi = getFunctionInstantiation(context, true);
+        return fi != null;
+    }     
+    
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         CsmType type = null;
