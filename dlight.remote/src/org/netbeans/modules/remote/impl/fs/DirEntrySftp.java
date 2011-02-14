@@ -149,7 +149,7 @@ public class DirEntrySftp implements DirEntry {
     }
 
     public void setCache(String cache) {
-        
+        this.cache = cache;
     }
 
     public String toExternalForm() {
