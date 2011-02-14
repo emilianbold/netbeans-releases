@@ -237,7 +237,7 @@ public class Utils {
             case FUNCTION_DEFINITION:
                 return "f"; // NOI18N
             case FUNCTION_INSTANTIATION:
-                return "i"; // NOI18N
+                return "j"; // NOI18N
             case USING_DIRECTIVE:
                 return "g"; // NOI18N
             case TEMPLATE_PARAMETER:
@@ -293,7 +293,7 @@ public class Utils {
                 return ENUMERATOR;
             case 'f': // NOI18N
                 return FUNCTION_DEFINITION;
-            case 'i': // NOI18N
+            case 'j': // NOI18N
                 return FUNCTION_INSTANTIATION;
             case 'g': // NOI18N
                 return USING_DIRECTIVE;
