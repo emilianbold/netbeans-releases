@@ -54,6 +54,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
@@ -192,6 +193,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             or.getType() == BrokenReferencesModel.RefType.LIBRARY_CONTENT) {
             LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
         } else if (or.getType() == BrokenReferencesModel.RefType.DEFINABLE_LIBRARY) {
+            fix.setEnabled(false);
             RP.post(new Runnable() {
                 public @Override void run() {
                     try {
@@ -207,6 +209,13 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
                         LOG.log(Level.INFO, null, x);
                         // fallback: user may need to create library manually
                         LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
+                    } finally {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fix.setEnabled(true);
+                            }
+                        });
                     }
                 }
             });
