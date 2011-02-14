@@ -289,7 +289,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     }
 
 
-    private class ArtIdOperation implements ModelOperation<POMModel> {
+    private static class ArtIdOperation implements ModelOperation<POMModel> {
         private final String artifactId;
         ArtIdOperation(String art) {
             artifactId = art;
@@ -300,7 +300,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         }
     }
 
-    private class DNameOperation implements ModelOperation<POMModel> {
+    private static class DNameOperation implements ModelOperation<POMModel> {
         private final String name;
         DNameOperation(String nm) {
             name = nm;
@@ -433,7 +433,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         }
     }
 
-    private class OptionalValidator implements Validator<String> {
+    private static class OptionalValidator implements Validator<String> {
         private final JCheckBox checkbox;
         private final Validator<String> delegate;
 
@@ -451,7 +451,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         }
     }
 
-    private class FileNameExists implements Validator<String> {
+    private static class FileNameExists implements Validator<String> {
         private final File parent;
 
         public FileNameExists(File parent) {
