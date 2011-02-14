@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 public class UtilTest {
 
     @Test
-    public void consistenty() {
+    public void consistency() {
         Set<String> set = new HashSet<String>();
         for(CsmDeclaration.Kind kind : CsmDeclaration.Kind.values()) {
             String csmDeclarationKindkey = Utils.getCsmDeclarationKindkey(kind);
@@ -129,7 +129,7 @@ public class UtilTest {
                 }
             });
             if (set.contains(csmInheritanceKindKey)) {
-                assert false : "Duplicated key "+csmInheritanceKindKey+" for "+kind;;
+                assert false : "Duplicated key "+csmInheritanceKindKey+" for "+kind;
             }
             set.add(csmInheritanceKindKey);
             assert Utils.getCsmVisibility(csmInheritanceKindKey.charAt(0)) == kind : "Undefined kind for char"+csmInheritanceKindKey.charAt(0);
