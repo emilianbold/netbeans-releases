@@ -291,7 +291,7 @@ public class JsUtils {
        return s;
     }
     
-    public static void dumpAST(Node root, Appendable out) {
+    static void dumpAST(Node root, Appendable out) {
         DumpTreeVisitor visitor = new DumpTreeVisitor(out);
         ParseTreeWalker walker = new ParseTreeWalker(visitor);
         walker.walk(root);
