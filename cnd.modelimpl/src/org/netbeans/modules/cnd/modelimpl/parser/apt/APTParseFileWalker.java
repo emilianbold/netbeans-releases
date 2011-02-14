@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -171,9 +172,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
     @Override
-    protected void postInclude(APTInclude apt, FileImpl included) {
+    protected void postInclude(APTInclude apt, FileImpl included, IncludeState pushIncludeState) {
         if (needMacroAndIncludes()) {
-            getFile().addInclude(createInclude(apt, included), included == null);
+            getFile().addInclude(createInclude(apt, included, pushIncludeState == IncludeState.Recursive), pushIncludeState != IncludeState.Success);
         }
     }
 
@@ -240,14 +241,14 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), pos, CsmMacro.Kind.DEFINED);
     }
 
-    private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {
+    private IncludeImpl createInclude(final APTInclude apt, final FileImpl included, boolean recursive) {
         SimpleOffsetableImpl inclPos = getOffsetable(apt.getToken());
         APTToken lastToken = getLastToken(apt.getInclude());
         if(lastToken == null || APTUtils.isEOF(lastToken)) {
             lastToken = apt.getToken();
         }
         setEndPosition(inclPos, lastToken);
-        IncludeImpl incImpl = IncludeImpl.create(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, getFile(), inclPos);
+        IncludeImpl incImpl = IncludeImpl.create(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), recursive, included, getFile(), inclPos);
         return incImpl;
     }
 
