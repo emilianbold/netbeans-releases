@@ -49,16 +49,12 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
 import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
 import org.netbeans.modules.maven.api.MavenValidators;
@@ -75,13 +71,10 @@ import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.DialogDescriptor;
 import org.openide.LifecycleManager;
 import org.openide.NotificationLineSupport;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -144,7 +137,6 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         txtArtifactId.setEnabled(cbArtifactId.isSelected());
         txtDisplayName.setEnabled(cbDisplayName.isSelected());
         txtFolder.setEnabled(cbFolder.isSelected());
-        taWarning.setText(cbFolder.isSelected() ? NbBundle.getMessage(RenameProjectPanel.class, "RenameProjectPanel.taWarning.text") : "");
     }
 
     /** This method is called from within the constructor to
@@ -163,7 +155,6 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         txtArtifactId = new javax.swing.JTextField();
         cbFolder = new javax.swing.JCheckBox();
         txtFolder = new javax.swing.JTextField();
-        taWarning = new javax.swing.JTextArea();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblRename, org.openide.util.NbBundle.getMessage(RenameProjectPanel.class, "RenameProjectPanel.lblRename.text")); // NOI18N
 
@@ -189,15 +180,6 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             }
         });
 
-        taWarning.setColumns(20);
-        taWarning.setEditable(false);
-        taWarning.setForeground(UIManager.getColor("nb.errorForeground"));
-        taWarning.setLineWrap(true);
-        taWarning.setRows(5);
-        taWarning.setText(org.openide.util.NbBundle.getMessage(RenameProjectPanel.class, "RenameProjectPanel.taWarning.text")); // NOI18N
-        taWarning.setWrapStyleWord(true);
-        taWarning.setOpaque(false);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -209,19 +191,14 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(taWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbArtifactId)
-                                    .addComponent(cbDisplayName)
-                                    .addComponent(cbFolder))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtDisplayName, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                                    .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                                    .addComponent(txtFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))))))
+                            .addComponent(cbArtifactId)
+                            .addComponent(cbDisplayName)
+                            .addComponent(cbFolder))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtDisplayName, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                            .addComponent(txtArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                            .addComponent(txtFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -241,9 +218,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbFolder)
                     .addComponent(txtFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(taWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(82, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -268,7 +243,6 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbDisplayName;
     private javax.swing.JCheckBox cbFolder;
     private javax.swing.JLabel lblRename;
-    private javax.swing.JTextArea taWarning;
     private javax.swing.JTextField txtArtifactId;
     private javax.swing.JTextField txtDisplayName;
     private javax.swing.JTextField txtFolder;
@@ -372,7 +346,8 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     private static final double FIND_PROJECT_WORK = 0.1;
     static final int    MAX_WORK = 100;
 
-    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueFolderName, FileObject newTarget) throws Exception {
+    // XXX copied from DefaultProjectOperationsImplementation
+    private static void doMoveProject(ProgressHandle handle, Project project, String nueFolderName, FileObject newTarget) throws Exception {
         boolean originalOK = true;
         Project main    = OpenProjects.getDefault().getMainProject();
         boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
@@ -390,46 +365,24 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
 
             FileObject projectDirectory = project.getProjectDirectory();
-            List<FileObject> toMoveList = new ArrayList<FileObject>();
-            for (FileObject child : projectDirectory.getChildren()) {
-                if (child.isValid()) {
-                    toMoveList.add(child);
-                }
+
+            double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK);
+
+            FileLock lock = projectDirectory.lock();
+            try {
+                target = projectDirectory.move(lock, newTarget, nueFolderName, null);
+            } finally {
+                lock.releaseLock();
             }
+            int lastWorkDone = (int) currentWorkDone;
 
-            double workPerFileAndOperation = (totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toMoveList.size()) / 2;
+            currentWorkDone += workPerFileAndOperation;
 
-            target = newTarget.createFolder(nueFolderName);
-
-            for (FileObject toCopy : toMoveList) {
-                doCopy(project, toCopy, target);
-
-                int lastWorkDone = (int) currentWorkDone;
-
-                currentWorkDone += workPerFileAndOperation;
-
-                if (lastWorkDone < (int) currentWorkDone) {
-                    handle.progress((int) currentWorkDone);
-                }
+            if (lastWorkDone < (int) currentWorkDone) {
+                handle.progress((int) currentWorkDone);
             }
 
             originalOK = false;
-
-            for (FileObject toCopy : toMoveList) {
-                doDelete(project, toCopy);
-
-                int lastWorkDone = (int) currentWorkDone;
-
-                currentWorkDone += workPerFileAndOperation;
-
-                if (lastWorkDone < (int) currentWorkDone) {
-                    handle.progress((int) currentWorkDone);
-                }
-            }
-
-            if (projectDirectory.getChildren().length == 0) {
-                projectDirectory.delete();
-            }
 
             //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
             ProjectManager.getDefault().clearNonProjectCache();
@@ -438,6 +391,9 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             handle.progress((int) (currentWorkDone += totalWork * FIND_PROJECT_WORK));
 
             assert nue != null;
+            assert nue != project : "got same Project for " + projectDirectory + " and " + target;
+
+//            ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueProjectName);
 
             handle.progress((int) (currentWorkDone += totalWork * NOTIFY_WORK));
 
@@ -446,6 +402,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             open(nue, wasMain);
 
             handle.progress(totalWork);
+            handle.finish();
         } catch (Exception e) {
             if (originalOK) {
                 open(project, wasMain);
@@ -455,73 +412,12 @@ public class RenameProjectPanel extends javax.swing.JPanel {
 		//#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
 		ProjectManager.getDefault().clearNonProjectCache();
 		Project nue = ProjectManager.getDefault().findProject(target);
-
-		assert nue != null;
-
-                open(nue, wasMain);
+		if (nue != null) {
+            open(nue, wasMain);
+        }
             }
-//            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(RenameProjectPanel.class, errorKey, e.getLocalizedMessage()));
+            // XXX: Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, e.getLocalizedMessage()));
             throw e;
-        }
-    }
-
-    private static boolean doDelete(Project original, FileObject toDelete) throws IOException {
-        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(toDelete).getProjectDirectory())) {
-            return false;
-        }
-
-        if (toDelete.isFolder()) {
-            boolean delete = true;
-
-            for (FileObject kid : toDelete.getChildren()) {
-                delete &= doDelete(original, kid);
-            }
-
-            if (delete) {
-                //#83958
-                DataFolder.findFolder(toDelete).delete();
-            }
-
-            return delete;
-        } else {
-            assert toDelete.isData();
-            try {
-                //#83958
-                DataObject dobj = DataObject.find(toDelete);
-                dobj.delete();
-            } catch (DataObjectNotFoundException ex) {
-                //In case of MultiDataObjects the file may be laready deleted
-                if (toDelete.isValid()) {
-                    toDelete.delete();
-                }
-            }
-            return true;
-        }
-    }
-
-    private static void doCopy(Project original, FileObject from, FileObject toParent) throws IOException {
-        if (!VisibilityQuery.getDefault().isVisible(from)) {
-            //Do not copy invisible files/folders.
-            return ;
-        }
-
-        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(from).getProjectDirectory())) {
-            return ;
-        }
-
-        //#109580
-        if (SharabilityQuery.getSharability(FileUtil.toFile(from)) == SharabilityQuery.NOT_SHARABLE) {
-            return;
-        }
-
-        if (from.isFolder()) {
-            FileObject copy = toParent.createFolder(from.getNameExt());
-            for (FileObject kid : from.getChildren()) {
-                doCopy(original, kid, copy);
-            }
-        } else {
-            assert from.isData();
-            FileObject target = FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
         }
     }
 
