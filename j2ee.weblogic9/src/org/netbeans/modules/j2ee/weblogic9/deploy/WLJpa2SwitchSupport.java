@@ -154,7 +154,7 @@ public final class WLJpa2SwitchSupport {
         ProgressSupport.invoke(actions);
     }
     
-    public void doEnable() {
+    private void doEnable() {
         if (!isSwitchSupported()) {
             throw new IllegalStateException("JPA2 switching is not supported for WebLogic " + serverRoot);
         }
@@ -237,7 +237,7 @@ public final class WLJpa2SwitchSupport {
         }
     }
 
-    public void doDisable() {
+    private void doDisable() {
         if (!isSwitchSupported()) {
             throw new IllegalStateException("JPA2 switching is not supported for WebLogic " + serverRoot);
         }
@@ -329,7 +329,7 @@ public final class WLJpa2SwitchSupport {
     }
 
     /**
-     * Method sends update of classpath change to any instance registered
+     * Method sends classpath change event to any instance registered
      * in the IDE and sharing the same server root.
      */
     private void notifyLibrariesChanged() {
