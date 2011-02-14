@@ -115,12 +115,11 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
         if (confRoot != null) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-" + j2eeModule.getModuleVersion() + ".xml";
             FileObject source = FileUtil.getConfigFile(resource);
-            try {
-                FileObject ddFile = FileUtil.copyFile(source, confRoot, "ejb-jar"); //NOI18N
-                return Collections.singleton(ddFile);
-            } catch(NullPointerException npe) {
-                throw new IllegalArgumentException("Could not find source file: " + resource);
+            if (source == null) {
+                throw new NullPointerException("Could not find source file: " + resource);
             }
+            FileObject ddFile = FileUtil.copyFile(source, confRoot, "ejb-jar"); //NOI18N
+            return Collections.singleton(ddFile);
         }
         return Collections.EMPTY_SET;
     }
