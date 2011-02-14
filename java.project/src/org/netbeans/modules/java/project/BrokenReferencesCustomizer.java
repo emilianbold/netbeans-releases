@@ -191,7 +191,12 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         final BrokenReferencesModel.OneReference or = model.getOneReference(index);
         if (or.getType() == BrokenReferencesModel.RefType.LIBRARY ||
             or.getType() == BrokenReferencesModel.RefType.LIBRARY_CONTENT) {
-            LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
+            fix.setEnabled(false);
+            try {
+                LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
+            } finally {
+                fix.setEnabled(true);
+            }
         } else if (or.getType() == BrokenReferencesModel.RefType.DEFINABLE_LIBRARY) {
             fix.setEnabled(false);
             RP.post(new Runnable() {
@@ -221,26 +226,41 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             });
             return;
         } else if (or.getType() == BrokenReferencesModel.RefType.PLATFORM) {
-            PlatformsCustomizer.showCustomizer(null);
+            fix.setEnabled(false);
+            try {
+                PlatformsCustomizer.showCustomizer(null);
+            } finally {
+                fix.setEnabled(true);
+            }
         } else if (or.getType() == BrokenReferencesModel.RefType.VARIABLE || or.getType() == BrokenReferencesModel.RefType.VARIABLE_CONTENT) {
-            VariablesSupport.showVariablesCustomizer();
+            fix.setEnabled(false);
+            try {
+                VariablesSupport.showVariablesCustomizer();
+            } finally {
+                fix.setEnabled(true);
+            }
         } else {
-            JFileChooser chooser;
-            if (or.getType() == BrokenReferencesModel.RefType.PROJECT) {
-                chooser = ProjectChooser.projectChooser();
-                chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_Project(or.getDisplayID()));
-            } else {
-                chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_File(or.getDisplayID()));
-            }
-            if (lastSelectedFile != null) {
-                chooser.setSelectedFile(lastSelectedFile);
-            }
-            int option = chooser.showOpenDialog(null);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                model.updateReference(errorList.getSelectedIndex(), chooser.getSelectedFile());
-                lastSelectedFile = chooser.getSelectedFile();
+            fix.setEnabled(false);
+            try {
+                JFileChooser chooser;
+                if (or.getType() == BrokenReferencesModel.RefType.PROJECT) {
+                    chooser = ProjectChooser.projectChooser();
+                    chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_Project(or.getDisplayID()));
+                } else {
+                    chooser = new JFileChooser();
+                    chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                    chooser.setDialogTitle(LBL_BrokenLinksCustomizer_Resolve_File(or.getDisplayID()));
+                }
+                if (lastSelectedFile != null) {
+                    chooser.setSelectedFile(lastSelectedFile);
+                }
+                int option = chooser.showOpenDialog(null);
+                if (option == JFileChooser.APPROVE_OPTION) {
+                    model.updateReference(errorList.getSelectedIndex(), chooser.getSelectedFile());
+                    lastSelectedFile = chooser.getSelectedFile();
+                }
+            } finally {
+                fix.setEnabled(true);
             }
         }
         model.refresh();
