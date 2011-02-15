@@ -84,7 +84,6 @@ import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
-import org.netbeans.modules.git.ui.repository.remote.SetRemoteConfigAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
