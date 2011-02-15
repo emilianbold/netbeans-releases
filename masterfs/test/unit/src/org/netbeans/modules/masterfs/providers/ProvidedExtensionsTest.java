@@ -63,6 +63,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.ProvidedExtensionsAccessor;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
@@ -680,18 +681,24 @@ public class ProvidedExtensionsTest extends NbTestCase {
             implsFileUnlockCalls++;
         }
 
+        private void assertLock() {
+            assertFalse("No lock when calling to extensions", ChildrenSupport.isLock());
+        }
         
         public void createSuccess(FileObject fo) {
+            assertLock();
             super.createSuccess(fo);
             assertNotNull(FileUtil.toFile(fo));
             implsCreateSuccessCalls++;
         }
 
         public void deleteSuccess(FileObject fo) {
+            assertLock();
             implsDeleteSuccessCalls++;
         }
 
         public void beforeChange(FileObject f) {
+            assertLock();
             assertNotNull(FileUtil.toFile(f));
             implsBeforeChangeCalls++;
         }
@@ -709,26 +716,35 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
 
         public void beforeMove(FileObject fo, File to) {
+            assertLock();
             beforeMoveCalls++;
         }
+        public void beforeCreate(FileObject parent, String name, boolean isFolder) {
+            assertLock();
+        }    
 
         public void moveSuccess(FileObject fo, File to) {
+            assertLock();
             moveSuccessCalls++;
         }
 
         public void moveFailure(FileObject fo, File to) {
+            assertLock();
             moveFailureCalls++;
         }
 
         public void beforeCopy(FileObject fo, File to) {
+            assertLock();
             beforeCopyCalls++;
         }
 
         public void copySuccess(FileObject fo, File to) {
+            assertLock();
             copySuccessCalls++;
         }
 
         public void copyFailure(FileObject fo, File to) {
+            assertLock();
             copyFailureCalls++;
         }
 
