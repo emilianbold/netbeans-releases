@@ -55,14 +55,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
 

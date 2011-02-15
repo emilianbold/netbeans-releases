@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.File;
 import java.io.OutputStreamWriter;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -63,7 +62,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
 
 
     @ForAllEnvironments
-    public void testCaseSensitiveDir() throws Exception {
+    public void testCanonical() throws Exception {
         String baseDir = mkTemp(true);
         try {
             String origDir = "orig-dir";
