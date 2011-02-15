@@ -733,6 +733,10 @@ public final class RemoteClient implements Cancellable {
                 try {
                     lock = foTarget.lock();
                     in = foSource.getInputStream();
+                    // lock the target file. 
+                    // TODO the doewnload action shoudln't save all file before 
+                    // executing, then the ide will ask, whether user wants 
+                    // to replace currently editted file.
                     out = foTarget.getOutputStream(lock);
                     FileUtil.copy(in, out);
                     moved[0] = true;
