@@ -55,14 +55,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.filesystems.FileObject;
 
@@ -124,6 +122,10 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     }
 
     protected String execute(String command, String... args) {
+        return execute(execEnv, command, args);
+    }
+
+    protected String execute(ExecutionEnvironment env, String command, String... args) {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, command, args);
         assertEquals(command + ' ' + args + " failed: " + res.error, 0, res.exitCode);
         return res.output;

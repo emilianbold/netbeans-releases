@@ -364,6 +364,7 @@ Other names may be trademarks of their respective owners.
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db3.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/db_persist_addentityclass.html" />
     <mapID target="org.netbeans.modules.j2ee.common.DatasourceCustomizer" url="persistence/csh/db_new_datasource.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.ui.MissingDatabaseConnectionWarning" url="persistence/csh/db_resolve_datasource.html" />
 
     <!-- one of these needs to be changed -->
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />

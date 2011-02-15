@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -51,19 +54,24 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 /**
  *
  * @author Vladimir Kvashin
  */
 public class CanonicalTestCase extends RemoteFileTestBase {
 
+    public CanonicalTestCase(String testName) {
+        super(testName);
+    }
+    
     public CanonicalTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
 
     @ForAllEnvironments
-    public void testCaseSensitiveDir() throws Exception {
+    public void testCanonical() throws Exception {
         String baseDir = mkTemp(true);
         try {
             String origDir = "orig-dir";
@@ -114,6 +122,75 @@ public class CanonicalTestCase extends RemoteFileTestBase {
         }
     }
     
+    @ForAllEnvironments
+    public void testCyclicLinks() throws Exception {
+        String baseDir = mkTemp(true);
+        try {
+            String link0 = "link1";
+            String link1 = "link2";
+            String link3 = "link3";
+            String script = 
+                    "cd " + baseDir + "; " +
+                    "ln -s " + link0 + ' ' + link1 + "; " +
+                    "ln -s " + link1 + ' ' + link0 + "; " +
+                    "ln -s " + "inexistent" + ' ' + link3;
+            execute("sh", "-c", script);
+            FileObject baseDirFO = getFileObject(baseDir);
+            final FileObject[] links = new FileObject[3];
+            links[0] = (RemoteFileObjectBase) getFileObject(baseDirFO, link0);
+            links[1] = (RemoteFileObjectBase) getFileObject(baseDirFO, link1);
+            links[2] = (RemoteFileObjectBase) getFileObject(baseDirFO, link3);
+            
+            final IOException[] exceptions = new IOException[3];
+            final FileObject[] canonical = new FileObject[3];
+            final CountDownLatch latch = new CountDownLatch(1);
+            final String[] operations = new String[3];
+            final AtomicReference<Integer> idx = new AtomicReference(1);
+            
+            Runnable r = new Runnable() {
+                public void run() {
+                    try {
+                        idx.set(0);
+                        operations[idx.get()] = "Resolvoing cyclic link " + links[idx.get()].getPath();
+                        canonical[idx.get()] = FileSystemProvider.getCanonicalFileObject(links[idx.get()]);
+                        System.err.printf("%s\n", canonical[idx.get()].getPath());
+                    } catch (IOException ex) {
+                        exceptions[0] = ex;
+                    }
+                    try {
+                        idx.set(1);
+                        operations[idx.get()] = "Resolvoing cyclic link " + links[idx.get()].getPath();
+                        canonical[idx.get()] = FileSystemProvider.getCanonicalFileObject(links[idx.get()]);
+                        System.err.printf("%s\n", canonical[idx.get()].getPath());
+                    } catch (IOException ex) {
+                        exceptions[1] = ex;
+                    }
+                    try {
+                        idx.set(2);
+                        operations[idx.get()] = "Resolvoing cyclic link " + links[idx.get()].getPath();
+                        canonical[idx.get()] = FileSystemProvider.getCanonicalFileObject(links[idx.get()]);
+                        System.err.printf("%s\n", canonical[idx.get()].getPath());
+                    } catch (IOException ex) {
+                        exceptions[2] = ex;
+                    }
+                    latch.countDown();
+                }
+            };
+            Thread thread = new Thread(r);
+            thread.start();
+            System.out.printf("Waiting... \n");
+            boolean ok = latch.await(30, TimeUnit.SECONDS);
+            assertTrue(operations[idx.get()] + " aborted by timeout ", ok);
+            for (int i = 0; i < exceptions.length; i++) {
+                assertNotNull(operations[i] + " should throw an exception", exceptions[i]);
+            }
+        } finally {
+            if (baseDir != null) {
+                CommonTasksSupport.rmDir(execEnv, baseDir, true, new OutputStreamWriter(System.err));
+            }
+        }
+    }
+
     private void checkCanonical(FileObject orig, FileObject canonicalShouldBe) throws Exception {
         FileObject canonical = FileSystemProvider.getCanonicalFileObject(orig);
         assertNotNull("Null canonical file object for " + orig, canonical);
