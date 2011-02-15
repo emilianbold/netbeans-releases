@@ -165,6 +165,33 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             }
         }
         setValid(valid, msg);
+        if (!EventQueue.isDispatchThread()) {
+            final Message[] message = new Message[1];
+            supp = new GitProgressSupport.NoOutputLogging() {
+                @Override
+                protected void perform () {
+                    String uri = getSelectedUri();
+                    try {
+                        GitClient client = getClient();
+                        remoteBranches = client.listRemoteBranches(uri, this);
+                    } catch (GitException ex) {
+                        Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
+                        message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect"), false); //NOI18N
+                    }                
+                }
+            };
+            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
+            if (message[0] != null) {
+                setValid(false, message[0]);
+            }
+            //enable input
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    setEnabled(true);
+                }
+            });
+        }
     }
 
     @Override
@@ -198,36 +225,6 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     @Override
     public void prepareValidation () {
         setEnabled(false);
-    }
-
-    @Override
-    public void validate () throws WizardValidationException {
-        super.validate();
-        final Message[] message = new Message[1];
-        supp = new GitProgressSupport.NoOutputLogging() {
-            @Override
-            protected void perform () {
-                String uri = getSelectedUri();
-                try {
-                    GitClient client = getClient();
-                    remoteBranches = client.listRemoteBranches(uri, this);
-                } catch (GitException ex) {
-                    Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
-                    message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect"), false); //NOI18N
-                }                
-            }
-        };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SelectUriStep.class, "LBL_SelectUriStep.progressName")).waitFinished(); //NOI18N
-        if (message[0] != null) {
-            setValid(false, message[0]);
-        }
-        //enable input
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run () {
-                setEnabled(true);
-            }
-        });
     }
 
     private void setEnabled (boolean enabled) {

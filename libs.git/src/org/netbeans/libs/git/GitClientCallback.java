@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor;
+
+package org.netbeans.libs.git;
 
 /**
  *
- * @author tomslot
+ * @author ondra
  */
-class PHPDocParamTagData {
+public interface GitClientCallback {
+    
+    String askQuestion (String uri, String prompt);
+    
+    String getUsername (String uri, String prompt);
+    
+    char[] getPassword (String uri, String prompt);
+    
+    char[] getPassphrase (String uri, String prompt);
+    
+    Boolean askYesNoQuestion (String uri, String prompt);
 
-    final String name;
-    final String type;
-    final String description;
-
-    PHPDocParamTagData(String text) {
-        String paramName, paramType, descriptionTmp;
-        paramName = paramType = descriptionTmp = ""; //NOI18N
-        String parts[] = text.trim().split("\\s+", 3); //NOI18N
-
-        if (parts.length > 0) {
-            paramType = parts[0];
-            if (parts.length > 1) {
-                paramName = parts[1];
-                if (parts.length > 2) {
-                    descriptionTmp = parts[2];
-                }
-            }
-        }
-
-        String optionalStr = "[optional]"; //NOI18N
-        if (paramType.endsWith(optionalStr)) {
-            paramType = paramType.substring(0, paramType.length() - optionalStr.length());
-        }
-
-        name = paramName;
-        type = paramType;
-        description = descriptionTmp;
-    }
 }

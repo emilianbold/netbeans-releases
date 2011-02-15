@@ -69,7 +69,7 @@ public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescr
     }
     
     @Override
-    public void validate () throws WizardValidationException {
+    public final void validate () throws WizardValidationException {
         validateBeforeNext();
         if (!valid || errMessage != null) {
             throw new WizardValidationException (

@@ -196,7 +196,9 @@ public final class SessionNode extends AbstractNode implements OpenCookie, Prope
     public void open() {
         FileObject fo = ejbViewController.getBeanFo();
         ElementHandle<TypeElement> beh = ejbViewController.getBeanClass();
-        ElementOpen.open(fo, beh);
+        if (fo != null && beh != null) {
+            ElementOpen.open(fo, beh);
+        }
 /*
         if (dataObject != null) {
             OpenCookie cookie = dataObject.getCookie(OpenCookie.class);

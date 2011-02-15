@@ -146,6 +146,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * name of the stub test method
      */
     private static final String STUB_TEST_NAME = "testSomeMethod";      //NOI18N
+    /**
+     * name of the 'container' variable in the generated ejb test method skeleton
+     */
+    private static final String CONTAINER_VAR_NAME = "container";         //NOI18N
+
     /** */
     private static final EnumSet<Modifier> NO_MODIFIERS
             = EnumSet.noneOf(Modifier.class);
@@ -1415,19 +1420,21 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             if (!isStatic) {
 
                 boolean useNoArgConstructor = hasAccessibleNoArgConstructor(srcClass);
-                boolean ejb = isClassEjb31Bean(workingCopy, srcClass);
 
-                VariableTree instanceVarInit = maker.Variable(
+                if (isClassEjb31Bean(workingCopy, srcClass)) {
+                    statements.addAll(generateEJBLookupCode(maker, srcClass, instanceClsName));
+                } else {
+                    VariableTree instanceVarInit = maker.Variable(
                         maker.Modifiers(Collections.<Modifier>emptySet()),
                         INSTANCE_VAR_NAME,
                         maker.QualIdent(srcClass),
-                        ejb ? generateEJBLookupCode(maker, srcClass, srcClass.getSimpleName()) :
-                            useNoArgConstructor
-                                 ? generateNoArgConstructorCall(maker,
-                                                                srcClass,
-                                                                instanceClsName)
-                                 : maker.Literal(null));
-                statements.add(instanceVarInit);
+                        useNoArgConstructor
+                            ? generateNoArgConstructorCall(maker,
+                                                            srcClass,
+                                                            instanceClsName)
+                             : maker.Literal(null));
+                    statements.add(instanceVarInit);
+                }
             }
 
             MethodInvocationTree methodCall = maker.MethodInvocation(
@@ -1484,6 +1491,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     statements.add(expectedValue);
                     statements.add(actualValue);
                     statements.add(comparisonStmt);
+            }
+
+            // close EJBContainer if ejb called
+            if (isClassEjb31Bean(workingCopy, srcClass)) {
+                statements.add(generateEJBCleanUpCode(maker));
             }
         }
 
@@ -2105,25 +2117,55 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return false;
     }
 
-    private ExpressionTree generateEJBLookupCode(TreeMaker maker,TypeElement cls, CharSequence instanceClsName) {
+    private List<VariableTree> generateEJBLookupCode(TreeMaker maker, TypeElement srcClass, CharSequence instanceClsName) {
+        final String ejbContainerPackage = "javax.ejb.embeddable.EJBContainer"; // NOI18N
+        List<VariableTree> trees = new ArrayList<VariableTree>();
+
         // TODO: there are probably better ways how to generate code below:
-        IdentifierTree container = maker.Identifier("("+instanceClsName+")javax.ejb.embeddable.EJBContainer"); // NOI18N
+        IdentifierTree container = maker.Identifier(ejbContainerPackage); 
         MethodInvocationTree invocation = maker.MethodInvocation(
+            Collections.<ExpressionTree>emptyList(),
+            maker.MemberSelect(container, "createEJBContainer"), // NOI18N
+            Collections.<ExpressionTree>emptyList()
+        );
+        VariableTree containerVarInit = maker.Variable(
+            maker.Modifiers(Collections.<Modifier>emptySet()),
+            CONTAINER_VAR_NAME,
+            maker.QualIdent(ejbContainerPackage), 
+            invocation
+            );
+        trees.add(containerVarInit);
+
+        IdentifierTree bean = maker.Identifier("(" + srcClass.getSimpleName() + ")" + CONTAINER_VAR_NAME); // NOI18N
+        MethodInvocationTree contextInvocation = maker.MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
-                maker.MemberSelect(container, "createEJBContainer"), // NOI18N
+                maker.MemberSelect(bean, "getContext"), // NOI18N
                 Collections.<ExpressionTree>emptyList()
         );
-        invocation = maker.MethodInvocation(
+        contextInvocation = maker.MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
-                maker.MemberSelect(invocation, "getContext"), // NOI18N
-                Collections.<ExpressionTree>emptyList()
+                maker.MemberSelect(contextInvocation, "lookup"), // NOI18N
+                Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+srcClass.getSimpleName())) // NOI18N
         );
-        invocation = maker.MethodInvocation(
-                Collections.<ExpressionTree>emptyList(),
-                maker.MemberSelect(invocation, "lookup"), // NOI18N
-                Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+instanceClsName)) // NOI18N
+        VariableTree beanVarInit = maker.Variable(
+            maker.Modifiers(Collections.<Modifier>emptySet()),
+            INSTANCE_VAR_NAME,
+            maker.QualIdent(srcClass),
+            contextInvocation
+            );
+        trees.add(beanVarInit);
+
+        return trees;
+    }
+
+    private StatementTree generateEJBCleanUpCode(TreeMaker maker) {
+        IdentifierTree container = maker.Identifier(CONTAINER_VAR_NAME);
+        MethodInvocationTree invocation = maker.MethodInvocation(
+            Collections.<ExpressionTree>emptyList(),
+            maker.MemberSelect(container, "close"), // NOI18N
+            Collections.<ExpressionTree>emptyList()
         );
-        return invocation;
+        return maker.ExpressionStatement(invocation);
     }
 
     /**
