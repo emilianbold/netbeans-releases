@@ -247,7 +247,7 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
                 }
             }
         }
-        PluginManager.show();
+        //PluginManager.show();
         ((CardLayout)getLayout()).show(this, "panel1"); //NOI18N
     }//GEN-LAST:event_jButton1ActionPerformed
     
