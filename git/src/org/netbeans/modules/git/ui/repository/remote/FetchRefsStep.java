@@ -131,7 +131,7 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
                         try {
                             GitClient client = getClient();
                             client.init(this);
-                            RemoteConfig remote = RemoteConfig.createUpdatableRemote(tempRepo, FetchRefsStep.this.remote.getRemoteName());
+                            RemoteConfig remote = new RemoteConfig(FetchRefsStep.this.remote);
                             List<String> refs = new LinkedList<String>();
                             Object[] toValidate = mode == Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY_VALIDATE_SELECTED
                                     ? panel.lstRefs.getSelectedValues()

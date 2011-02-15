@@ -73,7 +73,7 @@ public class RemoteConfig implements GitRemoteConfig {
         this.pushRefSpecs = new LinkedList<String>(pushRefSpecs);
     }
 
-    private RemoteConfig (GitRemoteConfig originalConfig) {
+    public RemoteConfig (GitRemoteConfig originalConfig) {
         this(originalConfig.getRemoteName(), originalConfig.getUris(), originalConfig.getPushUris(), originalConfig.getFetchRefSpecs(), originalConfig.getPushRefSpecs());
     }
 
