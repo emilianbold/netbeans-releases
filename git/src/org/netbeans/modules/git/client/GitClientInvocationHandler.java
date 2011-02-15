@@ -83,6 +83,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "log", //NOI18N
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - i guess there's no need to mke this an exclusive command
+            "setCallback", //NOI18N
             "setRemote")); //NOI18N - i guess there's no need to mke this an exclusive command
     /**
      * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
@@ -116,6 +117,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "unignore", //NOI18N
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - does not update index or files in WT
+            "setCallback", //NOI18N
             "setRemote")); //NOI18N - does not update index or files in WT
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
