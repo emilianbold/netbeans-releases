@@ -619,11 +619,18 @@ public class ChildrenKeysTest extends NbTestCase {
         n = null;
         assertGC ("Node can be gced", ref);
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             if (k.removeNotify == 1) {
                 break;
             }
-            Thread.sleep(100);
+            try {
+                ref = new WeakReference(root.getChildren().getEntrySupport());
+                assertGC("Stimulate GC activity", ref);
+            } catch (AssertionFailedError err) {
+                // OK, entry support cannot be GCed
+                continue;
+            }
+            fail("assertGC shall fail before");
         }
 
         assertEquals("Remove notify is being called", 1, k.removeNotify);
