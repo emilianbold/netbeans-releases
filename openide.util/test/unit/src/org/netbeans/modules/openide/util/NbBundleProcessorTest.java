@@ -122,7 +122,7 @@ public class NbBundleProcessorTest extends NbTestCase {
     }
 
     public void testPackageKeys() throws Exception {
-        assertEquals("stuff", org.netbeans.modules.openide.util.Bundle.general());
+        assertEquals("stuff", org.netbeans.modules.openide.util.Bundle./*general()*/class.getDeclaredMethod("general").invoke(null));
     }
 
     public void testDupeErrorSimple() throws Exception {
