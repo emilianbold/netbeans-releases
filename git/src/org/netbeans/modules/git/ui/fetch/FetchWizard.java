@@ -53,7 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.modules.git.ui.repository.remote.FetchRefsStep;
+import org.netbeans.modules.git.ui.repository.remote.FetchBranchesStep;
 import org.netbeans.modules.git.ui.repository.remote.RemoteConfig;
 import org.netbeans.modules.git.ui.repository.remote.SelectUriStep;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
@@ -93,7 +93,7 @@ class FetchWizard  implements ChangeListener {
             if (value == WizardDescriptor.CLOSED_OPTION || value == WizardDescriptor.CANCEL_OPTION ) {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
                 wizardIterator.selectUriStep.cancelBackgroundTasks();
-                wizardIterator.fetchRefsStep.cancelBackgroundTasks();
+                wizardIterator.fetchBranchesStep.cancelBackgroundTasks();
             }            
         }
         return finnished;
@@ -125,20 +125,20 @@ class FetchWizard  implements ChangeListener {
     }
     
     List<String> getFetchRefSpecs () {
-        return wizardIterator.fetchRefsStep.getSelectedRefSpecs();
+        return wizardIterator.fetchBranchesStep.getSelectedRefSpecs();
     }
     
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         private SelectUriStep selectUriStep;
-        private FetchRefsStep fetchRefsStep;
+        private FetchBranchesStep fetchBranchesStep;
 
         @Override
         protected Panel<WizardDescriptor>[] initializePanels () {
             selectUriStep = new SelectUriStep(repository, remotes);
             selectUriStep.addChangeListener(FetchWizard.this);
-            fetchRefsStep = new FetchRefsStep(FetchRefsStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY_VALIDATE_SELECTED);
-            fetchRefsStep.addChangeListener(FetchWizard.this);
-            Panel[] panels = new Panel[] { selectUriStep, fetchRefsStep };
+            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY);
+            fetchBranchesStep.addChangeListener(FetchWizard.this);
+            Panel[] panels = new Panel[] { selectUriStep, fetchBranchesStep };
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -174,10 +174,10 @@ class FetchWizard  implements ChangeListener {
                 if (remote == null) {
                     remote = RemoteConfig.createUpdatableRemote(repository, selectedUri);
                 }
-                fetchRefsStep.setRemote(remote);
-                fetchRefsStep.setFetchUri(selectedUri, false);
+                fetchBranchesStep.setRemote(remote);
+                fetchBranchesStep.setFetchUri(selectedUri, false);
                 if (remoteBranches != null) {
-                    fetchRefsStep.fillRemoteBranches(remoteBranches);
+                    fetchBranchesStep.fillRemoteBranches(remoteBranches);
                 }
             }
             super.nextPanel();
@@ -185,8 +185,8 @@ class FetchWizard  implements ChangeListener {
 
         @Override
         public synchronized void previousPanel () {
-            if (current() == fetchRefsStep) {
-                fetchRefsStep.cancelBackgroundTasks();
+            if (current() == fetchBranchesStep) {
+                fetchBranchesStep.cancelBackgroundTasks();
             }
             super.previousPanel();
         }
