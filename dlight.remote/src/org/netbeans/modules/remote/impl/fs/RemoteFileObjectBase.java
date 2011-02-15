@@ -204,9 +204,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public long getSize() {
-        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-        if (parent != null) {
-            return parent.getSize(this);
+        RemoteDirectory parent;
+        try {
+            parent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (parent != null) {
+                return parent.getSize(this);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return 0;
     }
@@ -269,9 +274,13 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public Date lastModified() {
-        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-        if (parent != null) {
-            return parent.lastModified(this);
+        try {
+            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (parent != null) {
+                return parent.lastModified(this);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
     }

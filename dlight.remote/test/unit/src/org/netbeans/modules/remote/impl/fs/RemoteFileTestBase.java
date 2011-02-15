@@ -122,6 +122,10 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     }
 
     protected String execute(String command, String... args) {
+        return execute(execEnv, command, args);
+    }
+
+    protected String execute(ExecutionEnvironment env, String command, String... args) {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, command, args);
         assertEquals(command + ' ' + args + " failed: " + res.error, 0, res.exitCode);
         return res.output;
