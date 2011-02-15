@@ -108,6 +108,8 @@ public final class DesktopImpl {
             desktop.setBackground(bkColor);
             desktop.setOpaque(true);
         }
+        if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            desktop.setOpaque( false);
         layeredPane.add(desktop);
     }
     
