@@ -118,6 +118,9 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     /** Debug startup/shutdown tag */
     public static final String TAG_DEBUG_CMD   = "catalina"; // NOI18N
 
+    // at most 5 instances starting stopping at the same time
+    private static final RequestProcessor SERVER_CONTROL_RP = new RequestProcessor("Tomcat Control", 5); 
+    
     /** Normal mode */
     private static final int MODE_RUN     = 0;
     /** Debug mode */
@@ -159,10 +162,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     public ProgressObject startDeploymentManager () {
         LOGGER.log(Level.FINE, "StartTomcat.startDeploymentManager called on " + tm);    // NOI18N
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
-        RequestProcessor.getDefault().post(
-                                        new StartRunnable(MODE_RUN, CommandType.START, null), 
-                                        0, 
-                                        Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_RUN, CommandType.START, null),
+                0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(tm.getUri());
         return this;
     }
@@ -224,10 +225,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     public ProgressObject stopDeploymentManager() { 
         LOGGER.log(Level.FINE, "StartTomcat.stopDeploymentManager called on " + tm);    // NOI18N
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.STOP, "", StateType.RUNNING));
-        RequestProcessor.getDefault().post(
-                                        new StartRunnable(MODE_RUN, CommandType.STOP, null), 
-                                        0, 
-                                        Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_RUN, CommandType.STOP, null),
+                0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(tm.getUri());
         return this;
     }
@@ -242,10 +241,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     public ProgressObject startDebugging(Target target) {
         LOGGER.log(Level.FINE, "StartTomcat.startDebugging called on " + tm);    // NOI18N
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
-        RequestProcessor.getDefault().post(
-                                        new StartRunnable(MODE_DEBUG, CommandType.START, null), 
-                                        0, 
-                                        Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_DEBUG, CommandType.START, null),
+                0, Thread.NORM_PRIORITY);
         return this;
     }
     
@@ -256,10 +253,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                                                 CommandType.START, 
                                                 "",  // NOI18N
                                                 StateType.RUNNING));
-        RequestProcessor.getDefault().post(
-                            new StartRunnable(MODE_PROFILE, CommandType.START, settings), 
-                            0, 
-                            Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new StartRunnable(MODE_PROFILE, CommandType.START, settings),
+                0, Thread.NORM_PRIORITY);
         return this;
     }
 

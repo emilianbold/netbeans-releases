@@ -85,15 +85,9 @@ public class TestBaseForTestProject extends TestBase {
         //disable info exceptions from j2eeserver
         Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
         
-        //so InstalledFileLocatorImpl finds the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
-        
-        //xxx Isn't there a more elegant way to do this?:
-        String unitTestRelativePath = "web.jsf.editor/build/test/unit/data";
-        String dataDir = getDataDir().getAbsolutePath();
-        String nbhome = dataDir.substring(0, dataDir.length() - unitTestRelativePath.length());
-        String entClusterDir = nbhome + "nbbuild/netbeans/enterprise";
-        
-        System.setProperty("netbeans.dirs", entClusterDir);
+        //the InstalledFileLocatorImpl needs the netbeans.dirs properly set 
+        //so it can find the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
+        assertNotNull("the netbeans.dirs property must be specified!", System.getProperty("netbeans.dirs"));
 
         this.projectFo = getTestFile("testWebProject");
         assertNotNull(projectFo);
