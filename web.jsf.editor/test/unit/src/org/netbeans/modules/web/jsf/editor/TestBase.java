@@ -129,7 +129,6 @@ public class TestBase extends CslTestBase {
     @Override
     protected void setUp() throws Exception {
         MockServices.setServices(MockMimeLookup.class);
-        System.setProperty("netbeans.dirs", "/Volumes/Mercurial/web-main/nbbuild/netbeans/enterprise");
         super.setUp();
     }
 
