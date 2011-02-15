@@ -607,12 +607,21 @@ Yes. Component can control its persistence and way how they are displayed in con
     </api>
 
     <api type="export" group="property" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
-         Name of resource bundle property which forces splitter to ingore TopComponent 
-         minimum size when resizing when its value is set to <code>false</code>, 
+         Name of resource bundle property which forces splitter to ingore TopComponent
+         minimum size when resizing when its value is set to <code>false</code>,
          the default value is <code>true</code>.
          When this feature is enabled then the splitter bars will not move beyond
          the minimum size of its TopComponents.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="NbMainWindow.showCustomBackground" category="stable">
+         Name of boolean property in <code>javax.swing.UIManager</code>. When the property value
+         is <code>TRUE</code> then the window system will turn off opacity
+        for most of the main window components - menu bar, toolbars, status bar,
+        sliding bars and the main desktop area component. That means that the main
+        window background will be showing through these components.
+        The property value must be set before the window system loads.
     </api>
 </answer>
 
