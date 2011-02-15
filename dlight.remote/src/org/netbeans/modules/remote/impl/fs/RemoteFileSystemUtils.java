@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
  */
 public class RemoteFileSystemUtils {
     
-    private static final int MAXSYMLINKS = Integer.getInteger("remote.max.sym.links", 20);
+    private static final int MAXSYMLINKS = Integer.getInteger("remote.max.sym.links", 20); // NOI18N
             
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
 
