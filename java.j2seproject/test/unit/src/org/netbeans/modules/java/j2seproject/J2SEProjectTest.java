@@ -65,7 +65,7 @@ public class J2SEProjectTest extends NbTestCase {
         MockLookup.setLayersAndInstances();
         clearWorkDir();
         Project p = ProjectManager.getDefault().findProject(J2SEProjectGenerator.createProject(
-                getWorkDir(), "test", null, null, null).getProjectDirectory());
+                getWorkDir(), "test", null, null, null, false).getProjectDirectory());
         assertNotNull(p.getLookup().lookup(AuxiliaryConfiguration.class));
         Callable<?> call = p.getLookup().lookup(Callable.class);
         assertNotNull(call);

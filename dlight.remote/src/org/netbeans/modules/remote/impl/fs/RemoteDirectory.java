@@ -53,7 +53,6 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -71,7 +70,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -85,11 +83,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
     private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
+    private static boolean LS_VIA_SFTP = ! Boolean.getBoolean("remote.parse.ls");
 
     private Reference<DirectoryStorage> storageRef;
     private static final class RefLock {}
-    private final Object refLock = new RefLock();
-    private static boolean wrongDateFormatReported = false;
+    private final Object refLock = new RefLock();    
 
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -114,11 +112,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ boolean canWrite(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            Entry entry = storage.getEntry(childNameExt);
-            return entry != null && entry.canWrite(execEnv.getUser()); //TODO:rfs - check groups
+            DirEntry entry = storage.getEntry(childNameExt);
+            return entry != null && entry.canWrite(execEnv); //TODO:rfs - check groups
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedIOException ex) {
+            RemoteLogger.finest(ex);
+            return false; // don't report
+        } catch (ExecutionException ex) {
             RemoteLogger.finest(ex);
             return false; // don't report
         } catch (InterruptedException ex) {
@@ -132,11 +133,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            Entry entry = storage.getEntry(childNameExt);
-            return entry != null && entry.canRead(execEnv.getUser()); //TODO:rfs - check groups
+            DirEntry entry = storage.getEntry(childNameExt);
+            return entry != null && entry.canRead(execEnv);
         } catch (ConnectException ex) {
             return false; // don't report
         } catch (InterruptedIOException ex) {
+            RemoteLogger.finest(ex);
+            return false; // don't report
+        } catch (ExecutionException ex) {
             RemoteLogger.finest(ex);
             return false; // don't report
         } catch (InterruptedException ex) {
@@ -177,6 +181,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);            
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
@@ -226,6 +232,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (IOException ex) {
                 throw ex;
+            } catch (ExecutionException ex) {
+                throw new IOException("Can not create " + path + ": exception occurred", ex); // NOI18N
             } catch (InterruptedException ex) {
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (CancellationException ex) {
@@ -277,18 +285,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         RemoteLogger.assertTrue(slashPos == -1);
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            DirectoryStorage.Entry entry = storage.getEntry(relativePath);
+            DirEntry entry = storage.getEntry(relativePath);
             if (entry == null) {
                 return null;
             }
             File childCache = new File(cache, entry.getCache());
             String remoteAbsPath = remotePath + '/' + relativePath;
-            if (entry.getFileType() == FileType.Directory) {
+            if (entry.isDirectory()) {
                 return fileSystem.getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
-            }  else if (entry.getFileType() == FileType.Symlink) {
-                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, entry.getLink());
+            }  else if (entry.isLink()) {
+                return fileSystem.getFactory().createRemoteLink(this, remoteAbsPath, entry.getLinkTarget());
             } else {
-                return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, entry.getFileType());
+                return fileSystem.getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, FileType.File);
             }
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
@@ -297,6 +305,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.finest(ex);
             return null;
         } catch (CancellationException ex) {
+            RemoteLogger.finest(ex);
+            return null;
+        } catch (ExecutionException ex) {
             RemoteLogger.finest(ex);
             return null;
         } catch (ConnectException ex) {
@@ -317,18 +328,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     public RemoteFileObjectBase[] getChildren() {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
-            List<DirectoryStorage.Entry> entries = storage.list();
+            List<DirEntry> entries = storage.list();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
-                DirectoryStorage.Entry entry = entries.get(i);
+                DirEntry entry = entries.get(i);
                 String childPath = remotePath + '/' + entry.getName(); //NOI18N
                 File childCache = new File(cache, entry.getCache());
-                if (entry.getFileType() == FileType.Directory) {
+                if (entry.isDirectory()) {
                     childrenFO[i] = fileSystem.getFactory().createRemoteDirectory(this, childPath, childCache);
-                } else if(entry.getFileType() == FileType.Symlink) {
-                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, entry.getLink());
+                } else if(entry.isLink()) {
+                    childrenFO[i] = fileSystem.getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
                 } else {
-                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, entry.getFileType());
+                    childrenFO[i] = fileSystem.getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
                 }
             }
             return childrenFO;
@@ -339,6 +350,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } catch (InterruptedIOException ex) {
             // don't report, for example FileChooser UI can interrupt us
             RemoteLogger.finest(ex);
+        } catch (ExecutionException ex) {
+            RemoteLogger.finest(ex);
+            // should we report it?
         } catch (ConnectException ex) {
             // don't report, this just means that we aren't connected
             RemoteLogger.finest(ex);
@@ -354,12 +368,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException {
+    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         getDirectoryStorage(true);
     }
 
     private DirectoryStorage getDirectoryStorage(boolean sync) throws
-            ConnectException, IOException, InterruptedException, CancellationException {
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(sync);
@@ -371,7 +385,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private DirectoryStorage getDirectoryStorageImpl(boolean sync) throws
-            ConnectException, IOException, InterruptedException, CancellationException {
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         DirectoryStorage storage = null;
 
@@ -415,12 +429,15 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     try {
                         storage.load();
                         loaded = true;
-                    } catch (DirectoryStorage.FormatException e) {
+                    } catch (FormatException e) {
                         Level level = e.isExpexted() ? Level.FINE : Level.WARNING;
                         RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
                         storageFile.delete();
                     } catch (InterruptedIOException e) {
                         throw e;
+                    } catch (FileNotFoundException e) {
+                        // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
+                        RemoteLogger.finest(e);
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
                     }
@@ -482,11 +499,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             if (!cache.exists()) {
                 cache.mkdirs();
+                if (!cache.exists()) {
+                    throw new IOException("Can not create cache directory " + cache); // NOI18N
+                }
             }
-            if (!cache.exists()) {
-                throw new IOException("Can not create cache directory " + cache); // NOI18N
-            }
-            DirectoryReader directoryReader = new DirectoryReader(execEnv, remotePath);
+            DirectoryReader directoryReader = getLsViaSftp() ? 
+                    new DirectoryReaderSftp(execEnv, remotePath) : new DirectoryReaderLs(execEnv, remotePath);
             if (trace) { trace("synchronizing"); } // NOI18N
             try {
                 directoryReader.readDirectory();
@@ -499,45 +517,58 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     fileSystem.getRemoteFileSupport().addPendingFile(this);
                     if (loaded && storage != null) {
                         return storage;
+                    } else {
+                        throw new ConnectException(ex.getMessage());
                     }
                 }
-                throw new ConnectException(ex.getMessage());
+                
+            }  catch (ExecutionException ex) {
+                if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    // connection was broken while we read directory content -
+                    // add notification and return cache if available
+                    fileSystem.getRemoteFileSupport().addPendingFile(this);
+                    if (loaded && storage != null) {
+                        return storage;
+                    } else {
+                        throw ex;
+                    }
+                }                
             }
             fileSystem.incrementDirSyncCount();
-            Map<String, List<DirectoryStorage.Entry>> dupLowerNames = new HashMap<String, List<DirectoryStorage.Entry>>();
+            Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
             boolean hasDups = false;
-            Map<String, DirectoryStorage.Entry> entries = new HashMap<String, DirectoryStorage.Entry>();
-            for (DirectoryStorage.Entry entry : directoryReader.getEntries()) {
+            Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
+            for (DirEntry entry : directoryReader.getEntries()) {
                 entries.put(entry.getName(), entry);
             }
             boolean changed = false;
-            Set<DirectoryStorage.Entry> keepCacheNames = new HashSet<DirectoryStorage.Entry>();
-            for (DirectoryStorage.Entry newEntry : entries.values()) {
+            Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
+            for (DirEntry newEntry : entries.values()) {
                 String cacheName;
-                DirectoryStorage.Entry oldEntry = storage.getEntry(newEntry.getName());
+                DirEntry oldEntry = storage.getEntry(newEntry.getName());
                 if (oldEntry == null) {
                     changed = true;
                     cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
                 } else {
-                    if (oldEntry.getFileType() == newEntry.getFileType()) {
+                    if (oldEntry.isSameType(newEntry)) {
                         cacheName = oldEntry.getCache();
                         keepCacheNames.add(newEntry);
-                        if (!newEntry.getTimestamp().equals(oldEntry.getTimestamp())) {
-                            if (newEntry.getFileType() == FileType.File) {
+                        if (!newEntry.isSameLastModified(oldEntry)) {
+                            if (newEntry.isPlainFile()) {
                                 changed = true;
                                 File entryCache = new File(cache, oldEntry.getCache());
                                 if (entryCache.exists()) {
                                     if (trace) { trace("removing cache for updated file {0}", entryCache.getAbsolutePath()); } // NOI18N
                                     entryCache.delete();
                                 }
-                            } else if (!equals(newEntry.getLink(), oldEntry.getLink())) {
+                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
                                 changed = true;
-                                fileSystem.getFactory().setLink(this, remotePath + '/' + newEntry.getName(), newEntry.getLink());
+                                fileSystem.getFactory().setLink(this, remotePath + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
                                 changed = true;
-                            } else if (!newEntry.getUser().equals(oldEntry.getUser())) {
+                            } else if (!newEntry.isSameUser(oldEntry)) {
                                 changed = true;
-                            } else if (!newEntry.getGroup().equals(oldEntry.getGroup())) {
+                            } else if (!newEntry.isSameGroup(oldEntry)) {
                                 changed = true;
                             } else if (newEntry.getSize() != oldEntry.getSize()) {
                                 changed = true;
@@ -552,9 +583,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 newEntry.setCache(cacheName);
                 if (!RemoteFileSystemUtils.isSystemCaseSensitive()) {
                     String lowerCacheName = newEntry.getCache().toLowerCase();
-                    List<DirectoryStorage.Entry> dupEntries = dupLowerNames.get(lowerCacheName);
+                    List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
-                        dupEntries = new ArrayList<Entry>();
+                        dupEntries = new ArrayList<DirEntry>();
                         dupLowerNames.put(lowerCacheName, dupEntries);
                     } else {
                         hasDups = true;
@@ -564,7 +595,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             if (changed || entries.size() != storage.size()) {
                 // Check for removal
-                for (DirectoryStorage.Entry oldEntry : storage.list()) {
+                for (DirEntry oldEntry : storage.list()) {
                     if (!entries.containsKey(oldEntry.getName())) {
                         changed = true;
                         invalidate(oldEntry);
@@ -574,13 +605,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
             if (changed) {
                 if (hasDups) {
-                    for (Map.Entry<String, List<DirectoryStorage.Entry>> mapEntry :
-                        new ArrayList<Map.Entry<String, List<DirectoryStorage.Entry>>>(dupLowerNames.entrySet())) {
+                    for (Map.Entry<String, List<DirEntry>> mapEntry :
+                        new ArrayList<Map.Entry<String, List<DirEntry>>>(dupLowerNames.entrySet())) {
 
-                        List<DirectoryStorage.Entry> dupEntries = mapEntry.getValue();
+                        List<DirEntry> dupEntries = mapEntry.getValue();
                         if (dupEntries.size() > 1) {
                             for (int i = 0; i < dupEntries.size(); i++) {
-                                DirectoryStorage.Entry entry = dupEntries.get(i);
+                                DirEntry entry = dupEntries.get(i);
                                 if (keepCacheNames.contains(entry) || i == 0) {
                                     continue; // keep the one that already exists or otherwise 0-th one
                                 }
@@ -601,6 +632,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 storage.setEntries(entries.values());
                 storage.store();
+            } else {
+                storage.touch();
             }
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
@@ -649,6 +682,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (child.cache.exists()) {
                 return;
             }
+            final File cacheParentFile = child.cache.getParentFile();
+            if (!cacheParentFile.exists()) {
+                cacheParentFile.mkdirs();
+                if (!cacheParentFile.exists()) {
+                    throw new IOException("Unable to create parent firectory " + cacheParentFile.getAbsolutePath()); //NOI18N
+                }
+            }
             Future<Integer> task = CommonTasksSupport.downloadFile(child.remotePath, execEnv, child.cache.getAbsolutePath(), null);
             int rc = task.get().intValue();
             if (rc == 0) {
@@ -691,7 +731,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         throw new IOException(getPath());
     }
 
-    private void invalidate(DirectoryStorage.Entry oldEntry) {
+    private void invalidate(DirEntry oldEntry) {
         fileSystem.getFactory().invalidate(remotePath + '/' + oldEntry.getName());
         File oldEntryCache = new File(cache, oldEntry.getCache());
         removeFile(oldEntryCache);
@@ -749,11 +789,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return (s1 == null) ? (s2 == null) : s1.equals(s2);
     }
 
-    private Entry getChildEntry(RemoteFileObjectBase child) {
+    private DirEntry getChildEntry(RemoteFileObjectBase child) {
         try {
             DirectoryStorage directoryStorage = getDirectoryStorage(false);
             if (directoryStorage != null) {
-                Entry entry = directoryStorage.getEntry(child.getNameExt());
+                DirEntry entry = directoryStorage.getEntry(child.getNameExt());
                 if (entry != null) {
                     return entry;
                 } else {
@@ -764,6 +804,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteLogger.finest(ex);
         } catch (IOException ex) {
             RemoteLogger.finest(ex);
+        } catch (ExecutionException ex) {
+            RemoteLogger.finest(ex);
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
         } catch (CancellationException ex) {
@@ -773,32 +815,26 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     long getSize(RemoteFileObjectBase child) {
-        Entry childEntry = getChildEntry(child);
+        DirEntry childEntry = getChildEntry(child);
         if (childEntry != null) {
             return childEntry.getSize();
         }
         return 0;
     }
 
-    Date lastModified(RemoteFileObjectBase child) {
-        Entry childEntry = getChildEntry(child);
+    /*package*/ Date lastModified(RemoteFileObjectBase child) {
+        DirEntry childEntry = getChildEntry(child);
         if (childEntry != null) {
-            String timestamp = childEntry.getTimestamp();
-            try {
-                if (timestamp != null) {
-                    Date date = DirectoryReader.getDate(timestamp);
-                    if (date != null) {
-                        return date;
-                    }
-                }
-            } catch (ParseException ex) {
-                // it can be normal, for example, for not fully supported remote OS (FreeBSD, Mac, AIX, etc)
-                if (!wrongDateFormatReported) {
-                    wrongDateFormatReported = true;
-                    RemoteLogger.getInstance().log(Level.INFO, "Error parsing date string for " + child.remotePath + ": " + timestamp, ex);
-                }
-            }
+            return childEntry.getLastModified();
         }
         return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
+    }
+    
+    /*package*/ static boolean getLsViaSftp() {
+        return LS_VIA_SFTP;
+    }
+    
+    /*package*/ static void testSetLsViaSftp(boolean value) {
+        LS_VIA_SFTP = value;
     }
 }

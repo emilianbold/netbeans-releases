@@ -65,7 +65,6 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public abstract class APTAbstractWalker extends APTWalker {
-    
     private final APTPreprocHandler preprocHandler;
     private final CharSequence startPath;
     private final FileSystem startFileSystem;

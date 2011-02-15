@@ -75,6 +75,8 @@ public final class ProjectActionEvent {
         RUN("Run"), // NOI18N
         DEBUG("Debug"), // NOI18N
         DEBUG_STEPINTO("Debug"), // NOI18N
+        DEBUG_TEST("Debug"), // NOI18N
+        DEBUG_STEPINTO_TEST("Debug"), // NOI18N
         CHECK_EXECUTABLE("CheckExecutable"), // NOI18N
         CUSTOM_ACTION("Custom"), // NOI18N
         BUILD_TESTS("BuildTests"), // NOI18N
@@ -166,7 +168,6 @@ public final class ProjectActionEvent {
     }
 
     public String getExecutable() {
-        // see IZ 191812 we should always get executable for debug from run command
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             return getExecutableFromRunCommand();
         }

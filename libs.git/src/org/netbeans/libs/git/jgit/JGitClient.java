@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
@@ -54,7 +55,6 @@ import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,6 +103,7 @@ import org.netbeans.libs.git.progress.StatusListener;
 public class JGitClient implements GitClient, StatusListener, FileListener, RevisionInfoListener {
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
+    private JGitCredentialsProvider credentialsProvider;
 
     public JGitClient (JGitRepository gitRepository) {
         this.gitRepository = gitRepository;
@@ -214,6 +215,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     @Override
     public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException {
         FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getUpdates();
     }
@@ -221,6 +223,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     @Override
     public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException {
         FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), remote, fetchRefSpecifications, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getUpdates();
     }
@@ -325,9 +328,10 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException {
+    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         ListRemoteBranchesCommand cmd = new ListRemoteBranchesCommand(repository, remoteRepositoryUrl, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getBranches();
     }
@@ -410,6 +414,11 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         Repository repository = gitRepository.getRepository();
         ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
         cmd.execute();
+    }
+
+    @Override
+    public void setCallback (GitClientCallback callback) {
+        this.credentialsProvider = callback == null ? null : new JGitCredentialsProvider(callback);
     }
 
     @Override

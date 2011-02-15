@@ -68,14 +68,12 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
- *  CsmFile analogue of CsmFileTaskFactory
- *
  * This factory should be registered in the global lookup using {@link org.openide.util.lookup.ServiceProvider}.
  *
  * @author Sergey Grinev
  */
 public abstract class CsmFileTaskFactory {
-
+    private static final boolean TRACE_TASKS = false;
     private final Map<FileObject, TaskData> fobj2task = new ConcurrentHashMap<FileObject, TaskData>();
     private final ProgressListener progressListener = new ProgressListener();
     private final ModelListener modelListener = new ModelListener();
@@ -334,6 +332,7 @@ public abstract class CsmFileTaskFactory {
     }
 
     private void post(TaskData pr, FileObject fo, PhaseRunner.Phase phase, int delay) {
+        if (TRACE_TASKS) {System.err.println("Post "+phase+" "+(pr.runner.isHighPriority()?"high":"normal")+" task "+pr.runner+" for "+fo.getPath());} //NOI18N
         if (pr.runner.isHighPriority()) {
             pr.task = HIGH_PRIORITY_WORKER.post(new CsmSafeRunnable(getRunnable(pr.runner, phase), fo), delay, Thread.NORM_PRIORITY);
         } else {
@@ -391,6 +390,7 @@ public abstract class CsmFileTaskFactory {
         public void modelChanged(final CsmChangeEvent e) {
             if (!e.getRemovedFiles().isEmpty()){
                 postDecision(new Runnable() {
+                    @Override
                     public void run() {
                         for (CsmFile f : e.getRemovedFiles()){
                             FileObject fobj = CsmUtilities.getFileObject(f);
@@ -448,6 +448,11 @@ public abstract class CsmFileTaskFactory {
             @Override
             public boolean isHighPriority() {
                 return false;
+            }
+
+            @Override
+            public String toString() {
+                return "Lazy runner"; //NOI18N
             }
         };
     }

@@ -105,7 +105,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
         }
-//        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         System.setProperty("cnd.modelimpl.timing","true"); // NOI18N
@@ -113,9 +113,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
         System.setProperty("cnd.dump.native.file.item.paths","true"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
-        System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
-        Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
-//        MockServices.setServices(MakeProjectType.class);
+        //System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
+        //Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
+        //MockServices.setServices(MakeProjectType.class);
     }
 
     protected boolean optimizeNativeExecutions() {
@@ -123,7 +123,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     protected boolean optimizeSimpleProjects() {
-        return true;
+        return false;
     }
 
     @Override

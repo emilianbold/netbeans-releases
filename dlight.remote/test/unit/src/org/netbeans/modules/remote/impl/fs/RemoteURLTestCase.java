@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
@@ -70,10 +71,30 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
         RemoteLogger.getInstance().setLevel(Level.FINEST);
     }
 
+    public RemoteURLTestCase(String testName) {
+        super(testName);
+    }
+    
     public RemoteURLTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
+    @ForAllEnvironments
+    public void testUrlToFileObject() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        String path = "/usr/include/stdio.h";
+        String url;
+        FileObject fo;
+        
+        url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + path;
+        fo = FileSystemProvider.urlToFileObject(url);
+        assertNotNull("Null file object for " + url, fo);
+        
+        url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getUser() + '@' + env.getHost() + ':' + path;
+        fo = FileSystemProvider.urlToFileObject(url);
+        assertNotNull("Null file object for " + url, fo);
+    }
+    
     @ForAllEnvironments
     public void testFindURL() throws Exception {
         String absPath = "/usr/include/stdio.h";

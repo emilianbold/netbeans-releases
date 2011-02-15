@@ -328,6 +328,16 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     List<TableColumn> getSortedColumns () {
         return sortedColumns;
     }
+
+    /** Removes all columns, including hidden ones. TODO: Add to public APIs */
+    void clean() {
+        List<TableColumn> allColumns = new ArrayList<TableColumn>(tableColumns.size() + hiddenColumns.size());
+        allColumns.addAll(tableColumns);
+        allColumns.addAll(hiddenColumns);
+        for (TableColumn tc : allColumns) {
+            removeColumn(tc);
+        }
+    }
     
     /**
      * Comparator that delegates to individual comparators supplied by

@@ -268,7 +268,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private PathMap cachedPathMap;
     private boolean lookedPathMap;
 
-    public final PathMap getPathMap() {
+    private PathMap getPathMap() {
 	if (!lookedPathMap) {
 	    lookedPathMap = true;
 	    Configuration conf = getNDI().getConfiguration();

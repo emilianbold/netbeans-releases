@@ -110,6 +110,7 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.etable.ETable;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.etable.TableColumnSelector;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
@@ -448,6 +449,22 @@ public class OutlineView extends JScrollPane {
      */
     @Deprecated
     public void setProperties(Node.Property[] newProperties) {
+        setProperties(newProperties, true);
+    }
+
+    private void setProperties(Node.Property[] newProperties, boolean doCleanColumns) {
+        if (doCleanColumns) {
+            TableColumnModel tcm = outline.getColumnModel();
+            if (tcm instanceof ETableColumnModel) {
+                try {
+                    java.lang.reflect.Method cleanMethod = ETableColumnModel.class.getDeclaredMethod("clean");
+                    cleanMethod.setAccessible(true);
+                    cleanMethod.invoke(tcm);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         rowModel.setProperties(newProperties);
         outline.tableChanged(null);
     }
@@ -482,7 +499,7 @@ public class OutlineView extends JScrollPane {
         Property[] nue = new Property[p.length + 1];
         System.arraycopy(p, 0, nue, 0, p.length);
         nue[p.length] = new PrototypeProperty(name, displayName, description);
-        setProperties (nue);
+        setProperties (nue, false);
     }
 
     /**
@@ -508,7 +525,7 @@ public class OutlineView extends JScrollPane {
         }
         if (found) {
             props = nue.toArray(new Property[props.length - 1]);
-            setProperties (props);
+            setProperties (props, false);
         }
         return found;
     }
@@ -551,7 +568,7 @@ public class OutlineView extends JScrollPane {
         for (int i = 0; i < namesAndDisplayNames.length; i+=2) {
             props[i / 2] = new PrototypeProperty (namesAndDisplayNames[i], namesAndDisplayNames[i+1]);
         }
-        setProperties (props);
+        setProperties (props, true);
     }
     
     /** Enable/disable displaying popup menus on tree view items.
@@ -842,6 +859,7 @@ public class OutlineView extends JScrollPane {
                 // display the context menu of the root node
                 JPopupMenu popup = manager.getRootContext().getContextMenu();
                 if (popup != null && popup.getSubElements().length > 0) {
+                    popupFactory.addNoFilterItem(outline, popup);
                     return popup;
                 }
             }
@@ -1442,68 +1460,6 @@ public class OutlineView extends JScrollPane {
             this.treeSortable = treeSortable;
         }
 
-        private JToolTip toolTip = null;
-
-        @Override
-        public String getToolTipText(MouseEvent event) {
-            try {
-                // Required to really get the tooltip text:
-                putClientProperty("ComputingTooltip", Boolean.TRUE);
-
-                toolTip = null;
-                String tipText = null;
-                Point p = event.getPoint();
-
-                // Locate the renderer under the event location
-                int hitColumnIndex = columnAtPoint(p);
-                int hitRowIndex = rowAtPoint(p);
-
-                if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
-                    TableCellRenderer renderer = getCellRenderer(hitRowIndex, hitColumnIndex);
-                    Component component = prepareRenderer(renderer, hitRowIndex, hitColumnIndex);
-
-                    // Now have to see if the component is a JComponent before
-                    // getting the tip
-                    if (component instanceof JComponent) {
-                        // Convert the event to the renderer's coordinate system
-                        Rectangle cellRect = getCellRect(hitRowIndex, hitColumnIndex, false);
-                        p.translate(-cellRect.x, -cellRect.y);
-                        MouseEvent newEvent = new MouseEvent(component, event.getID(),
-                                                  event.getWhen(), event.getModifiers(),
-                                                  p.x, p.y,
-                                                  event.getXOnScreen(),
-                                                  event.getYOnScreen(),
-                                                  event.getClickCount(),
-                                                  event.isPopupTrigger(),
-                                                  MouseEvent.NOBUTTON);
-
-                        tipText = ((JComponent)component).getToolTipText(newEvent);
-                        toolTip = ((JComponent)component).createToolTip();
-                    }
-                }
-
-                // No tip from the renderer get our own tip
-                if (tipText == null)
-                    tipText = getToolTipText();
-                
-                return tipText;
-            } finally {
-                putClientProperty("ComputingTooltip", Boolean.FALSE);
-            }
-            //return super.getToolTipText(event);
-        }
-
-        @Override
-        public JToolTip createToolTip() {
-            JToolTip t = toolTip;
-            toolTip = null;
-            if (t != null) {
-                return t;
-            } else {
-                return super.createToolTip();
-            }
-        }
-
         private void setNodesColumnDescription(String description) {
             nodesColumnDescription = description;
         }
@@ -1607,7 +1563,7 @@ public class OutlineView extends JScrollPane {
 
         }
 
-        private class TranslatedTableCellRenderer extends Component implements TableCellRenderer {
+        private class TranslatedTableCellRenderer extends JComponent implements TableCellRenderer {
 
             private OutlineViewOutline outline;
             private TableCellRenderer delegate;
@@ -1653,6 +1609,42 @@ public class OutlineView extends JScrollPane {
                                 ", with outsideBorder = "+((javax.swing.border.CompoundBorder) border).getOutsideBorder()+
                                 " and insideBorder = "+((javax.swing.border.CompoundBorder) border).getInsideBorder() : "")
                     ));
+                }
+            }
+
+            @Override
+            public String getToolTipText() {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).getToolTipText();
+                } else {
+                    return super.getToolTipText();
+                }
+            }
+
+            @Override
+            public Point getToolTipLocation(MouseEvent event) {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).getToolTipLocation(event);
+                } else {
+                    return super.getToolTipLocation(event);
+                }
+            }
+
+            @Override
+            public String getToolTipText(MouseEvent event) {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).getToolTipText(event);
+                } else {
+                    return super.getToolTipText(event);
+                }
+            }
+
+            @Override
+            public JToolTip createToolTip() {
+                if (component instanceof JComponent) {
+                    return ((JComponent) component).createToolTip();
+                } else {
+                    return super.createToolTip();
                 }
             }
 

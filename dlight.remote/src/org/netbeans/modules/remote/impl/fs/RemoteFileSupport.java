@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;

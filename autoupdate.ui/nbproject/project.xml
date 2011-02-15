@@ -131,7 +131,8 @@
                 <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>org.netbeans.modules.autoupdate.pluginimporter</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
-                <friend>org.netbeans.modules.maven.junit</friend>
+                <friend>org.netbeans.modules.junit</friend>
+                <friend>org.netbeans.modules.mobility.project</friend>
                 <package>org.netbeans.modules.autoupdate.ui.api</package>
             </friend-packages>
         </data>

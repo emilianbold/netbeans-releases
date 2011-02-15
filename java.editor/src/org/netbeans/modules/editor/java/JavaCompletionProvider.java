@@ -1436,6 +1436,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     boolean insideNew = false;
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree)parent).getExtendsClause() == fa) {
                         kinds = EnumSet.of(CLASS);
+                        env.afterExtends();
                     } else if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree)parent).getImplementsClause().contains(fa)) {
                         kinds = EnumSet.of(INTERFACE);
                     } else if (parent.getKind() == Tree.Kind.IMPORT) {
@@ -2919,6 +2920,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
+                                    (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees)) &&
                                     env.isAccessible(scope, e, t, isSuperCall) && isStatic;
                         case CONSTRUCTOR:
                             ctorSeen[0] = true;
@@ -3076,7 +3078,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Set<? extends Element> excludes = env.getExcludes();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if ((excludes == null || !excludes.contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || !e.getModifiers().contains(Modifier.FINAL))) {
+                    if ((excludes == null || !excludes.contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
                         String name = e.getSimpleName().toString();
                         return name.length() > 0 && !Character.isDigit(name.charAt(0)) && startsWith(env, name, prefix) &&
                                 (!isStatic || e.getModifiers().contains(STATIC) || e.getEnclosingElement() == enclMethod) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
@@ -3102,7 +3104,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if ((e.getKind().isClass() || e.getKind().isInterface())) {
                         return (excludes == null || !excludes.contains(e)) && startsWith(env, e.getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) &&
-                                isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || !e.getModifiers().contains(Modifier.FINAL));
+                                isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees));
                     }
                     return false;
                 }
@@ -3889,6 +3891,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                 DeclaredType dt = (DeclaredType)e.asType();
                 for (Element ee : e.getEnclosedElements())
                     if (trees.isAccessible(scope, ee, dt) && isOfKindAndType(ee.asType(), ee, kinds, base, scope, trees, types))
+                        return true;
+            }
+            return false;
+        }
+        
+        private boolean containsAccessibleNonFinalType(Element e, Scope scope, Trees trees) {
+            if (e.getKind().isClass() || e.getKind().isInterface()) {
+                if (!e.getModifiers().contains(Modifier.FINAL)) {
+                    return true;
+                }
+                DeclaredType dt = (DeclaredType)e.asType();
+                for (Element ee : e.getEnclosedElements())
+                    if (trees.isAccessible(scope, ee, dt) && containsAccessibleNonFinalType(ee, scope, trees))
                         return true;
             }
             return false;

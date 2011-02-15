@@ -154,6 +154,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         if(repositoryPaths != null) {
             try {           
                 repositoryPaths.getRepositoryFiles();
+                if (repositoryPaths.getRevision() instanceof SVNRevision.Number && ((SVNRevision.Number) repositoryPaths.getRevision()).getNumber() < 0) {
+                    invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2018"), false)); //NOI18N
+                    return false;
+                }
             } catch (NumberFormatException ex) {
                 invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2018"), false));// NOI18N
                 return false;

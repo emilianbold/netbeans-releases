@@ -60,8 +60,13 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
@@ -69,6 +74,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,13 +82,22 @@ import org.openide.util.Exceptions;
  */
 public final class WLJpa2SwitchSupport {
 
-    private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar";//NO18N
-    private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar";//NO18N
-    private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar";//NO18N
+    private static final Version SWITCH_SUPPORTED_VERSION = Version.fromJsr277NotationWithFallback("10.3.4"); // NOI18N
+
+    private static final String OEPE_CONTRIBUTIONS_JAR = "oepe-contributions.jar"; // NO18N
+
+    private static final String JPA_JAR_1 = "javax.persistence_1.0.0.0_2-0-0.jar"; // NO18N
+
+    private static final String JPA_JAR_2 = "com.oracle.jpa2support_1.0.0.0_2-0.jar"; // NO18N
+
     private static final Logger LOGGER = Logger.getLogger(WLJpa2SwitchSupport.class.getName());
+
     private final File serverRoot;
+
     private final WLDeploymentManager dm;
-    private boolean proggessSuccess = true;
+
+    /** GuardedBy("this")*/
+    private Version serverVersion;
 
     public WLJpa2SwitchSupport(File serverRoot) {
         this.dm = null;
@@ -94,9 +109,56 @@ public final class WLJpa2SwitchSupport {
         this.serverRoot = WLPluginProperties.getServerRoot(dm, true);
     }
 
+    public boolean isSwitchSupported() {
+        Version version = null;
+        synchronized (this) {
+            if (serverVersion != null) {
+                version = serverVersion;
+            } else {
+                if (dm != null) {
+                    version = dm.getServerVersion();
+                } else {
+                    version = WLPluginProperties.getServerVersion(serverRoot);
+                }
+                serverVersion = version;
+            }
+        }
+        return SWITCH_SUPPORTED_VERSION.getMajor().equals(version.getMajor())
+                && SWITCH_SUPPORTED_VERSION.getMinor().equals(version.getMinor())
+                && SWITCH_SUPPORTED_VERSION.getMicro().equals(version.getMicro());
+    }
+
     public void enable() {
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
-        proggessSuccess = true;
+        actions.add(new ProgressSupport.BackgroundAction() {
+
+            @Override
+            protected void run(Context actionContext) {
+                actionContext.progress(NbBundle.getMessage(WLJpa2SwitchSupport.class, "MSG_Enabling_JPA2"));
+                doEnable();
+            }
+        });
+        ProgressSupport.invoke(actions);
+    }
+    
+    public void disable() {
+        List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
+        actions.add(new ProgressSupport.BackgroundAction() {
+
+            @Override
+            protected void run(Context actionContext) {
+                actionContext.progress(NbBundle.getMessage(WLJpa2SwitchSupport.class, "MSG_Disabling_JPA2"));
+                doDisable();
+            }
+        });
+        ProgressSupport.invoke(actions);
+    }
+    
+    private void doEnable() {
+        if (!isSwitchSupported()) {
+            throw new IllegalStateException("JPA2 switching is not supported for WebLogic " + serverRoot);
+        }
+
         try {
             File libDir = WLPluginProperties.getServerLibDirectory(serverRoot);
             if (libDir != null) {
@@ -112,101 +174,74 @@ public final class WLJpa2SwitchSupport {
             final String contribPath = path + JPA_JAR_1 + " " // NOI18N
                     + path + JPA_JAR_2;//NOI18N
 
-            //OEPE jar part
-            actions.add(new ProgressSupport.BackgroundAction() {
-
-                @Override
-                protected void run(Context actionContext) {
-                    actionContext.progress("Processing oepe_contributions.jar ");
-                    try {
-                        // oepe does not exist
-                        if (!oepeFile.exists()) {
-                            createContributionsJar(oepeFile, contribPath);
-                            // exists so update cp
-                        } else {
-                            JarFile oepeJarFile = new JarFile(oepeFile);
-                            try {
-                                Manifest mf = oepeJarFile.getManifest();
-                                String cp = mf.getMainAttributes().getValue(Name.CLASS_PATH);
-                                if (cp == null) {
-                                    cp = ""; // NOI18N
-                                }
-                                if (!cp.contains(JPA_JAR_1) || !cp.contains(JPA_JAR_2)) {
-                                    StringBuilder updated = new StringBuilder(cp);
-                                    if (cp != null) {
-                                        // TODO full path check
-                                        if (!cp.contains(JPA_JAR_2)) {
-                                            updated.insert(0, " ").insert(0, JPA_JAR_2).insert(0, relPath);
-                                        }
-                                        if (!cp.contains(JPA_JAR_1)) {
-                                            updated.insert(0, " ").insert(0, JPA_JAR_1).insert(0, relPath);
-                                        }
-                                    }
-                                    if (cp.length() == 0) {
-                                        updated.deleteCharAt(updated.length() - 1);
-                                    }
-                                    mf.getMainAttributes().put(Name.CLASS_PATH, updated.toString());
-                                    replaceManifest(oepeFile, mf);
-                                }
-                            } finally {
-                                oepeJarFile.close();
+            
+            // oepe does not exist
+            if (!oepeFile.exists()) {
+                createContributionsJar(oepeFile, contribPath);
+                // exists so update cp
+            } else {
+                JarFile oepeJarFile = new JarFile(oepeFile);
+                try {
+                    Manifest mf = oepeJarFile.getManifest();
+                    String cp = mf.getMainAttributes().getValue(Name.CLASS_PATH);
+                    if (cp == null) {
+                        cp = ""; // NOI18N
+                    }
+                    if (!cp.contains(JPA_JAR_1) || !cp.contains(JPA_JAR_2)) {
+                        StringBuilder updated = new StringBuilder(cp);
+                        if (cp != null) {
+                            // TODO full path check
+                            if (!cp.contains(JPA_JAR_2)) {
+                                updated.insert(0, " ").insert(0, JPA_JAR_2).insert(0, relPath);
+                            }
+                            if (!cp.contains(JPA_JAR_1)) {
+                                updated.insert(0, " ").insert(0, JPA_JAR_1).insert(0, relPath);
                             }
                         }
-                    } catch (IOException ex) {
-                        proggessSuccess = false;
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-
-            //Weblogic.jar part
-            actions.add(new ProgressSupport.BackgroundAction() {
-
-                @Override
-                protected void run(Context actionContext) {
-                    if (!proggessSuccess) {
-                        return;
-                    }
-                    actionContext.progress("Processing weblogic.jar ");
-                    try {
-                        // update weblogic.jar
-                        File weblogicFile = WLPluginProperties.getWeblogicJar(serverRoot);
-                        JarFile weblogicJarFile = new JarFile(weblogicFile);
-                        try {
-                            Manifest wlManifest = weblogicJarFile.getManifest();
-                            String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
-                            if (cp == null) {
-                                cp = ""; // NOI18N
-                            }
-                            if (!cp.contains(OEPE_CONTRIBUTIONS_JAR)) {
-                                if (cp.length() == 0) {
-                                    cp = OEPE_CONTRIBUTIONS_JAR;
-                                } else {
-                                    cp = OEPE_CONTRIBUTIONS_JAR + " " + cp; // NOI18N
-                                }
-                                wlManifest.getMainAttributes().put(Name.CLASS_PATH, cp);
-                                replaceManifest(weblogicFile, wlManifest);
-                            }
-                        } finally {
-                            weblogicJarFile.close();
+                        if (cp.length() == 0) {
+                            updated.deleteCharAt(updated.length() - 1);
                         }
-                    } catch (IOException ex) {
-                        proggessSuccess = false;
-                        Exceptions.printStackTrace(ex);
+                        mf.getMainAttributes().put(Name.CLASS_PATH, updated.toString());
+                        replaceManifest(oepeFile, mf);
                     }
+                } finally {
+                    oepeJarFile.close();
                 }
-            });
-            ///////////////
-            ProgressSupport.invoke(actions);
-
-        } finally {
-            if (dm != null) {
-                dm.getJ2eePlatformImpl().notifyLibrariesChange();
             }
+
+            // update weblogic.jar
+            File weblogicFile = WLPluginProperties.getWeblogicJar(serverRoot);
+            JarFile weblogicJarFile = new JarFile(weblogicFile);
+            try {
+                Manifest wlManifest = weblogicJarFile.getManifest();
+                String cp = wlManifest.getMainAttributes().getValue(Name.CLASS_PATH);
+                if (cp == null) {
+                    cp = ""; // NOI18N
+                }
+                if (!cp.contains(OEPE_CONTRIBUTIONS_JAR)) {
+                    if (cp.length() == 0) {
+                        cp = OEPE_CONTRIBUTIONS_JAR;
+                    } else {
+                        cp = OEPE_CONTRIBUTIONS_JAR + " " + cp; // NOI18N
+                    }
+                    wlManifest.getMainAttributes().put(Name.CLASS_PATH, cp);
+                    replaceManifest(weblogicFile, wlManifest);
+                }
+            } finally {
+                weblogicJarFile.close();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            notifyLibrariesChanged();
         }
     }
 
-    public void disable() {
+    private void doDisable() {
+        if (!isSwitchSupported()) {
+            throw new IllegalStateException("JPA2 switching is not supported for WebLogic " + serverRoot);
+        }
+
         try {
             File libDir = WLPluginProperties.getServerLibDirectory(serverRoot);
             if (libDir != null) {
@@ -244,9 +279,7 @@ public final class WLJpa2SwitchSupport {
             // TODO some exception/message to the user
             Exceptions.printStackTrace(ex);
         } finally {
-            if (dm != null) {
-                dm.getJ2eePlatformImpl().notifyLibrariesChange();
-            }
+            notifyLibrariesChanged();
         }
     }
 
@@ -254,29 +287,77 @@ public final class WLJpa2SwitchSupport {
         if (dm != null) {
             return dm.getJ2eePlatformImpl().isJpa2Available();
         } else {
-            // TODO parse jar cp
+            List<URL> classpath = WLJ2eePlatformFactory.getWLSClassPath(serverRoot,
+                    WLPluginProperties.getMiddlewareHome(serverRoot), null);
+            for (URL url : classpath) {
+                URL file = FileUtil.getArchiveFile(url);
+                if (file.getFile().endsWith(JPA_JAR_1)) {
+                    return true;
+                }
+            }
             return false;
         }
     }
 
     public boolean isEnabledViaSmartUpdate() {
-        //check for BUG9923849_WLS103MP4.jar on Library classpath from j2eePlatformImpl
         if (dm != null) {
+            dm.getJ2eePlatformImpl().getLibraries();
             for (LibraryImplementation lib : dm.getJ2eePlatformImpl().getLibraries()) {
-                List<URL> urls = lib.getContent("classpath"); //NOI18N
-                if (urls != null) {
-                    for (URL url : urls) {
-                        String file = url.getFile();
-                        if (file.endsWith("BUG9923849_WLS103MP4.jar!/")) {
-                            return true;//NOI18N
-                        }
-                    }
+                List<URL> urls = lib.getContent("classpath"); // NOI18N
+                if (isEnabledViaSmartUpdate(urls)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            List<URL> urls = WLJ2eePlatformFactory.getWLSClassPath(serverRoot,
+                    WLPluginProperties.getMiddlewareHome(serverRoot), null);
+            return isEnabledViaSmartUpdate(urls);
+        }
+    }
+
+    private boolean isEnabledViaSmartUpdate(List<URL> urls) {
+        if (urls != null) {
+            for (URL url : urls) {
+                URL file = FileUtil.getArchiveFile(url);
+                if (file.getFile().endsWith("BUG9923849_WLS103MP4.jar")) { // NOI18N
+                    return true;
                 }
             }
         }
         return false;
     }
 
+    /**
+     * Method sends classpath change event to any instance registered
+     * in the IDE and sharing the same server root.
+     */
+    private void notifyLibrariesChanged() {
+        if (dm != null) {
+            dm.getJ2eePlatformImpl().notifyLibrariesChange();
+        }
+        String[] urls = Deployment.getDefault().getInstancesOfServer(WLDeploymentFactory.SERVER_ID);
+        for (String url : urls) {
+            if (dm != null && url.equals(dm.getUri())) {
+                continue;
+            }
+            InstanceProperties props = InstanceProperties.getInstanceProperties(url);
+            if (props != null) {
+                String serverRootValue = props.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+                File root = FileUtil.normalizeFile(new File(serverRootValue));
+                if (root.equals(serverRoot)) {
+                    try {
+                        WLDeploymentManager manager = (WLDeploymentManager)
+                                WLDeploymentFactory.getInstance().getDisconnectedDeploymentManager(url);
+                        manager.getJ2eePlatformImpl().notifyLibrariesChange();
+                    } catch (DeploymentManagerCreationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+            }
+        }
+    }
+    
     private void replaceManifest(File jarFile, Manifest manifest) throws IOException {
         FileObject fo = FileUtil.toFileObject(jarFile);
         String tmpName = FileUtil.findFreeFileName(fo.getParent(),

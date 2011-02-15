@@ -87,6 +87,7 @@ public class CallStackNodeModel implements NodeModel {
     private Vector listeners = new Vector ();
     private final RequestProcessor rp;
     private final Map<CallStackFrame, String> frameDescriptionsByFrame = new WeakHashMap<CallStackFrame, String>();
+    private final Map<CallStackFrame, String> frameTooltipByFrame = new WeakHashMap<CallStackFrame, String>();
     
     
     public CallStackNodeModel (ContextProvider lookupProvider) {
@@ -155,12 +156,36 @@ public class CallStackNodeModel implements NodeModel {
         });
     }
 
+    private void loadFrameTooltip(final CallStackFrame sf) {
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                String frameDescr = getCSFName(session, sf, true);
+                synchronized (frameTooltipByFrame) {
+                    frameTooltipByFrame.put(sf, frameDescr);
+                }
+                fireTooltipChanged(sf);
+            }
+        });
+    }
+
     private void fireDisplayNameChanged (Object node) {
         Vector v = (Vector) listeners.clone ();
         int k = v.size ();
         if (k == 0) return ;
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
                 ModelEvent.NodeChanged.DISPLAY_NAME_MASK);
+        for (int i = 0; i < k; i++) {
+            ((ModelListener) v.get (i)).modelChanged (event);
+        }
+    }
+
+    private void fireTooltipChanged (Object node) {
+        Vector v = (Vector) listeners.clone ();
+        int k = v.size ();
+        if (k == 0) return ;
+        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+                ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK);
         for (int i = 0; i < k; i++) {
             ((ModelListener) v.get (i)).modelChanged (event);
         }
@@ -173,7 +198,17 @@ public class CallStackNodeModel implements NodeModel {
         } else
         if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
-            return getCSFName (session, sf, true);
+            //return getCSFName (session, sf, true);
+            // Do not call JDI in AWT
+            String frameDescr;
+            synchronized (frameTooltipByFrame) {
+                frameDescr = frameTooltipByFrame.get(sf);
+                if (frameDescr == null) {
+                    loadFrameTooltip(sf);
+                    return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Frame_Loading");
+                }
+            }
+            return frameDescr;
         } else if ("No current thread" == o) {
             return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
         } else if ("Thread is running" == o) {

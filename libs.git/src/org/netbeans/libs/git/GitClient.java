@@ -166,8 +166,9 @@ public interface GitClient {
      * @param monitor
      * @return 
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
     
     /**
      * Fetches remote changes for given reference specifications.
@@ -176,8 +177,9 @@ public interface GitClient {
      * @param monitor
      * @return 
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
     
     /**
      * Returns all branches
@@ -256,8 +258,9 @@ public interface GitClient {
      * @param monitor
      * @return
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
@@ -324,6 +327,11 @@ public interface GitClient {
      * @throws GitException
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    
+    /**
+     * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
+     */
+    public void setCallback (GitClientCallback callback);
     
     /**
      * Sets the remote configuration in the configuration file.

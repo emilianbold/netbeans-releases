@@ -232,8 +232,18 @@ public final class RootNode extends AbstractNode {
             Mutex.EVENT.readAccess(this);
 
             ServerRegistry registry = ServerRegistry.getInstance();
+            boolean assertsEnabled = false;
+            assert assertsEnabled = true;
+            
             for (ServerInstanceProvider type : registry.getProviders()) {
-                fresh.addAll(type.getInstances());
+                List<ServerInstance> instances = type.getInstances();
+                // #194962
+                if (assertsEnabled) {
+                    for (ServerInstance instance : instances) {
+                        assert instance != null : "ServerInstance returned by provider " + type + " is null";
+                    }
+                }
+                fresh.addAll(instances);
             }
 
             Collections.sort(fresh, COMPARATOR);

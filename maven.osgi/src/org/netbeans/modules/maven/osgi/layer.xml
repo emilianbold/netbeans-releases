@@ -26,8 +26,7 @@
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="osgi-archetype"/>
-                    <attr name="version" stringvalue="1.2-20110201.180438-1"/>
-                    <attr name="repository" stringvalue="https://nexus.codehaus.org/content/repositories/snapshots/"/><!-- XXX until released -->
+                    <attr name="version" stringvalue="1.2"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/OSGiDescription.html"/>
                     <attr name="template" boolvalue="true"/>
                 </file>

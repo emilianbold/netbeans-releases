@@ -270,12 +270,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     @Override
-    public long putStack(List<CharSequence> stack) {
-        return putSample(stack, -1, -1);
+    public long putStack(long context_id, List<CharSequence> stack) {
+        return putSample(context_id, stack, -1, -1);
     }
 
     @Override
-    public long putSample(List<CharSequence> stack, long timestamp, long duration) {
+    public long putSample(long context_id, List<CharSequence> stack, long timestamp, long duration) {
         long callerId = 0;
         Set<Long> funcs = new HashSet<Long>();
         boolean isLeaf;
@@ -283,7 +283,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             isLeaf = i == 0;
             CharSequence funcName = stack.get(i);
             SourceFileInfo sourceFile = FunctionNameUtils.getSourceFileInfo(funcName.toString());
-            long funcId = generateFuncId(funcName, sourceFile);
+            long funcId = generateFuncId(context_id, funcName, sourceFile);
             updateMetrics(funcId, false, timestamp, duration, !funcs.contains(funcId), isLeaf);
             funcs.add(funcId);
             long nodeId = generateNodeId(callerId, funcId, getOffset(funcName), sourceFile == null ? -1 : sourceFile.getLine());
@@ -497,7 +497,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    private long generateFuncId(final CharSequence fname, SourceFileInfo sourceFileInfo) {
+    private long generateFuncId(long context_id, final CharSequence fname, SourceFileInfo sourceFileInfo) {
         // Need an immutable copy of fname. Otherwise will use
         // wrong key in funcCache (mutuable fname)
         String funcName = fname.toString();
@@ -514,18 +514,26 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
 
             try {
-                PreparedStatement ps = stmtCache.getPreparedStatement(
+                final PreparedStatement ps = stmtCache.getPreparedStatement(
                         "SELECT id from SourceFiles where source_file=?"); // NOI18N
-                ps.setString(1, sourceFileInfo.getFileName());
-                ResultSet rs = ps.executeQuery();
+                ResultSet rs = null;
+                //syncronized is used as getPreparedStatement() method is not thread-safe
+                synchronized(ps){
+                    ps.setString(1, sourceFileInfo.getFileName());
+                    rs  = ps.executeQuery();
+                }
                 if (rs != null && rs.next()) {
                     //get the id
                     source_file_index = rs.getInt("id"); //NOI18N
                 } else {
-                    PreparedStatement stmt = stmtCache.getPreparedStatement(
+                    final PreparedStatement stmt = stmtCache.getPreparedStatement(
                             "INSERT INTO SourceFiles (source_file) VALUES (?)"); // NOI18N
-                    stmt.setString(1, sourceFileInfo.getFileName());
-                    int r = stmt.executeUpdate();
+                    int r = 0;
+                    //syncronized is used as getPreparedStatement() method is not thread-safe
+                    synchronized(stmt) {
+                        stmt.setString(1, sourceFileInfo.getFileName());
+                        r = stmt.executeUpdate();
+                    }
                     if (r > 0) {
                         ResultSet generatedKeys = stmt.getGeneratedKeys();
                         if (generatedKeys != null && generatedKeys.next() && generatedKeys.getMetaData().getColumnCount() > 0) {
@@ -973,6 +981,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     protected static class FunctionImpl implements Function {
 
+        private final long context_id;
         private final long id;
         private String name;
         private final String quilifiedName;
@@ -997,7 +1006,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             this.module_name = module_name;
             this.module_offset = module_offset;
             this.source_file = source_file;
+            this.context_id  = -1;
         }
+
+        @Override
+        public long getContextID() {
+            return context_id;
+        }
+
 
         public long getId() {
             return id;

@@ -78,7 +78,7 @@ import org.openide.filesystems.FileUtil;
  * @author Jan Lahoda
  * @author Pavel Flaska
  */
-public class ImportAnalysisTest extends GeneratorTest {
+public class ImportAnalysisTest extends GeneratorTestBase {
 
     /** Creates a new instance of ClashingImportsTest */
     public ImportAnalysisTest(String name) {

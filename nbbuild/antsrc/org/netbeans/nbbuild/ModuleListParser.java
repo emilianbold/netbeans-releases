@@ -141,6 +141,8 @@ final class ModuleListParser {
                             // Hack to treat libs.junit4 as if it were in platform for purposes of building, yet build to another cluster.
                             if (clusterName.equals("nb.cluster.platform")) {
                                 moduleList += ",libs.junit4";
+                            } else if (clusterName.equals("nb.cluster.stableuc")) {
+                                moduleList = moduleList.replace(",libs.junit4", "");
                             }
 
 

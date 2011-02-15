@@ -47,17 +47,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
@@ -69,7 +71,6 @@ import org.netbeans.modules.j2ee.ejbverification.fixes.ExposeBusinessMethod;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -185,6 +186,7 @@ public class BusinessMethodExposed extends EJBVerificationRule {
 
                 if (clazz != null) {
                     result.add(clazz);
+                    addInterfaces(info, result, clazz.getInterfaces());
                 }
             }
         }
@@ -193,9 +195,35 @@ public class BusinessMethodExposed extends EJBVerificationRule {
         return result;
     }
     
+    private void addInterfaces(CompilationInfo info, Collection<TypeElement> result, List<? extends TypeMirror> interfaces){
+        for (TypeMirror inter : interfaces) {
+            TypeElement te = (TypeElement)info.getTypes().asElement(inter);
+            result.add(te);
+            addInterfaces(info, result, te.getInterfaces());
+        }
+    }
+    
     private boolean isEligibleMethod(ExecutableElement method){
+        // if ThrownTypes, Parameters, ReturnType are unknown
+        // then don't offer the hint, see issue #195061
         return method.getModifiers().contains(Modifier.PUBLIC) 
                 && !method.getModifiers().contains(Modifier.STATIC)
-                && method.getReturnType().getKind() != TypeKind.ERROR;
+                && isContainingKnownClasses(method);
+    }
+
+    private boolean isContainingKnownClasses(ExecutableElement method) {
+        if (method.getReturnType().getKind() == TypeKind.ERROR)
+            return false;
+
+        for (TypeMirror type : method.getThrownTypes()) {
+            if (type.getKind() == TypeKind.ERROR)
+                return false;
+        }
+
+        for (VariableElement variableElement : method.getParameters()) {
+            if (variableElement.asType().getKind() == TypeKind.ERROR)
+                return false;
+        }
+        return true;
     }
 }

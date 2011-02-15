@@ -335,7 +335,7 @@ public class HgCommand {
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
     private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
-    private static final String ENCODING = getEncoding();
+    public static final String ENCODING = getEncoding();
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N

@@ -484,7 +484,12 @@ public class GeneratorUtils {
             declFile = CsmRefactoringUtils.getCsmFile(enclClass);
         }
         if (defFile == null) {
-            Iterator<CsmFunction> extDefs = getAllOutOfClassMethodDefinitions(enclClass).iterator();
+            Iterator<CsmFunction> extDefs;
+            if (insPt.getElementDefinition() != null) {
+                extDefs = Collections.singleton((CsmFunction)insPt.getElementDefinition()).iterator();
+            } else {
+                extDefs = getAllOutOfClassMethodDefinitions(enclClass).iterator();
+            }
             while (extDefs.hasNext()) {
                 CsmFunction def = extDefs.next();
                 defFile = CsmRefactoringUtils.getCsmFile(def);

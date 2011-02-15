@@ -66,38 +66,49 @@ public class TomcatUsersTest extends NbTestCase {
                          "<user username='test'  password='tomcat' roles='manager,admin,role1'  />\n" +
                          "</tomcat-users>\n";
     
+    private final String CONTENT3 = "<tomcat-users>\n" +
+                         "<user username='tomcat6' password='tomcat' roles='tomcat,manager' />\n" +
+                         "<user username='tomcat7'  password='tomcat' roles='tomcat,manager-script'  />\n" +
+                         "</tomcat-users>\n";    
+    
     public TomcatUsersTest(String testName) {
         super(testName);
     }
     
     public void testHasRole() throws Exception {
         File file = createTomcatUsersXml("tomcat-users.xml", CONTENT);
-        assertTrue(TomcatUsers.hasManagerRole(file, "tomcat"));
-        assertTrue(TomcatUsers.hasManagerRole(file, "test"));
-        assertFalse(TomcatUsers.hasManagerRole(file, "ide"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "tomcat"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "test"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "ide"));
         
         file = createTomcatUsersXml("tomcat-users2.xml", CONTENT2);
-        assertTrue(TomcatUsers.hasManagerRole(file, "tomcat"));
-        assertTrue(TomcatUsers.hasManagerRole(file, "test"));
-        assertFalse(TomcatUsers.hasManagerRole(file, "ide"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "tomcat"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "test"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "ide"));
+        
+        file = createTomcatUsersXml("tomcat-users3.xml", CONTENT3);
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "tomcat6"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_70, file, "tomcat6"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_70, file, "tomcat7"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "tomcat7"));
     }
     
     public void testCreateUser() throws Exception {
         File file = createTomcatUsersXml("tomcat-users.xml", CONTENT);
-        assertFalse(TomcatUsers.hasManagerRole(file, "ide"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "ide"));
         TomcatUsers.createUser(file, "ide", "tomcat", TomcatVersion.TOMCAT_60);
-        assertTrue(TomcatUsers.hasManagerRole(file, "ide"));
-        assertFalse(TomcatUsers.hasManagerRole(file, "nonexisting"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "ide"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "nonexisting"));
         TomcatUsers.createUser(file, "new", "tomcat", TomcatVersion.TOMCAT_60);
-        assertTrue(TomcatUsers.hasManagerRole(file, "new"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "new"));
         
         file = createTomcatUsersXml("tomcat-users2.xml", CONTENT2);
-        assertFalse(TomcatUsers.hasManagerRole(file, "ide"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "ide"));
         TomcatUsers.createUser(file, "ide", "tomcat", TomcatVersion.TOMCAT_60);
-        assertTrue(TomcatUsers.hasManagerRole(file, "ide"));
-        assertFalse(TomcatUsers.hasManagerRole(file, "nonexisting"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "ide"));
+        assertFalse(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "nonexisting"));
         TomcatUsers.createUser(file, "new", "tomcat", TomcatVersion.TOMCAT_60);
-        assertTrue(TomcatUsers.hasManagerRole(file, "new"));
+        assertTrue(TomcatUsers.hasManagerRole(TomcatVersion.TOMCAT_60, file, "new"));
     }
     
     public void testUserExists() throws Exception {

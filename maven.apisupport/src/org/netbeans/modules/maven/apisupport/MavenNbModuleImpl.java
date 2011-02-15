@@ -65,8 +65,6 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import java.awt.BorderLayout;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -77,7 +75,8 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
@@ -91,16 +90,16 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -119,13 +118,6 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * can help finding the defined netbeans platform.
      */ 
     public static final String PROP_NETBEANS_INSTALL = "netbeans.installation"; //NOI18N
-    
-    /**
-     * Name of element in auxiliary properties configuration of a NetBeans module project
-     * which defines relative path to NB application module project.
-     * Element's namespace is the same as for project properties.
-     */
-    public static final String PROP_PATH_NB_APPLICATION_MODULE = "pathToNbApplicationModule"; //NOI18N
 
     public static final String GROUPID_MOJO = "org.codehaus.mojo";
     public static final String NBM_PLUGIN = "nbm-maven-plugin";
@@ -343,12 +335,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
         File platformDir = findPlatformFolder();
         if( null == platformDir ) {
-            //ask to find nb app module
-            if( SelectPlatformAppModulePanel.findAppModule( project ) ) {
-                platformDir = findPlatformFolder(); //look for platfrom app module again
-            } else {
-                return false;
-            }
+            return false;
         }
         if( null != platformDir && (!platformDir.exists() || platformDir.list().length == 0) ) {
             //platform needs to be built
@@ -567,28 +554,43 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
 
     static Project findAppProject(Project nbmProject) {
-        AuxiliaryProperties props = nbmProject.getLookup().lookup(AuxiliaryProperties.class);
-        String strPathToApp = props.get(PROP_PATH_NB_APPLICATION_MODULE, true); //TODO do we want the props to be shareable or not?
-        if (strPathToApp == null || strPathToApp.isEmpty()) {
+        NbMavenProject mp = nbmProject.getLookup().lookup(NbMavenProject.class);
+        if (mp == null) {
             return null;
         }
-        FileObject appModuleDir = FileUtilities.convertStringToFileObject(strPathToApp);
-        if (appModuleDir == null) {
-            //try relative path
-            File dir = FileUtilities.resolveFilePath(FileUtil.toFile(nbmProject.getProjectDirectory()), strPathToApp);
-            appModuleDir = FileUtil.toFileObject(dir);
-            if (null == appModuleDir) {
-                Logger.getLogger(MavenNbModuleImpl.class.getName()).log(Level.INFO, "Invalid path to NB application module: {0}", strPathToApp); //NOI18N
-                return null;
+        String groupId = mp.getMavenProject().getGroupId();
+        String artifactId = mp.getMavenProject().getArtifactId();
+        Project candidate = null;
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            NbMavenProject mp2 = p.getLookup().lookup(NbMavenProject.class);
+            if (mp2 != null && NbMavenProject.TYPE_NBM_APPLICATION.equals(mp2.getPackagingType())) {
+                for (Dependency dep : mp2.getMavenProject().getDependencies()) {
+                    if (dep.getGroupId().equals(groupId) && dep.getArtifactId().equals(artifactId)) {
+                        if (candidate != null) {
+                            // multiple candidates
+                            return null;
+                        } else {
+                            candidate = p;
+                        }
+                    }
+                }
             }
         }
-        try {
-            // XXX verify that it has nbm-application packaging?
-            return ProjectManager.getDefault().findProject(appModuleDir);
-        } catch (IOException x) {
-            Exceptions.printStackTrace(x);
-            return null;
+        return candidate;
+    }
+    @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
+    public static class RemoveOldPathToNbApplicationModule extends ProjectOpenedHook {
+        private final Project p;
+        public RemoveOldPathToNbApplicationModule(Project p) {
+            this.p = p;
         }
+        protected @Override void projectOpened() {
+            AuxiliaryProperties aux = p.getLookup().lookup(AuxiliaryProperties.class);
+            if (aux != null) {
+                aux.put("pathToNbApplicationModule", null, true);
+            }
+        }
+        protected @Override void projectClosed() {}
     }
 
     private File findPlatformFolder() {
