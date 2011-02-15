@@ -192,6 +192,7 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v1\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "public class C2 {public @Override String toString() {return Bundle.k2();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
         assertEquals("v1", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
