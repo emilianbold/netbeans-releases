@@ -68,6 +68,7 @@ import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,9 +83,9 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
     private GitProgressSupport validatingSupp;
     private static final String ALL_BRANCHES_FETCH_REF_SPEC = "+refs/heads/*:refs/remotes/{0}/*"; //NOI18N
     private static final String BRANCH_FETCH_REF_SPEC = "+refs/heads/{0}:refs/remotes/{1}/{2}"; //NOI18N
-    private JComponent[] inputComponents;
+    private Map<JComponent, Boolean> inputComponents;
     private final Mode mode;
-    
+
     public static enum Mode {
         ACCEPT_EMPTY_SELECTION,
         ACCEPT_NON_EMPTY_SELECTION_ONLY,
@@ -97,7 +98,12 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
         fillPanel();
         setInputComponents();
         attachListeners();
-        validateBeforeNext();
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                validateBeforeNext();
+            }
+        });
     }
     
     private void attachListeners () {
@@ -362,25 +368,30 @@ public class FetchRefsStep extends AbstractWizardPanel implements AsynchronousVa
     }
 
     private void setEnabled (boolean enabled) {
-        for (JComponent comp : inputComponents) {
-            comp.setEnabled(enabled);
+        for (Map.Entry<JComponent, Boolean> e : inputComponents.entrySet()) {
+            JComponent comp = e.getKey();
+            if (enabled) {
+                comp.setEnabled(e.getValue());
+            } else {
+                e.setValue(comp.isEnabled());
+                comp.setEnabled(false);
+            }
         }
     }
 
     private void setInputComponents () {
-        inputComponents = new JComponent[] { 
-            panel.btnAddNew, 
-            panel.btnAddSelected, 
-            panel.btnAddAll, 
-            panel.btnRemoveSelected, 
-            panel.txtNewRef, 
-            panel.lstRemoteBranches, 
-            panel.lstRefs };
+        inputComponents = new HashMap<JComponent, Boolean>(7);
+        inputComponents.put(panel.btnAddNew, false);
+        inputComponents.put(panel.btnAddSelected, false);
+        inputComponents.put(panel.btnAddAll, false);
+        inputComponents.put(panel.btnRemoveSelected, false);
+        inputComponents.put(panel.txtNewRef, false);
+        inputComponents.put(panel.lstRemoteBranches, false);
+        inputComponents.put(panel.lstRefs, false);
     }
 
     @Override
     public boolean isFinishPanel () {
         return true;
     }
-
 }
