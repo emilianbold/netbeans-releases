@@ -814,19 +814,6 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public String getName () {
             return NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemotesNode.name"); //NOI18N
         }
-
-        @Override
-        protected Action[] getPopupActions (boolean context) {
-            return new Action[] {
-                new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemotesNode.refresh")) { //NOI18N
-                    @Override
-                    public void actionPerformed (ActionEvent e) {
-                        ((AllRemotesChildren) getChildren()).refreshRemotes();
-                    }
-                },
-                SystemAction.get(SetRemoteConfigAction.class)
-            };
-        }
     }
 
     private class AllRemotesChildren extends Children.Keys<GitRemoteConfig> implements PropertyChangeListener {
@@ -911,7 +898,6 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     action.fetch(repository, getLookup().lookup(GitRemoteConfig.class));
                 }
             });
-            actions.add(SystemAction.get(SetRemoteConfigAction.class));
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
