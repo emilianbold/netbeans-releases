@@ -90,7 +90,7 @@ public class SetupRemoteWizard implements ChangeListener {
             // wizard wasn't properly finnished ...
             if (value == WizardDescriptor.CLOSED_OPTION || value == WizardDescriptor.CANCEL_OPTION ) {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
-                wizardIterator.fetchRefsStep.cancelBackgroundTasks();
+                wizardIterator.fetchBranchesStep.cancelBackgroundTasks();
             }            
         }
         return finnished;
@@ -102,7 +102,7 @@ public class SetupRemoteWizard implements ChangeListener {
         remote.setFetchUris(Arrays.asList(wizardIterator.fetchUrisStep.getURIs()));
         if (currentPanel != wizardIterator.fetchUrisStep) {
             // fetch ref specs panel accepted
-            remote.setFetchRefSpecs(wizardIterator.fetchRefsStep.getRefSpecs());
+            remote.setFetchRefSpecs(wizardIterator.fetchBranchesStep.getSelectedRefSpecs());
         }
         return remote;
     }
@@ -131,7 +131,7 @@ public class SetupRemoteWizard implements ChangeListener {
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         private SelectRemoteStep selectRemoteStep;
         private FetchUrisPanelController fetchUrisStep;
-        private FetchRefsStep fetchRefsStep;
+        private FetchBranchesStep fetchBranchesStep;
 
         @Override
         protected Panel<WizardDescriptor>[] initializePanels () {
@@ -139,9 +139,9 @@ public class SetupRemoteWizard implements ChangeListener {
             selectRemoteStep.addChangeListener(SetupRemoteWizard.this);
             fetchUrisStep = new FetchUrisPanelController(null);
             fetchUrisStep.addChangeListener(SetupRemoteWizard.this);
-            fetchRefsStep = new FetchRefsStep(FetchRefsStep.Mode.ACCEPT_EMPTY_SELECTION);
-            fetchRefsStep.addChangeListener(SetupRemoteWizard.this);
-            Panel[] panels = new Panel[] { selectRemoteStep, fetchUrisStep, fetchRefsStep };
+            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_EMPTY_SELECTION);
+            fetchBranchesStep.addChangeListener(SetupRemoteWizard.this);
+            Panel[] panels = new Panel[] { selectRemoteStep, fetchUrisStep, fetchBranchesStep };
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -176,16 +176,16 @@ public class SetupRemoteWizard implements ChangeListener {
                 if (selectedUri == null) {
                     selectedUri = fetchUrisStep.getURIs()[0];
                 }
-                fetchRefsStep.setRemote(remotes.get(selectRemoteStep.getSelectedRemote()));
-                fetchRefsStep.setFetchUri(selectedUri, true);
+                fetchBranchesStep.setRemote(remotes.get(selectRemoteStep.getSelectedRemote()));
+                fetchBranchesStep.setFetchUri(selectedUri, true);
             }
             super.nextPanel();
         }
 
         @Override
         public synchronized void previousPanel () {
-            if (current() == fetchRefsStep) {
-                fetchRefsStep.cancelBackgroundTasks();
+            if (current() == fetchBranchesStep) {
+                fetchBranchesStep.cancelBackgroundTasks();
             }
             super.previousPanel();
         }
