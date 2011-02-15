@@ -22,7 +22,9 @@
  */
 package org.netbeans.modules.html.validation;
 
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -678,7 +680,17 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private void reportRuntimeExceptionOnce(RuntimeException e) {
         int hash = document.hashCode();
         hash = 21 * hash + e.getClass().hashCode();
-        hash = 21 * hash + e.getMessage().hashCode();
+        if(e.getMessage() != null) {
+            hash = 21 * hash + e.getMessage().hashCode();
+        } else {
+            //no message provided, so use the whole stacktrace hashcode
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.flush();
+            sw.flush();
+            hash = 21 * hash + sw.toString().hashCode();
+        }
 
         final int fhash = hash;
         Object marker = new Object() {
