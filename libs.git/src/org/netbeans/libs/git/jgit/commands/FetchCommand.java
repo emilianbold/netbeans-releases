@@ -56,9 +56,11 @@ import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -66,11 +68,11 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  *
  * @author ondra
  */
-public class FetchCommand extends GitCommand {
+public class FetchCommand extends TransportCommand {
 
-    private final String remote;
     private final ProgressMonitor monitor;
     private final List<String> refSpecs;
+    private final String remote;
     private Map<String, GitTransportUpdate> updates;
     private FetchResult result;
     
@@ -79,14 +81,14 @@ public class FetchCommand extends GitCommand {
     }
 
     public FetchCommand (Repository repository, String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
-        super(repository, monitor);
+        super(repository, remote, monitor);
         this.monitor = monitor;
         this.remote = remote;
         this.refSpecs = fetchRefSpecifications;
     }
 
     @Override
-    protected void run () throws GitException {
+    protected void run () throws GitException.AuthorizationException, GitException {
         Repository repository = getRepository();
         List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
         for (String refSpec : refSpecs) {
@@ -94,7 +96,7 @@ public class FetchCommand extends GitCommand {
         }
         Transport transport = null;
         try {
-            transport = Transport.open(repository, remote);
+            transport = openTransport();
             transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
             transport.setDryRun(false);
             transport.setFetchThin(true);
@@ -116,7 +118,7 @@ public class FetchCommand extends GitCommand {
         } catch (URISyntaxException e) {
             throw new GitException(e);
         } catch (TransportException e) {
-            throw new GitException(e.getMessage(), e);
+            handleException(e);
         } finally {
             if (transport != null) {
                 transport.close();
