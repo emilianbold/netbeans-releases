@@ -46,39 +46,58 @@ import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 
-/**
- *
+/** Access to UI features of PluginManager that can be useful in other modules
+ * as well. 
+ * @since 1.21
+ * 
  * @author Jirka Rechtacek
  */
 public final class PluginManager {
-    private static PluginManagerAction p = null;
-    private static Runnable toRun = null;
-    public static void show () {
-        if (p == null) {
-            p = new PluginManagerAction ();
-        }
-        p.performAction ();
+    private PluginManager() {
     }
 
-    public static boolean openInstallWizard (OperationContainer<InstallSupport> updateContainer) {
-        if (updateContainer == null) {
+    /** Open standard dialog for installing set of modules. Shows it to the user,
+     * asks for confirmation, license acceptance, etc. The whole operation requires
+     * AWT dispatch thread access (to show the dialog) and blocks 
+     * (until the user clicks through), so either call from AWT dispatch thread
+     * directly, or be sure you hold no locks and block no progress of other
+     * threads to avoid deadlocks.
+<pre>
+{@link OperationContainer}<InstallSupport> container = OperationContainer.createForInstall();
+for ({@link UpdateUnit} u : {@link UpdateManager#getUpdateUnits(org.netbeans.api.autoupdate.UpdateManager.TYPE[]) UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)}) {
+    if (u.getCodeName().matches("org.my.favorite.module")) {
+        if (u.getAvailableUpdates().isEmpty()) {
+            continue;
+        }
+        container.add(u.getAvailableUpdates().get(0));
+    }
+}
+PluginManager.openInstallWizard(container);
+</pre>
+     * 
+     * @param container the container with list of modules for install
+     * @return true if all the requested modules were successfullly installed, 
+     *    false otherwise.
+     */
+    public static boolean openInstallWizard(OperationContainer<InstallSupport> container) {
+        if (container == null) {
             throw new IllegalArgumentException ("OperationContainer cannot be null."); // NOI18N
         }
-        List<OperationContainer.OperationInfo<InstallSupport>> all = updateContainer.listAll ();
+        List<OperationContainer.OperationInfo<InstallSupport>> all = container.listAll ();
         if (all.isEmpty ()) {
             throw new IllegalArgumentException ("OperationContainer cannot be empty."); // NOI18N
         }
-        List<OperationContainer.OperationInfo<InstallSupport>> invalid = updateContainer.listInvalid();
+        List<OperationContainer.OperationInfo<InstallSupport>> invalid = container.listInvalid();
         if (! invalid.isEmpty ()) {
             throw new IllegalArgumentException ("OperationContainer cannot contain invalid elements but " + invalid); // NOI18N
         }
         OperationInfo<InstallSupport> info = all.get (0);
         OperationType doOperation = info.getUpdateUnit ().getInstalled () == null ? OperationType.INSTALL : OperationType.UPDATE;
-        return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, updateContainer));
+        return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, container));
     }
 }
