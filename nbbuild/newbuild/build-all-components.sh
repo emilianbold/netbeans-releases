@@ -95,7 +95,7 @@ fi
 rm -rf $NB_ALL/nbbuild/netbeans/nb/servicetag
 rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false -Dbuild.compiler.debuglevel=source,lines 
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
 ERROR_CODE=$?
 
 create_test_result "build.test.dist" "Build Test Distribution" $ERROR_CODE
