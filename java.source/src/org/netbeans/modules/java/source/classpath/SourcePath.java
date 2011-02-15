@@ -316,7 +316,12 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
 
         @Override
         List<PathResourceImplementation> apply(List<Entry> entries) {
-            return new ArrayList(getAptBuildGeneratedFolders(entries));
+            final Set<? extends URL> aptGenerated = getAptBuildGeneratedFolders(entries);
+            final List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>(aptGenerated.size());
+            for (URL agr : aptGenerated) {
+                resources.add(ClassPathSupport.createResource(agr));
+            }
+            return resources;
         }
     }
 
