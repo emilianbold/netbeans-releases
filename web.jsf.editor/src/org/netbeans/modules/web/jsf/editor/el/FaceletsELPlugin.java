@@ -118,7 +118,6 @@ public class FaceletsELPlugin implements ELPlugin {
      */
     private static Collection<ImplicitObject> getScopeObjects() {
         Collection<ImplicitObject> result = new ArrayList<ImplicitObject>(4);
-        result.add(new JsfImplicitObject("pageScope", null, SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("sessionScope", null, SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("applicationScope", null, SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE));
