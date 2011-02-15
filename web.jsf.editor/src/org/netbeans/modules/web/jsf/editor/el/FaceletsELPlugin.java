@@ -90,14 +90,19 @@ public class FaceletsELPlugin implements ELPlugin {
 
             IMPL_OBJECTS.add( new FacesContextObject());
             IMPL_OBJECTS.add( new ApplicationObject());
-            IMPL_OBJECTS.add(new ComponentObject());
+            IMPL_OBJECTS.add( new ComponentObject());
             IMPL_OBJECTS.add( new FlashObject());
             IMPL_OBJECTS.add( new ResourceObject());
             IMPL_OBJECTS.add( new SessionObject());
             IMPL_OBJECTS.add( new ViewObject() );
             IMPL_OBJECTS.add( new JsfImplicitObject("cookie", null, MAP_TYPE) ); //NOI18N
-
             IMPL_OBJECTS.add( new JsfImplicitObject("cc", null, RAW) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("request", null, OBJECT_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("header", null, MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("headerValues", null, MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("initParam", null, MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("param", null, MAP_TYPE) ); //NOI18N
+            IMPL_OBJECTS.add( new JsfImplicitObject("paramValues", null, MAP_TYPE) ); //NOI18N
         }
 
 
@@ -133,7 +138,7 @@ public class FaceletsELPlugin implements ELPlugin {
 
     static class ApplicationObject extends JsfImplicitObject {
         public ApplicationObject(){
-            super("application",  "javax.servlet.ServletContext", OBJECT_TYPE); //NOI18N
+            super("application",  null, OBJECT_TYPE); //NOI18N
         }
     }
 
@@ -157,7 +162,7 @@ public class FaceletsELPlugin implements ELPlugin {
 
     static class SessionObject extends JsfImplicitObject {
         public SessionObject(){
-            super("session", "javax.servlet.http.HttpSession", OBJECT_TYPE); //NOI18N
+            super("session", null, OBJECT_TYPE); //NOI18N
         }
     }
 
