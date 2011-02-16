@@ -58,6 +58,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane.TitlePaneLayout;
 import org.netbeans.api.project.Project;
@@ -74,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileLock;
@@ -147,7 +149,7 @@ public class OpenRemoteProjectAction extends AbstractAction {
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         
         String userDir = null;
-        ExecutionEnvironment env = record.getExecutionEnvironment();
+        final ExecutionEnvironment env = record.getExecutionEnvironment();
         try {
             userDir = HostInfoUtils.getHostInfo(env).getUserDir();
         } catch (IOException ex) {
@@ -163,9 +165,13 @@ public class OpenRemoteProjectAction extends AbstractAction {
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
-        FileObject remoteProject = fileChooser.getSelectedFileObject();
+        FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
+        FileObject nbprojectFO = remoteProjectFO.getFileObject("nbproject");
+        if (nbprojectFO == null) {
+            return;
+        }
         try {
-            String path = ProjectChooser.getProjectsFolder().getAbsolutePath()+"/"+remoteProject.getNameExt() + "-shadow"; //NOI18N
+            String path = ProjectChooser.getProjectsFolder().getAbsolutePath()+"/"+remoteProjectFO.getNameExt() + "-shadow"; //NOI18N
             File destination = new File(path); //NOI18N
             int loop = 0;
             while(true) {
@@ -176,12 +182,14 @@ public class OpenRemoteProjectAction extends AbstractAction {
                 destination = new File(path + '-' + loop);
             }
             FileObject localProject = FileUtil.createFolder(destination);
-            copy(remoteProject.getFileObject("nbproject"), localProject, "nbproject"); //NOI18N
-            updateProject(remoteProject, localProject, record);
+            copy(nbprojectFO, localProject, "nbproject"); //NOI18N
+            updateProject(remoteProjectFO, localProject, record);
             updateConfiguration(localProject, record);
             updatePrivateConfiguration(localProject, record);
             Project findProject = ProjectManager.getDefault().findProject(localProject);
-            OpenProjects.getDefault().open(new Project[]{findProject}, false);
+            if (findProject != null) {
+                OpenProjects.getDefault().open(new Project[]{findProject}, false);
+            }
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
