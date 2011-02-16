@@ -950,7 +950,15 @@ public class FileObjectTestHid extends TestBaseHid {
     }
     
     public void testRenameFolder() throws Exception {
-        FileObject data = FileUtil.createData(root, "one/two/three/X.java");
+        FileObject data;
+        try {
+            data = FileUtil.createData(root, "one/two/three/X.java");
+        } catch (IOException iex) {
+            fsAssert("createData fired IOException. So there was expected fs or fo are read-only: " + iex.toString() ,
+            fs.isReadOnly() || root.isReadOnly());
+            fileDataCreatedAssert("fs or fo is read-only. So no event should be fired",0);
+            return;
+        }        
         FileObject two = data.getParent().getParent();
         registerDefaultListener(data.getFileSystem());
         {
