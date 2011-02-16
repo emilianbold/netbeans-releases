@@ -134,7 +134,7 @@ if [ "$OUT_COUNT" -gt 0 ]; then
 else
     echo "No outgoing changes. No reason to do build."
     echo >"nbbuild/no-outgoing-changes-no-build.zip"
-    if egrep "Location:.*blue(_anime)?[.]png" "$STATUS"; then
+    if egrep "Location:.*/blue(_anime)?[.]" "$STATUS"; then
         echo Build seems to be stable
         testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`"
     else

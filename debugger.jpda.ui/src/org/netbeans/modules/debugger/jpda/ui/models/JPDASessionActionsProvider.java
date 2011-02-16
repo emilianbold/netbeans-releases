@@ -60,6 +60,7 @@ import javax.swing.*;
 import java.util.*;
 import java.awt.event.ActionEvent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.awt.Mnemonics;
 
 /**
  * Provides popup menu for JPDA session nodes: suspend options and language selection. 
@@ -103,7 +104,12 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
     }
 
     private String localize(String s) {
-        return NbBundle.getBundle(JPDASessionActionsProvider.class).getString(s);
+        s = NbBundle.getBundle(JPDASessionActionsProvider.class).getString(s);
+        int ampIndex = Mnemonics.findMnemonicAmpersand(s);
+        if (ampIndex >= 0) {
+            s = s.substring(0, ampIndex) + s.substring(ampIndex+1);
+        }
+        return s;
     }
 
     private class LanguageSelection extends AbstractAction implements Presenter.Popup {
