@@ -503,14 +503,17 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             } else {
                 return ;
             }
-            Collection nodes = new ArrayList();
+            List nodes = new ArrayList();
             if (tg == null || !showThreadGroups) {
                 nodes.add(ROOT);
             } else if (tg != null) {
                 do {
-                    nodes.add(tg);
+                    nodes.add(0, tg);
                     tg = tg.getParentThreadGroup();
                 } while (tg != null);
+                if (showThreadGroups) {
+                    nodes.add(0, ROOT);
+                }
             }
             synchronized (this) {
                 if (task == null) {
