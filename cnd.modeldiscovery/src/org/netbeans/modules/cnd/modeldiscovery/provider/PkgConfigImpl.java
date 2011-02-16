@@ -469,9 +469,9 @@ public class PkgConfigImpl implements PkgConfig {
                         pc.requires.add(s);
                     }
                 } else if (line.startsWith("Requires.private:")){ // NOI18N
-                    if (false){
+                    if (true){
                         // It seems the pkg-config has a bug. It shouln't take into account "Requires.private" for --cflags option.
-                        // See bug: https://bugs.freedesktop.org/show_bug.cgi?id=3097#c6
+                        // See discussion: http://lists.freedesktop.org/archives/pkg-config/2009-February/000410.html
                         String value = line.substring(17).trim();
                         value = expandMacros(value,vars);
                         StringTokenizer st = new StringTokenizer(value, " ,"); // NOI18N
@@ -513,7 +513,11 @@ public class PkgConfigImpl implements PkgConfig {
                                         v = v.substring(4);
                                     }
                                     if (rootValue != null) {
-                                        v = rootValue+v;
+                                        if (v.startsWith(rootName)) {
+                                            v = rootValue+v.substring(rootName.length());
+                                        } else {
+                                            v = rootValue+v;
+                                        }
                                     } else if (drivePrefix != null) {
                                         v = drivePrefix+v;
                                     }
@@ -577,7 +581,6 @@ public class PkgConfigImpl implements PkgConfig {
             }
         }
         if (value.startsWith("/")) { // NOI18N
-            int i = value.indexOf('/', 1); // NOI18N
             file = file.getParent();
             if (file != null) {
                 file = file.getParent();
@@ -586,11 +589,14 @@ public class PkgConfigImpl implements PkgConfig {
                 file = file.getParent();
             }
             if (file != null) {
+                int i = value.indexOf('/', 1); // NOI18N
                 if (i > 0) {
-                    return file.getPath()+value.substring(i);
-                } else {
-                    return file.getPath();
+                    FileObject fileObject = file.getFileObject(value.substring(i + 1));
+                    if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
+                        return fileObject.getPath();
+                    }
                 }
+                return file.getPath();
             }
         }
         return null;
