@@ -1643,9 +1643,6 @@ public class ActionFactory {
                 final BaseDocument doc = Utilities.getDocument(target);
                 if (doc == null)
                     return;
-                final GuardedDocument gdoc = (doc instanceof GuardedDocument)
-                                       ? (GuardedDocument)doc : null;
-                
                 // Set hourglass cursor
                 final Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1659,10 +1656,10 @@ public class ActionFactory {
                         formatter.lock();
                         try {
                             if (canceled.get()) return;
-                            doc.runAtomicAsUser (new Runnable () {
-                                public void run () {
-                                    try {
+                            doc.runAtomicAsUser(new Runnable() {
 
+                                public void run() {
+                                    try {
                                         int startPos, endPos;
                                         if (Utilities.isSelectionShowing(caret)) {
                                             startPos = target.getSelectionStart();
@@ -1672,51 +1669,11 @@ public class ActionFactory {
                                             endPos = doc.getLength();
                                         }
 
-                                        int pos = startPos;
-                                        if (gdoc != null) {
-                                            pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                                        }
-                                        
-                                        LinkedList<PositionRegion> regions = new LinkedList<PositionRegion>();
-                                        while (pos < endPos) {
-                                            int stopPos = endPos;
-                                            if (gdoc != null) { // adjust to start of the next guarded block
-                                                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                                                if (stopPos == -1 || stopPos > endPos) {
-                                                    stopPos = endPos;
-                                                }
-                                            }
-
-                                            if (pos < stopPos) {
-                                                regions.addFirst(new PositionRegion(doc, pos, stopPos));
-                                                pos = stopPos;
-                                            } else {
-                                                pos++; //ensure to make progress
-                                            }
-
-                                            if (gdoc != null) { // adjust to end of current block
-                                                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                                            }
-                                        }
-                                        
-                                        if (canceled.get()) return;
-                                        // Once we start formatting, the task can't be canceled
-
-                                        for (PositionRegion region : regions) {
-                                            formatter.reformat(region.getStartOffset(), region.getEndOffset());
-                                        }
-                                        
+                                        reformat(formatter, doc, startPos, endPos, canceled);
                                     } catch (GuardedException e) {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
                                         Utilities.annotateLoggable(e);
-                                    } finally {
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    target.setCursor(origCursor);
-                                                }
-                                            });
                                     }
                                 }
                             });
@@ -1728,11 +1685,52 @@ public class ActionFactory {
                 } catch (Exception e) {
                     // not sure about this, but was getting j.l.Exception that the operation is too slow - wtf?
                     Logger.getLogger(FormatAction.class.getName()).log(Level.FINE, null, e);
+                } finally {
+                    target.setCursor(origCursor);
                 }
             }
         }
     }
 
+    static void reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException {
+        final GuardedDocument gdoc = (doc instanceof GuardedDocument)
+                ? (GuardedDocument) doc : null;
+
+        int pos = startPos;
+        if (gdoc != null) {
+            pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+        }
+
+        LinkedList<PositionRegion> regions = new LinkedList<PositionRegion>();
+        while (pos < endPos) {
+            int stopPos = endPos;
+            if (gdoc != null) { // adjust to start of the next guarded block
+                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+                if (stopPos == -1 || stopPos > endPos) {
+                    stopPos = endPos;
+                }
+            }
+
+            if (pos < stopPos) {
+                regions.addFirst(new PositionRegion(doc, pos, stopPos));
+                pos = stopPos;
+            } else {
+                pos++; //ensure to make progress
+            }
+
+            if (gdoc != null) { // adjust to end of current block
+                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+            }
+        }
+
+        if (canceled.get()) return;
+        // Once we start formatting, the task can't be canceled
+
+        for (PositionRegion region : regions) {
+            formatter.reformat(region.getStartOffset(), region.getEndOffset());
+        }
+    }
+    
     @EditorActionRegistrations({
         @EditorActionRegistration(name = BaseKit.firstNonWhiteAction),
         @EditorActionRegistration(name = BaseKit.selectionFirstNonWhiteAction)

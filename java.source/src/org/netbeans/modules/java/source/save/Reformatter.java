@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
@@ -225,6 +226,8 @@ public class Reformatter implements ReformatTask {
             if (endOffset == start && (text == null || !(text.trim().equals("}") || templateEdit))) //NOI18N
                 continue;
             if (embeddingOffset >= start)
+                continue;
+            if (doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(start))
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
@@ -2727,7 +2730,7 @@ public class Reformatter implements ReformatTask {
         }
 
         private void newline() {
-            blankLines(templateEdit ? ANY_COUNT : 0);
+            blankLines(0);
         }
 
         private void blankLines() {
@@ -2735,6 +2738,8 @@ public class Reformatter implements ReformatTask {
         }
 
         private void blankLines(int count) {
+            if (count == 0 && templateEdit)
+                count = ANY_COUNT;
             if (checkWrap && col > rightMargin) {
                 throw new WrapAbort();
             }
