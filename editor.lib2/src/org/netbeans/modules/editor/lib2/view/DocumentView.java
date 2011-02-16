@@ -860,7 +860,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
 
-            LOG.fine("updateCharMetrics() called\n"); // NOI18N
+            LOG.fine("updateCharMetrics(): FontRenderContext: AA=" + frc.isAntiAliased() + // NOI18N
+                    ", AATransformed=" + frc.isTransformed() + // NOI18N
+                    ", AAFractMetrics=" + frc.usesFractionalMetrics() + // NOI18N
+                    ", AAHint=" + frc.getAntiAliasingHint() + "\n"); // NOI18N
         }
     }
     

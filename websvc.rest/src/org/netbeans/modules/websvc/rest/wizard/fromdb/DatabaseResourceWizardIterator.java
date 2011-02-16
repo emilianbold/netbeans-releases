@@ -432,7 +432,9 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             String wizardBundleKey = "Templates/WebServices/RestServicesFromDatabase"; // NOI18N
             String wizardTitle = NbBundle.getMessage(EntityResourcesIterator.class, wizardBundleKey); // NOI18N
-            boolean javaEE6Project = RestUtils.isJavaEE6(Templates.getProject(wizard));
+            Project project = Templates.getProject(wizard);
+            boolean javaEE6Project = !RestUtils.hasSpringSupport(project)  && 
+                RestUtils.isJavaEE6( project);
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
                         new org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel.WizardPanel(wizardTitle),
