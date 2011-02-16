@@ -948,6 +948,41 @@ public class FileObjectTestHid extends TestBaseHid {
         fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);
         fileChangedAssert("fireFileChangedEvent should not be fired ",0);
     }
+    
+    public void testRenameFolder() throws Exception {
+        FileObject data = FileUtil.createData(root, "one/two/three/X.java");
+        FileObject two = data.getParent().getParent();
+        registerDefaultListener(data.getFileSystem());
+        {
+            Enumeration<? extends FileObject> en = two.getParent().getChildren(true);
+            int cnt = 0;
+            while (en.hasMoreElements()) {
+                FileObject fo = en.nextElement();
+                if (fo.isData()) {
+                    cnt++;
+                }
+            }
+            assertEquals("One data object found", 1, cnt);
+        }
+        FileLock lock = two.lock();
+        two.rename(lock, "dva", null);
+        lock.releaseLock();
+
+        {
+            Enumeration<? extends FileObject> en = two.getParent().getChildren(true);
+            int cnt = 0;
+            while (en.hasMoreElements()) {
+                FileObject fo = en.nextElement();
+                if (fo.isData()) {
+                    cnt++;
+                }
+            }
+            assertEquals("One data object found", 1, cnt);
+        }
+        
+        fileRenamedAssert("One rename", 1);
+        
+    }
 
     /** Test of fireFileDataCreatedEvent method, of class org.openide.filesystems.FileObject. */
     public void  testFireFileDataCreatedEvent_FS() throws IOException {
