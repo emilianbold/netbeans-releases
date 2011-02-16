@@ -78,6 +78,14 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             this.name = name;
             this.link = link;
         }
+        
+        public boolean isLink() {
+            return fileType == 'l';
+        }
+        
+        public boolean isDirectory() {
+            return fileType == 'd';
+        }
     }
 
     private RefEntry[] referenceEntries;
@@ -140,8 +148,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         }
     }
 
-    @ForAllEnvironments
-    public void testDirectoryReader() throws Exception {
+    private void prepareDirectory() throws Exception {
         ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
             public void processLine(String line) {
                 System.err.println(line);
@@ -151,18 +158,32 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         });
         int rc = scriptRunner.execute();
         assertEquals("Error running script", 0, rc);
+    }
+    
+    @ForAllEnvironments
+    public void testDirectoryReaderLs() throws Exception {
+        prepareDirectory();
         DirectoryReaderLs directoryReader = new DirectoryReaderLs(execEnv, remoteDir);
         directoryReader.readDirectory();
         List<DirEntry> entries = directoryReader.getEntries();
-        assertEntriesEqual(referenceEntries, entries);
+        assertEntriesEqual(referenceEntries, entries, true);
+    }
+
+    @ForAllEnvironments
+    public void testDirectoryReaderSftp() throws Exception {
+        prepareDirectory();
+        DirectoryReaderSftp directoryReader = new DirectoryReaderSftp(execEnv, remoteDir);
+        directoryReader.readDirectory();
+        List<DirEntry> entries = directoryReader.getEntries();
+        assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
     }
 
     private void doTestLsParser(HostInfo.OSFamily oSFamily, String[] lines, RefEntry[] refEntries) {
         List<DirEntry> entries = DirectoryReaderLs.testLsLineParser(oSFamily, lines);
-        assertEntriesEqual(refEntries, entries);
+        assertEntriesEqual(refEntries, entries, true);
     }
 
-    private void assertEntriesEqual(RefEntry[] refEntries, List<DirEntry> entries) {
+    private void assertEntriesEqual(RefEntry[] refEntries, List<DirEntry> entries, boolean strictTypes) {
         assertEquals("Entries count differs: ", refEntries.length, entries.size());
         for (RefEntry refEntry : refEntries) {
             DirEntry entry = null;
@@ -173,7 +194,11 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
                 }
             }
             assertNotNull("Entry not found for " + refEntry.name, entry);
-            assertEquals("File type differs for " + refEntry.name, FileType.fromChar(refEntry.fileType), entry.getFileType());
+            assertEquals("isLink() differs for " + refEntry.name, refEntry.isLink(), entry.isLink());
+            assertEquals("isDirectory() differs for " + refEntry.name, refEntry.isDirectory(), entry.isDirectory());
+            if (strictTypes) {
+                assertEquals("File type differs for " + refEntry.name, FileType.fromChar(refEntry.fileType), entry.getFileType());
+            }
             assertEquals("Access differs for " + refEntry.name, refEntry.access, entry.getAccessAsString());
 //            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
             if (!entry.isDirectory() && !entry.isLink()) {
