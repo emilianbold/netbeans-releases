@@ -200,3 +200,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-dlight-nativeexecution" value="${javadoc.web.root}/org-netbeans-modules-dlight-nativeexecution"/>
 <property name="javadoc.docs.org-netbeans-core-netigso" value="${javadoc.web.root}/org-netbeans-core-netigso"/>
 <property name="javadoc.docs.org-netbeans-modules-parsing-lucene" value="${javadoc.web.root}/org-netbeans-modules-parsing-lucene"/>
+<property name="javadoc.docs.org-netbeans-modules-autoupdate-ui" value="${javadoc.web.root}/org-netbeans-modules-autoupdate-ui"/>
