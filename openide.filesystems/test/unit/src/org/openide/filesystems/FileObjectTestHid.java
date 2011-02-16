@@ -1253,10 +1253,11 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fo = getTestFile1(root);
         registerDefaultListener(fo);
         FileLock lock = null;
-        
+        String uName = fo.getName().toUpperCase();
+        String uExt = fo.getExt().toUpperCase();
         try {
             lock = fo.lock();
-            fo.rename(lock,fo.getName().toUpperCase(),fo.getExt().toUpperCase());
+            fo.rename(lock,uName, uExt);
         } catch (IOException iex) {
             if (!fs.isReadOnly() && !root.isReadOnly()) {
                 throw iex;
@@ -1273,6 +1274,11 @@ public class FileObjectTestHid extends TestBaseHid {
         fileDataCreatedAssert("fireFileDataCreatedEvent should not be fired ",0);
         fileFolderCreatedAssert("fireFolderDataCreatedEvent  should not be fired ",0);
         fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);
+        
+        File real = FileUtil.toFile(fo);
+        if (real != null) {
+            assertEquals("Renamed too", real.getName(), uName + '.' + uExt);
+        }
     }
 
     /** Test of fireFileRenamedEvent method, of class org.openide.filesystems.FileObject. */
