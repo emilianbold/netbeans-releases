@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 /**
  *
  * @author Vladimir Kvashin
