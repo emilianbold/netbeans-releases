@@ -258,10 +258,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     //always call from mutex.writeAccess
-    private void loadIndexingContext(final RepositoryInfo... repoids) throws IOException {
-
-        for (RepositoryInfo info : repoids) {
-
+    private void loadIndexingContext(final RepositoryInfo info) throws IOException {
+        LOAD: {
             assert getRepoMutex(info).isWriteAccess();
             initIndexer();
 
@@ -280,7 +278,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     unloadIndexingContext(info);
                 } else {
                     LOGGER.fine("Skipping Context :" + info.getId() + ", already loaded.");//NOI18N
-                    continue;
+                    break LOAD; // XXX does it suffice to just return here, or is code after block needed?
                 }
             }
             LOGGER.fine("Loading Context :" + info.getId());//NOI18N
@@ -334,8 +332,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         //figure if a repository was removed from list, remove from context.
         Set<String> currents = new HashSet<String>();
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-            currents.add(info.getId());
+        for (RepositoryInfo info2 : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+            currents.add(info2.getId());
         }
         Set<String> toRemove = new HashSet<String>(indexer.getIndexingContexts().keySet());
         toRemove.removeAll(currents);
