@@ -706,7 +706,7 @@ public class FolderChildrenTest extends NbTestCase {
         VisQ visq = new VisQ();
 
         FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(df.createNodeChildren(visq))));
-        Node[] one = fn.getChildren().getNodes();
+        Node[] one = fn.getChildren().getNodes(true);
         assertEquals("One node", 1, one.length);
         assertEquals("0.dat", one[0].getName());
         
@@ -716,7 +716,7 @@ public class FolderChildrenTest extends NbTestCase {
         first.rename(lock, "2", "dat");
         lock.releaseLock();
         
-        Node[] two = fn.getChildren().getNodes();
+        Node[] two = fn.getChildren().getNodes(true);
         assertEquals("Two are now visible", 2, two.length);
     }
 
