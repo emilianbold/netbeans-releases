@@ -87,7 +87,7 @@ class DirectoryReaderSftp implements DirectoryReader {
         StatInfo[] infos = res.get();
         List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
         for (StatInfo statInfo : infos) {
-            if (! ".".equals(statInfo.getName()) && ! "..".equals(statInfo.getName())) {
+            if (! ".".equals(statInfo.getName()) && ! "..".equals(statInfo.getName())) { // NOI18N
                 newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
             }
         }
