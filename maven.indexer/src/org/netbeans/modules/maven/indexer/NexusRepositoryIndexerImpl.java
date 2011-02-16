@@ -188,12 +188,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     
     private Mutex getRepoMutex(String repoId) {
-        Mutex m = repoMutexMap.get(repoId);
-        if (null==m) {
-            m = new Mutex();
-            repoMutexMap.put(repoId, m);
+        synchronized (repoMutexMap) {
+            Mutex m = repoMutexMap.get(repoId);
+            if (m == null) {
+                m = new Mutex();
+                repoMutexMap.put(repoId, m);
+            }
+            return m;
         }
-        return m;
     }
     
     private Lookup lookup;
