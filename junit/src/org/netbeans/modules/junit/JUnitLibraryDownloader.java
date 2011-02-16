@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.junit;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -52,7 +53,9 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -74,35 +77,50 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
 
     @SuppressWarnings("SleepWhileInLoop")
     private Library download(String name) throws Exception {
-        for (UpdateUnit unit : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)) {
-            if (unit.getCodeName().equals("org.netbeans.modules.junitlib")) {
-                List<UpdateElement> updates = unit.getAvailableUpdates();
-                if (updates.isEmpty()) {
-                    throw new Exception("no updates for " + unit);
-                }
-                OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
-                UpdateElement element = updates.get(0);
-                if (!oc.canBeAdded(unit, element)) {
-                    throw new Exception("could not add " + element + " to updates");
-                }
-                for (UpdateElement req : oc.add(element).getRequiredElements()) {
-                    oc.add(req);
-                }
-                if (!PluginManager.openInstallWizard(oc)) {
-                    throw new Exception("user canceled update");
-                }
-                // XXX new library & build.properties apparently do not show up immediately... how to listen properly?
-                for (int i = 0; i < 10; i++) {
-                    Library lib = LibraryManager.getDefault().getLibrary(name);
-                    if (lib != null) {
-                        return lib;
-                    }
-                    Thread.sleep(1000);
-                }
-                throw new Exception("junitlib failed to install properly");
+        UpdateUnit unit = findJUnitLib();
+        if (unit == null) {
+            // May be first start, when no update lists have yet been downloaded.
+            for (UpdateProvider up : Lookup.getDefault().lookupAll(UpdateProvider.class)) {
+                up.refresh(true);
+            }
+            unit = findJUnitLib();
+            if (unit == null) {
+                throw new Exception("could not find junitlib on any update site");
             }
         }
-        throw new Exception("could not find junitlib on any update site");
+        List<UpdateElement> updates = unit.getAvailableUpdates();
+        if (updates.isEmpty()) {
+            throw new Exception("no updates for " + unit);
+        }
+        OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
+        UpdateElement element = updates.get(0);
+        if (!oc.canBeAdded(unit, element)) {
+            throw new Exception("could not add " + element + " to updates");
+        }
+        for (UpdateElement req : oc.add(element).getRequiredElements()) {
+            oc.add(req);
+        }
+        if (!PluginManager.openInstallWizard(oc)) {
+            throw new Exception("user canceled update");
+        }
+        // XXX new library & build.properties apparently do not show up immediately... how to listen properly?
+        for (int i = 0; i < 10; i++) {
+            Library lib = LibraryManager.getDefault().getLibrary(name);
+            if (lib != null) {
+                return lib;
+            }
+            Thread.sleep(1000);
+        }
+        throw new Exception("junitlib failed to install properly");
+    }
+
+    private UpdateUnit findJUnitLib() throws IOException {
+        for (UpdateUnit unit : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)) {
+            if (unit.getCodeName().equals("org.netbeans.modules.junitlib")) {
+                return unit;
+            }
+        }
+        return null;
     }
 
 }
