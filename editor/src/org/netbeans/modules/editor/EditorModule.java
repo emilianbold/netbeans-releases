@@ -665,10 +665,13 @@ public class EditorModule extends ModuleInstall {
 
                     @Override
                     public void run() {
+                        doc.putProperty("code-template-insert-handler", true);
                         try {
                             EditorPackageAccessor.get().ActionFactory_reformat(reformat, doc, 0, doc.getLength(), new AtomicBoolean());
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
+                        } finally {
+                            doc.putProperty("code-template-insert-handler", null);
                         }
                     }
                 });
