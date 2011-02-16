@@ -59,7 +59,8 @@ import java.beans.BeanInfo;
 import org.netbeans.modules.j2ee.jboss4.customizer.Customizer;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import java.awt.Component;
-import org.openide.util.Utilities;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -70,6 +71,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     private Lookup lookup;
     private static final String ADMIN_URL = "/web-console/"; //NOI18N
+    private static final String ADMIN_URL_60 = "/admin-console/"; //NOI18N
     private static final String JMX_CONSOLE_URL = "/jmx-console/"; //NOI18N
     private static final String HTTP_HEADER = "http://";
     
@@ -93,6 +95,10 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public String  getAdminURL() {
+        Version version = getDeploymentManager().getProperties().getServerVersion();
+        if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
+            return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL_60;
+        }
         return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL;
     }
     

@@ -120,7 +120,9 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
@@ -183,8 +185,7 @@ import org.openide.util.Exceptions;
 		MIValue addrValue = frameTuple.valueOf("addr");	// NOI18N
 		if (addrValue != null) {
 		    String addr = addrValue.asConst().value();
-		    addr = addr.substring(2);	// skip 0x
-		    pc = Long.parseLong(addr, 16);
+                    pc = Address.parseAddr(addr);
 		}
 
                 MIValue funcValue = frameTuple.valueOf("func"); // NOI18N
@@ -362,7 +363,7 @@ import org.openide.util.Exceptions;
             connectExisting = false;
         }
 
-
+        profileBridge.setup(gdi);
 	if (!connectExisting) {
 	    int flags = 0;
 	    if (Log.Startup.nopty)
@@ -406,12 +407,15 @@ import org.openide.util.Exceptions;
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
+        String runDir = gdi.getProfile().getRunDirectory();
+        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
 	    gdbInitFile,
 	    getHost(),
 	    connectExisting,
+            runDir,
 	    gdi);
 	factory.start();
     }
@@ -636,16 +640,23 @@ import org.openide.util.Exceptions;
             ioPack.close();
         }
 
+        postedKillEngine = true;
         session = null;
 	state().isLoaded = false;
 	stateChanged();
-
-        postedKillEngine = true;
+        
+        if (memoryWindow != null) {
+            memoryWindow.setDebugger(null);
+        }
 
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
 
 	// It all ends here
+    }
+    
+    boolean postedKillEngine() {
+        return postedKillEngine;
     }
 
     public void postKill() {
@@ -2392,7 +2403,7 @@ import org.openide.util.Exceptions;
     private void attrMIVar(final GdbVariable v, final boolean evalValue) {
         String expr = v.getMIName();
 	// editable ?
-        String cmdString = "-var-show-attributes " + expr; // NOI18N
+        String cmdString = "-var-show-attributes \"" + expr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
             @Override
@@ -2488,7 +2499,7 @@ import org.openide.util.Exceptions;
 			      String expr,
 			      final int level) {
 
-        String cmdString = "-var-list-children --all-values " + expr; // NOI18N
+        String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 		    @Override
@@ -2534,7 +2545,6 @@ import org.openide.util.Exceptions;
      */
     // SHOULD factor with DbxDebuggerImpl's localsMasked
     private boolean get_locals = false; // indicate Locals View open/close
-    private int local_count;
     private GdbVariable[] local_vars = new GdbVariable[0];
 
     public void registerLocalModel(LocalModel model) {
@@ -2558,7 +2568,7 @@ import org.openide.util.Exceptions;
     }
 
     public int getLocalsCount() {
-        return local_count;
+        return local_vars.length;
     }
 
     @Override
@@ -2598,7 +2608,7 @@ import org.openide.util.Exceptions;
         MITList localsresults = locals.results();
         MITList locals_list = (MITList) localsresults.valueOf("locals"); // NOI18N
         int size = locals_list.size();
-        local_count = size;
+        int local_count = size;
 
         MITList param_list = null;
         int params_count = 0;
@@ -2621,7 +2631,7 @@ import org.openide.util.Exceptions;
         }
 
         // iterate through local list
-        local_vars = new GdbVariable[local_count];
+        GdbVariable[] new_local_vars = new GdbVariable[local_count];
         for (int vx = 0; vx < size; vx++) {
             MIValue localvar = (MIValue) locals_list.get(vx);
             GdbLocal loc = new GdbLocal(localvar);
@@ -2629,12 +2639,12 @@ import org.openide.util.Exceptions;
             GdbVariable gv = variableBag.get(var_name, 
                   false, VariableBag.FROM_LOCALS);
             if (gv == null) {
-                local_vars[vx] = new GdbVariable(this, localUpdater, null, 
+                new_local_vars[vx] = new GdbVariable(this, localUpdater, null, 
                         var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(local_vars[vx]);
+                createMIVar(new_local_vars[vx]);
             } else {
 		gv.setValue(loc.getValue()); // update value
-                local_vars[vx] = gv;
+                new_local_vars[vx] = gv;
             }
         }
 
@@ -2658,13 +2668,16 @@ import org.openide.util.Exceptions;
                     gv.setValue(var_value); // update value
             }
             if (gv == null) {
-                local_vars[size + vx] = new GdbVariable(this, localUpdater, 
+                new_local_vars[size + vx] = new GdbVariable(this, localUpdater, 
                         null, var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(local_vars[size + vx]);
+                createMIVar(new_local_vars[size + vx]);
             } else {
-                local_vars[size + vx] = gv;
+                new_local_vars[size + vx] = gv;
             }
         }
+        // need to update local_vars with fully filled array
+        local_vars = new_local_vars;
+        
         if (update_var) {
             updateMIVar(); // call var-update * , but results are not reliable
         }
@@ -3180,6 +3193,7 @@ import org.openide.util.Exceptions;
         }
         
         String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        outputFile = localToRemote("symbol-file", outputFile); //NOI18N
         if (!CndPathUtilitities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531
             send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
@@ -3521,17 +3535,22 @@ import org.openide.util.Exceptions;
     public void requestDisassembly() {
         Disassembly.open();
     }
+    
+    public FormatOption[] getMemoryFormats() {
+        return GdbMemoryFormat.values();
+    }
 
     private static final int MEMORY_READ_WIDTH = 16;
     
-    public void requestMems(String start, String length, String format, int index) {
+    public void requestMems(String start, String length, FormatOption format) {
         int lines;
         try {
             lines = (Integer.valueOf(length)-1)/MEMORY_READ_WIDTH+1;
         } catch (Exception e) {
             return;
         }
-        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " .") { // NOI18N
+        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + ' ' + format.getOption() + //NOI18N
+                " 1 " + lines + ' ' + MEMORY_READ_WIDTH + " .") { // NOI18N
             @Override
             protected void onDone(MIRecord record) {
                 if (memoryWindow != null) {
@@ -3615,7 +3634,6 @@ import org.openide.util.Exceptions;
     }
 
     public void registerEvaluationWindow(EvaluationWindow w) {
-        notImplemented("registerEvaluationWindow()");	// NOI18N
     }
 
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
@@ -3701,7 +3719,7 @@ import org.openide.util.Exceptions;
 	    */
 	    bm().noteNewHandler(rt, bp, handler);
         } catch (Exception x) {
-            x.printStackTrace();
+            Exceptions.printStackTrace(x);
 	    /* LATER
             // something went wrong, create a "broken" breakpoint
             if (created != null) {
@@ -4323,9 +4341,40 @@ import org.openide.util.Exceptions;
         notImplemented("fix");	// NOI18N
     }
 
+    public FormatOption[] getEvalFormats() {
+        return null; // gdb does not support eval formats
+    }
+
     // interface NativeDebugger
-    public void exprEval(String format, String expr) {
-        notImplemented("exprEval");	// NOI18N
+    public void exprEval(FormatOption format, final String expr) {
+        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        MICommand cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                final String res;
+                if (!record.isError()) {
+                    MIValue val = record.results().valueOf("value"); //NOI18N
+                    if (val != null) {
+                        res = val.asConst().value();
+                    } else {
+                        res = "";
+                    }
+                } else {
+                    res = record.error();
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        EvaluationWindow evalWindow = EvaluationWindow.getDefault();
+                        evalWindow.open();
+                        evalWindow.requestActive();
+                        evalWindow.componentShowing();
+                        evalWindow.evalResult(expr + " = " + res + "\n"); //NOI18N
+                    }
+                });
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 
     // interface NativeDebugger

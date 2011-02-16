@@ -44,6 +44,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -194,6 +195,7 @@ public final class VerifyUpdateCenter extends Task {
                 }
             });
             Set<Manifest> manifests = new HashSet<Manifest>();
+            boolean foundJUnit = false;
             NodeList nl = doc.getElementsByTagName("manifest");
             for (int i = 0; i < nl.getLength(); i++) {
                 Element m = (Element) nl.item(i);
@@ -210,6 +212,12 @@ public final class VerifyUpdateCenter extends Task {
                     }
                 }
                 manifests.add(mani);
+                if ("org.netbeans.libs.junit4".equals(mani.getMainAttributes().getValue("OpenIDE-Module"))) {
+                    foundJUnit = true;
+                }
+            }
+            if (!foundJUnit) { // hack - pretend that this module is still in the platform cluster
+                manifests.add(new Manifest(new ByteArrayInputStream("OpenIDE-Module: org.netbeans.libs.junit4\nOpenIDE-Module-Specification-Version: 1.13\n\n".getBytes())));
             }
             return manifests;
         } catch (FileNotFoundException x) {

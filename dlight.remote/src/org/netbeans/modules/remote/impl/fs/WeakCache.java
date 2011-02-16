@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.util.HashMap;
-import java.util.Map;
 import java.lang.ref.SoftReference;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -57,7 +56,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class WeakCache<K, V> {
 
-    private final Map<K, Ref<K, V>> map;
+    private final ConcurrentMap<K, Ref<K, V>> map;
     private final ReferenceQueue<V> referenceQueue;
     private final Lock lock;
 
@@ -70,9 +69,25 @@ public class WeakCache<K, V> {
     }
 
     public WeakCache() {
-        map = new HashMap<K, Ref<K, V>>();
+        map = new ConcurrentHashMap<K, Ref<K, V>>();
         referenceQueue = new ReferenceQueue<V>();
         lock = new ReentrantLock();
+    }
+
+    public V putIfAbsent(K key, V value) {
+        Ref<K, V> newRef = new Ref<K, V>(key, value, referenceQueue);
+        Ref<K, V> oldRef = map.putIfAbsent(key, newRef);
+        if (oldRef == null) {
+            return value;
+        } else {
+            V oldValue = oldRef.get();
+            if (oldValue == null || (oldValue.getClass() != value.getClass())) {
+                map.put(key, newRef);
+                return value;
+            } else {
+                return oldValue;
+            }
+        }
     }
 
     public void put(K key, V value) {

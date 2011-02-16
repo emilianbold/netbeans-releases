@@ -53,9 +53,12 @@ import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
+import org.openide.util.test.TestFileUtils;
 
 /** Does a change in order on folder fire the right properties?
  *
@@ -114,9 +117,15 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));
         events.clear();
         
-        OutputStream os = lfs.findResource("AA/Y.txt").getOutputStream();
+        final FileObject orig = lfs.findResource("AA/X.txt");
+        assertNotNull("X.txt", orig);
+        final FileObject touch = lfs.findResource("AA/Y.txt");
+        assertNotNull("Y.txt", touch);
+        OutputStream os = touch.getOutputStream();
         os.write("Ahoj".getBytes());
         os.close();
+
+        TestFileUtils.touch(FileUtil.toFile(touch), FileUtil.toFile(orig));
 
         waitEvents();
         assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));

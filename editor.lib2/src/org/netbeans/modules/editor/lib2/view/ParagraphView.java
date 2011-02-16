@@ -191,14 +191,17 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     }
     
     void releaseTextLayouts() {
-        int viewCount = getViewCount(); // would be 0 for children == null
-        for (int i = 0; i < viewCount; i++) {
-            EditorView view = getEditorView(i);
-            if (view instanceof HighlightsView) {
-                ((HighlightsView)view).setLayout(null);
+        DocumentView docView = getDocumentView();
+        if (docView != null) { // Only when actively used by docView
+            int viewCount = getViewCount(); // would be 0 for children == null
+            for (int i = 0; i < viewCount; i++) {
+                EditorView view = getEditorView(i);
+                if (view instanceof HighlightsView) {
+                    ((HighlightsView)view).setLayout(null);
+                }
             }
+            docView.getTextLayoutCache().remove(this);
         }
-        getDocumentView().getTextLayoutCache().remove(this);
     }
     
     void initTextLayouts() {

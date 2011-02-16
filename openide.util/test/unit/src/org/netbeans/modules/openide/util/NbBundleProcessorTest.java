@@ -122,42 +122,42 @@ public class NbBundleProcessorTest extends NbTestCase {
     }
 
     public void testPackageKeys() throws Exception {
-        assertEquals("stuff", org.netbeans.modules.openide.util.Bundle.general());
+        assertEquals("stuff", org.netbeans.modules.openide.util.Bundle./*general()*/class.getDeclaredMethod("general").invoke(null));
     }
 
     public void testDupeErrorSimple() throws Exception {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "p.C", "@org.openide.util.NbBundle.Messages({\"k=v1\", \"k=v2\"})", "class C {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages({\"k=v1\", \"k=v2\"})", "class C {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
     }
 
     public void testDupeErrorByIdentifier() throws Exception {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "p.C", "@org.openide.util.NbBundle.Messages({\"k.=v1\", \"k,=v2\"})", "class C {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages({\"k.=v1\", \"k,=v2\"})", "class C {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
     }
 
     public void testDupeErrorAcrossClasses() throws Exception {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "p.C1", "@org.openide.util.NbBundle.Messages({\"k=v\"})", "class C1 {}");
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "p.C2", "@org.openide.util.NbBundle.Messages({\"k=v\"})", "class C2 {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages({\"k=v\"})", "class C1 {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages({\"k=v\"})", "class C2 {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
     }
 
     public void testNoEqualsError() throws Exception {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "p.C", "@org.openide.util.NbBundle.Messages(\"whatever\")", "class C {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages(\"whatever\")", "class C {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("="));
     }
 
     public void testWhitespaceError() throws Exception {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "p.C", "@org.openide.util.NbBundle.Messages(\"key = value\")", "class C {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages(\"key = value\")", "class C {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, err));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("="));
     }
 
@@ -174,10 +174,10 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages(\"k=v\")", "class C {}");
         TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "# original comment\nold=stuff\n");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        assertEquals("k=v\n# original comment\nold=stuff\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")));
+        assertEquals("k=v\n# original comment\nold=stuff\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")).replace("\r\n", "\n"));
         // Also check that we can recompile:
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        assertEquals("k=v\n# original comment\nold=stuff\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")));
+        assertEquals("k=v\n# original comment\nold=stuff\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")).replace("\r\n", "\n"));
     }
 
     public void testDupeErrorWithExistingBundle() throws Exception {
@@ -192,6 +192,7 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v1\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "public class C2 {public @Override String toString() {return Bundle.k2();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
         assertEquals("v1", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
@@ -205,10 +206,10 @@ public class NbBundleProcessorTest extends NbTestCase {
     public void testComments() throws Exception {
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages({\"# Something good to note.\", \"k=v\"})", "class C {}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        assertEquals("# Something good to note.\nk=v\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")));
+        assertEquals("# Something good to note.\nk=v\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")).replace("\r\n", "\n"));
         // Also check that we can recompile:
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        assertEquals("# Something good to note.\nk=v\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")));
+        assertEquals("# Something good to note.\nk=v\n", TestFileUtils.readFile(new File(dest, "p/Bundle.properties")).replace("\r\n", "\n"));
         // XXX also check non-ASCII chars in comments; works locally but fails on deadlock
     }
 

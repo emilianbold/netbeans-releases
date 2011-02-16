@@ -110,6 +110,7 @@ public abstract class GlassfishConfiguration implements
     private ASDDVersion minASVersion;
     private ASDDVersion maxASVersion;
     private boolean deferredAppServerChange;
+    private final String defaultcr;
 
 
     protected GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
@@ -123,19 +124,33 @@ public abstract class GlassfishConfiguration implements
             this.primarySunDD = moduleHelper.getPrimarySunDDFile(module);
             this.secondarySunDD = moduleHelper.getSecondarySunDDFile(module);
         } else {
-            throw new ConfigurationException("Unsupported module type: " + module.getType());
+            throw new ConfigurationException("Unsupported module type: " + module.getType()); // NOI18N
         }
 
         if (null == primarySunDD) {
-            throw new ConfigurationException("No primarySunDD for module type: " + module.getType());
+            throw new ConfigurationException("No primarySunDD for module type: " + module.getType()); // NOI18N
         }
 
         try {
 
             if (null == primarySunDD.getParentFile()) {
-                throw new ConfigurationException("module is not initialized completely");
+                throw new ConfigurationException("module is not initialized completely");  // NOI18N
             }
             addConfiguration(primarySunDD, this);
+            if (primarySunDD.getName().endsWith("-web.xml")) { // NOI18N
+                String path = primarySunDD.getParent().
+                        replaceAll("[\\\\/]web[\\\\/]WEB-INF", "").   // NOI18N
+                        replaceAll("[\\\\/]src[\\\\/]main[\\\\/]webapp[\\\\/]WEB-INF", "");  // NOI18N
+                int dex = path.lastIndexOf(File.separatorChar);
+                if (dex < 0) {
+                    defaultcr = null;
+                } else {
+                    defaultcr = path.substring(dex);
+                }
+
+            } else {
+                defaultcr = null;
+            }
 
             // Default to 8.1 in new beans.  This is set by the bean parser
             // in the appropriate root type, if reading from existing file(s).
@@ -377,7 +392,7 @@ public abstract class GlassfishConfiguration implements
     // of unsupported features (e.g. CMP, etc.)
     // ------------------------------------------------------------------------
 
-    private void createDefaultSunDD(File sunDDFile) throws IOException {
+    protected void createDefaultSunDD(File sunDDFile) throws IOException {
         FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(module, sunDDFile.getName()); //FileUtil.getConfigFile(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
@@ -593,17 +608,19 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
     @Override
     public String getContextRoot() throws ConfigurationException {
-        String contextRoot = null;
+        // assume the return value will be the default CR
+        String contextRoot = defaultcr;
         if (J2eeModule.Type.WAR.equals(module.getType())) {
             try {
-                contextRoot = cr;
                 RootInterface rootDD = getSunDDRoot(false);
                 if (rootDD instanceof SunWebApp) {
+                    // read the value of CR out of the DD file.
                     contextRoot = ((SunWebApp) rootDD).getContextRoot();
                     if((contextRoot != null) && (contextRoot.equals("/"))) { //NOI18N
                         contextRoot = ""; //NOI18N
                     } else if (null == contextRoot) {
-                        contextRoot = cr;
+                        // if there wasn't a value for context-root in the file... use the default
+                        contextRoot = defaultcr;
                     }
                 }
             } catch (IOException ex) {
@@ -616,11 +633,8 @@ public abstract class GlassfishConfiguration implements
                     "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: {0}",
                     module.getType());
         }
-        cr = contextRoot;
         return contextRoot;
     }
-
-    private String cr = null;
     
     private static final RequestProcessor RP = new RequestProcessor("GlassFishConfiguration.setContextRoot");
 
@@ -628,52 +642,76 @@ public abstract class GlassfishConfiguration implements
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         try {
             if (J2eeModule.Type.WAR.equals(module.getType())) {
-                String suspect = "";
-                if (null != module.getResourceDirectory())
-                    suspect = module.getResourceDirectory().getAbsolutePath();
-                if (contextRoot.equals(cr))
-                    return;
-                if (null == cr) {
-                    cr = contextRoot;
-                    return;
-                }
-                cr = contextRoot;
-                final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (primarySunDDFO != null) {
-                                RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
-                                if (rootDD instanceof SunWebApp) {
-                                    SunWebApp swa = (SunWebApp) rootDD;
-                                    if (contextRoot == null || contextRoot.trim().length() == 0) {
-                                        swa.setContextRoot("/"); //NOI18N
-                                    } else {
-                                        swa.setContextRoot(contextRoot);
+                if (defaultcr.equals(contextRoot)) {
+                    // remove the context-root entry from the DD file... if it exists
+                    final FileObject sunDDFO = getSunDD(primarySunDD, false);
+                    if (null != sunDDFO) {
+                        // remove the context-root element from the file
+                        RP.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    if (sunDDFO != null) {
+                                        RootInterface rootDD = DDProvider.getDefault().getDDRoot(sunDDFO);
+                                        if (rootDD instanceof SunWebApp) {
+                                            SunWebApp swa = (SunWebApp) rootDD;
+                                            swa.setContextRoot(null);
+                                            swa.write(sunDDFO);
+                                        }
                                     }
-                                    swa.write(primarySunDDFO);
+                                } catch (IOException ex) {
+                                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                    String defaultMessage = " trying set context-root in sun-web.xml";
+                                    displayError(ex, defaultMessage);
+                                } catch (Exception ex) {
+                                    Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                    String defaultMessage = " trying set context-root in sun-web.xml";
+                                    displayError(ex, defaultMessage);
                                 }
                             }
-                        } catch (IOException ex) {
-                            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                            String defaultMessage = " trying set context-root in sun-web.xml";
-                            displayError(ex, defaultMessage);
-                        } catch (Exception ex) {
-                            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                            String defaultMessage = " trying set context-root in sun-web.xml";
-                            displayError(ex, defaultMessage);
-                        }
+                        });
                     }
-                });
+                } else {
+                    // create the DD file and set the value of the context-root element
+                    final FileObject sunDDFO = getSunDD(primarySunDD, true);
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                if (sunDDFO != null) {
+                                    RootInterface rootDD = DDProvider.getDefault().getDDRoot(sunDDFO);
+                                    if (rootDD instanceof SunWebApp) {
+                                        SunWebApp swa = (SunWebApp) rootDD;
+                                        if (contextRoot == null || contextRoot.trim().length() == 0) {
+                                            swa.setContextRoot("/"); //NOI18N
+                                        } else {
+                                            swa.setContextRoot(contextRoot);
+                                        }
+                                        swa.write(sunDDFO);
+                                    }
+                                }
+                            } catch (IOException ex) {
+                                Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                String defaultMessage = " trying set context-root in sun-web.xml";
+                                displayError(ex, defaultMessage);
+                            } catch (Exception ex) {
+                                Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                                String defaultMessage = " trying set context-root in sun-web.xml";
+                                displayError(ex, defaultMessage);
+                            }
+                        }
+                    });
+                }
             } else {
-                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: {0}",
+                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,  // NOI18N
+                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: {0}",  // NOI18N
                         module.getType());
             }
         } catch (IOException ex) {
-            throw new ConfigurationException("",ex);
-        } 
+            throw new ConfigurationException("", ex);  // NOI18N
+        }
     }
 
 

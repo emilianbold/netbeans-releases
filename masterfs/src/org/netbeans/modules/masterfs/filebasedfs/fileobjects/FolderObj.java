@@ -106,15 +106,18 @@ public final class FolderObj extends BaseFileObj {
             // #47885 - relative path must not contain back slashes
             return null;
         }
-        if (relativePath.contains("..")) {
-            if (("/" + relativePath + "/").contains("/../")) {
-                return null;
-            }
-        }
         if (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }
         File file = new File(getFileName().getFile(), relativePath);
+        if (relativePath.contains("..")) {
+            try {
+                file = file.getCanonicalFile();
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Cannot canonicalize " + file, ex);
+            }
+        }
+        
         FileObjectFactory factory = getFactory();
         return factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject);
     }
@@ -188,11 +191,12 @@ public final class FolderObj extends BaseFileObj {
         
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
 
+        final File myFile = getFileName().getFile();
+        folder2Create = BaseFileObj.getFile( myFile, name, null);
+        getProvidedExtensions().beforeCreate(this, folder2Create.getName(), true);
         mutexPrivileged.enterWriteAccess();
 
         try {
-            final File myFile = getFileName().getFile();
-            folder2Create = BaseFileObj.getFile( myFile, name, null);
             if (!myFile.canWrite()) {
                 FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N
             }
@@ -230,7 +234,6 @@ public final class FolderObj extends BaseFileObj {
     private void createFolder(final File folder2Create, final String name) throws IOException {
         boolean isSupported = new FileInfo(folder2Create).isSupportedFile();
         ProvidedExtensions extensions =  getProvidedExtensions();
-        extensions.beforeCreate(this, folder2Create.getName(), true);
 
         if (!isSupported) { 
             extensions.createFailure(this, folder2Create.getName(), true);
@@ -274,15 +277,16 @@ public final class FolderObj extends BaseFileObj {
         final ChildrenCache childrenCache = getChildrenCache();        
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
         
+        ProvidedExtensions extensions =  getProvidedExtensions();
+        File file2Create;
+        file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
+        extensions.beforeCreate(this, file2Create.getName(), false);
         mutexPrivileged.enterWriteAccess();
 
         FileObj retVal;
-        File file2Create;
         FileNaming childName;
         try {
-            file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
             createData(file2Create);
-
             childName = getChildrenCache().getChild(file2Create.getName(), true);
             if (childName != null && childName.isDirectory()) {
                 childName = NamingFactory.fromFile(getFileName(), file2Create, true);
@@ -329,7 +333,6 @@ public final class FolderObj extends BaseFileObj {
     private void createData(final File file2Create) throws IOException {
         boolean isSupported = new FileInfo(file2Create).isSupportedFile();                        
         ProvidedExtensions extensions =  getProvidedExtensions();
-        extensions.beforeCreate(this, file2Create.getName(), false);
         
         if (!isSupported) {             
             extensions.createFailure(this, file2Create.getName(), false);

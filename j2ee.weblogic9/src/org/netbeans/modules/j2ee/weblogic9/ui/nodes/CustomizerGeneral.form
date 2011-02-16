@@ -20,7 +20,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="adminInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="NoteChangesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="NoteChangesLabel" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="domainNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -44,7 +44,8 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="jpa2Button" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jpa2SwitchButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jpa2SwitchLabel" alignment="0" pref="458" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -81,9 +82,11 @@
                   <Component id="serverPortLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverPort" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="44" max="32767" attributes="0"/>
-              <Component id="jpa2Button" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace pref="62" max="32767" attributes="0"/>
+              <Component id="jpa2SwitchLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jpa2SwitchButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="NoteChangesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -277,14 +280,21 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JButton" name="jpa2Button">
+    <Component class="javax.swing.JLabel" name="jpa2SwitchLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="LBL_EnableJPA2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="CustomizerGeneral.jpa2SwitchLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="jpa2SwitchButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/nodes/Bundle.properties" key="CustomizerGeneral.jpa2SwitchButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jpa2ButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jpa2SwitchButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

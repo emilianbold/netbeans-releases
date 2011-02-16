@@ -74,12 +74,17 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getBranches",  //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N
+            "getRemote", //NOI18N
+            "getRemotes", //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
             "listRemoteBranches", //NOI18N
             "log", //NOI18N
-            "removeNotificationListener")); //NOI18N
+            "removeNotificationListener", //NOI18N
+            "removeRemote", //NOI18N - i guess there's no need to mke this an exclusive command
+            "setCallback", //NOI18N
+            "setRemote")); //NOI18N - i guess there's no need to mke this an exclusive command
     /**
      * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
      */
@@ -101,6 +106,8 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getBranches",  //NOI18N
             "getConflicts", //NOI18N
             "getStatus",  //NOI18N
+            "getRemote", //NOI18N
+            "getRemotes", //NOI18N
             "getRepositoryState",  //NOI18N
             "getUser",  //NOI18N
             "ignore",  //NOI18N
@@ -108,7 +115,10 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "listRemoteBranches", //NOI18N
             "log", //NOI18N
             "unignore", //NOI18N
-            "removeNotificationListener")); //NOI18N
+            "removeNotificationListener", //NOI18N
+            "removeRemote", //NOI18N - does not update index or files in WT
+            "setCallback", //NOI18N
+            "setRemote")); //NOI18N - does not update index or files in WT
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
      */
@@ -120,7 +130,9 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
-            "reset")); //NOI18N
+            "reset", //NOI18N
+            "removeRemote", //NOI18N - updates remotes
+            "setRemote")); //NOI18N - updates remotes
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
 

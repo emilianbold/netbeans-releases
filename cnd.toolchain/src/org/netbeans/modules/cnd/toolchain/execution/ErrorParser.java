@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -103,7 +104,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
             fileName = fileName.replace('/', '\\'); // NOI18N
         }
         fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName, true);
-        return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fileName));
+        return FileSystemProvider.getFileObject(execEnv, FileSystemProvider.normalizeAbsolutePath(fileName, execEnv));
     }
 
     protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {

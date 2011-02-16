@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial;
 
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import java.io.File;
@@ -52,6 +53,7 @@ import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -84,6 +86,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
+    private static final File userDir = new File(System.getProperty("netbeans.user")); //NOI18N;
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -138,6 +141,9 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeMove(File from, File to) {
         Mercurial.LOG.fine("beforeMove " + from + "->" + to);
+        if (isUnderIgnoredUserDir(from)) {
+            return false;
+        }
         if (from == null || to == null || to.exists()) return true;
         
         Mercurial hg = Mercurial.getInstance();
@@ -219,6 +225,9 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeCopy (File from, File to) {
         Mercurial.LOG.fine("beforeCopy " + from + "->" + to);
+        if (isUnderIgnoredUserDir(to)) {
+            return false;
+        }
         if (from == null || to == null || to.exists()) return true;
 
         Mercurial hg = Mercurial.getInstance();
@@ -268,13 +277,21 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeCreate(final File file, boolean isDirectory) {
         Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
+        if (isUnderIgnoredUserDir(file)) {
+            return false;
+        }
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            FileInformation info = cache.getCachedStatus(file);
+            File root = Mercurial.getInstance().getRepositoryRoot(file);
+            FileInformation info = null;
+            try {
+                Map<File, FileInformation> statusMap = HgCommand.getStatus(root, Arrays.asList(file));
+                info = statusMap != null ? statusMap.get(file) : null;
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, "beforeCreate(): getStatus failed for file: {0} {1}", new Object[]{file.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
             if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
-                Mercurial hg = Mercurial.getInstance();
-                final File root = hg.getRepositoryRoot(file);
                 if (root == null) return false;
                 final OutputLogger logger = Mercurial.getInstance().getLogger(root.getAbsolutePath());
                 try {
@@ -386,6 +403,10 @@ public class MercurialInterceptor extends VCSInterceptor {
      */
     Set<File> getSeenRoots (File repositoryRoot) {
         return hgFolderEventsHandler.getSeenRoots(repositoryRoot);
+    }
+
+    private boolean isUnderIgnoredUserDir (File file) {
+        return Utils.isAncestorOrEqual(userDir, file) && HgUtils.isIgnored(file, false);
     }
 
     private class RefreshTask implements Runnable {

@@ -85,7 +85,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     private static final HashMap<Class<?>, String> classToType = new HashMap<Class<?>, String>();
     private static final DataStorageType storageType =
             DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);
-    private final HashMap<String, DataTableMetadata> tables;
+    protected final HashMap<String, DataTableMetadata> tables;
     private final ConcurrentHashMap<DataTableMetadata, String> tblMetadataToInsertSQL;
     private final SQLRequestsProcessorImpl requestProcessor;
     private final SQLStatementsCache statementsCache;

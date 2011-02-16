@@ -345,21 +345,17 @@ public class TreeUtilitiesTest extends NbTestCase {
         ClassTree clazz = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
         List<Comment> clazzComments = info.getTreeUtilities().getComments(clazz, true);
         
-        assertEquals(3, clazzComments.size());
+        assertEquals(1, clazzComments.size());
         
-        assertEquals(Style.WHITESPACE, clazzComments.get(0).style());
-        assertEquals(Style.BLOCK, clazzComments.get(1).style());
-        assertEquals(Style.WHITESPACE, clazzComments.get(0).style());
+        assertEquals(Style.BLOCK, clazzComments.get(0).style());
         
-        assertEquals("/*test1*/", clazzComments.get(1).getText());
+        assertEquals("/*test1*/", clazzComments.get(0).getText());
         
         List<Comment> clazzComments2 = info.getTreeUtilities().getComments(clazz, true);
         
-        assertEquals(3, clazzComments2.size());
+        assertEquals(1, clazzComments2.size());
         
         assertTrue(clazzComments.get(0) == clazzComments2.get(0));
-        assertTrue(clazzComments.get(1) == clazzComments2.get(1));
-        assertTrue(clazzComments.get(2) == clazzComments2.get(2));
     }
     
     public void testAutoMapComments2() throws Exception {
@@ -381,21 +377,17 @@ public class TreeUtilitiesTest extends NbTestCase {
         MethodTree method = (MethodTree) clazz.getMembers().get(1);
         List<Comment> methodComments = info.getTreeUtilities().getComments(method, true);
         
-        assertEquals(3, methodComments.size());
+        assertEquals(1, methodComments.size());
         
-        assertEquals(Style.WHITESPACE, methodComments.get(0).style());
-        assertEquals(Style.LINE, methodComments.get(1).style());
-        assertEquals(Style.WHITESPACE, methodComments.get(0).style());
+        assertEquals(Style.LINE, methodComments.get(0).style());
         
-        assertEquals("//test2\n", methodComments.get(1).getText());
+        assertEquals("//test2\n", methodComments.get(0).getText());
         
         List<Comment> methodComments2 = info.getTreeUtilities().getComments(method, true);
         
-        assertEquals(3, methodComments2.size());
+        assertEquals(1, methodComments2.size());
         
         assertTrue(methodComments.get(0) == methodComments2.get(0));
-        assertTrue(methodComments.get(1) == methodComments2.get(1));
-        assertTrue(methodComments.get(2) == methodComments2.get(2));
     }
 
     public void testIsEnumConstant() throws Exception {

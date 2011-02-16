@@ -182,9 +182,10 @@ public final class NbProxySelector extends ProxySelector {
                     if (ProxyAutoConfig.get(getPacFile()).getPacURI().getHost().equals(uri.getHost())) {
                         return Collections.singletonList(Proxy.NO_PROXY);
                     } else {
-                        res = ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri); // NOI18N
+                        res.addAll(ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri)); // NOI18N
                     }
                 }
+                res.add (Proxy.NO_PROXY);
                 break;
             case ProxySettings.MANUAL_SET_PAC:
                 // handling nonProxyHosts first
@@ -194,8 +195,9 @@ public final class NbProxySelector extends ProxySelector {
                 if (ProxyAutoConfig.get(getPacFile()).getPacURI().getHost().equals(uri.getHost())) {
                     return Collections.singletonList(Proxy.NO_PROXY);
                 } else {
-                    res = ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri); // NOI18N
+                    res.addAll(ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri)); // NOI18N
                 }
+                res.add (Proxy.NO_PROXY);
                 break;
             default:
                 assert false : "Invalid proxy type: " + proxyType;

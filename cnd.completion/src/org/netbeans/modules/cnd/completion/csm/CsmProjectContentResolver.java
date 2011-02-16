@@ -889,17 +889,17 @@ public final class CsmProjectContentResolver {
         handledNS.add(ns);
         Map<CharSequence, CsmNamespace> res = new LinkedHashMap<CharSequence, CsmNamespace>(); // order is important
         // handle all nested namespaces
+        for (CsmProject lib : ns.getProject().getLibraries()) {
+            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+            if (n != null && !handledNS.contains(n)) {
+                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+            }
+        }
         for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
             CsmNamespace nestedNs = (CsmNamespace) it.next();
             // TODO: consider when we add nested namespaces
             if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
                 res.put(nestedNs.getQualifiedName(), nestedNs);
-            }
-        }
-        for (CsmProject lib : ns.getProject().getLibraries()) {
-            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
-            if (n != null && !handledNS.contains(n)) {
-                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
             }
         }
         return res;

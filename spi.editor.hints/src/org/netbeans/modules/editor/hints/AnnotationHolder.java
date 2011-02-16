@@ -90,6 +90,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -192,7 +193,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
         getBag(doc);
 
-        this.doc.addDocumentListener(this);
+        DocumentUtilities.addPriorityDocumentListener(this.doc, this, DocumentListenerPriority.AFTER_CARET_UPDATE);
         editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
         this.editorCookie = editorCookie;
 
@@ -245,10 +246,17 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
     final class NbDocumentAttacher implements Attacher {
         public void attachAnnotation(Position lineStart, ParseErrorAnnotation a) throws BadLocationException {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("addAnnotation: pos=" + lineStart.getOffset() + ", a="+ a + ", doc=" +
+                        System.identityHashCode(doc) + "\n");
+            }
             NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, a);
         }
         public void detachAnnotation(Annotation a) {
             if (doc != null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("removeAnnotation: a=" + a + ", doc=" + System.identityHashCode(doc) + "\n");
+                }
                 NbDocument.removeAnnotation((StyledDocument) doc, a);
             }
         }
@@ -259,6 +267,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         for (ParseErrorAnnotation a : line2Annotations.values()) {
             detachAnnotation(a);
         }
+        line2Annotations.clear();
 
         file2Holder.remove(od);
         doc.removeDocumentListener(this);
@@ -644,8 +653,9 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         if (errorDescriptions == null) {
             //nothing to do, remove old:
             Annotation ann = line2Annotations.remove(line);
-
-            detachAnnotation(ann);
+            if (ann != null) {
+                detachAnnotation(ann);
+            }
             return;
         }
 
