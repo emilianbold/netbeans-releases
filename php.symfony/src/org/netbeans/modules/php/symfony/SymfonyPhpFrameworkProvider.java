@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -144,7 +145,8 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
             while (children.hasMoreElements()) {
                 FileObject child = children.nextElement();
                 if (child.isData()
-                        && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))) {
+                        && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))
+                        && VisibilityQuery.getDefault().isVisible(child)) {
                     fileObjects.add(child);
                 }
             }
