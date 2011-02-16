@@ -53,10 +53,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileView;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.TitlePaneLayout;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -67,7 +70,9 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -94,20 +99,30 @@ public class OpenRemoteProjectAction extends AbstractAction {
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
     private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        Collection<? extends org.netbeans.modules.cnd.api.remote.ServerRecord> records = ServerList.getRecords();
-        ServerRecord rr = null;
-        for (ServerRecord r : records) {
-            if (r.isRemote()) {
-                rr = r;
-                break;
+    private ServerRecord getDefaultRemoteServerRecord() {
+        ServerRecord record = ServerList.getDefaultRecord();
+        if (record.isRemote()) {
+            return record;
+        } else {
+            Collection<? extends org.netbeans.modules.cnd.api.remote.ServerRecord> records = ServerList.getRecords();
+            for (ServerRecord r : records) {
+                if (r.isRemote()) {
+                    return r;
+                }
             }
         }
-        if (rr == null) {
-            return;
+        return null;
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {       
+        final ServerRecord record = getDefaultRemoteServerRecord();
+        if (record == null) {
+            JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), 
+                    NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.text"), 
+                    NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.title"), 
+                    JOptionPane.ERROR_MESSAGE);
         }
-        final ServerRecord record = rr;
         if (record.isOffline()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 @Override
@@ -130,17 +145,27 @@ public class OpenRemoteProjectAction extends AbstractAction {
 
     private void openProject(ServerRecord record) {
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(record.getExecutionEnvironment(),
+        
+        String userDir = null;
+        ExecutionEnvironment env = record.getExecutionEnvironment();
+        try {
+            userDir = HostInfoUtils.getHostInfo(env).getUserDir();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+        } catch (CancellationException ex) {
+            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+        }        
+        
+        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(env,
                 record.getDisplayName(), NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
-                JFileChooser.DIRECTORIES_ONLY, null, null, true);
-        //fileChooser.setFileView(new MyFileView(fileChooser));
+                JFileChooser.DIRECTORIES_ONLY, null, userDir, true);
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         FileObject remoteProject = fileChooser.getSelectedFileObject();
         try {
-            String path = ProjectChooser.getProjectsFolder().getAbsolutePath()+"/"+remoteProject.getNameExt(); //NOI18N
+            String path = ProjectChooser.getProjectsFolder().getAbsolutePath()+"/"+remoteProject.getNameExt() + "-shadow"; //NOI18N
             File destination = new File(path); //NOI18N
             int loop = 0;
             while(true) {
@@ -148,7 +173,7 @@ public class OpenRemoteProjectAction extends AbstractAction {
                     break;
                 }
                 loop++;
-                destination = new File(path+loop);
+                destination = new File(path + '-' + loop);
             }
             FileObject localProject = FileUtil.createFolder(destination);
             copy(remoteProject.getFileObject("nbproject"), localProject, "nbproject"); //NOI18N
