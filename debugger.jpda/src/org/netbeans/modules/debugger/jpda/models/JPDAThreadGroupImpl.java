@@ -193,5 +193,10 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
             group.notifySuspended(tc);
         }
     }
-    
+
+    @Override
+    public String toString() {
+        return getClass().getName() + "["+name+"] @" + Integer.toHexString(hashCode());
+    }
+
 }
