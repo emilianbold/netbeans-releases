@@ -701,12 +701,26 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     if (csmLib instanceof LibProjectImpl) {
                         LibProjectImpl lib = (LibProjectImpl) csmLib;
                         if (!libs.contains(lib)) {
-                            lib.initFields();
                             libs.add(lib);
                         }
                     }
                 }
             }
+        }
+        for(CsmProject csmProject : projects()) {
+            if (!projects.contains(csmProject)) {
+                if (csmProject instanceof ProjectBase) {
+                    ProjectBase project = (ProjectBase) csmProject;
+                    for (CsmProject csmLib : project.getLibraries()) {
+                        if (csmLib instanceof LibProjectImpl) {
+                            libs.remove((LibProjectImpl)csmLib);
+                        }
+                    }
+                }
+            }
+        }
+        for (LibProjectImpl lib : libs) {
+            lib.initFields();
         }
         Collection<Object> platformProjects = new ArrayList<Object>();
         for (ProjectBase projectBase : toReparse) {
@@ -714,7 +728,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             platformProjects.add(platformProject);
             closeProject(platformProject, true);
         }
-        for (ProjectBase lib : libs) {
+        for (LibProjectImpl lib : libs) {
             closeProject(lib.getPlatformProject(), true);
         }
         LibraryManager.getInstance().cleanLibrariesData(libs);

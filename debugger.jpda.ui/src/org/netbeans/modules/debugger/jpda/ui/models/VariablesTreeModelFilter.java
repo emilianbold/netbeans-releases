@@ -604,17 +604,19 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
         Variable v = (Variable) o;
 
+        String type = null;
         if (checkEvaluated) {
-            boolean evaluated;
+            boolean evaluated = true;
+            if (!hasAllTypes(v)) {
+                evaluated = false;
+            }
             if (v instanceof Refreshable) {
                 synchronized (v) { // Do the test and retrieve of type in synch
                     evaluated = ((Refreshable) v).isCurrent();
+                    if (evaluated) {
+                        type = v.getType();
+                    }
                 }
-            } else {
-                evaluated = true;
-            }
-            if (!hasAllTypes(v)) {
-                evaluated = false;
             }
             if (!evaluated) {
                 if (whenEvaluated != null) {
@@ -623,7 +625,9 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 return null;
             }
         }
-        String type = v.getType();
+        if (type == null) {
+            type = v.getType();
+        }
 
         VariablesFilter vf = (VariablesFilter) typeToFilterL.get (type);
         if (vf != null) return vf;
