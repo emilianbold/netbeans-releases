@@ -144,7 +144,8 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
             while (children.hasMoreElements()) {
                 FileObject child = children.nextElement();
                 if (child.isData()
-                        && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))) {
+                        && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))
+                        && !child.getExt().equals("svn-base")) { // NOI18N
                     fileObjects.add(child);
                 }
             }
