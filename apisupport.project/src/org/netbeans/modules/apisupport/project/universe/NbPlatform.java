@@ -282,10 +282,13 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         }
         File loc = harnessJar.getParentFile().getParentFile().getParentFile();
         try {
-            File netbeansHome = new File(System.getProperty("netbeans.home")); // NOI18N
-            if (!platformCluster.getCanonicalFile().equals(netbeansHome.getCanonicalFile())) {
-                LOG.log(Level.WARNING, "{0} does not match {1}", new Object[] {platformCluster, netbeansHome});
-                return null;
+            String netbeansHomeS = System.getProperty("netbeans.home"); // NOI18N
+            if (netbeansHomeS != null) {
+                File netbeansHome = new File(netbeansHomeS);
+                if (!platformCluster.getCanonicalFile().equals(netbeansHome.getCanonicalFile())) {
+                    LOG.log(Level.WARNING, "{0} does not match {1}", new Object[] {platformCluster, netbeansHome});
+                    return null;
+                }
             }
             if (!loc.getCanonicalFile().equals(platformCluster.getParentFile().getCanonicalFile())) {
                 // Unusual installation structure, punt.
