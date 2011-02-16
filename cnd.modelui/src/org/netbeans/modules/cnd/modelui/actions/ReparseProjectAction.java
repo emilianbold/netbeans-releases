@@ -43,11 +43,9 @@
 package org.netbeans.modules.cnd.modelui.actions;
 
 import java.util.Collection;
-import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter.Menu;
         
 /**
  * @author Vladimir Voskresensky
@@ -61,11 +59,10 @@ public final class ReparseProjectAction extends ProjectActionBase {
     @Override
     public String getName() {
         final Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
-        System.err.println("getName " + projects);
         if (projects != null && projects.size() > 1) {
-            return NbBundle.getMessage(getClass(), "CTL_ReparseProjects", projects.size()); //NOI18N
+            return NbBundle.getMessage(ReparseProjectAction.class, "CTL_ReparseProjects", projects.size()); //NOI18N
         }
-        return NbBundle.getMessage(getClass(), "CTL_ReparseProject"); //NOI18N
+        return NbBundle.getMessage(ReparseProjectAction.class, "CTL_ReparseProject"); //NOI18N
     }
 
     @Override
