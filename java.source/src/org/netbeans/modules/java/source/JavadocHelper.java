@@ -175,8 +175,12 @@ public class JavadocHelper {
          * @return true if this looks to be a web location
          */
         public boolean isRemote() {
-            return url.getProtocol().startsWith("http"); // NOI18N
+            return JavadocHelper.isRemote(url);
         }
+    }
+
+    private static boolean isRemote(URL url) {
+        return url.getProtocol().startsWith("http"); // NOI18N
     }
     
     /**
@@ -378,13 +382,16 @@ public class JavadocHelper {
                     URL url = new URL(root, pkgName + "/" + pageName + ".html");
                     InputStream is = null;
                     String rootS = root.toString();
-                    if (knownGoodRoots.contains(rootS)) {
+                    boolean useKnownGoodRoots = result.length == 1 && isRemote(url);
+                    if (useKnownGoodRoots && knownGoodRoots.contains(rootS)) {
                         LOG.log(Level.FINE, "assumed valid Javadoc stream at {0}", url);
                     } else {
                         try {
                             is = openStream(url);
-                            knownGoodRoots.add(rootS);
-                            LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
+                            if (useKnownGoodRoots) {
+                                knownGoodRoots.add(rootS);
+                                LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
+                            }
                         } catch (IOException x) {
                             LOG.log(Level.FINE, "invalid Javadoc stream at {0}: {1}", new Object[] {url, x});
                             continue;

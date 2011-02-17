@@ -50,12 +50,12 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
-import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -80,8 +80,8 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
         UpdateUnit unit = findJUnitLib();
         if (unit == null) {
             // May be first start, when no update lists have yet been downloaded.
-            for (UpdateProvider up : Lookup.getDefault().lookupAll(UpdateProvider.class)) {
-                up.refresh(true);
+            for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true)) {
+                p.refresh(null, true);
             }
             unit = findJUnitLib();
             if (unit == null) {
