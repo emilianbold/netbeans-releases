@@ -80,11 +80,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author mkleint
- */
-public class POHImpl extends ProjectOpenedHook {
+public class POHImpl {
     private final Project project;
     private J2eeLookupProvider.Provider provider;
     private PropertyChangeListener refreshListener;
@@ -102,6 +98,7 @@ public class POHImpl extends ProjectOpenedHook {
     
     public void hackModuleServerChange() {
         ProjectManager.mutex().postReadRequest(new Runnable() {
+            @Override
             public void run() {
                 refreshAppServerAssignment();
             }
@@ -112,12 +109,13 @@ public class POHImpl extends ProjectOpenedHook {
         this.contextPath = path;
     }
     
-    protected void projectOpened() {
+    private void projectOpened() {
         refreshAppServerAssignment();
         if (refreshListener == null) {
             //#121148 when the user edits the file we need to reset the server instance
             NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
             refreshListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                         hackModuleServerChange();
@@ -163,7 +161,7 @@ public class POHImpl extends ProjectOpenedHook {
         USG_LOGGER.log(record);
     }
 
-    protected synchronized void refreshAppServerAssignment() {
+    private synchronized void refreshAppServerAssignment() {
         provider.hackModuleServerChange();
 
         String[] ids = obtainServerIds(project);
@@ -224,7 +222,7 @@ public class POHImpl extends ProjectOpenedHook {
         }
     }
 
-    protected void projectClosed() {
+    private void projectClosed() {
         //is null check necessary?
         if (refreshListener != null) {
             NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
@@ -240,7 +238,7 @@ public class POHImpl extends ProjectOpenedHook {
             try {
                 copyOnSave.cleanup();
             } catch (FileStateInvalidException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -302,6 +300,7 @@ public class POHImpl extends ProjectOpenedHook {
             putValue(Action.NAME, NbBundle.getMessage(POHImpl.class, "TXT_Add_Server"));
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             String newOne = ServerManager.showAddServerInstanceWizard();
             String serverType = null;
@@ -362,5 +361,25 @@ public class POHImpl extends ProjectOpenedHook {
                 }
             });
         }
+    }
+    
+    public static class Hook extends ProjectOpenedHook {
+
+        private POHImpl poh;
+
+        public Hook(POHImpl poh) {
+            this.poh = poh;
+        }
+        
+        @Override
+        protected void projectOpened() {
+            poh.projectOpened();
+        }
+
+        @Override
+        protected void projectClosed() {
+            poh.projectClosed();
+        }
+        
     }
 }
