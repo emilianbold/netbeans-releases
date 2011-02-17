@@ -86,13 +86,12 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -387,13 +386,7 @@ public class CsmUtilities {
     }
 
     public static boolean isAnyNativeProjectOpened() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i].getLookup().lookup(NativeProject.class) != null) {
-                return true;
-            }
-        }
-        return false;
+        return !NativeProjectRegistry.getDefault().getOpenProjects().isEmpty();
     }
     
     public static boolean isCsmSuitable(FileObject fo) {

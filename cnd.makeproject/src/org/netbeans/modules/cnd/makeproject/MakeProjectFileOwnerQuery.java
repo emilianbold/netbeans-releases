@@ -46,17 +46,18 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup.Provider;
 
 /**
  * FileOwnerQuery dealing with files that are not in the project directory.
@@ -95,16 +96,19 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             return null;
         }        
         String path = fo.getPath();
-        for (Project project : OpenProjects.getDefault().getOpenProjects()) {
-            if (!fs.equals(RemoteFileUtil.getProjectSourceFileSystem(project))) {
-                return null;
-            }
-            ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (provider != null && provider.gotDescriptor()) {
-                MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                if (descriptor != null && (descriptor.findProjectItemByPath(path) != null
-                            || descriptor.findExternalItemByPath(path) != null)) {
-                    return project;
+        for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
+            Provider project = nativeProject.getProject();
+            if (project instanceof Project) {
+                if (!fs.equals(RemoteFileUtil.getProjectSourceFileSystem((Project) project))) {
+                    return null;
+                }
+                ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                if (provider != null && provider.gotDescriptor()) {
+                    MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                    if (descriptor != null && (descriptor.findProjectItemByPath(path) != null
+                                || descriptor.findExternalItemByPath(path) != null)) {
+                        return (Project) project;
+                    }
                 }
             }
         }

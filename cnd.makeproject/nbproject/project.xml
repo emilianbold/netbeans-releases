@@ -366,6 +366,7 @@
                 <friend>com.sun.tools.dlight.remotesupport</friend>
                 <friend>com.sun.tools.dlight.target</friend>
                 <friend>com.sun.tools.dlight.xyplot</friend>
+                <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
