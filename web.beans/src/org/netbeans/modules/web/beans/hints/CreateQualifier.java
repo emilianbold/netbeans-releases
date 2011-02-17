@@ -163,7 +163,7 @@ public class CreateQualifier implements ErrorRule<Void> {
         throws IOException 
     {
         TreePath errorPath = findUnresolvedElement(compilationInfo, offset);
-        if ( !checkProject() || errorPath == null) {
+        if ( !checkProject(compilationInfo) || errorPath == null) {
             return Collections.<Fix>emptyList();
         }
 
@@ -356,9 +356,8 @@ public class CreateQualifier implements ErrorRule<Void> {
         }
     }
 
-    private boolean checkProject(){
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                EditorRegistry.lastFocusedComponent().getDocument());
+    private boolean checkProject(CompilationInfo info){
+        final FileObject fileObject = info.getFileObject();
         if ( fileObject == null ){
             return false;
         }

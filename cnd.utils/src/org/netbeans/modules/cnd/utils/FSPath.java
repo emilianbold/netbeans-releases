@@ -50,7 +50,7 @@ import org.openide.filesystems.FileSystem;
  * A FileSystem / path pair
  * @author Vladimir Kvashin
  */
-public class FSPath {
+public final class FSPath {
     
     private final FileSystem fileSystem;
     private final String path;
@@ -79,5 +79,31 @@ public class FSPath {
     @Override
     public String toString() {
         return "" + fileSystem + ':' + path;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FSPath other = (FSPath) obj;
+        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            return false;
+        }
+        if ((this.path == null) ? (other.path != null) : !this.path.equals(other.path)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+        hash = 97 * hash + (this.path != null ? this.path.hashCode() : 0);
+        return hash;
     }    
 }

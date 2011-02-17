@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 
 public interface NativeProject {
     /**
@@ -56,7 +57,7 @@ public interface NativeProject {
      * i.e. Netbeans project object
      * org.netbeans.api.project.Project
      */
-    public Object getProject();
+    public Lookup.Provider getProject();
 
     /**
      * File system project sources reside in
@@ -81,20 +82,6 @@ public interface NativeProject {
      * @return display name of the project
      */
     public String getProjectDisplayName();
-
-//    /**
-//      * Returns a list of all source files in the project.
-//      * @return a list of all source files in the project. A source
-//      * file is a file directly compiled by the project.
-//      */
-//     public List<NativeFileItem> getAllSourceFiles();
-//
-//     /**
-//      * Returns a list of all header files in the project.
-//      * @return a list of all header files in the project. A header
-//      * file is a file with the suffix .h.
-//      */
-//     public List<NativeFileItem> getAllHeaderFiles();
 
      /**
       * Returns a list of all files in the project.

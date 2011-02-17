@@ -62,6 +62,8 @@ import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
+import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.customization.multiview.WSCustomizationTopComponent;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
@@ -168,10 +170,14 @@ public class CustomizationWSEditor implements WSEditor {
         removeListeners();
     }
 
-    public JComponent createWSEditorComponent(Node node) {
+    public JComponent createWSEditorComponent(Node node) throws InvalidDataException {
         try {
             initializeModels(node);
-        } catch (Exception e) {
+        }
+        catch ( InvalidDataException ex){
+            throw ex;
+        } 
+        catch (Exception e) {
             ErrorManager.getDefault().notify(e);
             return null;
         }
@@ -305,7 +311,8 @@ public class CustomizationWSEditor implements WSEditor {
             ModelSource ms = Utilities.getModelSource(wsdlFO, true);
             model = WSDLModelFactory.getDefault().getModel(ms);
         } else { //wsdl not found, throw an exception
-            throw new Exception("WSDL file not found");
+            throw new InvalidDataException (  "WSDL not found" , NbBundle.
+                    getMessage(CustomizationWSEditor.class, "TXT_WsdlNotFound"));    // NOI18N 
         }
         primaryDefinitions = model.getDefinitions();
         return model;

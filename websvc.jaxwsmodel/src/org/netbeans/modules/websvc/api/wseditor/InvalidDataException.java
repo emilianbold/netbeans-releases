@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,50 +40,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * WSEditor.java
- *
- * Created on March 9, 2006, 2:38 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.websvc.api.wseditor;
 
-import javax.swing.JComponent;
-import org.openide.nodes.Node;
 
 /**
+ * @author ads
  *
- * @author Roderico Cruz
- * @author (modified by) ads
  */
-public interface WSEditor {
-    /**
-     * Return the main panel of the editor
-     */
-    JComponent createWSEditorComponent(Node node) throws InvalidDataException;   
+public class InvalidDataException extends Exception {
+    
+    private static final long serialVersionUID = -5509551375351698668L;
 
-    /**
-     * The title text that will be displayed in the tab corresponding
-     * to the editor.
-     */
-    String getTitle();
+    public InvalidDataException(String message , String localizedMessage ){
+        super( message );
+        this.localizedMessage = localizedMessage;
+    }
     
-    /**
-     * This is called when the OK button is selected 
+    /* (non-Javadoc)
+     * @see java.lang.Throwable#getLocalizedMessage()
      */
-    void save(Node node);
-    
-    /**
-     * This is called when the Cancel button is selected
-     */
-    void cancel(Node node);
-    
-    /**
-     *  Provides a description text that will be displayed at the top of the editor
-     */
-    String getDescription();
+    @Override
+    public String getLocalizedMessage() {
+        return localizedMessage;
+    }
+
+    private String localizedMessage;
 }
