@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -86,11 +86,12 @@ public class ResultSetJXTable extends JXTableDecorator {
     private String[] columnToolTips;
     private final int multiplier;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
-    private static Logger mLogger = Logger.getLogger(ResultSetJXTable.class.getName());
+    private static final Logger mLogger = Logger.getLogger(ResultSetJXTable.class.getName());
     protected DataView dView;
     private final List<Integer> columnWidthList;
     private final static int MAX_COLUMN_WIDTH = 25;
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public ResultSetJXTable(final DataView dataView) {
         this.dView = dataView;
 
@@ -170,7 +171,7 @@ public class ResultSetJXTable extends JXTableDecorator {
             DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
             setDefaultEditor(java.sql.Date.class, dateEditor);
         } catch (NullPointerException npe) {
-            mLogger.log(Level.WARNING, "While creating DatePickerCellEditor was thrown " + npe);
+            mLogger.log(Level.WARNING, "While creating DatePickerCellEditor was thrown " + npe, npe);
         }
 
         try{
@@ -179,19 +180,22 @@ public class ResultSetJXTable extends JXTableDecorator {
             setDefaultEditor(Timestamp.class, dateTimeEditor);
             setDefaultEditor(java.util.Date.class, dateTimeEditor);
         } catch (NullPointerException npe) {
-            mLogger.log(Level.WARNING, "While creating DateTimePickerCellEditor was thrown " + npe);
+            mLogger.log(Level.WARNING, "While creating DateTimePickerCellEditor was thrown " + npe, npe);
         }
     }
 
     protected KeyListener createControKeyListener() {
         return new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent arg0) {
             }
 
+            @Override
             public void keyPressed(KeyEvent arg0) {
             }
 
+            @Override
             public void keyReleased(KeyEvent arg0) {
             }
         };
@@ -206,7 +210,7 @@ public class ResultSetJXTable extends JXTableDecorator {
             }
             table.getTableHeader().setColumnModel(cModel);
         } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e);
+            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e, e);
         }
     }
 
@@ -227,7 +231,7 @@ public class ResultSetJXTable extends JXTableDecorator {
                 colWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e); // NOI18N
+            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e, e); // NOI18N
         }
         return colWidthList;
     }
