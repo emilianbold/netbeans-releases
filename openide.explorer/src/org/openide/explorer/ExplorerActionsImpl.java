@@ -400,9 +400,12 @@ final class ExplorerActionsImpl {
 
     /** If our clipboard is not found return the default system clipboard. */
     private static Clipboard getClipboard() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return null;
+        }
         Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
 
-        if (c == null && !GraphicsEnvironment.isHeadless()) {
+        if (c == null) {
             c = Toolkit.getDefaultToolkit().getSystemClipboard();
         }
 
