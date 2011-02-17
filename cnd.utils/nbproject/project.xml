@@ -88,6 +88,7 @@
                 <friend>com.sun.tools.debugger.gdb</friend>
                 <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
