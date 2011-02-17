@@ -509,9 +509,6 @@ public class PkgConfigImpl implements PkgConfig {
                                         }
                                     }
                                 } else {
-                                    if (v.startsWith("/usr/lib/")) { // NOI18N
-                                        v = v.substring(4);
-                                    }
                                     if (rootValue != null) {
                                         if (v.startsWith(rootName)) {
                                             v = rootValue+v.substring(rootName.length());
@@ -520,6 +517,17 @@ public class PkgConfigImpl implements PkgConfig {
                                         }
                                     } else if (drivePrefix != null) {
                                         v = drivePrefix+v;
+                                    }
+                                    if (v.indexOf("/usr/lib/") > 0) { // NOI18N
+                                        v = v.replace("/usr/lib/", "/lib/"); // NOI18N
+                                    }
+                                }
+                                if (TRACE) {
+                                    if (!new File(v).exists()) {
+                                        System.err.println("Not found path: "+v); // NOI18N
+                                        System.err.println("\tValue: "+value); // NOI18N
+                                        System.err.println("\tRoot Path: "+rootValue); // NOI18N
+                                        System.err.println("\tRoot Name: "+rootName); // NOI18N
                                     }
                                 }
                             }
@@ -589,12 +597,9 @@ public class PkgConfigImpl implements PkgConfig {
                 file = file.getParent();
             }
             if (file != null) {
-                int i = value.indexOf('/', 1); // NOI18N
-                if (i > 0) {
-                    FileObject fileObject = file.getFileObject(value.substring(i + 1));
-                    if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
-                        return fileObject.getPath();
-                    }
+                FileObject fileObject = file.getFileObject(value.substring(1));
+                if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
+                    return fileObject.getPath();
                 }
                 return file.getPath();
             }
