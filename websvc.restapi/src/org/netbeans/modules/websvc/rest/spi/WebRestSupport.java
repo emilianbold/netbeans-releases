@@ -286,28 +286,6 @@ public abstract class WebRestSupport extends RestSupport {
             libraries.addAll(findJerseyLibraries(libManager.getDeployableLibraries()));
             libraries.addAll(findJerseyLibraries(libManager.getDeployedLibraries()));
             
-            /*
-             *  TODO : this bloc should be removed after resolving a problem with
-             *  several libraries configuration . 
-             */
-            //==============================================================
-            ServerLibrary jersey = null;
-            for( Iterator<ServerLibrary> iterator = libraries.iterator(); 
-                iterator.hasNext();)
-            {
-                ServerLibrary library = iterator.next();
-                String title = library.getImplementationTitle();
-                title = title.toLowerCase(Locale.ENGLISH);
-                if ( title.contains(JERSEY) ){
-                    jersey = library;
-                    iterator.remove();
-                    break;
-                }
-            }
-            libraries.clear();
-            libraries.add( jersey );
-           //==============================================================
-            
             return libraries;
         } catch (InstanceRemovedException ex) {
             Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO, null, ex);
