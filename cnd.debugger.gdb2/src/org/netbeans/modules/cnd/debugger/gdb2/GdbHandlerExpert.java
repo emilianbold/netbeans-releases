@@ -334,14 +334,18 @@ public class GdbHandlerExpert implements HandlerExpert {
 	if (threadValue != null) {
 	    String threadString = threadValue.asConst().value();
 	    breakpoint.setThread(threadString);
-	}
+	} else {
+            breakpoint.setThread(null);
+        }
 
 	// condition
 	MIValue condValue = props.valueOf("cond");		// NOI18N
 	if (condValue != null) {
 	    String condString = condValue.asConst().value();
 	    breakpoint.setCondition(condString);
-	}
+	} else {
+            breakpoint.setCondition(null);
+        }
 
 	// action
 	Action action = Action.STOP;
