@@ -1150,7 +1150,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             isOpenHookDone = false;
         }
         MakeProjectFileProviderFactory.removeSearchBase(this);
-        NativeProjectRegistry.getDefault().register(nativeProjectProvider);
+        NativeProjectRegistry.getDefault().unregister(nativeProjectProvider);
     }
 
     public synchronized void save() {
