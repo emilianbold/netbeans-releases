@@ -61,14 +61,17 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rbNewLibrary" alignment="1" pref="459" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="1" pref="471" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lVersion" alignment="1" pref="437" max="32767" attributes="0"/>
-                                  <Component id="lDirectory" alignment="0" pref="437" max="32767" attributes="0"/>
                                   <Component id="cbPackageJars" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                      <Component id="lDirectory" alignment="0" max="32767" attributes="1"/>
+                                      <Component id="lVersion" alignment="0" max="32767" attributes="1"/>
+                                  </Group>
                               </Group>
+                              <EmptySpace pref="206" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -77,16 +80,16 @@
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="278" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="290" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="260" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="260" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="218" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="218" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="serverLibraries" alignment="0" pref="278" max="32767" attributes="0"/>
+                                  <Component id="serverLibraries" alignment="0" pref="290" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -221,6 +224,8 @@
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_Browse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
+                <Property name="text" type="java.lang.String" value="Browse"/>
+                <Property name="toolTipText" type="java.lang.String" value="Browse for JSF folder."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jbBrowseActionPerformed"/>
