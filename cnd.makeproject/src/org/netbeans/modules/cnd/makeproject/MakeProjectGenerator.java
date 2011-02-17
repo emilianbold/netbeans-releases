@@ -251,7 +251,7 @@ public class MakeProjectGenerator {
             data.appendChild(rfsHostNode);
             // mount point
             Element rfsBaseDir = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
-            rfsHostNode.appendChild(doc.createTextNode(dirFO.getPath()));
+            rfsBaseDir.appendChild(doc.createTextNode(dirFO.getPath()));
             data.appendChild(rfsBaseDir);
         }
 
