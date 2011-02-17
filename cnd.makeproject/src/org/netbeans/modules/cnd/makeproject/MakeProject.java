@@ -159,7 +159,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
-    private static final RequestProcessor RP = new RequestProcessor("Open project", 4);
+    private static final RequestProcessor RP = new RequestProcessor("Open project", 4); // NOI18N
     private static MakeTemplateListener templateListener = null;
     private final MakeProjectType kind;
     private final AntProjectHelper helper;
