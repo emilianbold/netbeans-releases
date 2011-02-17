@@ -270,12 +270,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     @Override
-    public long putStack(long context_id, List<CharSequence> stack) {
+    public synchronized long putStack(long context_id, List<CharSequence> stack) {
         return putSample(context_id, stack, -1, -1);
     }
 
     @Override
-    public long putSample(long context_id, List<CharSequence> stack, long timestamp, long duration) {
+    public synchronized long putSample(long context_id, List<CharSequence> stack, long timestamp, long duration) {
         long callerId = 0;
         Set<Long> funcs = new HashSet<Long>();
         boolean isLeaf;
