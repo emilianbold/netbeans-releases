@@ -145,7 +145,10 @@ public final class FolderObj extends BaseFileObj {
             }
             mutexPrivileged.enterWriteAccess();
             try {
-                fileNames = new HashSet<FileNaming>(childrenCache.getChildren(false, task));
+                Set<FileNaming> res = childrenCache.getChildren(false, task);
+                if (res != null) {
+                    fileNames = new HashSet<FileNaming>(res);
+                }   
             } finally {
                 mutexPrivileged.exitWriteAccess();
             }
