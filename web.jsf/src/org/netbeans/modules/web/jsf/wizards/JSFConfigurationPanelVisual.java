@@ -1150,9 +1150,6 @@ private void cbJsfComponentsActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void enableNewLibraryComponent(boolean enabled){
         lDirectory.setEnabled(enabled);
         jtFolder.setEnabled(enabled);
-        jtFolder.setFocusable(enabled);
-        jbBrowse.setFocusable(enabled);
-        jtNewLibraryName.setFocusable(enabled);
         jbBrowse.setEnabled(enabled);
         lVersion.setEnabled(enabled);
         jtNewLibraryName.setEnabled(enabled);
