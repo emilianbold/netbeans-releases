@@ -412,7 +412,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             // shortcut
-            if (!"openJpaPersistenceProviderIsDefault".equals(toolName) // NOI18N
+            if (!"openJpaPersistenceProviderIsDefault1.0".equals(toolName) // NOI18N
                     && !"eclipseLinkPersistenceProviderIsDefault".equals(toolName) // NOI18N
                     && !OPENJPA_JPA_PROVIDER.equals(toolName)
                     && !ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
@@ -421,7 +421,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // JPA provider part
             String currentDefaultJpaProvider = getDefaultJpaProvider();
-            if ("openJpaPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+            if ("openJpaPersistenceProviderIsDefault1.0".equals(toolName)) { // NOI18N
                 return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
             }
             if ("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
