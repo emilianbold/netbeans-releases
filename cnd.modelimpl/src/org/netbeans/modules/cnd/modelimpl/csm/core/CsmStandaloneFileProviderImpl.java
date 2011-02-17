@@ -83,6 +83,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -423,7 +424,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public Object getProject() {
+        public Lookup.Provider getProject() {
             return null;
         }
 

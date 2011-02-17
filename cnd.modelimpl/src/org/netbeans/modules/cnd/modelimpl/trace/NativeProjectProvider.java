@@ -66,6 +66,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 /**
  * 
@@ -207,7 +208,7 @@ public final class NativeProjectProvider {
 	}
 	
         @Override
-        public Object getProject() {
+        public Lookup.Provider getProject() {
             return null;
         }
 

@@ -156,8 +156,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public Object getProject() {
-        return this.project;
+    public Lookup.Provider getProject() {
+        return project;
     }
 
     @Override

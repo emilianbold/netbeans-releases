@@ -51,9 +51,9 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -570,7 +571,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     private void disableProject2(final ProjectBase csmProject) {
         csmProject.setDisposed();
-        Project project = findProjectByNativeProject(ModelSupport.getNativeProject(csmProject.getPlatformProject()));
+        Lookup.Provider project = findProjectByNativeProject(ModelSupport.getNativeProject(csmProject.getPlatformProject()));
         setCodeAssistanceEnabled(project, false);
         // that's a caller's responsibility to launch disabling in a separate thread
         disableProject3(csmProject);
@@ -634,7 +635,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         synchronized (lock) {
             disabledProjects.remove(nativeProject);
         }
-        Project project = findProjectByNativeProject(nativeProject);
+        Lookup.Provider project = findProjectByNativeProject(nativeProject);
         setCodeAssistanceEnabled(project, true);
         addProject(nativeProject, nativeProject.getProjectDisplayName(), Boolean.TRUE);
     //ProjectBase csmProject = (ProjectBase) _getProject(nativeProject);
@@ -642,7 +643,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     //new CodeAssistanceOptions(findProjectByNativeProject(nativeProject)).setCodeAssistanceEnabled(Boolean.TRUE);
     }
 
-    private void setCodeAssistanceEnabled(Project project, boolean enable) {
+    private void setCodeAssistanceEnabled(Lookup.Provider project, boolean enable) {
         if (project != null) {
             NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
             if (settings != null) {
@@ -651,12 +652,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
     }
     
-    public static Project findProjectByNativeProject(NativeProject nativeProjectToSearch) {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            NativeProject nativeProject = projects[i].getLookup().lookup(NativeProject.class);
-            if (nativeProject != null && nativeProject == nativeProjectToSearch) {
-                return projects[i];
+    public static Lookup.Provider findProjectByNativeProject(NativeProject nativeProjectToSearch) {
+        for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
+            if (nativeProject == nativeProjectToSearch) {
+                return nativeProject.getProject();
             }
         }
         return null;
