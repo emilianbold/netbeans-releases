@@ -125,48 +125,55 @@ public class OpenRemoteProjectAction extends AbstractAction {
                     NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.title"), 
                     JOptionPane.ERROR_MESSAGE);
         }
-        if (record.isOffline()) {
+//        if (record.isOffline()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+                private volatile String homeDir;
                 @Override
                 public void doWork() {
                     record.validate(true);
+                    if (record.isOnline()) {
+                        homeDir = getHomeDir(record.getExecutionEnvironment());
+                    }
                 }
                 @Override
                 public void doPostRunInEDT() {
-                    openProject(record);
+                    if (record.isOnline()) {
+                        openProject(record, homeDir);
+                    }
                 }
             };
             Frame mainWindow = WindowManager.getDefault().getMainWindow();
             String title = NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.comment.title"); //NOI18N
             String msg = NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.comment.message",record.getDisplayName()); //NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
-        } else {
-            openProject(record);
-        }
+//        } else {
+//            openProject(record);
+//        }
     }
 
-    private void openProject(ServerRecord record) {
-        Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        
-        String userDir = null;
-        final ExecutionEnvironment env = record.getExecutionEnvironment();
+    private String getHomeDir(ExecutionEnvironment env) {
         try {
-            userDir = HostInfoUtils.getHostInfo(env).getUserDir();
+            return HostInfoUtils.getHostInfo(env).getUserDir();
         } catch (IOException ex) {
             ex.printStackTrace(System.err); // it doesn't make sense to disturb user
         } catch (CancellationException ex) {
             ex.printStackTrace(System.err); // it doesn't make sense to disturb user
         }        
-        
+        return null;
+    }
+            
+    private void openProject(ServerRecord record, String homeDir) {
+        final ExecutionEnvironment env = record.getExecutionEnvironment();
+        Frame mainWindow = WindowManager.getDefault().getMainWindow();
         JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(env,
                 record.getDisplayName(), NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
-                JFileChooser.DIRECTORIES_ONLY, null, userDir, true);
+                JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         FileObject remoteProjectFO = fileChooser.getSelectedFileObject();
-        FileObject nbprojectFO = remoteProjectFO.getFileObject("nbproject");
+        FileObject nbprojectFO = remoteProjectFO.getFileObject("nbproject"); // NOI18N
         if (nbprojectFO == null) {
             return;
         }
