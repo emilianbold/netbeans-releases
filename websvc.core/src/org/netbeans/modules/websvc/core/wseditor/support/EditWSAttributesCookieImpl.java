@@ -70,7 +70,6 @@ import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.netbeans.modules.websvc.api.wseditor.WSEditorProviderRegistry;
-import org.netbeans.modules.websvc.customization.core.ui.CustomizationWSEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
