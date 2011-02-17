@@ -194,6 +194,7 @@ public class J2eeModule {
      *
      * @return module specification version.
      */
+    @NonNull
     public String getModuleVersion() {
         return impl.getModuleVersion();
     }

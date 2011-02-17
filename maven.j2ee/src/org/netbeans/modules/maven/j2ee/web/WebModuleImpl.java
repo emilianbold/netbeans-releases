@@ -262,9 +262,13 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
     
     public String getModuleVersion() {
         WebApp wapp = getWebApp ();
-        String version = WebApp.VERSION_3_0;
-        if (wapp != null)
+        String version = null;
+        if (wapp != null) {
             version = wapp.getVersion();
+        }
+        if (version == null) {
+            version = WebApp.VERSION_3_0;
+        }
         return version;
     }
     
