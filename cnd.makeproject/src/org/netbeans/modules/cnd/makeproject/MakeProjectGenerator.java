@@ -239,12 +239,6 @@ public class MakeProjectGenerator {
         Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        //Element minant = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        //minant.appendChild(doc.createTextNode("1.6")); // NOI18N
-        //data.appendChild(minant);
-        Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "make-project-type"); // NOI18N
-        nativeProjectType.appendChild(doc.createTextNode("" + 0)); // NOI18N
-        data.appendChild(nativeProjectType);
 
         if (prjParams.getFullRemote()) {
             // mode
