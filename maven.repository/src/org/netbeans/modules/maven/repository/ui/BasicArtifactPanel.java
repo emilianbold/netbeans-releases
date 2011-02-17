@@ -76,7 +76,6 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
-import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -446,7 +445,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
+            toolbar = new JToolBar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
