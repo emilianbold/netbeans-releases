@@ -84,9 +84,11 @@ public class ChildrenSupport {
         return getExisting(false);
     }
 
-    public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan) {
+    public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan, Runnable[] task) {
         if (rescan || !isStatus(ChildrenSupport.ALL_CHILDREN_CACHED))  {
-            rescanChildren(folderName, false);
+            if (rescanChildren(folderName, false, task) == null) {
+                return null;
+            }
             setStatus(ChildrenSupport.ALL_CHILDREN_CACHED);
         } /*else if (!isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
 
@@ -137,7 +139,7 @@ public class ChildrenSupport {
 
 
 
-    public synchronized Map<FileNaming, Integer> refresh(final FileNaming folderName) {
+    public synchronized Map<FileNaming, Integer> refresh(final FileNaming folderName, Runnable[] task) {
         Map<FileNaming, Integer> retVal = new HashMap<FileNaming, Integer>();
         Set<FileNaming> e = new HashSet<FileNaming>(getExisting(false));
         Set<FileNaming> nE = new HashSet<FileNaming>(getNotExisting(false));
@@ -160,7 +162,7 @@ public class ChildrenSupport {
                 }
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
-            retVal = rescanChildren(folderName, true);
+            retVal = rescanChildren(folderName, true, task);
         }
         return retVal;
     }
@@ -208,7 +210,7 @@ public class ChildrenSupport {
         return retval;
     }
 
-    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, boolean ignoreCache) {
+    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, boolean ignoreCache, Runnable[] task) {
         final Map<FileNaming, Integer> retval = new IdentityHashMap<FileNaming, Integer>();
         final Set<FileNaming> newChildren = new LinkedHashSet<FileNaming>();
 

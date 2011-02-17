@@ -137,13 +137,18 @@ public final class FolderObj extends BaseFileObj {
         final ChildrenCache childrenCache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
 
-        mutexPrivileged.enterWriteAccess();
-
-        Set<FileNaming> fileNames;
-        try {
-            fileNames = new HashSet<FileNaming>(childrenCache.getChildren(false));
-        } finally {
-            mutexPrivileged.exitWriteAccess();
+        Set<FileNaming> fileNames = null;
+        Runnable[] task = new Runnable[1];
+        while (fileNames == null) {
+            if (task[0] != null) {
+                task[0].run();
+            }
+            mutexPrivileged.enterWriteAccess();
+            try {
+                fileNames = new HashSet<FileNaming>(childrenCache.getChildren(false, task));
+            } finally {
+                mutexPrivileged.exitWriteAccess();
+            }
         }
 
         final FileObjectFactory lfs = getFactory();        
@@ -398,12 +403,18 @@ public final class FolderObj extends BaseFileObj {
 
         Set<FileNaming> oldChildren = null;
         Map<FileNaming, Integer> refreshResult = null;
-        mutexPrivileged.enterWriteAccess();
-        try {
-            oldChildren = new HashSet<FileNaming>(cache.getCachedChildren());
-            refreshResult = cache.refresh();
-        } finally {
-            mutexPrivileged.exitWriteAccess();
+        Runnable[] task = new Runnable[1];
+        while (refreshResult == null) {
+            if (task[0] != null) {
+                task[0].run();
+            }
+            mutexPrivileged.enterWriteAccess();
+            try {
+                oldChildren = new HashSet<FileNaming>(cache.getCachedChildren());
+                refreshResult = cache.refresh(task);
+            } finally {
+                mutexPrivileged.exitWriteAccess();
+            }
         }
 
         LOG.log(Level.FINER, "refreshImpl for {0} expected: {1} fire: {2} previous: {3}", new Object[]{this, expected, fire, previous});
@@ -611,8 +622,8 @@ public final class FolderObj extends BaseFileObj {
 
     public final class FolderChildrenCache extends ChildrenSupport implements ChildrenCache {
         @Override
-        public final Set<FileNaming> getChildren(final boolean rescan) {
-            return getChildren(getFileName(), rescan);
+        public final Set<FileNaming> getChildren(final boolean rescan, Runnable[] task) {
+            return getChildren(getFileName(), rescan, task);
         }
 
         @Override
@@ -621,8 +632,8 @@ public final class FolderObj extends BaseFileObj {
         }
 
         @Override
-        public final Map<FileNaming, Integer> refresh() {
-            return refresh(getFileName());
+        public final Map<FileNaming, Integer> refresh(Runnable[] task) {
+            return refresh(getFileName(), task);
         }
 
         @Override
