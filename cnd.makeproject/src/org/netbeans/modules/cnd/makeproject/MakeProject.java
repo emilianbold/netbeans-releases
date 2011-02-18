@@ -1293,8 +1293,19 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         @Override
-        public String getBaseDir() {
+        public String getSourceBaseDir() {
             return (remoteBaseDir == null) ? helper.getProjectDirectory().getPath() : remoteBaseDir;
+        }
+
+        @Override
+        public FileObject getSourceBaseDirFileObject() {
+            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                CndUtils.assertNotNull(remoteBaseDir, "Null remote base directory"); //NOI18N
+                if (remoteBaseDir != null) {
+                    return FileSystemProvider.getFileObject(remoteFileSystemHost, remoteBaseDir);
+                }
+            }
+            return getProjectDirectory();
         }
 
         @Override

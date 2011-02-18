@@ -78,6 +78,7 @@ public class ProjectGenerator {
         private String mainFile;
         private String hostUID;
         private boolean fullRemote;
+        private String fullRemoteNativeProjectPath;
         private CompilerSet cs;
         private boolean defaultToolchain;
         private String postCreationClassName;
@@ -177,6 +178,15 @@ public class ProjectGenerator {
 
         public boolean getFullRemote() {
             return fullRemote;
+        }
+
+        public ProjectParameters setFullRemoteNativeProjectPath(String nativeProjectPath) {
+            this.fullRemoteNativeProjectPath = nativeProjectPath;
+            return this;
+        }
+
+        public String getFullRemoteNativeProjectPath() {
+            return fullRemoteNativeProjectPath;
         }
 
         public RemoteProject.Mode getRemoteMode() {

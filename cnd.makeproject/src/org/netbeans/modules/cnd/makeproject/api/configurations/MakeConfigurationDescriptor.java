@@ -123,7 +123,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
-    private FileObject baseDirFO;
+    
+    /*
+     * For full remote, configuration base and project base are different -
+     * project base is local (shadow project), configuration base is remote.
+     * For any other project they are the same
+     */
+    private final FileObject baseDirFO;
+    private final FileObject projectDirFO;
+    
     private boolean modified = false;
     private Folder externalFileItems = null;
     private Folder testItems = null;
@@ -139,8 +147,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private CndVisibilityQuery folderVisibilityQuery = null;
     private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 10);//NOI18N
 
-    public MakeConfigurationDescriptor(FileObject baseDirFO) {
+    public MakeConfigurationDescriptor(FileObject projectDirFO) {
+        this(projectDirFO, projectDirFO);
+    }
+
+    public MakeConfigurationDescriptor(FileObject projectDirFO, FileObject baseDirFO) {
         this.baseDirFO = baseDirFO;
+        this.projectDirFO = projectDirFO;
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
@@ -234,10 +247,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 // in fact ProjectManager should solve such problems in more general way
                 // because even for java it's possible to open the same project from two different
                 // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
-                project = ProjectManager.getDefault().findProject(baseDirFO);
+                project = ProjectManager.getDefault().findProject(projectDirFO);
             } catch (Exception e) {
                 // Should not happen
-                System.err.println("Cannot find project in '" + baseDirFO + "' " + e); // FIXUP // NOI18N
+                System.err.println("Cannot find project in '" + projectDirFO + "' " + e); // FIXUP // NOI18N
             }
         }
         return project;
@@ -370,10 +383,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return baseDirFO;
     }
 
-    public void setBaseDirFileObject(FileObject baseDirFO) {
-        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
-        this.baseDirFO = baseDirFO;
-    }
+//    public void setBaseDirFileObject(FileObject baseDirFO) {
+//        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
+//        this.baseDirFO = baseDirFO;
+//    }
 
     public Map<String, Item> getProjectItemsMap() {
         return projectItems;
@@ -592,7 +605,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public ConfigurationDescriptor cloneProjectDescriptor() {
-        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(getBaseDirFileObject());
+        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(projectDirFO, getBaseDirFileObject());
         super.cloneProjectDescriptor(clone);
         clone.setProjectMakefileName(getProjectMakefileName());
         clone.setExternalFileItems(getExternalFileItems());
@@ -1300,7 +1313,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private NativeProjectProvider getNativeProject() {
         // the cons
         if (nativeProject == null) {
-            FileObject fo = baseDirFO;
+            FileObject fo = projectDirFO;
             try {
                 Project aProject = ProjectManager.getDefault().findProject(fo);
                 nativeProject = aProject.getLookup().lookup(NativeProject.class);
