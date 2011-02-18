@@ -522,8 +522,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         jbBrowse.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Browse").charAt(0));
-        jbBrowse.setText("Browse");
-        jbBrowse.setToolTipText("Browse for JSF folder.");
+        jbBrowse.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Browse")); // NOI18N
+        jbBrowse.setToolTipText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "HINT_JSF_BROWSE_BTN")); // NOI18N
         jbBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jbBrowseActionPerformed(evt);
@@ -576,8 +576,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                             .add(cbLibraries, 0, 290, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
                                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
-                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE))
+                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jbBrowse))
                             .add(serverLibraries, 0, 290, Short.MAX_VALUE))))
