@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
@@ -104,9 +105,9 @@ import static org.netbeans.modules.java.hints.errors.Utilities.getIterableGeneri
  * @author Jan Lahoda
  */
 public final class CreateElementUtilities {
-    
+
     private CreateElementUtilities() {}
-    
+
     public static List<? extends TypeMirror> resolveType(Set<ElementKind> types, CompilationInfo info, TreePath currentPath, Tree unresolved, int offset, TypeMirror[] typeParameterBound, int[] numTypeParameters) {
         switch (currentPath.getLeaf().getKind()) {
             case METHOD:
@@ -216,13 +217,15 @@ public final class CreateElementUtilities {
                         
             case ARRAY_TYPE:
                 return computeArrayType(types, info, currentPath, unresolved, offset);
+
+            case IMPORT:
+                return computeImport(types, info, currentPath, unresolved, offset);
                 
             case BLOCK:
             case BREAK:
             case CATCH:
             case COMPILATION_UNIT:
             case CONTINUE:
-            case IMPORT:
             case IDENTIFIER:
             case TYPE_CAST:
             case TRY:
@@ -569,6 +572,21 @@ public final class CreateElementUtilities {
         return null;
     }
     
+    private static List<? extends TypeMirror> computeImport(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        ImportTree tree = (ImportTree) parent.getLeaf();
+
+        if (tree.getQualifiedIdentifier() == error) {
+            types.add(ElementKind.ANNOTATION_TYPE);
+            types.add(ElementKind.CLASS);
+            types.add(ElementKind.ENUM);
+            types.add(ElementKind.INTERFACE);
+            
+            return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+        }
+
+        return null;
+    }
+
     private static List<? extends TypeMirror> computeUnary(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
         UnaryTree tree = (UnaryTree) parent.getLeaf();
         

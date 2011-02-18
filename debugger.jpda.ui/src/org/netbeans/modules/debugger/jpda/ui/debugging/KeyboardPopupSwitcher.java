@@ -361,8 +361,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             pTable.addMouseListener(new MouseListener() {
                 public void mouseClicked(MouseEvent e) {
                     int b = e.getButton();
-                    int c = e.getClickCount();
-                    if (b == e.BUTTON1 && c == 2) { // Double-click
+                    //int c = e.getClickCount();
+                    if (b == e.BUTTON1) { // Single or double-click
                         actionMap.get("close").actionPerformed(new ActionEvent(e.getSource(), e.getID(), "close"));
                     }
                 }

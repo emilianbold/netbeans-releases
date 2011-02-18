@@ -375,7 +375,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     }
 
     public ResultSet select(String tableName, List<Column> columns) {
-        return select(tableName, columns, null);
+        return select(tableName, columns, (String)null);
     }
 
     @Override
@@ -406,7 +406,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 return select(tableName, columns, sqlQuery);
             }
             if (sqlQuery == null) {
-                return select(viewName, columns, null);
+                return select(viewName, columns, (String)null);
             }
         }
         String sqlQueryNew = sqlQuery;
@@ -435,8 +435,43 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             query.append(" from ").append(tableName); // NOI18N
             sqlQuery = query.toString();
         }
-
         return connection.executeQuery(sqlQuery);
+    }
+    
+
+    public final ResultSet select(String tableName, List<Column> columns, Collection<DataTableMetadataFilter> filters) {
+            StringBuilder query = new StringBuilder("select "); // NOI18N
+
+            query.append(new EnumStringConstructor<Column>().constructEnumString(columns,
+                    new Convertor<Column>() {
+
+                        @Override
+                        public String toString(Column item) {
+                            return (item.getExpression() == null) ? item.getColumnName() : (item.getExpression() + " AS " + item.getColumnName()); // NOI18N
+                        }
+                    }));
+
+            query.append(" from ").append(tableName); // NOI18N
+            if (filters != null && !filters.isEmpty()){
+                String whereClause = "";
+
+                for (DataTableMetadataFilter filter : filters) {
+                    Column filterColumn = filter.getFilteredColumn();
+                    if (columns.contains(filterColumn)) {
+                        Range<?> range = filter.getNumericDataFilter().getInterval();
+                        if (range.getStart() != null || range.getEnd() != null) {
+                            whereClause = range.toString(" WHERE ", "%d <= " + filterColumn.getColumnName(), " AND ", filterColumn.getColumnName() + " <= %d", null); // NOI18N
+                            break;
+                        }
+                    }
+                }
+                if (!whereClause.isEmpty()){
+                    query.append(whereClause);
+                }
+                logger.log(Level.FINE, "SQLDataStorage my method sql=" + query.toString());
+            }
+
+        return connection.executeQuery(query.toString());
     }
 
     public void executeUpdate(String sql) throws SQLException {

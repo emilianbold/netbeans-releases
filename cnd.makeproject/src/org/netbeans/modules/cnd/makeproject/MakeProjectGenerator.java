@@ -82,7 +82,9 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.loaders.CreateFromTemplateHandler;
 
@@ -240,6 +242,7 @@ public class MakeProjectGenerator {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
 
+        FileObject sourceBaseFO;
         if (prjParams.getFullRemote()) {
             // mode
             Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE);
@@ -250,9 +253,14 @@ public class MakeProjectGenerator {
             rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID()));
             data.appendChild(rfsHostNode);
             // mount point
+            String remoteProjectPath = prjParams.getFullRemoteNativeProjectPath();
             Element rfsBaseDir = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
-            rfsBaseDir.appendChild(doc.createTextNode(dirFO.getPath()));
+            rfsBaseDir.appendChild(doc.createTextNode(remoteProjectPath));
             data.appendChild(rfsBaseDir);
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID());
+            sourceBaseFO = FileSystemProvider.getFileObject(env, remoteProjectPath);
+        } else {
+            sourceBaseFO = dirFO;
         }
 
         h.putPrimaryConfigurationData(data, true);
@@ -265,7 +273,7 @@ public class MakeProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk.
-        final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
+        final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO, sourceBaseFO);
         if (makefileName != null) {
             projectDescriptor.setProjectMakefileName(makefileName);
         }

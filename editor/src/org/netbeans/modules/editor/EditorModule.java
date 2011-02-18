@@ -655,6 +655,9 @@ public class EditorModule extends ModuleInstall {
     private void reformat(DataObject file) {
         try {
             EditorCookie ec = file.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) return;
+            
             final StyledDocument doc = ec.openDocument();
             final Reformat reformat = Reformat.get(doc);
             

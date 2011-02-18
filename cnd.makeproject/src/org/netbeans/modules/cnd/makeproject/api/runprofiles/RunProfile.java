@@ -66,8 +66,10 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ComboStringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
@@ -106,6 +108,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     // Run Command
     private ComboStringConfiguration runCommand;
     private DefaultPicklistModel runCommandPicklist;
+    private StringConfiguration arguments; // hidden property (used by dbxtool)
 
     private String dorun;
     public static final int CONSOLE_TYPE_DEFAULT = 0;
@@ -164,6 +167,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         runCommandPicklist = new DefaultPicklistModel(10);
         runCommandPicklist.addElement(DEFAULT_RUN_COMMAND);
         runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, runCommandPicklist); // NOI18N
+        arguments = new StringConfiguration(null, "");
         buildFirst = true;
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
@@ -642,6 +646,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         setRunDir(p.getRunDir());
         setRunCommand(p.getRunCommand());
         runCommandPicklist = p.getRunCommand().getPicklist();
+        setArguments(p.getArguments());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -662,6 +667,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setRunDir(getRunDir());
         p.setRunCommand(getRunCommand().clone());
+        p.setArguments(getArguments());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
         p.setConsoleType(getConsoleType().clone());
@@ -680,6 +686,7 @@ public final class RunProfile implements ConfigurationAuxObject {
 
     private Sheet createSheet(boolean disableConsoleTypeSelection) {
         Sheet sheet = new Sheet();
+        StringNodeProp argumentsNodeprop;
 
         Sheet.Set set = new Sheet.Set();
         set.setName("General"); // NOI18N
@@ -687,6 +694,8 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.setShortDescription(getString("GeneralTT"));
         set.put(new ComboStringNodeProp(getRunCommand(), true, getString("RunCommandName"), getString("RunCommandHint")));
         set.put(new RunDirectoryNodeProp());
+        set.put(argumentsNodeprop = new StringNodeProp(getArguments(), "", "Arguments", getString("ArgumentsName"), getString("ArgumentsHint"))); // NOI18N
+        argumentsNodeprop.setHidden(true);
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
         ConsoleIntNodeProp consoleTypeNP = new ConsoleIntNodeProp(getConsoleType(), true, null,
@@ -747,6 +756,26 @@ public final class RunProfile implements ConfigurationAuxObject {
         }
 
         return hasTHAModule.booleanValue();
+    }
+
+    /**
+     * @return the arguments
+     *
+     * @deprecated This property is hidden by default. Don't use it!
+     */
+    @Deprecated
+    public StringConfiguration getArguments() {
+        return arguments;
+    }
+
+    /**
+     * @param arguments the arguments to set
+     * 
+     * @deprecated This property is hidden by default. Don't use it!
+     */
+    @Deprecated
+    public void setArguments(StringConfiguration arguments) {
+        this.arguments = arguments;
     }
 
     private class RunDirectoryNodeProp extends PropertySupport<String> {
