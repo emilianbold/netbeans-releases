@@ -429,8 +429,20 @@ public class Util {
         if (provider == null) {
             //choose default/first provider
             ArrayList<Provider> providers = getProviders(project);
-            //
-            provider = providers.get(0);
+            int defIndex = 0;
+            if(providers.size()>1){//if it's possible to select preferred jpa2.0 provider, we'll select instead of jpa1.0 default one
+                String defProviderVersion = ProviderUtil.getVersion((Provider) providers.get(0));
+                boolean specialCase = Util.isJPAVersionSupported(project, Persistence.VERSION_2_0) && (defProviderVersion == null || defProviderVersion.equals(Persistence.VERSION_1_0));//jpa 2.0 is supported by default (or first) is jpa1.0 or udefined version provider
+                if(specialCase){
+                    for (int i = 1; i<providers.size() ; i++){
+                        if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(providers.get(i))){//eclipselink jpa2.0 is preferred provider
+                            defIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            provider = providers.get(defIndex);
         }
         //add necessary libraries before pu creation
         Library lib = null;
