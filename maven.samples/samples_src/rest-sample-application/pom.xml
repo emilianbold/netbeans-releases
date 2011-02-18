@@ -75,7 +75,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>nbm-maven-plugin</artifactId>
-                    <version>3.2-SNAPSHOT</version>
+                    <version>3.5</version>
                     <extensions>true</extensions>
                     <configuration>
                         <descriptor>src/main/nbm/module.xml</descriptor>
@@ -86,13 +86,13 @@
                 
                 <plugin>
                     <!-- netbeans modules in 6.9+ are 1.6 compatible
-                     2.2-SNAPSHOT is required to have netbeans api annotations work properly,
+                     2.2 is required to have netbeans api annotations work properly,
                      if you are not using these annotations, you can fallback to the latest released
                      maven-compiler-plugin version.
                     -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.2-SNAPSHOT</version>
+                    <version>2.3.2</version>
                     <configuration>
                         <source>1.6</source>
                         <target>1.6</target>
