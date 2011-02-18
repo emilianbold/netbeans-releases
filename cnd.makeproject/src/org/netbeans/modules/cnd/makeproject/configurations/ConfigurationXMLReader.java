@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
@@ -113,7 +114,8 @@ public class ConfigurationXMLReader extends XMLDocReader {
             displayErrorDialog();
             return null;
         }
-        final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory);
+        FileObject configurationBaseFO = (project == null) ? projectDirectory : RemoteFileUtil.getProjectSourceBaseFileObject(project);
+        final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory, configurationBaseFO);
         Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
             protected 

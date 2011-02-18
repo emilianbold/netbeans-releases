@@ -356,6 +356,7 @@ public class ImportProject implements PropertyChangeListener {
                 .setTestFolders(tests)
                 .setImportantFiles(importantItemsIterator)
                 .setFullRemote(fullRemote)
+                .setFullRemoteNativeProjectPath(nativeProjectPath)
                 .setHostUID(hostUID);
         if (makefilePath != null) {
             prjParams.setMakefileName(makefilePath);

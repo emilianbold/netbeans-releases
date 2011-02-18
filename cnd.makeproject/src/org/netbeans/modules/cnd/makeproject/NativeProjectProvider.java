@@ -195,7 +195,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
             projectRoot = project.getProjectDirectory().getPath();
         } else {
-            projectRoot = rp.getBaseDir();
+            projectRoot = rp.getSourceBaseDir();
         }
         CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N        
         return projectRoot;
