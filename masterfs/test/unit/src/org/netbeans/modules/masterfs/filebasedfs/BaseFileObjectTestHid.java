@@ -204,6 +204,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         final String up = parent.getName().toUpperCase();
         parent.rename(lock, up, null);
         assertEquals("Capital name", up, parent.getNameExt());
+        File real = FileUtil.toFile(parent);
+        assertNotNull("Real file exists", real);
+        assertEquals("It is capitalized too", up, real.getName());
         
         List<FileObject> now = Arrays.asList(parent.getChildren());
         assertEquals("Same children: ", arr, now);
