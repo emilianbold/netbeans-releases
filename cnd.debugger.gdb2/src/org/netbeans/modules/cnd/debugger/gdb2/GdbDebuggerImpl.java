@@ -717,7 +717,7 @@ import org.openide.util.Exceptions;
         sendResumptive("-exec-step"); // NOI18N
     }
 
-    public final void stepIntoMain() {
+    private void stepIntoMain() {
         send("-break-insert -t main"); //NOI18N
         sendResumptive("-exec-run"); // NOI18N
 	
@@ -755,7 +755,7 @@ import org.openide.util.Exceptions;
         sendResumptive("-exec-continue"); // NOI18N
     }
 
-    public void doMIAttach(GdbDebuggerInfo gdi) {
+    private void doMIAttach(GdbDebuggerInfo gdi) {
         final long pid = gdi.getPid();
         // MI command "-target-attach pid | file" does not available in
         // gdb 6.1, 6.6, use CLI command "attach" instead.
@@ -776,7 +776,7 @@ import org.openide.util.Exceptions;
         gdb.sendCommand(cmd);
     }
 
-    public void doMICorefile(GdbDebuggerInfo gdi) {
+    private void doMICorefile(GdbDebuggerInfo gdi) {
         String corefile = gdi.getCorefile();
         String cmdString = "core " + corefile; // NOI18N
         /*
