@@ -410,4 +410,9 @@ public final class OperationContainer<Support> {
     OperationContainerImpl<Support> impl;
     private Support support;
     private boolean upToDate = false;
+    
+    @Override
+    public String toString() {
+        return super.toString() + "+" + impl;
+    }
 }

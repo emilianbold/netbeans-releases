@@ -209,6 +209,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         final InstallSupport support = model.getInstallSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + installContainer.listAll () + " and invalid elements " + installContainer.listInvalid ();
+        assert installContainer.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + installContainer.listInvalid () + " container: " + installContainer;
         
         boolean finish = false;
         while (! finish) {

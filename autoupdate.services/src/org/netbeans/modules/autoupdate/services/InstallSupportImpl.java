@@ -157,12 +157,13 @@ public class InstallSupportImpl {
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+                final OperationContainer<InstallSupport> container = support.getContainer ();
+                assert container.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + container.listInvalid () + " container: " + container;
                 synchronized(LOCK) {
                     currentStep = STEP.DOWNLOAD;
                 }
 
-                infos = support.getContainer ().listAll ();
+                infos = container.listAll ();
                 List <OperationInfo<?>> newInfos = new ArrayList <OperationInfo<?>>();
                 for(OperationInfo <?> i : infos) {
                     if(i.getUpdateUnit().getInstalled()!=null &&
