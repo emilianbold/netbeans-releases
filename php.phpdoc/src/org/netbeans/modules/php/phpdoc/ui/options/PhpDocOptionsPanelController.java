@@ -117,7 +117,7 @@ public class PhpDocOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(PhpDocOptions.class);
     }
 
     @Override

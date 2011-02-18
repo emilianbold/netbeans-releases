@@ -43,11 +43,11 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -57,7 +57,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -66,6 +65,8 @@ import org.openide.util.Utilities;
  */
 public class RemoteFileSystemUtils {
     
+    private static final int MAXSYMLINKS = Integer.getInteger("remote.max.sym.links", 20); // NOI18N
+            
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
 
     private static boolean isWindows = Utilities.isWindows();
@@ -249,12 +250,15 @@ public class RemoteFileSystemUtils {
         return absPath; // TODO: implement! XXX:rfs XXX:fullRemote 
     }
     
-    public static FileObject getCanonicalFileObject(FileObject fileObject) {
+    public static FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
+        int level = 0;
         while (fileObject instanceof RemoteLinkBase) {
+            if (++level > MAXSYMLINKS) {
+                throw new IIOException("Number of symbolic links encountered during path name traversal exceeds MAXSYMLINKS"); //NOI18N
+            }
             FileObject delegate = ((RemoteLinkBase) fileObject).getDelegate();
             if (delegate == null) {
-                RemoteLogger.getInstance().log(Level.INFO, "Null delegate for remote link {0}", fileObject); //NOI18N
-                break;
+                throw new FileNotFoundException("Null delegate for remote link " + fileObject); //NOI18N
             } else {
                 fileObject = delegate;
             }
@@ -262,7 +266,7 @@ public class RemoteFileSystemUtils {
         return fileObject;        
     }
 
-    public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) {
+    public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {
         RemoteFileObjectBase parent = fo.getParent();
         if (parent == null) {
             return null;
@@ -324,5 +328,5 @@ public class RemoteFileSystemUtils {
     
     public static InputStream createDummyInputStream() {
         return new DummyInputStream();
-    }
+    }    
 }

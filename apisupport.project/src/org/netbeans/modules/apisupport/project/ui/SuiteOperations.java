@@ -268,7 +268,8 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             return null;
         }
         
-        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(from).getProjectDirectory())) {
+        Project owner = FileOwnerQuery.getOwner(from);
+        if (owner == null || !original.getProjectDirectory().equals(owner.getProjectDirectory())) {
             return null;
         }
         
@@ -288,7 +289,8 @@ public final class SuiteOperations implements DeleteOperationImplementation,
     
     private static boolean doDelete(final Project original,
             final FileObject toDelete) throws IOException {
-        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(toDelete).getProjectDirectory())) {
+        Project owner = FileOwnerQuery.getOwner(toDelete);
+        if (owner == null || !original.getProjectDirectory().equals(owner.getProjectDirectory())) {
             return false;
         }
         

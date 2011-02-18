@@ -61,9 +61,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -92,8 +92,8 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
-    private static final ConcurrentMap<Project, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Project, Map<Folder, List<CharSequence>>>();
-    private static final ConcurrentMap<Project, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Project, ConcurrentMap<CharSequence, List<CharSequence>>>();
+    private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Lookup.Provider, Map<Folder, List<CharSequence>>>();
+    private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Lookup.Provider, ConcurrentMap<CharSequence, List<CharSequence>>>();
     private static final UserOptionsProvider packageSearch = Lookup.getDefault().lookup(UserOptionsProvider.class);
 
     /**
@@ -230,36 +230,38 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         @Override
         public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
             if (MakeOptions.getInstance().isFixUnresolvedInclude()) {
-                for(Project p : OpenProjects.getDefault().getOpenProjects()) {
-                    NativeProject np = p.getLookup().lookup(NativeProject.class);
+                for(NativeProject np : NativeProjectRegistry.getDefault().getOpenProjects()) {
                     if (np == project) {
-                        ConcurrentMap<CharSequence,List<CharSequence>> projectSearchBase = fileNameSearchBase.get(p);
-                        if (projectSearchBase == null) {
-                            projectSearchBase = computeProjectFiles(p);
-                            fileNameSearchBase.put(p, projectSearchBase);
-                        }
-                        int i = fileName.lastIndexOf('/');
-                        String name = fileName;
-                        if (i >= 0) {
-                            name = fileName.substring(i+1);
-                        }
-                        Collection<CharSequence> res = projectSearchBase.get(CharSequences.create(name));
-                        if (res != null && res.size() > 0) {
-                            return res;
-                        }
-                        boolean isLocalHost = true;
-                        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(p);
-                        if (conf != null){
-                            isLocalHost = conf.getDevelopmentHost().isLocalhost();
-                        }
-                        boolean runPackagesSearchInRemote  =
-                                Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
+                        Lookup.Provider p = np.getProject();
+                        if (p instanceof Project) {
+                            ConcurrentMap<CharSequence,List<CharSequence>> projectSearchBase = fileNameSearchBase.get(p);
+                            if (projectSearchBase == null) {
+                                projectSearchBase = computeProjectFiles(p);
+                                fileNameSearchBase.put(p, projectSearchBase);
+                            }
+                            int i = fileName.lastIndexOf('/');
+                            String name = fileName;
+                            if (i >= 0) {
+                                name = fileName.substring(i+1);
+                            }
+                            Collection<CharSequence> res = projectSearchBase.get(CharSequences.create(name));
+                            if (res != null && res.size() > 0) {
+                                return res;
+                            }
+                            boolean isLocalHost = true;
+                            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
+                            if (conf != null){
+                                isLocalHost = conf.getDevelopmentHost().isLocalhost();
+                            }
+                            boolean runPackagesSearchInRemote  =
+                                    Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
 
-                        if (packageSearch != null && (isLocalHost || runPackagesSearchInRemote)) {
-                            res = packageSearch.getPackageFileSearch(p).searchFile(project, fileName);
-                        }
-                        if (res != null && res.size() > 0) {
-                            return res;
+                            if (packageSearch != null && (isLocalHost || runPackagesSearchInRemote)) {
+                                res = packageSearch.getPackageFileSearch((Project)p).searchFile(project, fileName);
+                            }
+                            if (res != null && res.size() > 0) {
+                                return res;
+                            }
                         }
                     }
                 }
@@ -267,7 +269,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             return Collections.<CharSequence>emptyList();
         }
 
-        private ConcurrentMap<CharSequence,List<CharSequence>> computeProjectFiles(Project project) {
+        private ConcurrentMap<CharSequence,List<CharSequence>> computeProjectFiles(Lookup.Provider project) {
             ConcurrentMap<CharSequence,List<CharSequence>> result = new ConcurrentHashMap<CharSequence,List<CharSequence>>();
             ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (provider != null && provider.gotDescriptor()) {

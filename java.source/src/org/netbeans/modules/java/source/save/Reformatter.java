@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
@@ -226,6 +227,8 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (embeddingOffset >= start)
                 continue;
+            if (doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(start))
+                continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -388,6 +391,7 @@ public class Reformatter implements ReformatTask {
         private Diff lastBlankLinesDiff;
         private boolean afterAnnotation;
         private boolean wrapAnnotation;
+        private boolean checkWrap;
         private boolean fieldGroup;
         private boolean templateEdit;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
@@ -1488,7 +1492,7 @@ public class Reformatter implements ReformatTask {
             boolean indented = false;
             if (col == indent) {
                 Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                if (d != null && d.getStartOffset() == tokens.offset() && d.getText() != null && d.getText().indexOf('\n') >= 0) {                    
+                if (d != null && d.getEndOffset() == tokens.offset() && d.getText() != null && d.getText().indexOf('\n') >= 0) {                    
                     indented = true;
                 } else {
                     tokens.movePrevious();
@@ -1607,6 +1611,12 @@ public class Reformatter implements ReformatTask {
                 accept(LPAREN);
                 spaces(cs.spaceWithinTryParens() ? 1 : 0, true);
                 wrapList(cs.wrapTryResources(), cs.alignMultilineTryResources(), false, SEMICOLON, res);
+                int index = tokens.index();
+                int c = col;
+                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                if (accept(SEMICOLON) == null) {
+                    rollback(index, c, d);
+                }
                 spaces(cs.spaceWithinTryParens() ? 1 : 0);
                 accept(RPAREN);
                 indent = old;
@@ -2399,6 +2409,9 @@ public class Reformatter implements ReformatTask {
         }
 
         private JavaTokenId accept(JavaTokenId first, JavaTokenId... rest) {
+            if (checkWrap && col > rightMargin) {
+                throw new WrapAbort();
+            }
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
             lastBlankLinesDiff = null;
@@ -2546,6 +2559,9 @@ public class Reformatter implements ReformatTask {
         }
         
         private boolean spaces(int count, boolean preserveNewline) {
+            if (checkWrap && col > rightMargin) {
+                throw new WrapAbort();
+            }
             Token<JavaTokenId> lastWSToken = null;
             boolean containedNewLine = false;
             int after = 0;
@@ -2714,7 +2730,7 @@ public class Reformatter implements ReformatTask {
         }
 
         private void newline() {
-            blankLines(templateEdit ? ANY_COUNT : 0);
+            blankLines(0);
         }
 
         private void blankLines() {
@@ -2722,6 +2738,11 @@ public class Reformatter implements ReformatTask {
         }
 
         private void blankLines(int count) {
+            if (count == 0 && templateEdit)
+                count = ANY_COUNT;
+            if (checkWrap && col > rightMargin) {
+                throw new WrapAbort();
+            }
             if (count >= 0) {
                 if (lastBlankLinesTokenIndex < 0) {
                     lastBlankLines = count;
@@ -2940,17 +2961,21 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
-                    if (alignIndent >= 0)
-                        indent = alignIndent;
-                    spaces(spacesCnt, true);
-                    indent = old;
-                    ret = col;
-                    accept(first, rest);
-                    if (this.col > rightMargin) {
-                        rollback(index, c, d);
-                        old = indent;
+                    checkWrap = true;
+                    try {
                         if (alignIndent >= 0)
                             indent = alignIndent;
+                        spaces(spacesCnt, true);
+                        indent = old;
+                        ret = col;
+                        accept(first, rest);
+                    } catch (WrapAbort wa) {
+                    } finally {
+                        checkWrap = false;
+                    }
+                    if (this.col > rightMargin) {
+                        rollback(index, c, d);
+                        indent = alignIndent >= 0 ? alignIndent : old;
                         newline();
                         indent = old;
                         ret = col;
@@ -2987,17 +3012,21 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
-                    if (alignIndent >= 0)
-                        indent = alignIndent;
-                    spaces(spacesCnt, true);
-                    indent = old;
-                    ret = col;
-                    scan(tree, null);
-                    if (col > rightMargin) {
-                        rollback(index, c, d);
-                        old = indent;
+                    checkWrap = true;
+                    try {
                         if (alignIndent >= 0)
                             indent = alignIndent;
+                        spaces(spacesCnt, true);
+                        indent = old;
+                        ret = col;
+                        scan(tree, null);
+                    } catch (WrapAbort wa) {
+                    } finally {
+                        checkWrap = false;
+                    }
+                    if (col > rightMargin) {
+                        rollback(index, c, d);
+                        indent = alignIndent >= 0 ? alignIndent : old;
                         newline();
                         indent = old;
                         ret = col;
@@ -3041,24 +3070,28 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
-                    if (alignIndent >= 0)
-                        indent = alignIndent;
-                    spaces(spacesCnt, true);
-                    indent = old;
-                    ret = col;
-                    if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
-                        col += tokens.token().length();
-                        lastBlankLines = -1;
-                        lastBlankLinesTokenIndex = -1;
-                        tokens.moveNext();
-                    }
-                    spaces(spacesCnt);
-                    scan(tree, null);
-                    if (col > rightMargin) {
-                        rollback(index, c, d);
-                        old = indent;
+                    checkWrap = true;
+                    try {
                         if (alignIndent >= 0)
                             indent = alignIndent;
+                        spaces(spacesCnt, true);
+                        indent = old;
+                        ret = col;
+                        if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                            col += tokens.token().length();
+                            lastBlankLines = -1;
+                            lastBlankLinesTokenIndex = -1;
+                            tokens.moveNext();
+                        }
+                        spaces(spacesCnt);
+                        scan(tree, null);
+                    } catch (WrapAbort wa) {
+                    } finally {
+                        checkWrap = false;
+                    }
+                    if (col > rightMargin) {
+                        rollback(index, c, d);
+                        indent = alignIndent >= 0 ? alignIndent : old;
                         newline();
                         indent = old;
                         ret = col;
@@ -3374,6 +3407,14 @@ public class Reformatter implements ReformatTask {
                 }
             }
             return false;
+        }
+        
+        private static class WrapAbort extends Error {
+
+            @Override
+            public synchronized Throwable fillInStackTrace() {
+                return null;
+            }
         }
     
         private static class FakeBlock extends JCBlock {

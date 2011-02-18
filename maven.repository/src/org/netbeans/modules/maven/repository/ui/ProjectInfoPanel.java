@@ -76,7 +76,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 
 /**
  *
@@ -435,7 +434,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
+            toolbar = new JToolBar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());

@@ -86,7 +86,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "nbproject/project.xml",
         "nbproject/project.properties",
         "src",
-        "test",
     };
     
     private static final String[] createdFilesExtSources = {
@@ -102,7 +101,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         File proj = getWorkDir();
         clearWorkDir();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "test-project", null, "manifest.mf", null);
+        AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "test-project", null, "manifest.mf", null, false);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         assertNotNull(aph);
         FileObject fo = aph.getProjectDirectory();

@@ -158,6 +158,7 @@ public final class MainWindow {
             }
 
         };
+        contentPane.setOpaque( false );
         frame.setContentPane(contentPane);
 
         init();
@@ -191,6 +192,7 @@ public final class MainWindow {
                 status.setBorder (BorderFactory.createEmptyBorder (0, 4, 0, 0));
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
+                statusLinePanel.setOpaque( false);
                 int magicConstant = 0;
                 if (Utilities.isMac()) {
                     // on mac there is window resize component in the right most bottom area.
@@ -436,6 +438,7 @@ public final class MainWindow {
         JMenuBar menu = getCustomMenuBar();
         if (menu == null) {
              menu = new MenuBar (null);
+             menu.setOpaque( false);
         }
         menu.setBorderPainted(false);
         if (menu instanceof MenuBar) {
@@ -595,6 +598,8 @@ public final class MainWindow {
             desktopPanel = new JPanel();
             desktopPanel.setBorder(getDesktopBorder());
             desktopPanel.setLayout(new BorderLayout());
+            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+                desktopPanel.setOpaque( false );
         }
         return desktopPanel;
     }
@@ -634,6 +639,15 @@ public final class MainWindow {
             isUndecorated = frame.isUndecorated();
             windowDecorationStyle = frame.getRootPane().getWindowDecorationStyle();
         }
+
+        GraphicsDevice device = null;
+        Graphics gc = frame.getGraphics();
+        if( gc instanceof Graphics2D ) {
+            GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
+            if( null != conf )
+                device = conf.getDevice();
+        }
+
         isFullScreenMode = fullScreenMode;
         if( Utilities.isWindows() )
             frame.setVisible( false );
@@ -655,14 +669,7 @@ public final class MainWindow {
         getToolbarComponent().setVisible( !isFullScreenMode );
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
 
-        GraphicsDevice device = null;
-        Graphics gc = frame.getGraphics();
-        if( gc instanceof Graphics2D ) {
-            GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
-            if( null != conf )
-                device = conf.getDevice();
-        }
-        if( null != device && device.isFullScreenSupported() ) {
+        if( null != device && device.isFullScreenSupported() && !Utilities.isMac() ) {
             device.setFullScreenWindow( isFullScreenMode ? frame : null );
         } else {
             frame.setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );

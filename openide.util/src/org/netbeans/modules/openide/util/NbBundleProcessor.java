@@ -87,6 +87,7 @@ public class NbBundleProcessor extends AbstractProcessor {
         Map</*package*/String,Map</*key*/String,/*value*/String>> pairs = new HashMap<String,Map<String,String>>();
         Map</*package*/String,Set</*identifier*/String>> identifiers = new HashMap<String,Set<String>>();
         Map</*package*/String,List<Element>> originatingElements = new HashMap<String,List<Element>>();
+        Map</*package*/String,Map</*key*/String,/*simplename*/String>> compilationUnits = new HashMap<String,Map<String,String>>();
         Map</*package*/String,Map</*key*/String,/*line*/String[]>> comments = new HashMap<String,Map<String,String[]>>();
         for (Element e : roundEnv.getElementsAnnotatedWith(NbBundle.Messages.class)) {
             String pkg = findPackage(e);
@@ -104,6 +105,11 @@ public class NbBundleProcessor extends AbstractProcessor {
             if (originatingElementsByPackage == null) {
                 originatingElementsByPackage = new ArrayList<Element>();
                 originatingElements.put(pkg, originatingElementsByPackage);
+            }
+            Map<String,String> compilationUnitsByPackage = compilationUnits.get(pkg);
+            if (compilationUnitsByPackage == null) {
+                compilationUnitsByPackage = new HashMap<String,String>();
+                compilationUnits.put(pkg, compilationUnitsByPackage);
             }
             Map<String,String[]> commentsByPackage = comments.get(pkg);
             if (commentsByPackage == null) {
@@ -137,6 +143,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                 String value = keyValue.substring(i + 1);
                 pairsByPackage.put(key, value);
                 originatingElementsByPackage.add(e);
+                compilationUnitsByPackage.put(key, findCompilationUnitName(e));
                 if (!runningComments.isEmpty()) {
                     commentsByPackage.put(key, runningComments.toArray(new String[runningComments.size()]));
                     runningComments.clear();
@@ -235,6 +242,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     m.appendTail(annotatedValue);
                     annotatedValue.append("</i>");
                     method.append("     * @return ").append(annotatedValue.toString().replace("<i></i>", "")).append('\n');
+                    method.append("     * @see ").append(compilationUnits.get(pkg).get(key)).append('\n');
                     method.append("     */\n");
                     String name = toIdentifier(key);
                     method.append("    static String ").append(name).append("(");
@@ -262,6 +270,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     PrintWriter pw = new PrintWriter(w);
                     pw.println("package " + pkg + ";");
                     pw.println("/** Localizable strings for {@link " + pkg + "}. */");
+                    pw.println("@javax.annotation.Generated(value=\"" + NbBundleProcessor.class.getName() + "\")");
                     pw.println("class Bundle {");
                     for (String method : methods.values()) {
                         pw.print(method);
@@ -287,6 +296,22 @@ public class NbBundleProcessor extends AbstractProcessor {
         default:
             return findPackage(e.getEnclosingElement());
         }
+    }
+
+    private String findCompilationUnitName(Element e) {
+        switch (e.getKind()) {
+        case PACKAGE:
+            return "package-info";
+        case CLASS:
+        case INTERFACE:
+        case ENUM:
+        case ANNOTATION_TYPE:
+            switch (e.getEnclosingElement().getKind()) {
+            case PACKAGE:
+                return e.getSimpleName().toString();
+            }
+        }
+        return findCompilationUnitName(e.getEnclosingElement());
     }
 
     private String toIdentifier(String key) {

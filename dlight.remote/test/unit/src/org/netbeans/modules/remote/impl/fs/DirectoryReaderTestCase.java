@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.impl.fs.DirectoryStorage.Entry;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
@@ -78,6 +77,14 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
             this.size = size;
             this.name = name;
             this.link = link;
+        }
+        
+        public boolean isLink() {
+            return fileType == 'l';
+        }
+        
+        public boolean isDirectory() {
+            return fileType == 'd';
         }
     }
 
@@ -141,8 +148,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         }
     }
 
-    @ForAllEnvironments
-    public void testDirectoryReader() throws Exception {
+    private void prepareDirectory() throws Exception {
         ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, script, new LineProcessor() {
             public void processLine(String line) {
                 System.err.println(line);
@@ -152,37 +158,55 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         });
         int rc = scriptRunner.execute();
         assertEquals("Error running script", 0, rc);
-        DirectoryReader directoryReader = new DirectoryReader(execEnv, remoteDir);
+    }
+    
+    @ForAllEnvironments
+    public void testDirectoryReaderLs() throws Exception {
+        prepareDirectory();
+        DirectoryReaderLs directoryReader = new DirectoryReaderLs(execEnv, remoteDir);
         directoryReader.readDirectory();
-        List<Entry> entries = directoryReader.getEntries();
-        assertEntriesEqual(referenceEntries, entries);
+        List<DirEntry> entries = directoryReader.getEntries();
+        assertEntriesEqual(referenceEntries, entries, true);
+    }
+
+    @ForAllEnvironments
+    public void testDirectoryReaderSftp() throws Exception {
+        prepareDirectory();
+        DirectoryReaderSftp directoryReader = new DirectoryReaderSftp(execEnv, remoteDir);
+        directoryReader.readDirectory();
+        List<DirEntry> entries = directoryReader.getEntries();
+        assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
     }
 
     private void doTestLsParser(HostInfo.OSFamily oSFamily, String[] lines, RefEntry[] refEntries) {
-        List<DirectoryStorage.Entry> entries = DirectoryReader.testLsLineParser(oSFamily, lines);
-        assertEntriesEqual(refEntries, entries);
+        List<DirEntry> entries = DirectoryReaderLs.testLsLineParser(oSFamily, lines);
+        assertEntriesEqual(refEntries, entries, true);
     }
 
-    private void assertEntriesEqual(RefEntry[] refEntries, List<DirectoryStorage.Entry> entries) {
+    private void assertEntriesEqual(RefEntry[] refEntries, List<DirEntry> entries, boolean strictTypes) {
         assertEquals("Entries count differs: ", refEntries.length, entries.size());
         for (RefEntry refEntry : refEntries) {
-            DirectoryStorage.Entry entry = null;
-            for (DirectoryStorage.Entry e : entries) {
+            DirEntry entry = null;
+            for (DirEntry e : entries) {
                 if (e.getName().equals(refEntry.name)) {
                     entry = e;
                     break;
                 }
             }
             assertNotNull("Entry not found for " + refEntry.name, entry);
-            assertEquals("File type differs for " + refEntry.name, FileType.fromChar(refEntry.fileType), entry.getFileType());
+            assertEquals("isLink() differs for " + refEntry.name, refEntry.isLink(), entry.isLink());
+            assertEquals("isDirectory() differs for " + refEntry.name, refEntry.isDirectory(), entry.isDirectory());
+            if (strictTypes) {
+                assertEquals("File type differs for " + refEntry.name, FileType.fromChar(refEntry.fileType), entry.getFileType());
+            }
             assertEquals("Access differs for " + refEntry.name, refEntry.access, entry.getAccessAsString());
-            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
-            if (entry.getFileType() != FileType.Directory && entry.getFileType() != FileType.Symlink) {
+//            assertEquals("Group differs for " + refEntry.name, refEntry.group, entry.getGroup());
+            if (!entry.isDirectory() && !entry.isLink()) {
                 assertEquals("Size differs for " + refEntry.name, refEntry.size, entry.getSize());
             }
 
-            assertEquals("Link differs for " + refEntry.name, refEntry.link, entry.getLink());
-            assertEquals("User differs for " + refEntry.name, refEntry.user, entry.getUser());
+            assertEquals("Link differs for " + refEntry.name, refEntry.link, entry.getLinkTarget());
+//            assertEquals("User differs for " + refEntry.name, refEntry.user, entry.getUser());
         }
     }
 

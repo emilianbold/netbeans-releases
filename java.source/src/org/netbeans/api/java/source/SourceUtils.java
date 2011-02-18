@@ -484,15 +484,13 @@ public class SourceUtils {
                     return folders.isEmpty() ? fo : folders.get(0);
                 }
                 else {               
-                    boolean caseSensitive = isCaseSensitive ();
-                    String sourceFileName = getSourceFileName (className);
+                    final boolean caseSensitive = isCaseSensitive ();
+                    final String sourceFileName = getSourceFileName (className);
+                    final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
                     folders.addFirst(fo);
                     for (FileObject folder : folders) {
-                        FileObject[] children = folder.getChildren();
-                        for (FileObject child : children) {
-                            if (((caseSensitive && child.getName().equals (sourceFileName)) ||
-                                (!caseSensitive && child.getName().equalsIgnoreCase (sourceFileName))) &&
-                                (child.isData() && JavaDataLoader.JAVA_EXTENSION.equalsIgnoreCase(child.getExt()))) {
+                        for (FileObject child : folder.getChildren()) {
+                            if (matchSet.apply(child)) {
                                 return child;
                             }
                         }
@@ -538,6 +536,50 @@ public class SourceUtils {
             });
         } catch (InterruptedException e) {
             return null;
+        }
+    }
+
+    private static abstract class Match {
+
+        private final String name;
+
+        Match(final String names) {
+            this.name = names;
+        }
+
+        final boolean apply(final FileObject fo) {
+            final String foName = fo.getName();
+            return match(foName,name) && isJava(fo);
+        }
+
+        protected abstract boolean match(String name1, String name2);
+
+        private boolean isJava(final FileObject fo) {
+            return  JavaDataLoader.JAVA_EXTENSION.equalsIgnoreCase(fo.getExt()) && fo.isData();
+        }
+    }
+
+    private static class CaseSensitiveMatch extends Match {
+
+        CaseSensitiveMatch(final String name) {
+            super(name);
+        }
+
+        @Override
+        protected boolean match(String name1, String name2) {
+            return name1.equals(name2);
+        }
+    }
+
+    private static class CaseInsensitiveMatch extends Match {
+
+        CaseInsensitiveMatch(final String name) {
+            super(name);
+        }
+
+        @Override
+        protected boolean match(String name1, String name2) {
+            return name1.equalsIgnoreCase(name2);
         }
     }
     
@@ -944,7 +986,7 @@ public class SourceUtils {
     private static String getSourceFileName (String classFileName) {
         int index = classFileName.indexOf('$'); //NOI18N
         return index == -1 ? classFileName : classFileName.substring(0,index);
-        }
+    }
         
     /**
      * @since 0.24

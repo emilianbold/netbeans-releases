@@ -45,7 +45,7 @@ import org.netbeans.api.java.source.WorkingCopy;
  * <code>cat test/unit/data/test/Test.java | tr '\n' ' ' | tr '\t' ' ' | sed -E 's| +| |g' | sed 's|"|\\"|g'</code>
  * @author Samuel Halliday
  */
-public class BreakContinueTest extends GeneratorTest {
+public class BreakContinueTest extends GeneratorTestBase {
 
     public BreakContinueTest(String name) {
         super(name);
@@ -94,6 +94,19 @@ public class BreakContinueTest extends GeneratorTest {
 
     public void testBreak158130b() throws Exception {
         String test = "public class Test { void m(int p) { loop: while (true) { i|f (p == 0) { break loop; } else { break ; } } } }";
+        String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break ; } } } }";
+        testHelper(test, golden, Kind.IF, new Delegate() {
+
+            public void run(WorkingCopy copy, Tree tree) {
+                IfTree original = (IfTree) tree;
+                IfTree modified = copy.getTreeMaker().If(original.getCondition(), original.getElseStatement(), null);
+                copy.rewrite(original, modified);
+            }
+        });
+    }
+
+    public void testBreak158130c() throws Exception {
+        String test = "public class Test { void m(int p) { loop: while (true) { i|f (p == 0) { break loop; } else { break; } } } }";
         String golden = "public class Test { void m(int p) { loop: while (true) { if (p == 0) { break; } } } }";
         testHelper(test, golden, Kind.IF, new Delegate() {
 

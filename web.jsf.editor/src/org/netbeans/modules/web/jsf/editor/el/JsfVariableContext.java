@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 /**
+ * Note: Uses embedded offsets of the html snapshot!
  *
  * @author marekfukala
  */
@@ -69,12 +70,18 @@ public class JsfVariableContext implements Comparable {
         return variableName;
     }
 
+    /** @return end offset of the variable context. The offset is the html parser result embedded offset. */
     public int getTo() {
         return to;
     }
 
+    /** @return start offset of the variable context. The offset is the html parser result embedded offset. */
     public int getFrom() {
         return from;
+    }
+
+    public String getResolvedExpression() {
+        return new StringBuilder().append("#{").append(getResolvedType()).append('}').toString();
     }
 
     public String getResolvedType() {

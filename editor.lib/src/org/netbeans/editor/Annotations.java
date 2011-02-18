@@ -189,12 +189,6 @@ public class Annotations implements DocumentListener {
 
     /** Add annotation */
     public void addAnnotation(AnnotationDesc anno) {
-
-        // Should always be run in EQ
-        if (!SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Must be run in EQ"); // NOI18N
-        }
-
         LineAnnotations lineAnnos;
         synchronized (lineAnnotationsArray) {
             // create mark for this annotation. One mark can be shared by more annotations
@@ -306,12 +300,6 @@ public class Annotations implements DocumentListener {
 
     /** Remove annotation */
     public void removeAnnotation(AnnotationDesc anno) {
-
-        // Should always be run in EQ
-        if (!SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Must be run in EQ"); // NOI18N
-        }
-
         int line;
         synchronized (lineAnnotationsArray) {
             // find LineAnnotations for the mark

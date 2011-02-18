@@ -44,7 +44,9 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -52,6 +54,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -63,7 +66,7 @@ import org.openide.util.Exceptions;
  *
  * @author Vladimir Kvashin
  */
-public abstract class RemoteFileObjectBase extends FileObject {
+public abstract class RemoteFileObjectBase extends FileObject implements Serializable {
 
     protected final RemoteFileSystem fileSystem;
     protected final ExecutionEnvironment execEnv;
@@ -72,7 +75,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
     private boolean valid;
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
-    
+    static final long serialVersionUID = 1931650016889811086L;
+
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -135,6 +139,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     @Override
     public void delete(FileLock lock) throws IOException {
         deleteImpl();
+        invalidate();
         RemoteFileObjectBase parent = getParent();
         if (parent != null) {
             parent.postDeleteChild(this);
@@ -199,9 +204,14 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public long getSize() {
-        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-        if (parent != null) {
-            return parent.getSize(this);
+        RemoteDirectory parent;
+        try {
+            parent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (parent != null) {
+                return parent.getSize(this);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return 0;
     }
@@ -264,11 +274,15 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Date lastModified() {
-        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-        if (parent != null) {
-            return parent.lastModified(this);
+        try {
+            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (parent != null) {
+                return parent.lastModified(this);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return new Date(cache.lastModified());
+        return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
     }
 
     @Override
@@ -346,4 +360,28 @@ public abstract class RemoteFileObjectBase extends FileObject {
         hash = 11 * hash + (this.cache != null ? this.cache.hashCode() : 0);
         return hash;
     }
+    
+   /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
+        return new SerializedForm(execEnv, remotePath);
+    }
+    
+    private static class SerializedForm implements Serializable {
+        
+        private final ExecutionEnvironment env;
+        private final String remotePath;
+
+        public SerializedForm(ExecutionEnvironment env, String remotePath) {
+            this.env = env;
+            this.remotePath = remotePath;
+        }
+                
+        /* Java serialization*/ Object readResolve() throws ObjectStreamException {
+            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+            FileObject fo = fs.findResource(remotePath);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
+            }
+            return fo;
+        }
+    }    
 }

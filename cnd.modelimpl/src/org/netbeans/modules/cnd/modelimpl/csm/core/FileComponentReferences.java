@@ -115,13 +115,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         super(input);
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         fileUID = defaultFactory.readUID(input);
-        int collSize = input.readInt();
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
-        for(int i = 0; i < collSize; i++) {
-            CsmUID<CsmObject> refObj = UIDObjectFactory.getDefaultFactory().readUID(input);
-            ReferenceImpl ref = new ReferenceImpl(fileUID, refObj, defaultFactory, input);
-            references.put(ref, refObj);
-        }
+        references = defaultFactory.readReferencesSortedToUIDMap(input, fileUID);
     }
 
     // only for EMPTY static field
@@ -275,7 +269,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
     }
 
-    private static final class ReferenceImpl implements CsmReference, Comparable<ReferenceImpl>{
+    public static final class ReferenceImpl implements CsmReference, Comparable<ReferenceImpl>{
         private final CsmUID<CsmFile> file;
         private final CsmReferenceKind refKind;
         private final CsmUID<CsmObject> refObj;
@@ -309,7 +303,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.closestTopLevelObjectUID = closestTopLevelObjectUID;
         }
 
-        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmUID<CsmObject> refObj, UIDObjectFactory defaultFactory, DataInput input) throws IOException {
+        public ReferenceImpl(CsmUID<CsmFile> fileUID, CsmUID<CsmObject> refObj, UIDObjectFactory defaultFactory, DataInput input) throws IOException {
             this.file = fileUID;
             this.refObj = refObj;
             assert refObj != null;

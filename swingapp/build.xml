@@ -4,13 +4,9 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="shell-build">
-        <mkdir dir="appshells/${shellname}/test"/>
         <delete file="src/org/netbeans/modules/swingapp/resources/${shellname}.zip" />
         <zip destfile="src/org/netbeans/modules/swingapp/resources/${shellname}.zip" basedir="appshells/${shellname}"
             excludes="build.xml, nbproject/build-impl.xml, nbproject/genfiles.properties, nbproject/private/**" />
-        <delete includeEmptyDirs="true">
-            <fileset dir="appshells/${shellname}/test"/>
-        </delete>
     </target>
 
     <target name="shells-build">

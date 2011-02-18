@@ -511,7 +511,7 @@ public abstract class EditorView extends View {
             Document doc = getDocument();
             if (doc != null) {
                 CharSequence docText = DocumentUtilities.getText(doc);
-                if (endOffset <= docText.length()) {
+                if (endOffset <= docText.length() && DocumentView.LOG_SOURCE_TEXT) {
                     int endTextOffset = Math.min(endOffset, startOffset + 7);
                     sb.append(" \"");
                     CharSequenceUtilities.debugText(sb, docText.subSequence(startOffset, endTextOffset));

@@ -77,7 +77,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Pavel Flaska
  */
-public class TwoModificationsTest extends GeneratorTest {
+public class TwoModificationsTest extends GeneratorTestBase {
     
     /** Creates a new instance of TwoModificationsTest */
     public TwoModificationsTest(String name) {

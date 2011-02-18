@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import java.io.File;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
@@ -68,11 +72,17 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
     public void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
+        ServerList.setDefaultRecord(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
     }
 
     private static QmakeConfiguration newQmakeConfiguration(int confType) {
         File dir = new File(System.getProperty("java.io.tmpdir"), "QmakeConfigurationTest");
         MakeConfiguration conf = new MakeConfiguration(dir.getPath(), "Dummy", confType);
+        //++ trace for #194772 -  QmakeConfigurationTest fails on Windows and Mac
+        Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
+        System.out.println("Creating QmakeConfiguration for platform " + platform.getDisplayName());        
+        System.out.println("platform.getQtLibraryName returned " + platform.getQtLibraryName("my-qt-lib", "1"));
+        //-- trace for #194772 -  QmakeConfigurationTest fails on Windows and Mac
         return new QmakeConfiguration(conf);
     }
 

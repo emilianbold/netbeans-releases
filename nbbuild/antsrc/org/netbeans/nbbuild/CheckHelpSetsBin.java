@@ -46,7 +46,6 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,14 +59,12 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -76,13 +73,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
-import javax.help.IndexItem;
-import javax.help.TOCItem;
-import javax.help.TreeItem;
-import javax.help.TreeItemFactory;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
 import org.apache.tools.ant.Location;
@@ -90,10 +80,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Mapper;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /** Task to check various aspects of JavaHelp helpsets.
  * <ol>
@@ -111,13 +97,12 @@ public class CheckHelpSetsBin extends Task {
     
     private ClassLoader globalClassLoader;
     
-    private Map<String, ClassLoader> classLoaderMap;
+    private Map<String,URLClassLoader> classLoaderMap;
     
     private Set<String> excludedModulesSet;
     
-    /** Add a fileset with one or more helpsets in it.
-     * <strong>Only</strong> the <samp>*.hs</samp> should match!
-     * All other files will be found from it.
+    /**
+     * Adds a set of module JARs. Class-Path extensions (including separate doc JARs) should not be included.
      */
     public void addFileset(FileSet fs) {
         filesets.add(fs);
@@ -153,13 +138,13 @@ public class CheckHelpSetsBin extends Task {
                 continue;
             }
             //Look for *.hs
-            for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
-                JarEntry je = (JarEntry) en.nextElement();
+            for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
+                JarEntry je = en.nextElement();
                 if (je.getName().endsWith(".hs")) {
                     hsFound = true;
                 }
             }
-            value = attrs.getValue("Class-Path");
+            value = attrs.getValue("Class-Path"); // XXX bad, look for hsref instead
             if (value != null) {
                 StringTokenizer tok = new StringTokenizer(value);
                 while (tok.hasMoreElements()) {
@@ -173,8 +158,8 @@ public class CheckHelpSetsBin extends Task {
                         ex.printStackTrace();
                     }
                     //Look for *.hs
-                    for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
-                        JarEntry je = (JarEntry) en.nextElement();
+                    for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
+                        JarEntry je = en.nextElement();
                         if (je.getName().endsWith(".hs")) {
                             hsFound = true;
                         }
@@ -196,14 +181,14 @@ public class CheckHelpSetsBin extends Task {
         return new URLClassLoader(globalClassPath,this.getClass().getClassLoader().getParent(),new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
     }
 
-    private Map<String, ClassLoader> createClassLoaderMap (File dir, String [] files) {
-        Map<String, ClassLoader> m = new HashMap<String, ClassLoader>();
+    private Map<String,URLClassLoader> createClassLoaderMap (File dir, String [] files) {
+        Map<String,URLClassLoader> m = new HashMap<String,URLClassLoader>();
         for (int i = 0; i < files.length; i++) {
             List<File> fileList = new ArrayList<File>();
             File moduleJar = new File(dir, files[i]);
             fileList.add(moduleJar);
             boolean hsFound = false;
-            URL [] classPath = null;
+            URL [] classPath = {};
 
             JarFile jar = null;
             Manifest manifest = null;
@@ -219,7 +204,7 @@ public class CheckHelpSetsBin extends Task {
             }
             File parent = moduleJar.getParentFile();
             java.util.jar.Attributes attrs = manifest.getMainAttributes();
-            String value = attrs.getValue("Class-Path");
+            String value = attrs.getValue("Class-Path"); // XXX bad, look for hsref instead
             if (value != null) {
                 StringTokenizer tok = new StringTokenizer(value);
                 while (tok.hasMoreElements()) {
@@ -242,18 +227,18 @@ public class CheckHelpSetsBin extends Task {
                 log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
                 continue;
             }
-            int pos = key.indexOf("/");
+            int pos = key.indexOf('/');
             if (pos != -1) {
                 key = key.substring(0,pos);
             }
             //Look for *.hs
-            for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
-                JarEntry je = (JarEntry) en.nextElement();
+            for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
+                JarEntry je = en.nextElement();
                 if (je.getName().endsWith(".hs")) {
                     hsFound = true;
                 }
             }
-            value = attrs.getValue("Class-Path");
+            value = attrs.getValue("Class-Path"); // XXX bad, look for hsref instead
             if (value != null) {
                 StringTokenizer tok = new StringTokenizer(value);
                 while (tok.hasMoreElements()) {
@@ -266,8 +251,8 @@ public class CheckHelpSetsBin extends Task {
                         ex.printStackTrace();
                     }
                     //Look for *.hs
-                    for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
-                        JarEntry je = (JarEntry) en.nextElement();
+                    for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
+                        JarEntry je = en.nextElement();
                         if (je.getName().endsWith(".hs")) {
                             hsFound = true;
                         }
@@ -284,18 +269,13 @@ public class CheckHelpSetsBin extends Task {
     }
     
     private Set<String> parseExcludeModulesProperty (String prop) {
-        excludedModulesSet = new HashSet<String>();
         if (prop == null) {
-            return excludedModulesSet;
+            return Collections.emptySet();
         }
-        String [] arr = prop.split(",");
-        for (int i = 0; i < arr.length; i++) {
-            excludedModulesSet.add(arr[i]);
-        }
-        return excludedModulesSet;
+        return new HashSet<String>(Arrays.asList(prop.split(",")));
     }
     
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         try {
             URL.setURLStreamHandlerFactory(new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
         } catch (Error ex) {
@@ -303,9 +283,7 @@ public class CheckHelpSetsBin extends Task {
         }
         String p = getProject().getProperty("javahelpbin.exclude.modules");
         excludedModulesSet = parseExcludeModulesProperty(p);
-        Iterator it = filesets.iterator();
-        while (it.hasNext()) {
-            FileSet fs = (FileSet)it.next();
+        for (FileSet fs : filesets) {
             FileScanner scanner = fs.getDirectoryScanner(getProject());
             File dir = scanner.getBasedir();
             String[] files = scanner.getIncludedFiles();
@@ -313,11 +291,10 @@ public class CheckHelpSetsBin extends Task {
             globalClassLoader = createGlobalClassLoader(dir,files);
             classLoaderMap = createClassLoaderMap(dir,files);
             
-            for (int i = 0; i < files.length; i++) {
+            for (String file : files) {
                 List<File> fileList = new ArrayList<File>();
-                File moduleJar = new File(dir, files[i]);
+                File moduleJar = new File(dir, file);
                 fileList.add(moduleJar);
-                URL [] classPath = null;
                 
                 JarFile jar = null;
                 Manifest manifest = null;
@@ -339,7 +316,7 @@ public class CheckHelpSetsBin extends Task {
                     log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
                     continue;
                 }
-                int pos = key.indexOf("/");
+                int pos = key.indexOf('/');
                 if (pos != -1) {
                     key = key.substring(0,pos);
                 }
@@ -350,7 +327,7 @@ public class CheckHelpSetsBin extends Task {
                     log("* * * *", Project.MSG_WARN);
                     continue;
                 }
-                URLClassLoader classLoader = (URLClassLoader) classLoaderMap.get(key);
+                URLClassLoader classLoader = classLoaderMap.get(key);
                 if (classLoader == null) {
                     //If module class loader was not added to map it does not contain
                     //any helpset => skip it.
@@ -361,11 +338,15 @@ public class CheckHelpSetsBin extends Task {
                 log("Parsing module: " + key, Project.MSG_WARN);
                 log("* * * *", Project.MSG_WARN);
                 //Look for *.hs
-                for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
-                    JarEntry je = (JarEntry) en.nextElement();
+                for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
+                    JarEntry je = en.nextElement();
                     if (je.getName().endsWith(".hs")) {
-                        URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(key);
+                        URLClassLoader moduleClassLoader = classLoaderMap.get(key);
                         URL hsURL = moduleClassLoader.findResource(je.getName());
+                        if (hsURL == null) {
+                            log("No resource " + je.getName() + " in " + Arrays.toString(moduleClassLoader.getURLs()), Project.MSG_WARN);
+                            continue;
+                        }
                         checkHelpSetURL(hsURL,globalClassLoader,moduleClassLoader,classLoaderMap,moduleJar);
                     }
                 }
@@ -381,11 +362,15 @@ public class CheckHelpSetsBin extends Task {
                             ex.printStackTrace();
                         }
                         //Look for *.hs
-                        for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
-                            JarEntry je = (JarEntry) en.nextElement();
+                        for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
+                            JarEntry je = en.nextElement();
                             if (je.getName().endsWith(".hs")) {
-                                ClassLoader moduleClassLoader = classLoaderMap.get(key);
+                                URLClassLoader moduleClassLoader = classLoaderMap.get(key);
                                 URL hsURL = moduleClassLoader.getResource(je.getName());
+                                if (hsURL == null) {
+                                    log("No resource " + je.getName() + " in " + Arrays.toString(moduleClassLoader.getURLs()), Project.MSG_WARN);
+                                    continue;
+                                }
                                 checkHelpSetURL(hsURL,globalClassLoader,moduleClassLoader,classLoaderMap,extJar);
                             }
                         }
@@ -396,15 +381,15 @@ public class CheckHelpSetsBin extends Task {
     }
     
     private void checkHelpSetURL
-    (URL hsURL, ClassLoader globalClassLoader, ClassLoader moduleClassLoader, java.util.Map classLoaderMap, File extJar) {
+    (URL hsURL, ClassLoader globalClassLoader, ClassLoader moduleClassLoader, Map<String,URLClassLoader> classLoaderMap, File extJar) {
         HelpSet hs = null;
         try {
             hs = new HelpSet(moduleClassLoader, hsURL);
         } catch (HelpSetException ex) {
-            ex.printStackTrace();
+            throw new BuildException("Failed to parse " + hsURL + ": " + ex, ex, getLocation());
         }
         javax.help.Map map = hs.getCombinedMap();
-        Enumeration e = map.getAllIDs();
+        Enumeration<?> e = map.getAllIDs();
         Set<URI> okurls = new HashSet<URI>(1000);
         Set<URI> badurls = new HashSet<URI>(1000);
         Set<URI> cleanurls = new HashSet<URI>(1000);
@@ -485,7 +470,6 @@ public class CheckHelpSetsBin extends Task {
             }
         }
     }
-    */
     
     private final class VerifyTIFactory implements TreeItemFactory {
         
@@ -597,6 +581,7 @@ public class CheckHelpSetsBin extends Task {
         }
         
     }
+    */
     
     public static class NbDocsStreamHandler extends URLStreamHandler {
 
@@ -654,6 +639,7 @@ public class CheckHelpSetsBin extends Task {
                     throw e;
                 }
                 if (! connected) {
+                    real = url.openConnection();
                     real.connect();
                     connected = true;
                 }
@@ -661,8 +647,10 @@ public class CheckHelpSetsBin extends Task {
 
             /** Maybe connect, if not keep track of the problem.
              */
-            private void tryToConnect() {
-                if (connected || exception != null) return;
+            private synchronized void tryToConnect() {
+                if (connected || exception != null) {
+                    return;
+                }
                 try {
                     connect();
                 } catch (IOException ioe) {
@@ -674,43 +662,46 @@ public class CheckHelpSetsBin extends Task {
              * @param n index of the header
              * @return the header value
              */
-            public String getHeaderField(int n) {
+            public @Override String getHeaderField(int n) {
                 tryToConnect();
-                if (connected)
+                if (connected) {
                     return real.getHeaderField(n);
-                else
+                } else {
                     return null;
+                }
             }
 
             /** Get the name of a header.
              * @param n the index
              * @return the header name
              */
-            public String getHeaderFieldKey(int n) {
+            public @Override String getHeaderFieldKey(int n) {
                 tryToConnect();
-                if (connected)
+                if (connected) {
                     return real.getHeaderFieldKey(n);
-                else
+                } else {
                     return null;
+                }
             }
 
             /** Get a header by name.
              * @param key the header name
              * @return the value
              */
-            public String getHeaderField(String key) {
+            public @Override String getHeaderField(String key) {
                 tryToConnect();
-                if (connected)
+                if (connected) {
                     return real.getHeaderField(key);
-                else
+                } else {
                     return null;
+                }
             }
 
             /** Get an input stream on the connection.
              * @throws IOException for the usual reasons
              * @return a stream to the object
              */
-            public InputStream getInputStream() throws IOException {
+            public @Override InputStream getInputStream() throws IOException {
                 connect();
                 return real.getInputStream();
             }
@@ -719,7 +710,7 @@ public class CheckHelpSetsBin extends Task {
              * @throws IOException for the usual reasons
              * @return an output stream writing to it
              */
-            public OutputStream getOutputStream() throws IOException {
+            public @Override OutputStream getOutputStream() throws IOException {
                 connect();
                 return real.getOutputStream();
             }
@@ -727,23 +718,25 @@ public class CheckHelpSetsBin extends Task {
             /** Get the type of the content.
              * @return the MIME type
              */
-            public String getContentType() {
+            public @Override String getContentType() {
                 tryToConnect();
-                if (connected)
+                if (connected) {
                     return real.getContentType();
-                else
-                    return "application/octet-stream"; // NOI18N
+                } else {
+                    return "application/octet-stream";
+                }
             }
 
             /** Get the length of content.
              * @return the length in bytes
              */
-            public int getContentLength() {
+            public @Override int getContentLength() {
                 tryToConnect();
-                if (connected)
+                if (connected) {
                     return real.getContentLength();
-                else
+                } else {
                     return 0;
+                }
             }
 
         }

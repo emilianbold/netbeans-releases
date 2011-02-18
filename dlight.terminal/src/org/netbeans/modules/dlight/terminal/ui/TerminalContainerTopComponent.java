@@ -90,7 +90,8 @@ public final class TerminalContainerTopComponent extends TopComponent {
         setName(title);
         setToolTipText(NbBundle.getMessage(TerminalContainerTopComponent.class, "HINT_TerminalContainerTopComponent"));// NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
+        // do not use PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, see #187391
+//        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
         tc = TerminalContainer.create(TerminalContainerTopComponent.this, title);
         add(tc);
     }
@@ -201,9 +202,13 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        JComponent selected = getIOContainer().getSelected();
+        while (selected != null) {
+            getIOContainer().remove(selected);
+            selected = getIOContainer().getSelected();
+        }
     }
-
+    
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles

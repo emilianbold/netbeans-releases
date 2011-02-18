@@ -527,6 +527,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             doc.readUnlock();
         }
     }
+
+    @Override
+    public String toString() {
+        return "MarkOccurrencesHighlighter runner"; //NOI18N
+    }
     
     private static final class TokenRef implements CsmReference {
         private final int start;
