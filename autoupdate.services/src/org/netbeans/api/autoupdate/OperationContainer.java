@@ -383,7 +383,7 @@ public final class OperationContainer<Support> {
         public UpdateElement getUpdateElement() {return impl.getUpdateElement();}
         public UpdateUnit getUpdateUnit() {return impl.getUpdateUnit();}        
         /**
-         * @return all requiered elements. Each of them represented by instance of <code>UpdateElement</code>
+         * @return all required elements. Each of them represented by instance of <code>UpdateElement</code>
          */
         public Set<UpdateElement> getRequiredElements(){return new LinkedHashSet<UpdateElement> (impl.getRequiredElements());}
         
