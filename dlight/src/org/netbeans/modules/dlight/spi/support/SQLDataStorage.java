@@ -243,6 +243,16 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         }
 
         final String tableName = metadata.getName();
+        List<DataTableMetadata> sourceTables = metadata.getSourceTables();
+        if (sourceTables!= null){
+            for (final DataTableMetadata dt : sourceTables){
+                createTable(dt);
+            }
+            if (!tables.containsKey(metadata.getName())) {
+                tables.put(tableName, metadata);
+            }
+            return true;
+        }
         StringBuilder sb = new StringBuilder("CREATE TABLE " + tableName + "("); // NOI18N
         sb.append(new EnumStringConstructor<DataTableMetadata.Column>().constructEnumString(metadata.getColumns(),
                 new Convertor<DataTableMetadata.Column>() {
@@ -399,11 +409,11 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 return select(viewName, columns, null);
             }
         }
-
         String sqlQueryNew = sqlQuery;
-
-        for (Entry<String, String> entry : renamedTableNames.entrySet()) {
-            sqlQueryNew = sqlQueryNew.replaceAll(entry.getKey(), entry.getValue());
+        if (sqlQueryNew != null){
+            for (Entry<String, String> entry : renamedTableNames.entrySet()) {
+                sqlQueryNew = sqlQueryNew.replaceAll(entry.getKey(), entry.getValue());
+            }
         }
 
         return select(tableName, columns, sqlQueryNew);
