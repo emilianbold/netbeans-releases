@@ -256,7 +256,8 @@ public class InstallSupportImpl {
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.VALIDATION;
                 }
-                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+                final OperationContainer<InstallSupport> container = support.getContainer();
+                assert container.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + container.listInvalid () + "\ncontainer: " + container;
 
                 // start progress
                 if (progress != null) {
