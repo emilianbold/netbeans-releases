@@ -208,7 +208,7 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
         String simpleName = name.toString();
-        TypeElement source = firstClass != null ? (TypeElement) info.getTrees().getElement(firstClass) : null;
+        final TypeElement source = firstClass != null ? (TypeElement) info.getTrees().getElement(firstClass) : null;
         Element target = null;
         boolean wasMemberSelect = false;
 
@@ -535,14 +535,21 @@ public final class CreateElement implements ErrorRule<Void> {
             return EnumSet.of(Modifier.PUBLIC);
         }
 
-        TypeElement outterMostSource = info.getElementUtilities().outermostTypeElement(source);
+        TypeElement outterMostSource = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
         TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
 
-        if (outterMostSource.equals(outterMostTarget)) {
+        if (outterMostTarget.equals(outterMostSource)) {
             return EnumSet.of(Modifier.PRIVATE);
         }
 
-        Element sourcePackage = outterMostSource.getEnclosingElement();
+        Element sourcePackage;
+
+        if (outterMostSource != null) {
+            sourcePackage = outterMostSource.getEnclosingElement();
+        } else {
+            sourcePackage = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), info.getCompilationUnit().getPackageName()));
+        }
+
         Element targetPackage = outterMostTarget.getEnclosingElement();
 
         if (sourcePackage.equals(targetPackage)) {
