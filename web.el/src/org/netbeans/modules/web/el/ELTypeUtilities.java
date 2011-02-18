@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
+import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELPlugin;
@@ -462,8 +463,49 @@ public final class ELTypeUtilities {
     }
 
     /**
+     * Resolves the given variable type
+     * @param vi the variable to be resolved
+     * @return source Element representing the variable
+     */
+    public Element getReferredType(final VariableInfo vi, final FileObject context) {
+        SourceTask<Element> task = new SourceTask<Element>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                setResult(getReferredType(info, vi, context));
+            }
+        };
+        runTask(task);
+        return task.getResult();
+        
+    }
+    
+    private Element getReferredType(CompilationController info, VariableInfo vi, FileObject context) {
+        //resolved variable
+        if(vi.clazz != null) {
+            return info.getElements().getTypeElement(vi.clazz);
+        }
+        
+        //unresolved variable
+        assert vi.expression != null;
+        try {
+            Node expressionNode = ELParser.parse(vi.expression);
+            if (expressionNode != null) {
+                return getReferredType(expressionNode, context, info);
+            }
+        }catch (ELException e) {
+            //invalid expression
+        }
+        
+        return null;
+    }
+    
+    /**
      * @return the element for the type that that given {@code expression} refers to, i.e.
      * the return type of the last method in the expression.
+     * 
+     * The method can ONLY be used for resolved expressions, i.e. the base object must be a known bean,
+     * not a variable!
      */
     public Element getReferredType(Node expression, final FileObject context, final CompilationController info) {
 
@@ -479,6 +521,10 @@ public final class ELTypeUtilities {
                         return;
                     }
                     Element enclosing = info.getElements().getTypeElement(beanClass);
+                    if(enclosing == null) {
+                        //no such class on the classpath
+                        return ;
+                    }
                     ExecutableElement method = null;
                     Node current = parent;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
