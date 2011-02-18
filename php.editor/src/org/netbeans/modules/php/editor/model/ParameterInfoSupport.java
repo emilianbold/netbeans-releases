@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
@@ -394,8 +395,8 @@ public class ParameterInfoSupport {
                             if (declaration instanceof FunctionScope && oneDeclaration) {
                                 FunctionScope functionScope = (FunctionScope) declaration;
                                 return new ParameterInfo(toParamNames(functionScope), idx, anchor);
-                            } else if (declaration instanceof FunctionElement && oneDeclaration) {
-                                FunctionElement functionElement = (FunctionElement) declaration;
+                            } else if (declaration instanceof BaseFunctionElement && oneDeclaration) {
+                                BaseFunctionElement functionElement = (BaseFunctionElement) declaration;
                                 return new ParameterInfo(toParamNames(functionElement), idx, anchor);
                             } else if (declaration instanceof ClassElement && oneDeclaration) {
                                 ClassElement clsElement = (ClassElement) declaration;
@@ -428,7 +429,7 @@ public class ParameterInfoSupport {
         return paramNames;
     }
     @CheckForNull
-    private static List<String> toParamNames(FunctionElement functionElement) {
+    private static List<String> toParamNames(BaseFunctionElement functionElement) {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionElement.getParameters();
         for (ParameterElement parameter : parameters) {
