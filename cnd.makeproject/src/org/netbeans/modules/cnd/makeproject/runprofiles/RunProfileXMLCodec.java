@@ -66,6 +66,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     private final static String VALUE_ATTR = "value"; // NOI18N
     private final static String ENVIRONMENT_ELEMENT = "environment"; // NOI18N
     private final static String ARGS_ELEMENT = "args"; // NOI18N
+    private final static String ARGUMENTS_ELEMENT = "arguments"; // NOI18N
     private final static String RUNDIR_ELEMENT = "rundir"; // NOI18N
     private final static String RUNCOMMAND_ELEMENT = "runcommand"; // NOI18N
     private final static String RUNCOMMAND_PICKLIST_ELEMENT = "runcommandpicklist"; // NOI18N
@@ -80,13 +81,15 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
 
     /*
+     *  V9 - NB 7.0
+     *    Re-introduced Arguments (for dbxtool). It's hidden by default.
      *  V8 - NB 7.0
      *    Don't save ARGS_ELEMENT. Args and Run command are now merged.
         Versions changes tracker (started from version 6):
         2010/12/09
             Run Command field is added (see Bug 154529). Version is not upgraded, because default value the property is provided.
      */
-    private final static int thisversion = 8;
+    private final static int thisversion = 9;
 
     public RunProfileXMLCodec(RunProfile profile) {
 	this.profile = profile;
@@ -128,6 +131,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @SuppressWarnings("deprecation")
     @Override
     public void endElement(String element, String currentText) {
 	if (element.equals(ARGS_ELEMENT)) {
@@ -135,6 +139,9 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	}
 	else if (element.equals(RUNDIR_ELEMENT)) {
 	    profile.setRunDir(currentText);
+	}
+	else if (element.equals(ARGUMENTS_ELEMENT)) {
+	    profile.getArguments().setValue(currentText);
 	}
 	else if (element.equals(RUNCOMMAND_ELEMENT)) {
 	    profile.getRunCommand().setValue(currentText); // FIXUP
@@ -198,6 +205,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
      * was: RunProfileHelper.java.writeProfileBlock
      */
 
+    @SuppressWarnings("deprecation")
     private static void encode(XMLEncoderStream xes, RunProfile profile) {
 	xes.elementOpen(PROFILE_ID, getVersion());
 
@@ -209,7 +217,9 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
         xes.elementClose(RUNCOMMAND_PICKLIST_ELEMENT);
 
         xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand().getValue()); // FIXUP
-        //xes.element(ARGS_ELEMENT, profile.getArgsFlat());
+        if (profile.getArguments().getModified()) {
+            xes.element(ARGUMENTS_ELEMENT, profile.getArguments().getValue());
+        }
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
         if (profile.getConsoleType().getModified()) {
