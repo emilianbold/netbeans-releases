@@ -327,8 +327,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                 if(sourceLevel !=null ){
                     if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6)){
-                        ArrayList<Provider> providers = Util.getProviders(project);
-                        if(providers!=null && providers.size()>0 && Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(providers.get(0)))){
+                        Provider provider = Util.getPreferredProvider(project);
+                        if(provider!=null && Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))){
                             if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
                                 warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                             } else {
