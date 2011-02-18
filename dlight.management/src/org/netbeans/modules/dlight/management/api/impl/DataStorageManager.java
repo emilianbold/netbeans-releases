@@ -104,7 +104,7 @@ public final class DataStorageManager {
         String storageUniqueKey = DLightSessionAccessor.getDefault().getSharedStorageUniqueKey(session);
         if (storageUniqueKey != null) {
             List<DLightSession> sessions = sharedStoragesSessions.get(storageUniqueKey);
-            if (sessions.contains(session)) {
+            if (sessions != null && sessions.contains(session)) {
                 sessions.remove(session);
                 if (sessions.isEmpty()) {
                     //close all storages
