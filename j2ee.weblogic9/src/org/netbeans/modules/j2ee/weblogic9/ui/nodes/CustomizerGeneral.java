@@ -127,8 +127,19 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 && !support.isEnabledViaSmartUpdate();
 
         jpa2SwitchLabel.setVisible(visible);
+        jpa2Status.setVisible(visible);
         jpa2SwitchButton.setVisible(visible);
-        jpa2SwitchButton.setSelected(support.isEnabled());        
+        updateJpa2Status();
+    }
+
+    private void updateJpa2Status() {
+        if (support.isEnabled()) {
+            jpa2Status.setText(NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2Status.enabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchButton.disableText"));
+        } else {
+            jpa2Status.setText(NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2Status.disabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchButton.enableText"));
+        }         
     }
 
     /** This method is called from within the constructor to
@@ -154,7 +165,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
         NoteChangesLabel = new javax.swing.JLabel();
         serverPort = new javax.swing.JTextField();
         jpa2SwitchLabel = new javax.swing.JLabel();
-        jpa2SwitchButton = new javax.swing.JToggleButton();
+        jpa2Status = new javax.swing.JLabel();
+        jpa2SwitchButton = new javax.swing.JButton();
 
         domainNameLabel.setLabelFor(domainName);
         org.openide.awt.Mnemonics.setLocalizedText(domainNameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizerDomainName")); // NOI18N
@@ -188,9 +200,12 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
         serverPort.setEditable(false);
 
+        jpa2SwitchLabel.setLabelFor(jpa2SwitchLabel);
         org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchButton.text", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2Status, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2Status.disabledText")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jpa2SwitchButton.enableText")); // NOI18N
         jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jpa2SwitchButtonActionPerformed(evt);
@@ -213,19 +228,24 @@ class CustomizerGeneral extends javax.swing.JPanel {
                             .addComponent(userNameLabel)
                             .addComponent(passwordLabel)
                             .addComponent(serverPortLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(domainFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
-                            .addComponent(domainName, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                            .addComponent(domainFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                            .addComponent(domainName, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(userName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(showButton))))
-                    .addComponent(jpa2SwitchButton)
-                    .addComponent(jpa2SwitchLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jpa2SwitchButton)
+                                    .addComponent(showButton))
+                                .addGap(65, 65, 65))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jpa2SwitchLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jpa2Status)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -254,11 +274,12 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverPortLabel)
                     .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
-                .addComponent(jpa2SwitchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jpa2SwitchButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jpa2SwitchLabel)
+                    .addComponent(jpa2Status)
+                    .addComponent(jpa2SwitchButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(NoteChangesLabel)
                 .addContainerGap())
         );
@@ -313,11 +334,12 @@ class CustomizerGeneral extends javax.swing.JPanel {
     }//GEN-LAST:event_showButtonActionPerformed
 
     private void jpa2SwitchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jpa2SwitchButtonActionPerformed
-        if (jpa2SwitchButton.isSelected()) {
+        if (!support.isEnabled()) {
             support.enable();
         } else {
             support.disable();
         }
+        updateJpa2Status();
     }//GEN-LAST:event_jpa2SwitchButtonActionPerformed
     
 
@@ -328,7 +350,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel domainFolderLabel;
     private javax.swing.JTextField domainName;
     private javax.swing.JLabel domainNameLabel;
-    private javax.swing.JToggleButton jpa2SwitchButton;
+    private javax.swing.JLabel jpa2Status;
+    private javax.swing.JButton jpa2SwitchButton;
     private javax.swing.JLabel jpa2SwitchLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
