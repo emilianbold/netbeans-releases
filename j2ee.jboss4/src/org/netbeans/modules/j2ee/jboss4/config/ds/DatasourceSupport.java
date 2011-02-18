@@ -105,12 +105,12 @@ public class DatasourceSupport {
     private class DatasourceFileListener extends FileChangeAdapter {
         
         public void fileChanged(FileEvent fe) {
-            assert(fe.getSource() == datasourcesFO);
+            assert(fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
 
         public void fileDeleted(FileEvent fe) {
-            assert(fe.getSource() == datasourcesFO);
+            assert(fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
     } 
