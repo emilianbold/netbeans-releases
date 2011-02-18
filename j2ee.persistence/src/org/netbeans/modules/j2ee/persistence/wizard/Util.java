@@ -490,6 +490,10 @@ public class Util {
             if (!(provider instanceof DefaultProvider)) {
                 punit.setProvider(provider.getProviderClass());
             }
+            // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+            // See issue 142575 - desc 10
+            // also it shouldn't change default behavior as default for containers should be the same
+            punit.setExcludeUnlistedClasses(false);
         } else {
             DatabaseConnection connection = null;
             if (preselectedDB != null && !preselectedDB.trim().equals("")) {
