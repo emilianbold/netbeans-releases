@@ -1315,6 +1315,42 @@ public class EnumTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
 
+    public void test195500() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n" +
+            "    @Deprecated\n"+
+            "    Issue4;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    @Deprecated\n"+
+            "    AAA;\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree en = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree c = (VariableTree) en.getMembers().get(1);
+
+                workingCopy.rewrite(c, make.setLabel(c, "AAA"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

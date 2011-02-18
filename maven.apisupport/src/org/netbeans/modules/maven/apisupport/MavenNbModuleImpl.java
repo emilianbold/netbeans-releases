@@ -75,7 +75,6 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -127,6 +126,10 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      */
     public MavenNbModuleImpl(Project project) {
         this.project = project;
+    }
+
+    static RepositoryInfo netbeansRepo() {
+        return RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans"); // NOI18N
     }
     
     private File getModuleXmlLocation() {
@@ -249,10 +252,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             return false;
         }
         Dependency dep = null;
-        File platformFile = lookForModuleInPlatform(artifactId);
-        if (platformFile != null) {
-            try {
-                List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(platformFile);
+        RepositoryInfo nbrepo = netbeansRepo();
+        if (nbrepo != null) {
+            File platformFile = lookForModuleInPlatform(artifactId);
+            if (platformFile != null) {
+                List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(platformFile, nbrepo);
                 for (NBVersionInfo elem : lst) {
                     dep = new Dependency();
                     dep.setArtifactId(elem.getArtifactId());
@@ -260,8 +264,6 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                     dep.setVersion(elem.getVersion());
                     break;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         if (dep == null) {
@@ -286,9 +288,8 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             }
         }
         if (dep.getVersion() == null) {
-            RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans"); // NOI18N
-            if (info != null) {
-                List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.netbeans.cluster", "platform", info); // NOI18N
+            if (nbrepo != null) {
+                List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.netbeans.cluster", "platform", nbrepo); // NOI18N
                 if (!versions.isEmpty()) {
                     dep.setVersion(versions.get(0).getVersion());
                 }
