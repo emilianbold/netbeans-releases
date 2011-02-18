@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -50,7 +49,6 @@ import junit.framework.Test;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;

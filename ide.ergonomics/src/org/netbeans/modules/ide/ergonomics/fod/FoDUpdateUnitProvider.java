@@ -169,7 +169,11 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                         }
                         FeatureInfo fi = FeatureManager.findInfo(d.getName());
                         if (fi != null) {
-                            justKits.addAll(fi.getCodeNames());
+                            assert fi.getFeatureCodeNameBase() != null : "NoCNB for " + fi;
+                            String cnb = "fod." + fi.getFeatureCodeNameBase();
+                            if (!cnb.equals(name)) {
+                                justKits.add(cnb);
+                            }
                         }
                     }
                     continue;
