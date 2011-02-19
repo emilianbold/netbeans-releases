@@ -1,4 +1,0 @@
-Code completion result for source line:
-added_class_m|ethod :something
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     added_class_method(param)       [STATIC]   Included::ClassMethods

@@ -111,7 +111,6 @@ mkdir -p $LOGS
 IDE_BUILD_LOG=$LOGS/$BASENAME-build-ide.log
 MOBILITY_BUILD_LOG=$LOGS/$BASENAME-build-mobility.log
 VISUALWEB_BUILD_LOG=$LOGS/$BASENAME-build-visualweb.log
-RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
 NBMS_BUILD_LOC=$LOGS/$BASENAME-build-nbms.log
 SCP_LOG=$LOGS/$BASENAME-scp.log
 MAC_LOG=$LOGS/$BASENAME-native_mac.log
