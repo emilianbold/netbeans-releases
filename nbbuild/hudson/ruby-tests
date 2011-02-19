@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# Be sure RubyGems environment of underlaying OS is ignored during build
-unset GEM_HOME GEM_PATH
-
-ant -Dcluster.config=ruby || exit 2
-ant -f ruby/build-ruby.xml runtests || exit 3
