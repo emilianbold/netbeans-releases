@@ -68,6 +68,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceObjects.class.getName());
     
     
+    @Override
     public Lookup create(String path) {
         return new OverObjects(path);
     }        
@@ -116,25 +117,32 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
             return new Lookup[] {new org.openide.loaders.FolderLookup(DataFolder.findFolder(fo), s).getLookup(), base};
         }
     
+        @Override
         public void resultChanged(LookupEvent ev) {
             setLookups(delegates(path));
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileDataCreated(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileChanged(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileDeleted(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             ch(fe);
         }
