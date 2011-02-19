@@ -55,7 +55,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
-/** Use FolderLookup to find out intances of named services.
+/** Use FolderLookup to find out instances of named services.
  *
  * @author Jaroslav Tulach
  */
