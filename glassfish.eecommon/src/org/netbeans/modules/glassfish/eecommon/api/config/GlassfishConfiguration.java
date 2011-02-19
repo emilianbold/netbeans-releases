@@ -240,7 +240,10 @@ public abstract class GlassfishConfiguration implements
         // target server, use that, otherwise, use 9.0.
         ASDDVersion result = getTargetAppServerVersion();
         if (result == null) {
-            result = ASDDVersion.SUN_APPSERVER_10_1;
+            if (primarySunDD.getName().startsWith("glassfish-"))
+                result = ASDDVersion.SUN_APPSERVER_10_1;
+            else
+                result = ASDDVersion.SUN_APPSERVER_10_0;
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING, NbBundle.getMessage(
                     GlassfishConfiguration.class, "ERR_UnidentifiedTargetServer", result.toString())); // NOI18N
         }
