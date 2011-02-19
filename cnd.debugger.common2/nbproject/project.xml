@@ -332,6 +332,7 @@
                 <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <package>org.netbeans.modules.cnd.debugger.common2.capture</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.actions</package>
