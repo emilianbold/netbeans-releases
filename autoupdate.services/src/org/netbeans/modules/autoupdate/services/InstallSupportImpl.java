@@ -126,6 +126,7 @@ public class InstallSupportImpl {
     private int wasDownloaded = 0;
     
     private Future<Boolean> runningTask;
+    private final Object LOCK = new Object();
     
     private static enum STEP {
         NOTSTARTED,
@@ -154,13 +155,15 @@ public class InstallSupportImpl {
     public boolean doDownload (final ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
         this.isGlobal = isGlobal;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
-                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
-                synchronized(this) {
+                final OperationContainer<InstallSupport> container = support.getContainer ();
+                assert container.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + container.listInvalid () + " container: " + container;
+                synchronized(LOCK) {
                     currentStep = STEP.DOWNLOAD;
                 }
 
-                infos = support.getContainer ().listAll ();
+                infos = container.listAll ();
                 List <OperationInfo<?>> newInfos = new ArrayList <OperationInfo<?>>();
                 for(OperationInfo <?> i : infos) {
                     if(i.getUpdateUnit().getInstalled()!=null &&
@@ -246,13 +249,15 @@ public class InstallSupportImpl {
     public boolean doValidate (final Validator validator, final ProgressHandle progress/*or null*/) throws OperationException {
         assert validator != null;
         Callable<Boolean> validationCallable = new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
-                synchronized(this) {
+                synchronized(LOCK) {
                     assert currentStep != STEP.FINISHED;
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.VALIDATION;
                 }
-                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+                final OperationContainer<InstallSupport> container = support.getContainer();
+                assert container.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + container.listInvalid () + "\ncontainer: " + container;
 
                 // start progress
                 if (progress != null) {
@@ -310,8 +315,9 @@ public class InstallSupportImpl {
     public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/) throws OperationException {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
-                synchronized(this) {
+                synchronized(LOCK) {
                     assert currentStep != STEP.FINISHED : currentStep + " != STEP.FINISHED";
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.INSTALLATION;
@@ -349,7 +355,7 @@ public class InstallSupportImpl {
                 List <UpdaterInfo> updaterFiles = new ArrayList <UpdaterInfo> ();
                 
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
-                    synchronized(this) {
+                    synchronized(LOCK) {
                         if (currentStep == STEP.CANCEL) {
                             if (progress != null) progress.finish ();
                             return false;
@@ -421,7 +427,7 @@ public class InstallSupportImpl {
                     }
 
                     if (! needsRestart) {
-                        synchronized(this) {
+                        synchronized(LOCK) {
                             if (currentStep == STEP.CANCEL) {
                                 if (progress != null) progress.finish ();
                                 return false;
@@ -528,7 +534,7 @@ public class InstallSupportImpl {
     }
 
     public void doRestart (Restarter restarter, ProgressHandle progress/*or null*/) throws OperationException {
-        synchronized(this) {
+        synchronized(LOCK) {
             assert currentStep != STEP.FINISHED;
             currentStep = STEP.RESTART;
         }        
@@ -647,7 +653,7 @@ public class InstallSupportImpl {
     }
 
     public void doCancel () throws OperationException {
-        synchronized(this) {
+        synchronized(LOCK) {
             currentStep = STEP.CANCEL;
         }
         if (runningTask != null && ! runningTask.isDone () && ! runningTask.isCancelled ()) {
