@@ -36,6 +36,7 @@ package org.netbeans.modules.settings;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -95,7 +96,9 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         @SuppressWarnings("deprecation")
         private static Lookup[] delegates(String path) {
             Collection<? extends ClassLoader> allCL = CL.allInstances();
+            LOG.log(Level.FINEST, "allCL: {0}", allCL);
             ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+            LOG.log(Level.FINEST, "ccl: {0}", ccl);
             if (ccl != null) {
                 allCL = Collections.singleton(ccl);
             } else {
@@ -103,6 +106,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
                     allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
                 }
             }
+            LOG.log(Level.FINER, "metaInfServices for {0}", allCL);
             Lookup base = Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path); // NOI18N
             FileObject fo = FileUtil.getConfigFile(path);
             if (fo == null) {
