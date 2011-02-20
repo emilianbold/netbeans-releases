@@ -383,6 +383,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return baseDirFO;
     }
 
+    public FileObject getProjectDirFileObject() {
+        return projectDirFO;
+    }
+
 //    public void setBaseDirFileObject(FileObject baseDirFO) {
 //        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
 //        this.baseDirFO = baseDirFO;
@@ -605,7 +609,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public ConfigurationDescriptor cloneProjectDescriptor() {
-        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(projectDirFO, getBaseDirFileObject());
+        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(
+                getProjectDirFileObject(), getBaseDirFileObject());
         super.cloneProjectDescriptor(clone);
         clone.setProjectMakefileName(getProjectMakefileName());
         clone.setExternalFileItems(getExternalFileItems());
@@ -785,7 +790,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         // ALl OK
         FileObject fo = null;
-        fo = getBaseDirFileObject();
+        fo = getProjectDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             new ConfigurationXMLWriter(fo, this).write();
