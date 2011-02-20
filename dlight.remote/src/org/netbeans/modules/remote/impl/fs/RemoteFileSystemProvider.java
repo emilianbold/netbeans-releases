@@ -190,13 +190,16 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
                         int digit = (int) c - (int) '0';
                         port = port * 10 + digit;
                     } else {
-                        remotePath = path.subSequence(i, path.length());
+                        remotePath = path.subSequence(i + 1, path.length());
                         break;
                     }
                 }
             }
             if (hostName.length() == 0) {
                 throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+            }
+            if (port == 0) {
+                port = 22;
             }
             FileObject fo = null;
             RemoteFileSystem fs = null;
@@ -208,7 +211,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
                     env = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), hostName.toString());
                 }
             } else {
-                env = ExecutionEnvironmentFactory.createNew(userName, hostName.toString());
+                env = ExecutionEnvironmentFactory.createNew(userName, hostName.toString(), port);
             }
             fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
             fo = fs.findResource(remotePath.toString());
