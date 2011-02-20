@@ -135,6 +135,15 @@ public abstract class CndFileSystemProvider {
         return getDefault().getCanonicalPathImpl(fileSystem, absPath);
     }
     
+    public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
+        return getDefault().getCanonicalFileObjectImpl(fo);
+    }
+    
+    public static String getCanonicalPath(FileObject fo) throws IOException {
+        return getDefault().getCanonicalPathImpl(fo);
+        
+    }
+    
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -157,6 +166,8 @@ public abstract class CndFileSystemProvider {
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
     
     protected abstract CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException;
+    protected abstract FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException;
+    protected abstract String getCanonicalPathImpl(FileObject fo) throws IOException;
 
     private static class DefaultProvider extends CndFileSystemProvider {
 
@@ -305,5 +316,27 @@ public abstract class CndFileSystemProvider {
             }
             return absPath;
         }
+
+        @Override
+        protected FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException {
+            for (CndFileSystemProvider provider : cache) {
+                FileObject canonical = provider.getCanonicalFileObjectImpl(fo);
+                if (canonical != null) {
+                    return canonical;
+                }
+            }
+            return fo;
+        }
+
+        @Override
+        protected String getCanonicalPathImpl(FileObject fo) throws IOException {
+            for (CndFileSystemProvider provider : cache) {
+                String canonical = provider.getCanonicalPathImpl(fo);
+                if (canonical != null) {
+                    return canonical;
+                }
+            }
+            return fo.getPath();
+        }        
     }
 }

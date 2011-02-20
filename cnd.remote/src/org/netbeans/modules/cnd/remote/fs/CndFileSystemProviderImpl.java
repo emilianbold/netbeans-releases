@@ -103,7 +103,17 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     @Override
     protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
         return FileSystemProvider.getCanonicalPath(fileSystem, absPath.toString());
-    }            
+    }
+
+    @Override
+    protected FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalFileObject(fo);
+    }
+
+    @Override
+    protected String getCanonicalPathImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalPath(fo);
+    }    
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {
