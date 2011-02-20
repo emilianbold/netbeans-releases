@@ -209,16 +209,11 @@ public final class CndFileUtils {
     }
 
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
-        File file = FileUtil.toFile(fo);
-        if (file != null) {
-            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:fullRemote - delegate to provider!
-        } else {
-            return fo;
-        }
+        return CndFileSystemProvider.getCanonicalFileObject(fo);
     }
     
     public static String getCanonicalPath(FileObject fo) throws IOException {
-        return getCanonicalFileObject(fo).getPath(); // XXX:fullRemote - delegate to provider!
+        return CndFileSystemProvider.getCanonicalPath(fo);
     }
 
     public static boolean isValidLocalFile(String absolutePath) {
