@@ -86,6 +86,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
+    protected FileObject toFileObjectImpl(File file) {
+        return FileSystemProvider.fileToFileObject(file);
+    }
+
+    @Override
     protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
         return FileSystemProvider.fileObjectToUrl(fileObject);
     }
