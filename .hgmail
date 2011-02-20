@@ -20,7 +20,6 @@ commits@platform.netbeans.org=api.visual/*
 commits@profiler.netbeans.org=*profiler*/*
 commits@projects.netbeans.org=javawebstart/*,project.libraries/*,projectapi/*,projectui/*,projectuiapi/*,queries/*,tasklist.projectint/*
 commits@qa.netbeans.org=jellytools*/*,jemmy/*
-commits@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,o.jruby/*,o.kxml2/*,languages.yaml/*
 commits@serverplugins.netbeans.org=identity.*/*,j2eeserver/*,j2ee.ant/*,j2eeapis/*,j2ee.jboss4/*,server/*,j2ee.sun.appsrv/*,j2ee.sun.appsrv81/*,j2ee.sun.dd/*,j2ee.sun.ddui/*,j2ee.weblogic9/*,j2ee.websphere6/*,glassfish*/*
 commits@soa.netbeans.org=bpel.*/*,compapp.*/*,etl.*/*,iep.*/*,wsdlextensions.*/*,soa.*/*,sql.*/*,xslt.*/*,dm.virtual.db/*,dm.di.core/*,edm.*/*,encoder*/*
 commits@usersguide.netbeans.org=usersguide/*,java.examples/*
