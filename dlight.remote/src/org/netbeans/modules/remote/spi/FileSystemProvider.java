@@ -218,6 +218,23 @@ public final class FileSystemProvider {
         }
     }
 
+    /**
+     * JFileChooser works in the term of files.
+     * For such "perverted" files FileUtil.toFileObject won't work.
+     * @param file
+     * @return 
+     */
+    public static FileObject fileToFileObject(File file) {
+        Parameters.notNull("file", file);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(file)) {
+                return provider.fileToFileObject(file);
+            }
+        }
+        noProvidersWarning(file);
+        return FileUtil.toFileObject(file);
+    }
+    
     public static FileObject urlToFileObject(String url) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(url)) {

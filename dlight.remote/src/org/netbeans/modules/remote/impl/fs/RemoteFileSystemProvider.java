@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -245,6 +247,17 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         } else {
             throw new IllegalArgumentException("File system should be an istance of " + RemoteFileSystem.class.getName()); //NOI18N
         }
+    }
+
+    public FileObject fileToFileObject(File file) {
+        if (file instanceof FileObjectBasedFile) {
+            return ((FileObjectBasedFile) file).getFileObject();
+        }
+        return null;
+    }
+
+    public boolean isMine(File file) {
+        return file instanceof FileObjectBasedFile;
     }
     
     @Override

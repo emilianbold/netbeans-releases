@@ -161,11 +161,7 @@ public final class CndFileUtils {
     }
 
     public static FileObject toFileObject(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) {
-            return InvalidFileObjectSupport.getInvalidFileObject(file);
-        }
-        return fo;
+        return CndFileSystemProvider.toFileObject(file);
     }
 
     public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
