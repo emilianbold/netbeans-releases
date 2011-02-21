@@ -128,7 +128,7 @@ class TestBeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getIntercetorClasses()
      */
-    public Set<String> getInterceptorClasses() {
+    public Set<String> getIntercetorClasses() {
         // method is not used in these tests
         assert false;
         return null;
