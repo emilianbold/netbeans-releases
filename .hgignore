@@ -159,8 +159,6 @@ derby\.log
 ^performance/threaddemo/user\.build\.properties$
 ^php.doc/libdoc/doc\.gzip$
 ^php.doc/libdoc/doc\.html$
-^o.jruby.distro/unpatched_source$
-^o.jruby/patched_source$
 ^o.mozilla.rhino.patched/patched_source$
 ^j2ee.sun.appsrv81/\.keystore$
 ^tomcat5/\.swo$

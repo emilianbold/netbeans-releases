@@ -1,5 +1,0 @@
-ss = vv.collect do |kkk, vvv|
-  ":#{kkk.id2name}=>#{vvv.inspect}"
-end
-
-args.each { |a| puts "#{a}\n" }

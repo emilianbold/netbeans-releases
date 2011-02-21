@@ -71,6 +71,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
@@ -109,7 +110,6 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -133,6 +133,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
@@ -158,16 +159,15 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
-    private static final String MAKE_PROJECT_TYPE = "make-project-type"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Open project", 4); // NOI18N
     private static MakeTemplateListener templateListener = null;
     private final MakeProjectType kind;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
-    private final GeneratedFilesHelper genFilesHelper;
+    private final NativeProjectProvider nativeProjectProvider;
     private final Lookup lookup;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
-    private int projectType = -1;
     private Set<String> headerExtensions = MakeProject.createExtensionSet();
     private Set<String> cExtensions = MakeProject.createExtensionSet();
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
@@ -190,20 +190,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
         LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
-        genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
+        nativeProjectProvider = new NativeProjectProvider(this, projectDescriptorProvider);
         lookup = createLookup(aux);
         helper.addAntProjectListener(MakeProject.this);
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
-        NodeList nl = data.getElementsByTagName(MAKE_PROJECT_TYPE);
-        if (nl.getLength() == 1) {
-            nl = nl.item(0).getChildNodes();
-            String typeTxt = nl.item(0).getNodeValue();
-            projectType = new Integer(typeTxt).intValue();
-        }
 
         remoteMode = RemoteProject.DEFAULT_MODE;
         NodeList remoteModeNodeList = data.getElementsByTagName(REMOTE_MODE);
@@ -336,7 +330,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     helper,
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
-                    new NativeProjectProvider(this, projectDescriptorProvider),
+                    nativeProjectProvider,
                     new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
@@ -1129,6 +1123,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 registerClassPath(true);
             }
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    projectDescriptorProvider.getConfigurationDescriptor(true);
+                    NativeProjectRegistry.getDefault().register(nativeProjectProvider);
+                }
+            });
         }
     }
 
@@ -1149,6 +1150,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             isOpenHookDone = false;
         }
         MakeProjectFileProviderFactory.removeSearchBase(this);
+        NativeProjectRegistry.getDefault().unregister(nativeProjectProvider);
     }
 
     public synchronized void save() {
@@ -1291,8 +1293,19 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         @Override
-        public String getBaseDir() {
+        public String getSourceBaseDir() {
             return (remoteBaseDir == null) ? helper.getProjectDirectory().getPath() : remoteBaseDir;
+        }
+
+        @Override
+        public FileObject getSourceBaseDirFileObject() {
+            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                CndUtils.assertNotNull(remoteBaseDir, "Null remote base directory"); //NOI18N
+                if (remoteBaseDir != null) {
+                    return FileSystemProvider.getFileObject(remoteFileSystemHost, remoteBaseDir);
+                }
+            }
+            return getProjectDirectory();
         }
 
         @Override

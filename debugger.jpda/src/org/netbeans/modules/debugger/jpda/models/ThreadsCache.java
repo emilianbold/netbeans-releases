@@ -331,9 +331,9 @@ public class ThreadsCache implements Executor {
         try {
             parent = ThreadGroupReferenceWrapper.parent(group);
         } catch (InternalExceptionWrapper ex) {
-            parent = null;
+            return Collections.emptyList();
         } catch (VMDisconnectedExceptionWrapper ex) {
-            parent = null;
+            return Collections.emptyList();
         }
         if (groupMap.get(parent) == null) {
             if (parent != null) {
@@ -345,7 +345,7 @@ public class ThreadsCache implements Executor {
             }
         }
         List<ThreadGroupReference> parentsGroups = groupMap.get(parent);
-        if (!parentsGroups.contains(group)) {
+        if (parentsGroups != null && !parentsGroups.contains(group)) {
             if (parentsGroups == uninitializedGroupList) {
                 parentsGroups = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(parent));
                 groupMap.put(parent, parentsGroups);

@@ -46,9 +46,11 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -95,7 +97,15 @@ import org.openide.util.NbBundle;
  */
 public abstract class WebRestSupport extends RestSupport {
 
+    /*
+     *  TODO : this should be refactored along with finding server 
+     *  deployable libraries for Jersey. 
+     */
     private static final String JERSEY = "jersey";                      //NOI18N
+    private static final String JSON = "json";                          //NOI18N
+    private static final String JETTISON ="jettison";                  //NOI18N
+    private static final String ROME ="rome";                           //NOI18N
+    
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
@@ -240,7 +250,19 @@ public abstract class WebRestSupport extends RestSupport {
         }
     }
     
-    public ServerLibrary getServerJerseyLibrary(){
+    public boolean hasJerseyLibrary(){
+        Collection<ServerLibrary> libraries = getServerJerseyLibraries();
+        for ( ServerLibrary library : libraries){
+            String title = library.getImplementationTitle();
+            title = title.toLowerCase(Locale.ENGLISH);
+            if ( title.contains(JERSEY) ){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public Collection<ServerLibrary> getServerJerseyLibraries(){
         try {
             J2eeModuleProvider provider = project.getLookup().lookup(
                     J2eeModuleProvider.class);
@@ -260,28 +282,30 @@ public abstract class WebRestSupport extends RestSupport {
                 return null;
             }
             
-            ServerLibrary library = findJerseyLibrary(libManager.getDeployableLibraries());
-            if ( library != null ){
-                return library;
-            }
-            library = findJerseyLibrary(libManager.getDeployedLibraries());
-            return library;
+            LinkedList<ServerLibrary> libraries = new LinkedList<ServerLibrary>();
+            libraries.addAll(findJerseyLibraries(libManager.getDeployableLibraries()));
+            libraries.addAll(findJerseyLibraries(libManager.getDeployedLibraries()));
+            
+            return libraries;
         } catch (InstanceRemovedException ex) {
             Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO, null, ex);
             return null;
         }
     }
     
-    public boolean addDeployableServerJerseyLibrary() {
+    public boolean addDeployableServerJerseyLibraries() {
         J2eeModuleProvider provider = project.getLookup().lookup(
                 J2eeModuleProvider.class);
-        ServerLibrary serverLibrary = getServerJerseyLibrary();
-        if (provider != null && serverLibrary != null) {
+        Collection<ServerLibrary> serverLibraries = getServerJerseyLibraries();
+        if (provider != null && serverLibraries.size()> 0) {
             try {
-                provider.getConfigSupport().configureLibrary(
-                        ServerLibraryDependency.minimalVersion(serverLibrary.getName(),
-                        serverLibrary.getSpecificationVersion(),
-                        serverLibrary.getImplementationVersion()));
+                for (ServerLibrary serverLibrary : serverLibraries) {
+                    provider.getConfigSupport().configureLibrary(
+                            ServerLibraryDependency.minimalVersion(
+                                    serverLibrary.getName(),
+                                    serverLibrary.getSpecificationVersion(),
+                                    serverLibrary.getImplementationVersion()));
+                }
                 Preferences prefs = ProjectUtils.getPreferences(project,
                         ProjectUtils.class, true);
                 prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT,
@@ -471,7 +495,7 @@ public abstract class WebRestSupport extends RestSupport {
 
     protected RestConfig setApplicationConfigProperty(boolean annotationConfigAvailable) {
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
-                annotationConfigAvailable, getServerJerseyLibrary()!=null);
+                annotationConfigAvailable, hasJerseyLibrary());
         DialogDescriptor desc = new DialogDescriptor(configPanel,
                 NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
         DialogDisplayer.getDefault().notify(desc);
@@ -540,15 +564,21 @@ public abstract class WebRestSupport extends RestSupport {
         }
     }
     
-    private ServerLibrary findJerseyLibrary(Collection<ServerLibrary> collection){
+    private Collection<ServerLibrary> findJerseyLibraries(
+            Collection<ServerLibrary> collection)
+    {
+        Collection<ServerLibrary> result = new ArrayList<ServerLibrary>( collection.size());
         for( Iterator<ServerLibrary> iterator = collection.iterator(); iterator.hasNext();){
             ServerLibrary library = iterator.next();
             String title = library.getImplementationTitle();
-            if ( title.toLowerCase(Locale.ENGLISH).contains(JERSEY) ){
-                return library;
+            title = title.toLowerCase(Locale.ENGLISH);
+            if ( title.contains(JERSEY) || title.contains(JSON) || 
+                    title.contains(ROME) || title.contains( JETTISON) )
+            {
+                result.add( library );
             }
         }
-        return null;
+        return result;
     }
 
     @Override

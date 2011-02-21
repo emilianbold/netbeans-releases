@@ -265,6 +265,30 @@ public class Util {
         return providers;
     }
 
+    /**
+     * check all available providers and return default/first/or ECLIPSELINK if prefereed
+     * @param project
+     * @return
+     */
+    public static Provider getPreferredProvider(Project project){
+        //choose default/first provider
+        ArrayList<Provider> providers = getProviders(project);
+        int defIndex = 0;
+        if(providers.size()>1){//if it's possible to select preferred jpa2.0 provider, we'll select instead of jpa1.0 default one
+            String defProviderVersion = ProviderUtil.getVersion((Provider) providers.get(0));
+            boolean specialCase = Util.isJPAVersionSupported(project, Persistence.VERSION_2_0) && (defProviderVersion == null || defProviderVersion.equals(Persistence.VERSION_1_0));//jpa 2.0 is supported by default (or first) is jpa1.0 or udefined version provider
+            if(specialCase){
+                for (int i = 1; i<providers.size() ; i++){
+                    if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(providers.get(i))){//eclipselink jpa2.0 is preferred provider
+                        defIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        return providers!=null && providers.size()>0 ? providers.get(defIndex) : null;
+    }
+
     public static boolean isDefaultProvider(Project project, Provider provider) {
         return provider != null && provider.equals(getDefaultProvider(project));
     }
@@ -428,9 +452,7 @@ public class Util {
 
         if (provider == null) {
             //choose default/first provider
-            ArrayList<Provider> providers = getProviders(project);
-            //
-            provider = providers.get(0);
+            provider = getPreferredProvider(project);
         }
         //add necessary libraries before pu creation
         Library lib = null;
@@ -478,6 +500,10 @@ public class Util {
             if (!(provider instanceof DefaultProvider)) {
                 punit.setProvider(provider.getProviderClass());
             }
+            // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+            // See issue 142575 - desc 10
+            // also it shouldn't change default behavior as default for containers should be the same
+            punit.setExcludeUnlistedClasses(false);
         } else {
             DatabaseConnection connection = null;
             if (preselectedDB != null && !preselectedDB.trim().equals("")) {

@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -146,6 +145,17 @@ public class RemoteFileUtil {
             }
         }
         return CndFileUtils.getLocalFileSystem();
+    }
+    
+    public static FileObject getProjectSourceBaseFileObject(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                return remoteProject.getSourceBaseDirFileObject();
+            }
+            return project.getProjectDirectory();
+        }
+        return null;
     }
 
     public static ExecutionEnvironment getProjectSourceExecutionEnvironment(Project project) {

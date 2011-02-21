@@ -84,9 +84,6 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
     rm -rf php*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME ruby "ruby*"
-    rm -rf ruby*
-
     pack_component $DIST_DIR/zip/moduleclusters $NAME profiler "profiler*"
     rm -rf profiler*
 

@@ -173,7 +173,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     public void deleteAllFixedWatches() {
         Collection nodes = new ArrayList(fixedWatches.keySet());
         for (Iterator iter = nodes.iterator(); iter.hasNext();) {
-            fixedWatches.remove(new KeyWrapper(iter.next()));
+            fixedWatches.remove(iter.next());
             fireModelChanged(new ModelEvent.NodeChanged(FixedWatchesManager.this,
                 TreeModel.ROOT,
                 ModelEvent.NodeChanged.CHILDREN_MASK));
@@ -280,7 +280,22 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         Action [] actions = original.getActions (node);
         List myActions = new ArrayList();
         if (fixedWatches.containsKey (new KeyWrapper(node))) {
-            myActions.add (0, DELETE_ACTION);
+            KeyStroke deleteKey = KeyStroke.getKeyStroke ("DELETE");
+            int deleteIndex = -1;
+            for (int i = 0; i < actions.length; i++) {
+                if (actions[i] != null && deleteKey.equals(actions[i].getValue(Action.ACCELERATOR_KEY))) {
+                    deleteIndex = i;
+                    break;
+                }
+            }
+            if (deleteIndex >= 0) {
+                actions = Arrays.copyOf(actions, actions.length);
+                if (deleteIndex >= 0) {
+                    actions[deleteIndex] = DELETE_ACTION;
+                }
+            } else {
+                myActions.add (0, DELETE_ACTION);
+            }
         } else
         if (node instanceof Variable) {
             myActions.add (CREATE_FIXED_WATCH_ACTION);

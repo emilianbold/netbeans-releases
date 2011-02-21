@@ -1,5 +1,0 @@
-Code completion result for source line:
-Here.new.right_|there
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     right_here                                 Here
-METHOD     right_there                                Here
