@@ -80,6 +80,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public boolean isAbsolute(String path) {
+        return new File(path).isAbsolute();
+    }
+    
+    @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         String absPath;
         if (FileSystemProvider.isAbsolute(relativeOrAbsolutePath)) {
@@ -224,6 +229,14 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public String toURL(FileSystem fileSystem, String absPath) {
         return absPath;
+    }
+
+    public FileObject fileToFileObject(File file) {
+        return FileUtil.toFileObject(file);
+    }
+
+    public boolean isMine(File file) {
+        return file.getClass() == java.io.File.class;
     }
 
     @Override

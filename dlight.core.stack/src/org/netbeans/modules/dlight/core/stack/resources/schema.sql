@@ -2,7 +2,7 @@ CREATE TABLE Func (
     func_id INT NOT NULL,
     func_name VARCHAR(16384) NOT NULL,
     func_source_file_id INT NOT NULL DEFAULT -1,
-    line_number INT NOT NULL DEFAULT -1,
+    line_number INT NOT NULL DEFAULT -1,    
 --  FOREIGN KEY (func_source_file_id) REFERENCES (SourceFiles.id)    
 --    time_incl BIGINT NOT NULL DEFAULT 0,
 --    time_excl BIGINT NOT NULL DEFAULT 0,

@@ -1,2 +1,0 @@
-puts |>MARK_OCCURRENCES:$^3<|
-puts "Second: #{|>MARK_OCCURRENCES:$3<|}"

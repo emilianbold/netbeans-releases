@@ -61,6 +61,10 @@ import javax.swing.filechooser.FileView;
  */
 class FilesystemInterceptor extends ProvidedExtensions implements FileChangeListener {
 
+    public FilesystemInterceptor(boolean providesCanWrite) {
+        super(providesCanWrite);
+    }
+    
     /**
      * A versioned files remote repository or origin.
      */

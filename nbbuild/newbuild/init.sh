@@ -36,6 +36,11 @@ if [ -z ${NB_BRANCH} ]; then
     export NB_BRANCH=default
 fi
 
+#L10N_BRANCH default
+if [ -z ${L10N_BRANCH} ]; then
+    export L10N_BRANCH=default
+fi
+
 #JAVAFX build 1/0
 if [ -z ${RUNJAVAFX} ]; then
     export RUNJAVAFX=0
@@ -46,7 +51,7 @@ if [ -z ${ML_BUILD} ]; then
     export ML_BUILD=1
 fi
 if [ -z ${LOCALES} ]; then
-    export LOCALES=ja,zh_CN,pt_BR
+    export LOCALES=ja,zh_CN,pt_BR,ru
 fi
 
 if [ -z ${UPLOAD_ML} ]; then
@@ -106,7 +111,6 @@ mkdir -p $LOGS
 IDE_BUILD_LOG=$LOGS/$BASENAME-build-ide.log
 MOBILITY_BUILD_LOG=$LOGS/$BASENAME-build-mobility.log
 VISUALWEB_BUILD_LOG=$LOGS/$BASENAME-build-visualweb.log
-RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
 NBMS_BUILD_LOC=$LOGS/$BASENAME-build-nbms.log
 SCP_LOG=$LOGS/$BASENAME-scp.log
 MAC_LOG=$LOGS/$BASENAME-native_mac.log

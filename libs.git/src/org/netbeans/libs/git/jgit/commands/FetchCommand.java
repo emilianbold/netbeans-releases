@@ -56,9 +56,11 @@ import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -66,11 +68,11 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  *
  * @author ondra
  */
-public class FetchCommand extends GitCommand {
+public class FetchCommand extends TransportCommand {
 
-    private final String remoteName;
     private final ProgressMonitor monitor;
     private final List<String> refSpecs;
+    private final String remote;
     private Map<String, GitTransportUpdate> updates;
     private FetchResult result;
     
@@ -78,15 +80,15 @@ public class FetchCommand extends GitCommand {
         this(repository, remoteName, Collections.<String>emptyList(), monitor);
     }
 
-    public FetchCommand (Repository repository, String remoteName, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public FetchCommand (Repository repository, String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
+        super(repository, remote, monitor);
         this.monitor = monitor;
-        this.remoteName = remoteName;
+        this.remote = remote;
         this.refSpecs = fetchRefSpecifications;
     }
 
     @Override
-    protected void run () throws GitException {
+    protected void run () throws GitException.AuthorizationException, GitException {
         Repository repository = getRepository();
         List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
         for (String refSpec : refSpecs) {
@@ -94,15 +96,16 @@ public class FetchCommand extends GitCommand {
         }
         Transport transport = null;
         try {
-            transport = Transport.open(repository, remoteName);
-            transport.setRemoveDeletedRefs(true);
+            transport = openTransport();
+            transport.setRemoveDeletedRefs(false); // cannot enable, see FetchTest.testDeleteStaleReferencesFails
             transport.setDryRun(false);
             transport.setFetchThin(true);
             transport.setTagOpt(TagOpt.FETCH_TAGS);
             result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
             for (String msg : result.getMessages().split("\n")) { //NOI18N
                 if (!msg.isEmpty()) {
-                    monitor.notifyWarning(msg);
+                    // these are not warnings, i guess, just plain informational messages
+//                    monitor.notifyWarning(msg);
                 }
             }
             updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
@@ -115,7 +118,7 @@ public class FetchCommand extends GitCommand {
         } catch (URISyntaxException e) {
             throw new GitException(e);
         } catch (TransportException e) {
-            throw new GitException(e.getMessage(), e);
+            handleException(e);
         } finally {
             if (transport != null) {
                 transport.close();
@@ -125,7 +128,7 @@ public class FetchCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git fetch ").append(remoteName); //NOI18N
+        StringBuilder sb = new StringBuilder("git fetch ").append(remote); //NOI18N
         for (String refSpec : refSpecs) {
             sb.append(' ').append(refSpec);
         }

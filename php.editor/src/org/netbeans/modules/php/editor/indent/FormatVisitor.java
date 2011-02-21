@@ -534,7 +534,8 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(node.getStartOffset());
 	    if (ts.moveNext()) {
 		addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
-		boolean addIndent = !(node.getExpression() instanceof MethodInvocation);
+                Expression expression = node.getExpression();
+		boolean addIndent = !(expression instanceof MethodInvocation || expression instanceof StaticMethodInvocation);
 		if (addIndent) {
 		    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
 		    super.visit(node);

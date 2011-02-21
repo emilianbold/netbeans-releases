@@ -45,6 +45,8 @@ package org.netbeans.modules.j2ee.persistence.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -128,7 +130,7 @@ public class CopyResourcesIndexer extends CustomIndexer {
                                         }
                                     }
                                 } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
+                                    Logger.getLogger("global").log(Level.INFO, "persistebce.xml indexing problem: {0}", ex.getMessage()); //NOI18N
                                 }
                             }
                         }

@@ -45,14 +45,15 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup.Provider;
 
 /**
  * Misc utilities methods related to code model
@@ -67,11 +68,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     private static Collection<CsmProject> getCsmProjects(ExecutionEnvironment execEnv) {
         CsmModel model = CsmModelAccessor.getModel();
         Collection<CsmProject> projects = new ArrayList<CsmProject>();
-        for (Project project : OpenProjects.getDefault().getOpenProjects()) {
-            ExecutionEnvironment projectEnv = getProjectEnv(project);
-            if (projectEnv != null && projectEnv.equals(execEnv)) {
-                NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
-                if (nativeProject != null) {
+        for (NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
+            Provider project = nativeProject.getProject();
+            if (project instanceof Project) {
+                ExecutionEnvironment projectEnv = getProjectEnv((Project) project);
+                if (projectEnv != null && projectEnv.equals(execEnv)) {
                     CsmProject csmProject = model.getProject(nativeProject);
                     if (csmProject != null) {
                         projects.add(csmProject);

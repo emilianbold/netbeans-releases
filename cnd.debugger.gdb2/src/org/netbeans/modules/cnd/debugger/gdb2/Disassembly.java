@@ -541,7 +541,7 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         synchronized (lines) {
             for (Line line : lines) {
                 try {
-                    if (Long.decode(line.address) == address) {
+                    if (Address.parseAddr(line.address) == address) {
                         return line.idx;
                     }
                 } catch (NumberFormatException e) {

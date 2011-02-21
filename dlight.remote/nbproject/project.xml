@@ -24,6 +24,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.libs.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -132,6 +140,7 @@
                 <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>

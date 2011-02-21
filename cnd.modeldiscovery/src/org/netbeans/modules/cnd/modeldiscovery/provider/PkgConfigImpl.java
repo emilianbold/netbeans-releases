@@ -469,9 +469,9 @@ public class PkgConfigImpl implements PkgConfig {
                         pc.requires.add(s);
                     }
                 } else if (line.startsWith("Requires.private:")){ // NOI18N
-                    if (false){
+                    if (true){
                         // It seems the pkg-config has a bug. It shouln't take into account "Requires.private" for --cflags option.
-                        // See bug: https://bugs.freedesktop.org/show_bug.cgi?id=3097#c6
+                        // See discussion: http://lists.freedesktop.org/archives/pkg-config/2009-February/000410.html
                         String value = line.substring(17).trim();
                         value = expandMacros(value,vars);
                         StringTokenizer st = new StringTokenizer(value, " ,"); // NOI18N
@@ -509,13 +509,25 @@ public class PkgConfigImpl implements PkgConfig {
                                         }
                                     }
                                 } else {
-                                    if (v.startsWith("/usr/lib/")) { // NOI18N
-                                        v = v.substring(4);
-                                    }
                                     if (rootValue != null) {
-                                        v = rootValue+v;
+                                        if (v.startsWith(rootName)) {
+                                            v = rootValue+v.substring(rootName.length());
+                                        } else {
+                                            v = rootValue+v;
+                                        }
                                     } else if (drivePrefix != null) {
                                         v = drivePrefix+v;
+                                    }
+                                    if (v.indexOf("/usr/lib/") > 0) { // NOI18N
+                                        v = v.replace("/usr/lib/", "/lib/"); // NOI18N
+                                    }
+                                }
+                                if (TRACE) {
+                                    if (!new File(v).exists()) {
+                                        System.err.println("Not found path: "+v); // NOI18N
+                                        System.err.println("\tValue: "+value); // NOI18N
+                                        System.err.println("\tRoot Path: "+rootValue); // NOI18N
+                                        System.err.println("\tRoot Name: "+rootName); // NOI18N
                                     }
                                 }
                             }
@@ -577,7 +589,6 @@ public class PkgConfigImpl implements PkgConfig {
             }
         }
         if (value.startsWith("/")) { // NOI18N
-            int i = value.indexOf('/', 1); // NOI18N
             file = file.getParent();
             if (file != null) {
                 file = file.getParent();
@@ -586,11 +597,11 @@ public class PkgConfigImpl implements PkgConfig {
                 file = file.getParent();
             }
             if (file != null) {
-                if (i > 0) {
-                    return file.getPath()+value.substring(i);
-                } else {
-                    return file.getPath();
+                FileObject fileObject = file.getFileObject(value.substring(1));
+                if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
+                    return fileObject.getPath();
                 }
+                return file.getPath();
             }
         }
         return null;

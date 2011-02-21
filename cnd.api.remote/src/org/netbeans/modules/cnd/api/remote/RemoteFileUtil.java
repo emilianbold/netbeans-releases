@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -136,7 +135,30 @@ public class RemoteFileUtil {
         }
     }
 
-    private static ExecutionEnvironment getFileSystemExecutionEnvironment(Project project) {
+    public static FileSystem getProjectSourceFileSystem(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                    return FileSystemProvider.getFileSystem(remoteProject.getSourceFileSystemHost());
+                }
+            }
+        }
+        return CndFileUtils.getLocalFileSystem();
+    }
+    
+    public static FileObject getProjectSourceBaseFileObject(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                return remoteProject.getSourceBaseDirFileObject();
+            }
+            return project.getProjectDirectory();
+        }
+        return null;
+    }
+
+    public static ExecutionEnvironment getProjectSourceExecutionEnvironment(Project project) {
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
@@ -149,7 +171,7 @@ public class RemoteFileUtil {
     }
 
     public static FileObject getFileObject(String absolutePath, Project project) {
-        ExecutionEnvironment execEnv = getFileSystemExecutionEnvironment(project);
+        ExecutionEnvironment execEnv = getProjectSourceExecutionEnvironment(project);
         if (execEnv != null && execEnv.isRemote()) {
             return getFileObject(absolutePath, execEnv);
         }
@@ -166,7 +188,7 @@ public class RemoteFileUtil {
     }
 
     public static String normalizeAbsolutePath(String absPath, Project project) {
-        ExecutionEnvironment execEnv = getFileSystemExecutionEnvironment(project);
+        ExecutionEnvironment execEnv = getProjectSourceExecutionEnvironment(project);
         if (execEnv != null && execEnv.isRemote()) {
             return normalizeAbsolutePath(absPath, execEnv);
         } else {

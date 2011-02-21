@@ -47,6 +47,7 @@ import java.util.Set;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.netbeans.modules.mercurial.FileInformation;
@@ -61,6 +62,7 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -192,7 +194,7 @@ public class ExportDiffAction extends ContextAction {
                 if (!list.isEmpty() && list.size() > 1) {
                     File outFile = new File(list.get(1));
                     if (outFile != null && outFile.canRead()) {
-                        org.netbeans.modules.versioning.util.Utils.openFile(FileUtil.normalizeFile(outFile));
+                        openFile(outFile);
                     }
                 }
             }
@@ -228,7 +230,7 @@ public class ExportDiffAction extends ContextAction {
             if (!list.isEmpty() && list.size() > 1) {
                 File outFile = new File(outputFileName);
                 if (outFile != null && outFile.canRead()) {
-                    org.netbeans.modules.versioning.util.Utils.openFile(FileUtil.normalizeFile(outFile));
+                        openFile(outFile);
                 }
             }
         }
@@ -245,5 +247,13 @@ public class ExportDiffAction extends ContextAction {
         if (file.getParent() != null) {
             HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", file.getParent()); // NOI18N
         }
+    }
+    
+    private static void openFile (File outFile) {
+        outFile = FileUtil.normalizeFile(outFile);
+        if (HgCommand.ENCODING != null) {
+            Utils.associateEncoding(outFile, Charset.forName(HgCommand.ENCODING));
+        }
+        Utils.openFile(outFile);
     }
 }

@@ -58,6 +58,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
         );
         tfShortcut.getAccessibleContext().setAccessibleName(loc("AN_Shortcut")); //NOI18N
         tfShortcut.getAccessibleContext().setAccessibleDescription(loc("AD_Shortcut")); //NOI18N
+        lShortcut.setDisplayedMnemonic(loc("CTL_Shortcut_Mnemonic").charAt(0));
 //        tfShortcut.setFocusTraversalKeys (
 //            KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, 
 //            Collections.EMPTY_SET

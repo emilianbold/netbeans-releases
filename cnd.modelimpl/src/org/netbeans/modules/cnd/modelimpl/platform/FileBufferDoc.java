@@ -235,7 +235,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
 
     @Override
-    public String getText() throws IOException {
+    public CharSequence getText() throws IOException {
         final String out[] = new String[] { null };
         final BadLocationException exc[] = new BadLocationException[] { null };
         doc.render(new Runnable() {

@@ -79,10 +79,12 @@ public final class BinaryExecSupport extends ExecutionSupport {
                 getString("PROP_RUN_DIRECTORY"), // NOI18N
                 getString("HINT_RUN_DIRECTORY")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getRunDirectory();
             }
 
+            @Override
             public void setValue(String val) {
                 setRunDirectory(val);
             }

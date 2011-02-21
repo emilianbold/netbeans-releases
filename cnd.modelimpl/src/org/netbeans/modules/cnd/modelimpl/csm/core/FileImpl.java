@@ -136,6 +136,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static int getParseCount() {
         return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
+
+    public static long getLongParseCount() {
+        return parseCount.get();
+    }
+
     private FileBuffer fileBuffer;
     /**
      * DUMMY_STATE and DUMMY_HANDLERS are used when we need to ensure that the file will be parsed.
@@ -1251,7 +1256,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     @Override
-    public String getText() {
+    public CharSequence getText() {
         try {
             return fileBuffer.getText();
         } catch (IOException e) {
@@ -1835,7 +1840,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public int[] getLineColumn(int offset) {
         if (offset == Integer.MAX_VALUE) {
-            offset = getText().length();
+            try {
+                offset = fileBuffer.getCharBuffer().length;
+            } catch (IOException e) {
+                DiagnosticExceptoins.register(e);
+                offset = 0;
+            }
         }
         try {
             return fileBuffer.getLineColumnByOffset(offset);

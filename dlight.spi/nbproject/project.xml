@@ -42,6 +42,8 @@
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.spi.impl</friend>
+                <friend>com.sun.tools.analytics.targets.gui</friend>
+                <friend>com.sun.tools.analytics.utils</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>

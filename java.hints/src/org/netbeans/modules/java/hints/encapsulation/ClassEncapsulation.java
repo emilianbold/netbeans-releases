@@ -44,14 +44,10 @@ package org.netbeans.modules.java.hints.encapsulation;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.Modifier;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -62,6 +58,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -93,7 +91,7 @@ public class ClassEncapsulation {
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription publicCls(final HintContext ctx) {
         assert ctx != null;
-        return create(ctx, Modifier.PUBLIC,
+        return create(ctx, Visibility.PUBLIC,
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_PublicInnerClass"), "PublicInnerClass");  //NOI18N
     }
 
@@ -101,7 +99,7 @@ public class ClassEncapsulation {
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription protectedCls(final HintContext ctx) {
         assert ctx != null;
-        return create(ctx, Modifier.PROTECTED,
+        return create(ctx, Visibility.PROTECTED,
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_ProtectedInnerClass"), "ProtectedInnerClass"); //NOI18N
     }
 
@@ -109,11 +107,11 @@ public class ClassEncapsulation {
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription packageCls(final HintContext ctx) {
         assert ctx != null;
-        return create(ctx, null,
+        return create(ctx, Visibility.PACKAGE_PRIVATE,
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_PackageInnerClass"), "PackageVisibleInnerClass");    //NOI18N
     }
 
-    private static ErrorDescription create(final HintContext ctx, final Modifier visibility,
+    private static ErrorDescription create(final HintContext ctx, final Visibility visibility,
         final String description, final String suppressWarnings) {
         assert ctx != null;
         assert description != null;
@@ -123,7 +121,7 @@ public class ClassEncapsulation {
         if (!TreeUtilities.CLASS_TREE_KINDS.contains(owner.getKind())) {
             return null;
         }
-        if (!hasRequiredVisibility(((ClassTree)tp.getLeaf()).getModifiers().getFlags(),visibility)) {
+        if (Utilities.effectiveVisibility(tp) != visibility) {
             return null;
         }
         if (ctx.getPreferences().getBoolean(ALLOW_ENUMS_KEY, ALLOW_ENUMS_DEFAULT)) {
@@ -134,13 +132,6 @@ public class ClassEncapsulation {
         return ErrorDescriptionFactory.forName(ctx, tp, description,
             new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
             FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, suppressWarnings));
-    }
-
-    private static boolean hasRequiredVisibility(final Set<Modifier> modifiers, final Modifier reqModifier) {
-        return reqModifier != null ?
-            modifiers.contains(reqModifier):
-            modifiers.isEmpty() ? true:
-                !EnumSet.copyOf(modifiers).removeAll(EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC));
     }
 
     private static class FixImpl implements Fix {
