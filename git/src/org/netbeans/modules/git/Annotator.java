@@ -68,6 +68,7 @@ import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
+import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
@@ -133,7 +134,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(ca);
                 } else {
                     actions.add(SystemAction.get(InitAction.class));
+//                    actions.add(null);
+//                    actions.add(SystemAction.get(CloneAction.class));
                 }
+//                actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
@@ -173,6 +177,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 }
                 actions.add(SystemAction.get(ResetAction.class));
                 actions.add(null);
+//                actions.add(SystemAction.get(CloneAction.class));
                 actions.add(SystemAction.get(FetchAction.class));
             }
         } else {
