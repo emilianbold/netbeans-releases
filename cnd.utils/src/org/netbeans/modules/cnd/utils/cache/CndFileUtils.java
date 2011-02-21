@@ -290,8 +290,9 @@ public final class CndFileUtils {
         CndUtils.assertAbsolutePathInConsole(path, "path for normalization must be absolute"); //NOI18N
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
-            // with case sensitive "path"s returned by remote compilers
-            path = CndFileSystemProvider.getCaseInsensitivePath(path);
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
         }
         String normalized;
         // small optimization for true case sensitive OSs
