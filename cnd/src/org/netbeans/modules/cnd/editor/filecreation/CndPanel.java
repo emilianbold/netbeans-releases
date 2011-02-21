@@ -189,7 +189,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         }
 
         FileObject targetFolder;
-        if ( folderName == null ) {
+        if ( folderName == null || folderName.length() == 0) {
             targetFolder = rootFolder;
         }
         else {            
