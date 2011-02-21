@@ -44,7 +44,9 @@ package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -52,11 +54,15 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -221,7 +227,8 @@ public class ConvertToARM {
                         multiVars.get("$armres$"),      //NOI18N
                         multiVars.get("$stms$"),        //NOI18N
                         multiVars.get("$catches$"),     //NOI18N
-                        multiVars.get("$finstms$")))    //NOI18N
+                        multiVars.get("$finstms$"),     //NOI18N
+                        multiVars.get("$$2$")))    //NOI18N
             ));
             }
         }
@@ -237,6 +244,7 @@ public class ConvertToARM {
         private final Collection<? extends TreePath> statementsPaths;
         private final Collection<? extends TreePath> catchesPaths;
         private final Collection<? extends TreePath> finStatementsPath;
+        private final Collection<? extends TreePath> tail;
         
         private ConvertToARMFix(
                 final CompilationInfo info,
@@ -247,7 +255,8 @@ public class ConvertToARM {
                 final Collection<? extends TreePath> armPaths,
                 final Collection<? extends TreePath> statements,
                 final Collection<? extends TreePath> catches,
-                final Collection<? extends TreePath> finStatementsPath) {
+                final Collection<? extends TreePath> finStatementsPath,
+                final Collection<? extends TreePath> tail) {
             super(info, owner);
             this.nestingKind = nestignKind;
             this.var = var;
@@ -256,6 +265,7 @@ public class ConvertToARM {
             this.statementsPaths = statements;
             this.catchesPaths = catches;
             this.finStatementsPath = finStatementsPath;
+            this.tail = tail;
         }
 
         @Override
@@ -271,7 +281,33 @@ public class ConvertToARM {
             final TreeMaker tm = wc.getTreeMaker();
             if (nestingKind == NestingKind.NONE) {
                 final List<? extends StatementTree> statements = ConvertToARMFix.<StatementTree>asList(statementsPaths);
-                final BlockTree block = tm.Block(statements, false);
+                final List<VariableTree> additionalVars = new LinkedList<VariableTree>();
+                final List<VariableTree> removedVars = new LinkedList<VariableTree>();
+                if (tail != null && !tail.isEmpty()) {
+                    final Collection<VariableTree> usedAfterCloseVarDecls = findVarsUsages(
+                            findVariableDecls(statements, statementsPaths.isEmpty()? null : statementsPaths.iterator().next().getParentPath().getLeaf()),
+                            ConvertToARMFix.<StatementTree>asList(tail),
+                            tail.iterator().next().getCompilationUnit(),
+                            wc.getTrees());                    
+                    for (VariableTree vr : usedAfterCloseVarDecls) {
+                        additionalVars.add(wc.getTreeMaker().Variable(
+                                vr.getModifiers(),
+                                vr.getName(),
+                                vr.getType(),
+                                null));
+                        if (vr.getInitializer() != null) {
+                            wc.rewrite(vr,
+                                wc.getTreeMaker().ExpressionStatement(wc.getTreeMaker().Assignment(
+                                    wc.getTreeMaker().Identifier(vr.getName()),
+                                    vr.getInitializer())));
+                        } else {
+                            removedVars.add(vr);
+                        }
+                    }
+                }
+                final List<StatementTree> filteredStatements = new LinkedList<StatementTree>(statements);
+                filteredStatements.removeAll(removedVars);
+                final BlockTree block = tm.Block(filteredStatements, false);
                 final VariableTree varTree = addInit(wc,
                         removeFinal(wc, (VariableTree)var.getLeaf()),
                         (ExpressionTree)init.getLeaf());
@@ -284,6 +320,7 @@ public class ConvertToARM {
                         tm,
                         ((BlockTree)tp.getLeaf()).getStatements(),
                         (StatementTree)var.getLeaf(),
+                        additionalVars,
                         tryTree,
                         statements));
             } else if (nestingKind == NestingKind.OUT) {
@@ -307,6 +344,7 @@ public class ConvertToARM {
                         tm,
                         ((BlockTree)tp.getLeaf()).getStatements(),
                         (StatementTree)var.getLeaf(),
+                        Collections.<VariableTree>emptyList(),
                         newTry,
                         ConvertToARMFix.<StatementTree>asList(statementsPaths)));
             } else if (nestingKind == NestingKind.IN) {
@@ -343,6 +381,7 @@ public class ConvertToARM {
                 final TreeMaker tm,
                 final List<? extends StatementTree> originalStatements,
                 final StatementTree var,
+                final List<? extends VariableTree> preVarDecls,
                 final TryTree newTry,
                 final List<? extends StatementTree> oldStms) {
             final List<StatementTree> statements = new ArrayList<StatementTree>(originalStatements.size());
@@ -350,6 +389,7 @@ public class ConvertToARM {
             final Set<Tree> toRemove = new HashSet<Tree>(oldStms);
             for (StatementTree statement : originalStatements) {
                 if (var == statement) {
+                    statements.addAll(preVarDecls);
                     state = 1;
                     continue;
                 } else if (state == 1) {
@@ -469,6 +509,47 @@ public class ConvertToARM {
     private static boolean insideARM(final HintContext ctx) {
         final TryTree enc = findEnclosingARM(ctx.getVariables().get("$var"));   //NOI18N
         return enc != null && enc.getResources() != null && !enc.getResources().isEmpty();  
+    }
+
+    private static Collection<VariableTree> findVariableDecls(
+            final List<? extends StatementTree> statements,
+            final Tree parent) {
+        final List<VariableTree> varDecls = new LinkedList<VariableTree>();
+        for (StatementTree st : statements) {
+            if (st.getKind() == Tree.Kind.VARIABLE) {
+                varDecls.add((VariableTree)st);
+            }
+        }
+        return varDecls;
+    }
+
+    private static Collection<VariableTree> findVarsUsages(
+            final Collection<VariableTree> vars,
+            final List<? extends StatementTree> stms,
+            final CompilationUnitTree cu,
+            final Trees trees) {
+        final Map<Element,VariableTree> elms = new HashMap<Element,VariableTree>();
+        for (VariableTree var : vars) {
+            final Element elm = trees.getElement(trees.getPath(cu, var));
+            if (elm != null) {
+                elms.put(elm,var);
+            }
+        }
+        final Set<VariableTree> result = new HashSet<VariableTree>();
+        final TreeScanner<Void,Void> scanner = new TreeScanner<Void,Void>(){
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                final Element elm = trees.getElement(trees.getPath(cu, node));
+                final VariableTree var = elms.get(elm);
+                if (var != null) {
+                    result.add(var);
+                }
+                return super.visitIdentifier(node, p);
+            }
+        };
+        scanner.scan(stms, null);
+        vars.retainAll(result);
+        return vars;
     }
     
     private enum NestingKind {
