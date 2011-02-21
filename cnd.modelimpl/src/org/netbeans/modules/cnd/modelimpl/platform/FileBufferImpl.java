@@ -95,7 +95,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     private SoftReference<FileBufferSnapshot> snapRef = new SoftReference<FileBufferSnapshot>(null);
     
     FileBufferImpl(FileObject fileObject, FileImpl fileImpl) {
-        this(getFileSystem(fileObject), CndFileUtils.getNormalizedPath(fileObject), fileImpl);
+        this(getFileSystem(fileObject), CndFileUtils.normalizePath(fileObject), fileImpl);
         attachListeners(fileObject);
     }
 

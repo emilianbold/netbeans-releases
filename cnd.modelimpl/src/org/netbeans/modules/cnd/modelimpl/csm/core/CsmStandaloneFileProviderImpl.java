@@ -157,7 +157,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (file == null) {
             return null;
         }        
-        String absPath = CndFileUtils.getNormalizedPath(fo);
+        String absPath = CndFileUtils.normalizePath(fo);
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
@@ -563,7 +563,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         
         @Override
         public String getAbsolutePath() {
-            return CndFileUtils.getNormalizedPath(fileObject);
+            return CndFileUtils.normalizePath(fileObject);
             }
 
         @Override
