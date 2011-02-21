@@ -339,13 +339,15 @@ public abstract class DocumentLine extends Line {
         pos.getCloneableEditorSupport().prepareDocument().waitFinished();
 
         try {
-            if (!anno.isInDocument()) {
-                anno.setInDocument(true);
+            synchronized (getAnnotations()) {
+                if (!anno.isInDocument()) {
+                    anno.setInDocument(true);
 
-                // #33165 - find position that is surely at begining of line
-                FindAnnotationPosition fap = new FindAnnotationPosition(doc, pos.getPosition());
-                doc.render(fap);
-                NbDocument.addAnnotation(doc, fap.getAnnotationPosition(), -1, anno);
+                    // #33165 - find position that is surely at begining of line
+                    FindAnnotationPosition fap = new FindAnnotationPosition(doc, pos.getPosition());
+                    doc.render(fap);
+                    NbDocument.addAnnotation(doc, fap.getAnnotationPosition(), -1, anno);
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
@@ -367,9 +369,11 @@ public abstract class DocumentLine extends Line {
 
         pos.getCloneableEditorSupport().prepareDocument().waitFinished();
 
-        if (anno.isInDocument()) {
-            anno.setInDocument(false);
-            NbDocument.removeAnnotation(doc, anno);
+        synchronized (getAnnotations()) {
+            if (anno.isInDocument()) {
+                anno.setInDocument(false);
+                NbDocument.removeAnnotation(doc, anno);
+            }
         }
     }
 
@@ -723,9 +727,11 @@ public abstract class DocumentLine extends Line {
             position.getCloneableEditorSupport().prepareDocument().waitFinished();
 
             try {
-                if (!anno.isInDocument()) {
-                    anno.setInDocument(true);
-                    NbDocument.addAnnotation(doc, position.getPosition(), length, anno);
+                synchronized (getAnnotations()) {
+                    if (!anno.isInDocument()) {
+                        anno.setInDocument(true);
+                        NbDocument.addAnnotation(doc, position.getPosition(), length, anno);
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
@@ -747,9 +753,11 @@ public abstract class DocumentLine extends Line {
 
             position.getCloneableEditorSupport().prepareDocument().waitFinished();
 
-            if (anno.isInDocument()) {
-                anno.setInDocument(false);
-                NbDocument.removeAnnotation(doc, anno);
+            synchronized (getAnnotations()) {
+                if (anno.isInDocument()) {
+                    anno.setInDocument(false);
+                    NbDocument.removeAnnotation(doc, anno);
+                }
             }
         }
 
