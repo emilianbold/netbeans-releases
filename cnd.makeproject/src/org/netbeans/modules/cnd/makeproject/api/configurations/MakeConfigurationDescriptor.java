@@ -102,6 +102,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.WindowManager;
@@ -154,6 +155,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public MakeConfigurationDescriptor(FileObject projectDirFO, FileObject baseDirFO) {
+        Parameters.notNull("projectDirFO", projectDirFO);
+        Parameters.notNull("baseDirFO", baseDirFO);
         this.baseDirFO = baseDirFO;
         this.projectDirFO = projectDirFO;
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -259,6 +260,9 @@ public class MakeProjectGenerator {
             data.appendChild(rfsBaseDir);
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID());
             sourceBaseFO = FileSystemProvider.getFileObject(env, remoteProjectPath);
+            if (sourceBaseFO == null) {
+                throw new FileNotFoundException("File does not exist: " + env + ':' + remoteProjectPath); //NOI18N
+            }
         } else {
             sourceBaseFO = dirFO;
         }
