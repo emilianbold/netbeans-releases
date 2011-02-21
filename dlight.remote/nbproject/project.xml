@@ -131,6 +131,7 @@
             <friend-packages>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.debugger.common</friend>
