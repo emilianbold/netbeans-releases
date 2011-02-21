@@ -56,8 +56,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
@@ -79,12 +77,43 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
     static final String OBSERVES_ANNOTATION = 
             "javax.enterprise.event.Observes";                      // NOI18N
     
-    protected Result findParameterInjectable( VariableElement element , 
-            DeclaredType parentType , WebBeansModelImplementation model) 
+    
+    ParameterInjectionPointLogic( WebBeansModelImplementation model ) {
+        super( model );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
+     */
+    @Override
+    public Result lookupInjectables( VariableElement element,
+            DeclaredType parentType )
     {
         DeclaredType parent = parentType;
         try {
-            parent = getParent(element, parentType, model);
+            parent = getParent(element, parentType);
+        }
+        catch (DefinitionError e) {
+            TypeElement type = e.getElement();
+            return new DefinitionErrorResult(element,  parentType, 
+                    NbBundle.getMessage(WebBeansModelProviderImpl.class, 
+                            "ERR_BadParent", element.getSimpleName(),
+                             type!= null? type.toString(): null));
+        }
+        
+        TypeMirror elementType = getParameterType( element , parent , 
+                INSTANCE_INTERFACE);
+        Result result = doFindVariableInjectable(element, elementType, true);
+        // TODO: return appropriate result based on <code>result</code>
+        return null;
+    }
+    
+    protected Result findParameterInjectable( VariableElement element , 
+            DeclaredType parentType ) 
+    {
+        DeclaredType parent = parentType;
+        try {
+            parent = getParent(element, parentType);
         }
         catch (DefinitionError e) {
             TypeElement type = e.getElement();
@@ -96,9 +125,8 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         
         ExecutableElement parentMethod = (ExecutableElement)element.
             getEnclosingElement();
-        ExecutableType methodType = (ExecutableType)model.getHelper().
-            getCompilationController().getTypes().asMemberOf(parent, 
-                    parentMethod );
+        ExecutableType methodType = (ExecutableType)getCompilationController().
+            getTypes().asMemberOf(parent, parentMethod );
         List<? extends TypeMirror> parameterTypes = methodType.getParameterTypes();
         
         boolean isInjectionPoint = false;
@@ -115,9 +143,9 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
                 index = i;
             }
             else if ( AnnotationObjectProvider.hasAnnotation(variableElement,
-                    DISPOSES_ANNOTATION, model.getHelper()) ||
+                    DISPOSES_ANNOTATION, getModel().getHelper()) ||
                     AnnotationObjectProvider.hasAnnotation(variableElement,
-                            OBSERVES_ANNOTATION, model.getHelper()) )
+                            OBSERVES_ANNOTATION, getModel().getHelper()) )
             {
                 isInjectionPoint = true;
             }
@@ -126,34 +154,31 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         
         Result result = null;
         boolean disposes = AnnotationObjectProvider.hasAnnotation( element, 
-                DISPOSES_ANNOTATION, model.getHelper());
+                DISPOSES_ANNOTATION, getModel().getHelper());
         boolean observes = AnnotationObjectProvider.hasAnnotation( element, 
-                OBSERVES_ANNOTATION, model.getHelper());
+                OBSERVES_ANNOTATION, getModel().getHelper());
         if ( isInjectionPoint || AnnotationObjectProvider.hasAnnotation( parentMethod, 
-                INJECT_ANNOTATION, model.getHelper()) ||
+                INJECT_ANNOTATION, getModel().getHelper()) ||
                 AnnotationObjectProvider.hasAnnotation( parentMethod, 
-                        PRODUCER_ANNOTATION, model.getHelper()) || disposes||
+                        PRODUCER_ANNOTATION, getModel().getHelper()) || disposes||
                         observes)
         {
-            result = doFindVariableInjectable(element, elementType, 
-                    model , false );
+            result = doFindVariableInjectable(element, elementType , false );
             isInjectionPoint = true;
         }
         if ( disposes ){
             if( result instanceof ResultImpl ){
                 ((ResultImpl) result).getTypeElements().clear();
                 Set<Element> productions = ((ResultImpl) result).getProductions();
-                TypeElement enclosingTypeElement = model.getHelper().
-                    getCompilationController().getElementUtilities().
-                        enclosingTypeElement(element);
+                TypeElement enclosingTypeElement = getCompilationController().
+                    getElementUtilities().enclosingTypeElement(element);
                 for (Iterator<Element> iterator = productions.iterator(); 
                     iterator.hasNext(); ) 
                 {
                     Element injectable = iterator.next();
                     if ( !(injectable instanceof ExecutableElement) ||
-                            !model.getHelper().getCompilationController().
-                            getElementUtilities().isMemberOf( injectable, 
-                                    enclosingTypeElement))
+                            !getCompilationController().getElementUtilities().
+                                isMemberOf( injectable, enclosingTypeElement))
                     {
                         iterator.remove();
                     }
@@ -165,7 +190,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         }
 
         if ( isInjectionPoint ){
-            return getResult(result, model );
+            return getResult(result );
         }
         else {
             return new DefinitionErrorResult(element, elementType, 
@@ -175,49 +200,14 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public Result lookupInjectables( VariableElement element,
-            DeclaredType parentType, AbstractModelImplementation modelImpl )
-    {
-        WebBeansModelImplementation impl = WebBeansModelProviderImpl.
-            getImplementation( modelImpl );
-        DeclaredType parent = parentType;
-        try {
-            parent = getParent(element, parentType, impl);
-        }
-        catch (DefinitionError e) {
-            TypeElement type = e.getElement();
-            return new DefinitionErrorResult(element,  parentType, 
-                    NbBundle.getMessage(WebBeansModelProviderImpl.class, 
-                            "ERR_BadParent", element.getSimpleName(),
-                             type!= null? type.toString(): null));
-        }
-        
-        TypeMirror elementType = getParameterType( element , parent , 
-                impl.getHelper().getCompilationController(),
-                INSTANCE_INTERFACE);
-        Result result = doFindVariableInjectable(element, elementType, 
-                impl, true);
-        // TODO: return appropriate result based on <code>result</code>
-        return null;
-    }
-
-
-    /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isDynamicInjectionPoint(javax.lang.model.element.VariableElement)
      */
-    public boolean isDynamicInjectionPoint( VariableElement element , 
-            AbstractModelImplementation modelImpl) 
-    {
-        WebBeansModelImplementation impl = WebBeansModelProviderImpl.
-            getImplementation( modelImpl );
-        TypeMirror type = getParameterType(element, null, 
-                impl.getHelper().getCompilationController(), 
-                        INSTANCE_INTERFACE);
+    @Override
+    public boolean isDynamicInjectionPoint( VariableElement element ) {
+        TypeMirror type = getParameterType(element, null, INSTANCE_INTERFACE);
         if ( type != null ){
             try {
-                return isInjectionPoint(element, impl);
+                return isInjectionPoint(element);
             }
             catch ( org.netbeans.modules.web.beans.api.model.
                     InjectionPointDefinitionError e )
@@ -228,8 +218,8 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         return false;
     }
     
-    protected TypeMirror getParameterType( Element element , DeclaredType parentType,
-            CompilationController compilationController, String... interfaceFqns) 
+    protected TypeMirror getParameterType( Element element , DeclaredType parentType, 
+            String... interfaceFqns) 
     {
         TypeMirror parameterType = null;
         TypeMirror elementType = null;
@@ -237,7 +227,8 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
             elementType = element.asType();
         }
         else {
-            elementType = compilationController.getTypes().asMemberOf(parentType, element);
+            elementType = getCompilationController().getTypes().
+                asMemberOf(parentType, element);
         }
         if ( elementType instanceof DeclaredType ){
             DeclaredType declaredType = (DeclaredType)elementType;
