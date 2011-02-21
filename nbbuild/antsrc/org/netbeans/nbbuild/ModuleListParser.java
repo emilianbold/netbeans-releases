@@ -886,7 +886,7 @@ final class ModuleListParser {
             String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
 
 
-            Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
+            Entry entry = new Entry(codenamebase, m, exts, null, null, null, cluster.getName(),
                     parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap(),
                     new File(moduleAutoDepsDir, codenamebase.replace('.', '-') + ".xml"));
             Entry prev = entries.put(codenamebase, entry);
