@@ -65,6 +65,7 @@
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.dlight</friend>
                 <friend>com.sun.tools.dlight.model</friend>
                 <friend>com.sun.tools.dlight.projectsupport</friend>

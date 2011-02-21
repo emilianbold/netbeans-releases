@@ -118,7 +118,7 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
                         boolean blockCommentStart = false;
                         if (offset > 0 && typedText.charAt(0) == '*') { //NOI18N
                             TokenItem<TokenId> tokenAtDot = CndTokenUtilities.getToken(doc, offset - 1, true);
-                            if (tokenAtDot.id() == CppTokenId.SLASH) {
+                            if (tokenAtDot.id() == CppTokenId.BLOCK_COMMENT) {
                                 // this is begin of block comment
                                 blockCommentStart = true;
                             }
