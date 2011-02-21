@@ -327,8 +327,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     result.add(si);
                 } else {
                     String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
-                    Logger.getLogger("glassfish").log(Level.WARNING, message,  // NOI18N
-                            new IllegalStateException(message));
+                    Logger.getLogger("glassfish").log(Level.WARNING, message);   // NOI18N
                     if (null != instance.getDeployerUri())
                         instanceMap.remove(instance.getDeployerUri());
                 }
@@ -355,8 +354,18 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     public ServerInstance getInstance(String uri) {
 //        return instanceMap.get(uri);
         //init();
+        ServerInstance rv = null;
         GlassfishInstance instance = instanceMap.get(uri);
-        return instance == null ? null : instance.getCommonInstance();
+        if (null != instance) {
+            rv = instance.getCommonInstance();
+            if (null == rv) {
+                String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
+                Logger.getLogger("glassfish").log(Level.WARNING, message);
+                if (null != instance.getDeployerUri())
+                    instanceMap.remove(instance.getDeployerUri());
+            }
+        }
+        return rv;
     }
 
     String getInstancesDirName() {
