@@ -79,10 +79,6 @@ public abstract class CndFileSystemProvider {
         return DEFAULT;
     }
 
-    public static String getCaseInsensitivePath(CharSequence path) {
-        return getDefault().getCaseInsensitivePathImpl(path);
-    }
-
     public static File toFile(FileObject fileObject) {
         // TODO: do we still need this?
         File file = FileUtil.toFile(fileObject);
@@ -172,8 +168,6 @@ public abstract class CndFileSystemProvider {
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
     protected abstract FileObject toFileObjectImpl(File file);
 
-    protected abstract String getCaseInsensitivePathImpl(CharSequence path);
-    
     protected abstract CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException;
     protected abstract FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException;
     protected abstract String getCanonicalPathImpl(FileObject fo) throws IOException;
@@ -300,17 +294,6 @@ public abstract class CndFileSystemProvider {
             return absPath;
         }
         
-        @Override
-        public String getCaseInsensitivePathImpl(CharSequence path) {
-            for (CndFileSystemProvider provider : cache) {
-                String data = provider.getCaseInsensitivePathImpl(path);
-                if (data != null) {
-                    return data;
-                }
-            }
-            return path.toString();
-        }
-
         @Override
         protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
             for (CndFileSystemProvider provider : cache) {

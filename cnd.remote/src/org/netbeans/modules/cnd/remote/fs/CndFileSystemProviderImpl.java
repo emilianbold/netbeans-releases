@@ -243,21 +243,6 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
-    protected String getCaseInsensitivePathImpl(CharSequence path) {
-//        String prefix = CndUtils.getIncludeFileBase();
-        if (Utilities.isWindows()) {
-            path = path.toString().replace('\\', '/');
-        }
-        return path.toString();
-//        if (pathStartsWith(path, prefix)) {
-//            CharSequence start = path.subSequence(0, prefix.length());
-//            CharSequence rest = path.subSequence(prefix.length(), path.length());
-//            return start + rest.toString(); // RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString());
-//        }
-//        return null;
-    }
-
-    @Override
     public void postConnectDownloadFinished(ExecutionEnvironment env) {
         RemoteCodeModelUtils.scheduleReparse(env);
     }
