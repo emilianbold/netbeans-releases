@@ -76,7 +76,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         super( unit );
         myManagers = new HashMap<String, PersistentObjectManager<BindingQualifier>>();
         myStereotypedManagers = new HashMap<String, PersistentObjectManager<StereotypedObject>>();
-        myHelper = AnnotationModelHelper.create( getModelUnit().getClassPathInfo() );
     }
     
     public static MetadataModelImplementation<WebBeansModel> createMetaModel( 
@@ -119,8 +118,12 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         });
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getHelper()
+     */
+    @Override
     protected AnnotationModelHelper getHelper() {
-        return myHelper;
+        return super.getHelper();
     }
 
     /* (non-Javadoc)
@@ -212,5 +215,4 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     private Map<String,PersistentObjectManager<BindingQualifier>> myManagers;
     private PersistentObjectManager<NamedStereotype> myStereotypesManager;
     private Map<String,PersistentObjectManager<StereotypedObject>> myStereotypedManagers; 
-    private AnnotationModelHelper myHelper;
 }

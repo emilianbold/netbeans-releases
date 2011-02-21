@@ -52,7 +52,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
 
@@ -63,30 +64,37 @@ import org.netbeans.modules.web.beans.api.model.Result;
  */
 public interface WebBeansModelProvider {
 
-    Result getInjectable( VariableElement element , DeclaredType parentType);
+    Result getInjectable( VariableElement element , DeclaredType parentType,
+            AbstractModelImplementation modelImpl );
     
-    Result lookupInjectables( VariableElement element , DeclaredType parentType);
+    Result lookupInjectables( VariableElement element , DeclaredType parentType,
+            AbstractModelImplementation modelImpl  );
     
-    boolean isDynamicInjectionPoint( VariableElement element );
+    boolean isDynamicInjectionPoint( VariableElement element ,
+            AbstractModelImplementation impl );
     
-    boolean isInjectionPoint( VariableElement element ) throws InjectionPointDefinitionError;
+    boolean isInjectionPoint( VariableElement element , 
+            AbstractModelImplementation impl ) throws InjectionPointDefinitionError;
     
-    List<AnnotationMirror> getQualifiers( Element element );
+    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
 
-    List<Element> getNamedElements( );
+    List<AnnotationMirror> getQualifiers( Element element , 
+            AbstractModelImplementation impl );
 
-    String getName( Element element);
+    List<Element> getNamedElements( AbstractModelImplementation impl );
+
+    String getName( Element element,
+            AbstractModelImplementation modelImplementation );
 
     List<ExecutableElement> getObservers( VariableElement element,
-            DeclaredType parentType);
+            DeclaredType parentType,
+            AbstractModelImplementation modelImplementation );
 
     List<VariableElement> getEventInjectionPoints( ExecutableElement element,
-            DeclaredType parentType);
+            DeclaredType parentType,
+            AbstractModelImplementation modelImplementation );
 
-    VariableElement getObserverParameter( ExecutableElement element);
-
-    CompilationController getCompilationController();
-
-    TypeMirror resolveType( String fqn);
+    VariableElement getObserverParameter( ExecutableElement element,
+            AbstractModelImplementation modelImplementation );
 
 }

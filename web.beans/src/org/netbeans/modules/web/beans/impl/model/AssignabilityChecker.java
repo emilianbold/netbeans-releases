@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -74,31 +72,23 @@ class AssignabilityChecker  implements Checker {
     }
     
     void init( ReferenceType varType, ReferenceType checkedType, 
-            Element originalElement, WebBeansModelImplementation impl)
+            WebBeansModelImplementation impl)
     {
         myVarType = varType;
         myType = checkedType;
         myImpl = impl;
-        myOriginalElement = originalElement;
-    }
-    
-    void init( ReferenceType varType, ReferenceType checkedType, 
-            WebBeansModelImplementation impl)
-    {
-        init( varType , checkedType , null, impl );
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.Checker#check()
      */
     public boolean check(){
-        boolean check = checkAssignability( getVarType(), getType(), 
-                myOriginalElement);
+        boolean check = checkAssignability( getVarType(), getType());
         return check;
     }
     
     public boolean checkAssignability( ReferenceType variableType , 
-            ReferenceType refType , Element originalElement ) 
+            ReferenceType refType) 
     {
         boolean isDeclaredType = variableType instanceof DeclaredType ;
         if ( !isDeclaredType ){
@@ -108,57 +98,62 @@ class AssignabilityChecker  implements Checker {
         if ( !( variableElement instanceof TypeElement ) ){
             return false;
         }
+        // if variableType is raw type
+        if ( ((DeclaredType)variableType).getTypeArguments().size() == 0 ){
+            return getImplementation().getHelper().getCompilationController().
+                getTypes().isAssignable( refType, variableType);
+        }
+
         
         if ( !( refType instanceof DeclaredType ) ){
             return false;
         }
         DeclaredType type = (DeclaredType)refType;
+        List<? extends TypeMirror> typeArguments = type.getTypeArguments();
+        
+        if (typeArguments.size() == 0) {
+            // Type is not parameterized. Check its parents.
+            List<? extends TypeMirror> interfaces = ((TypeElement)type.asElement()).
+                getInterfaces();
+            for (TypeMirror interfaze : interfaces) {
+                if (interfaze instanceof DeclaredType
+                        && checkAssignability( variableType, (DeclaredType)interfaze))
+                {
+                    return true;
+                }
+            }
 
-        Element refElement = getImplementation().getHelper().
-            getCompilationController().getTypes().asElement( type );
-        if ( !( refElement instanceof TypeElement ) ){
+            DeclaredType superClass = type;
+            do {
+                TypeMirror superType = ((TypeElement)superClass.asElement()).
+                    getSuperclass();
+                if (superType instanceof DeclaredType ){
+                    superClass = (DeclaredType)superType;
+                    if ( checkAssignability( variableType, superClass)){
+                        return true;
+                    }
+                }
+                else {
+                    superClass = null;
+                }
+            }
+            while( superClass != null);
+            // If no parameterized parents found then it is not assignable. 
             return false;
         }
 
-        Types types = getImplementation().getHelper().getCompilationController().getTypes();
-        Collection<TypeMirror> restrictedTypes = RestrictedTypedFilter.
-            getRestrictedTypes( originalElement, getImplementation());
-        // return false if restricted types don't contain injection point type
-        if ( !isEventAssignability && restrictedTypes != null ) {
-            boolean hasBeanType = false;
-            for( TypeMirror restrictedType : restrictedTypes ){
-                if ( types.isSameType( types.erasure( restrictedType ) , 
-                        types.erasure(variableType)))
-                {
-                    hasBeanType = true;
-                    break;
-                }
-            }
-            if ( !hasBeanType ){
-                return false;
-            }
-        }
-        
+        TypeElement objectElement = getImplementation().getHelper().
+            getCompilationController().getElements().getTypeElement(
+                    Object.class.getCanonicalName());
         /*
-         * Find ancestor of refType with the same raw type.
          * Raw types should be identical for parameterized type by the spec.
          * It means that inheritance by parameterized types are not allowed.  
          */
-        if ( !types.isSameType( types.erasure( variableType ) , types.erasure(type)) ){
-            TypeMirror ancestor = getAncestor((TypeElement)refElement ,
-                types.erasure( variableType ) , types );
-            // no appropriate type 
-            if ( !(ancestor instanceof DeclaredType)){
-                return false;
-            }
-            type = (DeclaredType) ancestor;
+        Types types = getImplementation().getHelper().getCompilationController().getTypes();
+        if ( !types.isSameType( types.erasure( variableType ) , types.erasure(type)))
+        {
+            return false;
         }
-
-        List<? extends TypeMirror> typeArguments = type.getTypeArguments();
-        
-        TypeElement objectElement = getImplementation().getHelper().
-        getCompilationController().getElements().getTypeElement(
-                Object.class.getCanonicalName());
         
         List<? extends TypeMirror> varTypeArguments = ((DeclaredType)variableType).
             getTypeArguments();
@@ -173,14 +168,7 @@ class AssignabilityChecker  implements Checker {
          *  type after erasure.             
          */
         {
-            // variable type is a raw.
-            if ( isEventAssignability ){
-                /* from the spec for event type : A parameterized event type 
-                 * is considered assignable to a raw observed event type 
-                 * if the raw types are identical. 
-                 */
-                return true;
-            }
+            // variable type is raw.
             for (TypeMirror typeParam : typeArguments) {
                 /*
                  * From the spec:
@@ -231,23 +219,8 @@ class AssignabilityChecker  implements Checker {
         return true;
     }
     
-    public boolean checkAssignability( ReferenceType variableType , 
-            ReferenceType refType ) 
-    {
-        if ( !isEventAssignability && ( refType instanceof DeclaredType )){
-            return checkAssignability(variableType, refType, 
-                    ((DeclaredType)refType).asElement());
-        }
-        else {
-            return checkAssignability(variableType, refType, null);
-        }
-    }
-    
     private boolean checkParameter( TypeMirror argType, TypeMirror varTypeArg )
     {
-        Types types = getImplementation().getHelper().getCompilationController().
-            getTypes();
-
         if ( isEventAssignability ){
             if ( varTypeArg.getKind()== TypeKind.TYPEVAR ){
                 TypeMirror upperBound = ((TypeVariable)varTypeArg).getUpperBound();
@@ -255,11 +228,15 @@ class AssignabilityChecker  implements Checker {
                     return true;
                 }
                 else {
-                    return checkIsAssignable(types, argType, upperBound);
+                    return getImplementation().getHelper().getCompilationController().
+                        getTypes().isAssignable( argType, upperBound);
                 }
             }
         }
         
+        Types types = getImplementation().getHelper().getCompilationController().
+            getTypes();
+
         /*
          * Implementation of spec item :
          * the required type parameter and the bean type parameter are actual 
@@ -273,17 +250,21 @@ class AssignabilityChecker  implements Checker {
                 (varTypeArg instanceof ReferenceType) )
                 //types.isSameType( types.erasure(argType), types.erasure(varTypeArg)))
         {
-            return checkIsAssignable(getImplementation().getHelper().
-                    getCompilationController().getTypes(), argType, varTypeArg);
+            if ( isAssignable(argType, varTypeArg, types)){
+                return true;
+            }
+            else if ( varTypeArg instanceof DeclaredType ){
+                return checkAssignability((DeclaredType)varTypeArg, 
+                        (ReferenceType)argType);
+            }
+            else {
+                return false;
+            }
         }
         
         if ( varTypeArg.getKind() == TypeKind.WILDCARD  )
         {
             return handleWildCard(argType, (WildcardType)varTypeArg, types);
-        }
-        
-        if ( isEventAssignability ){
-            return false;
         }
         
         /*
@@ -305,7 +286,18 @@ class AssignabilityChecker  implements Checker {
             if ( upperVar == null || upperVar.getKind() == TypeKind.NULL ){
                 return false;
             }
-            return checkIsAssignable(types, upperVar, upper);
+            if ( isAssignable(upper, upperVar, getImplementation().getHelper().
+                    getCompilationController().getTypes()) )
+            {
+                return true;
+            }
+            else if ( upperVar instanceof DeclaredType ){
+                return checkAssignability( (DeclaredType)upperVar, 
+                        (ReferenceType)upper);
+            }
+            else {
+                return false;
+            }
         }
         
         if (varTypeArg.getKind() != TypeKind.TYPEVAR
@@ -319,10 +311,18 @@ class AssignabilityChecker  implements Checker {
              */
 
             TypeMirror upper = ((TypeVariable)argType).getUpperBound();
-            if (  upper == null || upper.getKind()== TypeKind.NULL ){
+            if (  upper == null || upper.getKind()== TypeKind.NULL ||
+                    isAssignable(varTypeArg, upper, getImplementation().
+                            getHelper().getCompilationController().getTypes()) )
+            {
                 return true;
             }
-            return checkIsAssignable(types, varTypeArg, upper);
+            else if ( upper instanceof DeclaredType ){
+                checkAssignability( (DeclaredType)upper , (ReferenceType)varTypeArg);
+            }
+            else {
+                return false;
+            }
         }
         
         return false;
@@ -349,16 +349,48 @@ class AssignabilityChecker  implements Checker {
                     return true;
                 }
                 else {
-                    return checkIsAssignable(types, lowerBound, argType);
+                    if ( isAssignable(lowerBound, argType, types)){
+                        return true;
+                    }
+                    else if( argType instanceof DeclaredType ){
+                        return checkAssignability( (DeclaredType)argType, 
+                                (ReferenceType)lowerBound);
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
             else {
                 if ( lowerBound == null || lowerBound.getKind() == TypeKind.NULL){
-                    return checkIsAssignable(types, argType, upperBound);
+                    if ( isAssignable( argType, upperBound, types)){
+                        return true;
+                    }
+                    else if( upperBound instanceof DeclaredType ){
+                        return checkAssignability( (DeclaredType) upperBound, 
+                                (ReferenceType)argType);
+                    }
+                    else {
+                        return false;
+                    }
                 }
                 else {
-                    return checkIsAssignable(types, argType, upperBound) &&
-                        checkIsAssignable(types, lowerBound, argType);
+                    if ( isAssignable( argType, upperBound, types ) && 
+                            isAssignable(lowerBound, argType, types )  )
+                    {
+                        return true;
+                    }
+                    else if ( argType instanceof DeclaredType && 
+                            lowerBound instanceof DeclaredType)
+                    {
+                        return checkAssignability( (DeclaredType) upperBound, 
+                                (ReferenceType)argType) && 
+                                checkAssignability( (DeclaredType)argType, 
+                                        (ReferenceType)lowerBound);
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
         }            
@@ -368,11 +400,11 @@ class AssignabilityChecker  implements Checker {
         }
         /*
          * Implementation of spec item :
-         * the required type parameter is a wildcard, 
-         * the bean type parameter is a type variable and the upper bound of the type
-         * variable is assignable to or assignable from the upper bound, 
-         * if any, of the wildcard and assignable from the lower
-          * bound, if any, of the wildcard
+         * the required type parameter is a wildcard, the bean type parameter 
+         * is a type variable and the upper bound of the type
+         * variable is assignable to the upper bound, if any, of 
+         * the wildcard and assignable from the lower bound, if any, of the
+         * wildcard
          */ 
         if ( argType.getKind() == TypeKind.TYPEVAR ){
             TypeMirror typeUpper = ((TypeVariable)argType).getUpperBound();
@@ -386,29 +418,43 @@ class AssignabilityChecker  implements Checker {
                     return true;
                 }
                 else {
-                    return checkIsAssignable(types, lowerBound, typeUpper);
+                    if ( isAssignable(lowerBound, typeUpper, types)){
+                        return true;
+                    }
+                    else if( typeUpper instanceof DeclaredType ){
+                        return checkAssignability( (DeclaredType)typeUpper, 
+                                (ReferenceType)lowerBound);
+                    }
+                    else {
+                        return false;
+                    }
                 }
             }
             else {
                 if ( lowerBound == null || lowerBound.getKind() == TypeKind.NULL){
-                    return checkIsAssignable(types, typeUpper, upperBound) ||
-                        checkIsAssignable(types, upperBound, typeUpper );
+                    if ( isAssignable( typeUpper, upperBound, types)){
+                        return true;
+                    }
+                    else if( upperBound instanceof DeclaredType ){
+                        return checkAssignability( (DeclaredType) upperBound, 
+                                (ReferenceType)typeUpper);
+                    }
+                    else {
+                        return false;
+                    }
                 }
                 else {
-                    if ( (isAssignable( typeUpper, upperBound, types ) || 
-                            isAssignable( upperBound, typeUpper, types ) )&& 
+                    if ( isAssignable( typeUpper, upperBound, types ) && 
                             isAssignable(lowerBound, typeUpper, types)  )
                     {
                         return true;
                     }
-                    else if ( typeUpper instanceof ReferenceType && 
-                            lowerBound instanceof ReferenceType)
+                    else if ( typeUpper instanceof DeclaredType && 
+                            lowerBound instanceof DeclaredType)
                     {
-                        return (checkAssignability( (ReferenceType) upperBound, 
-                                (ReferenceType)typeUpper) || 
-                                checkAssignability( (ReferenceType) typeUpper, 
-                                        (ReferenceType)upperBound))&& 
-                                checkAssignability( (ReferenceType)typeUpper, 
+                        return checkAssignability( (DeclaredType) upperBound, 
+                                (ReferenceType)typeUpper) && 
+                                checkAssignability( (DeclaredType)typeUpper, 
                                         (ReferenceType)lowerBound);
                     }
                     else {
@@ -420,115 +466,17 @@ class AssignabilityChecker  implements Checker {
         
         return false;
     }
-
-    private boolean checkIsAssignable( Types types, TypeMirror from,
-            TypeMirror to )
-    {
-        if ( isAssignable(from, to, types)){
-            return true;
-        }
-        else if( to instanceof ReferenceType  && from instanceof ReferenceType )
-        {
-            return checkAssignability( (ReferenceType)to, 
-                    (ReferenceType)from);
-        }
-        else {
-            return false;
-        }
-    }
     
-    private boolean isAssignable( TypeMirror from, TypeMirror to, Types types )
-    {
-        Element element = types.asElement(to);
-        boolean isGeneric = (element instanceof TypeElement)
-                && ((TypeElement) element).getTypeParameters().size() != 0;
-        if (isGeneric || !( to instanceof DeclaredType )) {
+    private boolean isAssignable( TypeMirror from , TypeMirror to , Types types){
+        Element element = types.asElement(to );
+        boolean isGeneric = ( element instanceof TypeElement ) && 
+            ((TypeElement)element).getTypeParameters().size() != 0;
+        if ( isGeneric ){
             return false;
         }
         else {
-            Element fromElement = types.asElement(from);
-            Collection<TypeMirror> restrictedTypes = RestrictedTypedFilter
-                    .getRestrictedTypes(fromElement,
-                            getImplementation());
-            if (isEventAssignability || restrictedTypes == null) {
-                return getImplementation().getHelper()
-                        .getCompilationController().getTypes()
-                            .isAssignable(from, to);
-            }
-            for ( TypeMirror restrictedType : restrictedTypes ){
-                if ( types.isSameType( types.erasure(restrictedType), 
-                        types.erasure( to )))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return types.isAssignable(from , to);
         }
-    }
-    
-    private TypeMirror getAncestor( TypeElement element , TypeMirror rawType ,
-            Types types)
-    {
-        Collection<TypeMirror> classes = new LinkedList<TypeMirror>();
-        
-        TypeMirror found = findInterface(element, rawType , types );
-        if ( found != null ){
-            return found;
-        }
-        
-        collecSuperClasses( element , classes );
-        for( TypeMirror clazz : classes ){
-            if ( types.isSameType ( types.erasure( clazz), rawType )){
-                return clazz;
-            }
-            Element classElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( clazz);
-            if ( classElement instanceof TypeElement ){
-                found = findInterface((TypeElement)classElement, 
-                        rawType , types);
-                if ( found != null ){
-                    return found;
-                }
-                
-            }
-        }
-        return null;
-    }
-    
-    private void  collecSuperClasses(TypeElement element, 
-            Collection<TypeMirror> collected )
-    {
-        TypeMirror superClass = element.getSuperclass();
-        if ( superClass != null ){
-            collected.add( superClass );
-            Element superElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( superClass);
-            if ( superElement instanceof TypeElement ){
-                TypeElement clazz = (TypeElement)superElement;
-                collecSuperClasses(clazz, collected);
-            }
-        }
-    }
-    
-    private TypeMirror findInterface( TypeElement element , 
-            TypeMirror rawType , Types types)
-    {
-        List<? extends TypeMirror> interfaces = element.getInterfaces();
-        for (TypeMirror typeMirror : interfaces) {
-            if ( types.isSameType ( types.erasure( typeMirror), rawType )){
-                return typeMirror;
-            }
-            Element interfaceElement = getImplementation().getHelper().
-                getCompilationController().getTypes().asElement( typeMirror);
-            if ( interfaceElement instanceof TypeElement ){
-                TypeElement interfaze = (TypeElement)interfaceElement;
-                TypeMirror found = findInterface(interfaze , rawType, types );
-                if ( found != null ){
-                    return found;
-                }
-            }
-        }
-        return null;
     }
     
     private ReferenceType getVarType(){
@@ -543,7 +491,6 @@ class AssignabilityChecker  implements Checker {
         return myType;
     }
     
-    private Element myOriginalElement;
     private ReferenceType myVarType;
     private WebBeansModelImplementation myImpl;
     private ReferenceType myType;

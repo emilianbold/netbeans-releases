@@ -91,7 +91,8 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectable(element, parentType);
+        return getProvider().getInjectable(element, parentType, 
+                getModelImplementation());
     }
     
     /**
@@ -117,7 +118,8 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().lookupInjectables(element, parentType);
+        return getProvider().lookupInjectables(element, parentType,
+                getModelImplementation());
     }
     
     /**
@@ -141,7 +143,7 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return false;
         }
-        return getProvider().isInjectionPoint(element);
+        return getProvider().isInjectionPoint(element, getModelImplementation());
     }
     
     /**
@@ -186,7 +188,8 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return false;
         }
-        return getProvider().isDynamicInjectionPoint(element);
+        return getProvider().isDynamicInjectionPoint(element, 
+                getModelImplementation());
     }
     
     /**
@@ -198,7 +201,7 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return Collections.emptyList();
         }
-        return getProvider().getNamedElements( );
+        return getProvider().getNamedElements( getModelImplementation() );
     }
     
     /**
@@ -211,7 +214,7 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getName( element);
+        return getProvider().getName( element, getModelImplementation() );
     }
     
     /**
@@ -225,11 +228,11 @@ public final class WebBeansModel {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().resolveType(fqn);
+        return getProvider().resolveType(fqn, getModelImplementation().getHelper());
     }
     
     public CompilationController getCompilationController(){
-        return getProvider().getCompilationController();
+        return getModelImplementation().getHelper().getCompilationController();
     }
     
     /**
@@ -240,7 +243,7 @@ public final class WebBeansModel {
      * @return list of all bindings for <code>element</code>
      */
     public List<AnnotationMirror> getQualifiers( Element element ){
-        return getProvider().getQualifiers( element );
+        return getProvider().getQualifiers( element , getModelImplementation());
     }
     
     /**
@@ -254,7 +257,8 @@ public final class WebBeansModel {
     public List<ExecutableElement> getObservers(VariableElement element , 
             DeclaredType parentType)
     {
-        return getProvider().getObservers( element , parentType);
+        return getProvider().getObservers( element , parentType, 
+                getModelImplementation());
     }
     
     /**
@@ -268,7 +272,8 @@ public final class WebBeansModel {
     public List<VariableElement> getEventInjectionPoints( ExecutableElement element,
             DeclaredType parentType  )
     {
-        return getProvider().getEventInjectionPoints( element , parentType);
+        return getProvider().getEventInjectionPoints( element , parentType, 
+                getModelImplementation());
     }
     
     /**
@@ -281,7 +286,8 @@ public final class WebBeansModel {
      */
     public VariableElement getObserverParameter(ExecutableElement element )
     {
-        return getProvider().getObserverParameter( element );
+        return getProvider().getObserverParameter( element , 
+                getModelImplementation());
     }
     
     public AbstractModelImplementation getModelImplementation(){

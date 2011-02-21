@@ -155,7 +155,7 @@ public class BeansModelImpl implements BeansModel {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.BeansModel#getIntercetorClasses()
      */
-    public Set<String> getInterceptorClasses() {
+    public Set<String> getIntercetorClasses() {
         return getBeanClasses( Interceptors.class );
     }
     

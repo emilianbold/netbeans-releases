@@ -48,6 +48,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 
 
@@ -60,44 +61,37 @@ public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
 
     TestWebBeansModelProviderImpl(TestWebBeansModelImpl testWebBeansModelImpl )
     {
-        super( testWebBeansModelImpl );
-    }
-    
-    @Override
-    protected TestWebBeansModelImpl getModel() {
-        return (TestWebBeansModelImpl)super.getModel();
+        myModelImpl = testWebBeansModelImpl;
     }
 
-    @Override
     protected Result findParameterInjectable( VariableElement element,
             DeclaredType parentType)
     {
-        return super.findParameterInjectable(element, parentType);
+        return super.findParameterInjectable(element, parentType, myModelImpl);
     }
 
-    @Override
     protected Result doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, boolean injectRequired )
     {
-        return super.doFindVariableInjectable(element, elementType,
+        return super.doFindVariableInjectable(element, elementType, myModelImpl,
                 injectRequired);
     }
 
-    @Override
     protected Result findVariableInjectable( VariableElement element,
             DeclaredType parentType)
     {
-        return super.findVariableInjectable(element, parentType);
+        return super.findVariableInjectable(element, parentType, myModelImpl);
     }
     
-    @Override
-    protected Result getResult( Result result ){
-        if ( getModel().isFull() ){
-            return super.getResult(result);
+    protected Result getResult( Result result ,WebBeansModelImplementation model ){
+        if ( myModelImpl.isFull() ){
+            return super.getResult(result, model);
         }
         else {
             filterBeans(result);
             return result;
         }
     }
+
+    private TestWebBeansModelImpl myModelImpl;
 }
