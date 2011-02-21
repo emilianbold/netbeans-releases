@@ -260,7 +260,13 @@ public class RemoteFileSystem extends FileSystem {
         if (parent != null) {
             File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
             Properties table = readProperties(attr);
-            table.setProperty(translateAttributeName(file, attrName), encodeValue(value));
+            String translatedAttributeName = translateAttributeName(file, attrName);
+            String encodedValue = encodeValue(value);
+            if (encodedValue == null) {
+                table.remove(translatedAttributeName);
+            } else {                
+                table.setProperty(translatedAttributeName, encodedValue);
+            }
             FileOutputStream fileOtputStream = null;
             try {
                 fileOtputStream = new FileOutputStream(attr);
