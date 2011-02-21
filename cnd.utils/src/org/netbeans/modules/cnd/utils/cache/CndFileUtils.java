@@ -262,13 +262,14 @@ public final class CndFileUtils {
         return file;
     }
 
-    public static String getNormalizedPath(FileObject fo) {
-        try {
-            return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return fo.getPath();
-        }
+    public static String normalizePath(FileObject fo) {
+        return fo.getPath();
+//        try {
+//            return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
+//        } catch (FileStateInvalidException ex) {
+//            Exceptions.printStackTrace(ex);
+//            return fo.getPath();
+//        }
     }
 
     public static String normalizeAbsolutePath(FileSystem fs, String path) {

@@ -191,7 +191,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String getAbsolutePath() {
         synchronized (this) {
             if (fileObject != null) {
-                return CndFileUtils.getNormalizedPath(fileObject);
+                return CndFileUtils.normalizePath(fileObject);
             }
         }
         return getNormalizedFile().getAbsolutePath();
@@ -294,7 +294,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (fileObject == null) {
             return getNormalizedFile().getPath();
         } else {
-            return CndFileUtils.getNormalizedPath(fileObject);
+            return CndFileUtils.normalizePath(fileObject);
         }
     }
     

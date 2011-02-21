@@ -299,7 +299,7 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem findFileItem(FileObject fileObject) {
-            return findFileItem(CndFileUtils.getNormalizedPath(fileObject));
+            return findFileItem(CndFileUtils.normalizePath(fileObject));
         }
 
         private NativeFileItem findFileItem(String path) {
