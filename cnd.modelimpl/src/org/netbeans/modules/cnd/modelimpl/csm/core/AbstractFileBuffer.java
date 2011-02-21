@@ -72,7 +72,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private Reference<Line2Offset> lines = new WeakReference<Line2Offset>(null);
 
     protected AbstractFileBuffer(FileObject fileObject) {
-        this.absPath = FilePathCache.getManager().getString(CndFileUtils.getNormalizedPath(fileObject));
+        this.absPath = FilePathCache.getManager().getString(CndFileUtils.normalizePath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
 // remote link file objects are just lightweight delegating wrappers, so they have multiple instances
 //        if (CndUtils.isDebugMode()) {
