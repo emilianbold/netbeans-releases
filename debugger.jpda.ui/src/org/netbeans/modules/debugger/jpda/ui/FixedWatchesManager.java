@@ -89,7 +89,7 @@ import org.openide.windows.WindowManager;
                                  
     @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
                                  types={ NodeActionsProviderFilter.class,
-                                         ExtendedNodeModelFilter.class,
+                                         NodeModelFilter.class,
                                          TableModelFilter.class,
                                          TreeModelFilter.class },
                                  position=600)

@@ -95,10 +95,15 @@ public class TransformerUtils {
     /** xsl transformation utility for generating jaxws-build.xml script
     */ 
     public static void transformClients(final FileObject projectDirectory,
-                                        final String jaxws_stylesheet_resource,
-                                        boolean setJaxWsVersion) throws java.io.IOException {
+            final String jaxws_stylesheet_resource,boolean setJaxWsVersion) 
+            throws java.io.IOException 
+    {
         final FileObject jaxws_xml = projectDirectory.getFileObject(JAX_WS_XML_PATH);
-        final FileObject jaxWsBuildScriptXml = FileUtil.createData(projectDirectory, JAXWS_BUILD_XML_PATH);
+        if ( jaxws_xml == null ){
+            return;
+        }
+        final FileObject jaxWsBuildScriptXml = FileUtil.createData(projectDirectory, 
+                JAXWS_BUILD_XML_PATH);
         byte[] projectXmlData;
         
         try {
