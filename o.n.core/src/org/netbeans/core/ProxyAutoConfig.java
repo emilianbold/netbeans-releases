@@ -133,10 +133,10 @@ public class ProxyAutoConfig {
             eng = evalPAC(pacIS, utils);
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
-            throw new IllegalArgumentException(ex);
+            return ;
         } catch (ScriptException ex) {
             LOGGER.log(Level.FINE, "While constructing ProxyAutoConfig thrown " + ex, ex);
-            throw new IllegalArgumentException(ex);
+            return ;
         } finally {
             if (pacIS != null) {
                 try {
@@ -148,7 +148,8 @@ public class ProxyAutoConfig {
         }
         assert eng != null : "JavaScri5pt engine cannot be null";
         if (eng == null) {
-            throw new IllegalArgumentException("JavaScript engine cannot be null");
+            LOGGER.log(Level.WARNING, "JavaScript engine cannot be null");
+            return ;
         }
         inv = (Invocable) eng;
     }

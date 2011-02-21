@@ -179,8 +179,15 @@ public final class NbProxySelector extends ProxySelector {
                     if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                         res.add (Proxy.NO_PROXY);
                     }
-                    if (ProxyAutoConfig.get(getPacFile()).getPacURI().getHost().equals(uri.getHost())) {
-                        return Collections.singletonList(Proxy.NO_PROXY);
+                    ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
+                    assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
+                    if (pac == null) {
+                        LOG.finest ("No instance of ProxyAutoConfig(" + getPacFile() + ") for URI " + uri);
+                        res.add(Proxy.NO_PROXY);
+                    }
+                    if (pac.getPacURI().getHost() == null || pac.getPacURI().getHost().equals(uri.getHost())) {
+                        LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
+                        res.add(Proxy.NO_PROXY);
                     } else {
                         res.addAll(ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri)); // NOI18N
                     }
@@ -192,8 +199,15 @@ public final class NbProxySelector extends ProxySelector {
                 if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
                 }
-                if (ProxyAutoConfig.get(getPacFile()).getPacURI().getHost().equals(uri.getHost())) {
-                    return Collections.singletonList(Proxy.NO_PROXY);
+                ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
+                assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
+                if (pac == null) {
+                    LOG.finest ("No instance of ProxyAutoConfig(" + getPacFile() + ") for URI " + uri);
+                    res.add(Proxy.NO_PROXY);
+                }
+                if (pac.getPacURI().getHost() == null || pac.getPacURI().getHost().equals(uri.getHost())) {
+                    LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
+                    res.add(Proxy.NO_PROXY);
                 } else {
                     res.addAll(ProxyAutoConfig.get(getPacFile()).findProxyForURL(uri)); // NOI18N
                 }
