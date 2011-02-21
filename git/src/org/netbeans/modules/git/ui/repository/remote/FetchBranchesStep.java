@@ -42,15 +42,26 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitBranch;
@@ -77,7 +88,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     private GitProgressSupport supp;
     private GitProgressSupport validatingSupp;
     private final Mode mode;
-    private final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
 
     public static enum Mode {
         ACCEPT_EMPTY_SELECTION,
@@ -87,6 +98,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public FetchBranchesStep (Mode mode) {
         this.mode = mode;
         this.panel = new FetchBranchesPanel();
+        this.panel.lstRemoteBranches.setCellRenderer(new BranchRenderer());
         attachListeners();
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -97,14 +109,37 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
     
     private void attachListeners () {
-        panel.lstRemoteBranches.getSelectionModel().addListSelectionListener(this);
+        panel.lstRemoteBranches.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked (MouseEvent e) {
+                int index = panel.lstRemoteBranches.locationToIndex(e.getPoint());
+                if (index != -1) {
+                    BranchMapping mapping = (BranchMapping) panel.lstRemoteBranches.getModel().getElementAt(index);
+                    mapping.setSelected(!mapping.isSelected());
+                    panel.lstRemoteBranches.repaint();
+                    validateBeforeNext();
+                }
+            }
+        });
+        panel.lstRemoteBranches.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased (KeyEvent e) {
+                int index = panel.lstRemoteBranches.getSelectedIndex();
+                if (e.getKeyCode() == KeyEvent.VK_SPACE && index != -1) {
+                    BranchMapping mapping = (BranchMapping) panel.lstRemoteBranches.getModel().getElementAt(index);
+                    mapping.setSelected(!mapping.isSelected());
+                    panel.lstRemoteBranches.repaint();
+                    validateBeforeNext();
+                }
+            }
+        });
     }
 
     @Override
     protected final void validateBeforeNext () {
         setValid(true, null);
         boolean acceptEmptySelection = mode == Mode.ACCEPT_EMPTY_SELECTION;
-        if (!acceptEmptySelection && panel.lstRemoteBranches.getSelectedValues().length == 0) {
+        if (!acceptEmptySelection && getSelectedRefSpecs().isEmpty()) {
             setValid(false, new Message(NbBundle.getMessage(FetchBranchesPanel.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
         } else if (acceptEmptySelection && panel.lstRemoteBranches.getModel().getSize() == 0) {
             setValid(true, new Message(NbBundle.getMessage(FetchBranchesPanel.class, "MSG_FetchRefsPanel.errorNoBranch"), true)); //NOI18N
@@ -137,7 +172,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public void fillRemoteBranches (Map<String, GitBranch> branches) {
         DefaultListModel model = new DefaultListModel();
         for (GitBranch branch : branches.values()) {
-            model.addElement(branch.getName());
+            model.addElement(new BranchMapping(branch.getName(), remote));
         }
         panel.lstRemoteBranches.setModel(model);
         panel.lstRemoteBranches.setEnabled(true);
@@ -205,10 +240,12 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
 
     public List<String> getSelectedRefSpecs () {
-        List<String> specs = new ArrayList<String>(panel.lstRemoteBranches.getSelectedValues().length);
-        for (Object o : panel.lstRemoteBranches.getSelectedValues()) {
-            String branchName = (String) o;
-            specs.add(MessageFormat.format(REF_SPEC_PATTERN, branchName, remote.getRemoteName()));
+        List<String> specs = new LinkedList<String>();
+        for (Object o : ((DefaultListModel) panel.lstRemoteBranches.getModel()).toArray()) {
+            BranchMapping mapping = (BranchMapping) o;
+            if (mapping.isSelected()) {
+                specs.add(mapping.getRefSpec());
+            }
         }
         return specs;
     }
@@ -217,4 +254,45 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public boolean isFinishPanel () {
         return true;
     }
+    
+    private static class BranchMapping extends JCheckBox {
+        private final String remoteName;
+        private final String refSpec;
+
+        public BranchMapping (String remoteName, GitRemoteConfig remote) {
+            this.remoteName = remoteName;
+            this.refSpec = MessageFormat.format(REF_SPEC_PATTERN, remoteName, remote.getRemoteName());
+        }
+
+        public String getRemoteName () {
+            return remoteName;
+        }
+
+        public String getRefSpec () {
+            return refSpec;
+        }
+
+        @Override
+        public String getText () {
+            return remoteName;
+        }
+    }
+    
+    private static class BranchRenderer implements ListCellRenderer {
+        private static Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JCheckBox checkbox = (JCheckBox) value;
+            checkbox.setBackground(list.getBackground());
+            checkbox.setForeground(list.getForeground());
+            checkbox.setEnabled(list.isEnabled());
+            checkbox.setFont(list.getFont());
+            checkbox.setFocusPainted(false);
+            checkbox.setBorderPainted(true);
+            checkbox.setBorder(isSelected ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
+            return checkbox;
+        }
+    }
+
 }

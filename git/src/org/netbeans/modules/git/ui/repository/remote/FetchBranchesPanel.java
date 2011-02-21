@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import javax.swing.DefaultListModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,6 +79,7 @@ public class FetchBranchesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FetchBranchesPanel.class, "FetchBranchesPanel.jLabel1.text")); // NOI18N
         jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(FetchBranchesPanel.class, "FetchRefsPanel.jLabel1.TTtext")); // NOI18N
 
+        lstRemoteBranches.setModel(new DefaultListModel());
         jScrollPane1.setViewportView(lstRemoteBranches);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
