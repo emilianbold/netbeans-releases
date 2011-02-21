@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -288,10 +289,15 @@ public final class CndFileUtils {
      */
     public static String normalizeAbsolutePath(String path) {
         CndUtils.assertAbsolutePathInConsole(path, "path for normalization must be absolute"); //NOI18N
+        // TODO: this should be probably rewritten in a more elegant way
+        if (path.startsWith("/") && Utilities.isWindows()) { // NOI18N
+            return PathUtilities.normalizeUnixPath(path);
+        }
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
-            // with case sensitive "path"s returned by remote compilers
-            path = CndFileSystemProvider.getCaseInsensitivePath(path);
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
         }
         String normalized;
         // small optimization for true case sensitive OSs
