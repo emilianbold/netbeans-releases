@@ -450,6 +450,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             }
         } else if (source == ddCreate || source == ddDropCreate || source == ddUnknown){
             ProviderUtil.setTableGeneration(persistenceUnit, getTableGeneration(), ProviderUtil.getProvider(persistenceUnit.getProvider(), project));
+            ProviderUtil.normalizeIfPossible(project, persistenceUnit);
         } else if (source == includeAllEntities){
             persistenceUnit.setExcludeUnlistedClasses(!includeAllEntities.isSelected());
         } else if (source == jtaCheckBox){
@@ -497,6 +498,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
                 pu2.setValidationMode(validationModes[2]);
             }
+            ProviderUtil.normalizeIfPossible(project, persistenceUnit);
         }
         performValidation();
     }
@@ -529,7 +531,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 ProviderUtil.setTableGeneration(persistenceUnit, tableGeneration, provider);//preserv table generation property
                 setTableGeneration();
             }
-            ProviderUtil.makePortableIfPossible(project, persistenceUnit);
+            ProviderUtil.normalizeIfPossible(project, persistenceUnit);
             
         } else if (libraryComboBox.getSelectedItem() instanceof Provider){
             Provider provider = (Provider) libraryComboBox.getSelectedItem();
