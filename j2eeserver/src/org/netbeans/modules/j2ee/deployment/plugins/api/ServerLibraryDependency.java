@@ -212,7 +212,17 @@ public final class ServerLibraryDependency {
         }
         return true;
     }
-    
+
+    /**
+     * Returns <code>true</code> if the other object is library dependency and both
+     * name and specification version are equal to name and specification version
+     * of this object.
+     * 
+     * @param obj object to test
+     * @return <code>true</code> if the other object is library dependency
+     *             with same name and specification version as this object
+     * @since 1.77
+     */
     public boolean specificationEquals(Object obj) {
         if (obj == null) {
             return false;
