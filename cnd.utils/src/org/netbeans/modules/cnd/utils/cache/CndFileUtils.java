@@ -290,7 +290,7 @@ public final class CndFileUtils {
     public static String normalizeAbsolutePath(String path) {
         CndUtils.assertAbsolutePathInConsole(path, "path for normalization must be absolute"); //NOI18N
         // TODO: this should be probably rewritten in a more elegant way
-        if (path.startsWith("/") && Utilities.isWindows()) {
+        if (path.startsWith("/") && Utilities.isWindows()) { // NOI18N
             return PathUtilities.normalizeUnixPath(path);
         }
         boolean caseSensitive = isSystemCaseSensitive();
