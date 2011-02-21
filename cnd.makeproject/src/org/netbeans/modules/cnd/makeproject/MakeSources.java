@@ -224,6 +224,7 @@ public class MakeSources implements Sources, AntProjectListener {
             FileObjectBasedSources sources = new FileObjectBasedSources();
             for (String name : sourceRootList) {
                 String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
+                path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
                 String displayName = fsEnv.getDisplayName() + ":" + path; //NOI18N
                 FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);
                 if (fo == null) {

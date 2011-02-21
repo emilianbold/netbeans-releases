@@ -267,19 +267,19 @@ public abstract class WebRestSupport extends RestSupport {
             J2eeModuleProvider provider = project.getLookup().lookup(
                     J2eeModuleProvider.class);
             if ( provider == null ){
-                return null;
+                return Collections.emptyList();
             }
             String id = provider.getServerInstanceID();
             if ( id == null ){
-                return null;
+                return Collections.emptyList();
             }
             ServerInstance serverInstance =Deployment.getDefault().getServerInstance(id);
             if ( serverInstance == null ){
-                return null;
+                return Collections.emptyList();
             }
             ServerInstance.LibraryManager libManager = serverInstance.getLibraryManager();
             if ( libManager == null ){
-                return null;
+                return Collections.emptyList();
             }
             
             LinkedList<ServerLibrary> libraries = new LinkedList<ServerLibrary>();
@@ -289,7 +289,7 @@ public abstract class WebRestSupport extends RestSupport {
             return libraries;
         } catch (InstanceRemovedException ex) {
             Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO, null, ex);
-            return null;
+            return Collections.emptyList();
         }
     }
     

@@ -214,8 +214,9 @@ public class DiscoveryUtils {
     public static String normalizeAbsolutePath(String path) {
         boolean caseSensitive = CndFileUtils.isSystemCaseSensitive();
         if (!caseSensitive) {
-            // with case sensitive "path"s returned by remote compilers
-            path = CndFileSystemProvider.getCaseInsensitivePath(path);
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
         }
         String normalized;
         // small optimization for true case sensitive OSs
