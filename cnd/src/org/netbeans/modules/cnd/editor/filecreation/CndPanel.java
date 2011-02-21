@@ -272,15 +272,11 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     }
 
     /* package */ static boolean existFileName(FileObject targetFolder, String relFileName) {
-        boolean result = false;
-        File fileForTargetFolder = CndFileUtils.toFile(targetFolder);
-        if (fileForTargetFolder.exists()) {
-            result = new File (fileForTargetFolder, relFileName).exists();
-        } else {
-            result = targetFolder.getFileObject (relFileName) != null;
-        }
-        
-        return result;
+        if (targetFolder.isValid()) {
+            FileObject fo = targetFolder.getFileObject (relFileName);
+            return fo != null && fo.isValid();
+        }        
+        return false;
     }
     
     // if user would request support of wider array of symbols we can allow it by improving escaping symbols during Makefiles generation 
