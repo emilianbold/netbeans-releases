@@ -1179,9 +1179,11 @@ public class ConfigurationMakefileWriter {
                             command = "${PROC} lines=yes iname="; // NOI18N
                             command += file;
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                command += " code=cpp parse=partial"; // NOI18N
+                                command += " code=cpp parse=none"; // NOI18N
+                            } else {
+                                command += " parse=none"; // NOI18N                                
                             }
-                            command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
+//                            command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
                             command += " oname="; // NOI18N
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                                 MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
