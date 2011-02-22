@@ -102,7 +102,9 @@ public class ConvertToARM {
     private static final String PTR_ENC_NONE_TRY = "$CV $var = $init; try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}";  //NOI18N
     private static final String PTR_ENC_NONE_TRY_FIN = "final $CV $var = $init; try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_NONE_TRY_NULL = "$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {if ($var != null) $var.close(); $finstms$;}"; //NOI18N
-    
+    private static final String PTR_ENC_NONE_TRY_NULL2 = "$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
+    private static final String PTR_ENC_NONE_TRY_NULL2_SHADOW = "$CV_x $var_x = null; try { $var_x = $init_x; $stms_x$; } catch $catches_x$ finally {$var_x.close(); $finstms_x$;}"; //NOI18N
+
     private static final String PTR_ENC_OUT_NO_TRY = "$CV $var = $init; try($armres$) {$stms$;} $var.close();";    //NOI18N
     private static final String PTR_ENC_OUT_NO_TRY_SHADOW = "$CV_x $var_x = $init_x; try($armres_x$) {$stms_x$;} $var_s.close();";    //NOI18N
     private static final String PTR_ENC_OUT_NO_TRY_FIN = "final $CV $var = $init; try($armres$) {$stms$;} $var.close();";  //NOI18N
@@ -146,7 +148,20 @@ public class ConvertToARM {
             @TriggerPattern(value=PTR_ENC_NONE_TRY_NULL)
         }
     )
-    public static List<ErrorDescription> hint1(HintContext ctx) {
+    public static List<ErrorDescription> hint11(final HintContext ctx) {
+        return hint1Impl(ctx, false);
+    }
+
+    @TriggerPatterns(
+        {
+            @TriggerPattern(value=PTR_ENC_NONE_TRY_NULL2)
+        }
+    )
+    public static List<ErrorDescription> hint12(final HintContext ctx) {
+        return hint1Impl(ctx, true);
+    }
+
+    public static List<ErrorDescription> hint1Impl(HintContext ctx, boolean secondRule) {
         if (!MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_SHADOW)     &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_FIN_SHADOW) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_SHADOW) &&
@@ -162,13 +177,17 @@ public class ConvertToARM {
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_FIN_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL2_SHADOW) && insideARM(ctx))) {
-            return hintImpl(ctx, NestingKind.NONE);
+            if (!secondRule && MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_NONE_TRY_NULL2_SHADOW)) {
+                return Collections.<ErrorDescription>emptyList();
+            } else {
+                return hintImpl(ctx, NestingKind.NONE);
+            }
         } else {
             return Collections.<ErrorDescription>emptyList();
         }
     }
-    
-    
+
+        
     @TriggerPatterns(
         {
             @TriggerPattern(value=PTR_ENC_OUT_NO_TRY),
