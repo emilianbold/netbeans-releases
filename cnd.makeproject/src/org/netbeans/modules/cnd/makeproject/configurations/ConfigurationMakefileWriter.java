@@ -60,6 +60,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -104,6 +105,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -111,6 +113,7 @@ import org.openide.util.NbBundle;
 public class ConfigurationMakefileWriter {
 
     private MakeConfigurationDescriptor projectDescriptor;
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     
     public ConfigurationMakefileWriter(MakeConfigurationDescriptor projectDescriptor) {
         this.projectDescriptor = projectDescriptor;
@@ -341,10 +344,15 @@ public class ConfigurationMakefileWriter {
             makefileWriter = new DefaultMakefileWriter();
         }
 
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + "/Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
-
+        
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(outputFileName));
+            FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
+            if (nbProjFO == null) {
+                LOGGER.info("Error writing makefiles: can not find nbproject");
+                return;
+            }
+            FileObject makefileFO = FileUtil.createData(nbProjFO, "Makefile-" + conf.getName() + ".mk"); // NOI18N;
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(makefileFO.getOutputStream()));
             try {
                 makefileWriter.writePrelude(projectDescriptor, conf, bw);
                 writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
