@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.SourceVersion;
@@ -303,8 +305,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (toolTip != null && toolTip.hasData())
                                 resultSet.setToolTip(toolTip);
                         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                            if (documentation != null)
+                            if (documentation instanceof JavaCompletionDoc) {
+                                while (!isTaskCancelled()) {
+                                    try {
+                                        ((JavaCompletionDoc)documentation).getFutureText().get(250, TimeUnit.MILLISECONDS);
+                                        resultSet.setDocumentation(documentation);
+                                        break;
+                                    } catch (TimeoutException timeOut) {/*retry*/}
+                                }
+                                
+                            } else if (documentation != null) {
                                 resultSet.setDocumentation(documentation);
+                            }
                         }
                         if (anchorOffset > -1)
                             resultSet.setAnchorOffset(anchorOffset);
