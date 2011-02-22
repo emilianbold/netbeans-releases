@@ -2178,7 +2178,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue195562() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.continuationIndentSize, 4);
-        reformatFileContents("testfiles/formatting/spaces/php", options);
+        reformatFileContents("testfiles/formatting/spaces/issue195562.php", options);
     }
 
     protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {
