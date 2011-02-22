@@ -264,13 +264,12 @@ public final class CndFileUtils {
     }
 
     public static String normalizePath(FileObject fo) {
+        try {
+            return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return fo.getPath();
-//        try {
-//            return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
-//        } catch (FileStateInvalidException ex) {
-//            Exceptions.printStackTrace(ex);
-//            return fo.getPath();
-//        }
     }
 
     public static String normalizeAbsolutePath(FileSystem fs, String path) {
