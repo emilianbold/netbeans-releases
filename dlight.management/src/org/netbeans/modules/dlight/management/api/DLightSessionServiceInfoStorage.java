@@ -60,8 +60,8 @@ import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 
 /**
  *  You can use the storage to store any information which should be persistent for the session
@@ -159,7 +159,7 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
                 loadTable(tableName);
             }
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
     }
 
@@ -176,7 +176,7 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
             super.loadTable(result);
             tables.put(result.getName(), result);
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
     }
 
@@ -206,7 +206,7 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
                 }
 
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(this, ex);
             }
 
 
@@ -239,7 +239,7 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
             PreparedStatement stat = getConnection().prepareStatement(sqlString);
             stat.executeUpdate();
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
         return oldValue;
 
