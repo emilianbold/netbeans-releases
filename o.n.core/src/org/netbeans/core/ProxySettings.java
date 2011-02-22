@@ -140,7 +140,8 @@ public class ProxySettings {
     }
     
     public static String getNonProxyHosts () {
-        return getPreferences ().get (NOT_PROXY_HOSTS, getDefaultUserNonProxyHosts ());
+        String hosts = getPreferences ().get (NOT_PROXY_HOSTS, getDefaultUserNonProxyHosts ());
+        return compactNonProxyHosts(hosts);
     }
     
     public static int getProxyType () {
@@ -384,21 +385,34 @@ public class ProxySettings {
 
 
     // avoid duplicate hosts
-    private static String compactNonProxyHosts (String nonProxyHost) {
-        StringTokenizer st = new StringTokenizer (nonProxyHost, "|"); //NOI18N
-        Set<String> s = new HashSet<String> (); 
+    private static String compactNonProxyHosts (String hosts) {
+        StringTokenizer st = new StringTokenizer(hosts, ","); //NOI18N
+        StringBuilder nonProxyHosts = new StringBuilder();
+        while (st.hasMoreTokens()) {
+            String h = st.nextToken().trim();
+            if (h.length() == 0) {
+                continue;
+            }
+            if (nonProxyHosts.length() > 0) {
+                nonProxyHosts.append("|"); // NOI18N
+            }
+            nonProxyHosts.append(h);
+        }
+        st = new StringTokenizer (nonProxyHosts.toString(), "|"); //NOI18N
+        Set<String> set = new HashSet<String> (); 
         StringBuilder compactedProxyHosts = new StringBuilder();
         while (st.hasMoreTokens ()) {
             String t = st.nextToken ();
-            if (s.add (t.toLowerCase (Locale.US))) {
-                if (compactedProxyHosts.length() > 0)
+            if (set.add (t.toLowerCase (Locale.US))) {
+                if (compactedProxyHosts.length() > 0) {
                     compactedProxyHosts.append('|');
+                }
                 compactedProxyHosts.append(t);
             }
         }
         return compactedProxyHosts.toString();
     }
-
+    
     private static String addReguralToNonProxyHosts (String nonProxyHost) {
         StringTokenizer st = new StringTokenizer (nonProxyHost, "|");
         StringBuilder reguralProxyHosts = new StringBuilder();
