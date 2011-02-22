@@ -674,7 +674,7 @@ public final class MainWindow {
         getToolbarComponent().setVisible( !isFullScreenMode );
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
 
-        if( null != device && device.isFullScreenSupported() && !Utilities.isMac() ) {
+        if( null != device && device.isFullScreenSupported() && !(Utilities.isMac() || Utilities.isWindows())) {
             device.setFullScreenWindow( isFullScreenMode ? frame : null );
         } else {
             frame.setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
