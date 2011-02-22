@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.api.editor.PhpClass;
@@ -67,17 +70,20 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     public static final String IDX_FIELD = PHPIndexer.FIELD_CLASS;
 
     private final QualifiedName superClass;
-
+    private Collection<QualifiedName> possibleFQSuperClassNames;
+    
     private ClassElementImpl(
             final QualifiedName qualifiedName,
             final int offset,
             final QualifiedName superClsName,
+            final Collection<QualifiedName> possibleFQSuperClassNames,
             final Set<QualifiedName> ifaceNames,
             final int flags,
             final String fileUrl,
             final ElementQuery elementQuery) {
         super(qualifiedName, offset, ifaceNames, flags, fileUrl, elementQuery);
         this.superClass = superClsName;
+        this.possibleFQSuperClassNames = possibleFQSuperClassNames;
     }
 
     public static Set<ClassElement> fromSignature(final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
@@ -106,7 +112,8 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         ClassElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new ClassElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
-                    signParser.getSuperClassName(), signParser.getSuperInterfaces(), signParser.getFlags(),
+                    signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(), 
+                    signParser.getSuperInterfaces(), signParser.getFlags(),
                     indexResult.getUrl().toString(), indexScopeQuery);
         }
         return retval;
@@ -120,7 +127,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new ClassElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                info.getSuperClassName(), info.getInterfaceNames(), info.getAccessModifiers().toFlags(),
+                info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(), info.getAccessModifiers().toFlags(),
                 fileQuery.getURL().toExternalForm(), fileQuery);
     }
 
@@ -128,7 +135,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         Parameters.notNull("clz", clz);
         Parameters.notNull("elementQuery", clz);
         ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(clz.getFullyQualifiedName()),
-                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, null, elementQuery);
+                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, null, elementQuery);
         retval.fileObject = clz.getFile();
         return retval;
     }
@@ -148,6 +155,11 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     public final QualifiedName getSuperClassName() {
         return superClass;
     }
+    
+    @Override
+    public Collection<QualifiedName> getPossibleFQSuperClassNames() {
+        return this.possibleFQSuperClassNames;
+    }
 
     @Override
     public String getSignature() {
@@ -158,6 +170,16 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             sb.append(superClassName.toString());
+            sb.append("|");
+            boolean first = true;
+            for (QualifiedName qualifiedName : possibleFQSuperClassNames) {
+                if (!first) {
+                    sb.append(',');
+                } else {
+                    first = true;
+                }
+                sb.append(qualifiedName.toString());
+            }
         }
         sb.append(SEPARATOR.SEMICOLON);//NOI18N
         QualifiedName namespaceName = getNamespaceName();
@@ -248,8 +270,27 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
 
         @CheckForNull
         QualifiedName getSuperClassName() {
-            final String name = signature.string(3);
+            String name = signature.string(3);
+            int index = 0;
+            if (name != null && (index = name.indexOf('|')) > 0) {
+                name = name.substring(0, index);
+            }
             return name.trim().length() == 0 ? null : QualifiedName.create(name);
+        }
+        
+        Collection<QualifiedName> getPossibleFQSuperClassName(){
+            String field = signature.string(3);
+            Collection<QualifiedName> retval = Collections.emptyList();
+            int index = 0;
+            if (field != null && (index = field.indexOf('|')) > 0) {
+                field = field.substring(index + 1);
+                retval = new ArrayList<QualifiedName>();
+                for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) {
+                    String token = st.nextToken();
+                    retval.add(QualifiedName.create(token));
+                }
+            }
+            return retval;
         }
 
         public Set<QualifiedName> getSuperInterfaces() {
