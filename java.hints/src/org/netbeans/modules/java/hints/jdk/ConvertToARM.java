@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ModifiersTree;
@@ -54,6 +56,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -131,7 +135,7 @@ public class ConvertToARM {
     private static final String PTR_ENC_IN_TRY_NULL2 = "try($armres$) { $CV $var = null; try { $var = $init; $stms$; } finally {if ($var != null) $var.close();}} catch $catches$ finally {$finstms$;}"; //NOI18N
     private static final String PTR_ENC_IN_TRY_NULL2_SHADOW = "try($armres_x$) { $CV_x $var_x = null; try { $var_x = $init_x; $stms_x$; } finally {if ($var_x != null) $var_x.close();}} catch $catches_x$ finally {$finstms_x$;}"; //NOI18N
     
-    static boolean checkAutoCloseable = true;
+    static boolean checkAutoCloseable = false;
 
     @TriggerPatterns(
         {
@@ -214,22 +218,30 @@ public class ConvertToARM {
             final Element autoCloseable = info.getElements().getTypeElement(AUTO_CLOSEABLE);
             if (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType()))) {
                 final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
-                result.add(ErrorDescriptionFactory.forName(
-                    ctx,
-                    varVar,
-                    NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
-                    JavaFix.toEditorFix(new ConvertToARMFix(
-                        info,
-                        ctx.getPath(),
-                        nestingKind,
+                final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
+                final Trees trees = ctx.getInfo().getTrees();
+                final VariableElement resElement = (VariableElement) trees.getElement(varVar);
+                final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
+                final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
+                if (!hasNonCleanUpUsages(usages, cleanUpStatements)) {
+                    result.add(ErrorDescriptionFactory.forName(
+                        ctx,
                         varVar,
-                        vars.get("$init"),              //NOI18N
-                        multiVars.get("$armres$"),      //NOI18N
-                        multiVars.get("$stms$"),        //NOI18N
-                        multiVars.get("$catches$"),     //NOI18N
-                        multiVars.get("$finstms$"),     //NOI18N
-                        multiVars.get("$$2$")))    //NOI18N
-            ));
+                        NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
+                        JavaFix.toEditorFix(new ConvertToARMFix(
+                            info,
+                            ctx.getPath(),
+                            nestingKind,
+                            varVar,
+                            vars.get("$init"),              //NOI18N
+                            multiVars.get("$armres$"),      //NOI18N
+                            multiVars.get("$stms$"),        //NOI18N
+                            multiVars.get("$catches$"),     //NOI18N
+                            multiVars.get("$finstms$"),     //NOI18N
+                            tail,
+                            cleanUpStatements))
+                    ));
+                }
             }
         }
         return Collections.unmodifiableList(result);
@@ -245,6 +257,7 @@ public class ConvertToARM {
         private final Collection<? extends TreePath> catchesPaths;
         private final Collection<? extends TreePath> finStatementsPath;
         private final Collection<? extends TreePath> tail;
+        private final Collection<? extends TreePath> cleanUpStms;
         
         private ConvertToARMFix(
                 final CompilationInfo info,
@@ -256,7 +269,8 @@ public class ConvertToARM {
                 final Collection<? extends TreePath> statements,
                 final Collection<? extends TreePath> catches,
                 final Collection<? extends TreePath> finStatementsPath,
-                final Collection<? extends TreePath> tail) {
+                final Collection<? extends TreePath> tail,
+                final Collection<? extends TreePath> cleanUpStms) {
             super(info, owner);
             this.nestingKind = nestignKind;
             this.var = var;
@@ -266,6 +280,7 @@ public class ConvertToARM {
             this.catchesPaths = catches;
             this.finStatementsPath = finStatementsPath;
             this.tail = tail;
+            this.cleanUpStms = cleanUpStms;
         }
 
         @Override
@@ -279,6 +294,18 @@ public class ConvertToARM {
                 final TreePath tp,
                 final UpgradeUICallback callback) {
             final TreeMaker tm = wc.getTreeMaker();
+            final Set<StatementTree> nonNeededStms = new HashSet<StatementTree>();
+            for (TreePath stm : cleanUpStms) {
+                BlockTree owner = (BlockTree)stm.getParentPath().getLeaf();
+                if (owner == tp.getLeaf()) {
+                    nonNeededStms.add((StatementTree)stm.getLeaf());
+                } else {
+                    wc.rewrite(owner,
+                        tm.removeBlockStatement(
+                            owner,
+                            (StatementTree)stm.getLeaf()));
+                }
+            }
             if (nestingKind == NestingKind.NONE) {
                 final List<? extends StatementTree> statements = ConvertToARMFix.<StatementTree>asList(statementsPaths);
                 final List<VariableTree> additionalVars = new LinkedList<VariableTree>();
@@ -290,15 +317,15 @@ public class ConvertToARM {
                             tail.iterator().next().getCompilationUnit(),
                             wc.getTrees());                    
                     for (VariableTree vr : usedAfterCloseVarDecls) {
-                        additionalVars.add(wc.getTreeMaker().Variable(
+                        additionalVars.add(tm.Variable(
                                 vr.getModifiers(),
                                 vr.getName(),
                                 vr.getType(),
                                 null));
                         if (vr.getInitializer() != null) {
                             wc.rewrite(vr,
-                                wc.getTreeMaker().ExpressionStatement(wc.getTreeMaker().Assignment(
-                                    wc.getTreeMaker().Identifier(vr.getName()),
+                                tm.ExpressionStatement(tm.Assignment(
+                                    tm.Identifier(vr.getName()),
                                     vr.getInitializer())));
                         } else {
                             removedVars.add(vr);
@@ -322,7 +349,8 @@ public class ConvertToARM {
                         (StatementTree)var.getLeaf(),
                         additionalVars,
                         tryTree,
-                        statements));
+                        statements,
+                        nonNeededStms));
             } else if (nestingKind == NestingKind.OUT) {
                 final TryTree oldTry = findNestedARM(
                         ((BlockTree)tp.getLeaf()).getStatements(),
@@ -346,7 +374,8 @@ public class ConvertToARM {
                         (StatementTree)var.getLeaf(),
                         Collections.<VariableTree>emptyList(),
                         newTry,
-                        ConvertToARMFix.<StatementTree>asList(statementsPaths)));
+                        ConvertToARMFix.<StatementTree>asList(statementsPaths),
+                        nonNeededStms));
             } else if (nestingKind == NestingKind.IN) {
                 final TryTree oldTry = findEnclosingARM(var);
                 if (oldTry == null) {
@@ -362,7 +391,7 @@ public class ConvertToARM {
                         oldTry.getCatches(),
                         oldTry.getFinallyBlock());
                 wc.rewrite(oldTry, newTry);
-            }
+            }            
         }
         
         @SuppressWarnings("unchecked")
@@ -383,11 +412,15 @@ public class ConvertToARM {
                 final StatementTree var,
                 final List<? extends VariableTree> preVarDecls,
                 final TryTree newTry,
-                final List<? extends StatementTree> oldStms) {
+                final List<? extends StatementTree> oldStms,
+                final Set<? extends StatementTree> removeStms) {
             final List<StatementTree> statements = new ArrayList<StatementTree>(originalStatements.size());
             int state = 0;  //0 - ordinary,1 - replace by try, 2 - remove 
             final Set<Tree> toRemove = new HashSet<Tree>(oldStms);
             for (StatementTree statement : originalStatements) {
+                if (removeStms.contains(statement)) {
+                    continue;
+                }
                 if (var == statement) {
                     statements.addAll(preVarDecls);
                     state = 1;
@@ -550,6 +583,56 @@ public class ConvertToARM {
         scanner.scan(stms, null);
         vars.retainAll(result);
         return vars;
+    }
+
+    private static Collection<? extends TreePath> findResourceUsagesAfterClose(
+            final VariableElement resource,
+            final Collection<? extends TreePath> statements,
+            final CompilationUnitTree cu,
+            final Trees trees) {
+        final List<TreePath> usages = new LinkedList<TreePath>();
+        if (statements != null) {
+            final TreePathScanner<List<TreePath>,List<TreePath>> scanner = new TreePathScanner<List<TreePath>, List<TreePath>>() {
+                @Override
+                public List<TreePath> visitIdentifier(IdentifierTree node, List<TreePath> p) {
+                    final TreePath path = getCurrentPath();
+                    final Element element = trees.getElement(path);
+                    if (element == resource) {
+                        usages.add(path);
+                    }
+                    return super.visitIdentifier(node, p);
+                }
+            };
+            for (TreePath st : statements) {
+                scanner.scan(st, usages);
+            }
+        }
+        return usages;
+    }
+
+    private static boolean hasNonCleanUpUsages(
+            final Collection<? extends TreePath> usages,
+            final Collection<? super TreePath> cleanupStatements) {
+        for (TreePath usage : usages) {
+            final TreePath parentPath = usage.getParentPath();
+            final Tree parent = parentPath.getLeaf();
+            if (parent.getKind() != Tree.Kind.ASSIGNMENT) {
+                return true;
+            }
+            final AssignmentTree assign = (AssignmentTree) parent;
+            if (assign.getVariable() != usage.getLeaf()) {
+                return true;
+            }
+            if (assign.getExpression().getKind() != Tree.Kind.NULL_LITERAL) {
+                return true;
+            }
+            final TreePath parentParent = parentPath.getParentPath();
+            if (parentParent.getLeaf().getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+                return true;
+            }
+            cleanupStatements.add(parentParent);
+        }
+        return false;
     }
     
     private enum NestingKind {
