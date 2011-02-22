@@ -135,7 +135,7 @@ public class ConvertToARM {
     private static final String PTR_ENC_IN_TRY_NULL2 = "try($armres$) { $CV $var = null; try { $var = $init; $stms$; } finally {if ($var != null) $var.close();}} catch $catches$ finally {$finstms$;}"; //NOI18N
     private static final String PTR_ENC_IN_TRY_NULL2_SHADOW = "try($armres_x$) { $CV_x $var_x = null; try { $var_x = $init_x; $stms_x$; } finally {if ($var_x != null) $var_x.close();}} catch $catches_x$ finally {$finstms_x$;}"; //NOI18N
     
-    static boolean checkAutoCloseable = false;
+    static boolean checkAutoCloseable = true;
 
     @TriggerPatterns(
         {
