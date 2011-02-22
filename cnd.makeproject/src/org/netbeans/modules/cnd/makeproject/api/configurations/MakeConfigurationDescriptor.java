@@ -391,6 +391,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public FileObject getProjectDirFileObject() {
         return projectDirFO;
     }
+    
+    public FileObject getNbprojectFileObject() {
+        if (projectDirFO != null) {
+            return projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        }
+        return null;
+    }    
 
 //    public void setBaseDirFileObject(FileObject baseDirFO) {
 //        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
