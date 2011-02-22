@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.repository.remote;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.KeyAdapter;
@@ -50,6 +51,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,6 +75,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
@@ -89,14 +94,17 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     private GitProgressSupport validatingSupp;
     private final Mode mode;
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String BRANCH_MAPPING_LABEL = "{0} -> {1}/{0} [{2}]"; //NOI18N
+    private final File repository;
 
     public static enum Mode {
         ACCEPT_EMPTY_SELECTION,
         ACCEPT_NON_EMPTY_SELECTION_ONLY
     }
 
-    public FetchBranchesStep (Mode mode) {
+    public FetchBranchesStep (File repository, Mode mode) {
         this.mode = mode;
+        this.repository = repository;
         this.panel = new FetchBranchesPanel();
         this.panel.lstRemoteBranches.setCellRenderer(new BranchRenderer());
         attachListeners();
@@ -169,10 +177,39 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         validateBeforeNext();
     }
 
-    public void fillRemoteBranches (Map<String, GitBranch> branches) {
+    public void fillRemoteBranches (final Map<String, GitBranch> branches) {
+        if (repository == null) {
+            fillRemoteBranches(branches, Collections.<String, GitBranch>emptyMap());
+        } else {
+            new GitProgressSupport.NoOutputLogging() {
+                @Override
+                protected void perform () {
+                    final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    info.refresh();
+                    localBranches.putAll(info.getBranches());
+                    EventQueue.invokeLater(new Runnable () {
+                        @Override
+                        public void run () {
+                            fillRemoteBranches(branches, localBranches);
+                        }
+                    });
+                }
+            }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(FetchBranchesPanel.class, "MSG_FetchBranchesPanel.loadingLocalBranches")); //NOI18N
+        }
+    }
+    
+    private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
         DefaultListModel model = new DefaultListModel();
-        for (GitBranch branch : branches.values()) {
-            model.addElement(new BranchMapping(branch.getName(), remote));
+        List<GitBranch> branchList = new ArrayList<GitBranch>(branches.values());
+        Collections.sort(branchList, new Comparator<GitBranch>() {
+            @Override
+            public int compare (GitBranch b1, GitBranch b2) {
+                return b1.getName().compareTo(b2.getName());
+            }
+        });
+        for (GitBranch branch : branchList) {
+            model.addElement(new BranchMapping(branch.getName(), remote, localBranches.get(remote.getRemoteName() + "/" + branch.getName())));
         }
         panel.lstRemoteBranches.setModel(model);
         panel.lstRemoteBranches.setEnabled(true);
@@ -204,10 +241,16 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                         @Override
                         protected void perform () {
                             final Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+                            final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
                             try {
                                 GitClient client = getClient();
                                 client.init(this);
                                 branches.putAll(client.listRemoteBranches(uri, this));
+                                if (repository != null) {
+                                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                                    info.refresh();
+                                    localBranches.putAll(info.getBranches());
+                                }
                             } catch (GitException ex) {
                                 GitClientExceptionHandler.notifyException(ex, true);
                             } finally {
@@ -217,7 +260,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                                     @Override
                                     public void run () {
                                         if (!supp.isCanceled()) {
-                                            fillRemoteBranches(branches);
+                                            fillRemoteBranches(branches, localBranches);
                                         }
                                     }
                                 });
@@ -258,10 +301,40 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     private static class BranchMapping extends JCheckBox {
         private final String remoteName;
         private final String refSpec;
+        private final String label;
+        private static enum Mode {
+            DELETED(new Color(0x99, 0x99, 0x99), NbBundle.getMessage(FetchBranchesPanel.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.deleted.description"), "D"), //NOI18N
+            ADDED(new Color(0, 0x80, 0), NbBundle.getMessage(FetchBranchesPanel.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.added.description"), "A"), //NOI18N
+            MODIFIED(new Color(0, 0, 0xff), NbBundle.getMessage(FetchBranchesPanel.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.updated.description"), "U"); //NOI18N
+            
+            private final String label;
+            private final String description;
+            private final Color fgColor;
+            
+            Mode (Color color, String description, String label) {
+                this.fgColor = color;
+                this.label = label;
+                this.description = description;
+            }
 
-        public BranchMapping (String remoteName, GitRemoteConfig remote) {
+            @Override
+            public String toString () {
+                return description;
+            }
+        }
+
+        public BranchMapping (String remoteName, GitRemoteConfig remote, GitBranch localBranch) {
             this.remoteName = remoteName;
             this.refSpec = MessageFormat.format(REF_SPEC_PATTERN, remoteName, remote.getRemoteName());
+            Mode mode;
+            if (localBranch == null) {
+                mode = Mode.ADDED;
+            } else {
+                mode = Mode.MODIFIED;
+            }
+            this.label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteName, remote.getRemoteName(), mode.label);
+            setToolTipText(NbBundle.getMessage(FetchBranchesPanel.class, "LBL_FetchBranchesPanel.BranchMapping.description", new Object[] { localBranch == null ? remote.getRemoteName() + "/" + remoteName : localBranch.getName(), mode.toString() })); //NOI18N
+            setForeground(mode.fgColor);
         }
 
         public String getRemoteName () {
@@ -274,7 +347,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
 
         @Override
         public String getText () {
-            return remoteName;
+            return label;
         }
     }
     
