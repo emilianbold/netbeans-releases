@@ -136,7 +136,7 @@ class FetchWizard  implements ChangeListener {
         protected Panel<WizardDescriptor>[] initializePanels () {
             selectUriStep = new SelectUriStep(repository, remotes);
             selectUriStep.addChangeListener(FetchWizard.this);
-            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY);
+            fetchBranchesStep = new FetchBranchesStep(repository, FetchBranchesStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY);
             fetchBranchesStep.addChangeListener(FetchWizard.this);
             Panel[] panels = new Panel[] { selectUriStep, fetchBranchesStep };
 

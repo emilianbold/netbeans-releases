@@ -235,8 +235,11 @@ public class ComponentInspector extends TopComponent
         Clipboard c = getClipboard();
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard) c;
-            if (clipboardListener == null)
+            if (clipboardListener == null) {
                 clipboardListener = new ClipboardChangesListener();
+            } else {
+                clip.removeClipboardListener(clipboardListener);
+            }
             clip.addClipboardListener(clipboardListener);
         }
     }
