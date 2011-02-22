@@ -756,10 +756,19 @@ import org.openide.util.Exceptions;
     }
 
     private void doMIAttach(GdbDebuggerInfo gdi) {
-        final long pid = gdi.getPid();
-        // MI command "-target-attach pid | file" does not available in
-        // gdb 6.1, 6.6, use CLI command "attach" instead.
-        String cmdString = "attach " + Long.toString(pid); // NOI18N
+        String cmdString;
+        long pid = -1;
+        String remoteTarget = gdi.getRemoteTarget();
+        if (remoteTarget != null) {
+            cmdString = "target remote " + remoteTarget;  //NOI18N
+        } else {
+            pid = gdi.getPid();
+            // MI command "-target-attach pid | file" does not available in
+            // gdb 6.1, 6.6, use CLI command "attach" instead.
+            cmdString = "attach " + Long.toString(pid); //NOI18N
+        }
+        
+        final long newPid = pid;
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -768,7 +777,9 @@ import org.openide.util.Exceptions;
                         state().isProcess = true;
                         stateChanged();
 			session().setSessionState(state());
-			session().setPid(pid);
+                        if (newPid != -1) {
+                            session().setPid(newPid);
+                        }
                         requestStack(null);
                         finish();
                     }
