@@ -102,6 +102,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -442,13 +443,21 @@ public final class PhpProject implements Project {
         //  2. just return the project directory & warn user about impossibility of creating src dir
         String projectName = getName();
         File dir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(propertyName))));
-        if (dir.mkdirs()) {
-            // original sources restored
-            informUser(projectName, NbBundle.getMessage(PhpProject.class, infoMessageKey, dir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
-            return FileUtil.toFileObject(dir);
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                NbBundle.getMessage(PhpProject.class, "MSG_CanFolderRestore", dir.getAbsolutePath()),   //NOI18N
+                NbBundle.getMessage(PhpProject.class, "LBL_TitleCanFolderRestore", projectName),        //NOI18N
+                NotifyDescriptor.YES_NO_OPTION, 
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null, NotifyDescriptor.NO_OPTION);
+        if (DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.YES_OPTION) {
+            if (dir.mkdirs()) {
+                // original sources restored
+                informUser(projectName, NbBundle.getMessage(PhpProject.class, infoMessageKey, dir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
+                return FileUtil.toFileObject(dir);
+            }
+            // temporary set sources to project directory, do not store it anywhere
+            informUser(projectName, NbBundle.getMessage(PhpProject.class, errorMessageKey, dir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         }
-        // temporary set sources to project directory, do not store it anywhere
-        informUser(projectName, NbBundle.getMessage(PhpProject.class, errorMessageKey, dir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         return helper.getProjectDirectory();
     }
 
