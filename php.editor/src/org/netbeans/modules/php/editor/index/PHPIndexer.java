@@ -209,7 +209,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 QualifiedName superClassName = classScope.getSuperClassName();
                 if (superClassName != null) {
                     final String name = superClassName.getName();
-                    //final String namespaceName = superClassName.toNamespaceName().toString();
+                    //final String namespaceName = superClassName.toNamespaceName().toString();                    
                     Collection<QualifiedName> namespaceNames = VariousUtils.getPossibleFQN(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope());
                     final String namespaceName = ModelUtils.getFirst(namespaceNames).getNamespaceName();
                     classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
