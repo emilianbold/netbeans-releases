@@ -114,6 +114,10 @@ public class RemoteProjectSupport {
         if (mcs == null) {
             return new File[0];
         }
+        if (FileUtil.toFile(mcs.getBaseDirFileObject()) == null) {
+            // no disk files
+            return sourceFilesAndDirs.toArray(new File[sourceFilesAndDirs.size()]);
+        }
         for(String soorceRoot : mcs.getSourceRoots()) {
             String path = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = CndFileUtils.createLocalFile(path); // or canonical?
