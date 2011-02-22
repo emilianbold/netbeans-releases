@@ -68,7 +68,7 @@ public class DownloadLibraryTask implements Runnable {
 
     @Messages({
         "download_title=Install JUnit Library",
-        "download_question=Do you wish to download and install the JUnit testing library? Doing so is recommended for Java development, but it is not distributed with NetBeans."
+        "download_question=Do you wish to download and install the JUnit testing library? Doing so is recommended for Java development, but JUnit is not distributed with NetBeans."
     })
     public @Override void run() {
         Preferences p = NbPreferences.forModule(DownloadLibraryTask.class);
