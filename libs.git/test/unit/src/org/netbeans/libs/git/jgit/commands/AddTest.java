@@ -50,14 +50,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -237,6 +243,51 @@ public class AddTest extends AbstractGitTestCase {
         assertDirCacheSize(1);
         assertDirCacheEntry(Arrays.asList(file1_2));
         assertNullDirCacheEntry(Arrays.asList(file1_1, file2_1, file2_2));
+    }
+    
+    public void testAddIgnoreExecutable () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "hi, i am executable");
+        f.setExecutable(true);
+        File[] roots = { f };
+        GitClient client = getClient(workDir);
+        StoredConfig config = repository.getConfig();
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        config.save();
+        // add should not set executable bit in index
+        add(roots);
+        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        
+        // index should differ from wt
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
+        config.save();
+        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
+    }
+    
+    public void testUpdateIndexIgnoreExecutable () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "hi, i am not executable");
+        File[] roots = { f };
+        add(roots);
+        commit(roots);
+        f.setExecutable(true);
+        GitClient client = getClient(workDir);
+        StoredConfig config = repository.getConfig();
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        config.save();
+        write(f, "hi, i am executable");
+        // add should not set executable bit in index
+        add(roots);
+        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        
+        // index should differ from wt
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
+        config.save();
+        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
     }
 
     public void testCancel () throws Exception {
