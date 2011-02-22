@@ -417,10 +417,6 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(classNamesLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_ClassNames")); // NOI18N
 
         classNamesScrollPane.setMinimumSize(new java.awt.Dimension(23, 80));
-
-        classNamesTable.setMaximumSize(new java.awt.Dimension(0, 12000));
-        classNamesTable.setMinimumSize(new java.awt.Dimension(0, 80));
-        classNamesTable.setPreferredSize(new java.awt.Dimension(0, 80));
         classNamesScrollPane.setViewportView(classNamesTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_Project")); // NOI18N
