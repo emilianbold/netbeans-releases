@@ -117,7 +117,7 @@ class CloneWizard  implements ChangeListener {
         protected Panel<WizardDescriptor>[] initializePanels () {
             repositoryStep = new RepositoryStep();
             repositoryStep.addChangeListener(CloneWizard.this);
-            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY);
+//            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY);
             cloneDestinationStep = new CloneDestinationStep();
             
             Panel[] panels = new Panel[] { repositoryStep, fetchBranchesStep, cloneDestinationStep };
