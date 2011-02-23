@@ -177,13 +177,14 @@ public class ConvertToARMTest extends TestBase {
                        "     public void test() throws Exception {" +
                        "         System.out.println(\"Start\");" +
                        "         InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         in.read();"+
                        "         in.close();"+
                        "         System.out.println(\"Done\");"+                                              
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:Convert to Automatic Resource Management",
                        "FixImpl",
-                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { } System.out.println(\"Done\"); }}");
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
     public void testNoTry1Stm() throws Exception {
@@ -1064,6 +1065,25 @@ public class ConvertToARMTest extends TestBase {
                        "FixImpl",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } System.out.println(\"Done\"); }}");
     }
+
+    public void testNoStatements() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "        System.out.println(\"Start\");" +
+                       "        InputStream ins = new FileInputStream(\"\");" +
+                       "        ins.close();"+
+                       "        System.out.println(\"Done\");" +
+                       "     }" +
+                       "}");
+    }
+
     
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {

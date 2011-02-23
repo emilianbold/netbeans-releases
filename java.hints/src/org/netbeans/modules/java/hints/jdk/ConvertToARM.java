@@ -237,29 +237,32 @@ public class ConvertToARM {
             final Element autoCloseable = info.getElements().getTypeElement(AUTO_CLOSEABLE);
             if (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType()))) {
                 final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
-                final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
-                final Trees trees = ctx.getInfo().getTrees();
-                final VariableElement resElement = (VariableElement) trees.getElement(varVar);
-                final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
-                final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
-                if (!hasNonCleanUpUsages(usages, cleanUpStatements)) {
-                    result.add(ErrorDescriptionFactory.forName(
-                        ctx,
-                        varVar,
-                        NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
-                        JavaFix.toEditorFix(new ConvertToARMFix(
-                            info,
-                            ctx.getPath(),
-                            nestingKind,
+                final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
+                if (!stms.isEmpty()) {
+                    final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
+                    final Trees trees = ctx.getInfo().getTrees();
+                    final VariableElement resElement = (VariableElement) trees.getElement(varVar);
+                    final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
+                    final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
+                    if (!hasNonCleanUpUsages(usages, cleanUpStatements)) {
+                        result.add(ErrorDescriptionFactory.forName(
+                            ctx,
                             varVar,
-                            vars.get("$init"),              //NOI18N
-                            multiVars.get("$armres$"),      //NOI18N
-                            multiVars.get("$stms$"),        //NOI18N
-                            multiVars.get("$catches$"),     //NOI18N
-                            multiVars.get("$finstms$"),     //NOI18N
-                            tail,
-                            cleanUpStatements))
-                    ));
+                            NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
+                            JavaFix.toEditorFix(new ConvertToARMFix(
+                                info,
+                                ctx.getPath(),
+                                nestingKind,
+                                varVar,
+                                vars.get("$init"),              //NOI18N
+                                multiVars.get("$armres$"),      //NOI18N
+                                stms,
+                                multiVars.get("$catches$"),     //NOI18N
+                                multiVars.get("$finstms$"),     //NOI18N
+                                tail,
+                                cleanUpStatements))
+                        ));
+                    }
                 }
             }
         }
