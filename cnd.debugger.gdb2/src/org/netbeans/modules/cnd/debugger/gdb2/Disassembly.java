@@ -602,7 +602,11 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         @Override
         public String toString() {
             //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
-            return function + "+" + offset + ": " + instruction; // NOI18N
+            if (!function.isEmpty()) {
+                return function + "+" + offset + ": " + instruction; // NOI18N
+            } else {
+                return address + ": " + instruction; // NOI18N
+            }
         }
     }
     
