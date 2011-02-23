@@ -597,7 +597,8 @@ public class Utilities {
 
         Element el = info.getTrees().getElement(tp);
 
-        if (el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String) {
+        if (el != null && (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.LOCAL_VARIABLE)
+                && ((VariableElement) el).getConstantValue() instanceof String) {
             return true;
         }
 
