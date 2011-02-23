@@ -206,6 +206,7 @@ public final class CndFileUtils {
     }
 
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
+        Parameters.notNull("FileObject", fo); //NOI18N
         return CndFileSystemProvider.getCanonicalFileObject(fo);
     }
     

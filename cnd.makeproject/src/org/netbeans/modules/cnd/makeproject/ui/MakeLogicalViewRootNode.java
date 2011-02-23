@@ -239,13 +239,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             if (makeConfiguration.isMakefileConfiguration()) {
                 MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                 FileObject buildCommandFO = makefileConfiguration.getAbsBuildCommandFileObject();
-                try {
-                    FileObject fileObject = CndFileUtils.getCanonicalFileObject(buildCommandFO);
-                    if (fileObject != null /*paranoia*/ && fileObject.isValid()) {
-                        set.add(fileObject);
+                if (buildCommandFO != null && buildCommandFO.isValid()) {
+                    try {
+                        FileObject fileObject = CndFileUtils.getCanonicalFileObject(buildCommandFO);
+                        if (fileObject != null /*paranoia*/ && fileObject.isValid()) {
+                            set.add(fileObject);
+                        }
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace(System.err);
                     }
-                } catch (IOException ioe) {
-                    ioe.printStackTrace(System.err);
                 }
             }
         }
