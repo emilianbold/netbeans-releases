@@ -118,6 +118,10 @@ public class MylynUtils {
                 authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);
                 repository.setCredentials(AuthenticationType.PROXY, authenticationCredentials, false);
             }
+        } else {
+            repository.setProperty(TaskRepository.PROXY_HOSTNAME, null);
+            repository.setProperty(TaskRepository.PROXY_PORT, null);
+            repository.setCredentials(AuthenticationType.PROXY, null, false);
         }
     }
     
