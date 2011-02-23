@@ -3782,7 +3782,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         // interface Controller
 	@Override
-        public void requestDis() {
+        public void requestDis(boolean withSource) {
             if (visitedLocation == null)
                 return;
 
@@ -3821,7 +3821,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         // interface Controller
 	@Override
-        public void requestDis(String start, int count) {
+        public void requestDis(String start, int count, boolean withSource) {
 	    start = start + "/" + count; // NOI18N
 	    requestDisHelp("dis ", start); // NOI18N
         }
