@@ -46,7 +46,6 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ModifiersTree;
@@ -74,6 +73,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -85,6 +85,8 @@ import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -94,6 +96,8 @@ import org.openide.util.Parameters;
  */
 @Hint(category="rules15", suppressWarnings="ConvertToARM")  //NOI18N
 public class ConvertToARM {
+
+    private static final SpecificationVersion JDK_17 = new SpecificationVersion("1.7"); //NOI18N
     
     private static final String AUTO_CLOSEABLE = "java.lang.AutoCloseable"; //NOI18N
     
@@ -235,7 +239,7 @@ public class ConvertToARM {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>(1);
         if (type != null && type.getKind() == TypeKind.DECLARED) {
             final Element autoCloseable = info.getElements().getTypeElement(AUTO_CLOSEABLE);
-            if (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType()))) {
+            if (isSupportedSourceLevel(ctx.getInfo().getFileObject())  && (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType())))) {
                 final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
                 final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
                 if (!stms.isEmpty()) {
@@ -655,6 +659,17 @@ public class ConvertToARM {
             cleanupStatements.add(parentParent);
         }
         return false;
+    }
+
+    private static boolean isSupportedSourceLevel(final FileObject file) {
+        if (file == null) {
+            return false;
+        }
+        final String sl = SourceLevelQuery.getSourceLevel(file);
+        if (sl == null) {
+            return false;
+        }
+        return JDK_17.compareTo(new SpecificationVersion(sl)) <= 0;
     }
     
     private enum NestingKind {
