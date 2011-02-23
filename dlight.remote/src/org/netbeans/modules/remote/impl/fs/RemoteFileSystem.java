@@ -51,8 +51,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,15 +59,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileSystem;
@@ -87,7 +84,7 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Kvashin
  */
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
-public class RemoteFileSystem extends FileSystem {
+public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
     private static final String ATTRIBUTES_FILE_NAME = ".attr"; // NOI18N
@@ -105,7 +102,6 @@ public class RemoteFileSystem extends FileSystem {
     private static int dirSyncCount;
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
-    private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -141,7 +137,27 @@ public class RemoteFileSystem extends FileSystem {
             }
         });
         resetDirtyTimestamp();
+        ConnectionManager.getInstance().addConnectionListener(this);
     }
+    
+    public void connected(ExecutionEnvironment env) {
+        if (execEnv.equals(env)) {
+            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
+                fo.connectionChanged();
+            }
+        }
+    }
+
+    public void disconnected(ExecutionEnvironment env) {
+        if (execEnv.equals(env)) {
+            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
+                fo.connectionChanged();
+            }
+        }
+    }
+    
+
+    
 
     /*package for test needs*/ void testResetDirtyTimestamp() {
         resetDirtyTimestamp();
@@ -255,7 +271,7 @@ public class RemoteFileSystem extends FileSystem {
         return getDisplayName();
     }
 
-    void setAttribute(RemoteFileObjectBase file, String attrName, Object value) {
+    /*package*/ void setAttribute(RemoteFileObjectBase file, String attrName, Object value) {
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
             File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
@@ -285,7 +301,7 @@ public class RemoteFileSystem extends FileSystem {
         }
     }
 
-    Object getAttribute(RemoteFileObjectBase file, String attrName) {
+    /*package*/ Object getAttribute(RemoteFileObjectBase file, String attrName) {
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
             if (attrName.equals(READONLY_ATTRIBUTES)) {
@@ -306,7 +322,7 @@ public class RemoteFileSystem extends FileSystem {
         return null;
     }
 
-    Enumeration<String> getAttributes(RemoteFileObjectBase file) {
+    /*package*/ Enumeration<String> getAttributes(RemoteFileObjectBase file) {
         RemoteFileObjectBase parent = file.getParent();
         if (parent != null) {
             File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
