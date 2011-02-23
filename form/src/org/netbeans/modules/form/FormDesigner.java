@@ -193,13 +193,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (formEditor != null) { // Issue 67879
             explorerManager = new ExplorerManager();
 
-            // add FormDataObject to lookup so it can be obtained from multiview TopComponent
             ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
             final FormDataObject formDataObject = formEditor.getFormDataObject();
             lookup = new FormProxyLookup(new Lookup[] {
                 ExplorerUtils.createLookup(explorerManager, map),
                 PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile()),
-                Lookup.EMPTY // placeholder for data node lookup used when no node selected in the form
+                Lookup.EMPTY, // placeholder for UndoRedo.Provider
+                formDataObject.getNodeDelegate().getLookup() // so FDO is found in multiview TC lookup
+                // last two items may change, see switchXXXInLookup methods
             });
             associateLookup(lookup);
 
@@ -214,6 +215,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         removeAll();
 
         formModel = formEditor.getFormModel();
+
+        switchUndoRedoInLookup(true);
 
         componentLayer = new ComponentLayer(formModel);
         handleLayer = new HandleLayer(this);
@@ -283,7 +286,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                 list.add(n);
                             }
                         }
-                        switchLookup(list.isEmpty()); // if no form node, select data node (of FormDataObject)
+                        // if no form node, select data node (of FormDataObject)
+                        switchNodeInLookup(list.isEmpty());
                         explorerManager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException ex) {
                         Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
@@ -368,6 +372,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
             topDesignComponent = null;
             formModel = null;
+            switchUndoRedoInLookup(false); // so it can be set to new value when reloaded
         }
         
         replicator = null;
@@ -378,7 +383,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         this.formEditor = formEditor;
     }
 
-    private void switchLookup(boolean includeDataNodeLookup) {
+    private void switchNodeInLookup(boolean includeDataNodeLookup) {
         if (settingLookup) {
             return;
         }
@@ -389,6 +394,33 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             lookups[index] = includeDataNodeLookup
                     ? formEditor.getFormDataObject().getNodeDelegate().getLookup()
                     : Lookup.EMPTY;
+            try {
+                settingLookup = true; // avoid re-entrant call
+                lookup.setSubLookups(lookups);
+            } finally {
+                settingLookup = false;
+            }
+        }
+    }
+
+    private void switchUndoRedoInLookup(boolean includeUndoRedo) {
+        if (settingLookup) {
+            return;
+        }
+        Lookup[] lookups = lookup.getSubLookups();
+        int index = lookups.length - 2;
+        boolean undoInLookup = (lookups[index] != Lookup.EMPTY);
+        if (includeUndoRedo != undoInLookup) {
+            final UndoRedo ur = getUndoRedo();
+            if (includeUndoRedo && ur != null) {
+                lookups[index] = Lookups.singleton(new UndoRedo.Provider() {
+                    @Override public UndoRedo getUndoRedo() {
+                        return ur;
+                    }
+                });
+            } else {
+                lookups[index] = Lookup.EMPTY;
+            }
             try {
                 settingLookup = true; // avoid re-entrant call
                 lookup.setSubLookups(lookups);

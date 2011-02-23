@@ -39,60 +39,45 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.management.api;
+package org.netbeans.modules.dlight.spi.support;
 
+import java.io.InterruptedIOException;
 import java.sql.SQLException;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
-import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
-import org.netbeans.modules.dlight.spi.support.SQLExceptions;
+import java.util.logging.Level;
+import org.openide.util.Exceptions;
 
 /**
- *
- * @author masha
+ * Utility class to work with SQLExceptions.
+ * 
+ * Currently SQL work is done in several threads and no good tracking of current 
+ * state of DB-related work is implemented... So it is possible that some 
+ * storage get closed in one thread while another one works with it. 
+ * 
+ * If the reason of the exception is 'closed connection' or it is either caused by
+ * InterruptedIOException or InterruptedException, then it just silently ignored.
+ * 
+ * @author ak119685
  */
-public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactory<DLightSessionServiceInfoStorage> {
-    /* use holder to prevent connect during lookup of service */
+public final class SQLExceptions {
 
-    private final static class InstanceHolder {
+    private SQLExceptions() {
+    }
 
-        public static final DLightSessionServiceInfoStorage serviceInfoStorage = new DLightSessionServiceInfoStorage("test"); // NOI18N
+    public static void printStackTrace(Level level, SQLDataStorage storage, SQLException ex) {
+        Exceptions.attachSeverity(ex, level);
+        printStackTrace(storage, ex);
+    }
 
-        static {
-            try {
-                serviceInfoStorage.connect();
-            } catch (SQLException ex) {
-                SQLExceptions.printStackTrace(serviceInfoStorage, ex);
-            }
+    public static void printStackTrace(SQLDataStorage storage, SQLException ex) {
+        if (storage.isClosed()) {
+            return;
         }
-    }
-    static final String ANALYTICS_SERVICE_INFO_DATA_STORAGE_TYPE = "analytics:serviceinfo"; // NOI18N
 
-    public static DLightSessionServiceInfoStorage getStorageInstance() {
-        return InstanceHolder.serviceInfoStorage;
-    }
+        if (ex.getCause() instanceof InterruptedIOException
+                || ex.getCause() instanceof InterruptedException) {
+            return;
+        }
 
-    @Override
-    public DLightSessionServiceInfoStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-
-    @Override
-    public DLightSessionServiceInfoStorage createStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-
-    @Override
-    public DLightSessionServiceInfoStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-
-    @Override
-    public String getUniqueKey(DLightSessionServiceInfoStorage storage) {
-        return DLightSessionServiceInfoStorage.DLIGHT_SERVICE_INFO_H2_DATABASE_URL;
-    }
-
-    @Override
-    public synchronized DLightSessionServiceInfoStorage createStorage() {
-        return InstanceHolder.serviceInfoStorage;
+        Exceptions.printStackTrace(ex);
     }
 }

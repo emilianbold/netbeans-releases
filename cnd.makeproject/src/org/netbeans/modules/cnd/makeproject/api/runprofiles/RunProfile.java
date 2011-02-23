@@ -551,7 +551,12 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     public void setRunCommand(ComboStringConfiguration runCommand) {
+        String oldArgsFlat = getArgsFlat();
         this.runCommand = runCommand;
+        String argsFlat = getArgsFlat();
+        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
+            pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
+        }
     }
 
     public IntConfiguration getConsoleType() {
