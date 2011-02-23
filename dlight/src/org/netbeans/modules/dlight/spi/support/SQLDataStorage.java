@@ -59,6 +59,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -73,7 +74,6 @@ import org.netbeans.modules.dlight.spi.support.impl.SQLConnection;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Range;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -92,6 +92,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     private final String dburl;
     private final SQLConnection connection = new SQLConnection();
     private volatile ServiceInfoDataStorage serviceInfoDataStorage;
+    private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
     static {
         classToType.put(Byte.class, "tinyint");     // NOI18N
@@ -342,7 +343,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         try {
             result = statementsCache.getPreparedStatement(sql);
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
 
         return result;
@@ -468,7 +469,10 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
                 if (!whereClause.isEmpty()){
                     query.append(whereClause);
                 }
-                logger.log(Level.FINE, "SQLDataStorage my method sql=" + query.toString());
+                
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "SQLDataStorage my method sql = {0}", query.toString()); // NOI18N
+                }
             }
 
         return connection.executeQuery(query.toString());
@@ -482,7 +486,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         try {
             return statement.executeUpdate();
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
         return -1;
     }
@@ -503,14 +507,16 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     }
 
     @Override
-    public synchronized boolean shutdown() {
-        try {
-            statementsCache.close();
-            connection.close();
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+    public boolean shutdown() {
+        isClosed.set(true);
+        synchronized (this) {
+            try {
+                statementsCache.close();
+                connection.close();
+            } catch (SQLException ex) {
+                SQLExceptions.printStackTrace(this, ex);
+            }
         }
-
         return true;
     }
 
@@ -521,7 +527,7 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
             try {
                 request.execute();
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(this, ex);
             }
         }
     }
@@ -632,6 +638,10 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
 
     public final SQLRequestsProcessor getRequestsProcessor() {
         return requestProcessor;
+    }
+
+    public final boolean isClosed() {
+        return isClosed.get();
     }
 
     private static class CustomRequest extends SQLBaseRequest {

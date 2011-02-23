@@ -87,12 +87,12 @@ import org.netbeans.modules.dlight.spi.indicator.PersistentIndicator;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -368,7 +368,7 @@ public final class TimeSeriesIndicator
                     rs.close();
                 }
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(storage, ex);
                 return false;
             }
         }
@@ -400,7 +400,7 @@ public final class TimeSeriesIndicator
                     rs.close();
                 }
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
                 return false;
             }
         }
@@ -420,7 +420,7 @@ public final class TimeSeriesIndicator
                 }
                 detailsValues = map;
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
                 return false;
             }
         }

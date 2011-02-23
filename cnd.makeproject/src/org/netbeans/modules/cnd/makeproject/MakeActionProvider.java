@@ -724,7 +724,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             if (ont == null) {
                 if (runProfile == null) {
-                    runProfile = conf.getProfile().clone(conf);
+                    runProfile = conf.getProfile();//.clone(conf); //Don't use a clone. I creates problems for dbxgui that writes back into run profile!!!!!
                 }
                 runProfile.getEnvironment().putenv("OMP_NUM_THREADS", "2"); // NOI18N
             }
