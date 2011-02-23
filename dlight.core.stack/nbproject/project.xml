@@ -84,6 +84,7 @@
                 <friend>com.sun.tools.analytics.oss.support</friend>
                 <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
+                <friend>com.sun.tools.analytics.dataproviders</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>

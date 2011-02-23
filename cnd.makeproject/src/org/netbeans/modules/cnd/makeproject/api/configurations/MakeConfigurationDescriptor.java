@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.MakeConfigurationSaveListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -99,7 +100,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.WindowManager;
@@ -123,7 +126,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
-    private FileObject baseDirFO;
+    
+    /*
+     * For full remote, configuration base and project base are different -
+     * project base is local (shadow project), configuration base is remote.
+     * For any other project they are the same
+     */
+    private final FileObject baseDirFO;
+    private final FileObject projectDirFO;
+    
     private boolean modified = false;
     private Folder externalFileItems = null;
     private Folder testItems = null;
@@ -139,8 +150,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private CndVisibilityQuery folderVisibilityQuery = null;
     private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 10);//NOI18N
 
-    public MakeConfigurationDescriptor(FileObject baseDirFO) {
+    public MakeConfigurationDescriptor(FileObject projectDirFO) {
+        this(projectDirFO, projectDirFO);
+    }
+
+    public MakeConfigurationDescriptor(FileObject projectDirFO, FileObject baseDirFO) {
+        Parameters.notNull("projectDirFO", projectDirFO);
+        Parameters.notNull("baseDirFO", baseDirFO);
         this.baseDirFO = baseDirFO;
+        this.projectDirFO = projectDirFO;
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
@@ -234,10 +252,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 // in fact ProjectManager should solve such problems in more general way
                 // because even for java it's possible to open the same project from two different
                 // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
-                project = ProjectManager.getDefault().findProject(baseDirFO);
+                project = ProjectManager.getDefault().findProject(projectDirFO);
             } catch (Exception e) {
                 // Should not happen
-                System.err.println("Cannot find project in '" + baseDirFO + "' " + e); // FIXUP // NOI18N
+                System.err.println("Cannot find project in '" + projectDirFO + "' " + e); // FIXUP // NOI18N
             }
         }
         return project;
@@ -260,7 +278,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, 
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
             Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -272,7 +290,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         if (!addGeneratedMakefileToLogicalView) {
-            externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+            if (!getProjectMakefileName().isEmpty()) {
+                externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+            }
         }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
@@ -368,10 +388,21 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return baseDirFO;
     }
 
-    public void setBaseDirFileObject(FileObject baseDirFO) {
-        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
-        this.baseDirFO = baseDirFO;
+    public FileObject getProjectDirFileObject() {
+        return projectDirFO;
     }
+    
+    public FileObject getNbprojectFileObject() {
+        if (projectDirFO != null) {
+            return projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        }
+        return null;
+    }    
+
+//    public void setBaseDirFileObject(FileObject baseDirFO) {
+//        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
+//        this.baseDirFO = baseDirFO;
+//    }
 
     public Map<String, Item> getProjectItemsMap() {
         return projectItems;
@@ -590,7 +621,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public ConfigurationDescriptor cloneProjectDescriptor() {
-        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(getBaseDirFileObject());
+        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(
+                getProjectDirFileObject(), getBaseDirFileObject());
         super.cloneProjectDescriptor(clone);
         clone.setProjectMakefileName(getProjectMakefileName());
         clone.setExternalFileItems(getExternalFileItems());
@@ -602,7 +634,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         clone.setFolderVisibilityQuery(getFolderVisibilityQuery().getRegEx());
         return clone;
     }
-
 
     /**
      * @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor.isModified instead.
@@ -656,12 +687,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
         RequestProcessor.Task task = RP.post(saveRunnable);
-        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()){
+        if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
             ModalMessageDlg.runLongTask(
-            WindowManager.getDefault().getMainWindow(),
-            task, null, null,
-            getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
-            getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
+                    WindowManager.getDefault().getMainWindow(),
+                    task, null, null,
+                    getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
+                    getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         } else {
             task.waitFinished();
         }
@@ -703,7 +734,18 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         @Override
         public void run() {
-            ret = saveWorker(extraMessage);
+            Collection<? extends MakeConfigurationSaveListener> listeners = 
+                    Lookup.getDefault().lookupAll(MakeConfigurationSaveListener.class);
+            for (MakeConfigurationSaveListener listener : listeners) {
+                listener.configurationSaving(MakeConfigurationDescriptor.this);
+            }
+            try {
+                ret = saveWorker(extraMessage);
+            } finally {
+                for (MakeConfigurationSaveListener listener : listeners) {
+                    listener.configurationSaved(MakeConfigurationDescriptor.this, ret);
+                }
+            }
         }
     }
 
@@ -731,6 +773,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (!isModified()) {
             // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
             new ConfigurationMakefileWriter(this).writeMissingMakefiles();
+
+            ConfigurationPrivateXMLWriter();
+            saveProject();
+
             return true;
         }
 
@@ -767,12 +813,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         // ALl OK
         FileObject fo = null;
-        fo = getBaseDirFileObject();
+        fo = getProjectDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
+            ConfigurationPrivateXMLWriter();
+            saveProject();
             LOGGER.log(Level.FINE, "End of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
         }
 
@@ -791,99 +839,135 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Fix is to rewrite this method to not use Project and Ant Helper and use DocumentFactory.createInstance().parse instead to open the document.
             return;
         }
+        AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+
+        // Remove old project dependency node
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        // Create new project dependency node
+        Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
+        Set<String> subprojectLocations = getSubprojectLocations();
+        for (String loc : subprojectLocations) {
+            Node n1;
+            n1 = doc.createElement(MakeProjectType.MAKE_DEP_PROJECT);
+            n1.appendChild(doc.createTextNode(loc));
+            element.appendChild(n1);
+        }
+        data.appendChild(element);
+        helper.putPrimaryConfigurationData(data, true);
+
+        // Remove old source root node
+        nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        // Create new source root node
+        element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
+        List<String> sourceRootist = getSourceRoots();
+        for (String loc : sourceRootist) {
+            Node n1;
+            n1 = doc.createElement(MakeProjectType.SOURCE_ROOT_ELEMENT);
+            n1.appendChild(doc.createTextNode(loc));
+            element.appendChild(n1);
+        }
+        data.appendChild(element);
+        helper.putPrimaryConfigurationData(data, true);
+
+
+        // Remove old configuration node
+        nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        // Create new configuration node
+        element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
+        for (Configuration conf : getConfs().getConfigurations()) {
+            Element element2 = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_ELEMENT);
+            Node n1;
+            n1 = doc.createElement(MakeProjectType.CONFIGURATION_NAME_ELEMENT);
+            n1.appendChild(doc.createTextNode(conf.getName()));
+            element2.appendChild(n1);
+            n1 = doc.createElement(MakeProjectType.CONFIGURATION_TYPE_ELEMENT);
+            n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getConfigurationType().getValue()));
+            element2.appendChild(n1);
+            element.appendChild(element2);
+        }
+        data.appendChild(element);
+
+        helper.putPrimaryConfigurationData(data, true);
+
+
+        // Create source encoding node
+        nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            // Node already there
+            Node node = nodeList.item(0);
+            node.setTextContent(((MakeProject) getProject()).getSourceEncoding());
+        } else {
+            // Create node
+            Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
+            nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
+            data.appendChild(nativeProjectType);
+        }
+
+        helper.putPrimaryConfigurationData(data, true);
+    }
+
+    private void ConfigurationPrivateXMLWriter() {
+        if (getProject() == null) {
+            return;
+        }
+        AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
+        Element data = helper.getPrimaryConfigurationData(false);
+        Document doc = data.getOwnerDocument();
+
+        // Create active configuration type node
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            // Node already there
+            Node node = nodeList.item(0);
+            node.setTextContent("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue());
+        } else {
+            // Create node
+            Element elem = doc.createElementNS(MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
+            elem.appendChild(doc.createTextNode("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue()));
+            data.appendChild(elem);
+        }
+
+        // Create active configuration type node
+        nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            // Node already there
+            Node node = nodeList.item(0);
+            node.setTextContent("" + getConfs().getActiveAsIndex());
+        } else {
+            // Create node
+            Element elem = doc.createElementNS(MakeProjectType.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_INDEX_ELEMENT); // NOI18N
+            elem.appendChild(doc.createTextNode("" + getConfs().getActiveAsIndex()));
+            data.appendChild(elem);
+        }
+
+        helper.putPrimaryConfigurationData(data, false);
+    }
+
+    private void saveProject() {
+        if (getProject() == null) {
+            return;
+        }
         try {
-            AntProjectHelper helper = ((MakeProject) getProject()).getAntProjectHelper();
-            Element data = helper.getPrimaryConfigurationData(true);
-            Document doc = data.getOwnerDocument();
-
-            // Remove old project dependency node
-            NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Node node = nodeList.item(i);
-                    data.removeChild(node);
-                }
-            }
-            // Create new project dependency node
-            Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
-            Set<String> subprojectLocations = getSubprojectLocations();
-            for (String loc : subprojectLocations) {
-                Node n1;
-                n1 = doc.createElement(MakeProjectType.MAKE_DEP_PROJECT);
-                n1.appendChild(doc.createTextNode(loc));
-                element.appendChild(n1);
-            }
-            data.appendChild(element);
-            helper.putPrimaryConfigurationData(data, true);
-
-            // Remove old source root node
-            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Node node = nodeList.item(i);
-                    data.removeChild(node);
-                }
-            }
-            // Create new source root node
-            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ROOT_LIST_ELEMENT);
-            List<String> sourceRootist = getSourceRoots();
-            for (String loc : sourceRootist) {
-                Node n1;
-                n1 = doc.createElement(MakeProjectType.SOURCE_ROOT_ELEMENT);
-                n1.appendChild(doc.createTextNode(loc));
-                element.appendChild(n1);
-            }
-            data.appendChild(element);
-            helper.putPrimaryConfigurationData(data, true);
-
-            // Remove old configuration node
-            nodeList = data.getElementsByTagName(MakeProjectType.CONFIGURATION_LIST_ELEMENT);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    Node node = nodeList.item(i);
-                    data.removeChild(node);
-                }
-            }
-            // Create new configuration node
-            element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.CONFIGURATION_LIST_ELEMENT);
-            String[] confsNames = getConfs().getConfsAsNames();
-            for (String name : confsNames) {
-                Node n1;
-                n1 = doc.createElement(MakeProjectType.CONFIGURATION_ELEMENT);
-                n1.appendChild(doc.createTextNode(name));
-                element.appendChild(n1);
-            }
-            data.appendChild(element);
-            helper.putPrimaryConfigurationData(data, true);
-
-            // Create source encoding node
-            nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                // Node already there
-                Node node = nodeList.item(0);
-                node.setTextContent(((MakeProject) getProject()).getSourceEncoding());
-            } else {
-                // Create node
-                Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.SOURCE_ENCODING_TAG); // NOI18N
-                nativeProjectType.appendChild(doc.createTextNode(((MakeProject) getProject()).getSourceEncoding()));
-                data.appendChild(nativeProjectType);
-            }
-
-            // Create active configuration type node
-            nodeList = data.getElementsByTagName(MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
-            if (nodeList != null && nodeList.getLength() > 0) {
-                // Node already there
-                Node node = nodeList.item(0);
-                node.setTextContent("" + ((MakeConfiguration)getConfs().getActive()).getConfigurationType().getValue());
-            } else {
-                // Create node
-                Element elem = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
-                elem.appendChild(doc.createTextNode("" + ((MakeConfiguration)getConfs().getActive()).getConfigurationType().getValue()));
-                data.appendChild(elem);
-            }
-
-            helper.putPrimaryConfigurationData(data, true);
-
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
             Set<Entry<Thread, StackTraceElement[]>> entrySet = Thread.getAllStackTraces().entrySet();
@@ -1257,7 +1341,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private NativeProjectProvider getNativeProject() {
         // the cons
         if (nativeProject == null) {
-            FileObject fo = baseDirFO;
+            FileObject fo = projectDirFO;
             try {
                 Project aProject = ProjectManager.getDefault().findProject(fo);
                 nativeProject = aProject.getLookup().lookup(NativeProject.class);

@@ -1045,7 +1045,8 @@ public class ElementJavadoc {
                         if (refClass != null) {
                             createLink(sb, eu.elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
                         } else {
-                            sb.append(stag.referencedClassName());
+                            String className = stag.referencedClassName();
+                            sb.append(className != null ? className : stag.text());
                         }
                     }
                 }

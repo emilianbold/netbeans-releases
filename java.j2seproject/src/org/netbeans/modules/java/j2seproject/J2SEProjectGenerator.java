@@ -67,11 +67,12 @@ public class J2SEProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, 
-            final String manifestFile, final String librariesDefinition) throws IOException {
+            final String manifestFile, final String librariesDefinition, boolean skipTests) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
         return new J2SEProjectBuilder (dir, name).
                 addDefaultSourceRoots().
+                skipTests(skipTests).
                 setMainClass(mainClass).
                 setManifest(manifestFile).
                 setLibrariesDefinitionFile(librariesDefinition).
@@ -90,6 +91,7 @@ public class J2SEProjectGenerator {
         return new J2SEProjectBuilder(dir, name).
                 addSourceRoots(sourceFolders).
                 addTestRoots(testFolders).
+                skipTests(testFolders.length == 0).
                 setManifest(manifestFile).
                 setLibrariesDefinitionFile(librariesDefinition).
                 setBuildXmlName(buildXmlName).

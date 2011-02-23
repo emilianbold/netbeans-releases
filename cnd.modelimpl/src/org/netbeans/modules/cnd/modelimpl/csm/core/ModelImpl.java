@@ -51,9 +51,10 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
@@ -64,7 +65,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryNotifier;
-import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -570,10 +571,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     private void disableProject2(final ProjectBase csmProject) {
         csmProject.setDisposed();
-        Project project = findProjectByNativeProject(ModelSupport.getNativeProject(csmProject.getPlatformProject()));
-        if (project != null) {
-            new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.FALSE);
-        }
+        Lookup.Provider project = findProjectByNativeProject(ModelSupport.getNativeProject(csmProject.getPlatformProject()));
+        setCodeAssistanceEnabled(project, false);
         // that's a caller's responsibility to launch disabling in a separate thread
         disableProject3(csmProject);
     }
@@ -628,7 +627,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 //	}
 //	return lastLibs;
 //    }
-    /** Enables/disables code model for the particular ptoject */
+    /** Enables/disables code model for the particular project */
     public void enableProject(NativeProject nativeProject) {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.enableProject " + nativeProject.getProjectDisplayName());
@@ -636,22 +635,27 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         synchronized (lock) {
             disabledProjects.remove(nativeProject);
         }
-        Project project = findProjectByNativeProject(nativeProject);
-        if (project != null) {
-            new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.TRUE);
-        }
+        Lookup.Provider project = findProjectByNativeProject(nativeProject);
+        setCodeAssistanceEnabled(project, true);
         addProject(nativeProject, nativeProject.getProjectDisplayName(), Boolean.TRUE);
     //ProjectBase csmProject = (ProjectBase) _getProject(nativeProject);
     //fireProjectOpened(csmProject);
     //new CodeAssistanceOptions(findProjectByNativeProject(nativeProject)).setCodeAssistanceEnabled(Boolean.TRUE);
     }
 
-    public static Project findProjectByNativeProject(NativeProject nativeProjectToSearch) {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            NativeProject nativeProject = projects[i].getLookup().lookup(NativeProject.class);
-            if (nativeProject != null && nativeProject == nativeProjectToSearch) {
-                return projects[i];
+    private void setCodeAssistanceEnabled(Lookup.Provider project, boolean enable) {
+        if (project != null) {
+            NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
+            if (settings != null) {
+                settings.setCodeAssistanceEnabled(enable);
+            }
+        }
+    }
+    
+    public static Lookup.Provider findProjectByNativeProject(NativeProject nativeProjectToSearch) {
+        for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
+            if (nativeProject == nativeProjectToSearch) {
+                return nativeProject.getProject();
             }
         }
         return null;
@@ -696,12 +700,26 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     if (csmLib instanceof LibProjectImpl) {
                         LibProjectImpl lib = (LibProjectImpl) csmLib;
                         if (!libs.contains(lib)) {
-                            lib.initFields();
                             libs.add(lib);
                         }
                     }
                 }
             }
+        }
+        for(CsmProject csmProject : projects()) {
+            if (!projects.contains(csmProject)) {
+                if (csmProject instanceof ProjectBase) {
+                    ProjectBase project = (ProjectBase) csmProject;
+                    for (CsmProject csmLib : project.getLibraries()) {
+                        if (csmLib instanceof LibProjectImpl) {
+                            libs.remove((LibProjectImpl)csmLib);
+                        }
+                    }
+                }
+            }
+        }
+        for (LibProjectImpl lib : libs) {
+            lib.initFields();
         }
         Collection<Object> platformProjects = new ArrayList<Object>();
         for (ProjectBase projectBase : toReparse) {
@@ -709,14 +727,16 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             platformProjects.add(platformProject);
             closeProject(platformProject, true);
         }
-        for (ProjectBase lib : libs) {
+        for (LibProjectImpl lib : libs) {
             closeProject(lib.getPlatformProject(), true);
         }
         LibraryManager.getInstance().cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
             ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
-            newPrj.scheduleReparse();
-            ListenersImpl.getImpl().fireProjectOpened(newPrj);
+            if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed? 
+                newPrj.scheduleReparse();
+                ListenersImpl.getImpl().fireProjectOpened(newPrj);
+            }
         }
     }
 

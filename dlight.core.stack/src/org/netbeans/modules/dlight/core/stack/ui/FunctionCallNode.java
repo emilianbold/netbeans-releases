@@ -68,7 +68,7 @@ final class FunctionCallNode extends AbstractNode implements GoToSourceAction.Go
 //        super(Children.LEAF);
         super(stackModel.getCallers(functionCall) == null ? Children.LEAF : new FunctionCallChildren(stackModel, stackModel.getCallers(functionCall)));
         this.functionCall = functionCall;
-        action = new GoToSourceAction(stackModel.getSourceFileInfoProvider(), functionCall, this);
+        action = new GoToSourceAction(null, stackModel.getSourceFileInfoProvider(), functionCall, this);
         plainDisplayName = functionCall.getDisplayedName();
         updateNames();
     }

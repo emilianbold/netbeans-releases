@@ -4,10 +4,12 @@ $var = new A|($var, $var2);
 CONSTRUCTO A($var)                         [PUBLIC]   A
 CONSTRUCTO A($var, $var2 = 10)             [PUBLIC]   A
 PACKAGE    ANS                             [PUBLIC]   null
+PACKAGE    Admin                           [PUBLIC]   null
 ------------------------------------
 CONSTRUCTO A()                             [PUBLIC]   A
 CONSTRUCTO a()                             [PUBLIC]   a
 CLASS      A135618                         [PUBLIC]   issue135618.php
+CLASS      Admin                           [PUBLIC]   Admin
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      a                               [PUBLIC]   issue137033.php

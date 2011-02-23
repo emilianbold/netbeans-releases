@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -38,7 +39,9 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.openide.util.Exceptions;
 
 /**
  * This walker gathers information about code blocks being hidden by preprocessor
@@ -96,8 +99,28 @@ public class APTFindUnusedBlocksWalker extends APTSelfWalker {
     protected @Override void onErrorNode(APT apt) {
         super.onErrorNode(apt);
         int startOffset = apt.getEndOffset();
-        int endOffset = this.csmFile.getText().length();
+        int endOffset;
+        try {
+            endOffset = ((FileImpl) csmFile).getBuffer().getCharBuffer().length;
+        } catch (IOException ex) {
+            endOffset = 0;
+        }
         addBlock(startOffset, endOffset);
+    }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
+        super.onPragmaNode(apt);
+        if (isStopped()) {
+            int startOffset = apt.getEndOffset();
+            int endOffset;
+            try {
+                endOffset = ((FileImpl) csmFile).getBuffer().getCharBuffer().length;
+            } catch (IOException ex) {
+                endOffset = 0;
+            }
+            addBlock(startOffset, endOffset);
+        }
     }
 
     private void handleIf(APT opener, boolean value) {

@@ -76,8 +76,8 @@ import org.openide.util.NbBundle;
         OVERRIDEN_COMBINED,
         IS_SPECIALIZED,
         SPECIALIZES,
-        TEMPLATE_COMBINED,
-        COMBINED
+        EXTENDED_IS_SPECIALIZED,
+        EXTENDED_SPECIALIZES
     }
 
     /*package*/ static final Logger LOGGER = Logger.getLogger("cnd.overrides.annotations.logger"); // NOI18N
@@ -114,11 +114,17 @@ import org.openide.util.NbBundle;
             } else if (templateSpecializations.isEmpty()) {
                 type = AnnotationType.SPECIALIZES;
             } else {
-                type = AnnotationType.TEMPLATE_COMBINED;
+                type = AnnotationType.SPECIALIZES;
             }
         } else {
             assert !baseTemplates.isEmpty() || !templateSpecializations.isEmpty() || !descDecls.isEmpty() || !baseDecls.isEmpty() : "all are empty?";
-            type = AnnotationType.COMBINED;
+            if (baseTemplates.isEmpty()) {
+                type = AnnotationType.EXTENDED_IS_SPECIALIZED;
+            } else if (templateSpecializations.isEmpty()) {
+                type = AnnotationType.EXTENDED_SPECIALIZES;
+            } else {
+                type = AnnotationType.EXTENDED_SPECIALIZES;
+            }
         }
         baseUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseDecls.size());
         for (CsmOffsetableDeclaration d : baseDecls) {
@@ -154,9 +160,11 @@ import org.openide.util.NbBundle;
             case IS_SPECIALIZED:
                 return "org-netbeans-modules-cnd-navigation-is_specialized"; // NOI18N
             case OVERRIDEN_COMBINED:
-            case TEMPLATE_COMBINED:
-            case COMBINED:
                 return "org-netbeans-modules-editor-annotations-override-is-overridden-combined"; //NOI18N
+            case EXTENDED_SPECIALIZES:
+                return "org-netbeans-modules-cnd-navigation-extended_specializes"; // NOI18N
+            case EXTENDED_IS_SPECIALIZED:
+                return "org-netbeans-modules-cnd-navigation-extended_is_specialized"; // NOI18N
             default:
                 throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }
@@ -200,9 +208,10 @@ import org.openide.util.NbBundle;
     }
     
     public void attach() {
-        if(pos.getOffset() != -1) {
-            NbDocument.addAnnotation(document, pos, -1, this);
+        if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
+            return;
         }
+         NbDocument.addAnnotation(document, pos, -1, this);
     }
     
     public void detachImpl() {

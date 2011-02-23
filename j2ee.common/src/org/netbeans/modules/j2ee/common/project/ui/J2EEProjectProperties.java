@@ -403,7 +403,7 @@ public final class J2EEProjectProperties {
             serverFile = FileUtil.normalizeFile(serverFile);
             FileObject server = FileUtil.toFileObject(serverFile);
             if (server != null) {
-                roots.put(serverFile.getAbsolutePath(), J2EE_SERVER_HOME);
+                roots.put(serverFile.getAbsolutePath().replace('\\', '/'), J2EE_SERVER_HOME); // NOI18N
                 toCheck.add(server);
             }
         }
@@ -412,7 +412,7 @@ public final class J2EEProjectProperties {
             domainFile = FileUtil.normalizeFile(domainFile);
             FileObject domain = FileUtil.toFileObject(domainFile);
             if (domain != null) {
-                roots.put(domainFile.getAbsolutePath(), J2EE_DOMAIN_HOME);
+                roots.put(domainFile.getAbsolutePath().replace('\\', '/'), J2EE_DOMAIN_HOME); // NOI18N
                 toCheck.add(domain);
             }
         }
@@ -421,7 +421,7 @@ public final class J2EEProjectProperties {
             middlewareFile = FileUtil.normalizeFile(middlewareFile);
             FileObject middleware = FileUtil.toFileObject(middlewareFile);
             if (middleware != null) {
-                roots.put(middlewareFile.getAbsolutePath(), J2EE_MIDDLEWARE_HOME);
+                roots.put(middlewareFile.getAbsolutePath().replace('\\', '/'), J2EE_MIDDLEWARE_HOME); // NOI18N
                 toCheck.add(middleware);
             }
         }
@@ -474,7 +474,7 @@ public final class J2EEProjectProperties {
         if (!ok) {
             return null;
         }
-        return Collections.singletonMap(rootFile.getAbsolutePath(), J2EE_SERVER_HOME);
+        return Collections.singletonMap(rootFile.getAbsolutePath().replace('\\', '/'), J2EE_SERVER_HOME); // NOI18N
     }
 
     public static String toClasspathString(File[] classpathEntries) {
@@ -483,7 +483,7 @@ public final class J2EEProjectProperties {
         }
         StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
-            classpath.append(classpathEntries[i].getAbsolutePath());
+            classpath.append(classpathEntries[i].getAbsolutePath().replace('\\', '/')); // NOI18N
             if (i + 1 < classpathEntries.length) {
                 classpath.append(':'); // NOI18N
             }
@@ -497,7 +497,7 @@ public final class J2EEProjectProperties {
         }
         StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
-            String path = classpathEntries[i].getAbsolutePath();
+            String path = classpathEntries[i].getAbsolutePath().replace('\\', '/'); // NOI18N
             
             if (roots != null) {
                 Map.Entry<String,String> replacement = null;
@@ -528,7 +528,7 @@ public final class J2EEProjectProperties {
         StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
             try {
-                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath());
+                classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath().replace('\\', '/')); // NOI18N
             } catch (URISyntaxException ex) {
 
             }

@@ -140,16 +140,13 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
         }
         return result;
+    }      
+
+    @Override
+    public String toString() {
+        return "APTIncludeResolverImpl{\n" + "baseFileIncludeDirIndex=" + baseFileIncludeDirIndex + ",\nbaseFile=" + baseFile + ",\nfileSystem=" + fileSystem.getDisplayName() +  // NOI18N
+                ",\nsystemIncludePaths=" + systemIncludePaths + ",\nuserIncludePaths=" + userIncludePaths + ",\nfileSearch=" + fileSearch + "\n}"; // NOI18N
     }
 
-//    private String resolveNextFilePath(String file, boolean system) {
-//        String result = null;
-//        if (result == null) {
-//            result = APTIncludeUtils.resolveFilePath(file, system ? systemIncludePaths : userIncludePaths, baseFile, true);
-//        }
-//        if (result == null) {
-//            result = APTIncludeUtils.resolveFilePath(file, system ? userIncludePaths : systemIncludePaths, baseFile, true);
-//        }
-//        return result;
-//    }      
+    
 }

@@ -151,6 +151,8 @@ public final class MakeActionProvider implements ActionProvider {
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
+    public static final String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
+    public static final String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
@@ -169,7 +171,10 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_RENAME,
         COMMAND_CUSTOM_ACTION,
         COMMAND_TEST,
-        COMMAND_TEST_SINGLE,};
+        COMMAND_TEST_SINGLE,
+        COMMAND_DEBUG_TEST,
+        COMMAND_DEBUG_STEP_INTO_TEST,
+    };
     // Project
     private MakeProject project;
     // Project Descriptor
@@ -193,6 +198,8 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String BUILD_TESTS_STEP = "build-tests"; // NOI18N
     private static final String TEST_STEP = "test"; // NOI18N
     private static final String TEST_SINGLE_STEP = "test-single"; // NOI18N
+    private static final String DEBUG_TEST_STEP = "debug-test"; // NOI18N
+    private static final String DEBUG_STEPINTO_TEST_STEP = "debug-stepinto-test"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Make Action RP", 1);// NOI18N
 
     public MakeActionProvider(MakeProject project) {
@@ -476,8 +483,12 @@ public final class MakeActionProvider implements ActionProvider {
             return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG);
+        } else if (targetName.equals(DEBUG_TEST_STEP)) {
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_TEST);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
+        } else if (targetName.equals(DEBUG_STEPINTO_TEST_STEP)) {
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
@@ -563,7 +574,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (conf.isLibraryConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
-                path = conf.getProfile().getRunCommand();
+                path = conf.getProfile().getRunCommand().getValue();
                 if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
@@ -713,7 +724,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             if (ont == null) {
                 if (runProfile == null) {
-                    runProfile = conf.getProfile().clone(conf);
+                    runProfile = conf.getProfile();//.clone(conf); //Don't use a clone. I creates problems for dbxgui that writes back into run profile!!!!!
                 }
                 runProfile.getEnvironment().putenv("OMP_NUM_THREADS", "2"); // NOI18N
             }
@@ -1012,6 +1023,8 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)
                 || command.equals(COMMAND_DEBUG)
                 || command.equals(COMMAND_DEBUG_STEP_INTO)
+                || command.equals(COMMAND_DEBUG_TEST)
+                || command.equals(COMMAND_DEBUG_STEP_INTO_TEST)
                 || command.equals(COMMAND_CUSTOM_ACTION)) {
             MakeConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = pd.getActiveConfiguration();
@@ -1196,6 +1209,7 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
                 if (CndUtils.isUnitTestMode()) {
+                    errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
                     new Exception(errormsg).printStackTrace();
                 } else {
                     if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(errormsg, NotifyDescriptor.WARNING_MESSAGE)) != NotifyDescriptor.OK_OPTION) {

@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
-import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.ResourceModel;
-import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.WadlModeler;
 import org.netbeans.modules.websvc.rest.support.ZipUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

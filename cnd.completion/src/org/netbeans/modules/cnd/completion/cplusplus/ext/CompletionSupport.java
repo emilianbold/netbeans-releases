@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -210,15 +211,16 @@ public final class CompletionSupport implements DocumentListener {
         if (pos == 0) {
             return 0;
         }
-//        if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos)) {
+        if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos) && 
+                !CndTokenUtilities.isInProCDirective(getDocument(), pos)) {
             if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
                 return lastSeparatorOffset;
             }
             lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
             return lastSeparatorOffset;
-//        } else {
-//            return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
-//        }
+        } else {
+            return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
+        }
     }
 
     /** Get the class from name. The import sections are consulted to find
@@ -518,12 +520,15 @@ public final class CompletionSupport implements DocumentListener {
                 if(pos2 != -1) {
                     CsmType type = findExactVarType(file, var, varObj.getInitialValue().getStartOffset() + pos2, refContext);
                     if(type != null) { 
-                        String varName = expr.substring(pos2).replaceAll("\\.(\\w*)(\\s)*=.*", "$1"); // NOI18N
+                        String varName = expr.substring(pos2).replaceAll("\\.(\\w*)(\\s)*=(.|\\n)*", "$1"); // NOI18N
                         CsmClassifier cls = type.getClassifier();
-                        if (CsmKindUtilities.isClass(cls)) {
-                            for (CsmMember csmMember : ((CsmClass)cls).getMembers()) {
-                                if(CsmKindUtilities.isField(csmMember) && csmMember.getName().toString().equals(varName)) {
-                                    return ((CsmField)csmMember).getType();
+                        if(cls != null) {
+                            cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, file);
+                            if (CsmKindUtilities.isClass(cls)) {
+                                for (CsmMember csmMember : ((CsmClass)cls).getMembers()) {
+                                    if(CsmKindUtilities.isField(csmMember) && csmMember.getName().toString().equals(varName)) {
+                                        return ((CsmField)csmMember).getType();
+                                    }
                                 }
                             }
                         }

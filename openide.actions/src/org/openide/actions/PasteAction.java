@@ -775,6 +775,7 @@ bigloop:
     /** Action that wraps paste type.
      */
     private static final class ActionPT extends AbstractAction implements Runnable {
+        private static final RequestProcessor RP = new RequestProcessor("Pasting"); // NOI18N
         private PasteType t;
         private NodeSelector sel;
         private boolean secondInvocation;
@@ -791,7 +792,7 @@ bigloop:
             if ("waitFinished".equals(command)) { // NOI18N
                 run();
             } else {
-                RequestProcessor.getDefault().post(this);
+                RP.post(this);
             }
         }
 

@@ -487,13 +487,33 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
+            StringBuilder value = new StringBuilder();
+            
+            appendQuotation(value, attrInfo.valueQuotationType);
+            value.append(attributes.getValue(i));
+            appendQuotation(value, attrInfo.valueQuotationType);
+            
             AstNode.Attribute attr = factory.createAttribute(
                     attributes.getLocalName(i),
-                    attributes.getValue(i),
+                    value.toString(),
                     attrInfo.nameOffset,
                     attrInfo.valueOffset);
 
             node.setAttribute(attr);
+        }
+    }
+    
+    private void appendQuotation(StringBuilder builder, AttrInfo.ValueQuotation kind) {
+        if(kind == null) {
+            return ;
+        }
+        switch(kind) {
+            case DOUBLE:
+                builder.append('"');
+                break;
+            case SINGLE:
+                builder.append('\'');
+                break;
         }
     }
 

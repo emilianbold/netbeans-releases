@@ -672,37 +672,46 @@ implements ChangeListener {
         FileObject fo = fe.getFile();
         // The FileSystem notifying us about the changes should
         // not hold any lock so we're safe here
-        synchronized (DataObjectPool.getPOOL()) {
-            Item itm = DataObjectPool.POOL.map.get(fo);
-            if (itm != null) { // the file was someones' primary
-                return Collections.singleton(itm); // so notify only owner
-            } else { // unknown file or someone secondary
-                List<Item> arr = DataObjectPool.POOL.children.get(fo.getParent());
-                if (arr != null) {
-                    return new ArrayList<Item>(arr);
-                }
-                if (!checkSiblings) {
-                    return Collections.emptySet();
-                }
-                List<Item> toNotify = new LinkedList<Item>();
-                FileObject parent = fo.getParent();
-                if (parent != null) { // the fo is not root
-                    FileObject[] siblings = parent.getChildren();
-                    // notify all in folder
-                    for (int i = 0; i < siblings.length; i++) {
-                        itm = (Item) DataObjectPool.POOL.map.get(siblings[i]);
-                        if (itm == null) {
-                            continue;
-                        }
-                        DataObject obj = itm.getDataObjectOrNull();
-                        if (obj == null) {
-                            continue;
-                        }
-                        toNotify.add(itm);
+        FileObject[] siblings = null;
+        FileObject parent = null;
+        for (;;) {
+            OUTSIDE: synchronized (DataObjectPool.getPOOL()) {
+                Item itm = DataObjectPool.POOL.map.get(fo);
+                if (itm != null) { // the file was someones' primary
+                    return Collections.singleton(itm); // so notify only owner
+                } else { // unknown file or someone secondary
+                    List<Item> arr = DataObjectPool.POOL.children.get(fo.getParent());
+                    if (arr != null) {
+                        return new ArrayList<Item>(arr);
                     }
+                    if (!checkSiblings) {
+                        return Collections.emptySet();
+                    }
+                    List<Item> toNotify = new LinkedList<Item>();
+                    if (parent == null) {
+                        parent = fo.getParent();
+                    }
+                    if (parent != null) { // the fo is not root
+                        if (siblings == null) {
+                            break OUTSIDE;
+                        }
+                        // notify all in folder
+                        for (int i = 0; i < siblings.length; i++) {
+                            itm = (Item) DataObjectPool.POOL.map.get(siblings[i]);
+                            if (itm == null) {
+                                continue;
+                            }
+                            DataObject obj = itm.getDataObjectOrNull();
+                            if (obj == null) {
+                                continue;
+                            }
+                            toNotify.add(itm);
+                        }
+                    }
+                    return toNotify;
                 }
-                return toNotify;
             }
+            siblings = parent.getChildren();
         }
     }
 

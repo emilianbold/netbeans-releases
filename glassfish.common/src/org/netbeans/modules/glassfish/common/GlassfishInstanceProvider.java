@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -70,6 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -80,6 +82,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
+    private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
     private volatile static GlassfishInstanceProvider preludeProvider;
     private volatile static GlassfishInstanceProvider ee6Provider;
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
@@ -319,7 +322,15 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         //init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
-                result.add(instance.getCommonInstance());
+                ServerInstance si = instance.getCommonInstance();
+                if (null != si) {
+                    result.add(si);
+                } else {
+                    String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.WARNING, message);   // NOI18N
+                    if (null != instance.getDeployerUri())
+                        instanceMap.remove(instance.getDeployerUri());
+                }
             }
         }
         return result;
@@ -343,8 +354,18 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     public ServerInstance getInstance(String uri) {
 //        return instanceMap.get(uri);
         //init();
+        ServerInstance rv = null;
         GlassfishInstance instance = instanceMap.get(uri);
-        return instance == null ? null : instance.getCommonInstance();
+        if (null != instance) {
+            rv = instance.getCommonInstance();
+            if (null == rv) {
+                String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
+                Logger.getLogger("glassfish").log(Level.WARNING, message);
+                if (null != instance.getDeployerUri())
+                    instanceMap.remove(instance.getDeployerUri());
+            }
+        }
+        return rv;
     }
 
     String getInstancesDirName() {
@@ -404,7 +425,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             }
                             GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
                             if(si != null) {
-                                instanceMap.put(si.getDeployerUri(), si);
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
                                 getLogger().log(Level.FINER, "Unable to create glassfish instance for {0}", // NOI18N
@@ -417,18 +437,16 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 }
             }
         }
-        if (null != installedInstance) {
+        if (null != installedInstance && null == NbPreferences.forModule(this.getClass()).get(AUTOINSTANCECOPIED,null)) {
             try {
                 GlassfishInstance igi = readInstanceFromFile(installedInstance, uriFragments[savedj]);
-                GlassfishInstance si = instanceMap.get(igi.getDeployerUri());
-                if (null == si) {
-                    try {
-                        writeInstanceToFile(igi, false);
-                    } catch (IOException ioe) {
-                    }
-                    instanceMap.put(igi.getDeployerUri(), igi);
-                    activeDisplayNames.add(igi.getDisplayName());
+                try {
+                    NbPreferences.forModule(this.getClass()).put(AUTOINSTANCECOPIED, "true"); // NOI18N
+                    NbPreferences.forModule(this.getClass()).flush();
+                } catch (BackingStoreException ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, "auto-registered instance may reappear", ex); // NOI18N
                 }
+                activeDisplayNames.add(igi.getDisplayName());
             } catch (IOException ex) {
                 getLogger().log(Level.INFO, null, ex);
             }
@@ -531,7 +549,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 FileObject[] installedServers = dir.getChildren();
                 for(int i = 0; i < installedServers.length; i++) {
                     String val = getStringAttribute(installedServers[i], GlassfishModule.URL_ATTR);
-                    if(val != null && val.equals(url)) {
+                    if(val != null && val.equals(url) &&
+                            !GLASSFISH_AUTOREGISTERED_INSTANCE.equals(installedServers[i].getName())) {
                         return installedServers[i];
                     }
                 }

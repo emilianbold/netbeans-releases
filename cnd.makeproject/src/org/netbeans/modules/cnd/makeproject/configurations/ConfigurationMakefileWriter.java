@@ -51,6 +51,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -59,10 +60,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -105,6 +105,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -112,7 +113,8 @@ import org.openide.util.NbBundle;
 public class ConfigurationMakefileWriter {
 
     private MakeConfigurationDescriptor projectDescriptor;
-
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    
     public ConfigurationMakefileWriter(MakeConfigurationDescriptor projectDescriptor) {
         this.projectDescriptor = projectDescriptor;
     }
@@ -342,10 +344,15 @@ public class ConfigurationMakefileWriter {
             makefileWriter = new DefaultMakefileWriter();
         }
 
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + "/Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
-
+        
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(outputFileName));
+            FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
+            if (nbProjFO == null) {
+                LOGGER.info("Error writing makefiles: can not find nbproject");
+                return;
+            }
+            FileObject makefileFO = FileUtil.createData(nbProjFO, "Makefile-" + conf.getName() + ".mk"); // NOI18N;
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(makefileFO.getOutputStream()));
             try {
                 makefileWriter.writePrelude(projectDescriptor, conf, bw);
                 writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
@@ -448,9 +455,11 @@ public class ConfigurationMakefileWriter {
         bw.write("CND_BUILDDIR=" + MakeConfiguration.BUILD_FOLDER + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
-        bw.write("# Include project Makefile\n"); // NOI18N
-        bw.write("include " + projectDescriptor.getProjectMakefileName() + "\n"); // NOI18N
-        bw.write("\n"); // NOI18N
+        if (!projectDescriptor.getProjectMakefileName().isEmpty()) {
+            bw.write("# Include project Makefile\n"); // NOI18N
+            bw.write("include " + projectDescriptor.getProjectMakefileName() + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
         bw.write("# Object Directory\n"); // NOI18N
         bw.write(MakeConfiguration.OBJECTDIR_MACRO_NAME + "=" + getObjectDir(conf) + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
@@ -1177,9 +1186,11 @@ public class ConfigurationMakefileWriter {
                             command = "${PROC} lines=yes iname="; // NOI18N
                             command += file;
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                command += " code=cpp parse=partial"; // NOI18N
+                                command += " code=cpp parse=none"; // NOI18N
+                            } else {
+                                command += " parse=none"; // NOI18N                                
                             }
-                            command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
+//                            command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
                             command += " oname="; // NOI18N
                             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                                 MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
@@ -1596,8 +1607,6 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writePackagingScript(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
-
         if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             // Nothing to do
             return;
@@ -1608,12 +1617,25 @@ public class ConfigurationMakefileWriter {
             return;
         }
 
-        FileOutputStream os = null;
+        OutputStream os = null;
+        final String scriptName = "Package-" + conf.getName() + ".bash"; // NOI18N
+        FileObject projectBaseFO = RemoteFileUtil.getProjectSourceBaseFileObject(projectDescriptor.getProject());
+        if (projectBaseFO == null) {
+            return;
+        }
+        FileObject nbProjectFO = projectBaseFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        if (nbProjectFO == null) {
+            return;
+        }            
         try {
-            os = new FileOutputStream(outputFileName);
+            FileObject outputFO = nbProjectFO.getFileObject(scriptName); // UNIX path // NOI18N
+            if (outputFO == null) {
+                outputFO = nbProjectFO.createData(scriptName);
+            }
+            os = outputFO.getOutputStream();
         } catch (Exception e) {
             // FIXUP
-            System.err.println("Cannot create FileOutputStream from " + outputFileName); // NOI18N
+            System.err.println("Cannot open for writing " + nbProjectFO + '/' + scriptName); // NOI18N
             e.printStackTrace(System.err);
             return;
         }

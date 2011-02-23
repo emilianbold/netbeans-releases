@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImp
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
@@ -452,6 +451,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         @Override
         public boolean isSpecialization() {
             return ((CsmTemplate) declaration).isSpecialization();
+        }
+
+        @Override
+        public boolean isExplicitSpecialization() {
+            return ((CsmTemplate) declaration).isExplicitSpecialization();
         }
         
         private boolean isRecursion(CsmTemplate type, int i){

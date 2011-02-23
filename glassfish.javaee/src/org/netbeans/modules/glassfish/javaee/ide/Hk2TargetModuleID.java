@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -93,7 +93,8 @@ public class Hk2TargetModuleID implements TargetModuleID {
                 retVal = new Hk2TargetModuleID(target, docBaseURI, contextPath, location);
                 knownModules.put(key,retVal);
             } else {
-                retVal.setPath(contextPath);
+                if (null != contextPath)
+                    retVal.setPath(contextPath);
             }
             if (clearChildren) {
                 retVal.children.clear();

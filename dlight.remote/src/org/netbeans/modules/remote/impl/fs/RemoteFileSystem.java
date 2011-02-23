@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -106,7 +107,7 @@ public class RemoteFileSystem extends FileSystem {
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
     private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
 
-    public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
+    /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
@@ -174,37 +175,8 @@ public class RemoteFileSystem extends FileSystem {
 
     }
 
-    private static String normalize(String absPath){
-        //BZ#192265 as vkvashin stated the URI i sused to normilize the path
-        //but URI is really very restrictive so let's use another way
-        //will use the face that path is absolute and we have Unix like system
-        //no special code for Windows
-        //also as absolute path is passed to the method we will use it as an absolute
-        String result = absPath;
-// # Remove all /./ sequences.
-//    local   path=${1//\/.\//\/}
-        result = result.replaceAll("[/][.][/]", "[/]"); // NOI18N
-
-//
-//    # Remove first dir/.. sequence.
-//    local   npath=$(echo $path | sed -e 's;[^/][^/]*/\.\./;;')
-        if (result.startsWith("..")){ // NOI18N
-            result = result.replaceFirst("..", ""); // NOI18N
-        }
-//    # Remove remaining dir/.. sequence.
-//    while [[ $npath != $path ]]
-//    do
-//        path=$npath
-//        npath=$(echo $path | sed -e 's;[^/][^/]*/\.\./;;')
-//    done
-//    echo $path
-        Pattern p = Pattern.compile(".*[/]([^/]+)[/][.][.].*"); // NOI18N
-        Matcher m = p.matcher(result);
-        if (m.matches()){
-            result = result.replaceAll("[/][^/]+[/][.][.]", ""); // NOI18N
-        }
-        return result;
-
+    private static String normalize(String absPath) {
+        return PathUtilities.normalizeUnixPath(absPath);
     }
 
     /*package-local, for testing*/
@@ -288,7 +260,13 @@ public class RemoteFileSystem extends FileSystem {
         if (parent != null) {
             File attr = new File(cache + parent.getPath(), ATTRIBUTES_FILE_NAME);
             Properties table = readProperties(attr);
-            table.setProperty(translateAttributeName(file, attrName), encodeValue(value));
+            String translatedAttributeName = translateAttributeName(file, attrName);
+            String encodedValue = encodeValue(value);
+            if (encodedValue == null) {
+                table.remove(translatedAttributeName);
+            } else {                
+                table.setProperty(translatedAttributeName, encodedValue);
+            }
             FileOutputStream fileOtputStream = null;
             try {
                 fileOtputStream = new FileOutputStream(attr);

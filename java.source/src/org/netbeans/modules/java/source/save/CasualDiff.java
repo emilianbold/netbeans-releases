@@ -605,6 +605,10 @@ public class CasualDiff {
             parameterPrint = false;
             printer.setPrec(old);
         }
+        //make sure the ')' is printed:
+        moveFwdToToken(tokenSequence, posHint, JavaTokenId.RPAREN);
+        tokenSequence.moveNext();
+        posHint = tokenSequence.offset();
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
         // if abstract, hint is before ending semi-colon, otherwise before method body
@@ -631,7 +635,8 @@ public class CasualDiff {
         } else {
             posHint = oldT.thrown.iterator().next().getStartPosition();
         }
-        copyTo(localPointer, localPointer = posHint);
+        if (!newT.thrown.isEmpty()) //do not copy the "throws" keyword:
+            copyTo(localPointer, localPointer = posHint);
         PositionEstimator est = EstimatorFactory.throwz(oldT.getThrows(), newT.getThrows(), diffContext);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
         if (oldT.defaultValue != newT.defaultValue) {
@@ -3069,8 +3074,15 @@ public class CasualDiff {
                 return oldBounds[1];
             }
         }
-
-        elementBounds[1] = Math.min(elementBounds[1], Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING)));
+        
+        int commentsStart = Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING));
+        if (commentsStart < elementBounds[1]) {
+            int lastIndex;
+            tokenSequence.move(commentsStart);
+            elementBounds[1] = tokenSequence.movePrevious() && tokenSequence.token().id() == JavaTokenId.WHITESPACE &&
+                    (lastIndex = tokenSequence.token().text().toString().lastIndexOf('\n')) > -1 ?
+                    tokenSequence.offset() + lastIndex + 1 : commentsStart;
+        }
 
         switch (oldT.getTag()) {
           case JCTree.TOPLEVEL:

@@ -129,9 +129,9 @@ class FilesystemHandler extends VCSInterceptor {
                 if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                     SvnClientExceptionHandler.notifyException(e, false, false); // log this
                 }
-                IOException ex = new IOException(); // NOI18N
-                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()}));
-                ex.initCause(e);
+                IOException ex = new IOException();
+                Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()})); // NOI18N
+                ex.getCause().initCause(e);
                 throw ex;
             } finally {
                 internalyDeletedFiles.add(file);
@@ -461,9 +461,9 @@ class FilesystemHandler extends VCSInterceptor {
                     if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                         SvnClientExceptionHandler.notifyException(e, false, false); // log this
                     }
-                    IOException ex = new IOException(); // NOI18N
-                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()}));
-                    ex.initCause(e);
+                    IOException ex = new IOException();
+                    Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()})); // NOI18N
+                    ex.getCause().initCause(e);
                     throw ex;
                 }
             }
@@ -471,9 +471,9 @@ class FilesystemHandler extends VCSInterceptor {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
-            IOException ex = new IOException(); // NOI18N
-            Exceptions.attachLocalizedMessage(e, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
-            ex.initCause(e);
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage()); // NOI18N
+            ex.getCause().initCause(e);
             throw ex;
         }                 
 
@@ -811,9 +811,9 @@ class FilesystemHandler extends VCSInterceptor {
                     if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                         SvnClientExceptionHandler.notifyException(e, false, false); // log this
                     }
-                    IOException ex = new IOException(); // NOI18N
-                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()}));
-                    ex.initCause(e);
+                    IOException ex = new IOException();
+                    Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()})); //NOI18N
+                    ex.getCause().initCause(e);
                     throw ex;
                 }
             }
@@ -821,9 +821,9 @@ class FilesystemHandler extends VCSInterceptor {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
-            IOException ex = new IOException(); // NOI18N
-            Exceptions.attachLocalizedMessage(e, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
-            ex.initCause(e);
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage()); // NOI18N
+            ex.getCause().initCause(e);
             throw ex;
         }
     }

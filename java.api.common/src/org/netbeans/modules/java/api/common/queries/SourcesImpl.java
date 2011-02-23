@@ -90,7 +90,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
     private long eventId;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final SourceGroupModifierImplementation sgmi;
+    private SourceGroupModifierImplementation sgmi;
     private final FireAction fireTask = new FireAction();
 
     @SuppressWarnings("LeakingThisInConstructor")
@@ -129,7 +129,9 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 synchronized (SourcesImpl.this) {
                     if (dirty) {
                         delegate.removeChangeListener(SourcesImpl.this);
-                        delegate = initSources().createSources();
+                        SourcesHelper sh = initSources();
+                        sgmi = sh.createSourceGroupModifierImplementation();
+                        delegate = sh.createSources();
                         delegate.addChangeListener(SourcesImpl.this);
                         dirty = false;
                     }

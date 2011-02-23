@@ -97,7 +97,8 @@ public class MavenPersistenceProviderSupplier implements PersistenceProviderSupp
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER2_0, "hibernatePersistenceProviderIsDefault2.0", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER1_0, "toplinkPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault2.0", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER1_0, "openJpaPersistenceProviderIsDefault1.0", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
         return result;
     }
