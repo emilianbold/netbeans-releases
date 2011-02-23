@@ -110,7 +110,8 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     private Field[]         fields;
     private Field[]         staticFields;
     private Field[]         inheritedFields;
-    private volatile boolean refreshFields;
+    private boolean         refreshFields;
+    private final Object    fieldsLock = new Object();
 
     private com.sun.jdi.Type valueType;
     private String           valueTypeName;
@@ -184,10 +185,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         if (v instanceof ArrayReference) {
             return ArrayReferenceWrapper.length0((ArrayReference) v);
         } else {
-            if (fields == null || refreshFields) {
-                initFields ();
+            synchronized (fieldsLock) {
+                if (fields == null || refreshFields) {
+                    initFields ();
+                }
+                return fields.length;
             }
-            return fields.length;
         }
     }
 
@@ -242,17 +245,19 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 return elements;
             } else {
                 //either the fields are cached or we have to init them
-                if (fields == null || refreshFields) {
-                    initFields ();
+                synchronized (fieldsLock) {
+                    if (fields == null || refreshFields) {
+                        initFields ();
+                    }
+                    if (to != 0) {
+                        to = Math.min(fields.length, to);
+                        from = Math.min(fields.length, from);
+                        Field[] fv = new Field [to - from];
+                        System.arraycopy (fields, from, fv, 0, to - from);
+                        return fv;
+                    }
+                    return fields;
                 }
-                if (to != 0) {
-                    to = Math.min(fields.length, to);
-                    from = Math.min(fields.length, from);
-                    Field[] fv = new Field [to - from];
-                    System.arraycopy (fields, from, fv, 0, to - from);
-                    return fv;
-                }
-                return fields;
             }
         } catch (InternalExceptionWrapper e) {
             return new Field[] {};
@@ -273,17 +278,19 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         if (v == null || v instanceof ArrayReference) {
             return new Field[] {};
         }
-        if (fields == null || refreshFields) {
-            initFields ();
+        synchronized (fieldsLock) {
+            if (fields == null || refreshFields) {
+                initFields ();
+            }
+            if (to != 0) {
+                to = Math.min(staticFields.length, to);
+                from = Math.min(staticFields.length, from);
+                Field[] fv = new Field[to - from];
+                System.arraycopy (staticFields, from, fv, 0, to - from);
+                return fv;
+            }
+            return staticFields;
         }
-        if (to != 0) {
-            to = Math.min(staticFields.length, to);
-            from = Math.min(staticFields.length, from);
-            Field[] fv = new Field[to - from];
-            System.arraycopy (staticFields, from, fv, 0, to - from);
-            return fv;
-        }
-        return staticFields;
     }
 
     /**
@@ -296,17 +303,19 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         if (v == null || v instanceof ArrayReference) {
             return new Field[] {};
         }
-        if (fields == null || refreshFields) {
-            initFields ();
+        synchronized (fieldsLock) {
+            if (fields == null || refreshFields) {
+                initFields ();
+            }
+            if (to != 0) {
+                to = Math.min(inheritedFields.length, to);
+                from = Math.min(inheritedFields.length, from);
+                Field[] fv = new Field[to - from];
+                System.arraycopy (inheritedFields, from, fv, 0, to - from);
+                return fv;
+            }
+            return inheritedFields;
         }
-        if (to != 0) {
-            to = Math.min(inheritedFields.length, to);
-            from = Math.min(inheritedFields.length, from);
-            Field[] fv = new Field[to - from];
-            System.arraycopy (inheritedFields, from, fv, 0, to - from);
-            return fv;
-        }
-        return inheritedFields;
     }
 
     public Super getSuper () {
@@ -707,9 +716,11 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 ObjectReferenceWrapper.disableCollection((ObjectReference) v);
             } catch (Exception ex) {}
         }*/
-        fields = null;
-        staticFields = null;
-        inheritedFields = null;
+        synchronized (fieldsLock) {
+            fields = null;
+            staticFields = null;
+            inheritedFields = null;
+        }
         synchronized (superClassLoaded) {
             superClassLoaded[0] = false;
         }
@@ -791,6 +802,8 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     }
 
     private void initFields () {
+        // Called under synchronized (fieldsLock)
+        assert Thread.holdsLock(fieldsLock);
         refreshFields = false;
         Value value = getInnerValue();
         Type type;
@@ -1094,7 +1107,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 Object newValue = evt.getNewValue();
                 if (newValue instanceof Integer &&
                     JPDADebugger.STATE_RUNNING == ((Integer) newValue).intValue()) {
-                    AbstractObjectVariable.this.refreshFields = true;
+                    synchronized (AbstractObjectVariable.this.fieldsLock) {
+                        AbstractObjectVariable.this.refreshFields = true;
+                    }
                 }
             }
         }
