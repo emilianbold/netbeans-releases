@@ -82,7 +82,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
     /** default path separator */
     private static final char PATH_SEP = '/';
-    private static final String WEIGHT_ATTRIBUTE = "weight"; // NOI18N
+    static final String WEIGHT_ATTRIBUTE = "weight"; // NOI18N
     private static final FileSystem.AtomicAction markAtomicAction = new FileSystem.AtomicAction() {
             public void run() {
             }
