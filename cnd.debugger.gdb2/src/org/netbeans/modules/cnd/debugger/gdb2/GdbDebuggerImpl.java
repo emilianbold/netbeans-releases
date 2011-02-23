@@ -1767,6 +1767,7 @@ import org.openide.util.Exceptions;
             getFullPath((GdbFrame) f);
         }
         stackUpdater.treeChanged();     // causes a pull
+        disassembly.stateUpdated();
     }
 
     private void visitCurrentSrc(GdbFrame f, MIRecord srcRecord) {
@@ -1873,6 +1874,7 @@ import org.openide.util.Exceptions;
         }
 
         stackUpdater.treeChanged();     // causes a pull
+        disassembly.stateUpdated();
     }
 
     /*
@@ -3441,32 +3443,31 @@ import org.openide.util.Exceptions;
 	 */
 
         // interface Controller
-        public void requestDis() {
-            if (visitedLocation == null)
+        public void requestDis(boolean withSource) {
+            GdbFrame currentFrame = getCurrentFrame();
+            if (currentFrame == null) {
                 return;
+            }
+            String file = currentFrame.getFullPath();
+            String line = currentFrame.getLineNo();
 
 	    String cmd = "-data-disassemble"; // NOI18N
-	    if (visitedLocation.hasSource()) {
+            int src = withSource ? 1 : 0;
+	    if (file != null && line != null && !line.isEmpty()) {
 		// request by line #
 
-		// 6742661
-		if (visitedLocation.line() <= 0)
-		    visitedLocation = visitedLocation.line(1);
-
-		String file = visitedLocation.src();
-		file = localToRemote("requestDis", file); // NOI18N
 		cmd += " -f " + file; // NOI18N
-		cmd += " -l " + visitedLocation.line(); // NOI18N
-		cmd += " -- 1";		// provide src lines as well // NOI18N
+		cmd += " -l " + line; // NOI18N
+		cmd += " -- " + src; // NOI18N
 
 	    } else {
-                cmd += " -s $pc -e \"$pc+1000\" -- 1"; //NOI18N
+                cmd += " -s $pc -e \"$pc+100\" -- " + src; //NOI18N
 	    }
 	    requestDisFromGdb(cmd);
         }
 
         // interface Controller
-        public void requestDis(String start, int count) {
+        public void requestDis(String start, int count, boolean withSource) {
 	    /* 
 	    System.out.printf("DisController.requestDis(%s, %d)\n",
 		start, count);
@@ -3475,10 +3476,11 @@ import org.openide.util.Exceptions;
 	    if (start == null)
 		return;
 
+            int src = withSource ? 1 : 0;
 	    String cmd = "-data-disassemble"; // NOI18N
 	    cmd += " -s " + start; // NOI18N
-	    cmd += " -e " + start + "+" + count; // NOI18N
-	    cmd += " -- 1";		// provide disassembly only // NOI18N
+	    cmd += " -e \"" + start + '+' + count + "\""; // NOI18N
+	    cmd += " -- " + src; // NOI18N
 	    requestDisFromGdb(cmd);
         }
     }
@@ -3538,8 +3540,8 @@ import org.openide.util.Exceptions;
         disassembly.update(record.toString());
 
 	// 6582172
-	if (update_dis)
-	    disStateModel().updateStateModel(visitedLocation, false);
+//	if (update_dis)
+//	    disStateModel().updateStateModel(visitedLocation, false);
     }
 
     @Override
