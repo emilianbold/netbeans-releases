@@ -48,6 +48,7 @@ import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.ConnectException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.CancellationException;
@@ -55,9 +56,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -72,10 +74,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     protected final ExecutionEnvironment execEnv;
     protected final String remotePath;
     protected final File cache;
-    private boolean valid;
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
+
+    private byte flags;
+    
+    private static final byte MASK_VALID = 1;
+    private static final byte CHECK_CAN_WRITE = 2;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
@@ -85,9 +91,21 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         this.execEnv = execEnv;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;
-        valid = true;
+        setFlag(MASK_VALID, true);
     }
-
+    
+    private boolean getFlag(byte mask) {
+        return (flags & mask) == mask;
+    }
+    
+    private void setFlag(byte mask, boolean value) {
+        if (value) {
+            flags |= mask;
+        } else {
+            flags &= ~mask;
+        }
+    }
+    
     public ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
     }
@@ -106,31 +124,10 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     public void removeFileChangeListener(FileChangeListener fcl) {
         listeners.remove(fcl);
     }
-
     
-    protected void fireDataCreated(FileObject fo) {
-        for (FileChangeListener fcl : listeners) {
-            fcl.fileDataCreated(new FileEvent(this, fo));
-        }
+    protected final Enumeration<FileChangeListener> getListeners() {
+        return Collections.enumeration(listeners);
     }
-
-    protected void fireFolderCreated(FileObject fo) {
-        for (FileChangeListener fcl : listeners) {
-            fcl.fileFolderCreated(new FileEvent(this, fo));
-        }
-    }
-
-    protected void fireDeleted(FileObject fo) {
-        for (FileChangeListener fcl : listeners) {
-            fcl.fileDeleted(new FileEvent(this, fo));
-        }
-    }
-    
-//    protected void fireRenamed(FileObject fo, String name, String ext) {
-//        for (FileChangeListener fcl : listeners) {
-//            fcl.fileRenamed(new FileRenameEvent(this, fo, name, ext));
-//        }
-//    }
     
     protected abstract void deleteImpl() throws IOException;
 
@@ -237,19 +234,37 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
     }
 
-
+    void connectionChanged() {
+        if (getFlag(CHECK_CAN_WRITE)) {
+            setFlag(CHECK_CAN_WRITE, false);
+            // react the same way org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj does
+            fireFileAttributeChangedEvent(getListeners(), 
+                    new FileAttributeEvent(this, this, "DataEditorSupport.read-only.refresh", null, null)); //NOI18N
+        }
+    }
+    
     @Override
     public boolean canWrite() {
+        setFlag(CHECK_CAN_WRITE, true);
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {            
+            return false;
+        }
         try {
             RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
             if (parent == null) {
                 return false;
             } else {
-                return parent.canWrite(getNameExt());
+                boolean result = parent.canWrite(getNameExt());
+                if (!result) {
+                    setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
+                }
+                return result;
             }
+        } catch (ConnectException ex) {
+            return false;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return true;
+            return false;
         }
     }
 
@@ -260,11 +275,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public boolean isValid() {
-        return valid;
+        return getFlag(MASK_VALID);
     }
 
     /*package*/ void invalidate() {
-        valid = false;
+        setFlag(MASK_VALID, false);
     }
 
     @Override

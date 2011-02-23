@@ -71,6 +71,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -109,13 +110,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
          return getFileObject(name + '.' + ext); // NOI18N
     }
 
-    /*package*/ boolean canWrite(String childNameExt) throws IOException {
+    /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
         try {
             DirectoryStorage storage = getDirectoryStorage(true);
             DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canWrite(execEnv); //TODO:rfs - check groups
         } catch (ConnectException ex) {
-            return false; // don't report
+            throw ex; // don't report
         } catch (InterruptedIOException ex) {
             RemoteLogger.finest(ex);
             return false; // don't report
@@ -176,7 +177,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             DirectoryStorage ds = getDirectoryStorage(false);
             ds.removeEntry(child.getNameExt());
             ds.store();
-            fireDeleted(child);
+            fireFileDeletedEvent(getListeners(), new FileEvent(child));
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
@@ -221,9 +222,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
                 }
                 if (directory) {
-                    fireFolderCreated(fo);
+                    fireFileFolderCreatedEvent(getListeners(), new FileEvent(fo));
                 } else {
-                    fireDataCreated(fo);
+                    fireFileDataCreatedEvent(getListeners(), new FileEvent(fo));
                 }
                 return fo;
             } catch (ConnectException ex) {
