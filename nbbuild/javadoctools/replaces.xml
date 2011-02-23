@@ -200,3 +200,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-core-netigso@" value="${javadoc.docs.org-netbeans-core-netigso}"/>
 <replacefilter token="@org-netbeans-modules-parsing-lucene@" value="${javadoc.docs.org-netbeans-modules-parsing-lucene}"/>
 <replacefilter token="@org-netbeans-modules-autoupdate-ui@" value="${javadoc.docs.org-netbeans-modules-autoupdate-ui}"/>
+<replacefilter token="@org-netbeans-modules-php-project@" value="${javadoc.docs.org-netbeans-modules-php-project}"/>

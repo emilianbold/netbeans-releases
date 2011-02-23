@@ -268,16 +268,19 @@ class ExtPlainView extends PlainView {
         if (axis == Y_AXIS) {
             return super.getPreferredSpan(axis);
         } else {
+            if (longestLineLength == -1) {
+                calcLongestLineLength();
+            }
             return longestLineLength + 1;
         }
     }
     
     Font font;
     int tabBase;
-    int longestLineLength;
+    int longestLineLength = -1;
     Element longestLine;
 
-    protected void calcLongestLineLength() {
+    private void calcLongestLineLength() {
 	Component c = getContainer();
 	font = c.getFont();
 	metrics = c.getFontMetrics(font);
@@ -318,7 +321,10 @@ class ExtPlainView extends PlainView {
         if (!(doc instanceof Document)) {
             super.updateDamage(changes, a, f);
             return;
-        }        
+        }
+        if (longestLineLength == -1) {
+            calcLongestLineLength();
+        }
 	Component host = getContainer();
 	updateMetrics();        
 	Element elem = getElement();
