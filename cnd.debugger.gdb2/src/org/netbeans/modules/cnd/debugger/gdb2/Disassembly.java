@@ -132,9 +132,9 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
 
     private boolean cancelled = false;
 
-    private static enum RequestMode {FILE, ADDRESS, NONE};
+    private static enum RequestMode {FILE_SRC, FILE_NO_SRC, ADDRESS_SRC, ADDRESS_NO_SRC, NONE};
 
-    private RequestMode requestMode = RequestMode.FILE;
+    private RequestMode requestMode = RequestMode.FILE_SRC;
     
     private final BreakpointModel breakpointModel;
     
@@ -437,27 +437,36 @@ public class Disassembly implements StateModel.Listener, DocumentListener {
         }
 
         if (!curAddress.equals(address)) {
-            requestMode = RequestMode.FILE;
-        }
-
-        if (requestMode == RequestMode.NONE) {
+            requestMode = withSource ? RequestMode.FILE_SRC : RequestMode.FILE_NO_SRC;
+        } else if (requestMode == RequestMode.NONE) {
             return;
         }
 
         if (force || getAddressLine(curAddress) == -1) {
             intFileName = null; //frame.getOriginalFullName();
             resolvedFileName = frame.getFullPath();
-            if ((intFileName == null || intFileName.length() == 0) && requestMode == RequestMode.FILE) {
-                requestMode = RequestMode.ADDRESS;
+            //if ((intFileName == null || intFileName.length() == 0) && requestMode == RequestMode.FILE) {
+            if ((resolvedFileName == null || resolvedFileName.length() == 0) &&
+                    (requestMode == RequestMode.FILE_SRC || requestMode == RequestMode.FILE_NO_SRC)) {
+                requestMode = withSource ? RequestMode.ADDRESS_SRC : RequestMode.ADDRESS_NO_SRC;
             }
             switch (requestMode) {
-                case FILE:
-                    //debugger.getGdbProxy().data_disassemble(intFileName, frame.getLineNo(), withSource);
-                    debugger.disController().requestDis();
-                    requestMode = RequestMode.ADDRESS;
+                case FILE_SRC:
+                    debugger.disController().requestDis(withSource);
+                    requestMode = RequestMode.FILE_NO_SRC;
                     break;
-                case ADDRESS:
-                    debugger.disController().requestDis();
+                case FILE_NO_SRC:
+                    //debugger.getGdbProxy().data_disassemble(intFileName, frame.getLineNo(), withSource);
+                    debugger.disController().requestDis(withSource);
+                    requestMode = RequestMode.ADDRESS_SRC;
+                    break;
+                case ADDRESS_SRC:
+                    debugger.disController().requestDis("$pc", 100, withSource); //NOI18N
+                    //debugger.getGdbProxy().data_disassemble(1000, withSource);
+                    requestMode = RequestMode.ADDRESS_NO_SRC;
+                    break;
+                case ADDRESS_NO_SRC:
+                    debugger.disController().requestDis("$pc", 100, withSource); //NOI18N
                     //debugger.getGdbProxy().data_disassemble(1000, withSource);
                     requestMode = RequestMode.NONE;
                     break;
