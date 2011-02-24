@@ -68,6 +68,7 @@ import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -159,8 +160,11 @@ final class JavadocCompletionUtils {
                     // see #147533
                     return null;
                 }
-            }
-            if (!IGNORE_TOKES.contains(tid)) {
+            } else if (tid == JavaTokenId.JAVADOC_COMMENT) {
+                if (ts.token().partType() == PartType.COMPLETE) {
+                    return null;
+                }
+            } else if (!IGNORE_TOKES.contains(tid)) {
                 offsetBehindJavadoc = ts.offset();
                 // it is magic for TreeUtilities.pathFor
                 ++offsetBehindJavadoc;
@@ -238,24 +242,26 @@ final class JavadocCompletionUtils {
         Token<JavaTokenId> token = null;
         while (s.movePrevious()) {
             token = s.token();
-            if (token.id() == JavaTokenId.BLOCK_COMMENT) {
-                if ("/**/".contentEquals(token.text())) { // NOI18N
+            switch (token.id()) {
+                case BLOCK_COMMENT:
                     // see #147533
+                    if (!"/**/".contentEquals(token.text())) { // NOI18N
+                        break;
+                    }
+                case JAVADOC_COMMENT:
+                    if (token.partType() == PartType.COMPLETE) {
+                        return javac.getElements().getDocComment(e) == null
+                                ? null : s.embedded(JavadocTokenId.language());
+                    }
                     break;
-                }
-            }
-            if (!IGNORE_TOKES.contains(token.id())) {
-                break;
+                case WHITESPACE:
+                case LINE_COMMENT:
+                    break;
+                default:
+                    return null;
             }
         }
-        if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
-            return null;
-        }
-
-        if (javac.getElements().getDocComment(e) == null)
-            return null;
-
-        return s.embedded(JavadocTokenId.language());
+        return null;
     }
 
     static boolean isInsideIndent(Token<JavadocTokenId> token, int offset) {
