@@ -487,7 +487,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         if (stringToken == null) {
             return Collections.<CsmReference>emptyList();
         }
-        String tokenText = stringToken.text().toString();
+        CharSequence aText = stringToken.text();
+        if (aText == null) {
+            return Collections.<CsmReference>emptyList();
+        }
+        String tokenText = aText.toString();
         doc.readLock();
         try {
             Collection<CsmReference> out = new ArrayList<CsmReference>(10);

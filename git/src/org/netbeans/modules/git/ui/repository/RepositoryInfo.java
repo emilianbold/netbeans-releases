@@ -104,12 +104,33 @@ public class RepositoryInfo {
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
     private final String name;
+    
+    private static final GitBranch FAKE_BRANCH = new GitBranch() {
+        @Override
+        public String getName () {
+            return GitBranch.NO_BRANCH;
+        }
+        @Override
+        public boolean isRemote () {
+            return false;
+        }
+        @Override
+        public boolean isActive () {
+            return true;
+        }
+        @Override
+        public String getId () {
+            return ""; //NOI18N
+        }
+    };
 
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
         this.branches = new HashMap<String, GitBranch>();
         this.remotes = new HashMap<String, GitRemoteConfig>();
+        this.activeBranch = FAKE_BRANCH;
+        this.repositoryState = GitRepositoryState.SAFE;
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
