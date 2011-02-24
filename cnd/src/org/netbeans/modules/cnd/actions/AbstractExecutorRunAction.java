@@ -64,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -479,10 +480,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             if (project != null) {
                 remoteProject = project.getLookup().lookup(RemoteProject.class);
             }
-            PathMap mapper;
+            PathMap mapper = null;
             if (remoteProject != null) {
-                mapper = remoteProject.getSyncFactory().getPathMap(execEnv);
-            } else {
+                RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+                if (syncFactory != null) {
+                    mapper = syncFactory.getPathMap(execEnv);
+                }
+            }
+            if (mapper == null) {
                 mapper = HostInfoProvider.getMapper(execEnv);
             }
             return mapper.getRemotePath(localDir, false);

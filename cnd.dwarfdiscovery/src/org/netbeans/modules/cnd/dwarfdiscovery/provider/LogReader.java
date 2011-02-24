@@ -975,7 +975,7 @@ public class LogReader {
 
     private void gatherSubFolders(File d){
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (DiscoveryUtils.ignoreFolder(d)){
+            if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath().replace('\\', '/');
