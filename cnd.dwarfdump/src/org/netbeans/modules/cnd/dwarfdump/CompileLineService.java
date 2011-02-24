@@ -295,6 +295,12 @@ public class CompileLineService {
             hash = 97 * hash + (this.sourceFile != null ? this.sourceFile.hashCode() : 0);
             return hash;
         }
+
+        @Override
+        public String toString() {
+            return "SourceFile{" + "compileLine=" + compileLine + ", compileDir=" + compileDir + ", sourceFile=" + sourceFile + '}'; // NOI18N
+        }
+        
         
         private void initMacrosAndPaths(){
             userPaths = new ArrayList<String>();
