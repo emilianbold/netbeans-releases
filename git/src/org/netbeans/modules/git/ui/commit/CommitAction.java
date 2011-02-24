@@ -115,7 +115,8 @@ public class CommitAction extends SingleRepositoryAction {
                     GitClient client = Git.getInstance().getClient(repository);
                     user = client.getUser();
                 } catch (GitException ex) {
-                    LOG.log(Level.WARNING, null, ex);
+                    GitClientExceptionHandler.notifyException(ex, true);
+                    return;
                 }
                 
                 GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
