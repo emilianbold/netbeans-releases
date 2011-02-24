@@ -87,7 +87,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
-    private static final RequestProcessor RP = new RequestProcessor("Inot Hosts",2);
+    private static final RequestProcessor RP = new RequestProcessor("Inot Hosts",1); // NOI18N
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
