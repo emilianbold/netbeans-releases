@@ -137,7 +137,7 @@ public class FindUsagesVisitor extends FindVisitor {
                     MethodTree t = workingCopy.getTrees().getTree(c);
                     TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) t.getBody().getStatements().get(0)).getExpression());
                     Element superCallElement = trees.getElement(superCall);
-                    if (superCallElement != null && superCallElement.equals(p)) {
+                    if (superCallElement != null && superCallElement.equals(p) && !workingCopy.getTreeUtilities().isSynthetic(superCall)) {
                         addUsage(superCall);
                     }
                 }

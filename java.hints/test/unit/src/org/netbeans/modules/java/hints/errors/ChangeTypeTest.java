@@ -138,7 +138,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
     public void testCapturedWildcard1() throws Exception {
         performFixTest("test/Test.java",
                 "package test; import java.util.List; public class Test {private void test() {String o = |test1();} private List<? extends CharSequence> test1() {return null;}}",
-                "Change type of o to List<? extends CharSequence>",
+                "Change type of o to List&lt;? extends CharSequence>",
                 "package test; import java.util.List; public class Test {private void test() { List<? extends CharSequence> o = test1();} private List<? extends CharSequence> test1() {return null;}}");
     }
 
@@ -182,6 +182,13 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void foo(Object[] it) { for (String o : |it) { } } }",
                        "Change type of o to Object",
                        "package test; public class Test {public void foo(Object[] it) { for (Object o : it) { } } }");
+    }
+
+    public void testGenericsEscaped() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import java.util.*; public class Test {public void foo() { List<Number> l = |new ArrayList<String>(); } }",
+                       "Change type of l to ArrayList&lt;String>",
+                       "package test; import java.util.*; public class Test {public void foo() { ArrayList<String> l = new ArrayList<String>(); } }");
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {

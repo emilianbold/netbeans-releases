@@ -475,9 +475,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private VariableElement instanceOf(String typeName, String name) {
         try {
             if (cInfo != null) {
-                TreeUtilities tu = cInfo.getTreeUtilities();
-                ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
-                TypeMirror type = tu.attributeTree(ex, scope);
+                TypeMirror type = type(typeName);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
                 if (type != null) {
@@ -507,8 +505,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         try {
             if (cInfo != null) {
                 final TreeUtilities tu = cInfo.getTreeUtilities();
-                ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
-                TypeMirror type = tu.attributeTree(ex, scope);
+                TypeMirror type = type(typeName);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
                 if (type != null) {
@@ -574,9 +571,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private String valueOf(String typeName) {
         try {
             if (cInfo != null) {
-                TreeUtilities tu = cInfo.getTreeUtilities();
-                ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
-                TypeMirror type = tu.attributeTree(ex, scope);
+                TypeMirror type = type(typeName);
                 if (type != null) {
                     if (type.getKind() == TypeKind.DECLARED)
                         return NULL;
@@ -614,11 +609,24 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
 
     private TypeMirror type(String typeName) {
-        typeName = typeName.trim();
-        if (cInfo != null && typeName.length() > 0) {
-            TreeUtilities tu = cInfo.getTreeUtilities();
-            ExpressionTree ex = tu.parseExpression(typeName, new SourcePositions[1]);
-            return tu.attributeTree(ex, scope);
+        try {
+            typeName = typeName.trim();
+            if (cInfo != null && typeName.length() > 0) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement("{" + typeName + " a;}", sourcePositions); //NOI18N
+                if (!errChecker.containsErrors(stmt) && stmt.getKind() == Tree.Kind.BLOCK) {
+                    List<? extends StatementTree> stmts = ((BlockTree)stmt).getStatements();
+                    if (!stmts.isEmpty()) {
+                        StatementTree var = stmts.get(0);
+                        if (var.getKind() == Tree.Kind.VARIABLE) {
+                            tu.attributeTree(stmt, scope);
+                            return cInfo.getTrees().getTypeMirror(new TreePath(treePath, ((VariableTree)var).getType()));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {            
         }
         return null;
     }
@@ -904,7 +912,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         return cInfo != null;
     }
-
+    
     public static final class Factory implements CodeTemplateProcessorFactory {
         
         public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {
