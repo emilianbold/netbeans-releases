@@ -55,9 +55,6 @@ pack_all_components()
 
     rm -rf extra
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
-    rm -rf visualweb*
-
     pack_component $DIST_DIR/zip/moduleclusters $NAME xml "xml*"
     rm -rf xml*
 

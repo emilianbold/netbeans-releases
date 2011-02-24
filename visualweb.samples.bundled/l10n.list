@@ -1,2 +1,0 @@
-read global
-${l10n-module}/webapps/descriptions/*.html
