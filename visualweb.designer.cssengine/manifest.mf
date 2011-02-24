@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.visualweb.designer.cssengine
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/designer/cssengine/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.7
-AutoUpdate-Show-In-Client: false
