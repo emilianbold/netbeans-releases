@@ -1103,8 +1103,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
-        CndUtils.assertTrue(nativeFile.getNativeProject().getFileSystem().equals(getFileSystem()), "File systems differ"); //NOI18N
-        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey,
+        if (CndUtils.isDebugMode()) {
+            FileSystem curPrjFS = getFileSystem();
+            FileSystem nativeProjectFS = nativeFile.getNativeProject().getFileSystem();
+            CndUtils.assertTrue(nativeProjectFS.equals(curPrjFS), "File systems differ: incoming=" + nativeProjectFS + ";cur=" + curPrjFS); //NOI18N
+        }
+        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey, 
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;
         Object aPlatformProject = getPlatformProject();
