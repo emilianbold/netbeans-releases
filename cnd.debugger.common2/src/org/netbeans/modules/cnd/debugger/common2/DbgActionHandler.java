@@ -57,7 +57,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -115,7 +117,18 @@ public class DbgActionHandler implements ProjectActionHandler {
 
     private void doExecute(final String executable, final DebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
-        final RunProfile profile = pae.getProfile();
+        final RunProfile profile;
+        // The following is a hack to work around issues with dbxgui interaction with run profile.
+        // We can't use the clone becasue of dbxgui and and we can't use the original because of on windows we want to use a modified PATH.
+        // We need to figure out a better solution but this should work for now (with no regressions)
+        // See IZ 195975
+        int platform = ((MakeConfiguration) configuration).getDevelopmentHost().getBuildPlatform();
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            profile = pae.getProfile(); // Use clone on windows because of modified PATH
+        } else {
+            profile = configuration.getProfile(); // Don't use clone on Solaris/Linux beacuse of interaction with dbxgui. Dbxgui sets values with for instance runargs xxx ...
+        }
+
 	// DefaultProjectActionHandler's executionStarted is a no-op.
 
 	executionStarted();
