@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.autoupdate.pluginimporter.libinstaller;
 
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressHandle;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,7 +78,10 @@ public class JUnitLibraryInstaller {
 
     @Messages({
         "download_title=Install JUnit Library",
-        "download_question=Do you wish to download and install the JUnit testing library? Doing so is recommended for Java development, but JUnit is not distributed with NetBeans."
+        "download_question=Do you wish to download and install the JUnit testing library? Doing so is recommended for Java development, but JUnit is not distributed with NetBeans.",
+        "download_handle=Download JUnit library",
+        "validate_handle=Install JUnit library",
+        "install_handle=Install JUnit library"
     })
     
     public static void install(boolean silent) {
@@ -129,14 +134,17 @@ public class JUnitLibraryInstaller {
             oc.add(req);
         }
         if (silent) {
-            // download
             try {
+                // download
                 LOG.fine("Try to download " + jUnitElement);
-                Validator validator = oc.getSupport().doDownload(null, true);
+                ProgressHandle downloadHandle = ProgressHandleFactory.createHandle (download_handle());
+                Validator validator = oc.getSupport().doDownload(downloadHandle, true);
                 // install
-                Installer installer = oc.getSupport().doValidate(validator, null);
+                ProgressHandle validateHandle = ProgressHandleFactory.createHandle (validate_handle());
+                Installer installer = oc.getSupport().doValidate(validator, validateHandle);
                 LOG.fine("Try to install " + jUnitElement);
-                Restarter restarter = oc.getSupport().doInstall(installer, null);
+                ProgressHandle installHandle = ProgressHandleFactory.createHandle (install_handle());
+                Restarter restarter = oc.getSupport().doInstall(installer, installHandle);
                 assert restarter == null : "Not need to restart while installing " + jUnitLib;
                 LOG.fine("Done " + jUnitElement);
             } catch (OperationException ex) {
