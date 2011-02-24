@@ -11,6 +11,7 @@
                 <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.lint</friend>
