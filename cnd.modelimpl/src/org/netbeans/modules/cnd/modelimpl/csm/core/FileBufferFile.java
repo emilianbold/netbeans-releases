@@ -103,7 +103,8 @@ public class FileBufferFile extends AbstractFileBuffer {
         if (length == 0) {
             return new char[0];
         }
-        char[] readChars = new char[(int)length+1];
+        length++;
+        char[] readChars = new char[(int)length];
         InputStream is = getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
         try {
@@ -111,7 +112,19 @@ public class FileBufferFile extends AbstractFileBuffer {
             int position = 0;
             while((line = reader.readLine())!= null) {
                 for(int i = 0; i < line.length(); i++) {
+                    if (length == position) {
+                        length = length*2;
+                        char[] copyChars = new char[(int)length];
+                        System.arraycopy(readChars, 0, copyChars, 0, position);
+                        readChars = copyChars;
+                    }
                     readChars[position++] = line.charAt(i);
+                }
+                if (length == position) {
+                    length = length*2;
+                    char[] copyChars = new char[(int)length];
+                    System.arraycopy(readChars, 0, copyChars, 0, position);
+                    readChars = copyChars;
                 }
                 readChars[position++] = '\n'; // NOI18N
             }

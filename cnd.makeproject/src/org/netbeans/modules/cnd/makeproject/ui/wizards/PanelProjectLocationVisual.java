@@ -87,6 +87,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Inot Hosts",1); // NOI18N
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
@@ -727,7 +728,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         CompilerSet cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean isDefaultCompilerSet = Boolean.TRUE.equals(settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         Boolean readOnlyToolchain = (Boolean) settings.getProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN);
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet, 
+        RP.post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet,
                 readOnlyToolchain, (ToolsCacheManager) settings.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {

@@ -320,7 +320,7 @@ public final class IndentImpl {
         }
     }
 
-    public void reformat(int startOffset, int endOffset) throws BadLocationException {
+    public void reformat(int startOffset, int endOffset, int caretOffset) throws BadLocationException {
         if (startOffset > endOffset) {
             throw new IllegalArgumentException("startOffset=" + startOffset + " > endOffset=" + endOffset); // NOI18N
         }
@@ -335,6 +335,7 @@ public final class IndentImpl {
             if (runUnlocked) {
                 reformatHandler.collectTasks();
             }
+            reformatHandler.setCaretOffset(caretOffset);
 // XXX: formatting infra cleanup
 //            boolean done = false;
             if (reformatHandler.hasItems()) {
