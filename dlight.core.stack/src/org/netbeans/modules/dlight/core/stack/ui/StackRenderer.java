@@ -68,19 +68,26 @@ public final class StackRenderer implements Renderer<DataRow> {
     private final List<Column> stackColumns;
     private final boolean useHMTL;
     private final GoToSourceCallbackAction callbackAction;
+    private final boolean perstistProvider;
 
     public StackRenderer(List<Column> stackColumns) {
-        this(stackColumns, false, null);
+        this(stackColumns, false, null, true);
     }
     public StackRenderer(List<Column> stackColumns, boolean useHtml){
-        this(stackColumns, useHtml, null);
+        this(stackColumns, useHtml, null, true);
     }
 
-    public StackRenderer(List<Column> stackColumns, boolean useHtml, GoToSourceCallbackAction callbackAction) {
+    public StackRenderer(List<Column> stackColumns, boolean useHtml, boolean persistProvider){
+        this(stackColumns, useHtml, null, persistProvider);
+    }
+
+    public StackRenderer(List<Column> stackColumns, boolean useHtml, GoToSourceCallbackAction callbackAction,
+            boolean persistProvider) {
         this.stackColumns = Collections.unmodifiableList(
                 new ArrayList<Column>(stackColumns)); // yes, it's paranoia :)
         this.useHMTL = useHtml;
         this.callbackAction = callbackAction;
+        this.perstistProvider = persistProvider;
     }
 
     @Override
@@ -137,7 +144,7 @@ public final class StackRenderer implements Renderer<DataRow> {
 
 
     private synchronized StackDataProvider findStackDataProvider() {
-        if (stackDataProvider == null && !stackDataProviderSearched) {
+        if ((stackDataProvider == null && !stackDataProviderSearched) || !perstistProvider) {
             DLightSession session = DLightManager.getDefault().getActiveSession();
             stackDataProvider = (StackDataProvider) session.createDataProvider(
                     DataModelSchemeProvider.getInstance().getScheme("model:stack"), null); // NOI18N
