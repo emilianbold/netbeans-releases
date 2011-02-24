@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,8 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
 /**
@@ -582,16 +585,39 @@ public class Html5ParserTest extends NbTestCase {
         String code = "@@@<div> @@@ </div>";
         assertEquals("   <div>     </div>", Html5Parser.maskTemplatingMarks(code));
     }
-
-    private HtmlParseResult parse(CharSequence code) throws ParseException {
-        HtmlSource source = new HtmlSource(code);
-        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
-
-        assertNotNull(result);
-
-        return result;
+    
+    
+    public void testParseFileTest1() throws ParseException {
+        parse(getTestFile("testfiles/test1.html"));
     }
+    
+    public void testParseFileTest2() throws ParseException {
+        parse(getTestFile("testfiles/test2.html"));
+    }
+    
+    public void testParseFileTest3() throws ParseException {
+        parse(getTestFile("testfiles/test3.html"));
+    }
+    
+    public void testParseFileTest4() throws ParseException {
+        parse(getTestFile("testfiles/test4.html"));
+    }
+    
+    public void testParseFileTest5() throws ParseException {
+        parse(getTestFile("testfiles/test5.html"));
+    }
+    
+    protected FileObject getTestFile(String relFilePath) {
+        File wholeInputFile = new File(getDataDir(), relFilePath);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
 
+        return fo;
+    }
+    
     public void testHtml5Model() throws ParseException {
         String code = "<!doctype html><title>hi</title>";
         HtmlParseResult result = parse(code);
@@ -805,6 +831,24 @@ public class Html5ParserTest extends NbTestCase {
 //
 //    }
 
+    private HtmlParseResult parse(FileObject file) throws ParseException {
+        HtmlSource source = new HtmlSource(file);
+        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+
+        assertNotNull(result);
+
+        return result;
+    }
+
+    private HtmlParseResult parse(CharSequence code) throws ParseException {
+        HtmlSource source = new HtmlSource(code);
+        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+
+        assertNotNull(result);
+
+        return result;
+    }
+    
     private static class HtmlTagImpl implements HtmlTag {
 
         private String name;
