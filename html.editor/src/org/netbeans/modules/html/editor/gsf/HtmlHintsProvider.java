@@ -96,7 +96,11 @@ public class HtmlHintsProvider implements HintsProvider {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         HtmlVersion version = result.getDetectedHtmlVersion();
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        Project project = file != null ? FileOwnerQuery.getOwner(file) : null;
+        if(file == null) {
+            //the Hint doesn't allow the fileObject argument to be null
+            return ;
+        }
+        Project project = FileOwnerQuery.getOwner(file);
         boolean xhtml = result.getSyntaxAnalyzerResult().mayBeXhtml();
         if (version == null) {
             //the version can be determined
@@ -175,6 +179,10 @@ public class HtmlHintsProvider implements HintsProvider {
         SyntaxAnalyzerResult saresult = result.getSyntaxAnalyzerResult();
 
         FileObject fo = snapshot.getSource().getFileObject();
+        if(fo == null) {
+            //the Hint doesn't allow the fileObject argument to be null
+            return ;
+        }
         if (isErrorCheckingEnabled(saresult)) {
             for (Error e : context.parserResult.getDiagnostics()) {
                     assert e.getDescription() != null;
