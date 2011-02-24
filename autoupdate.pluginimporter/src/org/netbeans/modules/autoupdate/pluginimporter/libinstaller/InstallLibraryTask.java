@@ -39,62 +39,57 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.autoupdate.pluginimporter.libinstaller;
 
-package org.netbeans.modules.junit;
-
-import java.util.concurrent.Callable;
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.junit.Bundle.*;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * #195123: prompt to load JUnit during startup.
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
-public class DownloadLibraryTask implements Runnable {
+@ServiceProvider(service = Runnable.class, path = "WarmUp")
+public class InstallLibraryTask implements Runnable {
 
-    private static final String LIB_NAME = "junit_4";
-    private static final String KEY = "tried.to.download.junit";
+    private static final String KEY = "tried.to.download.junit"; // NOI18N
+    private static final String JUNIT_APPROVED = "junit_accepted"; // NOI18N
+    private static final String JUNIT_DENIED = "junit_denied"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(InstallLibraryTask.class.getName());
 
-    @Messages({
-        "download_title=Install JUnit Library",
-        "download_question=Do you wish to download and install the JUnit testing library? Doing so is recommended for Java development, but JUnit is not distributed with NetBeans."
-    })
-    public @Override void run() {
-        Preferences p = NbPreferences.forModule(DownloadLibraryTask.class);
+    public @Override
+    void run() {
+        Preferences p = NbPreferences.forModule(InstallLibraryTask.class);
         if (p.getBoolean(KEY, false)) {
             // Only check once (i.e. on first start for a fresh user dir).
             return;
         }
         p.putBoolean(KEY, true);
-        if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(download_question(), download_title(), NotifyDescriptor.OK_CANCEL_OPTION)) == NotifyDescriptor.OK_OPTION) {
-            perhapsDownload();
-        }
-    }
-
-    public static void perhapsDownload() {
-        if (LibraryManager.getDefault().getLibrary(LIB_NAME) == null) {
-            for (LibraryDefiner definer : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
-                Callable<Library> c = definer.missingLibrary(LIB_NAME);
-                if (c != null) {
-                    try {
-                        c.call();
-                    } catch (Exception x) {
-                        Logger.getLogger(DownloadLibraryTask.class.getName()).log(Level.INFO, "Could not install JUnit library", x);
-                    }
-                }
+        // find licenseAcceptedFile
+        File licenseAcceptedFile = InstalledFileLocator.getDefault().locate("var/license_accepted", null, false); // NOI18N
+        try {
+            // read content of file
+            String content = FileUtil.toFileObject(licenseAcceptedFile).asText();
+            LOG.fine("Content of var/license_accepted: " + content);
+            if (content != null && content.indexOf(JUNIT_APPROVED) != -1) {
+                // IDE license accepted, JUnit accpeted => let's install silently
+                LOG.fine(" IDE license accepted, JUnit accpeted => let's install silently"); 
+                JUnitLibraryInstaller.install(true);
+            } else if (content != null && content.indexOf(JUNIT_DENIED) != -1) {
+                // IDE license accepted but JUnit disapproved => do nothing
+                LOG.fine("IDE license accepted but JUnit disapproved => do nothing"); 
+            } else {
+                // IDE license accepted, JUnit N/A => use prompt & wizard way
+                LOG.fine("IDE license accepted, JUnit N/A => use prompt & wizard way"); 
+                JUnitLibraryInstaller.install(false);
             }
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "while reading " + licenseAcceptedFile, ex);
         }
     }
-
 }
