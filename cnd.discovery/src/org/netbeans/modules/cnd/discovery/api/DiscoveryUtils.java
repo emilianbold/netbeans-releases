@@ -111,14 +111,6 @@ public class DiscoveryUtils {
         }
         return new HashMap<String,String>();
     }
-    
-    public static boolean ignoreFolder(File file){
-        if (file.isDirectory()) {
-            String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
-        }
-        return false;
-    }
 
     public static List<String> scanCommandLine(String line){
         List<String> res = new ArrayList<String>();

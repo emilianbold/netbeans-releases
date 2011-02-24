@@ -1283,12 +1283,26 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             // Probably noit sice fixed factory is set to configurations in the cae of full remote
             switch (remoteMode) {
                 case LOCAL_SOURCES:
-                    return getActiveConfiguration().getRemoteSyncFactory();
+                {
+                    MakeConfiguration activeConfiguration = getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        return activeConfiguration.getRemoteSyncFactory();
+                    } else {
+                        return null;
+                    }
+                }
                 case REMOTE_SOURCES:
                     return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
                 default:
+                {
                     CndUtils.assertTrue(false, "Unexpected remote mode " + remoteMode); //NOI18N
-                    return getActiveConfiguration().getRemoteSyncFactory();
+                    MakeConfiguration activeConfiguration = getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        return getActiveConfiguration().getRemoteSyncFactory();
+                    } else {
+                        return null;
+                    }
+                }
             }
         }
 

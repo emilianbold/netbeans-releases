@@ -228,7 +228,7 @@ public class MakeSources implements Sources, AntProjectListener {
                 String displayName = fsEnv.getDisplayName() + ":" + path; //NOI18N
                 FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);
                 if (fo == null) {
-                    new NullPointerException().printStackTrace();
+                    new NullPointerException("Null file object for " + fsEnv + ':' + path).printStackTrace(); //NOI18N
                 } else {
                     sources.addGroup(project, GENERIC, fo, displayName);
                 }

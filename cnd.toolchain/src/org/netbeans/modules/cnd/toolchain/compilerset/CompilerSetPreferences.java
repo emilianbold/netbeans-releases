@@ -240,11 +240,16 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
+                Tool tool = null;
+                if (toolFlavor != null) {
+                    tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
+                }
                 if (tool instanceof AbstractCompiler) {
                     ((AbstractCompiler) tool).loadSettings(getPreferences(), CSM + executionEnvironmentKey + TOOL_SETTINGS + setCount + '.' + toolCount);
                 }
-                cs.addTool(tool);
+                if (tool != null) {
+                    cs.addTool(tool);
+                }
             }
             css.add(cs);
         }
@@ -297,9 +302,14 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
+                Tool tool = null;
+                if (toolFlavor != null) {
+                    tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
                         toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath); //NOI18N
-                cs.addTool(tool);
+                }
+                if (tool != null) {
+                    cs.addTool(tool);
+                }
             }
             CompilerSetManagerImpl.completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);
