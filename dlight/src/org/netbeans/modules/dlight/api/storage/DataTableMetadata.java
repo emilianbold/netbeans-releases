@@ -198,6 +198,15 @@ public final class DataTableMetadata {
                 return c;
             }
         }
+        
+        // TODO: Fixme.
+        // This is a fall-back to overcome CR7022064
+        //
+        for (Column c : columns) {
+            if (c.getColumnUName().equals(columnName)) {
+                return c;
+            }
+        }
         return null;
     }
 
