@@ -404,12 +404,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected AstNode createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
-        if(name == null) {
-            //Bug 194537 - [70cat] NullPointerException at org.netbeans.editor.ext.html.parser.api.AstNode.getNameWithoutPrefi
-            //just log the context, the NPE will be thrown at the original location so the exception reporter will reopen the issue
-            LOGGER.log(Level.INFO, "null name argument passed to createElement(...), current stack: " + dumpStack(), new IllegalArgumentException());
-        }
-
         if(LOG) {
             LOGGER.fine(String.format("createElement(%s)", name));//NOI18N
         }

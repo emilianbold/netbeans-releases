@@ -97,14 +97,15 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         private static Lookup[] delegates(String path) {
             Collection<? extends ClassLoader> allCL = CL.allInstances();
             LOG.log(Level.FINEST, "allCL: {0}", allCL);
-            ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-            LOG.log(Level.FINEST, "ccl: {0}", ccl);
-            if (ccl != null) {
-                allCL = Collections.singleton(ccl);
-            } else {
-                if (allCL.isEmpty()) {
-                    allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
+            if (allCL.isEmpty()) {
+                ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+                LOG.log(Level.FINEST, "ccl: {0}", ccl);
+                if (ccl != null) {
+                    allCL = Collections.singleton(ccl);
                 }
+            }
+            if (allCL.isEmpty()) {
+                allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
             }
             LOG.log(Level.FINER, "metaInfServices for {0}", allCL);
             Lookup base = Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path); // NOI18N
