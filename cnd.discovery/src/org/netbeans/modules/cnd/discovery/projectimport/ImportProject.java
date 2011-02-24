@@ -416,15 +416,19 @@ public class ImportProject implements PropertyChangeListener {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
-                if (runConfigure && configurePath != null && configurePath.length() > 0 && 
-                        configureFileObject != null && configureFileObject.isValid()) {
-                    postConfigure();
-                } else {
-                    if (runMake) {
-                        makeProject(true, null);
+                if (pdp.getConfigurationDescriptor().getActiveConfiguration() != null) {
+                    if (runConfigure && configurePath != null && configurePath.length() > 0 &&
+                            configureFileObject != null && configureFileObject.isValid()) {
+                        postConfigure();
                     } else {
-                        discovery(0, null);
+                        if (runMake) {
+                            makeProject(true, null);
+                        } else {
+                            discovery(0, null);
+                        }
                     }
+                } else {
+                    isFinished = true;
                 }
             } else {
                 isFinished = true;
