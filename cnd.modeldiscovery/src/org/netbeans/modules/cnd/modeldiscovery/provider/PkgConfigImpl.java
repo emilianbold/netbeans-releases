@@ -631,7 +631,7 @@ public class PkgConfigImpl implements PkgConfig {
         List<String> macros = new ArrayList<String>();
         List<String> paths = new ArrayList<String>();
         String libs = "";
-        private String name;
+        private final String name;
         private String version;
         private String displayName;
         private PackageConfigurationImpl(String name){
@@ -660,7 +660,10 @@ public class PkgConfigImpl implements PkgConfig {
 
         @Override
         public String getDisplayName() {
-            return displayName;
+            if (displayName != null) {
+                return displayName;
+            }
+            return name;
         }
 
         @Override
