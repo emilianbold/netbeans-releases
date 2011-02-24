@@ -342,7 +342,7 @@ class SftpSupport {
                     } else {
                         String message = String.format("Error on attempt %d to copy %s to %s:%s :\n", // NOI18N
                                 attempt, srcFileName, execEnv, dstFileName);
-                        LOG.log(Level.FINE, message);
+                        LOG.log(Level.FINE, message, e);
                         if (attempt == 2) {
                             Logger.fullThreadDump(message);
                         }
