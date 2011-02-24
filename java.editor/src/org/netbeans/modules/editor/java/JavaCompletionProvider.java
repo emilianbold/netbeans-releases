@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.SourceVersion;
@@ -94,8 +96,8 @@ import org.openide.util.NbBundle;
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (typedText != null && typedText.length() > 0
-                && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(typedText.length() - 1)) >= 0
+        if (typedText != null && typedText.length() == 1
+                && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
                 || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText)))) {
             if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
                 return COMPLETION_QUERY_TYPE;
@@ -303,8 +305,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (toolTip != null && toolTip.hasData())
                                 resultSet.setToolTip(toolTip);
                         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                            if (documentation != null)
+                            if (documentation instanceof JavaCompletionDoc) {
+                                while (!isTaskCancelled()) {
+                                    try {
+                                        ((JavaCompletionDoc)documentation).getFutureText().get(250, TimeUnit.MILLISECONDS);
+                                        resultSet.setDocumentation(documentation);
+                                        break;
+                                    } catch (TimeoutException timeOut) {/*retry*/}
+                                }
+                                
+                            } else if (documentation != null) {
                                 resultSet.setDocumentation(documentation);
+                            }
                         }
                         if (anchorOffset > -1)
                             resultSet.setAnchorOffset(anchorOffset);
