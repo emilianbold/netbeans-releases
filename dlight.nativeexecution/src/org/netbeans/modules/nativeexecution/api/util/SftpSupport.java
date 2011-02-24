@@ -116,8 +116,10 @@ class SftpSupport {
     private static final int CONCURRENCY_LEVEL = 
             Integer.getInteger("remote.sftp.threads", Runtime.getRuntime().availableProcessors() + 2); // NOI18N
 
-    private static final String RP_NAME = "SFTP request processor"; // NOI18N;
-    private final RequestProcessor requestProcessor = new RequestProcessor(RP_NAME, CONCURRENCY_LEVEL);
+    private static final String PREFIX = "SFTP: "; // NOI18N;
+//    private final RequestProcessor readRuestProcessor = new RequestProcessor(PREFIX + "read", CONCURRENCY_LEVEL); //NOI18N
+//    private final RequestProcessor writeRuestProcessor = new RequestProcessor(PREFIX + "write", 1); //NOI18N
+    private final RequestProcessor requestProcessor = new RequestProcessor(PREFIX, CONCURRENCY_LEVEL); //NOI18N
         
     //
     // Instance stuff
@@ -134,11 +136,17 @@ class SftpSupport {
 
     private SftpSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
-        // we've got some sftp issues => only 1 task at a moment
-        // make it statis: workaround for #184068 -  Instable remote unit tests failure
-        // requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
+        LOG.log(Level.FINE, "SftpSupport for {0} started with maximum thread count: {1}", new Object[] { execEnv, CONCURRENCY_LEVEL });
     }
 
+    private RequestProcessor getReadRequestProcessor() {
+        return requestProcessor; // readRuestProcessor;
+    }
+
+    public RequestProcessor getWriteRuestProcessor() {
+        return requestProcessor; // writeRuestProcessor;
+    }
+    
     private void incrementStatistics() {
         synchronized (channelLock) {
             currBusyChannels++;
@@ -206,7 +214,7 @@ class SftpSupport {
         public Integer call() throws InterruptedException {
             int rc = -1;
             try {                
-                Thread.currentThread().setName(RP_NAME + ": " + getTraceName()); // NOI18N
+                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 work();
                 rc = 0;
             } catch (JSchException ex) {
@@ -392,7 +400,7 @@ class SftpSupport {
                 parameters.srcFile.getAbsolutePath(),
                 parameters.dstFileName, parameters.mask, parameters.error, parameters.checkMd5);
         final FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
-        RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
+        RequestProcessor.Task requestProcessorTask = getWriteRuestProcessor().create(ftask);
         if (parameters.callback != null) {
             final ChangeListener callback = parameters.callback;
             requestProcessorTask.addTaskListener(new TaskListener() {
@@ -414,7 +422,7 @@ class SftpSupport {
 
         Downloader downloader = new Downloader(srcFileName, dstFileName, error);
         FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
-        requestProcessor.post(ftask);
+        getReadRequestProcessor().post(ftask);
         LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
         return ftask;
     }
@@ -434,7 +442,7 @@ class SftpSupport {
             StatInfo result;
             ChannelSftp cftp = getChannel();
             try {
-                Thread.currentThread().setName(RP_NAME + ": " + getTraceName()); // NOI18N
+                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 SftpATTRS attrs = cftp.lstat(path);            
                 String dirName, baseName;
                 int slashPos = path.lastIndexOf('/');
@@ -474,7 +482,7 @@ class SftpSupport {
             StatInfo[] result;
             ChannelSftp cftp = getChannel();
             try {
-                Thread.currentThread().setName(RP_NAME + ": " + getTraceName()); // NOI18N
+                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
                 result = new StatInfo[entries.size()];
                 int i = 0;
@@ -510,7 +518,7 @@ class SftpSupport {
     /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
         StatLoader loader = new StatLoader(absPath);
         FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
-        requestProcessor.post(ftask);
+        getReadRequestProcessor().post(ftask);
         LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
         return ftask;
     }
@@ -518,7 +526,7 @@ class SftpSupport {
     /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
         LsLoader loader = new LsLoader(absPath);
         FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
-        requestProcessor.post(ftask);
+        getReadRequestProcessor().post(ftask);
         LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
         return ftask;
     }

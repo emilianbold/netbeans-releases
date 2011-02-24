@@ -47,6 +47,7 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -90,12 +91,11 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
@@ -876,7 +876,29 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 return false;
             }
 
+            // check that target server supports full JEE6 platform if Java EE 6 sources
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {
+                if(!isRunningOnFullJ2ee6Server(project)) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotFullJ2eeServer")); // NOI18N
+                    return false;
+                }
+            }
+            
             return super.isValid();
+        }
+
+        private boolean isRunningOnFullJ2ee6Server(Project project) {
+            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            String projectServerInstanceID = moduleProvider.getServerInstanceID();
+            String[] serverInstanceIDList = Deployment.getDefault().getServerInstanceIDs(Arrays.asList(J2eeModule.Type.WAR), Profile.JAVA_EE_6_FULL);
+            for (String serverInstanceID : serverInstanceIDList) {
+                if (serverInstanceID.equals(projectServerInstanceID)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
