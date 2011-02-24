@@ -177,6 +177,8 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -2165,6 +2167,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             newArrayType = getSubArrayType(arg0, type, evaluationContext);
             // might call visitNewArray()
             Value elementValue = (Value) exp.accept(this, evaluationContext);
+            newArrayType = null;
             if (elementValue instanceof ArtificialMirror) {
                 elementValue = (Value)((ArtificialMirror)elementValue).getVMMirror();
             }
@@ -3140,7 +3143,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         ScriptVariable var = evaluationContext.createScriptLocalVariable(name, type);
         ExpressionTree initializer = arg0.getInitializer();
         if (initializer != null) {
+            if (Tree.Kind.NEW_ARRAY.equals(initializer.getKind())) {
+                try {
+                    newArrayType = ArrayTypeWrapper.componentType((ArrayType) type);
+                } catch (ClassNotLoadedException cnlex) {
+                    throw new IllegalStateException(cnlex);
+                } catch (InternalExceptionWrapper ex) {
+                    // What can we do? Ignore...
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    throw ex.getCause();
+                }
+            }
             Mirror initialValue = initializer.accept(this, evaluationContext);
+            newArrayType = null;
             var.setValue(initialValue);
             return initialValue;
         }
