@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -76,6 +75,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -236,7 +236,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (DiscoveryUtils.ignoreFolder(d)){
+            if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath();
