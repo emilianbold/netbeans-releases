@@ -46,7 +46,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import junit.framework.Test;
@@ -64,6 +67,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 public class ParallelSftpTest extends NativeExecutionBaseTestCase {
     
     private Level oldLevel;
+    private final Writer errorWriter = new PrintWriter(System.err);
     
     public ParallelSftpTest(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
@@ -90,7 +94,6 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);
         File localTmpDir = createTempFile("parallel", "upload", true);
-        Writer errorWriter = new PrintWriter(System.err);
         long time = System.currentTimeMillis();
         try {            
             @SuppressWarnings("unchecked")
@@ -134,7 +137,6 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);
         final File localTmpDir = createTempFile("parallel", "upload", true);
-        Writer errorWriter = new PrintWriter(System.err);
         final String remoteDir = "/usr/include";
         StatInfo[] ls = ls(env, remoteDir);
         assertTrue("too few elements in ls /usr/include RC", ls.length > 10);        
@@ -162,6 +164,60 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
         System.err.printf("Downloading from %s; %d laps %d files each took %d seconds; declared concurrency level: %d; max. SFTP busy channels: %d\n", 
                 remoteDir, lapsCount, ls.length, time/1000, concurrencyLevel, SftpSupport.getInstance(env).getMaxBusyChannels());
         //System.err.printf("Max. SFTP busy channels: %d\n", SftpSupport.getInstance(env).getMaxBusyChannels());
+    }
+
+    private void gatherPlainFiles(File dir, Collection<File> result, Set<String> shotrNames) throws Exception {
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                gatherPlainFiles(file, result, shotrNames);
+            } else {
+                if (!shotrNames.contains(file.getName())) {
+                    result.add(file);
+                }
+            }
+        }
+    }
+    
+    private File[] getNetBeansPlatformPlainFiles() throws Exception {
+        List<File> result = new ArrayList<File>();
+        File platformDir = getNetBeansPlatformDir();
+        assertNotNull("netbeans platform dir", platformDir);
+        gatherPlainFiles(platformDir, result, new TreeSet<String>());
+        return result.toArray(new File[result.size()]);
+    }
+    
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testParallelUpload() throws Exception {        
+        final int lapsCount = 10;
+        int concurrencyLevel = 10;
+        SftpSupport.testSetConcurrencyLevel(concurrencyLevel);        
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(env);                
+        File[] files = getNetBeansPlatformPlainFiles();
+        String remoteDir = createRemoteTmpDir();
+        long time = System.currentTimeMillis();        
+        try {            
+            @SuppressWarnings("unchecked")
+            Future<Integer>[][] tasks = (Future<Integer>[][]) (new Future[lapsCount][files.length]);            
+            for (int currLap = 0; currLap < lapsCount; currLap++) {
+                for (int currFile = 0; currFile < files.length; currFile++ ) {
+                    String name = files[currFile].getName();                    
+                    tasks[currLap][currFile] = CommonTasksSupport.uploadFile(
+                            files[currFile], env, remoteDir + '/' + name /*+ '.' + currLap*/, 0600, errorWriter);
+                }
+            }
+            for (int currLap = 0; currLap < lapsCount; currLap++) {
+                for (int currFile = 0; currFile < files.length; currFile++ ) {
+                    assertEquals("RC for file " + files[currFile].getName() + " lap #" + currLap, 0, tasks[currLap][currFile].get().intValue());
+                }
+            }
+        } finally {
+            time = System.currentTimeMillis() - time;
+            runScript("rm -rf " + remoteDir);
+            //runCommand("rm", "rf", remoteDir);
+        }        
+        System.err.printf("Uploading to %s; %d laps %d files each took %d seconds; declared concurrency level: %d; max. SFTP busy channels: %d\n", 
+                remoteDir, lapsCount, files.length, time/1000, concurrencyLevel, SftpSupport.getInstance(env).getMaxBusyChannels());
     }
     
     @SuppressWarnings("unchecked")
