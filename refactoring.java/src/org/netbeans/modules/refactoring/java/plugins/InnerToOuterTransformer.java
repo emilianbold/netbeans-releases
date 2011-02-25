@@ -100,15 +100,15 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             return null;
         }
-        if (inner.equals(getCurrentElement())) {
+        Element current = getCurrentElement();
+        if (inner.equals(current)) {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);
         } else if (isThisReferenceToOuter()) {
-            Element current = getCurrentElement();
             if (current.getModifiers().contains(Modifier.PRIVATE) && isThisInInner()) {
-                referencedPrivateElement.add(getCurrentElement());
+                referencedPrivateElement.add(current);
             }
-            if (!workingCopy.getTypes().isSubtype(inner.asType(), workingCopy.getElementUtilities().enclosingTypeElement(getCurrentElement()).asType())) {
+            if (!workingCopy.getTypes().isSubtype(inner.asType(), workingCopy.getElementUtilities().enclosingTypeElement(current).asType())) {
                 IdentifierTree m;
                 if (refactoring.getReferenceName()==null || current.getModifiers().contains(Modifier.STATIC)) {
                     m = make.Identifier(outer.getSimpleName().toString() + "." + node.getName().toString()); // NOI18N
@@ -131,8 +131,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitNewClass(NewClassTree arg0, Element arg1) {
-        Element currentElement = workingCopy.getTrees().getElement(getCurrentPath());
-        if (refactoring.getReferenceName()!=null && currentElement!=null && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
+        Element currentElement = getCurrentElement();
+        if (refactoring.getReferenceName()!=null && currentElement!=null && workingCopy.getTypes().isSubtype(workingCopy.getElementUtilities().enclosingTypeElement(currentElement).asType(), inner.asType())) {
             String thisString;
             if (getCurrentClass()==inner) {
                 thisString = refactoring.getReferenceName();
