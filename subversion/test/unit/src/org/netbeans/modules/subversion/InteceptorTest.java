@@ -208,21 +208,21 @@ public class InteceptorTest extends NbTestCase {
     
     public static Test moveViaDataObjectSuite() {
 	TestSuite suite = new TestSuite();
-//        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
-//        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
-//        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
         suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveFileTree_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFile2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFolder2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveFileTree2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveA2CB2A_DO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveA2CB2A_DO"));
         return(suite);
     }
     
