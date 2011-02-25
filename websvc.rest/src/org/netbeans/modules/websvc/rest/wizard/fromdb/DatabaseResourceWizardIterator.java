@@ -75,6 +75,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
@@ -159,7 +160,21 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         // create the pu first if needed
         if(helper.isCreatePU()) {
             Project project = Templates.getProject(wizard);
-            org.netbeans.modules.j2ee.persistence.wizard.Util.addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
+            if ( RestUtils.hasSpringSupport(project) ) {
+                org.netbeans.modules.j2ee.persistence.wizard.Util.
+                    addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.
+                        persistence.wizard.Util.
+                        buildPersistenceUnitUsingData(project, null, 
+                                helper.getTableSource().getName(), null, null,
+                                Persistence.VERSION_1_0));
+            }
+            else {
+                org.netbeans.modules.j2ee.persistence.wizard.Util.
+                    addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.
+                            persistence.wizard.Util.
+                            buildPersistenceUnitUsingData(project, null, 
+                            helper.getTableSource().getName(), null, null));
+            }
         }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
