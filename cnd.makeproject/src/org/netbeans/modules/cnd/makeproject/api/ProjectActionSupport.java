@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
@@ -535,7 +536,16 @@ public class ProjectActionSupport {
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
-            handler.init(pae, paes);
+            if (additional == null) {
+                additional = BuildActionsProvider.getDefault().getActions(pae.getActionName(), paes);
+            }
+            List<OutputStreamHandler> streamHandlers = new ArrayList<OutputStreamHandler>();
+            for(BuildAction action : additional) {
+                if (action instanceof OutputStreamHandler) {
+                    streamHandlers.add((OutputStreamHandler) action);
+                }
+            }
+            handler.init(pae, paes, streamHandlers);
             progressHandle.finish();
             progressHandle = handler.canCancel() ? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();
