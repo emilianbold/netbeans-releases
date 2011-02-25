@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -89,10 +91,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     }
     
     @Override
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
         this.delegate = RemoteBuildProjectActionHandlerFactory.createDelegateHandler(pae);
-        this.delegate.init(pae, paes);
+        this.delegate.init(pae, paes, outputHandlers);
         this.execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
     }
 
