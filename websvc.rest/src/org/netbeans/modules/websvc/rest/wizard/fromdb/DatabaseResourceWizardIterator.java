@@ -159,7 +159,11 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         // create the pu first if needed
         if(helper.isCreatePU()) {
             Project project = Templates.getProject(wizard);
-            org.netbeans.modules.j2ee.persistence.wizard.Util.addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
+            org.netbeans.modules.j2ee.persistence.wizard.Util.
+                addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.
+                        persistence.wizard.Util.
+                        buildPersistenceUnitUsingData(project, null, 
+                                helper.getTableSource().getName(), null, null));
         }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
