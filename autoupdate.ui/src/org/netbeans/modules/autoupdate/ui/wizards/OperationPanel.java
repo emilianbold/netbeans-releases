@@ -183,7 +183,8 @@ public class OperationPanel extends javax.swing.JPanel {
     private void setBodyInEQ (String msg, List<UpdateElement> elements) {
         pProgress.removeAll ();
         pProgress.add (getTitleComponent (msg), BorderLayout.NORTH);
-        pProgress.add (getElementsComponent (elements), BorderLayout.CENTER);
+        pContainerList2.add(getElementsComponent(elements), BorderLayout.CENTER);
+        pProgress.add(pContainerList1, BorderLayout.CENTER);
         pAboveSpace.setVisible(false);
         revalidate ();
     }
@@ -191,7 +192,8 @@ public class OperationPanel extends javax.swing.JPanel {
     private void setBodyInEQ (String msg, String elements) {
         pProgress.removeAll ();
         pProgress.add (getTitleComponent (msg), BorderLayout.NORTH);
-        pProgress.add (getElementsComponent (elements), BorderLayout.CENTER);
+        pContainerList2.add(getElementsComponent(elements), BorderLayout.CENTER);
+        pProgress.add (pContainerList1, BorderLayout.CENTER);
         pAboveSpace.setVisible(false);
         revalidate ();
     }
@@ -231,6 +233,9 @@ public class OperationPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         bgRestartButtons = new javax.swing.ButtonGroup();
+        pContainerList1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        pContainerList2 = new javax.swing.JPanel();
         pAboveSpace = new javax.swing.JPanel();
         pProgress = new javax.swing.JPanel();
         pbPlaceHolder = new javax.swing.JProgressBar();
@@ -239,6 +244,24 @@ public class OperationPanel extends javax.swing.JPanel {
         rbRestartNow = new javax.swing.JRadioButton();
         rbRestartLater = new javax.swing.JRadioButton();
         cbRunInBackground = new javax.swing.JCheckBox();
+
+        pContainerList2.setLayout(new java.awt.BorderLayout());
+        jScrollPane1.setViewportView(pContainerList2);
+
+        javax.swing.GroupLayout pContainerList1Layout = new javax.swing.GroupLayout(pContainerList1);
+        pContainerList1.setLayout(pContainerList1Layout);
+        pContainerList1Layout.setHorizontalGroup(
+            pContainerList1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 156, Short.MAX_VALUE)
+            .addGroup(pContainerList1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
+        );
+        pContainerList1Layout.setVerticalGroup(
+            pContainerList1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 144, Short.MAX_VALUE)
+            .addGroup(pContainerList1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))
+        );
 
         pAboveSpace.setOpaque(false);
 
@@ -332,9 +355,12 @@ private void cbRunInBackgroundActionPerformed(java.awt.event.ActionEvent evt) {/
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgRestartButtons;
     private javax.swing.JCheckBox cbRunInBackground;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lDetailLabel;
     private javax.swing.JLabel lMainLabel;
     private javax.swing.JPanel pAboveSpace;
+    private javax.swing.JPanel pContainerList1;
+    private javax.swing.JPanel pContainerList2;
     private javax.swing.JPanel pProgress;
     private javax.swing.JProgressBar pbPlaceHolder;
     private javax.swing.JRadioButton rbRestartLater;

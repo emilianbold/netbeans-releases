@@ -113,7 +113,7 @@ class SftpSupport {
         return instance;
     }
 
-    private static final int CONCURRENCY_LEVEL = 
+    private static int CONCURRENCY_LEVEL = 
             Integer.getInteger("remote.sftp.threads", Runtime.getRuntime().availableProcessors() + 2); // NOI18N
 
     private static final String PREFIX = "SFTP: "; // NOI18N;
@@ -529,5 +529,23 @@ class SftpSupport {
         getReadRequestProcessor().post(ftask);
         LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
         return ftask;
+    }
+    
+    /*package*/ static void testSetConcurrencyLevel(int level) {
+        boolean hadInstances;
+        synchronized (instancesLock) {
+            hadInstances = ! instances.isEmpty();
+            instances.clear();
+        }
+        CONCURRENCY_LEVEL = level;
+        if (hadInstances) {
+            System.err.printf("Warning: SFTP concurrency level was set while there were some %s instances\n", SftpSupport.class.getSimpleName());
+        }
+    }
+    
+    /*package*/ int getMaxBusyChannels() {
+        synchronized (channelLock) {
+            return maxBusyChannels;
+        }
     }
 }
