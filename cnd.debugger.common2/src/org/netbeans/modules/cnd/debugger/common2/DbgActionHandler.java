@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -75,7 +76,7 @@ public class DbgActionHandler implements ProjectActionHandler {
 
     protected ProjectActionEvent pae;
 
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
     }
 
