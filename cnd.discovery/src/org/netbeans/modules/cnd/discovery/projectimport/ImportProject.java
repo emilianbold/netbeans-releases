@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
@@ -119,6 +120,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.WizardDescriptor;
@@ -812,6 +814,20 @@ public class ImportProject implements PropertyChangeListener {
         if (makeLog == null) {
             makeLog = createTempFile("make"); // NOI18N
         }
+        if (executionEnvironment.isLocal()) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                switch (hostInfo.getOSFamily()) {
+                case SUNOS:
+                case LINUX:
+                    execLog = createTempFile("exec"); // NOI18N
+                    execLog.deleteOnExit();
+                }
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
+            }
+        }
+
         ExecutionListener listener = new ExecutionListener() {
             private RfsListenerImpl listener;
 
@@ -854,6 +870,10 @@ public class ImportProject implements PropertyChangeListener {
         if (ses != null) {
             try {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                if (execLog != null) {
+                    vars.add("__CND_TOOLS__=cc:CC:gcc:g++"); // NOI18N
+                    vars.add("__CND_BUILD_LOG__="+execLog.getAbsolutePath()); // NOI18N
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -1142,6 +1162,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private File makeLog = null;
+    private File execLog = null;
     public void setMakeLog(File makeLog) {
         this.makeLog = makeLog;
     }
