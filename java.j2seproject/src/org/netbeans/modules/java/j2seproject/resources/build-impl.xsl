@@ -338,7 +338,15 @@ is divided into following sections:
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
-                    <property name="javac.fork" value="true"/>  <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
+                    <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
+                        <and>
+                            <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
+                            <not>
+                                <os family="unix"/>
+                            </not>
+                        </and>
+                    </condition>
+                    <property name="javac.fork" value="${{jdkBug6558476}}"/>
                 </xsl:if>
                 <property name="jar.index" value="false"/>
                 <property name="jar.index.metainf" value="${{jar.index}}"/>

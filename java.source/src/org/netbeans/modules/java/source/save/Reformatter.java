@@ -694,7 +694,7 @@ public class Reformatter implements ReformatTask {
                 }
             }
             if (emptyClass) {
-                newline();
+                blankLines(templateEdit ? ANY_COUNT : 0);
             } else {
                 if (!cs.indentTopLevelClassMembers())
                     indent = old;
@@ -1328,8 +1328,8 @@ public class Reformatter implements ReformatTask {
                     scan(stat, p);
                 }
             }
-            if (isEmpty || templateEdit)
-                newline();
+            if (isEmpty)
+                blankLines(templateEdit ? ANY_COUNT : 0);
             if (node instanceof FakeBlock) {
                 indent = halfIndent;
                 int i = tokens.index();
@@ -2738,8 +2738,6 @@ public class Reformatter implements ReformatTask {
         }
 
         private void blankLines(int count) {
-            if (count == 0 && templateEdit)
-                count = ANY_COUNT;
             if (checkWrap && col > rightMargin) {
                 throw new WrapAbort();
             }

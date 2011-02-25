@@ -143,6 +143,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     private DiffFileTable           fileTable;
     private boolean                 dividerSet;
 
+    private RequestProcessor        rp;
+    
     /**
      * panel that is used for displaying the diff if {@code JSplitPane}
      * is not used
@@ -669,7 +671,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             setDiffIndex(0, 0);
             commitButton.setEnabled(true);
             dpt = new DiffPrepareTask(setups);
-            prepareTask = RequestProcessor.getDefault().post(dpt);
+            prepareTask = getRequestProcessor().post(dpt);
         }
     }
 
@@ -725,6 +727,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             }
         }
         return files.toArray(new File[files.size()]);
+    }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("ClearCase Diff", 50);                    // NOI18N
+        }
+        return rp;
     }
 
     private class DiffPrepareTask implements Runnable {

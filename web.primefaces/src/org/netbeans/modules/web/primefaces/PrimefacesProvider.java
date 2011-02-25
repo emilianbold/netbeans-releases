@@ -66,10 +66,10 @@ public class PrimefacesProvider implements JsfComponentProvider {
     }
 
     private static String getWelcomeMessageBody() {
-        String body = "<" + NS_PREFIX +":commandButton value=\"Hello from PrimeFaces\" onclick=\"dlg1.show();\" type=\"button\" />"
+        String body = "<h:form><" + NS_PREFIX +":commandButton value=\"Hello from PrimeFaces\" onclick=\"dlg1.show();\" type=\"button\" />"
                 + "<" + NS_PREFIX +":dialog header=\"PrimeFaces Dialog\" widgetVar=\"dlg1\" width=\"500\">"
                 + "For more information visit <a href=\"http://primefaces.org\">http://primefaces.org</a>."
-                + "</" + NS_PREFIX +":dialog>";
+                + "</" + NS_PREFIX +":dialog></h:form>";
         return body;
     }
 

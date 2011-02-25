@@ -748,7 +748,10 @@ public abstract class RestSupport {
     }
 
     public boolean isServerGFV3() {
-        return GFV3_SERVER_TYPE.equals(getServerType());
+        if ( getServerType() == null ){
+            return false;
+        }
+        return getServerType().startsWith(GFV3_SERVER_TYPE);
     }
 
     public boolean isServerGFV2() {
