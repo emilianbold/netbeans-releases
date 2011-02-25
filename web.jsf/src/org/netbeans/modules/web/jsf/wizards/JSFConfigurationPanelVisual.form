@@ -66,10 +66,8 @@
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="cbPackageJars" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="lDirectory" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="lVersion" alignment="0" max="32767" attributes="1"/>
-                                  </Group>
+                                  <Component id="lVersion" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  <Component id="lDirectory" alignment="0" min="-2" max="-2" attributes="1"/>
                               </Group>
                               <EmptySpace pref="206" max="32767" attributes="0"/>
                           </Group>

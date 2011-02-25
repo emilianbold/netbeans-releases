@@ -93,6 +93,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.spi.support.SQLRequest;
 import org.netbeans.modules.dlight.spi.support.SQLRequestsProcessor;
 import org.netbeans.modules.dlight.spi.support.SQLStatementsCache;
@@ -169,7 +170,9 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
         try {
             initTables();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
+            SQLExceptions.printStackTrace(sqlStorage, ex);
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -231,7 +234,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             try {
                 stmtCache.close();
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
 
             stmtCache = null;
@@ -326,7 +329,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             demangle(result);
             return result;
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
             return Collections.emptyList();
         }
     }
@@ -355,7 +358,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             demangle(result);
             return result;
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
             return Collections.emptyList();
         }
     }
@@ -401,7 +404,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
             return funcList;
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
         return Collections.emptyList();
     }
@@ -440,8 +443,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                 value = new Time(Long.valueOf(value + ""));
                             }
                             metricValues.put(m, value);
-                        } catch (SQLException e) {
-                            Exceptions.printStackTrace(e);
+                        } catch (SQLException ex) {
+                            SQLExceptions.printStackTrace(sqlStorage, ex);
                         }
                     }
                     String funcName = rs.getString(functionColumnName);
@@ -456,7 +459,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
             return funcList;
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
             return Collections.emptyList();
         }
     }
@@ -542,7 +545,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                     }
                 }
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
         } else {
             int plusPos = lastIndexOf(funcName, '+'); // NOI18N
@@ -738,7 +741,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
             return snapshots;
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
             return Collections.emptyList();
         }
     }
@@ -923,7 +926,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 }
             }
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
         demangle(result);
         return result;

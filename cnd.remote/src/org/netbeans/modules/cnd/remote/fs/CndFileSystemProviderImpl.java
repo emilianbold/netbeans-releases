@@ -86,6 +86,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
+    protected FileObject toFileObjectImpl(File file) {
+        return FileSystemProvider.fileToFileObject(file);
+    }
+
+    @Override
     protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
         return FileSystemProvider.fileObjectToUrl(fileObject);
     }
@@ -103,7 +108,17 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     @Override
     protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
         return FileSystemProvider.getCanonicalPath(fileSystem, absPath.toString());
-    }            
+    }
+
+    @Override
+    protected FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalFileObject(fo);
+    }
+
+    @Override
+    protected String getCanonicalPathImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalPath(fo);
+    }    
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {
@@ -225,21 +240,6 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
             }
         }
         return result;
-    }
-
-    @Override
-    protected String getCaseInsensitivePathImpl(CharSequence path) {
-//        String prefix = CndUtils.getIncludeFileBase();
-        if (Utilities.isWindows()) {
-            path = path.toString().replace('\\', '/');
-        }
-        return path.toString();
-//        if (pathStartsWith(path, prefix)) {
-//            CharSequence start = path.subSequence(0, prefix.length());
-//            CharSequence rest = path.subSequence(prefix.length(), path.length());
-//            return start + rest.toString(); // RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString());
-//        }
-//        return null;
     }
 
     @Override

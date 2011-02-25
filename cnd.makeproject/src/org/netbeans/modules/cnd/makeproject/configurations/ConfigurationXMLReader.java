@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -115,6 +116,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
             return null;
         }
         FileObject configurationBaseFO = (project == null) ? projectDirectory : RemoteFileUtil.getProjectSourceBaseFileObject(project);
+        if (configurationBaseFO == null) {
+            throw new FileNotFoundException("File does not exist"); //NOI18N
+        }
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory, configurationBaseFO);
         Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 

@@ -76,6 +76,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.libs.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -392,6 +400,7 @@
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations.ui</package>

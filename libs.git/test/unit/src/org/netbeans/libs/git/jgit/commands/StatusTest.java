@@ -48,7 +48,9 @@ import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -461,6 +463,40 @@ public class StatusTest extends AbstractGitTestCase {
         write(exclude, "f");
         GitStatus st = getClient(workDir).getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f);
         assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
+    }
+    
+    public void testIgnoreExecutable () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "hi, i am executable");
+        f.setExecutable(true);
+        File[] roots = { f };
+        add(roots);
+        commit(roots);
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        f.setExecutable(false);
+        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        
+        StoredConfig config = repository.getConfig();
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        config.save();
+        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
+        config.save();
+        add(roots);
+        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        config.save();
+        add(roots);
+        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
     }
 
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {

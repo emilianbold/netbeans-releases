@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -77,6 +78,10 @@ public class RemoteFileObjectFactory {
         scheduleCleanDeadEntries();
     }
 
+    /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
+        return fileObjectsCache.values();
+    }
+    
     private void scheduleCleanDeadEntries() {
         cleaningTask.schedule(CLEAN_INTERVAL);
     }

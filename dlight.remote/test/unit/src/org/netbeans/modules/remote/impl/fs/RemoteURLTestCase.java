@@ -86,13 +86,23 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
         String url;
         FileObject fo;
         
-        url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + path;
+        url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + ':' + path;
         fo = FileSystemProvider.urlToFileObject(url);
         assertNotNull("Null file object for " + url, fo);
-        
-        url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getUser() + '@' + env.getHost() + ':' + path;
+        if (env.getSSHPort() == 22) {
+            url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getHost() + ':' + path;
+            fo = FileSystemProvider.urlToFileObject(url);
+            assertNotNull("Null file object for " + url, fo);
+        }
+                 
+        url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getUser() + '@' + env.getHost() + ':' + env.getSSHPort()  + ':' + path;
         fo = FileSystemProvider.urlToFileObject(url);
         assertNotNull("Null file object for " + url, fo);
+        if (env.getSSHPort() == 22) {
+            url = RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getUser() + '@' + env.getHost() + ':' + path;
+            fo = FileSystemProvider.urlToFileObject(url);
+            assertNotNull("Null file object for " + url, fo);
+        }
     }
     
     @ForAllEnvironments

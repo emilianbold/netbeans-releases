@@ -87,18 +87,18 @@ public class InvalidFileObjectSupport {
     
     private static FileSystem getFileSystem(File file) {
         file = FileUtil.normalizeFile(file);
-        while (file != null) {
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                try {
-                    return fo.getFileSystem();
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return getDummyFileSystem();
-                }
+//        while (file != null) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                return fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return getDummyFileSystem();
             }
-            file = file.getParentFile();
         }
+//            file = FileUtil.normalizeFile(file.getParentFile());
+//        }
         return getDummyFileSystem();
     }
 

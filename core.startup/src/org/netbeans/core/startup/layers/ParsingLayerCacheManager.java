@@ -107,7 +107,9 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     private MemFolder root;
     private Stack<Object> curr; // Stack<MemFileOrFolder | MemAttr>
     private URL base;
-    private StringBuffer buf = new StringBuffer();
+    private final StringBuilder buf = new StringBuilder();
+    private URL ref;
+    private int weight;
     private int fileCount, folderCount, attrCount;
     // Folders, files, and attrs already encountered in this layer.
     // By path; attrs as folder/file path plus "//" plus attr name.
@@ -223,18 +225,17 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             if (!(mfof instanceof MemFile)) { // a collision between modules
                 throw new ClassCastException("Stack: " + curr); // NOI18N
             }
-            MemFile file = (MemFile)mfof;
-            file.contents = null;
+            buf.setLength(0);
+            ref = null;
             String u = attrs.getValue("url");
             if (u != null) {
                 try {
-                    file.ref = new URL(base, u);
+                    ref = new URL(base, u);
                 } catch (MalformedURLException mfue) {
                     throw (SAXException) new SAXException(mfue.toString()).initCause(mfue);
                 }
-            } else {
-                file.ref = null;
             }
+            weight = 0;
         } else if (qname.equals("attr")) {
             attrCount++;
             MemAttr attr = new MemAttr();
@@ -253,6 +254,17 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
                 }
                 if (attr.name != null && attr.data != null) {
                     break;
+                }
+            }
+            if (/*MultiFileObject.WEIGHT_ATTRIBUTE*/"weight".equals(attr.name)) {
+                if ("intvalue".equals(attr.type)) {
+                    try {
+                        weight = Integer.parseInt(attr.data);
+                    } catch (NumberFormatException x) {
+                        // ignore here (other places should report it)
+                    }
+                } else {
+                    LayerCacheManager.err.log(Level.WARNING, "currently unsupported value type for weight attribute in {0}: {1}", new Object[] {base, attr.type});
                 }
             }
 //            System.out.println("found attr "+attr);
@@ -329,44 +341,51 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     }
     
     public void endElement(String ns, String lname, String qname) throws SAXException {
-        if (qname.equals("file") && buf.length() > 0) {
-            String text = buf.toString().trim();
-            if (text.length() > 0) {
-                MemFile file = (MemFile)curr.peek();
-                if (file.ref != null) throw new SAXParseException("CDATA plus url= in <file>", locator);
-                /* May be used legitimately by e.g. @HelpSetRegistration:
-                LayerCacheManager.err.warning("use of inline CDATA text contents in <file name=\"" + file.name + "\"> deprecated for performance and charset safety at " + locator.getSystemId() + ":" + locator.getLineNumber() + ". Please use the 'url' attribute instead, or the file attribute 'originalFile' on *.shadow files.");
-                 */
-                // Note: platform default encoding used. If you care about the encoding,
-                // you had better be using url= instead.
-                file.contents = text.getBytes();
-            }
-            buf.setLength(0);
-        }
-        if (qname.equals("file") && openURLs()) {
-            MemFile file = (MemFile)curr.peek();
-            // Only open simple URLs. Assume that JARs are the same JARs with the layers.
-            if (file.ref != null && file.ref.toExternalForm().startsWith("jar:file:")) { // NOI18N
-                try {
-                    URLConnection conn = file.ref.openConnection();
-                    conn.connect();
-                    byte[] readBuf = new byte[conn.getContentLength()];
-                    InputStream is = conn.getInputStream();
-                    try {
-                        int pos = 0;
-                        while (pos < readBuf.length) {
-                            int read = is.read(readBuf, pos, readBuf.length - pos);
-                            if (read < 1) throw new IOException("Premature EOF on " + file.ref.toExternalForm()); // NOI18N
-                            pos += read;
+        if (qname.equals("file")) {
+            MemFile file = (MemFile) curr.peek();
+            if (weight /* #23609: reversed, so not > */>= file.weight) {
+                file.weight = weight;
+                file.contents = null;
+                if (buf.length() > 0) {
+                    String text = buf.toString().trim();
+                    if (text.length() > 0) {
+                        if (ref != null) {
+                            throw new SAXParseException("CDATA plus url= in <file>", locator);
                         }
-                        if (is.read() != -1) throw new IOException("Delayed EOF on " + file.ref.toExternalForm()); // NOI18N
-                    } finally {
-                        is.close();
+                        /* May be used legitimately by e.g. @HelpSetRegistration:
+                        LayerCacheManager.err.warning("use of inline CDATA text contents in <file name=\"" + file.name + "\"> deprecated for performance and charset safety at " + locator.getSystemId() + ":" + locator.getLineNumber() + ". Please use the 'url' attribute instead, or the file attribute 'originalFile' on *.shadow files.");
+                         */
+                        // Note: platform default encoding used. If you care about the encoding,
+                        // you had better be using url= instead.
+                        file.contents = text.getBytes();
                     }
-                    file.contents = readBuf;
-                    file.ref = null;
-                } catch (IOException ioe) {
-                    throw new SAXException(ioe);
+                }
+                file.ref = ref;
+                if (openURLs()) {
+                    // Only open simple URLs. Assume that JARs are the same JARs with the layers.
+                    if (file.ref != null && file.contents == null && file.ref.toExternalForm().startsWith("jar:file:")) { // NOI18N
+                        try {
+                            URLConnection conn = file.ref.openConnection();
+                            conn.connect();
+                            byte[] readBuf = new byte[conn.getContentLength()];
+                            InputStream is = conn.getInputStream();
+                            try {
+                                int pos = 0;
+                                while (pos < readBuf.length) {
+                                    int read = is.read(readBuf, pos, readBuf.length - pos);
+                                    if (read < 1) throw new IOException("Premature EOF on " + file.ref.toExternalForm()); // NOI18N
+                                    pos += read;
+                                }
+                                if (is.read() != -1) throw new IOException("Delayed EOF on " + file.ref.toExternalForm()); // NOI18N
+                            } finally {
+                                is.close();
+                            }
+                            file.contents = readBuf;
+                            file.ref = null;
+                        } catch (IOException ioe) {
+                            throw new SAXException(ioe);
+                        }
+                    }
                 }
             }
         }
@@ -386,10 +405,6 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         if (!(currF instanceof MemFile)) {
             return;
         }
-        // Usually this will just be whitespace which we will ignore anyway.
-        // Do it anyway, so that people who accidentally write:
-        // <file name="x" url="y"><![CDATA[z]]></file>
-        // will at least get an error.
         buf.append(ch, start, len);
     }
     
@@ -499,6 +514,8 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     protected static final class MemFile extends MemFileOrFolder {
         public byte[] contents = null; // {null | byte[]}
         public URL ref = null; // {null | URL}
+
+        private int weight = Integer.MIN_VALUE;
         
         public MemFile (URL base) {
             super (base);

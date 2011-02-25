@@ -39,13 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.management.api;
 
 import java.sql.SQLException;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 
 /**
  *
@@ -53,41 +52,47 @@ import org.openide.util.Exceptions;
  */
 public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactory<DLightSessionServiceInfoStorage> {
     /* use holder to prevent connect during lookup of service */
-    private final static class InstanceHolder{
-        public static final DLightSessionServiceInfoStorage serviceInfoStorage  = new DLightSessionServiceInfoStorage("test"); // NOI18N
-        static{
+
+    private final static class InstanceHolder {
+
+        public static final DLightSessionServiceInfoStorage serviceInfoStorage = new DLightSessionServiceInfoStorage("test"); // NOI18N
+
+        static {
             try {
                 serviceInfoStorage.connect();
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(serviceInfoStorage, ex);
             }
         }
     }
-
     static final String ANALYTICS_SERVICE_INFO_DATA_STORAGE_TYPE = "analytics:serviceinfo"; // NOI18N
 
-    public static DLightSessionServiceInfoStorage getStorageInstance(){
+    public static DLightSessionServiceInfoStorage getStorageInstance() {
         return InstanceHolder.serviceInfoStorage;
     }
 
-
+    @Override
     public DLightSessionServiceInfoStorage openStorage(String uniqueKey) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public DLightSessionServiceInfoStorage createStorage(String uniqueKey) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public DLightSessionServiceInfoStorage openStorage(String uniqueKey, Mode mode) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getUniqueKey(DLightSessionServiceInfoStorage storage) {
         return DLightSessionServiceInfoStorage.DLIGHT_SERVICE_INFO_H2_DATABASE_URL;
     }
 
+    @Override
     public synchronized DLightSessionServiceInfoStorage createStorage() {
-         return InstanceHolder.serviceInfoStorage;
+        return InstanceHolder.serviceInfoStorage;
     }
 }

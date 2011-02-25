@@ -106,6 +106,8 @@ public final class MainWindow {
     private LookupListener saveListener;
 
     private static MainWindow theInstance;
+
+    private final static boolean showCustomBackground = UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
     
 
     /** Constructs main window. */
@@ -158,7 +160,8 @@ public final class MainWindow {
             }
 
         };
-        contentPane.setOpaque( false );
+        if( showCustomBackground )
+            contentPane.setOpaque( false );
         frame.setContentPane(contentPane);
 
         init();
@@ -192,7 +195,8 @@ public final class MainWindow {
                 status.setBorder (BorderFactory.createEmptyBorder (0, 4, 0, 0));
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
-                statusLinePanel.setOpaque( false);
+                if( showCustomBackground )
+                    statusLinePanel.setOpaque( false);
                 int magicConstant = 0;
                 if (Utilities.isMac()) {
                     // on mac there is window resize component in the right most bottom area.
@@ -438,7 +442,8 @@ public final class MainWindow {
         JMenuBar menu = getCustomMenuBar();
         if (menu == null) {
              menu = new MenuBar (null);
-             menu.setOpaque( false);
+             if( showCustomBackground )
+                menu.setOpaque( false);
         }
         menu.setBorderPainted(false);
         if (menu instanceof MenuBar) {
@@ -598,7 +603,7 @@ public final class MainWindow {
             desktopPanel = new JPanel();
             desktopPanel.setBorder(getDesktopBorder());
             desktopPanel.setLayout(new BorderLayout());
-            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            if( showCustomBackground )
                 desktopPanel.setOpaque( false );
         }
         return desktopPanel;
@@ -669,7 +674,7 @@ public final class MainWindow {
         getToolbarComponent().setVisible( !isFullScreenMode );
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
 
-        if( null != device && device.isFullScreenSupported() && !Utilities.isMac() ) {
+        if( null != device && device.isFullScreenSupported() && !(Utilities.isMac() || Utilities.isWindows())) {
             device.setFullScreenWindow( isFullScreenMode ? frame : null );
         } else {
             frame.setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );

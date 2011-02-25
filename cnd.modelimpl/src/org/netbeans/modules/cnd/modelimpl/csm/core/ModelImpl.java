@@ -733,8 +733,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         LibraryManager.getInstance().cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
             ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
-            newPrj.scheduleReparse();
-            ListenersImpl.getImpl().fireProjectOpened(newPrj);
+            if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed? 
+                newPrj.scheduleReparse();
+                ListenersImpl.getImpl().fireProjectOpened(newPrj);
+            }
         }
     }
 

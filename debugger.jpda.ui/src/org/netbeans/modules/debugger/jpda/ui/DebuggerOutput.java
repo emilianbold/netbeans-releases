@@ -312,6 +312,7 @@ PropertyChangeListener {
                         debugger
                     );
 
+                boolean important = url == null; // Bring attention to the console output if there's no URL to display.
                 if (op != null) {
                     boolean done = op == lastOperation;
                     if (!done) {
@@ -323,7 +324,8 @@ PropertyChangeListener {
                                 String.valueOf(lineNumber),
                                 op.getMethodName()
                             },
-                            line
+                            line,
+                            important
                         );
                     } else {
                         print("CTL_Thread_stopped_after_op",
@@ -334,7 +336,8 @@ PropertyChangeListener {
                                 String.valueOf(lineNumber),
                                 lastOperation.getMethodName()
                             },
-                            line
+                            line,
+                            important
                         );
                     }
                 } else if (lineNumber > 0)
@@ -347,7 +350,8 @@ PropertyChangeListener {
                             methodName,
                             String.valueOf(lineNumber)
                         },
-                        line
+                        line,
+                        important
                     );
                 else if (sourceName.length() > 0 && methodName.length() > 0)
                     print (
@@ -358,13 +362,15 @@ PropertyChangeListener {
                             sourceName,
                             methodName
                         },
-                        line
+                        line,
+                        important
                     );
                 else
                     print (
                         "CTL_Thread_stopped_no_line_no_source",
                         new String[] { threadName },
-                        line
+                        line,
+                        important
                     );
             } catch (AbsentInformationException ex) {
                 if (lineNumber > 0)
@@ -377,7 +383,8 @@ PropertyChangeListener {
                             methodName,
                             lineNumber > 0 ? String.valueOf(lineNumber) : ""
                         },
-                        null
+                        null,
+                        true
                     );
                 else
                     print (
@@ -388,7 +395,8 @@ PropertyChangeListener {
                             className,
                             methodName
                         },
-                        null
+                        null,
+                        true
                     );
             }
         }
@@ -422,6 +430,16 @@ PropertyChangeListener {
         String[] args,
         IOManager.Line line
     ) {
+        print(message, args, line, false);
+    }
+
+    private void print (
+        String message,
+//        int where,
+        String[] args,
+        IOManager.Line line,
+        boolean important
+    ) {
         String text = (args == null) ?
             NbBundle.getMessage (
                 DebuggerOutput.class,
@@ -440,7 +458,8 @@ PropertyChangeListener {
         ioManager.println (
             text,
 //            where,
-            line
+            line,
+            important
         );
     }
 }

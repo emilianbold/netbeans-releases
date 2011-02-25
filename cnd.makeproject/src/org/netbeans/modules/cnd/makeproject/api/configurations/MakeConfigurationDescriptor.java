@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.MakeConfigurationSaveListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -99,7 +100,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.WindowManager;
@@ -152,6 +155,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public MakeConfigurationDescriptor(FileObject projectDirFO, FileObject baseDirFO) {
+        Parameters.notNull("projectDirFO", projectDirFO);
+        Parameters.notNull("baseDirFO", baseDirFO);
         this.baseDirFO = baseDirFO;
         this.projectDirFO = projectDirFO;
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
@@ -383,6 +388,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return baseDirFO;
     }
 
+    public FileObject getProjectDirFileObject() {
+        return projectDirFO;
+    }
+    
+    public FileObject getNbprojectFileObject() {
+        if (projectDirFO != null) {
+            return projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        }
+        return null;
+    }    
+
 //    public void setBaseDirFileObject(FileObject baseDirFO) {
 //        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
 //        this.baseDirFO = baseDirFO;
@@ -605,7 +621,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public ConfigurationDescriptor cloneProjectDescriptor() {
-        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(projectDirFO, getBaseDirFileObject());
+        MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(
+                getProjectDirFileObject(), getBaseDirFileObject());
         super.cloneProjectDescriptor(clone);
         clone.setProjectMakefileName(getProjectMakefileName());
         clone.setExternalFileItems(getExternalFileItems());
@@ -717,7 +734,18 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         @Override
         public void run() {
-            ret = saveWorker(extraMessage);
+            Collection<? extends MakeConfigurationSaveListener> listeners = 
+                    Lookup.getDefault().lookupAll(MakeConfigurationSaveListener.class);
+            for (MakeConfigurationSaveListener listener : listeners) {
+                listener.configurationSaving(MakeConfigurationDescriptor.this);
+            }
+            try {
+                ret = saveWorker(extraMessage);
+            } finally {
+                for (MakeConfigurationSaveListener listener : listeners) {
+                    listener.configurationSaved(MakeConfigurationDescriptor.this, ret);
+                }
+            }
         }
     }
 
@@ -785,7 +813,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         // ALl OK
         FileObject fo = null;
-        fo = getBaseDirFileObject();
+        fo = getProjectDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             new ConfigurationXMLWriter(fo, this).write();

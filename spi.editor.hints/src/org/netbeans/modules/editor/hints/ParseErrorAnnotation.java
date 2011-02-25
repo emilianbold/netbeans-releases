@@ -46,10 +46,11 @@ package org.netbeans.modules.editor.hints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.text.Annotation;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -138,5 +139,21 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     
     Severity getSeverity() {
         return severity;
+    }
+
+    private boolean attached;
+
+    synchronized void attachAnnotation(StyledDocument doc, Position lineStart) {
+        if (!attached) {
+            attached = true;
+            NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, this);
+        }
+    }
+
+    void detachAnnotation(StyledDocument doc) {
+        if (attached) {
+            attached = false;
+            NbDocument.removeAnnotation(doc, this);
+        }
     }
 }

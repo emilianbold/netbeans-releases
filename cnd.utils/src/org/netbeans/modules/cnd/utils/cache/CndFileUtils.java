@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -161,11 +162,7 @@ public final class CndFileUtils {
     }
 
     public static FileObject toFileObject(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) {
-            return InvalidFileObjectSupport.getInvalidFileObject(file);
-        }
-        return fo;
+        return CndFileSystemProvider.toFileObject(file);
     }
 
     public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
@@ -209,16 +206,12 @@ public final class CndFileUtils {
     }
 
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
-        File file = FileUtil.toFile(fo);
-        if (file != null) {
-            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:fullRemote - delegate to provider!
-        } else {
-            return fo;
-        }
+        Parameters.notNull("FileObject", fo); //NOI18N
+        return CndFileSystemProvider.getCanonicalFileObject(fo);
     }
     
     public static String getCanonicalPath(FileObject fo) throws IOException {
-        return getCanonicalFileObject(fo).getPath(); // XXX:fullRemote - delegate to provider!
+        return CndFileSystemProvider.getCanonicalPath(fo);
     }
 
     public static boolean isValidLocalFile(String absolutePath) {
@@ -271,13 +264,13 @@ public final class CndFileUtils {
         return file;
     }
 
-    public static String getNormalizedPath(FileObject fo) {
+    public static String normalizePath(FileObject fo) {
         try {
             return normalizeAbsolutePath(fo.getFileSystem(), fo.getPath());
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
-            return fo.getPath();
         }
+        return fo.getPath();
     }
 
     public static String normalizeAbsolutePath(FileSystem fs, String path) {
@@ -296,10 +289,15 @@ public final class CndFileUtils {
      */
     public static String normalizeAbsolutePath(String path) {
         CndUtils.assertAbsolutePathInConsole(path, "path for normalization must be absolute"); //NOI18N
+        // TODO: this should be probably rewritten in a more elegant way
+        if (path.startsWith("/") && Utilities.isWindows()) { // NOI18N
+            return PathUtilities.normalizeUnixPath(path);
+        }
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
-            // with case sensitive "path"s returned by remote compilers
-            path = CndFileSystemProvider.getCaseInsensitivePath(path);
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
         }
         String normalized;
         // small optimization for true case sensitive OSs

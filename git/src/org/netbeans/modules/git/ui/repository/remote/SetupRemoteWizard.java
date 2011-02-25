@@ -139,7 +139,7 @@ public class SetupRemoteWizard implements ChangeListener {
             selectRemoteStep.addChangeListener(SetupRemoteWizard.this);
             fetchUrisStep = new FetchUrisPanelController(null);
             fetchUrisStep.addChangeListener(SetupRemoteWizard.this);
-            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_EMPTY_SELECTION);
+            fetchBranchesStep = new FetchBranchesStep(repository, FetchBranchesStep.Mode.ACCEPT_EMPTY_SELECTION);
             fetchBranchesStep.addChangeListener(SetupRemoteWizard.this);
             Panel[] panels = new Panel[] { selectRemoteStep, fetchUrisStep, fetchBranchesStep };
 
