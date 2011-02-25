@@ -52,6 +52,8 @@ import java.io.InterruptedIOException;
 import java.io.Writer;
 import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -479,22 +481,25 @@ class SftpSupport {
         @SuppressWarnings("unchecked")
         public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
-            StatInfo[] result;
+            List<StatInfo> result = Collections.<StatInfo>emptyList();
             ChannelSftp cftp = getChannel();
             try {
                 Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
-                result = new StatInfo[entries.size()];
+                result = new ArrayList<StatInfo>(entries.size() - 2);
                 int i = 0;
                 for (LsEntry entry : entries) {
-                    SftpATTRS attrs = entry.getAttrs();
-                    result[i++] = createStatInfo(path, entry.getFilename(), attrs, cftp);
+                    String name = entry.getFilename();
+                    if (! ".".equals(name) && ! "..".equals(name)) { //NOI18N
+                        SftpATTRS attrs = entry.getAttrs();
+                        result.add(createStatInfo(path, name, attrs, cftp));
+                    }
                 }            
             } finally {
                 releaseChannel(cftp);
             }
             LOG.log(Level.FINE, "{0} finished", getTraceName());
-            return result;
+            return result.toArray(new StatInfo[result.size()]);
         }
 
         public String getTraceName() {
