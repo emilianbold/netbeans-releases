@@ -59,12 +59,10 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JTabbedPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Segment;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
@@ -97,10 +95,12 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         return res;
     }
 
-    private static final class ConfigureAction extends AbstractAction implements BuildAction {
+    private static final class ConfigureAction extends AbstractAction implements BuildAction,  OutputStreamHandler {
         private String ioTabName;
         private ProjectActionEvent[] events;
         private int step = -1;
+        private BufferedWriter bw;
+        private String name;
 
         public ConfigureAction(String ioTabName, ProjectActionEvent[] events) {
             this.ioTabName = ioTabName;
@@ -121,11 +121,27 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         @Override
         public void executionStarted(int pid) {
             setEnabled(false);
+            if (step == 1) {
+                File file;
+                try {
+                    file = File.createTempFile("tmplog", ".log"); // NOI18N
+                    //if (file.exists()){
+                    //    file.delete();
+                    //}
+                    file.deleteOnExit();
+                    name = file.getAbsolutePath();
+                    bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+                } catch (IOException ex) {
+                    name = null;
+                    bw = null;
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
 
         @Override
         public void executionFinished(int rc) {
-            if (step == 1 && rc == 0) {
+            if (step == 1 && rc == 0 && name != null) {
                 setEnabled(true);
             }
         }
@@ -138,64 +154,46 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
-            JEditorPane pane = findPane();
-            if (pane != null && step >= 0 && step < events.length) {
+            if (step >= 0 && step < events.length) {
                 Project project = events[step].getProject();
-                String fileName = saveLog(pane);
+                String fileName = name;
                 if (fileName != null) {
+                    name = null;
                     invokeWizard(project, fileName);
                 }
             }
         }
 
-        private String saveLog(JEditorPane pane){
-            // TODO: this method does not work for sun studio compilers. Action should listen output writer.
-            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
-            BufferedWriter bw = null;
-            String name = null;
-            try {
-                File file = File.createTempFile("tmplog", ".log"); // NOI18N
-                if (file.exists()){
-                    file.delete();
+        @Override
+        public void handleLine(String line) {
+            if (bw != null) {
+                try {
+                    bw.write(line);
+                } catch (IOException ex) {
                 }
-                file.deleteOnExit();
-                name = file.getAbsolutePath();
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-                Document doc = pane.getDocument();
-                int nleft = doc.getLength();
-                Segment text = new Segment();
-                int offs = 0;
-                text.setPartialReturn(true);   
-                while (nleft > 0) {
-                    try {
-                        doc.getText(offs, nleft, text);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    for(char c: text.array) {
-                        if (c != 0) {
-                            bw.append(c);
-                        }
-                    }
-                    nleft -= text.count;
-                    offs += text.count;
-                }
-                bw.flush();
-                bw.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                if (bw != null) {
-                    try {
-                        bw.close();
-                    } catch (IOException ex1) {
-                        Exceptions.printStackTrace(ex1);
-                    }
-                }
-                name = null;
             }
-            return name;
         }
-        
+
+        @Override
+        public void flush() {
+            if (bw != null) {
+                try {
+                    bw.flush();
+                } catch (IOException ex) {
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+
         private void invokeWizard(Project project, String fileName) {
             DiscoveryProvider provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
             if (provider == null) {
@@ -243,38 +241,6 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 DiscoveryWizardAction.setupComponent(steps, null, i, c);
             }
             return new DiscoveryWizardIterator(simple, simple);
-        }
-        
-        private JEditorPane findPane(){
-            TopComponent component = TopComponent.getRegistry().getActivated();
-            return findPane(component);
-        }
-        
-        private JEditorPane findPane(Container container){ 
-            for(Component component : container.getComponents()){
-                if (component instanceof JEditorPane) {
-                    return (JEditorPane) component;
-                } else if (component instanceof JTabbedPane){
-                    JTabbedPane jt = (JTabbedPane) component;
-                    if (jt.getComponentCount() > 0) {
-                        Component t = jt.getSelectedComponent();
-                        if (t instanceof JEditorPane) {
-                            return (JEditorPane) t;
-                        } else if (t instanceof Container){
-                            JEditorPane res = findPane((Container)t);
-                            if (res != null) {
-                                return res;
-                            }
-                        }
-                    }
-                } else if (component instanceof Container) {
-                    JEditorPane res = findPane((Container)component);
-                    if (res != null) {
-                        return res;
-                    }
-                }
-            }
-            return null;
         }
     }
 }
