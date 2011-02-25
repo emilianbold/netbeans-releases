@@ -447,6 +447,22 @@ public class Util {
      */
     public static PersistenceUnit buildPersistenceUnitUsingData(Project project, String puName,
             String preselectedDB, TableGeneration tableGeneration, Provider provider) {
+            return buildPersistenceUnitUsingData(project, puName, preselectedDB, tableGeneration, provider, null);
+    }
+    /**
+     * Builds a persistence unit using data passed as parameters. Does not save the created persistence unit
+     * nor create the persistence.xml file if it  does not exist.
+     * If some parameters are null, try to find default one or best match
+     * @param project the current project
+     * @param name name for pu, if null default will be used
+     * @param preselectedDB the name of the database connection that should be preselected in the wizard.
+     * @tableGeneration the table generation strategy that should be preselected in the wizard.
+     * @param puVersion pu will be created with passed as a parameter jpa version but will be limited by project/provider properties (can't create 2.0 in project and provider with 1.0 support only).
+     * @return the created PersistenceUnit or null if nothing was created, for example
+     * if wizard was cancelled.
+     */
+    public static PersistenceUnit buildPersistenceUnitUsingData(Project project, String puName,
+            String preselectedDB, TableGeneration tableGeneration, Provider provider, String puVersion) {
 
         boolean isContainerManaged = Util.isContainerManaged(project);
 
@@ -469,7 +485,7 @@ public class Util {
             }
         }
 
-        String version = (lib != null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
+        String    version = (lib != null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
         if (provider != null && version != null) {
             String provVersion = ProviderUtil.getVersion(provider);
             if (provVersion != null) {
@@ -477,6 +493,11 @@ public class Util {
                 if (Double.parseDouble(version) > Double.parseDouble(provVersion)) {
                     version = provVersion;
                 }
+            }
+        }
+        if(puVersion != null){
+            if (Double.parseDouble(version) > Double.parseDouble(puVersion)) {
+                version = puVersion;//if passed version less then supported we can use lower version.
             }
         }
         PersistenceUnit punit = null;

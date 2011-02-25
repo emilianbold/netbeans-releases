@@ -74,6 +74,13 @@ public abstract class BuildActionsProvider {
         void setStep(int step);
     }
 
+    public interface OutputStreamHandler {
+        void handleLine(String line);
+
+        void flush();
+
+        void close();
+    }
     /**
      * Implementation of the default BuildActionsProvider
      */

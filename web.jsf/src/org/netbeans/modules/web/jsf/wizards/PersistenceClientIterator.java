@@ -75,6 +75,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -879,9 +880,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             // check that target server supports full JEE6 platform if Java EE 6 sources
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
             if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {
-                if(!isRunningOnFullJ2ee6Server(project)) {
+                if(!isRunningOnSufficientJ2eeServer(project)) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotFullJ2eeServer")); // NOI18N
+                            NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotSufficientJ2eeServer")); // NOI18N
                     return false;
                 }
             }
@@ -889,13 +890,17 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             return super.isValid();
         }
 
-        private boolean isRunningOnFullJ2ee6Server(Project project) {
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            String projectServerInstanceID = moduleProvider.getServerInstanceID();
-            String[] serverInstanceIDList = Deployment.getDefault().getServerInstanceIDs(Arrays.asList(J2eeModule.Type.WAR), Profile.JAVA_EE_6_FULL);
-            for (String serverInstanceID : serverInstanceIDList) {
-                if (serverInstanceID.equals(projectServerInstanceID)) {
-                    return true;
+        private boolean isRunningOnSufficientJ2eeServer(Project project) {
+            J2eeModuleProvider moduleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            if (moduleProvider != null) {
+                String projectServerInstanceID = moduleProvider.getServerInstanceID();
+                try {
+                    return (Deployment.getDefault().getServerInstance(projectServerInstanceID).
+                            getJ2eePlatform().getSupportedProfiles().contains(Profile.JAVA_EE_6_WEB) &&
+                            !moduleProvider.getServerID().startsWith("Tomcat"));
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(PersistenceClientIterator.class.getName()).log(Level.WARNING, null, ex);
+                    return false;
                 }
             }
             return false;

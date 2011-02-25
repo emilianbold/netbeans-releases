@@ -72,10 +72,14 @@ public class InstallLibraryTask implements Runnable {
         p.putBoolean(KEY, true);
         // find licenseAcceptedFile
         File licenseAcceptedFile = InstalledFileLocator.getDefault().locate("var/license_accepted", null, false); // NOI18N
+        if (licenseAcceptedFile == null) {
+            LOG.info("$userdir/var/license_accepted not found => skipping install JUnit.");
+            return ;
+        }
         try {
             // read content of file
             String content = FileUtil.toFileObject(licenseAcceptedFile).asText();
-            LOG.fine("Content of var/license_accepted: " + content);
+            LOG.fine("Content of $userdir/var/license_accepted: " + content);
             if (content != null && content.indexOf(JUNIT_APPROVED) != -1) {
                 // IDE license accepted, JUnit accpeted => let's install silently
                 LOG.fine(" IDE license accepted, JUnit accpeted => let's install silently"); 
