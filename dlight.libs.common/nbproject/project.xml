@@ -47,6 +47,7 @@
                 <friend>org.netbeans.modules.cnd.utils</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
+                <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <package>org.netbeans.modules.dlight.libs.common</package>
             </friend-packages>
         </data>

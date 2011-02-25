@@ -42,14 +42,25 @@
 
 package org.netbeans.modules.remote.impl.fs.ui;
 
+import org.netbeans.modules.remote.spi.ConnectionNotifierImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public interface ConnectionNotifierImplementation {
-    void addTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
-    void removeTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
+@ServiceProvider(service=ConnectionNotifierImplementation.class)
+public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {
+
+    @Override
+    public void addTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).addTask(task);
+    }
+
+    @Override
+    public void removeTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
+        ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
+    }
 }
