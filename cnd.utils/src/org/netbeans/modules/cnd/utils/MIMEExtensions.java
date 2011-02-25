@@ -141,6 +141,9 @@ public final class MIMEExtensions {
      * @throws IllegalArgumentException if input list doesn't contain default extension
      */
     public void setExtensions(List<String> newExts, String defaultExt) {
+        if (newExts.isEmpty()) {
+            return;
+        }
         if (!newExts.contains(defaultExt)) {
             throw new IllegalArgumentException("input list " + newExts + " doesn't contain default element:" + defaultExt); // NOI18N
         }
