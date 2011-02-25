@@ -57,6 +57,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Factories for standard {@link Sources} implementations.
@@ -116,9 +117,10 @@ public class GenericSources {
      * @return a new group object
      */
     public static SourceGroup group(Project p, FileObject rootFolder, String name, String displayName, Icon icon, Icon openedIcon) {
-        if (name == null) {
-            throw new NullPointerException("Cannot specify a null name for a source group"); // NOI18N
-        }
+        Parameters.notNull("p", p);
+        Parameters.notNull("rootFolder", rootFolder);
+        Parameters.notNull("name", name);
+        Parameters.notNull("displayName", displayName);
         return new Group(p, rootFolder, name, displayName, icon, openedIcon);
     }
     
@@ -160,14 +162,12 @@ public class GenericSources {
             if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
                 throw new IllegalArgumentException(rootFolder + " [isValid=" + rootFolder.isValid() + "] is not parent of " + file + " [isValid=" + file.isValid() + "].");  //NOI18N
             }
-            if (p != null) {
-                if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
-                    // #67450: avoid actually loading the nested project.
-                    return false;
-                }
-                if (FileOwnerQuery.getOwner(file) != p) {
-                    return false;
-                }
+            if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
+                // #67450: avoid actually loading the nested project.
+                return false;
+            }
+            if (FileOwnerQuery.getOwner(file) != p) {
+                return false;
             }
             File f = FileUtil.toFile(file);
             if (f != null) {
