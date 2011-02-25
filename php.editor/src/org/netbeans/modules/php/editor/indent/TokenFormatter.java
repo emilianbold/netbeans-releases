@@ -617,6 +617,16 @@ public class TokenFormatter {
                                         indentRule = true;
                                         newLines = docOptions.blankLinesAfterUse + 1;
                                         break;
+                                    case WHITESPACE_BEFORE_USES_PART:
+                                        indentRule = true;
+                                        if (formatTokens.get(index -1 ).getId() == FormatToken.Kind.ANCHOR) {
+                                            newLines = 0;
+                                            countSpaces = 1;
+                                        } else {
+                                            newLines = 1;
+                                            countSpaces = lastAnchor.getAnchorColumn();
+                                        }
+                                        break;
                                     case WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS:
                                         indentRule = true;
                                         switch (docOptions.wrapExtendsImplementsKeyword) {
