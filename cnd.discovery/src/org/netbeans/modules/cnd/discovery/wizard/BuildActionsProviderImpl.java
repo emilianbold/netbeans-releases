@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
@@ -57,8 +56,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JEditorPane;
-import javax.swing.JTabbedPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
@@ -71,7 +68,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -122,12 +118,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         public void executionStarted(int pid) {
             setEnabled(false);
             if (step == 1) {
-                File file;
                 try {
-                    file = File.createTempFile("tmplog", ".log"); // NOI18N
-                    //if (file.exists()){
-                    //    file.delete();
-                    //}
+                    File file = File.createTempFile("tmplog", ".log"); // NOI18N
                     file.deleteOnExit();
                     name = file.getAbsolutePath();
                     bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));

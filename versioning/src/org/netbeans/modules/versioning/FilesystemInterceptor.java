@@ -218,7 +218,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     public void deletedExternally(FileObject fo) {
         fileDeleted(fo);
     }
-
+    
     @Override
     public void fileDeleted(FileEvent fe) { }
 
@@ -263,6 +263,12 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         fileCreated(new FileEvent(fo));
     }
 
+    @Override
+    public void createdExternally(FileObject fo) {
+        LOG.log(Level.FINE, "createdExternally {0}", fo);
+        fileCreated(new FileEvent(fo));
+    }
+    
     @Override
     public void fileDataCreated(FileEvent fe) { }
 

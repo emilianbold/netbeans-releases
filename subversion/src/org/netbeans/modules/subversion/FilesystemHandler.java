@@ -532,6 +532,35 @@ class FilesystemHandler extends VCSInterceptor {
                 if (file.isDirectory()) {
                     // II. refresh the whole dir
                     cache.directoryContentChanged(file);
+                } else if ((status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && file.exists()) {
+                    // file exists but it's status is set to deleted
+                    File temporary = FileUtils.generateTemporaryFile(file.getParentFile(), file.getName());
+                    try {
+                        SvnClient client = Subversion.getInstance().getClient(false);
+                        if (file.renameTo(temporary)) {
+                            client.revert(file, false);
+                            file.delete();
+                        } else {
+                            Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} to {1}", new Object[] { file, temporary }); //NOI18N
+                            client.addFile(file); // at least add the file so it is not deleted
+                        }
+                    } catch (SVNClientException ex) {
+                        Subversion.LOG.log(Level.INFO, null, ex);
+                    } finally {
+                        if (temporary.exists()) {
+                            try {
+                                if (!temporary.renameTo(file)) {
+                                    Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} back to {1}, {1} exists={2}", new Object[] { temporary, file, file.exists() }); //NOI18N
+                                    FileUtils.copyFile(temporary, file);
+                                }
+                            } catch (IOException ex) {
+                                Subversion.LOG.log(Level.INFO, "FileSystemHandler.afterCreate: cannot copy {0} back to {1}", new Object[] { temporary, file }); //NOI18N
+                            } finally {
+                                temporary.delete();
+                            }
+                        }
+                        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+                    }
                 }
             }
         });

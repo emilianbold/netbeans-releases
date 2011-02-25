@@ -185,6 +185,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("createNewFolder"));
         suite.addTest(new InteceptorTest("deleteA_CreateA"));
         suite.addTest(new InteceptorTest("deleteA_CreateA_RunAtomic"));
+        suite.addTest(new InteceptorTest("afterDelete_AfterCreate_194998"));
         return(suite);
     }
     
@@ -207,21 +208,21 @@ public class InteceptorTest extends NbTestCase {
     
     public static Test moveViaDataObjectSuite() {
 	TestSuite suite = new TestSuite();
-//        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
-//        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
-//        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
         suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveFileTree_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFile2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFolder2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveFileTree2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveA2CB2A_DO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveA2CB2A_DO"));
         return(suite);
     }
     
@@ -608,6 +609,32 @@ public class InteceptorTest extends NbTestCase {
         
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
         assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+    }
+    
+    public void afterDelete_AfterCreate_194998 () throws Exception {
+        // init
+        File file = new File(wc, "file");
+        
+        // create
+        FileObject fo = FileUtil.toFileObject(wc);
+        fo.createData(file.getName());
+        add(file);
+        commit(file);
+        
+        // test 
+        assertTrue(file.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+        
+        file.delete();
+        FileUtil.refreshFor(file);
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
+        
+        TestKit.write(file, "modification");
+        FileUtil.refreshFor(file.getParentFile());
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
+        assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
     }
 
     public void createNewFolder() throws Exception {
