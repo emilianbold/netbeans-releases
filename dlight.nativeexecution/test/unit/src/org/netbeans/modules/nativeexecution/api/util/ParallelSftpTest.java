@@ -50,6 +50,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import junit.framework.Test;
@@ -59,6 +61,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -87,7 +90,7 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
     }    
 
     @ForAllEnvironments(section = "remote.platforms")
-    public void testParallelSingleDownload() throws Exception {
+    public void testMultipleDownload() throws Exception {
         int taskCount = 200;
         int concurrencyLevel = 10;
         SftpSupport.testSetConcurrencyLevel(concurrencyLevel);        
@@ -131,38 +134,79 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
     
     @ForAllEnvironments(section = "remote.platforms")
     public void testParallelMultyDownload() throws Exception {
-        final int lapsCount = 10;
+        final int threadCount = 10;
         final int concurrencyLevel = 10;
         SftpSupport.testSetConcurrencyLevel(concurrencyLevel);
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);
         final File localTmpDir = createTempFile("parallel", "upload", true);
         final String remoteDir = "/usr/include";
-        StatInfo[] ls = ls(env, remoteDir);
+        final StatInfo[] ls = ls(env, remoteDir);
         assertTrue("too few elements in ls /usr/include RC", ls.length > 10);        
         long time = System.currentTimeMillis();
         try {            
             @SuppressWarnings("unchecked")
-            Future<Integer>[][] tasks = (Future<Integer>[][]) (new Future[lapsCount][ls.length]);
-            File[][] files = new File[lapsCount][ls.length];
-            for (int currLap = 0; currLap < lapsCount; currLap++) {
-                for (int currFile = 0; currFile < ls.length; currFile++ ) {
-                    String name = ls[currFile].getName();
-                    files[currLap][currFile] = new File(localTmpDir, name + '.' + currLap);
-                    tasks[currLap][currFile] = CommonTasksSupport.downloadFile(remoteDir + '/' + name, env, files[currLap][currFile], errorWriter);
+            final Future<Integer>[][] tasks = (Future<Integer>[][]) (new Future[threadCount][ls.length]);
+            final File[][] files = new File[threadCount][ls.length];            
+            final CyclicBarrier barrier = new CyclicBarrier(threadCount);
+            Thread[] threads = new Thread[threadCount];
+            final Exception[] threadExceptions = new Exception[threadCount];
+            for (int i = 0; i < threadCount; i++) {
+                final int currThread = i;
+                final String threadName = "SFTP parallel download test thread #" + currThread;
+                threads[currThread] = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            System.err.printf("%s waiting on barrier\n", threadName);
+                            barrier.await();
+                            System.err.printf("%s started\n", threadName);
+                            try {
+                                for (int currFile = 0; currFile < ls.length; currFile++ ) {
+                                    String name = ls[currFile].getName();
+                                    files[currThread][currFile] = new File(localTmpDir, name + '.' + currThread);
+                                    tasks[currThread][currFile] = CommonTasksSupport.downloadFile(remoteDir + '/' + name, env, files[currThread][currFile], errorWriter);
+                                }
+                            } finally {
+                                System.err.printf("%s finished\n", threadName);
+                            }
+                        } catch (InterruptedException ex) {
+                            threadExceptions[currThread] = ex;
+                            Exceptions.printStackTrace(ex);
+                        } catch (BrokenBarrierException ex) {
+                            threadExceptions[currThread] = ex;
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }, threadName);
+            }
+            
+            for (int i = 0; i < threadCount; i++) {
+                threads[i].start();
+            }
+            System.err.printf("Waiting for threads to finish\n");
+            for (int i = 0; i < threadCount; i++) {
+                threads[i].join();
+            }
+            
+            for (int i = 0; i < threadCount; i++) {
+                if (threadExceptions[i] != null) {
+                    throw threadExceptions[i];
                 }
             }
-            for (int currLap = 0; currLap < lapsCount; currLap++) {
+                                    
+            for (int currLap = 0; currLap < threadCount; currLap++) {
                 for (int currFile = 0; currFile < ls.length; currFile++ ) {
                     assertEquals("RC for file " + files[currLap][currFile].getName() + " lap #" + currLap, 0, tasks[currLap][currFile].get().intValue());
                 }
             }
+            
         } finally {
             time = System.currentTimeMillis() - time;
             removeDirectory(localTmpDir);
         }        
-        System.err.printf("Downloading from %s; %d laps %d files each took %d seconds; declared concurrency level: %d; max. SFTP busy channels: %d\n", 
-                remoteDir, lapsCount, ls.length, time/1000, concurrencyLevel, SftpSupport.getInstance(env).getMaxBusyChannels());
+        System.err.printf("Downloading from %s; %d threads %d files each took %d seconds; declared concurrency level: %d; max. SFTP busy channels: %d\n", 
+                remoteDir, threadCount, ls.length, time/1000, concurrencyLevel, SftpSupport.getInstance(env).getMaxBusyChannels());
         //System.err.printf("Max. SFTP busy channels: %d\n", SftpSupport.getInstance(env).getMaxBusyChannels());
     }
 
@@ -188,25 +232,65 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
     
     @ForAllEnvironments(section = "remote.platforms")
     public void testParallelUpload() throws Exception {        
-        final int lapsCount = 10;
+        final int threadCount = 10;
         int concurrencyLevel = 10;
         SftpSupport.testSetConcurrencyLevel(concurrencyLevel);        
-        ExecutionEnvironment env = getTestExecutionEnvironment();
-        ConnectionManager.getInstance().connectTo(env);                
-        File[] files = getNetBeansPlatformPlainFiles();
-        String remoteDir = createRemoteTmpDir();
+        final ExecutionEnvironment env = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(env);
+        final File[] files = getNetBeansPlatformPlainFiles();
+        final String remoteDir = createRemoteTmpDir();
         long time = System.currentTimeMillis();        
         try {            
             @SuppressWarnings("unchecked")
-            Future<Integer>[][] tasks = (Future<Integer>[][]) (new Future[lapsCount][files.length]);            
-            for (int currLap = 0; currLap < lapsCount; currLap++) {
-                for (int currFile = 0; currFile < files.length; currFile++ ) {
-                    String name = files[currFile].getName();                    
-                    tasks[currLap][currFile] = CommonTasksSupport.uploadFile(
-                            files[currFile], env, remoteDir + '/' + name /*+ '.' + currLap*/, 0600, errorWriter);
+            final Future<Integer>[][] tasks = (Future<Integer>[][]) (new Future[threadCount][files.length]);            
+            Thread[] threads = new Thread[threadCount];
+            final Exception[] threadExceptions = new Exception[threadCount];
+            final CyclicBarrier barrier = new CyclicBarrier(threadCount);            
+            for (int i = 0; i < threadCount; i++) {
+                final int currThread = i;
+                final String threadName = "SFTP parallel upload test thread #" + currThread;
+                threads[currThread] = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            System.err.printf("%s waiting on barrier\n", threadName);
+                            barrier.await();
+                            System.err.printf("%s started\n", threadName);
+                            try {
+                                for (int currFile = 0; currFile < files.length; currFile++ ) {
+                                    String name = files[currFile].getName();                    
+                                    tasks[currThread][currFile] = CommonTasksSupport.uploadFile(
+                                            files[currFile], env, remoteDir + '/' + name /*+ '.' + currLap*/, 0600, errorWriter);
+                                }
+                            } finally {
+                                System.err.printf("%s finished\n", threadName);
+                            }
+                        } catch (InterruptedException ex) {
+                            threadExceptions[currThread] = ex;
+                            Exceptions.printStackTrace(ex);
+                        } catch (BrokenBarrierException ex) {
+                            threadExceptions[currThread] = ex;
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }, threadName);
+            }
+            
+            for (int i = 0; i < threadCount; i++) {
+                threads[i].start();
+            }
+            System.err.printf("Waiting for threads to finish\n");
+            for (int i = 0; i < threadCount; i++) {
+                threads[i].join();
+            }
+            
+            for (int i = 0; i < threadCount; i++) {
+                if (threadExceptions[i] != null) {
+                    throw threadExceptions[i];
                 }
             }
-            for (int currLap = 0; currLap < lapsCount; currLap++) {
+                        
+            for (int currLap = 0; currLap < threadCount; currLap++) {
                 for (int currFile = 0; currFile < files.length; currFile++ ) {
                     assertEquals("RC for file " + files[currFile].getName() + " lap #" + currLap, 0, tasks[currLap][currFile].get().intValue());
                 }
@@ -216,8 +300,8 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
             runScript("rm -rf " + remoteDir);
             //runCommand("rm", "rf", remoteDir);
         }        
-        System.err.printf("Uploading to %s; %d laps %d files each took %d seconds; declared concurrency level: %d; max. SFTP busy channels: %d\n", 
-                remoteDir, lapsCount, files.length, time/1000, concurrencyLevel, SftpSupport.getInstance(env).getMaxBusyChannels());
+        System.err.printf("Uploading to %s; %d threads %d files each took %d seconds; declared concurrency level: %d; max. SFTP busy channels: %d\n", 
+                remoteDir, threadCount, files.length, time/1000, concurrencyLevel, SftpSupport.getInstance(env).getMaxBusyChannels());
     }
     
     @SuppressWarnings("unchecked")
