@@ -651,7 +651,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         setRunDir(p.getRunDir());
         setRunCommand(p.getRunCommand());
         runCommandPicklist = p.getRunCommand().getPicklist();
-        setArguments(p.getArguments());
+        setConfigurationArguments(p.getConfigurationArguments());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -672,7 +672,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setRunDir(getRunDir());
         p.setRunCommand(getRunCommand().clone());
-        p.setArguments(getArguments());
+        p.setConfigurationArguments(getConfigurationArguments());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
         p.setConsoleType(getConsoleType().clone());
@@ -699,7 +699,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         set.setShortDescription(getString("GeneralTT"));
         set.put(new ComboStringNodeProp(getRunCommand(), true, getString("RunCommandName"), getString("RunCommandHint")));
         set.put(new RunDirectoryNodeProp());
-        set.put(argumentsNodeprop = new StringNodeProp(getArguments(), "", "Arguments", getString("ArgumentsName"), getString("ArgumentsHint"))); // NOI18N
+        set.put(argumentsNodeprop = new StringNodeProp(getConfigurationArguments(), "", "Arguments", getString("ArgumentsName"), getString("ArgumentsHint"))); // NOI18N
         argumentsNodeprop.setHidden(true);
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
@@ -765,22 +765,39 @@ public final class RunProfile implements ConfigurationAuxObject {
 
     /**
      * @return the arguments
-     *
-     * @deprecated This property is hidden by default. Don't use it!
+     * This property is hidden by default. Don't use it!
      */
-    @Deprecated
-    public StringConfiguration getArguments() {
+    public StringConfiguration getConfigurationArguments() {
         return arguments;
     }
 
     /**
      * @param arguments the arguments to set
-     * 
+     * This property is hidden by default. Don't use it!
+     */
+    public void setConfigurationArguments(StringConfiguration arguments) {
+        this.arguments = arguments;
+    }
+
+
+    /**
      * @deprecated This property is hidden by default. Don't use it!
      */
     @Deprecated
-    public void setArguments(StringConfiguration arguments) {
-        this.arguments = arguments;
+    public String getArguments() {
+        return arguments.getValue();
+    }
+
+    /**
+     * @deprecated This property is hidden by default. Don't use it!
+     */
+    @Deprecated
+    public void setArguments(String val) {
+        String oldArgs = arguments.getValue();
+        arguments.setValue(val);
+        if (pcs != null && !CndPathUtilitities.sameString(oldArgs, val)) {
+            pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, val);
+        }
     }
 
     private class RunDirectoryNodeProp extends PropertySupport<String> {

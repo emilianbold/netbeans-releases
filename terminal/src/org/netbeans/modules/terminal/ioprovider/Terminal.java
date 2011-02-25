@@ -146,7 +146,7 @@ public final class Terminal extends JComponent {
     private final CallBacks callBacks = new CallBacks();
 
     // Not final so we can dispose of them
-    private ActiveTerm term;
+    private final ActiveTerm term;
     private final TermListener termListener;
     private FindState findState;
 
@@ -364,7 +364,6 @@ public final class Terminal extends JComponent {
 	term.removeListener(termListener);
 	term.setActionListener(null);
 	findState = null;
-	term = null;
         termOptions.removePropertyChangeListener(termOptionsPCL);
 	tio.dispose();
 	TerminalIOProvider.dispose(tio);

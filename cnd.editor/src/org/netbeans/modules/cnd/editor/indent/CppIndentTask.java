@@ -103,7 +103,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
                         if (function != null) {
                             StringBuilder buf = createDoc(indent, function);
-                            TBIcontext.setText("\n"+buf.toString(), 0, indent+3);
+                            TBIcontext.setText("\n"+buf.toString(), 0, indent+3); // NOI18N
                             return true;
                         }
                     }

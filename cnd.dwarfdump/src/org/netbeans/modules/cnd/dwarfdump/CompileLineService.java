@@ -266,6 +266,42 @@ public class CompileLineService {
             return userPaths;
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SourceFile other = (SourceFile) obj;
+            if ((this.compileLine == null) ? (other.compileLine != null) : !this.compileLine.equals(other.compileLine)) {
+                return false;
+            }
+            if ((this.compileDir == null) ? (other.compileDir != null) : !this.compileDir.equals(other.compileDir)) {
+                return false;
+            }
+            if ((this.sourceFile == null) ? (other.sourceFile != null) : !this.sourceFile.equals(other.sourceFile)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (this.compileLine != null ? this.compileLine.hashCode() : 0);
+            hash = 97 * hash + (this.compileDir != null ? this.compileDir.hashCode() : 0);
+            hash = 97 * hash + (this.sourceFile != null ? this.sourceFile.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "SourceFile{" + "compileLine=" + compileLine + ", compileDir=" + compileDir + ", sourceFile=" + sourceFile + '}'; // NOI18N
+        }
+        
+        
         private void initMacrosAndPaths(){
             userPaths = new ArrayList<String>();
             userMacros = new LinkedHashMap<String, String>();
