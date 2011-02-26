@@ -125,6 +125,7 @@ public abstract class CLIHandler extends Object {
      /** Extra set of inits.
      */
     public static final int WHEN_EXTRA = 3;
+    private static final RequestProcessor secureCLIPort = new RequestProcessor("Secure CLI Port");
     
     /** reference to our server.
      */
@@ -456,6 +457,10 @@ public abstract class CLIHandler extends Object {
         return doLater == null;
     }
     
+    static void waitSecureCLIOver() {
+        secureCLIPort.post(Task.EMPTY).waitFinished();
+    }
+    
     /** Stops the server.
      */
     public static synchronized void stopServer () {
@@ -596,7 +601,8 @@ public abstract class CLIHandler extends Object {
                 
                 enterState(20, block);
                 
-                Task parael = new RequestProcessor("Secure CLI Port").post(new Runnable() { // NOI18N
+                Task parael = secureCLIPort.post(new Runnable() { // NOI18N
+                    @Override
                     public void run() {
                         SecureRandom random = null;
                         enterState(95, block);
