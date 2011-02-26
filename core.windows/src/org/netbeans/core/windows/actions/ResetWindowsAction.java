@@ -74,10 +74,23 @@ import org.openide.windows.TopComponentGroup;
  *
  * @author S. Aubrecht
  */
-@ActionID(id = "org.netbeans.core.windows.actions.ResetWindowsAction", category = "Window")
-@ActionRegistration(displayName = "#CTL_ResetWindows")
-@ActionReference(position = 3000, path = "Menu/Window")
 public class ResetWindowsAction implements ActionListener {
+    @ActionID(id = "org.netbeans.core.windows.actions.ResetWindowsAction", category = "Window")
+    @ActionRegistration(displayName = "#CTL_ResetWindows")
+    @ActionReference(position = 3000, path = "Menu/Window")
+    public static ActionListener reset() {
+        return new ResetWindowsAction(true);
+    }
+    
+    @ActionID(id = "org.netbeans.core.windows.actions.ReloadWindowsAction", category = "Window")
+    @ActionRegistration(displayName = "#CTL_ReloadWindows")
+    public static ActionListener reload() {
+        return new ResetWindowsAction(false);
+    }
+    private final boolean reset;
+    public ResetWindowsAction(boolean reset) {
+        this.reset = reset;
+    }
     
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -119,7 +132,7 @@ public class ResetWindowsAction implements ActionListener {
             public void run() {
                 //find the local folder that must be deleted
                 FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
-                if( null != rootFolder ) {
+                if (reset && null != rootFolder) {
                     try {
                         for( FileObject fo : rootFolder.getChildren() ) {
                             if( PersistenceManager.COMPS_FOLDER.equals( fo.getName() ) )
