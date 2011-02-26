@@ -129,7 +129,7 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
     }
 
     public void addPendingFile(RemoteFileObjectBase fo) {
-        RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, fo.remotePath}); //NOI18N
+        RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, fo.getPath()}); //NOI18N
         //pendingFilesQueue.add(fo.remotePath);
         ConnectionNotifier.addTask(execEnv, this);
     }

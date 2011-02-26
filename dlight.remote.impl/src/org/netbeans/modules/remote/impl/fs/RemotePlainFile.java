@@ -142,7 +142,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     private FileNotFoundException newFileNotFoundException(Exception cause) {
-        FileNotFoundException ex = new FileNotFoundException("" + execEnv + ':' + remotePath); //NOI18N
+        FileNotFoundException ex = new FileNotFoundException("" + getExecutionEnvironment() + ':' + getPath()); //NOI18N
         ex.initCause(cause);
         return ex;
     }
@@ -164,7 +164,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     
     @Override
     protected void deleteImpl() throws IOException {
-        RemoteFileSystemUtils.delete(execEnv, remotePath, false);
+        RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override
@@ -193,7 +193,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         FileOutputStream delegate;
 
         public DelegateOutputStream() throws IOException {
-            delegate = new FileOutputStream(cache);
+            delegate = new FileOutputStream(getCache());
         }
 
         @Override
@@ -209,7 +209,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         @Override
         public void close() throws IOException {
             delegate.close();
-            WritingQueue.getInstance(execEnv).add(cache, remotePath, -1, null);
+            WritingQueue.getInstance(getExecutionEnvironment()).add(getCache(), getPath(), -1, null);
         }
 
         @Override

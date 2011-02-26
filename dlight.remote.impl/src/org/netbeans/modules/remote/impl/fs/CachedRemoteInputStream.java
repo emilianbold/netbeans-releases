@@ -93,7 +93,7 @@ final class CachedRemoteInputStream extends InputStream {
     CachedRemoteInputStream(RemotePlainFile remoteFile, ExecutionEnvironment srcExecEnv) {
         this.remoteFile = remoteFile;
         position = 0;
-        buffer = CommonTasksSupport.readFile(remoteFile.remotePath, srcExecEnv, 0, BUFFER_SIZE, writer);
+        buffer = CommonTasksSupport.readFile(remoteFile.getPath(), srcExecEnv, 0, BUFFER_SIZE, writer);
     }
 
     private CachedRemoteInputStream(CachedRemoteInputStream master) {
@@ -120,12 +120,12 @@ final class CachedRemoteInputStream extends InputStream {
                     return -1;
                 } else {
                     RemoteFileSystemUtils.getCanonicalParent(remoteFile).ensureChildSync(remoteFile);
-                    delegate = new FileInputStream(remoteFile.cache);
-                    if (remoteFile.cache.length() > 1024*1024) {
+                    delegate = new FileInputStream(remoteFile.getCache());
+                    if (remoteFile.getCache().length() > 1024*1024) {
                         boolean debug = false;
                         assert (debug = true);
                         if (debug) {
-                            new Exception("Too long remote file "+remoteFile.remotePath).printStackTrace(System.err); // NOI18N
+                            new Exception("Too long remote file "+remoteFile.getPath()).printStackTrace(System.err); // NOI18N
                         }
                     }
                     while (position > 0) {
