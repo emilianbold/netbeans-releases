@@ -114,7 +114,7 @@ public class RemoteFileObjectFactory {
             scheduleCleanDeadEntries(); // schedule on 1-st request
         }
         RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-        if (fo instanceof RemoteDirectory && fo.isValid() && fo.cache.equals(cacheFile)) {
+        if (fo instanceof RemoteDirectory && fo.isValid() && fo.getCache().equals(cacheFile)) {
             cacheHits++;
             return (RemoteDirectory) fo;
         }
@@ -131,7 +131,7 @@ public class RemoteFileObjectFactory {
             scheduleCleanDeadEntries(); // schedule on 1-st request
         }
         RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-        if (fo instanceof RemotePlainFile && fo.isValid() && fo.cache.equals(cacheFile) && fo.getType() == fileType) {
+        if (fo instanceof RemotePlainFile && fo.isValid() && fo.getCache().equals(cacheFile) && fo.getType() == fileType) {
             cacheHits++;
             return (RemotePlainFile) fo;
         }

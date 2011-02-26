@@ -68,7 +68,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
     public abstract RemoteFileObjectBase getDelegate();
 
     protected FileNotFoundException fileNotFoundException(String operation) {
-        return new FileNotFoundException("can not " + operation + ' ' + remotePath + ": can not find link target"); //NOI18N
+        return new FileNotFoundException("can not " + operation + ' ' + getPath() + ": can not find link target"); //NOI18N
     }
     
     @Override
@@ -87,11 +87,11 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
     private RemoteFileObjectBase wrapFileObject(RemoteFileObjectBase fo, String relativePath) {
         String childAbsPath;
         if (relativePath == null) {
-            childAbsPath = remotePath + '/' + fo.getNameExt();
+            childAbsPath = getPath() + '/' + fo.getNameExt();
         } else {
-            childAbsPath = RemoteFileSystemUtils.normalize(remotePath + '/' + relativePath);
+            childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
-        return new RemoteLinkChild(fileSystem, execEnv, this, childAbsPath, fo);
+        return new RemoteLinkChild(getFileSystem(), getExecutionEnvironment(), this, childAbsPath, fo);
     }
 
     // ------------ delegating methods -------------------
