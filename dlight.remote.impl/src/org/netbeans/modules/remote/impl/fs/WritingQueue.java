@@ -160,7 +160,16 @@ public class WritingQueue {
             synchronized (lock) {
                 failed.remove(dstFileName);
                 if (currentTask != null) {
-                    currentTask.cancel(true);
+                    // cancel does not work with jsch sftp, reasons to be investigated                    
+                    RemoteLogger.getInstance().log(Level.FINE, "Waiting for previous upload task for {0}", dstFileName);
+                    //currentTask.cancel(true);
+                    try {
+                        currentTask.get();
+                    } catch (InterruptedException ex) {
+                        RemoteLogger.getInstance().log(Level.INFO, "InterruptedException when waiting for previous task", ex);
+                    } catch (ExecutionException ex) {
+                        RemoteLogger.getInstance().log(Level.INFO, "ExecutionException when waiting for previous task", ex);
+                    }
                     currentTask = null;
                 }
                 CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
