@@ -136,6 +136,9 @@ public class DbgActionHandler implements ProjectActionHandler {
 
         Runnable loadProgram = new Runnable() {
             public void run() {
+                if (io != null) {
+                    io.select();
+                }
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
 		    dm.setAction(DebuggerManager.RUN);
 		    dm.removeAction(DebuggerManager.STEP);
