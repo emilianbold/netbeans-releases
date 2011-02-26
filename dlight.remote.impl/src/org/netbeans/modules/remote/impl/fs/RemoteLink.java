@@ -77,7 +77,7 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     public RemoteFileObjectBase getDelegate() {
-        RemoteFileObjectBase delegate = fileSystem.findResource(link);
+        RemoteFileObjectBase delegate = getFileSystem().findResource(link);
         return delegate;
     }
         
@@ -92,6 +92,6 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     protected void deleteImpl() throws IOException {
-        RemoteFileSystemUtils.delete(execEnv, remotePath, false);
+        RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
     }
 }

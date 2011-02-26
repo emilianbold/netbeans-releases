@@ -70,10 +70,10 @@ import org.openide.util.Exceptions;
  */
 public abstract class RemoteFileObjectBase extends FileObject implements Serializable {
 
-    protected final RemoteFileSystem fileSystem;
-    protected final ExecutionEnvironment execEnv;
-    protected final String remotePath;
-    protected final File cache;
+    private final RemoteFileSystem fileSystem;
+    private final ExecutionEnvironment execEnv;
+    private final String remotePath;
+    private final File cache;
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
@@ -108,6 +108,10 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     public ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
+    }
+
+    protected File getCache() {
+        return cache;
     }
 
     @Override
@@ -156,7 +160,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     protected RemoteFileSupport getRemoteFileSupport() {
-        return fileSystem.getRemoteFileSupport();
+        return getFileSystem().getRemoteFileSupport();
     }
 
     @Override
@@ -168,8 +172,8 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public String getNameExt() {
-        int slashPos = this.remotePath.lastIndexOf('/');
-        return (slashPos < 0) ? "" : this.remotePath.substring(slashPos + 1);
+        int slashPos = this.getPath().lastIndexOf('/');
+        return (slashPos < 0) ? "" : this.getPath().substring(slashPos + 1);
     }
 
     @Override
@@ -188,14 +192,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public RemoteFileObjectBase getParent() {
-        int slashPos = remotePath.lastIndexOf('/');
+        int slashPos = getPath().lastIndexOf('/');
         if (slashPos > 0) {
-            String parentPath = remotePath.substring(0, slashPos);
-            FileObject parent = fileSystem.findResource(parentPath);
-            RemoteLogger.assertTrue(parent != null, "Null parent for " + remotePath); //NOI18N
+            String parentPath = getPath().substring(0, slashPos);
+            FileObject parent = getFileSystem().findResource(parentPath);
+            RemoteLogger.assertTrue(parent != null, "Null parent for " + getPath()); //NOI18N
             return (RemoteFileObjectBase)parent;
         } else {
-            return fileSystem.getRoot();
+            return getFileSystem().getRoot();
         }
     }
 
@@ -312,17 +316,17 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public Object getAttribute(String attrName) {
-        return fileSystem.getAttribute(this, attrName);
+        return getFileSystem().getAttribute(this, attrName);
     }
 
     @Override
     public Enumeration<String> getAttributes() {
-        return fileSystem.getAttributes(this);
+        return getFileSystem().getAttributes(this);
     }
 
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
-        fileSystem.setAttribute(this, attrName, value);
+        getFileSystem().setAttribute(this, attrName, value);
     }
 
     @Override
@@ -343,7 +347,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public String toString() {
-        return execEnv.toString() + ":" + remotePath; //NOI18N
+        return getExecutionEnvironment().toString() + ":" + getPath(); //NOI18N
     }
 
     @Override
@@ -355,13 +359,13 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             return false;
         }
         final RemoteFileObjectBase other = (RemoteFileObjectBase) obj;
-        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+        if (this.getFileSystem() != other.getFileSystem() && (this.getFileSystem() == null || !this.fileSystem.equals(other.fileSystem))) {
             return false;
         }
-        if (this.execEnv != other.execEnv && (this.execEnv == null || !this.execEnv.equals(other.execEnv))) {
+        if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.execEnv.equals(other.execEnv))) {
             return false;
         }
-        if (this.cache != other.cache && (this.cache == null || !this.cache.equals(other.cache))) {
+        if (this.getCache() != other.getCache() && (this.getCache() == null || !this.cache.equals(other.cache))) {
             return false;
         }
         return true;
@@ -370,14 +374,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 11 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
-        hash = 11 * hash + (this.execEnv != null ? this.execEnv.hashCode() : 0);
-        hash = 11 * hash + (this.cache != null ? this.cache.hashCode() : 0);
+        hash = 11 * hash + (this.getFileSystem() != null ? this.getFileSystem().hashCode() : 0);
+        hash = 11 * hash + (this.getExecutionEnvironment() != null ? this.getExecutionEnvironment().hashCode() : 0);
+        hash = 11 * hash + (this.getCache() != null ? this.getCache().hashCode() : 0);
         return hash;
     }
     
    /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
-        return new SerializedForm(execEnv, remotePath);
+        return new SerializedForm(getExecutionEnvironment(), getPath());
     }
     
     private static class SerializedForm implements Serializable {
