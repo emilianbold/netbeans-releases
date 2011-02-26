@@ -66,9 +66,10 @@
 
 /****************************************************************/
 
-static FILE* flog = NULL;
 static char* filter[100];
 static int filter_sz = 0;
+static char* env_log = NULL;
+static int interpose_init = 0;
 
 static int comparator(const void * elem1, const void * elem2) {
     const char* str1 = *(const char**) elem1;
@@ -78,12 +79,11 @@ static int comparator(const void * elem1, const void * elem2) {
 
 static int init() {
     /* This function is not reenterable!!! TODO: introduce locking */
-    static int interpose_init = 0;
     if (interpose_init != 0)
         return interpose_init;
 
     char* env_map = getenv("__CND_TOOLS__");
-    char* env_log = getenv("__CND_BUILD_LOG__");
+    env_log = getenv("__CND_BUILD_LOG__");
 
     if (env_map == NULL) {
         LOG("\n>>>ERROR: __CND_TOOLS__ is not set!!!\n");
@@ -94,17 +94,11 @@ static int init() {
         return interpose_init = -1;
     }
 
-    flog = fopen(env_log, "a");
-
-    if (flog == NULL) {
-        LOG("\n>>>ERROR: can not open%s!!!\n", env_log);
-        return interpose_init = -1;
-    }
-
     LOG("\n>>>NBBUILD: TOOLS=%s\n\tLOG=%s\n", env_map, env_log);
 
     char * token;
     int i = 0;
+    env_map = strdup(env_map);
     for (token = strtok(env_map, ":");
             token;
             token = strtok(NULL, ":")) {
@@ -125,6 +119,7 @@ static int init() {
         i++;
         filter_sz++;
     }
+    free(env_map);
 
     if (filter_sz == 0)
         return interpose_init = -1;
@@ -152,6 +147,14 @@ static void __logprint(const char* fname, char *const argv[], ...) {
 
     if (found) {
         LOG("\n>>>NBBUILD: found %s\n", *found);
+        FILE* flog = fopen(env_log, "a");
+
+        if (flog == NULL) {
+            LOG("\n>>>ERROR: can not open%s!!!\n", env_log);
+            interpose_init = -1;
+            return;
+        }
+
         //FILE* log = stderr;
         fprintf(flog, "called: %s\n", fname);
         char *buf = malloc(1024);
@@ -163,6 +166,8 @@ static void __logprint(const char* fname, char *const argv[], ...) {
             fprintf(flog, "\t%s\n", *par);
         fprintf(flog, "\n");
         fflush(flog);
+        fclose(flog);
+        LOG("log closed\n");
     }
     return;
 }
@@ -238,10 +243,6 @@ init_function(void) {
 static void
 __attribute((destructor))
 fini_function(void) {
-    if (flog) {
-        fclose(flog);
-        LOG("log closed\n");
-    }
     int i = 0;
     for (; i < filter_sz; i++)
         free(filter[i]);
