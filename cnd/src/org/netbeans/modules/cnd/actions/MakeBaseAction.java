@@ -248,7 +248,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     private static final class BuildTraceHelper extends HelperUtility {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
         private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/$osname-${platform}$_isa/libBuildTrace.so");
+            super("org.netbeans.modules.cnd.actions", "bin/$osname-${platform}$_isa/libBuildTrace.so"); // NOI18N
         }
     }
 }
