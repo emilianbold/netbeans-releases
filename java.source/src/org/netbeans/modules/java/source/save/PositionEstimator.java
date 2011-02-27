@@ -717,12 +717,13 @@ public abstract class PositionEstimator {
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
                     break;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
-                    int indexOf = token.text().toString().lastIndexOf('\n');
-                    if (indexOf > -1) {
-                        sectionStart = seq.offset() + indexOf + 1;
-                    } else {
-                        sectionStart = seq.offset();
-                    }
+                    //#196053: not removing leading whitespaces, see ClassMemberTest.test196053b:
+//                    int indexOf = token.text().toString().lastIndexOf('\n');
+//                    if (indexOf > -1) {
+//                        sectionStart = seq.offset() + indexOf + 1;
+//                    } else {
+//                        sectionStart = seq.offset();
+//                    }
                 }
             }
             seq.move(sectionEnd);
@@ -741,7 +742,7 @@ public abstract class PositionEstimator {
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
                     } else {
-                        sectionEnd += seq.offset() + token.text().length();
+                        sectionEnd = seq.offset() + token.text().length();
                     }
                 }
             }
