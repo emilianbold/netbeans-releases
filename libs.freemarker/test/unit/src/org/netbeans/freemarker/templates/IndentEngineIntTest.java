@@ -32,7 +32,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.templates;
+package org.netbeans.freemarker.templates;
 
 import java.awt.Dialog;
 import java.io.IOException;
@@ -90,10 +90,10 @@ public class IndentEngineIntTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
+        String txt = "<html><h1>${title}</h1></html>";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "JavaScript");
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
         
         
         DataObject obj = DataObject.find(fo);
@@ -112,7 +112,10 @@ public class IndentEngineIntTest extends NbTestCase {
     }
     
     private static String readFile(FileObject fo) throws IOException {
-        return fo.asText();
+        byte[] arr = new byte[(int)fo.getSize()];
+        int len = fo.getInputStream().read(arr);
+        assertEquals("Fully read", arr.length, len);
+        return new String(arr);
     }
     
     public static final class DD extends DialogDisplayer {

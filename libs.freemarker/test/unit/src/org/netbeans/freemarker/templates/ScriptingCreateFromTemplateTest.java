@@ -32,7 +32,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.templates;
+package org.netbeans.freemarker.templates;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -84,12 +84,13 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        os.write("print(encoding)".getBytes());
+        os.write("${encoding}".getBytes());
         os.close();
         assertEquals("content/unknown", fo.getMIMEType());
         fo.setAttribute ("template", Boolean.TRUE);
         assertEquals("content/unknown", fo.getMIMEType());
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        assertEquals("text/x-freemarker", fo.getMIMEType());
         
         DataObject obj = DataObject.find(fo);
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
@@ -115,10 +116,10 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject template = FileUtil.createData(root, "simple.pl");
         OutputStream os = template.getOutputStream();
-        os.write("println('#!/usr/bin/perl'); print('# ');println(license);print('# ');print(name);print(' in ');println(nameAndExt);".getBytes());
+        os.write("#!/usr/bin/perl\n# ${license}\n# ${name} in ${nameAndExt}\n".getBytes());
         os.close();
         template.setAttribute("template", true);
-        template.setAttribute("javax.script.ScriptEngine", "js");
+        template.setAttribute("javax.script.ScriptEngine", "freemarker");
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("license", "GPL");
         parameters.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
@@ -163,7 +164,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         os.write("test".getBytes());
         os.close();
         fo.setAttribute ("template", Boolean.TRUE);
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
 
         MockServices.setServices(MockMimeLookup.class);
         MockMimeLookup.setInstances(MimePath.parse("content/unknown"), new TestEditorKit());
