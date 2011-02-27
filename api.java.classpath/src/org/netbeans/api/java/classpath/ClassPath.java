@@ -759,7 +759,6 @@ public final class ClassPath {
             if (_root != null && _root.isValid()) {
                 return _root;
             }
-
             for (int retryCount = 0; retryCount<=1; retryCount++) { //Bug 193086 : try to do refresh
                 _root = URLMapper.findFileObject(this.url);            
                 synchronized (this) {
@@ -780,7 +779,9 @@ public final class ClassPath {
                                                 " file: " + file.isFile() +             //NOI18N
                                                 " directory: "+ file.isDirectory() +    //NOI18N
                                                 " read: "+ file.canRead() +             //NOI18N
-                                                " write: "+ file.canWrite()+")";        //NOI18N
+                                                " write: "+ file.canWrite()+        //NOI18N
+                                                " root: "+ root +        //NOI18N
+                                                " _root: "+ _root +")";        //NOI18N
                                 } catch (IllegalArgumentException e) {
                                     //Non local file - keep file null (not log file state)
                                 } catch (URISyntaxException e) {

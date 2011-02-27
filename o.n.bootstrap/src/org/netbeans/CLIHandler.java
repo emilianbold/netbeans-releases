@@ -262,7 +262,19 @@ public abstract class CLIHandler extends Object {
             args.reset(consume);
         }
     }
-    
+    private static int processInitLevelCLI(final Args args, final Collection<? extends CLIHandler> handlers, final boolean failOnUnknownOptions) {
+        return registerFinishInstallation(new Execute() {
+            @Override
+            public int exec() {
+                return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
+            }
+
+            public @Override
+            String toString() {
+                return handlers.toString();
+            }
+        });
+    }    
     /**
      * Represents result of initialization.
      * @see #initialize(String[], ClassLoader)
@@ -518,7 +530,8 @@ public abstract class CLIHandler extends Object {
         }
     
         if ("memory".equals(home)) { // NOI18N
-            return new Status(0);
+            int execCode = processInitLevelCLI(args, handlers, failOnUnknownOptions);
+            return new Status(execCode);
         }
 
         File lockFile = new File(home, "lock"); // NOI18N
@@ -658,14 +671,7 @@ public abstract class CLIHandler extends Object {
                     }
                 });
                 
-                int execCode = registerFinishInstallation (new Execute () {
-                    public int exec () {
-                        return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
-                    }
-                    public @Override String toString() {
-                        return handlers.toString();
-                    }
-                });
+                int execCode = processInitLevelCLI (args, handlers, failOnUnknownOptions);
                 
                 enterState(0, block);
                 return new Status(lockFile, server.getLocalPort(), execCode, parael);
