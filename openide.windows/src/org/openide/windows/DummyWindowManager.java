@@ -450,6 +450,8 @@ final class DummyWindowManager extends WindowManager {
 
     @Override
     public boolean isEditorMode(Mode mode) {
+        if( null == mode )
+            return false;
         return "editor".equals(mode.getName());
     }
 

@@ -201,7 +201,7 @@ public class StatusCommand extends GitCommand {
                             } else {
                                 statusIndexWC = GitStatus.Status.STATUS_ADDED;
                             }
-                        } else if (differ(mIndex, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true))) {
+                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mIndex, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true)))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;
@@ -210,7 +210,7 @@ public class StatusCommand extends GitCommand {
                             statusHeadWC = GitStatus.Status.STATUS_REMOVED;
                         } else if (mHead == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
                             statusHeadWC = GitStatus.Status.STATUS_ADDED;
-                        } else if (differ(mHead, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId()))) {
+                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mHead, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
                             statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusHeadWC = GitStatus.Status.STATUS_NORMAL;
@@ -338,12 +338,22 @@ public class StatusCommand extends GitCommand {
         return subtreeFilters;
     }
 
-    private boolean differ (int fileMode1, int fileMode2, boolean checkFileMode) {
-        int difference = fileMode1 ^ fileMode2;
-        if (checkFileMode) {
-            return difference != 0;
+    private boolean differ (int fileMode1, int fileModeWorking, boolean checkFileMode) {
+        boolean differ;
+        if (isExistingSymlink(fileMode1, fileModeWorking)) {
+            differ = false;
         } else {
-            return (difference & ~0111) != 0;
+            int difference = fileMode1 ^ fileModeWorking;
+            if (checkFileMode) {
+                differ = difference != 0;
+            } else {
+                differ = (difference & ~0111) != 0;
+            }
         }
+        return differ;
+    }
+
+    private boolean isExistingSymlink (int fileMode1, int fileModeWorking) {
+        return (fileModeWorking & FileMode.TYPE_FILE) == FileMode.TYPE_FILE && (fileMode1 & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
     }
 }

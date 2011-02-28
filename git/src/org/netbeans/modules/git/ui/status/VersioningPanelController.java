@@ -229,9 +229,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
                         refreshStatusSupport = SystemAction.get(StatusAction.class).scanStatus(context);
-                        refreshStatusSupport.getTask().waitFinished();
-                        if (!(refreshStatusSupport == null || refreshStatusSupport.isCanceled())) {
-                            refreshNodes();
+                        if (refreshStatusSupport != null) {
+                            refreshStatusSupport.getTask().waitFinished();
+                            if (!refreshStatusSupport.isCanceled()) {
+                                refreshNodes();
+                            }
                         }
                     }
                 }

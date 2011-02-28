@@ -80,6 +80,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * Null is a valid value if base file does not exist in this revision.
      */
     private File            remoteFile;
+    private boolean isDirectory;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -191,7 +192,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      */
     synchronized void init() throws IOException {
         if (remoteFile != null || revision == null) return;
-        if (baseFile.isDirectory()) {
+        if (baseFile.isDirectory() || isDirectory) {
             mimeType = "content/unknown"; // NOI18N
             return;
         }
@@ -214,6 +215,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
                 // target is a directory, but locally deleted
                 Subversion.LOG.log(Level.FINE, "", e);
                 mimeType = "content/unknown"; // NOI18N
+                isDirectory = true;
                 return;
             }
             throw e;

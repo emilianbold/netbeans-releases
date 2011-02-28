@@ -649,8 +649,13 @@ public final class MainWindow {
         Graphics gc = frame.getGraphics();
         if( gc instanceof Graphics2D ) {
             GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
-            if( null != conf )
+            if( null != conf ) {
                 device = conf.getDevice();
+                if( isFullScreenMode && device.isFullScreenSupported() && !(Utilities.isMac() || Utilities.isWindows()) ) {
+                    //#195927 - attempting to prevent NPE on sunray solaris
+                    device.setFullScreenWindow( null );
+                }
+            }
         }
 
         isFullScreenMode = fullScreenMode;
