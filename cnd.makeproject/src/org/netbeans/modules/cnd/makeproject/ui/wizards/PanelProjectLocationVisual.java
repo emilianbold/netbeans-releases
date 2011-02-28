@@ -120,7 +120,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainTextField.setText("main"); // NOI18N
         createMainTextField.getDocument().addDocumentListener(PanelProjectLocationVisual.this);
 
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
@@ -129,6 +129,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainComboBox.addItem("Fortran"); // NOI18N
             String prefLanguage = MakeOptions.getInstance().getPrefApplicationLanguage();
             createMainComboBox.setSelectedItem(prefLanguage);
+        } else if (type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
+            createMainCheckBox.setVisible(true);
+            createMainTextField.setVisible(true);
+            createMainComboBox.setVisible(true);
+            createMainComboBox.addItem("C"); // NOI18N
+            createMainComboBox.addItem("C++"); // NOI18N
+            createMainComboBox.setSelectedItem(0);
         } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
