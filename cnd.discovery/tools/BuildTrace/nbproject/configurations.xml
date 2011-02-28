@@ -28,7 +28,7 @@
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Release32" type="2">
+    <conf name="SunOS-x86" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
@@ -39,7 +39,7 @@
         </cTool>
       </compileType>
     </conf>
-    <conf name="Release64" type="2">
+    <conf name="SunOS-x86_64" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
@@ -48,6 +48,60 @@
         <cTool>
           <architecture>2</architecture>
         </cTool>
+      </compileType>
+    </conf>
+    <conf name="SunOS-sparc" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <architecture>1</architecture>
+        </cTool>
+      </compileType>
+    </conf>
+    <conf name="SunOS-sparc_64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <architecture>2</architecture>
+        </cTool>
+      </compileType>
+    </conf>
+    <conf name="Linux-x86" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>GNU|GNU</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <architecture>1</architecture>
+        </cTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Linux-x86_64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>GNU|GNU</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
     </conf>
   </confs>

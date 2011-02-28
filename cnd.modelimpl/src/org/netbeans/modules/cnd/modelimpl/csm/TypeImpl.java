@@ -493,10 +493,16 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     classifier = null;
                 }
             }
+        } else {
+            // let's recalculate invalid classifiers for types
+            // may be we can use parseCount && start file pair to remember context, but not only parseCount as now
+            // see #194826 -  The code model can become corrupt, causing false errors
+            // sample projects https://netbeans.org/bugzilla/attachment.cgi?id=106540
+            classifier = null;
         }
         if (needToRender) {
             int newParseCount = FileImpl.getParseCount();
-            if (classifier != null) {
+            if (classifier != null) {                
                 if (newParseCount == parseCount) {
                     return classifier;
                 }

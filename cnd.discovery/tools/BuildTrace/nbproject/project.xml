@@ -12,11 +12,27 @@
             <sourceRootList/>
             <confList>
                 <confElem>
-                    <name>Release32</name>
+                    <name>SunOS-x86</name>
                     <type>2</type>
                 </confElem>
                 <confElem>
-                    <name>Release64</name>
+                    <name>SunOS-x86_64</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>SunOS-sparc</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>SunOS-sparc_64</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>Linux-x86</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>Linux-x86_64</name>
                     <type>2</type>
                 </confElem>
             </confList>
