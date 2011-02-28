@@ -78,15 +78,16 @@ public class NbJUnitLicensePanel extends WizardPanel {
                 DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY,
                 DEFAULT_DESCRIPTION);
-        
+        setProperty(LICENSE_DESCRIPTION_PROPERTY,
+                DEFAULT_LICENSE_DESCRIPTION);
         setProperty(ACCEPT_RBUTTON_TEXT_PROPERTY,
                 DEFAULT_ACCEPT_RBUTTON_TEXT);
         setProperty(DENY_RBUTTON_TEXT_PROPERTY,
                 DEFAULT_DENY_RBUTTON_TEXT);
         setProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY,
                 DEFAULT_ERROR_CANNOT_GET_LOGIC);       
-        setProperty(JUNIT_LICENSE_FORMAT_PROPERTY,
-                DEFAULT_JUNIT_LICENSE_FORMAT);
+        setProperty(LICENSE_FORMAT_PROPERTY,
+                DEFAULT_LICENSE_FORMAT);
     }
     
     @Override
@@ -141,6 +142,7 @@ public class NbJUnitLicensePanel extends WizardPanel {
                 
         private NbiTextPane licensePane;
         private NbiScrollPane licenseScrollPane;
+        private NbiTextPane descriptionPane;
         
         private NbiRadioButton acceptRButton;
         private NbiRadioButton denyRButton;
@@ -169,7 +171,8 @@ public class NbJUnitLicensePanel extends WizardPanel {
                     component.getProperty(ACCEPT_RBUTTON_TEXT_PROPERTY));
 
             denyRButton.setText(
-                    component.getProperty(DENY_RBUTTON_TEXT_PROPERTY));            
+                    component.getProperty(DENY_RBUTTON_TEXT_PROPERTY));
+            descriptionPane.setText(component.getProperty(LICENSE_DESCRIPTION_PROPERTY));
                        
             final StringBuilder text = new StringBuilder();
                                     
@@ -178,7 +181,7 @@ public class NbJUnitLicensePanel extends WizardPanel {
                 final String licenseValue = SystemUtils.resolveString(
                         System.getProperty(JUNIT_LICENSE_RESOURCE_PROPERTY));
                 final String license = SystemUtils.resolveString("$R{" + licenseValue + ";" + StringUtils.ENCODING_UTF8 + "}");
-                final String format = component.getProperty(JUNIT_LICENSE_FORMAT_PROPERTY);
+                final String format = component.getProperty(LICENSE_FORMAT_PROPERTY);
                 if(license!=null) {
                     text.append(StringUtils.format(format, license));
                 }
@@ -248,6 +251,9 @@ public class NbJUnitLicensePanel extends WizardPanel {
             licensePane.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
             licensePane.setFocusable(true);
 
+            //descriptionPane ///////////////////
+            descriptionPane = new NbiTextPane();
+
             // licenseScrollPane ////////////////////////////////////////////////////
             licenseScrollPane = new NbiScrollPane(licensePane);
 
@@ -288,21 +294,30 @@ public class NbJUnitLicensePanel extends WizardPanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            add(acceptRButton, new GridBagConstraints(
+
+            add(descriptionPane, new GridBagConstraints(
                     0, 2,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(7, 11, 3, 11),        // padding
-                    0, 0));                           // padx, pady - ???
-            add(denyRButton, new GridBagConstraints(
+                    new Insets(7, 11, 2, 11),        // padding
+                    0, 0));
+            add(acceptRButton, new GridBagConstraints(
                     0, 3,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(3, 11, 11, 11),        // padding
+                    new Insets(2, 11, 2, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(denyRButton, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(2, 11, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
         }
         
@@ -329,14 +344,16 @@ public class NbJUnitLicensePanel extends WizardPanel {
             "accept.rbutton.text"; // NOI18N
     public static final String DENY_RBUTTON_TEXT_PROPERTY =
             "deny.rbutton.text"; // NOI18N
+    public static final String LICENSE_DESCRIPTION_PROPERTY =
+            "license.description"; // NOI18N
     public static final String ERROR_CANNOT_GET_LOGIC_PROPERTY =
             "error.cannot.get.logic";//NOI18N
     public static final String JUNIT_LICENSE_RESOURCE_PROPERTY =
             "nbi.junit.license.resource";//NOI18N
     public static final String JUNIT_LICENSE_CONTENT_TYPE_PROPERTY =
             "nbi.junit.license.content.type";//NOI18N
-    public static final String JUNIT_LICENSE_FORMAT_PROPERTY =
-            "junit.license.format";//NOI18N
+    public static final String LICENSE_FORMAT_PROPERTY =
+            "license.format";//NOI18N
     public static final String JUNIT_ACCEPTED_PROPERTY =
             "junit.accepted";//NOI18N
     private static final String JUNIT_LICENSE_SCROLLING_REQUIRED =
@@ -347,15 +364,15 @@ public class NbJUnitLicensePanel extends WizardPanel {
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(NbJUnitLicensePanel.class,
             "NLP.description"); // NOI18N
+    public static final String DEFAULT_LICENSE_FORMAT =
+            ResourceUtils.getString(NbJUnitLicensePanel.class,
+            "NLP.license.format"); // NOI18N
     public static final String DEFAULT_APPEND_LICENSE_FORMAT =
             ResourceUtils.getString(NbJUnitLicensePanel.class,
             "NLP.append.license.format"); // NOI18N
-    public static final String DEFAULT_JUNIT_LICENSE_FORMAT =
+    public static final String DEFAULT_LICENSE_DESCRIPTION =
             ResourceUtils.getString(NbJUnitLicensePanel.class,
-            "NLP.junit.license.format"); // NOI18N
-    public static final String DEFAULT_SINGLE_PRODUCT_LICENSE_FORMAT =
-            ResourceUtils.getString(NbJUnitLicensePanel.class,
-            "NLP.single.product.license.format"); // NOI18N
+            "NLP.license.description"); // NOI18N
     public static final String DEFAULT_ACCEPT_RBUTTON_TEXT =
             ResourceUtils.getString(NbJUnitLicensePanel.class,
             "NLP.accept.rbutton.text"); // NOI18N
