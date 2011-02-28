@@ -89,6 +89,7 @@ import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
@@ -2316,6 +2317,9 @@ public class ActionFactory {
                 hierarchy.lock();
                 try {
                     /*DEBUG*/System.err.println("FOLD HIERARCHY DUMP:\n" + hierarchy); // NOI18N
+                    TokenHierarchy<?> th = TokenHierarchy.get(adoc);
+                    /*DEBUG*/System.err.println("TOKEN HIERARCHY DUMP:\n" + (th != null ? th : "<NULL-TH>")); // NOI18N
+
                 } finally {
                     hierarchy.unlock();
                 }
