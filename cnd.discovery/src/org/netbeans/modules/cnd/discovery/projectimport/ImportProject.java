@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;

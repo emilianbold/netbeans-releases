@@ -51,7 +51,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -85,6 +84,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     
     private void addListeners(){
         librariesTextField.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
@@ -93,12 +93,15 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         Component component = editor.getEditorComponent();
         if (component instanceof JTextField) {
             ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     update();
                 }
@@ -256,6 +259,10 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
             additionalLibrariesButton.setVisible(true);
             librariesLabel.setVisible(true);
             librariesTextField.setVisible(true);
+        } else if ("exec-log".equals(providerID)){ // NOI18N
+            additionalLibrariesButton.setVisible(false);
+            librariesLabel.setVisible(false);
+            librariesTextField.setVisible(false);
         } else if ("make-log".equals(providerID)){ // NOI18N
             additionalLibrariesButton.setVisible(false);
             librariesLabel.setVisible(false);

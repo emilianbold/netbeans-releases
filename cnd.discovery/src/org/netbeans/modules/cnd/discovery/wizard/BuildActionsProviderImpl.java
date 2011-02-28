@@ -91,12 +91,13 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         return res;
     }
 
-    private static final class ConfigureAction extends AbstractAction implements BuildAction,  OutputStreamHandler {
+    public static final class ConfigureAction extends AbstractAction implements BuildAction,  OutputStreamHandler {
         private String ioTabName;
         private ProjectActionEvent[] events;
         private int step = -1;
         private BufferedWriter bw;
         private String name;
+        private File execLog;
 
         public ConfigureAction(String ioTabName, ProjectActionEvent[] events) {
             this.ioTabName = ioTabName;
@@ -143,6 +144,11 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             this.step = step;
         }
 
+
+        public void setExecLog(File execLog) {
+            this.execLog = execLog;
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
@@ -187,7 +193,12 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
 
         private void invokeWizard(Project project, String fileName) {
-            DiscoveryProvider provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
+            DiscoveryProvider provider = null;
+            if (execLog != null) {
+                provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+            } else {
+                provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
+            }
             if (provider == null) {
                 return;
             }
@@ -203,8 +214,11 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             wizardDescriptor.setProvider(provider);
             wizardDescriptor.setProject(project);
             wizardDescriptor.setRootFolder(DiscoveryWizardAction.findSourceRoot(project));
-            //wizardDescriptor.setBuildResult(DiscoveryWizardAction.findBuildResult(project));
-            wizardDescriptor.setBuildLog(fileName);
+            if (execLog != null) {
+                wizardDescriptor.setExecLog(execLog.getAbsolutePath());
+            } else {
+                wizardDescriptor.setBuildLog(fileName);
+            }
             wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
             wizardDescriptor.setTitle(getString("WIZARD_TITLE_TXT")); // NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
