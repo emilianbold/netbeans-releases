@@ -119,6 +119,9 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
         
         FileObject testFile = info.getFileObject();
         Project prj = FileOwnerQuery.getOwner(testFile);
+        if (prj == null) {
+            return null;
+        }
         if (prj.getLookup().lookup(NbMavenProject.class) == null) {
             // handles only Maven projects; Ant projects solves this issue differently
             return null;
