@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=BuildTrace
 
 # Active Configuration
-DEFAULTCONF=Release32
+DEFAULTCONF=SunOS-x86
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Release32 Release64 
+ALLCONFS=SunOS-x86 SunOS-x86_64 SunOS-sparc SunOS-sparc_64 Linux-x86 Linux-x86_64 
 
 
 # build
