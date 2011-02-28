@@ -197,7 +197,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private final static class FileProviderImpl implements FileProvider, NativeFileSearch {
         private final AtomicBoolean cancel = new AtomicBoolean();
-        private final Set<SearchContext> searched = new HashSet<SearchContext>();
+        private final Set<SearchContext> searchedProjects = new HashSet<SearchContext>();
+        private SearchContext lastContext = null;
         
         public FileProviderImpl() {
         }
@@ -209,7 +210,12 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 Project project = context.getProject();
                 SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
                 if (project != null) {
-                    if (searched.add(searchContext)) {
+                    SearchContext curContext = new SearchContext(context.getText(), context.getSearchType(), null);
+                    if (!curContext.equals(lastContext)) {
+                        lastContext = curContext;
+                        searchedProjects.clear();
+                    }
+                    if (searchedProjects.add(searchContext)) {
                         ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
                         if (provider != null && provider.gotDescriptor()) {
                             MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
