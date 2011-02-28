@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.projectimport;
+package org.netbeans.modules.cnd.discovery.buildsupport;
 
 import org.netbeans.modules.cnd.debug.DebugUtils;
 
