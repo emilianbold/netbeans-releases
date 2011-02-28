@@ -48,8 +48,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,6 +80,7 @@ import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
+import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -194,7 +197,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private final static class FileProviderImpl implements FileProvider, NativeFileSearch {
         private final AtomicBoolean cancel = new AtomicBoolean();
-
+        private final Set<SearchContext> searched = new HashSet<SearchContext>();
+        
         public FileProviderImpl() {
         }
 
@@ -203,22 +207,27 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             if (!MakeOptions.getInstance().isFullFileIndexer()) {
                 cancel.set(false);
                 Project project = context.getProject();
+                SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
                 if (project != null) {
-                    ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    if (provider != null && provider.gotDescriptor()) {
-                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                        Sources srcs = project.getLookup().lookup(Sources.class);
-                        final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
-                        if (genericSG != null && genericSG.length > 0) {
-                            for(SourceGroup group : genericSG) {
-                                if (group.getRootFolder().equals(context.getRoot())) {
-                                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                                    computeFiles(project, descriptor, matcher, result);
-                                    break;
+                    if (searched.add(searchContext)) {
+                        ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        if (provider != null && provider.gotDescriptor()) {
+                            MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                            Sources srcs = project.getLookup().lookup(Sources.class);
+                            final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
+                            if (genericSG != null && genericSG.length > 0) {
+                                for(SourceGroup group : genericSG) {
+                                    if (group.getRootFolder().equals(context.getRoot())) {
+                                        NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                        computeFiles(project, descriptor, matcher, result);
+                                        break;
+                                    }
                                 }
                             }
+                            return false;
                         }
-                        return false;
+                    } else {
+                        System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: skip already searched context " + searchContext);// NOI18N
                     }
                 } else {
                     System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: no project for source root " + context.getRoot());// NOI18N
@@ -384,6 +393,54 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         result.addFile(fileObject);
                     }
                 }
+            }
+        }
+        
+        private static final class SearchContext {
+
+            private final String searchText;
+            private final SearchType searchType;
+            private final Project project;
+
+            public SearchContext(String searchText, SearchType searchType, Project project) {
+                this.searchText = searchText;
+                this.searchType = searchType;
+                this.project = project;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final SearchContext other = (SearchContext) obj;
+                if ((this.searchText == null) ? (other.searchText != null) : !this.searchText.equals(other.searchText)) {
+                    return false;
+                }
+                if (this.searchType != other.searchType) {
+                    return false;
+                }
+                if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 43 * hash + (this.searchText != null ? this.searchText.hashCode() : 0);
+                hash = 43 * hash + (this.searchType != null ? this.searchType.hashCode() : 0);
+                hash = 43 * hash + (this.project != null ? this.project.hashCode() : 0);
+                return hash;
+            }
+
+            @Override
+            public String toString() {
+                return "SearchContext{" + "searchText=" + searchText + ", searchType=" + searchType + ", project=" + project + '}'; // NOI18N
             }
         }
     }
