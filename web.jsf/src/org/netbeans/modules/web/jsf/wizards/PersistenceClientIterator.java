@@ -47,7 +47,6 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +74,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -92,8 +90,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -879,8 +875,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
             // check that target server supports full JEE6 platform if Java EE 6 sources
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-            if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {
-                if(!isRunningOnSufficientJ2eeServer(project)) {
+            if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {            
+                J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+                if (cap == null || !cap.isJsf2Supported()) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotSufficientJ2eeServer")); // NOI18N
                     return false;
@@ -888,22 +885,6 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
             
             return super.isValid();
-        }
-
-        private boolean isRunningOnSufficientJ2eeServer(Project project) {
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-            if (moduleProvider != null) {
-                String projectServerInstanceID = moduleProvider.getServerInstanceID();
-                try {
-                    return (Deployment.getDefault().getServerInstance(projectServerInstanceID).
-                            getJ2eePlatform().getSupportedProfiles().contains(Profile.JAVA_EE_6_WEB) &&
-                            !moduleProvider.getServerID().startsWith("Tomcat"));
-                } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(PersistenceClientIterator.class.getName()).log(Level.WARNING, null, ex);
-                    return false;
-                }
-            }
-            return false;
         }
     }
 }
