@@ -65,6 +65,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.autoupdate.pluginimporter.libinstaller.Bundle.*;
 
@@ -78,10 +79,11 @@ public class JUnitLibraryInstaller {
 
     @Messages({
         "download_title=Install JUnit Library",
-        "download_question=Do you wish to download and install the JUnit testing library? Doing so is recommended for Java development, but JUnit is not distributed with NetBeans.",
-        "download_handle=Download JUnit library",
-        "validate_handle=Install JUnit library",
-        "install_handle=Install JUnit library"
+        "download_question=Do you wish to download and install JUnit testing library now? Doing so is recommended for Java development, but JUnit is not distributed with NetBeans.",
+        "accept_button=Download and Install JUnit",
+        "download_handle=Downloading JUnit",
+        "validate_handle=Installing JUnit",
+        "install_handle=Installing JUnit"
     })
     
     public static void install(boolean silent) {
@@ -151,11 +153,12 @@ public class JUnitLibraryInstaller {
                 LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
             }
         } else {
-            if (DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation(
-                        download_question(),
-                        download_title(),
-                    NotifyDescriptor.OK_CANCEL_OPTION)) == NotifyDescriptor.OK_OPTION) {
+            Confirmation question = new NotifyDescriptor.Confirmation(
+                                            download_question(),
+                                            download_title(),
+                                            NotifyDescriptor.OK_CANCEL_OPTION);
+            question.setOptions(new Object[] {accept_button(), NotifyDescriptor.CANCEL_OPTION});
+            if (DialogDisplayer.getDefault().notify(question) == accept_button()) {
                 if (! PluginManager.openInstallWizard(oc)) {
                     LOG.info("user canceled JUnit install wizard");
                 }

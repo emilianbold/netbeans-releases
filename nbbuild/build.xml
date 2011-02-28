@@ -186,8 +186,9 @@ made subject to such option by the copyright holder.
       <mkdir dir="nbms" />
       <property name="base.nbm.target.dir" location="nbms" />
       <property name="nbms.fail.on.error" value="true"/>
-      <subant-junit target="nbm" failonerror="${nbms.fail.on.error}" report="build/build-nbms.xml">
+      <subant-junit target="nbm" failonerror="${nbms.fail.on.error}" report="build/build-nbms.xml" inheritall="false">
           <buildpath path="${modules.sorted}"/>
+          <property name="base.nbm.target.dir" value="${base.nbm.target.dir}"/>
       </subant-junit>
   </target>
 
