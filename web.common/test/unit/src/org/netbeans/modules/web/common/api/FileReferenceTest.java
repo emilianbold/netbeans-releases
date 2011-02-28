@@ -230,5 +230,41 @@ public class FileReferenceTest extends CslTestBase {
         assertEquals("/folder/superinner/fifth.txt", modif.getModifiedReferencePath());
 
     }
+    
+    public void testResolveLinkWithQueryPart() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/second.txt");
+        assertNotNull(two);
+
+        FileReference resolved = WebUtils.resolveToReference(one, "folder/second.txt?param=val");
+        assertNotNull(resolved);
+        
+        assertEquals(one, resolved.source());
+        assertEquals(two, resolved.target());
+        assertEquals(FileReferenceType.RELATIVE, resolved.type());
+    }
+    
+    public void testResolveEmptyLink() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/second.txt");
+        assertNotNull(two);
+
+        FileReference resolved = WebUtils.resolveToReference(one, "");
+        assertNull(resolved);
+        
+    }
+    
+    public void testResolveInvalidLink() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/second.txt");
+        assertNotNull(two);
+
+        FileReference resolved = WebUtils.resolveToReference(one, "is*this+an!invalid@ link?");
+        assertNull(resolved);
+        
+    }
 
 }

@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Various web utilities
@@ -83,10 +84,19 @@ public class WebUtils {
      * Resolves the relative or absolute link from the base file
      *
      * @param source The base file
-     * @param importedFileName the link
+     * @param importedFileName the file link
      * @return FileReference instance which is a reference descriptor
      */
     public static FileReference resolveToReference(FileObject source, String importedFileName) {
+        Parameters.notNull("source", source);
+        Parameters.notNull("importedFileName", importedFileName);
+        
+        //possibly remove the query part of the link
+        int qmIndex = importedFileName.indexOf("?"); //NOI18N
+        if(qmIndex >= 0) {
+            importedFileName = importedFileName.substring(0, qmIndex);
+        }
+        
         try {
             URI u = new URI(importedFileName);
             File file = null;
