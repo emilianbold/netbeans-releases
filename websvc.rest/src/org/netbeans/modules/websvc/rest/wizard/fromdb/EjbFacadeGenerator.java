@@ -234,14 +234,6 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + REST_FACADE_SUFFIX, null);
         createdFiles.add(facade);
 
-        // generate methods for the facade
-        EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
-        List<GenerationOptions> methodOptions = getMethodOptions(entityFQN, variableName);
-        for (GenerationOptions each : methodOptions){
-            generator.generate(each, ContainerManagedJTAInjectableInEJB.class);
-        }
-        modifyEntityManager( methodOptions, facade);
-
         // create the interfaces
         final String localInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_LOCAL_SUFFIX, targetFolder);
         final String remoteInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_REMOTE_SUFFIX, targetFolder);
@@ -419,6 +411,14 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             }
         }
         JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
+        
+        // generate methods for the facade
+        EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
+        List<GenerationOptions> methodOptions = getMethodOptions(entityFQN, variableName);
+        for (GenerationOptions each : methodOptions){
+            generator.generate(each, ContainerManagedJTAInjectableInEJB.class);
+        }
+        modifyEntityManager( methodOptions, facade);
 
         return createdFiles;
     }

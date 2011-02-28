@@ -567,9 +567,11 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
                         statusRefreshSupport = SystemAction.get(StatusAction.class).scanStatus(context);
-                        statusRefreshSupport.getTask().waitFinished();
-                        if (!(statusRefreshSupport == null || statusRefreshSupport.isCanceled())) {
-                            refreshNodes();
+                        if (statusRefreshSupport != null) {
+                            statusRefreshSupport.getTask().waitFinished();
+                            if (!statusRefreshSupport.isCanceled()) {
+                                refreshNodes();
+                            }
                         }
                     }
                 }

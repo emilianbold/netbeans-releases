@@ -803,6 +803,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String unconfirmed = "UNCONFIRMED"; // NOI18N
         String reopened = "REOPENED"; // NOI18N
         String resolved = "RESOLVED"; // NOI18N
+        if(status != null) {
+            status = status.trim();
+        }
         if (openStatuses.contains(status)) {
             statuses.addAll(openStatuses);
             if (!unconfirmed.equals(status)) {
@@ -834,13 +837,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (!oldRepository) {
                     statuses.add(resolved);
                 }
-                if(!status.equals("")) {
-                    for (int i=allStatuses.indexOf(status); i<allStatuses.size(); i++) {
-                        String s = allStatuses.get(i);
-                        if (!openStatuses.contains(s)) {
-                            statuses.add(s);
+                if (allStatuses.contains(status)) {
+                    if (!status.equals("")) {
+                        for (int i = allStatuses.indexOf(status); i < allStatuses.size(); i++) {
+                            String s = allStatuses.get(i);
+                            if (!openStatuses.contains(s)) {
+                                statuses.add(s);
+                            }
                         }
                     }
+                } else {
+                    Bugzilla.LOG.log(Level.WARNING, "status value {0} not between all statuses: {1}", new Object[]{status, allStatuses}); // NOI18N
                 }
             }
             resolvedIndex = statuses.indexOf(resolved);
