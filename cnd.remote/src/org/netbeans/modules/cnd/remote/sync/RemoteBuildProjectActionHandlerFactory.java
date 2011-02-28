@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -61,10 +62,14 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
     @Override
     public boolean canHandle(Type type, Configuration configuration) {
         if (type == PredefinedType.BUILD || type == PredefinedType.BUILD_TESTS || type == PredefinedType.CLEAN) {
-            return RfsSyncFactory.ENABLE_RFS;
-        } else {
-            return false;
+            if (configuration instanceof MakeConfiguration) {
+                MakeConfiguration conf = (MakeConfiguration) configuration;
+                if (conf.getDevelopmentHost().getExecutionEnvironment().isRemote()) {
+                    return RfsSyncFactory.ENABLE_RFS;
+                }
+            }
         }
+        return false;
     }
 
     @Override
