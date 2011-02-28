@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.common;
 
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -51,7 +52,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  * Facade allowing queries for certain capabilities provided by Java EE runtime.
@@ -63,19 +66,23 @@ public final class J2eeProjectCapabilities {
 
     private final J2eeModuleProvider provider;
     private final Profile ejbJarProfile;
+    private final Profile webProfile;
 
-    private J2eeProjectCapabilities(J2eeModuleProvider provider, Profile ejbJarProfile) {
+    private J2eeProjectCapabilities(J2eeModuleProvider provider,
+            Profile ejbJarProfile, Profile webProfile) {
         this.provider = provider;
         this.ejbJarProfile = ejbJarProfile;
+        this.webProfile = webProfile;
     }
 
     @CheckForNull
-    public static J2eeProjectCapabilities forProject(Project project) {
+    public static J2eeProjectCapabilities forProject(@NonNull Project project) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider == null) {
             return null;
         }
         Profile ejbJarProfile = null;
+        Profile webProfile = null;
         if (provider.getJ2eeModule().getType() == J2eeModule.Type.EJB ||
                 provider.getJ2eeModule().getType() == J2eeModule.Type.WAR) {
             EjbJar[] ejbJars = EjbJar.getEjbJars(project);
@@ -83,8 +90,14 @@ public final class J2eeProjectCapabilities {
                 // just use first one to test profile:
                 ejbJarProfile =  ejbJars[0].getJ2eeProfile();
             }
+            if (provider.getJ2eeModule().getType() == J2eeModule.Type.WAR) {
+                WebModule module = WebModule.getWebModule(project.getProjectDirectory());
+                if (module != null) {
+                    webProfile = module.getJ2eeProfile();
+                }
+            }
         }
-        return new J2eeProjectCapabilities(provider, ejbJarProfile);
+        return new J2eeProjectCapabilities(provider, ejbJarProfile, webProfile);
     }
 
     /**
@@ -117,6 +130,29 @@ public final class J2eeProjectCapabilities {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         boolean ee6Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_6_WEB);
         return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6Web);
+    }
+    
+    /*
+     * Returns <code>true</code> if the server used by project supports JSF 2.x.
+     * 
+     * @retunr <code>true</code> if the server used by project supports JSF 2.x
+     * @since 1.61
+     */
+    public boolean isJsf2Supported() {
+        if (webProfile == null || !webProfile.equals(Profile.JAVA_EE_6_FULL)
+                && !webProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            return false;
+        }
+        String projectServerInstanceID = provider.getServerInstanceID();
+        try {
+            ServerInstance inst = Deployment.getDefault().getServerInstance(projectServerInstanceID);
+            Set<Profile> profiles = inst.getJ2eePlatform().getSupportedProfiles();
+            return profiles.contains(Profile.JAVA_EE_6_FULL)
+                    || (profiles.contains(Profile.JAVA_EE_6_WEB)
+                        && !provider.getServerID().startsWith("Tomcat")); // NOI18N
+        } catch (InstanceRemovedException ex) {
+            return false;
+        }
     }
 
     public boolean hasDefaultPersistenceProvider() {
