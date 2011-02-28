@@ -155,7 +155,7 @@ public class HtmlFileModel {
 
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(super.toString());
+        StringBuilder buf = new StringBuilder(super.toString());
         buf.append(":"); //NOI18N
         for (HtmlLinkEntry c : getReferences()) {
             buf.append(" references="); //NOI18N
@@ -166,18 +166,25 @@ public class HtmlFileModel {
     }
 
 
-    public HtmlLinkEntry createFileReferenceEntry(String name, OffsetRange range, String tagName, String attributeName) {
+    private HtmlLinkEntry createFileReferenceEntry(String name, OffsetRange range, String tagName, String attributeName) {
+        //normalize the link so it contains just the file reference, not the possible query part
+        //TODO query part handling should be moved to the HtmlLinkEntry possibly
+        int qmIndex = name.indexOf("?");//NOI18N
+        if(qmIndex >= 0) {
+            //modify the range
+            range = new OffsetRange(range.getStart(), range.getEnd() - (name.length() - qmIndex));
+            //strip the name
+            name = name.substring(0, qmIndex);
+        }
+        
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
-
+        
         OffsetRange documentRange = null;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
-                LOGGER.finer("Ast offset range " + range.toString() +
-                        ", text='" + getSnapshot().getText().subSequence(range.getStart(), range.getEnd())+ "', "
-                        + " cannot be properly mapped to source offset range: ["
-                        + documentFrom + "," + documentTo + "] in file "
-                        + getFileObject().getPath()); //NOI18N
+                LOGGER.log(Level.FINER,"Ast offset range {0}, text=''{1}" + "'', "
+                        + " cannot be properly mapped to source offset range: [{2},{3}] in file {4}", new Object[]{range.toString(), getSnapshot().getText().subSequence(range.getStart(), range.getEnd()), documentFrom, documentTo, getFileObject().getPath()}); //NOI18N
             }
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
@@ -221,11 +228,7 @@ public class HtmlFileModel {
                         }
                     } else {
                         //that's odd since the end offset of the tag should be always set
-                        LOGGER.log(Level.INFO, "The end offset of the node "
-                                + node.path().toString()
-                                + " is not set! Please report the exception and attach the "
-                                + FileUtil.getFileDisplayName(HtmlFileModel.this.getFileObject())
-                                + " to the issue."); //NOI18N
+                        LOGGER.log(Level.INFO, "The end offset of the node {0} is not set! Please report the exception and attach the {1} to the issue.", new Object[]{node.path().toString(), FileUtil.getFileDisplayName(HtmlFileModel.this.getFileObject())}); //NOI18N
                     }
                 }
             }

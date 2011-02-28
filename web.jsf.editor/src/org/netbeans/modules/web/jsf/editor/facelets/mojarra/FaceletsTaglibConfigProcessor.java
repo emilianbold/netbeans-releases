@@ -375,6 +375,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
             String name) {
 
         String className = getNodeText(handlerClass);
+        //mfukala: (issue #184097) fix possible NPE from the code below if <handler-class> element is empty and the getNodeText() returns null
+        if(className == null) {
+            return ; //just ignre that entry
+        }
         Class<?> clazz = loadClass(className, this, null);
         taglibrary.putTagHandler(name, clazz);
 
@@ -387,6 +391,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
         String docURI = documentElement.getOwnerDocument().getDocumentURI();
         String s = getNodeText(source);
+        //mfukala: fix possible NPE from the code below if <source> element is empty and the getNodeText() returns null
+        if(s == null) {
+            return ; //just ignre that entry
+        }
         try {
             URL url = new URL(new URL(docURI), s);
             taglibrary.putUserTag(name, url);

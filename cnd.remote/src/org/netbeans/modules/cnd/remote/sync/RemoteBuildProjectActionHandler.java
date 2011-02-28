@@ -124,13 +124,14 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     public void execute(InputOutput io) {
 
         if (execEnv.isLocal()) {
+            assert true;
             delegate.execute(io);
             return;
         } else {
             try {
                 ConnectionManager.getInstance().connectTo(execEnv);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
                 if (io != null) {
                     io.getErr().printf("%s\n", ex.getMessage()); //NOI18N
                 }
@@ -200,7 +201,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     }
 
     /**
-     * For test purposes: wait until workeris finished
+     * For test purposes: wait until workers finished
      * @param timeout timeout IN SECONDS
      */
     /* package */ static void testWaitWorkerFinished(int timeout) throws TimeoutException, InterruptedException {

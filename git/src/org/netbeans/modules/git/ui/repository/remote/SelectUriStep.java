@@ -176,7 +176,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         remoteBranches = client.listRemoteBranches(uri, this);
                     } catch (GitException ex) {
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
-                        message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect"), false); //NOI18N
+                        message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
                     }                
                 }
             };
