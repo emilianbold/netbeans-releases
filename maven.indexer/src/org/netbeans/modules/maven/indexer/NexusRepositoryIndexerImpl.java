@@ -81,6 +81,7 @@ import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -313,10 +314,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
                 } catch (IOException ex) {
-                    LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
-                    LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
+                    LOGGER.log(Level.INFO, "Found a broken index at " + loc.getAbsolutePath(), ex); //NOI18N
                     FileUtils.deleteDirectory(loc);
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NexusRepositoryIndexerImpl.class, "MSG_Reconstruct_Index"));
+                    try {
                     indexer.addIndexingContextForced(
                             info.getId(), // context id
                             info.getId(), // repository id
@@ -325,6 +326,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
+                    } catch (LockObtainFailedException x) {
+                        LOGGER.log(Level.INFO, "#195357: could not clean up from broken index", x);
+                    }
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
