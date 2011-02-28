@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,70 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.discovery.projectimport;
 
-package org.netbeans.modules.cnd.discovery.wizard.api;
-
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface DiscoveryDescriptor {
-
-    Project getProject();
-    void setProject(Project project);
-    
-    DiscoveryProvider getProvider();
-    String getProviderID();
-    void setProvider(DiscoveryProvider provider);
-
-    String getRootFolder();
-    void setRootFolder(String root);
-
-    List<String> getErrors();
-    void setErrors(List<String> errors);
-
-    String getBuildResult();
-    void setBuildResult(String binaryPath);
-
-    String getAditionalLibraries();
-    void setAditionalLibraries(String binaryPath);
-
-    String getBuildLog();
-    void setBuildLog(String logFile);
-
-    String getExecLog();
-    void setExecLog(String logFile);
-
-    String getLevel();
-    void setLevel(String level);
-
-    List<ProjectConfiguration> getConfigurations();
-    void setConfigurations(List<ProjectConfiguration> configuration);
-
-    List<String> getIncludedFiles();
-    void setIncludedFiles(List<String> includedFiles);
-
-    boolean isInvokeProvider();
-    void setInvokeProvider(boolean invoke);
-    
-    boolean isSimpleMode();
-    void setSimpleMode(boolean simple);
-
-    String getCompilerName();
-    void setCompilerName(String compiler);
-
-    List<String> getDependencies();
-    void setDependencies(List<String> dependencies);
-
-    List<String> getSearchPaths();
-    void setSearchPaths(List<String> searchPaths);
-
-    void setMessage(String message);
-
-    void clean();
+public class BuildTraceSupport {
+    public static final boolean CND_BUILD_TOOLS_ENABLED = DebugUtils.getBoolean("cnd.buildtrace.enabled", true); //NOI18N
+    public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
+    public static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
+    public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
 }

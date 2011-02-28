@@ -426,7 +426,7 @@ public class ImportProject implements PropertyChangeListener {
                         if (runMake) {
                             makeProject(true, null);
                         } else {
-                            discovery(0, null);
+                            discovery(0, null, null);
                         }
                     }
                 } else {
@@ -700,14 +700,14 @@ public class ImportProject implements PropertyChangeListener {
                     }
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } finally {
                 try {
                     if (in != null) {
                         in.close();
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
             }
         }
@@ -814,17 +814,19 @@ public class ImportProject implements PropertyChangeListener {
         if (makeLog == null) {
             makeLog = createTempFile("make"); // NOI18N
         }
-        if (executionEnvironment.isLocal()) {
-            try {
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                switch (hostInfo.getOSFamily()) {
-                case SUNOS:
-                case LINUX:
-                    execLog = createTempFile("exec"); // NOI18N
-                    execLog.deleteOnExit();
+        if(BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
+            if (executionEnvironment.isLocal()) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                    switch (hostInfo.getOSFamily()) {
+                    case SUNOS:
+                    case LINUX:
+                        execLog = createTempFile("exec"); // NOI18N
+                        execLog.deleteOnExit();
+                    }
+                } catch (IOException ex) {
+                } catch (CancellationException ex) {
                 }
-            } catch (IOException ex) {
-            } catch (CancellationException ex) {
             }
         }
 
@@ -850,7 +852,7 @@ public class ImportProject implements PropertyChangeListener {
                 } else {
                     importResult.put(Step.Make, State.Fail);
                 }
-                discovery(rc, makeLog);
+                discovery(rc, makeLog, execLog);
             }
         };
         Writer outputListener = null;
@@ -871,8 +873,8 @@ public class ImportProject implements PropertyChangeListener {
             try {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                 if (execLog != null) {
-                    vars.add("__CND_TOOLS__=cc:CC:gcc:g++"); // NOI18N
-                    vars.add("__CND_BUILD_LOG__="+execLog.getAbsolutePath()); // NOI18N
+                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
+                    vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -948,7 +950,7 @@ public class ImportProject implements PropertyChangeListener {
         provider.getConfigurationDescriptor(true);
     }
 
-    private void discovery(int rc, File makeLog) {
+    private void discovery(int rc, File makeLog, File execLog) {
         try {
             if (!isProjectOpened()) {
                 isFinished = true;
@@ -956,10 +958,37 @@ public class ImportProject implements PropertyChangeListener {
             }
             waitConfigurationDescriptor();
             boolean done = false;
+            boolean exeLogDone = false;
             if (!manualCA) {
                 final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
                 if (rc == 0) {
-                    if (extension != null) {
+                    if (execLog != null) {
+                        if (extension != null) {
+                            final Map<String, Object> map = new HashMap<String, Object>();
+                            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
+                            map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, execLog.getAbsolutePath());
+                            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                            if (extension.canApply(map, makeProject)) {
+                                if (TRACE) {
+                                    logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
+                                }
+                                try {
+                                    done = true;
+                                    exeLogDone = true;
+                                    extension.apply(map, makeProject);
+                                    importResult.put(Step.DiscoveryLog, State.Successful);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace(System.err);
+                                }
+                            } else {
+                                if (TRACE) {
+                                    logger.log(Level.INFO, "#discovery cannot be done by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
+                                }
+                            }
+                            map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, null);
+                        }
+                    }
+                    if (extension != null && !done) {
                         final Map<String, Object> map = new HashMap<String, Object>();
                         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
                         map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
@@ -983,7 +1012,7 @@ public class ImportProject implements PropertyChangeListener {
                                     importResult.put(Step.DiscoveryDwarf, State.Successful);
                                 }
                             } catch (IOException ex) {
-                                ex.printStackTrace();
+                                ex.printStackTrace(System.err);
                             }
                         } else {
                             if (TRACE) {
@@ -1008,7 +1037,7 @@ public class ImportProject implements PropertyChangeListener {
                                 extension.apply(map, makeProject);
                                 importResult.put(Step.DiscoveryLog, State.Successful);
                             } catch (IOException ex) {
-                                ex.printStackTrace();
+                                ex.printStackTrace(System.err);
                             }
                         } else {
                             if (TRACE) {
@@ -1016,7 +1045,7 @@ public class ImportProject implements PropertyChangeListener {
                             }
                         }
                     }
-                } else if (done && makeLog != null) {
+                } else if (done && makeLog != null && !exeLogDone) {
                     if (!isProjectOpened()) {
                         return;
                     }
@@ -1248,7 +1277,7 @@ public class ImportProject implements PropertyChangeListener {
                         importResult.put(Step.DiscoveryDwarf, State.Successful);
                         does = true;
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        ex.printStackTrace(System.err);
                     }
                 } else {
                     if (TRACE) {
