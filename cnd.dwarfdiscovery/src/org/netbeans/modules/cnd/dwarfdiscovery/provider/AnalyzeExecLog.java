@@ -361,11 +361,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                     progress.increment(null);
                                 }
                             }
-                            if (line.startsWith("called:")) {
+                            if (line.startsWith("called:")) { //NOI18N
                                 tool = line.substring(7).trim();
                                 continue;
                             }
-                            if (line.startsWith("\t")) {
+                            if (line.startsWith("\t")) { //NOI18N
                                 params.add(line.substring(1).trim());
                                 continue;
                             }
@@ -377,9 +377,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
                                     if (TRACE) {
                                         ex.printStackTrace(System.err);
-                                        System.err.println("\tTool:"+tool);
+                                        System.err.println("\tTool:"+tool); //NOI18N
                                         for(String p : params) {
-                                            System.err.println("\t"+p);
+                                            System.err.println("\t"+p); //NOI18N
                                         }
                                     }
                                 }
@@ -422,17 +422,17 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private Set<String> includedFiles = Collections.<String>emptySet();
 
         private ExecSource(String tool, List<String> args) {
-            if (tool.lastIndexOf('/') > 0) {
-                compiler = tool.substring(tool.lastIndexOf('/')+1);
+            if (tool.lastIndexOf('/') > 0) { //NOI18N
+                compiler = tool.substring(tool.lastIndexOf('/')+1); //NOI18N
             } else {
                 compiler = tool;
             }
-            if (compiler.equals("cc") || compiler.equals("gcc")) {
+            if (compiler.equals("cc") || compiler.equals("gcc")) { //NOI18N
                 language = LanguageKind.C;
-            } else if (compiler.equals("CC") || compiler.equals("g++")) {
+            } else if (compiler.equals("CC") || compiler.equals("g++")) { //NOI18N
                 language = LanguageKind.CPP;
-            } else if (compiler.equals("ffortran") || compiler.equals("f77") || compiler.equals("f90") || compiler.equals("f95") ||
-                       compiler.equals("gfortran") || compiler.equals("g77") || compiler.equals("g90") || compiler.equals("g95")) {
+            } else if (compiler.equals("ffortran") || compiler.equals("f77") || compiler.equals("f90") || compiler.equals("f95") || //NOI18N
+                       compiler.equals("gfortran") || compiler.equals("g77") || compiler.equals("g90") || compiler.equals("g95")) { //NOI18N
                 language = LanguageKind.Fortran;
             } else {
                 language = LanguageKind.Unknown;
