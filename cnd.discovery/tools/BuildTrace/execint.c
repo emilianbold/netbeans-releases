@@ -144,9 +144,11 @@ static void __logprint(const char* fname, char *const argv[], ...) {
         return;
     }
 
+    int shortName = 0;
     const char* key = strrchr(fname, '/');
     if (key == NULL) {
         key = fname;
+        shortName = 1;
     } else {
         key++;
     }
@@ -156,10 +158,11 @@ static void __logprint(const char* fname, char *const argv[], ...) {
     char** found = bsearch(&key, filter, filter_sz, sizeof (filter[0]), comparator);
 
     if (found) {
-        int status;
-        status = stat(fname, &buffer);
-        if (status != 0) {
-            return;
+        if (shortName == 0) {
+            int status = stat(fname, &buffer);
+            if (status != 0) {
+                return;
+            }
         }
         
         LOG("\n>>>NBBUILD: found %s\n", *found);

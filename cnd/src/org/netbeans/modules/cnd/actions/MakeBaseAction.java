@@ -169,7 +169,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
         if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
             try {
-                envMap.put("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) + ":${LD_PRELOAD}"); // NOI18N
+                envMap.put("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) /*+ ":${LD_PRELOAD}"*/); // NOI18N
                 envMap.put("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":${LD_LIBRARY_PATH}"); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
