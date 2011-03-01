@@ -824,7 +824,7 @@ public class ImportProject implements PropertyChangeListener {
                     execLog = createTempFile("exec"); // NOI18N
                     execLog.deleteOnExit();
                     if (executionEnvironment.isRemote()) {
-                        remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName();
+                        remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
                     }
                 }
             } catch (IOException ex) {
