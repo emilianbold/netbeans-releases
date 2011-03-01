@@ -60,7 +60,7 @@ LDLIBSOPTIONS=-ldl
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -KPIC -norunpath -h libBuildTrace.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -KPIC -h libBuildTrace.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}

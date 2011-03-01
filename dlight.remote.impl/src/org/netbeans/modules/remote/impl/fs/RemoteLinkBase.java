@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class RemoteLinkBase extends RemoteFileObjectBase {
     
-    protected RemoteLinkBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, FileObject parent, String remotePath) {
+    protected RemoteLinkBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
         super(fileSystem, execEnv, parent, remotePath, null);
     }
     

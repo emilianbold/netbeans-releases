@@ -173,7 +173,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(fo);
                 if (platformProject != null) {
                     project = ModelImpl.instance().addProject(platformProject, absPath, true);
-                    if (TRACE) {trace("added project %s", project.toString());} //NOI18N
+                    if (TRACE) {trace("added project %s", project);} //NOI18N
                     project.ensureFilesCreated();
                 }
             }

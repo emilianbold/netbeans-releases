@@ -71,7 +71,7 @@ import org.openide.util.Exceptions;
 public abstract class RemoteFileObjectBase extends FileObject implements Serializable {
 
     private final RemoteFileSystem fileSystem;
-    private final ExecutionEnvironment execEnv;
+    private final RemoteFileObjectBase parent;
     private final String remotePath;
     private final File cache;
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
@@ -84,11 +84,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private static final byte CHECK_CAN_WRITE = 2;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
-            FileObject parent, String remotePath, File cache) {
-        RemoteLogger.assertTrue(execEnv.isRemote());
+            RemoteFileObjectBase parent, String remotePath, File cache) {
+        RemoteLogger.assertTrue(execEnv.isRemote());        
         //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.fileSystem = fileSystem;
-        this.execEnv = execEnv;
+        this.parent = parent;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;
         setFlag(MASK_VALID, true);
@@ -107,7 +107,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
     
     public ExecutionEnvironment getExecutionEnvironment() {
-        return execEnv;
+        return fileSystem.getExecutionEnvironment();
     }
 
     protected File getCache() {
@@ -141,9 +141,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     public void delete(FileLock lock) throws IOException {
         deleteImpl();
         invalidate();
-        RemoteFileObjectBase parent = getParent();
-        if (parent != null) {
-            parent.postDeleteChild(this);
+        RemoteFileObjectBase p = getParent();
+        if (p != null) {
+            p.postDeleteChild(this);
         }
     }
 
@@ -192,24 +192,16 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public RemoteFileObjectBase getParent() {
-        int slashPos = getPath().lastIndexOf('/');
-        if (slashPos > 0) {
-            String parentPath = getPath().substring(0, slashPos);
-            FileObject parent = getFileSystem().findResource(parentPath);
-            RemoteLogger.assertTrue(parent != null, "Null parent for " + getPath()); //NOI18N
-            return (RemoteFileObjectBase)parent;
-        } else {
-            return getFileSystem().getRoot();
-        }
+        return parent;
     }
 
     @Override
     public long getSize() {
-        RemoteDirectory parent;
+        RemoteDirectory canonicalParent;
         try {
-            parent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent != null) {
-                return parent.getSize(this);
+            canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent != null) {
+                return canonicalParent.getSize(this);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -226,11 +218,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public boolean canRead() {
         try {
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent == null) {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent == null) {
                 return true;
             } else {
-                return parent.canRead(getNameExt());
+                return canonicalParent.canRead(getNameExt());
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -250,15 +242,15 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public boolean canWrite() {
         setFlag(CHECK_CAN_WRITE, true);
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {            
+        if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {            
             return false;
         }
         try {
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent == null) {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent == null) {
                 return false;
             } else {
-                boolean result = parent.canWrite(getNameExt());
+                boolean result = canonicalParent.canWrite(getNameExt());
                 if (!result) {
                     setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
                 }
@@ -294,9 +286,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public Date lastModified() {
         try {
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent != null) {
-                return parent.lastModified(this);
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent != null) {
+                return canonicalParent.lastModified(this);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -362,7 +354,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         if (this.getFileSystem() != other.getFileSystem() && (this.getFileSystem() == null || !this.fileSystem.equals(other.fileSystem))) {
             return false;
         }
-        if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.execEnv.equals(other.execEnv))) {
+        if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.getExecutionEnvironment().equals(other.getExecutionEnvironment()))) {
             return false;
         }
         if (this.getCache() != other.getCache() && (this.getCache() == null || !this.cache.equals(other.cache))) {

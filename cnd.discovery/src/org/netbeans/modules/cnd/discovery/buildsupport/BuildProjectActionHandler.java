@@ -134,7 +134,7 @@ import org.openide.windows.InputOutput;
             }
             if (execEnv.isRemote()) {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName();
+                remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
             }
         } catch (IOException ex) {
         }
@@ -147,8 +147,21 @@ import org.openide.windows.InputOutput;
                 env.putenv(BuildTraceSupport.CND_BUILD_LOG,execLog.getAbsolutePath());
             }
             try {
-                env.putenv("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) /*+ ":${LD_PRELOAD}"*/); // NOI18N
-                env.putenv("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":${LD_LIBRARY_PATH}"); // NOI18N
+                String merge = env.getenv("LD_PRELOAD"); // NOI18N
+                if (merge != null && !merge.isEmpty()) {
+                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv)+":"+merge; // NOI18N
+                } else {
+                    merge = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                }
+                env.putenv("LD_PRELOAD", merge); // NOI18N
+                
+                merge = env.getenv("LD_LIBRARY_PATH"); // NOI18N
+                if (merge != null && !merge.isEmpty()) {
+                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv)+":"+merge; // NOI18N
+                } else {
+                    merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                }
+                env.putenv("LD_LIBRARY_PATH", merge); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
