@@ -877,7 +877,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
             if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {            
                 J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-                if (cap == null || !cap.isJsf2Supported()) {
+                if (cap == null || !cap.isJsf2Included()) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotSufficientJ2eeServer")); // NOI18N
                     return false;

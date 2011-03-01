@@ -56,7 +56,10 @@
 #include <stdlib.h>
 #include <string.h>
 //#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #ifdef TRACE
 #define LOG(args...) fprintf(stderr, ## args)
@@ -65,11 +68,13 @@
 #endif
 
 /****************************************************************/
+extern char *getcwd (char *__buf, size_t __size);
 
 static char* filter[100];
 static int filter_sz = 0;
 static char* env_log = NULL;
 static int interpose_init = 0;
+static struct stat buffer;
 
 static int comparator(const void * elem1, const void * elem2) {
     const char* str1 = *(const char**) elem1;
@@ -79,8 +84,9 @@ static int comparator(const void * elem1, const void * elem2) {
 
 static int init() {
     /* This function is not reenterable!!! TODO: introduce locking */
-    if (interpose_init != 0)
+    if (interpose_init != 0) {
         return interpose_init;
+    }
 
     char* env_map = getenv("__CND_TOOLS__");
     env_log = getenv("__CND_BUILD_LOG__");
@@ -121,8 +127,9 @@ static int init() {
     }
     free(env_map);
 
-    if (filter_sz == 0)
+    if (filter_sz == 0) {
         return interpose_init = -1;
+    }
 
     qsort(filter, filter_sz, sizeof (filter[0]), comparator);
 
@@ -133,19 +140,31 @@ static int init() {
 
 static void __logprint(const char* fname, char *const argv[], ...) {
 
-    if (init() < 0) return;
+    if (init() < 0) {
+        return;
+    }
 
-    char* key = strrchr(fname, '/');
-    if (key == NULL)
+    int shortName = 0;
+    const char* key = strrchr(fname, '/');
+    if (key == NULL) {
         key = fname;
-    else
+        shortName = 1;
+    } else {
         key++;
+    }
 
     LOG("\n>>>NBBUILD: key = %s\n", key);
 
     char** found = bsearch(&key, filter, filter_sz, sizeof (filter[0]), comparator);
 
     if (found) {
+        if (shortName == 0) {
+            int status = stat(fname, &buffer);
+            if (status != 0) {
+                return;
+            }
+        }
+        
         LOG("\n>>>NBBUILD: found %s\n", *found);
         FILE* flog = fopen(env_log, "a");
 
@@ -162,8 +181,9 @@ static void __logprint(const char* fname, char *const argv[], ...) {
         fprintf(flog, "\t%s\n", buf);
         free(buf);
         char** par = (char**) argv;
-        for (; *par != 0; par++)
+        for (; *par != 0; par++) {
             fprintf(flog, "\t%s\n", *par);
+        }
         fprintf(flog, "\n");
         fflush(flog);
         fclose(flog);
@@ -184,10 +204,12 @@ static void __logprint(const char* fname, char *const argv[], ...) {
 
 #define INSTRUMENT(func, param, actual) \
 int func (const char * p param) { \
+    int prev_errno = errno; \
     static int (* ORIG(func))(const char* p param) = NULL; \
     INIT(func); \
     LOG(">>>EXECINT: %s called. PATH=%s\n", QUOTE(func), p); \
     __logprint(p actual); \
+    errno = prev_errno; \
     int ret = ORIG(func) (p actual); \
     LOG(">>>EXECINT: %s  returned\n", QUOTE(func)); \
     return ret; \

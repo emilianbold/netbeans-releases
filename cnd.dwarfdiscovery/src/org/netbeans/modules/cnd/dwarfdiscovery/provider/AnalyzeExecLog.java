@@ -54,6 +54,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -68,6 +72,7 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
@@ -303,6 +308,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final String fileName;
         private List<SourceFileProperties> result;
         private final ProjectProxy project;
+        private final PathMap pathMapper;
 
         public ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
@@ -312,6 +318,21 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             this.fileName = fileName;
             this.project = project;
+            this.pathMapper = getPathMapper(project);
+        }
+
+        private PathMap getPathMapper(ProjectProxy project) {
+            Project p = project.getProject();
+            if (p != null) {
+                RemoteProject info = p.getLookup().lookup(RemoteProject.class);
+                if (info != null) {
+                    ExecutionEnvironment developmentHost = info.getDevelopmentHost();
+                    if (developmentHost != null && developmentHost.isRemote()) {
+                        return HostInfoProvider.getMapper(developmentHost);
+                    }
+                }
+            }
+            return null;
         }
         
         // Exec log format
@@ -372,7 +393,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             if (line.length()==0) {
                                 // create new result entry
                                 try {
-                                    result.add(new ExecSource(tool, params));
+                                    result.add(new ExecSource(tool, params, pathMapper));
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
                                     if (TRACE) {
@@ -421,7 +442,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private ExecSource(String tool, List<String> args) {
+        private ExecSource(String tool, List<String> args, PathMap pathMapper) {
             if (tool.lastIndexOf('/') > 0) { //NOI18N
                 compiler = tool.substring(tool.lastIndexOf('/')+1); //NOI18N
             } else {
@@ -438,7 +459,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 language = LanguageKind.Unknown;
             }
             if (args.size()>0) {
-                compilePath = args.get(0);
+                if (pathMapper != null) {
+                    compilePath = pathMapper.getLocalPath(args.get(0));
+                } else {
+                    compilePath = args.get(0);
+                }
             }
             Iterator<String> iterator = args.iterator();
             if (iterator.hasNext()) {
@@ -463,6 +488,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             userIncludes = new ArrayList<String>(aUserIncludes.size());
             for(String s : aUserIncludes){
+                if (s.startsWith("/") && pathMapper != null) {
+                    s = pathMapper.getLocalPath(what);
+                }
                 userIncludes.add(PathCache.getString(s));
             }
             userMacros = new HashMap<String, String>(aUserMacros.size());
@@ -474,6 +502,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
             }
             if (what.startsWith("/")){  //NOI18N
+                if (pathMapper != null) {
+                    what = pathMapper.getLocalPath(what);
+                }
                 fullName = what;
                 sourceName = DiscoveryUtils.getRelativePath(compilePath, what);
             } else {

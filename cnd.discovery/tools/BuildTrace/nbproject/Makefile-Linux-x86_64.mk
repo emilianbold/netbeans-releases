@@ -14,15 +14,15 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=gfortran
+CC=cc
+CCC=CC
+CXX=CC
+FC=f95
 AS=as
 PROC=proc
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=OracleSolarisStudio-Linux-x86
 CND_CONF=Linux-x86_64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -60,12 +60,11 @@ LDLIBSOPTIONS=-ldl
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -KPIC -norunpath -h libBuildTrace.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/execint.o execint.c
+	$(COMPILE.c) -g -KPIC  -o ${OBJECTDIR}/execint.o execint.c
 
 # Subprojects
 .build-subprojects:
