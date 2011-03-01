@@ -207,7 +207,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                             Element redefined = identifiersByPackage.get(identifier);
                             if (redefined != null) {
                                 // #194958: identifier defined by something not in this processing round.
-                                processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate identifier: " + identifier, redefined);
+                                processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate identifier (also in " + simplename + "): " + identifier, redefined);
                                 return true;
                             }
                         }
