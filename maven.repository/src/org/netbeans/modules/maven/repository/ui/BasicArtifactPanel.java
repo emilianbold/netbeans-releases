@@ -88,6 +88,8 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class BasicArtifactPanel extends TopComponent implements MultiViewElement {
+
+    private static final RequestProcessor RP = new RequestProcessor(BasicArtifactPanel.class);
     
     private MultiViewElementCallback callback;
     private JToolBar toolbar;
@@ -515,7 +517,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         final DefaultListModel dlm = new DefaultListModel();
         dlm.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
         lstVersions.setModel(dlm);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId());
                 final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
@@ -534,7 +536,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         final DefaultListModel mdl = new DefaultListModel();
         mdl.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
         lstClassifiers.setModel(mdl);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
                 final Set<String> classifiers = new TreeSet<String>();
