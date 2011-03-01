@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.openide.util;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
@@ -122,7 +123,12 @@ public class NbBundleProcessorTest extends NbTestCase {
     }
 
     public void testPackageKeys() throws Exception {
-        assertEquals("stuff", org.netbeans.modules.openide.util.Bundle./*general()*/class.getDeclaredMethod("general").invoke(null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.package-info", "@org.openide.util.NbBundle.Messages(\"k=v\")", "package p;");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        Method m = l.loadClass("p.Bundle").getDeclaredMethod("k");
+        m.setAccessible(true);
+        assertEquals("v", m.invoke(null));
     }
 
     public void testDupeErrorSimple() throws Exception {
