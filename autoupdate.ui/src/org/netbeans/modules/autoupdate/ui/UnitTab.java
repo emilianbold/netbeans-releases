@@ -338,6 +338,8 @@ public class UnitTab extends javax.swing.JPanel {
     private Collection<Unit> oldUnits = Collections.emptySet ();
     
     public void refreshState () {
+        spTab.invalidate();
+        spTab.validate();
         detailView.setVisible(this.model.supportsTwoViews());
         final Collection<Unit> units = model.getMarkedUnits ();
         if (oldUnits.equals (units)) {
