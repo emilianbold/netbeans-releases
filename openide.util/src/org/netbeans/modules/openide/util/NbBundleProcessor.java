@@ -84,76 +84,63 @@ public class NbBundleProcessor extends AbstractProcessor {
         if (roundEnv.processingOver()) {
             return false;
         }
-        Map</*package*/String,Map</*key*/String,/*value*/String>> pairs = new HashMap<String,Map<String,String>>();
-        Map</*package*/String,Map</*identifier*/String,Element>> identifiers = new HashMap<String,Map<String,Element>>();
-        Map</*package*/String,Map</*key*/String,/*simplename*/String>> compilationUnits = new HashMap<String,Map<String,String>>();
-        Map</*package*/String,Map</*key*/String,/*line*/String[]>> comments = new HashMap<String,Map<String,String[]>>();
+        Map</*package*/String,Set<Element>> annotatedElementsByPackage = new HashMap<String,Set<Element>>();
         for (Element e : roundEnv.getElementsAnnotatedWith(NbBundle.Messages.class)) {
             NbBundle.Messages messages = e.getAnnotation(NbBundle.Messages.class);
             if (messages == null) { // bug in java.source, apparently; similar to #195983
                 continue;
             }
             String pkg = findPackage(e);
-            String simplename = findCompilationUnitName(e);
-            Map<String, String> pairsByPackage = pairs.get(pkg);
-            if (pairsByPackage == null) {
-                pairsByPackage = new HashMap<String, String>();
-                pairs.put(pkg, pairsByPackage);
+            Set<Element> annotatedElements = annotatedElementsByPackage.get(pkg);
+            if (annotatedElements == null) {
+                annotatedElements = new HashSet<Element>();
+                annotatedElementsByPackage.put(pkg, annotatedElements);
             }
-            Map<String,Element> identifiersByPackage = identifiers.get(pkg);
-            if (identifiersByPackage == null) {
-                identifiersByPackage = new HashMap<String,Element>();
-                identifiers.put(pkg, identifiersByPackage);
-            }
-            Map<String,String> compilationUnitsByPackage = compilationUnits.get(pkg);
-            if (compilationUnitsByPackage == null) {
-                compilationUnitsByPackage = new HashMap<String,String>();
-                compilationUnits.put(pkg, compilationUnitsByPackage);
-            }
-            Map<String,String[]> commentsByPackage = comments.get(pkg);
-            if (commentsByPackage == null) {
-                commentsByPackage = new HashMap<String,String[]>();
-                comments.put(pkg, commentsByPackage);
-            }
-            List<String> runningComments = new ArrayList<String>();
-            for (String keyValue : messages.value()) {
-                if (keyValue.startsWith("#")) {
-                    runningComments.add(keyValue);
-                    continue;
-                }
-                int i = keyValue.indexOf('=');
-                if (i == -1) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Bad key=value: " + keyValue, e);
-                    continue;
-                }
-                String key = keyValue.substring(0, i);
-                if (key.isEmpty() || !key.equals(key.trim())) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Whitespace not permitted in key: " + keyValue, e);
-                    continue;
-                }
-                Element original = identifiersByPackage.put(toIdentifier(key), e);
-                if (original != null) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, e);
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, original);
-                    return true; // do not generate anything
-                }
-                String value = keyValue.substring(i + 1);
-                pairsByPackage.put(key, value);
-                compilationUnitsByPackage.put(key, simplename);
-                if (!runningComments.isEmpty()) {
-                    commentsByPackage.put(key, runningComments.toArray(new String[runningComments.size()]));
-                    runningComments.clear();
-                }
-            }
-            if (!runningComments.isEmpty()) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, "Comments must precede keys", e);
-            }
+            annotatedElements.add(e);
         }
-        for (Map.Entry<String,Map<String,String>> entry : pairs.entrySet()) {
-            String pkg = entry.getKey();
-            Map<String,String> keysAndValues = entry.getValue();
-            Map<String, Element> identifiersByPackage = identifiers.get(pkg);
-            Element[] elements = new HashSet<Element>(identifiersByPackage.values()).toArray(new Element[0]);
+        PACKAGE: for (Map.Entry<String,Set<Element>> packageEntry : annotatedElementsByPackage.entrySet()) {
+            String pkg = packageEntry.getKey();
+            Map</*key*/String,/*value*/String> pairs = new HashMap<String,String>();
+            Map</*identifier*/String,Element> identifiers = new HashMap<String,Element>();
+            Map</*key*/String,/*simplename*/String> compilationUnits = new HashMap<String,String>();
+            Map</*key*/String,/*line*/String[]> comments = new HashMap<String,String[]>();
+            for (Element e : packageEntry.getValue()) {
+                String simplename = findCompilationUnitName(e);
+                List<String> runningComments = new ArrayList<String>();
+                for (String keyValue : e.getAnnotation(NbBundle.Messages.class).value()) {
+                    if (keyValue.startsWith("#")) {
+                        runningComments.add(keyValue);
+                        continue;
+                    }
+                    int i = keyValue.indexOf('=');
+                    if (i == -1) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Bad key=value: " + keyValue, e);
+                        continue;
+                    }
+                    String key = keyValue.substring(0, i);
+                    if (key.isEmpty() || !key.equals(key.trim())) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Whitespace not permitted in key: " + keyValue, e);
+                        continue;
+                    }
+                    Element original = identifiers.put(toIdentifier(key), e);
+                    if (original != null) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, e);
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, original);
+                        continue PACKAGE; // do not generate anything
+                    }
+                    String value = keyValue.substring(i + 1);
+                    pairs.put(key, value);
+                    compilationUnits.put(key, simplename);
+                    if (!runningComments.isEmpty()) {
+                        comments.put(key, runningComments.toArray(new String[runningComments.size()]));
+                        runningComments.clear();
+                    }
+                }
+                if (!runningComments.isEmpty()) {
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "Comments must precede keys", e);
+                }
+            }
+            Element[] elements = new HashSet<Element>(identifiers.values()).toArray(new Element[0]);
             try {
                 EditableProperties p = new EditableProperties(true);
                 // Load any preexisting bundle so we can just add our keys.
@@ -168,8 +155,8 @@ public class NbBundleProcessor extends AbstractProcessor {
                     // OK, not there
                 }
                 for (String key : p.keySet()) {
-                    if (keysAndValues.containsKey(key)) {
-                        processingEnv.getMessager().printMessage(Kind.ERROR, "Key " + key + " is a duplicate of one from Bundle.properties", identifiersByPackage.get(toIdentifier(key)));
+                    if (pairs.containsKey(key)) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Key " + key + " is a duplicate of one from Bundle.properties", identifiers.get(toIdentifier(key)));
                     }
                 }
                 // Also check class output for (1) incremental builds, (2) preexisting bundles from Maven projects.
@@ -186,8 +173,8 @@ public class NbBundleProcessor extends AbstractProcessor {
                 } catch (IOException x) {
                     // OK, not there
                 }
-                p.putAll(keysAndValues);
-                for (Map.Entry<String,String[]> entry2 : comments.get(pkg).entrySet()) {
+                p.putAll(pairs);
+                for (Map.Entry<String,String[]> entry2 : comments.entrySet()) {
                     p.setComment(entry2.getKey(), entry2.getValue(), false);
                 }
                 OutputStream os = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, pkg, "Bundle.properties", elements).openOutputStream();
@@ -197,26 +184,25 @@ public class NbBundleProcessor extends AbstractProcessor {
                     os.close();
                 }
                 Map</*identifier*/String,/*method body*/String> methods = new TreeMap<String,String>();
-                Map</*key*/String,/*simplename*/String> compilationUnitsByPackage = compilationUnits.get(pkg);
                 try {
                     Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*] @see (\\w+)\r?\n     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
                     while (m.find()) {
                         String simplename = m.group(1);
                         String identifier = m.group(2);
                         methods.put(identifier, m.group());
-                        if (!compilationUnitsByPackage.values().contains(simplename)) {
-                            Element redefined = identifiersByPackage.get(identifier);
+                        if (!compilationUnits.values().contains(simplename)) {
+                            Element redefined = identifiers.get(identifier);
                             if (redefined != null) {
                                 // #194958: identifier defined by something not in this processing round.
                                 processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate identifier (also in " + simplename + "): " + identifier, redefined);
-                                return true;
+                                continue PACKAGE;
                             }
                         }
                     }
                 } catch (IOException x) {
                     // OK, not there
                 }
-                for (Map.Entry<String, String> entry2 : keysAndValues.entrySet()) {
+                for (Map.Entry<String, String> entry2 : pairs.entrySet()) {
                     String key = entry2.getKey();
                     String value = entry2.getValue();
                     StringBuilder method = new StringBuilder();
@@ -226,7 +212,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     while (value.contains("{" + i)) {
                         params.add("arg" + i++);
                     }
-                    String[] commentLines = comments.get(pkg).get(key);
+                    String[] commentLines = comments.get(key);
                     if (commentLines != null) {
                         for (String comment : commentLines) {
                             Matcher m = Pattern.compile("# [{](\\d+)[}] - (.+)").matcher(comment);
@@ -250,7 +236,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     m.appendTail(annotatedValue);
                     annotatedValue.append("</i>");
                     method.append("     * @return ").append(annotatedValue.toString().replace("<i></i>", "")).append('\n');
-                    method.append("     * @see ").append(compilationUnitsByPackage.get(key)).append('\n');
+                    method.append("     * @see ").append(compilationUnits.get(key)).append('\n');
                     method.append("     */\n");
                     String name = toIdentifier(key);
                     method.append("    static String ").append(name).append("(");
