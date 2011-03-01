@@ -75,7 +75,7 @@
     <conf name="Linux-x86" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
       </toolsSet>
       <compileType>
         <cTool>
@@ -91,7 +91,7 @@
     <conf name="Linux-x86_64" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
       </toolsSet>
       <compileType>
         <cTool>
