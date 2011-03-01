@@ -413,7 +413,7 @@ public final class FolderObj extends BaseFileObj {
             }
             mutexPrivileged.enterWriteAccess();
             try {
-                oldChildren = new HashSet<FileNaming>(cache.getCachedChildren());
+                oldChildren = cache.getCachedChildren();
                 refreshResult = cache.refresh(task);
             } finally {
                 mutexPrivileged.exitWriteAccess();
