@@ -130,9 +130,11 @@ public class NbBundleProcessor extends AbstractProcessor {
                     processingEnv.getMessager().printMessage(Kind.ERROR, "Whitespace not permitted in key: " + keyValue, e);
                     continue;
                 }
-                if (identifiersByPackage.put(toIdentifier(key), e) != null) {
+                Element original = identifiersByPackage.put(toIdentifier(key), e);
+                if (original != null) {
                     processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, e);
-                    continue;
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, original);
+                    return true; // do not generate anything
                 }
                 String value = keyValue.substring(i + 1);
                 pairsByPackage.put(key, value);
@@ -206,6 +208,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                             if (redefined != null) {
                                 // #194958: identifier defined by something not in this processing round.
                                 processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate identifier: " + identifier, redefined);
+                                return true;
                             }
                         }
                     }

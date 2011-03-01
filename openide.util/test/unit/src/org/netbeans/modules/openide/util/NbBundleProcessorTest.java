@@ -145,6 +145,8 @@ public class NbBundleProcessorTest extends NbTestCase {
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
+        assertTrue(err.toString(), err.toString().contains("C1.java"));
+        assertTrue(err.toString(), err.toString().contains("C2.java"));
     }
 
     public void testDupeErrorAcrossClassesIncremental() throws Exception {
@@ -153,6 +155,8 @@ public class NbBundleProcessorTest extends NbTestCase {
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, err));
         assertEquals("", err.toString());
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("uplicate"));
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
     }
