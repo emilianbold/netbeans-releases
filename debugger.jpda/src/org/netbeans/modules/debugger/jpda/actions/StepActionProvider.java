@@ -121,7 +121,9 @@ implements Executor {
     //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
     private Properties p;
-
+    private String className;
+    private String methodName;
+    private int depth;
     
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
@@ -257,6 +259,9 @@ implements Executor {
                 getDebuggerImpl ().getOperator ().unregister(stepRequest);
                 return ;
             }
+            className = resumeThread.getClassName ();
+            methodName = resumeThread.getMethodName ();
+            depth = resumeThread.getStackDepth();
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);
             }
@@ -405,6 +410,11 @@ implements Executor {
                     removeBPListener();
                 }
                 return true;
+            }
+            if (depth == 1 && "main".equals(methodName) && !"java.lang.Thread".equals(this.className) &&
+                "java.lang.Thread".equals(className) && "exit".equals(getDebuggerImpl ().getThread (tr).getMethodName())) {
+                // Hack for not stepping into Thread.exit() when stepping *over* from main() method.
+                return true; // Resume to let the thread die and the app to finish.
             }
             
             // Stop execution here?
