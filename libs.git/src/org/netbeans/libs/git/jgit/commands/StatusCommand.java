@@ -91,6 +91,7 @@ public class StatusCommand extends GitCommand {
     private final File[] roots;
     private final ProgressMonitor monitor;
     private final StatusListener listener;
+    private static final String PROP_TRACK_SYMLINKS = "org.netbeans.libs.git.trackSymLinks"; //NOI18N
 
     public StatusCommand (Repository repository, File[] roots, ProgressMonitor monitor, StatusListener listener) {
         super(repository, monitor);
@@ -144,11 +145,17 @@ public class StatusCommand extends GitCommand {
                 final int T_WORKSPACE = 2;
                 String lastPath = null;
                 GitStatus[] conflicts = new GitStatus[3];
+                List<GitStatus> symLinks = new LinkedList<GitStatus>();
                 boolean checkExecutable = Utils.checkExecutable(repository);
+                boolean trackSymLinks = Boolean.valueOf(System.getProperty(PROP_TRACK_SYMLINKS, Boolean.FALSE.toString()));
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
-                    if (!path.equals(lastPath)) {
+                    boolean symlink = false;
+                    if (path.equals(lastPath)) {
+                        symlink = isKnownSymlink(symLinks, path);
+                    } else {
                         handleConflict(conflicts, workTreePath);
+                        handleSymlink(symLinks, workTreePath);
                     }
                     lastPath = path;
                     File file = new File(workTreePath + File.separator + path);
@@ -172,7 +179,7 @@ public class StatusCommand extends GitCommand {
                     DirCacheIterator indexIterator = treeWalk.getTree(T_INDEX, DirCacheIterator.class);
                     DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
                     boolean isFolder = false;
-                    if (treeWalk.isSubtree()) {
+                    if (!symlink && treeWalk.isSubtree()) {
                         if (mWorking == FileMode.TREE.getBits() && fti.isEntryIgnored()) {
                             Collection<TreeFilter> subTreeFilters = getSubtreeFilters(pathFilters, path);
                             if (!subTreeFilters.isEmpty()) {
@@ -221,12 +228,17 @@ public class StatusCommand extends GitCommand {
 
                     GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
                     if (stage == 0) {
-                        addStatus(file, status);
+                        if (!trackSymLinks && isSymlinkFolder(mHead, mWorking)) {
+                            symLinks.add(status);
+                        } else {
+                            addStatus(file, status);
+                        }
                     } else {
                         conflicts[stage - 1] = status;
                     }
                 }
                 handleConflict(conflicts, workTreePath);
+                handleSymlink(symLinks, workTreePath);
             } finally {
                 cache.unlock();
             }
@@ -355,5 +367,27 @@ public class StatusCommand extends GitCommand {
 
     private boolean isExistingSymlink (int fileMode1, int fileModeWorking) {
         return (fileModeWorking & FileMode.TYPE_FILE) == FileMode.TYPE_FILE && (fileMode1 & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
+    }
+
+    private boolean isKnownSymlink (List<GitStatus> symLinks, String path) {
+        return !symLinks.isEmpty() && path.equals(symLinks.get(0).getRelativePath());
+    }
+
+    private boolean isSymlinkFolder (int mHead, int mWorking) {
+        // it seems symlink to a folder has always mWorking set to 0
+        return mWorking == 0 && (mHead & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
+    }
+
+    private void handleSymlink (List<GitStatus> symLinks, String workTreePath) {
+        if (!symLinks.isEmpty()) {
+            boolean removed = symLinks.size() == 1;
+            GitStatus status = symLinks.get(0);
+            status = new JGitStatus(true, status.getRelativePath(), workTreePath, status.getFile(), status.getStatusHeadIndex(),
+                    !removed || status.getStatusHeadIndex() == GitStatus.Status.STATUS_REMOVED ? GitStatus.Status.STATUS_NORMAL : GitStatus.Status.STATUS_REMOVED,
+                    removed ? GitStatus.Status.STATUS_REMOVED : GitStatus.Status.STATUS_NORMAL,
+                    null, status.isFolder(), null);
+            addStatus(status.getFile(), status);
+            symLinks.clear();
+        }
     }
 }
