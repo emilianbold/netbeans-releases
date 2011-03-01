@@ -82,6 +82,14 @@ import org.openide.util.Utilities;
 
     @Override
     public boolean setSystemIncludeDirectories(List<String> values) {
+        return copySystemIncludeDirectoriesImpl(values, true);
+    }
+    
+    protected final boolean copySystemIncludeDirectories(List<String> values) {
+        return copySystemIncludeDirectoriesImpl(values, false);
+    }
+    
+    private boolean copySystemIncludeDirectoriesImpl(List<String> values, boolean normalize) {
         assert values != null;
         if (compilerDefinitions == null) {
             compilerDefinitions = new Pair();
@@ -90,11 +98,13 @@ import org.openide.util.Utilities;
             return false;
         }
         List<String> systemIncludeDirectoriesList = new ArrayList<String>(values);
-        normalizePaths(systemIncludeDirectoriesList);
+        if (normalize) {
+            normalizePaths(systemIncludeDirectoriesList);
+        }
         compilerDefinitions.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
         return true;
     }
-
+    
     @Override
     public boolean setSystemPreprocessorSymbols(List<String> values) {
         assert values != null;
@@ -106,6 +116,10 @@ import org.openide.util.Utilities;
         }
         compilerDefinitions.systemPreprocessorSymbolsList = new ArrayList<String>(values);
         return true;
+    }
+    
+    protected final boolean copySystemPreprocessorSymbols(List<String> values) {
+        return setSystemPreprocessorSymbols(values);
     }
 
     @Override
@@ -164,7 +178,7 @@ import org.openide.util.Utilities;
                 includeDirList.addAll(oldIncludeDirList);
             }
         }
-        setSystemIncludeDirectories(includeDirList);
+        copySystemIncludeDirectories(includeDirList);
 
         List<String> preprocSymbolList = new ArrayList<String>();
         String preprocSymbolPrefix = prefix + ".systemMacros"; // NOI18N
@@ -182,7 +196,7 @@ import org.openide.util.Utilities;
                 preprocSymbolList.addAll(oldPreprocSymbolList);
             }
         }
-        setSystemPreprocessorSymbols(preprocSymbolList);
+        copySystemPreprocessorSymbols(preprocSymbolList);
     }
 
     @Override

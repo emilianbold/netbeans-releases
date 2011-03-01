@@ -82,6 +82,7 @@
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
+          <linkerNorunpath>false</linkerNorunpath>
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
           </linkerLibItems>
@@ -98,6 +99,7 @@
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
+          <linkerNorunpath>false</linkerNorunpath>
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
           </linkerLibItems>
