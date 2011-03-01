@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,11 +101,22 @@ public class NbBundleProcessor extends AbstractProcessor {
         }
         PACKAGE: for (Map.Entry<String,Set<Element>> packageEntry : annotatedElementsByPackage.entrySet()) {
             String pkg = packageEntry.getKey();
+            Set<Element> annotatedElements = packageEntry.getValue();
+            PackageElement pkgE = processingEnv.getElementUtils().getPackageElement(pkg);
+            if (pkgE != null) {
+                Set<Element> unscannedTopElements = new HashSet<Element>();
+                unscannedTopElements.add(pkgE);
+                unscannedTopElements.addAll(pkgE.getEnclosedElements());
+                unscannedTopElements.removeAll(roundEnv.getRootElements());
+                addToAnnotatedElements(unscannedTopElements, annotatedElements);
+            } else {
+                processingEnv.getMessager().printMessage(Kind.WARNING, "Could not check for other source files in " + pkg);
+            }
             Map</*key*/String,/*value*/String> pairs = new HashMap<String,String>();
             Map</*identifier*/String,Element> identifiers = new HashMap<String,Element>();
             Map</*key*/String,/*simplename*/String> compilationUnits = new HashMap<String,String>();
             Map</*key*/String,/*line*/String[]> comments = new HashMap<String,String[]>();
-            for (Element e : packageEntry.getValue()) {
+            for (Element e : annotatedElements) {
                 String simplename = findCompilationUnitName(e);
                 List<String> runningComments = new ArrayList<String>();
                 for (String keyValue : e.getAnnotation(NbBundle.Messages.class).value()) {
@@ -184,24 +196,6 @@ public class NbBundleProcessor extends AbstractProcessor {
                     os.close();
                 }
                 Map</*identifier*/String,/*method body*/String> methods = new TreeMap<String,String>();
-                try {
-                    Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*] @see (\\w+)\r?\n     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
-                    while (m.find()) {
-                        String simplename = m.group(1);
-                        String identifier = m.group(2);
-                        methods.put(identifier, m.group());
-                        if (!compilationUnits.values().contains(simplename)) {
-                            Element redefined = identifiers.get(identifier);
-                            if (redefined != null) {
-                                // #194958: identifier defined by something not in this processing round.
-                                processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate identifier (also in " + simplename + "): " + identifier, redefined);
-                                continue PACKAGE;
-                            }
-                        }
-                    }
-                } catch (IOException x) {
-                    // OK, not there
-                }
                 for (Map.Entry<String, String> entry2 : pairs.entrySet()) {
                     String key = entry2.getKey();
                     String value = entry2.getValue();
@@ -323,6 +317,15 @@ public class NbBundleProcessor extends AbstractProcessor {
 
     private String toJavadoc(String text) {
         return text.replace("&", "&amp;").replace("<", "&lt;").replace("*/", "&#x2A;/").replace("\n", "<br>").replace("@", "&#64;");
+    }
+
+    private void addToAnnotatedElements(Collection<? extends Element> unscannedElements, Set<Element> annotatedElements) {
+        for (Element e : unscannedElements) {
+            if (e.getAnnotation(NbBundle.Messages.class) != null) {
+                annotatedElements.add(e);
+            }
+            addToAnnotatedElements(e.getEnclosedElements(), annotatedElements);
+        }
     }
 
 }
