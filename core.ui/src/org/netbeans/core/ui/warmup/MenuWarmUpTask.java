@@ -175,11 +175,13 @@ public final class MenuWarmUpTask implements Runnable {
                     }
                     LOG.fine("Window deactivated, preparing refresh task");
                 }
-                LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
-                r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-                r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-                r.setLoggerName(UILOG.getName());
-                UILOG.log(r);
+                if (UILOG.isLoggable(Level.FINE)) {
+                    LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
+                    r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                    r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                    r.setLoggerName(UILOG.getName());
+                    UILOG.log(r);
+                }
             }
         }
 
@@ -298,12 +300,14 @@ public final class MenuWarmUpTask implements Runnable {
                     run.run();
                 }
                 long took = System.currentTimeMillis() - now;
-                LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
-                r.setParameters(new Object[] { took });
-                r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-                r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-                r.setLoggerName(UILOG.getName());
-                UILOG.log(r);
+                if (UILOG.isLoggable(Level.FINE)) {
+                    LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
+                    r.setParameters(new Object[] { took });
+                    r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                    r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                    r.setLoggerName(UILOG.getName());
+                    UILOG.log(r);
+                }
                 LOG.log(Level.FINE, "Refresh done in {0} ms", took);
                 AtomicBoolean ab = goOn;
                 if (ab == null || ab.get()) {
@@ -336,7 +340,7 @@ public final class MenuWarmUpTask implements Runnable {
 
             ++counter;
 
-            {
+            if (UILOG.isLoggable(Level.FINE)) {
                 LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_CANCEL"); // NOI18N
                 r.setParameters(new Object[]{counter});
                 r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
@@ -350,13 +354,15 @@ public final class MenuWarmUpTask implements Runnable {
                 nd.setOptions(new Object[] { Message.YES_OPTION, Message.NO_OPTION });
                 if (DialogDisplayer.getDefault().notify(nd) == Message.YES_OPTION) {
                     NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").putBoolean("manual", true); // NOI18N
-                    
-                    LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_OFF"); // NOI18N
-                    r.setParameters(new Object[]{counter});
-                    r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-                    r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-                    r.setLoggerName(UILOG.getName());
-                    UILOG.log(r);
+
+                    if (UILOG.isLoggable(Level.FINE)) {
+                        LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_OFF"); // NOI18N
+                        r.setParameters(new Object[]{counter});
+                        r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                        r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                        r.setLoggerName(UILOG.getName());
+                        UILOG.log(r);
+                    }
                 }
             }
             return true;
