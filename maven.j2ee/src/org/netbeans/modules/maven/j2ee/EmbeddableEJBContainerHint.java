@@ -208,7 +208,7 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     try {
                         URL u;
                         if (serId.indexOf("gfv3ee6wc") != -1) {
-                            u = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.1-b38/glassfish-embedded-static-shell-3.1-b38.pom");
+                            u = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.1/glassfish-embedded-static-shell-3.1.pom");
                         } else {
                             u = new URL("http://download.java.net/maven/glassfish/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom");
                         }
