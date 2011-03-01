@@ -308,7 +308,7 @@ public class ConnectionTest extends AbstractGitTestCase {
 
         @Override
         public char[] getPassphrase (String uri, String prompt) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return "".toCharArray();
         }
         
     }
