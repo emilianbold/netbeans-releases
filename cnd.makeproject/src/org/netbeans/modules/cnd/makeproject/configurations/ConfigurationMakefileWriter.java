@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -431,7 +432,12 @@ public class ConfigurationMakefileWriter {
         bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
         bw.write("FC=" + getCompilerName(conf, PredefinedToolKind.FortranCompiler) + "\n"); // NOI18N
         bw.write("AS=" + getCompilerName(conf, PredefinedToolKind.Assembler) + "\n"); // NOI18N
-        bw.write("PROC=proc\n"); // NOI18N
+        
+        DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+        if(provider != null) {
+            provider.writePrelude(projectDescriptor, conf, bw);
+        }
+        
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
@@ -797,18 +803,14 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                FileObject fileObject = items[i].getFileObject();
-                if(fileObject != null) {
-                    if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                            MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
-                            file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                            MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
-                            file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
-                        }
+                
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    if(provider.isProCItem(items[i])) {
+                        file = provider.getProCOutput(items[i], conf);
                     }
                 }
+                
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -889,7 +891,10 @@ public class ConfigurationMakefileWriter {
                 bw.write("\t" + command + "\n"); // NOI18N
             }
 
-            writeProCTargets(projectDescriptor, conf, bw);
+            DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+            if(provider != null) {
+                provider.writeProCTargets(projectDescriptor, conf, bw);
+            }
         }
     }
 
@@ -919,18 +924,14 @@ public class ConfigurationMakefileWriter {
                             continue;
                         }
                         file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                        FileObject fileObject = items[i].getFileObject();
-                        if(fileObject != null) {
-                            if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                    MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
-                                    file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                                    MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
-                                    file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
-                                }
+                        
+                        DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                        if(provider != null) {
+                            if(provider.isProCItem(items[i])) {
+                                file = provider.getProCOutput(items[i], conf);
                             }
                         }
+                        
                         command = ""; // NOI18N
                         comment = null;
                         additionalDep = null;
@@ -997,7 +998,10 @@ public class ConfigurationMakefileWriter {
 
             writeCompileTargetsWithoutMain(projectDescriptor, conf, bw);
             
-            writeProCTargets(projectDescriptor, conf, bw);
+            DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+            if(provider != null) {
+                provider.writeProCTargets(projectDescriptor, conf, bw);
+            }
         }
     }
 
@@ -1128,100 +1132,6 @@ public class ConfigurationMakefileWriter {
                 bw.write("\tfi\n"); // NOI18N
             }
             bw.write("\n"); // NOI18N
-        }
-    }
-
-    public static void writeProCTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        Item[] items = projectDescriptor.getProjectItems();
-        if (conf.isCompileConfiguration()) {
-            String target = null;
-            String folders = null;
-            String file = null;
-            String command = null;
-            String comment = null;
-            String additionalDep = null;
-            for (int i = 0; i < items.length; i++) {
-                Item item = items[i];
-                FileObject fileObject = item.getFileObject();
-                if(fileObject == null) {
-                    continue;
-                }
-                if(!"pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                    continue;
-                }
-                final Folder folder = item.getFolder();
-                if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
-                    continue;
-                }
-                ItemConfiguration itemConfiguration = item.getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-                if (itemConfiguration.getExcluded().getValue()) {
-                    continue;
-                }
-                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                if (compilerSet == null) {
-                    continue;
-                }
-                file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, item.getPath(true)));
-                command = ""; // NOI18N
-                comment = null;
-                additionalDep = null;
-                if (itemConfiguration.isCompilerToolConfiguration()) {
-                    CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
-                    if(customToolConfiguration != null) {
-                        if (customToolConfiguration.getModified()) {
-                            target = customToolConfiguration.getOutputs().getValue();
-                            command = customToolConfiguration.getCommandLine().getValue();
-                            comment = customToolConfiguration.getDescription().getValue();
-                            additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
-                        } else {
-                            comment = "Pro*C Preprocessor"; // NOI18N
-                            command = "${PROC} lines=yes iname="; // NOI18N
-                            command += file;
-                            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                command += " code=cpp parse=none"; // NOI18N
-                            } else {
-                                command += " parse=none"; // NOI18N                                
-                            }
-//                            command += " sys_include=\\(${CND_SYSINCLUDES_C_"+MakeConfiguration.CND_CONF_MACRO+"}\\)"; // NOI18N
-                            command += " oname="; // NOI18N
-                            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
-                                target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                            } else {
-                                MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
-                                target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
-                            }
-                            command += target;
-                        }
-                    }
-                } else {
-                    continue;
-                }
-                folders = CndPathUtilitities.getDirName(target);
-                bw.write("\n"); // NOI18N
-
-                if (target.contains(" ")) { // NOI18N
-                    bw.write(".NO_PARALLEL:" + target + "\n"); // NOI18N
-                }
-                bw.write(target + ": "); // NOI18N
-                // See IZ #151465 for explanation why Makefile is listed as dependency.
-                if (conf.getRebuildPropChanged().getValue()) {
-                    bw.write("nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk "); // NOI18N
-                }
-                if (additionalDep != null) {
-                    bw.write(file + " " + additionalDep + "\n"); // NOI18N
-                } else {
-                    bw.write(file + "\n"); // NOI18N
-                }
-
-                if (folders != null) {
-                    bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
-                }
-                if (comment != null) {
-                    bw.write("\t@echo " + comment + "\n"); // NOI18N
-                }
-                bw.write("\t" + command + "\n"); // NOI18N
-            }
         }
     }
 
