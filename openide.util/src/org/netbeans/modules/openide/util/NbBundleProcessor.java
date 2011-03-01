@@ -89,7 +89,12 @@ public class NbBundleProcessor extends AbstractProcessor {
         Map</*package*/String,Map</*key*/String,/*simplename*/String>> compilationUnits = new HashMap<String,Map<String,String>>();
         Map</*package*/String,Map</*key*/String,/*line*/String[]>> comments = new HashMap<String,Map<String,String[]>>();
         for (Element e : roundEnv.getElementsAnnotatedWith(NbBundle.Messages.class)) {
+            NbBundle.Messages messages = e.getAnnotation(NbBundle.Messages.class);
+            if (messages == null) { // bug in java.source, apparently; similar to #195983
+                continue;
+            }
             String pkg = findPackage(e);
+            String simplename = findCompilationUnitName(e);
             Map<String, String> pairsByPackage = pairs.get(pkg);
             if (pairsByPackage == null) {
                 pairsByPackage = new HashMap<String, String>();
@@ -111,10 +116,6 @@ public class NbBundleProcessor extends AbstractProcessor {
                 comments.put(pkg, commentsByPackage);
             }
             List<String> runningComments = new ArrayList<String>();
-            NbBundle.Messages messages = e.getAnnotation(NbBundle.Messages.class);
-            if (messages == null) {
-                continue;
-            }
             for (String keyValue : messages.value()) {
                 if (keyValue.startsWith("#")) {
                     runningComments.add(keyValue);
@@ -138,7 +139,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                 }
                 String value = keyValue.substring(i + 1);
                 pairsByPackage.put(key, value);
-                compilationUnitsByPackage.put(key, findCompilationUnitName(e));
+                compilationUnitsByPackage.put(key, simplename);
                 if (!runningComments.isEmpty()) {
                     commentsByPackage.put(key, runningComments.toArray(new String[runningComments.size()]));
                     runningComments.clear();
