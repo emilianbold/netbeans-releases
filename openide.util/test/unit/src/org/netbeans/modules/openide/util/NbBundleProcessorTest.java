@@ -159,8 +159,8 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages({\"k=v1\"})", "class C1 {}");
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages({\"k=v2\"})", "class C2 {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, err));
-        assertEquals("", err.toString());
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("uplicate"));
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
