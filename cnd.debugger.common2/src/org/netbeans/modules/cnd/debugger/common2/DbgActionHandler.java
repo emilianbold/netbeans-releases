@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.windows.IOSelect;
 
 /**
  * Implements debug-related actions on a project.
@@ -137,7 +139,7 @@ public class DbgActionHandler implements ProjectActionHandler {
         Runnable loadProgram = new Runnable() {
             public void run() {
                 if (io != null) {
-                    io.select();
+                    IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
                 }
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_TEST) {
 		    dm.setAction(DebuggerManager.RUN);
