@@ -206,10 +206,7 @@ public class SvnClientFactory {
                 }          
                 LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
                 setupCommandline();
-            }
-            
-            if(factoryType.trim().equals("javahl"))
-            {
+            } else if (factoryType.trim().equals("javahl")) {
                 if(setupJavaHl()) {
                     return;
                 }
