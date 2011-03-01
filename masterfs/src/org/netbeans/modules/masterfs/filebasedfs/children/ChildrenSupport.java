@@ -80,8 +80,8 @@ public class ChildrenSupport {
         return mutex.isReadAccess() || mutex.isWriteAccess();
     }
 
-    public Set<FileNaming> getCachedChildren() {
-        return getExisting(false);
+    public synchronized Set<FileNaming> getCachedChildren() {
+        return new HashSet<FileNaming>(getExisting(false));
     }
 
     public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan, Runnable[] task) {
