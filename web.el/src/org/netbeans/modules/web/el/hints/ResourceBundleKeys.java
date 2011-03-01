@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELParserResult;
 import org.netbeans.modules.web.el.Pair;
 import org.netbeans.modules.web.el.ResourceBundles;
 import org.openide.filesystems.FileObject;
@@ -85,8 +86,9 @@ public final class ResourceBundleKeys extends ELRule {
     }
 
     @Override
-    protected void run(ELRuleContext context, List<Hint> result) {
-        for (ELElement each : context.getELParserResult().getElements()) {
+    protected void run(RuleContext context, List<Hint> result) {
+        ELParserResult elResult = (ELParserResult)context.parserResult;
+        for (ELElement each : elResult.getElements()) {
             if (!each.isValid()) {
                 // broken AST, skip (perhaps could try just plain string search)
                 continue;
@@ -95,7 +97,7 @@ public final class ResourceBundleKeys extends ELRule {
                 if (!resourceBundles.isValidKey(pair.first.getImage(), pair.second.getString())) {
                     Hint hint = new Hint(this,
                             NbBundle.getMessage(ResourceBundleKeys.class, "ResourceBundleKeys_Unknown", pair.second.getString()),
-                            context.getELParserResult().getFileObject(),
+                            elResult.getFileObject(),
                             each.getOriginalOffset(pair.second),
                             Collections.<HintFix>emptyList(), 200);
                     result.add(hint);
