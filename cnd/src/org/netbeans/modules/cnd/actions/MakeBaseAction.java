@@ -45,10 +45,8 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.awt.Frame;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -72,8 +70,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
-import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -172,14 +169,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
         if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
             try {
-                String dll = BuildTraceHelper.INSTANCE.getPath(execEnv);
-                String path = MacroExpanderFactory.getExpander(execEnv).expandPredefinedMacros("$osname-${platform}"); // NOI18N
-                File where = new File(dll).getParentFile().getParentFile();
-                path = where.getAbsolutePath() + "/" + path; // NOI18N
-                envMap.put("LD_PRELOAD", new File(dll).getName() + ":${LD_PRELOAD}"); // NOI18N
-                envMap.put("LD_LIBRARY_PATH", path + ":" + path + "_64" + ":${LD_LIBRARY_PATH}"); // NOI18N
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                envMap.put("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) /*+ ":${LD_PRELOAD}"*/); // NOI18N
+                envMap.put("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":${LD_LIBRARY_PATH}"); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -245,10 +236,10 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
         return set;
     }
-    private static final class BuildTraceHelper extends HelperUtility {
+    private static final class BuildTraceHelper extends HelperLibraryUtility {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
         private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/$osname-${platform}$_isa/libBuildTrace.so"); // NOI18N
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
         }
     }
 }

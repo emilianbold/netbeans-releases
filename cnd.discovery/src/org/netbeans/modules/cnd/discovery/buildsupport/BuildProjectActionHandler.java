@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.discovery.buildsupport;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -56,8 +54,9 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -121,6 +120,7 @@ import org.openide.windows.InputOutput;
         };
         delegate.addExecutionListener(listener);
         File execLog = null;
+        String remoteExecLog = null;
         try {
             execLog = File.createTempFile("exec", ".log"); // NOI18N
             execLog.deleteOnExit();
@@ -132,21 +132,23 @@ import org.openide.windows.InputOutput;
                     }
                 }
             }
+            if (execEnv.isRemote()) {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName();
+            }
         } catch (IOException ex) {
         }
         if (execLog != null) {
             Env env = pae.getProfile().getEnvironment();
             env.putenv(BuildTraceSupport.CND_TOOLS,BuildTraceSupport.CND_TOOLS_VALUE);
-            env.putenv(BuildTraceSupport.CND_BUILD_LOG,execLog.getAbsolutePath());
+            if (execEnv.isRemote()) {
+                env.putenv(BuildTraceSupport.CND_BUILD_LOG,remoteExecLog);
+            } else {
+                env.putenv(BuildTraceSupport.CND_BUILD_LOG,execLog.getAbsolutePath());
+            }
             try {
-                String dll = BuildTraceHelper.INSTANCE.getPath(execEnv);
-                String path = MacroExpanderFactory.getExpander(execEnv).expandPredefinedMacros("$osname-${platform}"); // NOI18N
-                File where = new File(dll).getParentFile().getParentFile();
-                path = where.getAbsolutePath() + "/" + path; // NOI18N
-                env.putenv("LD_PRELOAD", new File(dll).getName() + ":${LD_PRELOAD}"); // NOI18N
-                env.putenv("LD_LIBRARY_PATH", path + ":" + path + "_64" + ":${LD_LIBRARY_PATH}"); // NOI18N
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                env.putenv("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) /*+ ":${LD_PRELOAD}"*/); // NOI18N
+                env.putenv("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":${LD_LIBRARY_PATH}"); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -154,10 +156,10 @@ import org.openide.windows.InputOutput;
         delegate.execute(io);
     }
 
-    private static final class BuildTraceHelper extends HelperUtility {
+    private static final class BuildTraceHelper extends HelperLibraryUtility {
         private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
         private BuildTraceHelper() {
-            super("org.netbeans.modules.cnd.actions", "bin/$osname-${platform}$_isa/libBuildTrace.so"); // NOI18N
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
         }
     }
 }

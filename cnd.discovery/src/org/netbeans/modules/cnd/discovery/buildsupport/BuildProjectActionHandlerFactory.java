@@ -70,19 +70,17 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
             if (configuration instanceof MakeConfiguration) {
                 MakeConfiguration conf = (MakeConfiguration) configuration;
                 final ExecutionEnvironment executionEnvironment = conf.getDevelopmentHost().getExecutionEnvironment();
-                if (executionEnvironment.isLocal()) {
-                    if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                        if (BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
-                            try {
-                                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                                switch (hostInfo.getOSFamily()) {
-                                case SUNOS:
-                                case LINUX:
-                                    return true;
-                                }
-                            } catch (IOException ex) {
-                            } catch (CancellationException ex) {
+                if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                    if (BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
+                        try {
+                            HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                            switch (hostInfo.getOSFamily()) {
+                            case SUNOS:
+                            case LINUX:
+                                return true;
                             }
+                        } catch (IOException ex) {
+                        } catch (CancellationException ex) {
                         }
                     }
                 }
@@ -98,8 +96,11 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
 
     /* package-local */
     static ProjectActionHandler createDelegateHandler(ProjectActionEvent pae) {
+        boolean selfFound = false;
         for (ProjectActionHandlerFactory factory : Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class)) {
-            if (!(factory instanceof BuildProjectActionHandlerFactory)) {
+            if (factory instanceof BuildProjectActionHandlerFactory) {
+                selfFound = true;
+            } else if (selfFound) {
                 if (factory.canHandle(pae)) {
                     return factory.createHandler();
                 }

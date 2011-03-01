@@ -79,8 +79,11 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
 
     /* package-local */
     static ProjectActionHandler createDelegateHandler(ProjectActionEvent pae) {
+        boolean selfFound = false;
         for (ProjectActionHandlerFactory factory : Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class)) {
-            if (!(factory instanceof RemoteBuildProjectActionHandlerFactory)) {
+            if (factory instanceof RemoteBuildProjectActionHandlerFactory) {
+                selfFound = true;
+            } else if (selfFound) {
                 if (factory.canHandle(pae)) {
                     return factory.createHandler();
                 }
