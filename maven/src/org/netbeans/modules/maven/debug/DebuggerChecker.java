@@ -267,6 +267,9 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
     private String classToSourceURL (FileObject fo, OutputWriter logger) {
         try {
             ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
+            if (cp == null) {
+                return null;
+            }
             FileObject root = cp.findOwnerRoot (fo);
             String resourceName = cp.getResourceName (fo, '/', false);
             if (resourceName == null) {
