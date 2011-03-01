@@ -531,6 +531,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @param fo file object
     * @return folder for the file object
     * @exception IllegalArgumentException if the file object is not folder
+    *   or if its responsible loader prevents the data object from being
+    *   instantiated - e.g. {@link DataObject#find} throws {@link DataObjectNotFoundException}
     */
     public static DataFolder findFolder (FileObject fo) {
         DataObject d;

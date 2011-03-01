@@ -196,6 +196,15 @@ public class ChildrenSupportTest extends NbTestCase {
         assertTrue(file2.createNewFile());
 
         assertEquals(2,chCache.refresh().size());
+        
+        Iterator<FileNaming> res = childrenSupport.getCachedChildren().iterator();
+        assertNotNull("Has one element", res.next());
+        
+        assertTrue("Third file created", new File(wDir, "testciao.f").createNewFile());
+        assertEquals("One additional file created", 1, chCache.refresh().size());
+        
+        assertNotNull("Can iterate to next", res.next());
+        assertFalse("And that was the last one", res.hasNext());
     }
 
 
