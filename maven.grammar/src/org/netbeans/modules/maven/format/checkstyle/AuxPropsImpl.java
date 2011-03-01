@@ -56,9 +56,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.apache.maven.execution.DefaultMavenExecutionResult;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -76,6 +80,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -253,6 +259,9 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
 
                 List<Dependency> deps = plug.getDependencies();
                 final MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+                session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(online.getLocalRepository().getBasedir()));
+                online.lookupComponent(LegacySupport.class).setSession(new MavenSession(online.getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
 
                 //TODO: check alternative for deprecated maven components
                 final MavenProjectBuilder builder = online.lookupComponent(MavenProjectBuilder.class);
@@ -270,6 +279,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                             public void run() {
                                 try {
                                     //TODO add progress bar.
+                                    // XXX does online.resolve(...) not suffice?
                                     builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
                                     synchronized (AuxPropsImpl.this) {
                                         recheck = true;
