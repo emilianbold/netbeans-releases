@@ -71,6 +71,7 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -167,14 +168,6 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
 
-        if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
-            try {
-                envMap.put("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) /*+ ":${LD_PRELOAD}"*/); // NOI18N
-                envMap.put("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":${LD_LIBRARY_PATH}"); // NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
         if (inputOutput == null) {
             // Tab Name
             String tabName = execEnv.isLocal() ? getString("MAKE_LABEL", node.getName(), target) : getString("MAKE_REMOTE_LABEL", node.getName(), target, execEnv.getDisplayName()); // NOI18N
@@ -194,7 +187,19 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        traceExecutable(executable, buildDir, args, execEnv.toString(), envMap);
+        
+        MacroMap mm = MacroMap.createEmpty(execEnv);
+        mm.putAll(envMap);
+        
+        if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
+            try {
+                mm.prependPathVariable("LD_PRELOAD",BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
+                mm.prependPathVariable("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
                 new CompilerLineConvertor(project, getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
@@ -206,7 +211,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 unbufferOutput(false).
                 addNativeProcessListener(processChangeListener);
 
-        npb.getEnvironment().putAll(envMap);
+        npb.getEnvironment().putAll(mm);
         npb.redirectError();
         
         NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
