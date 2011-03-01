@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.openide.util;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
@@ -122,7 +123,12 @@ public class NbBundleProcessorTest extends NbTestCase {
     }
 
     public void testPackageKeys() throws Exception {
-        assertEquals("stuff", org.netbeans.modules.openide.util.Bundle./*general()*/class.getDeclaredMethod("general").invoke(null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.package-info", "@org.openide.util.NbBundle.Messages(\"k=v\")", "package p;");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        Method m = l.loadClass("p.Bundle").getDeclaredMethod("k");
+        m.setAccessible(true);
+        assertEquals("v", m.invoke(null));
     }
 
     public void testDupeErrorSimple() throws Exception {
@@ -144,6 +150,20 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages({\"k=v\"})", "class C2 {}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("uplicate"));
+        assertTrue(err.toString(), err.toString().contains("C1.java"));
+        assertTrue(err.toString(), err.toString().contains("C2.java"));
+    }
+
+    public void testDupeErrorAcrossClassesIncremental() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages({\"k=v1\"})", "class C1 {}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages({\"k=v2\"})", "class C2 {}");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, err));
+        assertEquals("", err.toString());
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("uplicate"));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
         assertTrue(err.toString(), err.toString().contains("uplicate"));
     }
 

@@ -45,12 +45,14 @@
 package org.netbeans.modules.tasklist.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import org.netbeans.modules.tasklist.impl.Accessor;
 import org.netbeans.modules.tasklist.impl.TaskComparator;
 import org.netbeans.modules.tasklist.impl.TaskList;
@@ -249,10 +251,14 @@ class FoldingTaskListModel extends TaskListModel {
     
     class FoldingGroup implements Comparable<FoldingTaskListModel.FoldingGroup> {
         private TaskGroup tg;
-        private final ArrayList<Task> tasks = new ArrayList<Task>( 100 );
+        
+        private final Object TASK_LOCK = new Object();
+        private TreeSet<Task> sortedTasks = new TreeSet<Task>( getComparator() );
+        private ArrayList<Task> tasksList;
+        
         private boolean isExpanded;
         private Comparator<Task> comparator;
-        
+            
         public FoldingGroup( TaskGroup tg ) {
             this.tg = tg;
             isExpanded = Settings.getDefault().isGroupExpanded( tg.getName() );
@@ -260,11 +266,11 @@ class FoldingTaskListModel extends TaskListModel {
         
         public void add( List<Task> newTasks ) {
             boolean wasEmpty = isEmpty();
-            synchronized( tasks ) {
-                tasks.addAll( newTasks );
-                Collections.sort( tasks, getComparator() );
-            }
             
+            synchronized( TASK_LOCK ) {
+                sortedTasks.addAll( newTasks );
+                tasksList = null;
+            }
             int startingRow = getFoldingGroupStartingRow( this );
             
             if( wasEmpty ) {
@@ -274,7 +280,7 @@ class FoldingTaskListModel extends TaskListModel {
                     int firstRow = Integer.MAX_VALUE;
                     int lastRow = Integer.MIN_VALUE;
                     for( Task t : newTasks ) {
-                        int index = tasks.indexOf( t );
+                        int index = getTasksList().indexOf( t );
                         if( index < firstRow )
                             firstRow = index;
                         if( index > lastRow )
@@ -292,15 +298,16 @@ class FoldingTaskListModel extends TaskListModel {
             int rowCount = getRowCount();
             if( isExpanded ) {
                 for( Task t : removedTasks ) {
-                    int index = tasks.indexOf( t );
+                    int index = getTasksList().indexOf( t );
                     if( index < firstRow )
                         firstRow = index;
                     if( index > lastRow )
                         lastRow = index;
                 }
             }
-            synchronized( tasks ) {
-                tasks.removeAll( removedTasks );
+            synchronized( TASK_LOCK ) {
+                sortedTasks.removeAll( removedTasks );
+                tasksList = null;
             }            
             int startingRow = getFoldingGroupStartingRow( this );
             if( isEmpty() ) {
@@ -319,16 +326,17 @@ class FoldingTaskListModel extends TaskListModel {
             
             int rowCount = getRowCount();
             int startingRow = getFoldingGroupStartingRow( this );
-            synchronized( tasks ) {
-                tasks.clear();
+            synchronized( TASK_LOCK ) {
+                sortedTasks.clear();
+                tasksList = null;
             }
             
             fireTableRowsDeleted( startingRow, startingRow+rowCount );
         }
         
         public boolean isEmpty() {
-            synchronized( tasks ) {
-                return tasks.isEmpty();
+            synchronized( TASK_LOCK ) {
+                return sortedTasks.isEmpty();
             }
         }
         
@@ -361,18 +369,20 @@ class FoldingTaskListModel extends TaskListModel {
         }
         
         public int getRowCount() {
-            return isEmpty() ? 0 : (isExpanded ? 1+tasks.size() : 1);
+            synchronized( TASK_LOCK ) {
+                return isEmpty() ? 0 : (isExpanded ? 1+sortedTasks.size() : 1);
+            }
         }
         
         public int getTaskCount() {
-            synchronized( tasks ) {
-                return tasks.size();
+            synchronized( TASK_LOCK ) {
+                return sortedTasks.size();
             }
         }
         
         public Task getTaskAt( int index ) {
-            synchronized( tasks ) {
-                return tasks.get( index );
+            synchronized( TASK_LOCK ) {
+                return getTasksList().get( index );
             }
         }
     
@@ -391,6 +401,15 @@ class FoldingTaskListModel extends TaskListModel {
             return tg;
         }
         
+        private List<Task> getTasksList() {
+            synchronized ( TASK_LOCK ) {
+                if(tasksList == null) {
+                    tasksList = new ArrayList<Task>(sortedTasks);
+                }
+                return tasksList;
+            }
+        }
+    
         private Comparator<Task> getComparator() {
             if( null == comparator )
                 comparator = TaskComparator.getDefault();
@@ -401,9 +420,13 @@ class FoldingTaskListModel extends TaskListModel {
             if( getComparator().equals( newComparator ) )
                 return;
             comparator = newComparator;
-            synchronized( tasks ) {
-                if( !tasks.isEmpty() ) {
-                    Collections.sort( tasks, getComparator() );
+            synchronized( TASK_LOCK ) {
+                if( !sortedTasks.isEmpty() ) {
+                    
+                    TreeSet<Task> s = sortedTasks;
+                    sortedTasks = new TreeSet<Task>(comparator);
+                    tasksList = null;
+        
                     if( isExpanded() ) {
                         int firstRow = 0;
                         synchronized( groups ) {
