@@ -76,7 +76,7 @@ public class AccidentalAssignment extends JsErrorRule {
         return Collections.singleton("msg.equal.as.assign"); // NOI18N
     }
 
-    public void run(JsRuleContext context, Error error, List<Hint> result) {
+    public void run(RuleContext context, Error error, List<Hint> result) {
         JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         BaseDocument doc = context.doc;
 
@@ -129,12 +129,12 @@ public class AccidentalAssignment extends JsErrorRule {
 
     private static class ConvertAssignmentFix implements PreviewableFix {
 
-        private final JsRuleContext context;
+        private final RuleContext context;
         private final Node assignment;
         private final Error error;
         private final boolean ignore;
 
-        public ConvertAssignmentFix(JsRuleContext context, Node assignment, Error error, boolean ignore) {
+        public ConvertAssignmentFix(RuleContext context, Node assignment, Error error, boolean ignore) {
             this.context = context;
             this.assignment = assignment;
             this.error = error;
