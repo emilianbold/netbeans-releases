@@ -816,18 +816,19 @@ public class ImportProject implements PropertyChangeListener {
             makeLog = createTempFile("make"); // NOI18N
         }
         if(BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
-            if (executionEnvironment.isLocal()) {
-                try {
-                    HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                    switch (hostInfo.getOSFamily()) {
-                    case SUNOS:
-                    case LINUX:
-                        execLog = createTempFile("exec"); // NOI18N
-                        execLog.deleteOnExit();
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                switch (hostInfo.getOSFamily()) {
+                case SUNOS:
+                case LINUX:
+                    execLog = createTempFile("exec"); // NOI18N
+                    execLog.deleteOnExit();
+                    if (executionEnvironment.isRemote()) {
+                        remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName();
                     }
-                } catch (IOException ex) {
-                } catch (CancellationException ex) {
                 }
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
             }
         }
 
@@ -853,6 +854,20 @@ public class ImportProject implements PropertyChangeListener {
                 } else {
                     importResult.put(Step.Make, State.Fail);
                 }
+                if (executionEnvironment.isRemote()) {
+                    try {
+                        if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
+                            Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#download file {0}", makeLog.getAbsolutePath()); // NOI18N
+                            }
+                            /*int rc =*/ task.get();
+                        }
+                    } catch (Throwable ex) {
+                        Exceptions.printStackTrace(ex);
+                        execLog = null;
+                    }
+                }
                 discovery(rc, makeLog, execLog);
             }
         };
@@ -875,7 +890,11 @@ public class ImportProject implements PropertyChangeListener {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                 if (execLog != null) {
                     vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
-                    vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
+                    if (executionEnvironment.isLocal()) {
+                        vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
+                    } else {
+                        vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+remoteExecLog); // NOI18N
+                    }
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -1193,6 +1212,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private File makeLog = null;
     private File execLog = null;
+    private String remoteExecLog = null;
     public void setMakeLog(File makeLog) {
         this.makeLog = makeLog;
     }

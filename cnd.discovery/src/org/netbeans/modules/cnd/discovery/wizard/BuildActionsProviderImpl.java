@@ -53,6 +53,7 @@ import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -62,6 +63,10 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -195,8 +200,24 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         private void invokeWizard(Project project, String fileName) {
             DiscoveryProvider provider = null;
             if (execLog != null) {
-                provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
-            } else {
+                ExecutionEnvironment executionEnvironment = events[1].getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                if (executionEnvironment.isRemote()) {
+                    try {
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                        String remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName();
+                        if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
+                            Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
+                            /*int rc =*/ task.get();
+                            provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+                        }
+                    } catch (Throwable ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    provider = DiscoveryExtension.findProvider("exec-log"); // NOI18N
+                }
+            }
+            if (provider == null) {
                 provider = DiscoveryExtension.findProvider("make-log"); // NOI18N
             }
             if (provider == null) {
