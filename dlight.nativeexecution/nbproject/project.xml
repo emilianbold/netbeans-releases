@@ -32,14 +32,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.terminal</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.libs.jna</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -77,6 +69,14 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.terminal</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -158,6 +158,10 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.dlight.libs.common</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -176,6 +180,7 @@
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
+                <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>
@@ -189,6 +194,7 @@
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
                 <friend>com.sun.tools.dlight.apache</friend>
                 <friend>com.sun.tools.dlight.attachsupport</friend>
@@ -203,6 +209,8 @@
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
                 <friend>com.sun.tools.dlight.util</friend>
+                <friend>com.sun.tools.ide.remote</friend>
+                <friend>com.sun.tools.ide.remote.project</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
@@ -249,6 +257,7 @@
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.nativeexecution.terminal</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.execution</package>

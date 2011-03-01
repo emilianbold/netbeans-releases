@@ -83,6 +83,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -156,7 +157,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (file == null) {
             return null;
         }        
-        String absPath = CndFileUtils.getNormalizedPath(fo);
+        String absPath = CndFileUtils.normalizePath(fo);
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
@@ -423,7 +424,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public Object getProject() {
+        public Lookup.Provider getProject() {
             return null;
         }
 
@@ -562,7 +563,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         
         @Override
         public String getAbsolutePath() {
-            return CndFileUtils.getNormalizedPath(fileObject);
+            return CndFileUtils.normalizePath(fileObject);
             }
 
         @Override

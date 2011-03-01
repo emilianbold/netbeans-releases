@@ -102,7 +102,7 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
 
     @Override
     protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
-        FileObject file = elem.getParserResult().getFileObject();
+        FileObject file = elem.getSnapshot().getSource().getFileObject();
         ModificationResult modificationResult = new ModificationResult();
         List<Difference> differences = new ArrayList<Difference>();
 

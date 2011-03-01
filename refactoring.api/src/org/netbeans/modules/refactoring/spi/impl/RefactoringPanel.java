@@ -207,6 +207,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         // put the toolbar to the panel. If the getToolBar() returns null,
         // suppose the toolbar does not exist.
         JToolBar toolBar = getToolBar();
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            toolBar.setBackground(UIManager.getColor("NbExplorerView.background"));
+            southPanel.setBackground(UIManager.getColor("NbExplorerView.background"));
+        }
         if (toolBar != null)
             left.add(toolBar, BorderLayout.WEST);
         validate();
@@ -719,7 +723,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                 tree.setToggleClickCount(0);
                                 tree.setTransferHandler(new TransferHandlerImpl());
                                 scrollPane = new JScrollPane(tree);
-                                scrollPane.setBorder(new EmptyBorder(0,0,0,0));
+                                    scrollPane.setBorder(new EmptyBorder(0,0,0,0));
                                 RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
                                 RefactoringPanel.this.validate();
                             } else {

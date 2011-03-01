@@ -87,6 +87,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Inot Hosts",1); // NOI18N
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
@@ -155,7 +156,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     /*package*/static void updateToolchainsComponents(JComboBox hostComboBox, JComboBox toolchainComboBox, 
-            Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enableHost, boolean enableToolchain) {
+            Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enableHost, boolean enableToolchain) {
 
         hostComboBox.removeAllItems();
         toolchainComboBox.removeAllItems();
@@ -165,7 +166,21 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
             hostComboBox.setSelectedItem(srToSelect);
             updateToolchains(toolchainComboBox, srToSelect);
-            toolchainComboBox.setSelectedItem(csToSelect);
+            for(int i = 0; i < toolchainComboBox.getModel().getSize(); i++) {
+                Object elementAt = toolchainComboBox.getModel().getElementAt(i);
+                if (elementAt instanceof ToolCollectionItem) {
+                    ToolCollectionItem item = (ToolCollectionItem) elementAt;
+                    if (isDefaultCompilerSet && item.isDefaultCompilerSet()) {
+                        toolchainComboBox.setSelectedIndex(i);
+                        break;
+                    } else {
+                        if (item.getCompilerSet().equals(csToSelect)) {
+                            toolchainComboBox.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
+            }
             hostComboBox.setEnabled(enableHost);
             toolchainComboBox.setEnabled(enableToolchain);
         }
@@ -711,12 +726,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
         String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+        boolean isDefaultCompilerSet = Boolean.TRUE.equals(settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         Boolean readOnlyToolchain = (Boolean) settings.getProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN);
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, 
+        RP.post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet,
                 readOnlyToolchain, (ToolsCacheManager) settings.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) {
             @Override
-            public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
-                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled, enabled);
+            public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabled, enabled);
                 initialized = true;
                 controller.fireChangeEvent(); // Notify that the panel changed
             }
@@ -932,6 +948,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     /*package*/ abstract static class DevHostsInitializer implements Runnable {
         private final String hostUID;
         private final CompilerSet cs;
+        private final boolean isDefaultCompilerSet;
         private final boolean readOnlyUI;
         private final ToolsCacheManager toolsCacheManager;
         
@@ -940,9 +957,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         private ServerRecord srToSelect;
         private CompilerSet csToSelect;
         
-        public DevHostsInitializer(String hostUID, CompilerSet cs, Boolean readOnlyToolchain, ToolsCacheManager toolsCacheManager) {
+        public DevHostsInitializer(String hostUID, CompilerSet cs, boolean isDefaultCompilerSet, Boolean readOnlyToolchain, ToolsCacheManager toolsCacheManager) {
             this.hostUID = hostUID;
             this.cs = cs;
+            this.isDefaultCompilerSet = isDefaultCompilerSet;
             this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain.booleanValue();
             this.toolsCacheManager = toolsCacheManager;
         }
@@ -978,11 +996,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     SwingUtilities.invokeLater(this);
                 }
             } else {
-                updateComponents(this.records, this.srToSelect, this.csToSelect, !readOnlyUI);
+                updateComponents(records, srToSelect, csToSelect, isDefaultCompilerSet, !readOnlyUI);
             }
         }
 
-        public abstract void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled);
+        public abstract void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect,
+                CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled);
     }
 
     public final static class ToolCollectionItem {

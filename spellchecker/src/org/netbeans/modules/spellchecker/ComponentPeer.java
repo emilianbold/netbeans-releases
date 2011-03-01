@@ -91,6 +91,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.editor.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.api.LocaleQuery;
 import org.netbeans.modules.spellchecker.hints.AddToDictionaryHint;
@@ -409,10 +411,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     });
                 }
                 
-                FileObject file = getFile(_document);
+                FileObject file = NbEditorUtilities.getFileObject(_document);
 
-                Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
-                        new Object[] {file, System.currentTimeMillis() - startTime});
+                if (file != null) {
+                    Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
+                            new Object[] {file, System.currentTimeMillis() - startTime});
+                }
             }
         }
     }

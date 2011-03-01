@@ -61,7 +61,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
@@ -88,12 +87,12 @@ import org.netbeans.modules.dlight.spi.indicator.PersistentIndicator;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -111,7 +110,6 @@ public final class TimeSeriesIndicator
     private GraphPanel<TimeSeriesPlot, Legend> panel;
     private TimeSeriesPlot graph;
     private Legend legend;
-    private JButton button;
     private final int timeSeriesCount;
     private int tickCounter;
     private List<Action> popupActions;
@@ -146,9 +144,9 @@ public final class TimeSeriesIndicator
         this.graph = createGraph(configuration, data);
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.legend = new Legend(timeSeriesList, detailsList);
-        this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
+        
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
-                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), getActions());
         panel.setPopupActions(popupActions);
     }
 
@@ -347,7 +345,7 @@ public final class TimeSeriesIndicator
             return Collections.emptyList();
         }
     }
-    
+
     // TODO: perhaps need to redesign this... 
     public boolean initFromStorage(SQLDataStorage storage, String query) {
         if (1 < data.size()) {
@@ -370,11 +368,11 @@ public final class TimeSeriesIndicator
                     rs.close();
                 }
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(storage, ex);
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -402,7 +400,7 @@ public final class TimeSeriesIndicator
                     rs.close();
                 }
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
                 return false;
             }
         }
@@ -422,7 +420,7 @@ public final class TimeSeriesIndicator
                 }
                 detailsValues = map;
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
                 return false;
             }
         }

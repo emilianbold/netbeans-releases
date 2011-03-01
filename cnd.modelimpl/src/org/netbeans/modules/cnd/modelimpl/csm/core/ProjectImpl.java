@@ -176,7 +176,7 @@ public final class ProjectImpl extends ProjectBase {
             // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
             if (undo) {
                 // but we need to call in case of undo when there are no external modifications
-                DeepReparsingUtils.reparseOnChangedFile(file, this);
+                DeepReparsingUtils.reparseOnEditingFile(this, file);
             }
         }
     }

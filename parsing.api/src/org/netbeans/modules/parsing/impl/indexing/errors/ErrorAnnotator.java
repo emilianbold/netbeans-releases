@@ -393,7 +393,9 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         }
 
         private void update(FileEvent fe) {
-            if (RepositoryUpdater.getDefault().getOwningSourceRoot(fe.getFile()) == null) {
+            final RepositoryUpdater ru = RepositoryUpdater.getDefault();
+            final FileObject fo = fe.getFile();
+            if (!ru.isCacheFile(fo) && ru.getOwningSourceRoot(fo) == null) {
                 try {
                     update(fe.getFile().getURL());
                 } catch (FileStateInvalidException ex) {

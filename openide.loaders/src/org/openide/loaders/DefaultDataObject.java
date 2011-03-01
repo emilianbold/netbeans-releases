@@ -130,7 +130,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
                 // file without separator
                 getPrimaryFile ().rename (lock, name, null);
             } else if (pos == 0){
-                getPrimaryFile ().rename (lock, name, getPrimaryFile ().getExt ());
+                getPrimaryFile ().rename (lock, name, null);
             } else {
                 if (!name.equals(getPrimaryFile ().getNameExt())){
                     getPrimaryFile ().rename (lock, name.substring(0, pos), 

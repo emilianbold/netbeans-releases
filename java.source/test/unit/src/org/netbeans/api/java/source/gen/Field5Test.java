@@ -56,7 +56,7 @@ import org.netbeans.modules.java.source.transform.Transformer;
  * 
  * @author Pavel Flaska
  */
-public class Field5Test extends GeneratorTest {
+public class Field5Test extends GeneratorTestBase {
     
     /**
      * Creates a new instance of Field5Test

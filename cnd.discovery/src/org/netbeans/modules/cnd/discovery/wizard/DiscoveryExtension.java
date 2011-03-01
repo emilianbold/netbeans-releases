@@ -115,7 +115,12 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         progress.start(0);
         try {
             List<String> errors = new  ArrayList<String>();
-            DiscoveryExtensionInterface.Applicable applicable = isApplicableDwarfExecutable(descriptor);
+            DiscoveryExtensionInterface.Applicable applicable;
+            applicable = isApplicableExecLog(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
+            }
+            applicable = isApplicableDwarfExecutable(descriptor);
             if (applicable.isApplicable()){
                 return applicable;
             }
@@ -217,7 +222,34 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 if (canAnalyze.getErrors().size() > 0) {
                     return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
                 } else {
-                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeFolder",rootFolder))); // NOI18N
+                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeBuildLog",logFile))); // NOI18N
+                }
+            }
+        }
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
+    }
+    
+    private DiscoveryExtensionInterface.Applicable  isApplicableExecLog(DiscoveryDescriptor descriptor){
+        String rootFolder = descriptor.getRootFolder();
+        if (rootFolder == null) {
+            return ApplicableImpl.getNotApplicable(null);
+        }
+        String logFile = descriptor.getExecLog();
+        ProjectProxy proxy = new ProjectProxyImpl(descriptor);
+        DiscoveryProvider provider = findProvider("exec-log"); // NOI18N
+        if (provider != null) {
+            provider.getProperty("exec-log-file").setValue(logFile); // NOI18N
+            if (provider.isApplicable(proxy)){
+                Applicable canAnalyze = provider.canAnalyze(proxy);
+                if (canAnalyze.isApplicable()){
+                    descriptor.setProvider(provider);
+                    return canAnalyze;
+                } else {
+                    if (canAnalyze.getErrors().size() > 0) {
+                        return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
+                    } else {
+                        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeBuildLog",logFile))); // NOI18N
+                    }
                 }
             }
         }
@@ -259,6 +291,9 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             String rootFolder = descriptor.getRootFolder();
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
         } else if ("make-log".equals(provider.getID())){ // NOI18N
+            //String rootFolder = descriptor.getRootFolder();
+            //provider.getProperty("folder").setValue(rootFolder); // NOI18N
+        } else if ("exec-log".equals(provider.getID())){ // NOI18N
             //String rootFolder = descriptor.getRootFolder();
             //provider.getProperty("folder").setValue(rootFolder); // NOI18N
         } else {

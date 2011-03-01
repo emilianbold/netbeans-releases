@@ -605,6 +605,10 @@ public class CasualDiff {
             parameterPrint = false;
             printer.setPrec(old);
         }
+        //make sure the ')' is printed:
+        moveFwdToToken(tokenSequence, posHint, JavaTokenId.RPAREN);
+        tokenSequence.moveNext();
+        posHint = tokenSequence.offset();
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
         // if abstract, hint is before ending semi-colon, otherwise before method body
@@ -631,7 +635,8 @@ public class CasualDiff {
         } else {
             posHint = oldT.thrown.iterator().next().getStartPosition();
         }
-        copyTo(localPointer, localPointer = posHint);
+        if (!newT.thrown.isEmpty()) //do not copy the "throws" keyword:
+            copyTo(localPointer, localPointer = posHint);
         PositionEstimator est = EstimatorFactory.throwz(oldT.getThrows(), newT.getThrows(), diffContext);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
         if (oldT.defaultValue != newT.defaultValue) {
@@ -1771,10 +1776,24 @@ public class CasualDiff {
         }
 
         int startPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
+        int firstAnnotationPos = !oldT.getAnnotations().isEmpty() ? getOldPos(oldT.getAnnotations().head) : -1;
+        int endOffset = endPos(oldT);
+
+        //TODO: cannot currently match intermixed annotations and flags/keywords (#196053)
+        //but at least handle case where annotations are after the keywords:
+        if (startPos < firstAnnotationPos) {
+            //first modifiers, then annotations:
+            if (oldT.flags != newT.flags) {
+                copyTo(localPointer, startPos);
+                printer.printFlags(newT.flags & ~Flags.INTERFACE, oldT.getFlags().isEmpty() ? true : false);
+                tokenSequence.move(firstAnnotationPos);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                tokenSequence.moveNext();
+                localPointer = tokenSequence.offset();
+            }
+        }
         
         localPointer = diffAnnotationsLists(oldT.getAnnotations(), newT.getAnnotations(), startPos, localPointer);
-
-        int endOffset = endPos(oldT);
 
         if ((oldT.flags & Flags.ANNOTATION) != 0) {
             tokenSequence.move(endOffset);
@@ -1785,7 +1804,7 @@ public class CasualDiff {
 
             endOffset = tokenSequence.offset();
         }
-        if (oldT.flags != newT.flags) {
+        if (oldT.flags != newT.flags && !(startPos < firstAnnotationPos)) {
             if (localPointer == startPos) {
                 // no annotation printed, do modifiers print immediately
                 if ((newT.flags & ~Flags.INTERFACE) != 0) {
@@ -3069,8 +3088,15 @@ public class CasualDiff {
                 return oldBounds[1];
             }
         }
-
-        elementBounds[1] = Math.min(elementBounds[1], Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING)));
+        
+        int commentsStart = Math.min(commentStart(comments.getComments(oldT), CommentSet.RelativePosition.INLINE), commentStart(comments.getComments(oldT), CommentSet.RelativePosition.TRAILING));
+        if (commentsStart < elementBounds[1]) {
+            int lastIndex;
+            tokenSequence.move(commentsStart);
+            elementBounds[1] = tokenSequence.movePrevious() && tokenSequence.token().id() == JavaTokenId.WHITESPACE &&
+                    (lastIndex = tokenSequence.token().text().toString().lastIndexOf('\n')) > -1 ?
+                    tokenSequence.offset() + lastIndex + 1 : commentsStart;
+        }
 
         switch (oldT.getTag()) {
           case JCTree.TOPLEVEL:

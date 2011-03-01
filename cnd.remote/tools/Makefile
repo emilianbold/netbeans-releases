@@ -49,7 +49,7 @@ CC-Mac_OS_X := gcc
 DEBUG := -g
 
 CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE
-CFLAGS-Linux := ${CFLAGS-COMMON} -Wimplicit -Werror -std=c99
+CFLAGS-Linux := ${CFLAGS-COMMON} -Wreturn-type -Wimplicit -Werror -std=c99
 CFLAGS-SunOS := ${CFLAGS-COMMON} -xc99 -errwarn
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 

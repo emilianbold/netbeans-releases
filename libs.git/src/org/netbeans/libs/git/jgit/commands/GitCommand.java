@@ -42,6 +42,8 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import org.eclipse.jgit.JGitText;
+import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -89,4 +91,18 @@ public abstract class GitCommand {
     }
 
     protected abstract String getCommandDescription ();
+    
+    
+    protected void handleException (TransportException e) throws GitException.AuthorizationException, GitException {
+        String message = e.getMessage();
+        int pos;
+        if ((pos = message.indexOf(": " + JGitText.get().notAuthorized)) != -1) { //NOI18N
+            String repositoryUrl = message.substring(0, pos);
+            throw new GitException.AuthorizationException(repositoryUrl, message, e);
+        } else if (message.contains(JGitText.get().notAuthorized)) { //NOI18N
+            throw new GitException.AuthorizationException(message, e);
+        } else {
+            throw new GitException(e.getMessage(), e);
+        }
+    }
 }

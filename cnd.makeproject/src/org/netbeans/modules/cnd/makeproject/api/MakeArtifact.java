@@ -108,8 +108,13 @@ public class MakeArtifact {
             cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
         } else {
             workingDirectory = projectLocation;
-            buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-            cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+            if (!pd.getProjectMakefileName().isEmpty()) {
+                buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+            } else {
+                buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName + " clean"; // NOI18N
+            }
         }
 
         switch (makeConfiguration.getConfigurationType().getValue()) {

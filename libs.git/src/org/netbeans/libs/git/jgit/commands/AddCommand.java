@@ -53,6 +53,7 @@ import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectInserter;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
@@ -108,6 +109,7 @@ public class AddCommand extends GitCommand {
                 treeWalk.addTree(new DirCacheBuildIterator(builder));
                 treeWalk.addTree(new FileTreeIterator(repository));
                 String lastAddedFile = null;
+                boolean checkExecutable = Utils.checkExecutable(repository);
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     WorkingTreeIterator f = treeWalk.getTree(1, WorkingTreeIterator.class);
@@ -120,7 +122,11 @@ public class AddCommand extends GitCommand {
                             DirCacheEntry entry = new DirCacheEntry(path);
                             entry.setLength(sz);
                             entry.setLastModified(f.getEntryLastModified());
-                            entry.setFileMode(f.getEntryFileMode());
+                            int fm = f.getEntryFileMode().getBits();
+                            if (!checkExecutable) {
+                                fm = fm & ~0111;
+                            }
+                            entry.setFileMode(FileMode.fromBits(fm));
                             InputStream in = f.openEntryStream();
                             try {
                                 entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));

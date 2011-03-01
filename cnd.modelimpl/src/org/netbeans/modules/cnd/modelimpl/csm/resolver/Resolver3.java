@@ -636,225 +636,243 @@ public final class Resolver3 implements Resolver {
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
-        CsmNamespace containingNS = null;
 
         if( nameTokens.length == 1 ) {
-            if( result == null && needClassifiers()) {
-                CsmClass cls = context.getContainingClass();
-                result = resolveInClass(cls, nameTokens[0]);
-                if( result == null ) {
-                    if (parentResolver == null || !((Resolver3)parentResolver).resolveInBaseClass) {
-                        result = resolveInBaseClasses(cls, nameTokens[0]);
+            result = resolveSimpleName(result, nameTokens[0], interestedKind);
+        } else if( nameTokens.length > 1 ) {
+            result = resolveCompoundName(nameTokens, result, interestedKind);
+        }
+        return result;
+    }
+
+    private CsmObject resolveSimpleName(CsmObject result, CharSequence name, int interestedKind) {
+        CsmNamespace containingNS = null;
+        if (result == null && needClassifiers()) {
+            CsmClass cls = context.getContainingClass();
+            result = resolveInClass(cls, name);
+            if (result == null) {
+                if (parentResolver == null || !((Resolver3) parentResolver).resolveInBaseClass) {
+                    result = resolveInBaseClasses(cls, name);
+                    if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
+                        result = null;
                     }
+                }
+            }
+        }
+        if (result == null && needClassifiers()) {
+            containingNS = context.getContainingNamespace();
+            result = findClassifier(containingNS, name);
+            if (result == null && containingNS != null) {
+                result = resolveInUsings(containingNS, name);
+            }
+        }
+        if (result == null && needNamespaces()) {
+            containingNS = context.getContainingNamespace();
+            result = findNamespace(containingNS, name);
+        }
+        if (result == null && needClassifiers()) {
+            result = findClassifierUsedInFile(name);
+            if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
+                result = null;
+            }
+        }
+        if (result == null) {
+            gatherMaps(file, true, origOffset);
+            if (currLocalClassifier != null && needClassifiers()) {
+                result = currLocalClassifier;
+            }
+            if (currTypedef != null && needClassifiers()) {
+                result = currTypedef;
+            }
+            if (result == null) {
+                CsmDeclaration decl = usingDeclarations.get(CharSequences.create(name));
+                if (decl != null) {
+                    result = decl;
                 }
             }
             if (result == null && needClassifiers()) {
-                containingNS = context.getContainingNamespace();
-                result = findClassifier(containingNS, nameTokens[0]);
-                if (result == null && containingNS != null) {
-                    result = resolveInUsings(containingNS, nameTokens[0]);
-                }
-            }
-            if( result == null  && needNamespaces()) {
-                containingNS = context.getContainingNamespace();
-                result = findNamespace(containingNS, nameTokens[0]);
-            }
-            if (result == null  && needClassifiers()){
-                result = findClassifierUsedInFile(nameTokens[0]);
-            }
-            if( result == null ) {
-                gatherMaps(file, true, origOffset);
-                if( currLocalClassifier != null && needClassifiers()) {
-                    result = currLocalClassifier;
-                }
-                if( currTypedef != null && needClassifiers()) {
-                    result = currTypedef;
-                }
-
-                if( result == null ) {
-                    CsmDeclaration decl = usingDeclarations.get(CharSequences.create(nameTokens[0]));
-                    if( decl != null ) {
-                        result = decl;
+                for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                    String nsp = iter.next().toString();
+                    String fqn = nsp + "::" + name; // NOI18N
+                    result = findClassifierUsedInFile(fqn);
+                    if (result == null) {
+                        result = findClassifier(containingNS, fqn);
                     }
-                }
-
-                if( result == null && needClassifiers()) {
-                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
-                        String nsp = iter.next().toString();
-                        String fqn = nsp + "::" + nameTokens[0]; // NOI18N
-                        result = findClassifierUsedInFile(fqn);
-                        if (result == null) {
-                            result = findClassifier(containingNS, fqn);
-                        }
-                        if (result == null) {
-                            CsmNamespace ns = findNamespace(nsp);
-                            if (ns != null) {
-                                result = resolveInUsings(ns, nameTokens[0]);
-                            }
-                        }
-                        if( result != null ) {
-                            break;
+                    if (result == null) {
+                        CsmNamespace ns = findNamespace(nsp);
+                        if (ns != null) {
+                            result = resolveInUsings(ns, name);
                         }
                     }
-                }
-
-                if( result == null && needNamespaces()) {
-                    Object o = namespaceAliases.get(CharSequences.create(nameTokens[0]));
-                    if( o instanceof CsmNamespace ) {
-                        result = (CsmNamespace) o;
-                    }
-                }
-
-                if( result == null && needNamespaces()) {
-                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
-                        String nsp = iter.next().toString();
-                        String fqn = nsp + "::" + nameTokens[0]; // NOI18N
-                        result = findNamespace(fqn);
-                        if( result != null ) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if( result == null ) {
-                if(TemplateUtils.isTemplateQualifiedName(nameTokens[0].toString())) {
-                    Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
-                    try {
-                        result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString())), interestedKind);
-                    } finally {
-                        ResolverFactory.releaseResolver(aResolver);
-                    }
-                }
-            }
-        } else if( nameTokens.length > 1 ) {
-            StringBuilder sb = new StringBuilder(nameTokens[0]);
-            for (int i = 1; i < nameTokens.length; i++) {
-                sb.append("::"); // NOI18N
-                sb.append(nameTokens[i]);
-            }
-            if (needClassifiers()) {
-                result = findClassifierUsedInFile(sb.toString());
-            }
-            if( result == null && needClassifiers()) {
-                containingNS = context.getContainingNamespace();
-                result = findClassifier(containingNS, sb.toString());
-            }
-            if( result == null && needNamespaces()) {
-                containingNS = context.getContainingNamespace();
-                result = findNamespace(containingNS, sb.toString());
-            }
-            if( result == null && needClassifiers()) {
-                gatherMaps(file, true, origOffset);
-                if( currTypedef != null) {
-                    CsmType type = currTypedef.getType();
-                    if( type != null ) {
-                        CsmClassifier currentClassifier = getTypeClassifier(type);
-                        while (currNamIdx < names.length -1 && currentClassifier != null) {
-                            currNamIdx++;
-                            currentClassifier = findNestedClassifier(currentClassifier);
-                            if (CsmKindUtilities.isTypedef(currentClassifier)) {
-                                CsmType curType = ((CsmTypedef)currentClassifier).getType();
-                                currentClassifier = curType == null ? null : getTypeClassifier(curType);
-                            }
-                        }
-                        if (currNamIdx == names.length - 1) {
-                            result = currentClassifier;
-                        }
-                    }
-                }
-
-                if( result == null ) {
-                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
-                        String nsp = iter.next().toString();
-                        String fqn = nsp + "::" + sb; // NOI18N
-                        result = findClassifierUsedInFile(fqn);
-                        if( result != null ) {
-                            break;
-                        }
-                    }
-                }
-
-                if( result == null ) {
-                    CsmObject first = null;
-                    Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
-                    try {
-                        first = aResolver.resolve(Utils.splitQualifiedName(nameTokens[0].toString()), NAMESPACE);
-                    } finally {
-                        ResolverFactory.releaseResolver(aResolver);
-                    }
-                    if( first != null ) {
-                        if( first instanceof CsmNamespace ) {
-                            NamespaceImpl ns = (NamespaceImpl) first;
-                            sb = new StringBuilder(ns.getQualifiedName());
-                            for (int i = 1; i < nameTokens.length; i++) {
-                                sb.append("::"); // NOI18N
-                                sb.append(nameTokens[i]);
-                            }
-                            result = findClassifierUsedInFile(sb.toString());
-                            if (result == null) {
-                                sb = new StringBuilder(nameTokens[1]);
-                                for (int i = 2; i < nameTokens.length; i++) {
-                                    sb.append("::"); // NOI18N
-                                    sb.append(nameTokens[i]);
-                                }
-                                result = resolveInUsings(ns, sb.toString());
-                            }
-                        } else if( first instanceof CsmClass ) {
-
-                        }
+                    if (result != null) {
+                        break;
                     }
                 }
             }
             if (result == null && needNamespaces()) {
-                CsmObject obj = null;
+                Object o = namespaceAliases.get(CharSequences.create(name));
+                if (o instanceof CsmNamespace) {
+                    result = (CsmNamespace) o;
+                }
+            }
+            if (result == null && needNamespaces()) {
+                for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                    String nsp = iter.next().toString();
+                    String fqn = nsp + "::" + name; // NOI18N
+                    result = findNamespace(fqn);
+                    if (result != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            if (TemplateUtils.isTemplateQualifiedName(name.toString())) {
                 Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
                 try {
-                    obj = aResolver.resolve(Utils.splitQualifiedName(nameTokens[0].toString()), NAMESPACE);
+                    result = aResolver.resolve(Utils.splitQualifiedName(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(name.toString())), TEMPLATE_CLASS);
                 } finally {
                     ResolverFactory.releaseResolver(aResolver);
                 }
-                if (obj instanceof CsmNamespace) {
-                    CsmNamespace ns = (CsmNamespace) obj;
-                    for (int i = 1; i < nameTokens.length; i++) {
-                        CsmNamespace newNs = null;
-                        CharSequence name = nameTokens[i];
-                        Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases(ns);
-                        for (CsmNamespaceAlias alias : aliases) {
-                            if (alias.getAlias().toString().equals(name.toString())) {
-                                newNs = alias.getReferencedNamespace();
-                                break;
-                            }
+            }
+        }
+        if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
+            result = null;
+        }
+        return result;
+    }
+
+    private String fullName(CharSequence[] nameTokens) {
+        StringBuilder sb = new StringBuilder(nameTokens[0]);
+        for (int i = 1; i < nameTokens.length; i++) {
+            sb.append("::"); // NOI18N
+            sb.append(nameTokens[i]);
+        }
+        return sb.toString();
+    }
+
+    private CsmObject resolveCompoundName(CharSequence[] nameTokens, CsmObject result, int interestedKind) {
+        CsmNamespace containingNS = null;
+        String fullName = fullName(nameTokens);
+        if (needClassifiers()) {
+            result = findClassifierUsedInFile(fullName);
+        }
+        if (result == null && needClassifiers()) {
+            containingNS = context.getContainingNamespace();
+            result = findClassifier(containingNS, fullName);
+        }
+        if (result == null && needNamespaces()) {
+            containingNS = context.getContainingNamespace();
+            result = findNamespace(containingNS, fullName);
+        }
+        if (result == null && needClassifiers()) {
+            gatherMaps(file, true, origOffset);
+            if (currTypedef != null) {
+                CsmType type = currTypedef.getType();
+                if (type != null) {
+                    CsmClassifier currentClassifier = getTypeClassifier(type);
+                    while (currNamIdx < names.length - 1 && currentClassifier != null) {
+                        currNamIdx++;
+                        currentClassifier = findNestedClassifier(currentClassifier);
+                        if (CsmKindUtilities.isTypedef(currentClassifier)) {
+                            CsmType curType = ((CsmTypedef) currentClassifier).getType();
+                            currentClassifier = curType == null ? null : getTypeClassifier(curType);
                         }
-                        if (newNs == null) {
-                            Collection<CsmNamespace> namespaces = ns.getNestedNamespaces();
-                            for (CsmNamespace namespace : namespaces) {
-                                if (namespace.getName().toString().equals(name.toString())) {
-                                    newNs = namespace;
-                                    break;
-                                }
-                            }
+                    }
+                    if (currNamIdx == names.length - 1) {
+                        result = currentClassifier;
+                    }
+                }
+            }
+            if (result == null) {
+                for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                    String nsp = iter.next().toString();
+                    String fqn = nsp + "::" + fullName; // NOI18N
+                    result = findClassifierUsedInFile(fqn);
+                    if (result != null) {
+                        break;
+                    }
+                }
+            }
+            if (result == null) {
+                CsmObject first = null;
+                Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
+                try {
+                    first = aResolver.resolve(Utils.splitQualifiedName(nameTokens[0].toString()), NAMESPACE);
+                } finally {
+                    ResolverFactory.releaseResolver(aResolver);
+                }
+                if (first != null) {
+                    if (first instanceof CsmNamespace) {
+                        NamespaceImpl ns = (NamespaceImpl) first;
+                        StringBuilder sb = new StringBuilder(ns.getQualifiedName());
+                        for (int i = 1; i < nameTokens.length; i++) {
+                            sb.append("::"); // NOI18N
+                            sb.append(nameTokens[i]);
                         }
-                        ns = newNs;
-                        if (ns == null) {
+                        result = findClassifierUsedInFile(sb.toString());
+                        if (result == null) {
+                            sb = new StringBuilder(nameTokens[1]);
+                            for (int i = 2; i < nameTokens.length; i++) {
+                                sb.append("::"); // NOI18N
+                                sb.append(nameTokens[i]);
+                            }
+                            result = resolveInUsings(ns, sb.toString());
+                        }
+                    } else if (first instanceof CsmClass) {
+                    }
+                }
+            }
+        }
+        if (result == null && needNamespaces()) {
+            CsmObject obj = null;
+            Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
+            try {
+                obj = aResolver.resolve(Utils.splitQualifiedName(nameTokens[0].toString()), NAMESPACE);
+            } finally {
+                ResolverFactory.releaseResolver(aResolver);
+            }
+            if (obj instanceof CsmNamespace) {
+                CsmNamespace ns = (CsmNamespace) obj;
+                for (int i = 1; i < nameTokens.length; i++) {
+                    CsmNamespace newNs = null;
+                    CharSequence name = nameTokens[i];
+                    Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases(ns);
+                    for (CsmNamespaceAlias alias : aliases) {
+                        if (alias.getAlias().toString().equals(name.toString())) {
+                            newNs = alias.getReferencedNamespace();
                             break;
                         }
                     }
-                    result = ns;
+                    if (newNs == null) {
+                        Collection<CsmNamespace> namespaces = ns.getNestedNamespaces();
+                        for (CsmNamespace namespace : namespaces) {
+                            if (namespace.getName().toString().equals(name.toString())) {
+                                newNs = namespace;
+                                break;
+                            }
+                        }
+                    }
+                    ns = newNs;
+                    if (ns == null) {
+                        break;
+                    }
                 }
+                result = ns;
             }
-            if( result == null ) {
-                if( TemplateUtils.isTemplateQualifiedName(sb.toString())) {
-                    StringBuilder sb2 = new StringBuilder(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString()));
-                    for (int i = 1; i < nameTokens.length; i++) {
-                        sb2.append("::"); // NOI18N
-                        sb2.append(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[i].toString()));
-                    }
-                    Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
-                    try {
-                        result = aResolver.resolve(Utils.splitQualifiedName(sb2.toString()), interestedKind);
-                    } finally {
-                        ResolverFactory.releaseResolver(aResolver);
-                    }
+        }
+        if (result == null) {
+            if (TemplateUtils.isTemplateQualifiedName(fullName.toString())) {
+                StringBuilder sb2 = new StringBuilder(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString()));
+                for (int i = 1; i < nameTokens.length; i++) {
+                    sb2.append("::"); // NOI18N
+                    sb2.append(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[i].toString()));
+                }
+                Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
+                try {
+                    result = aResolver.resolve(Utils.splitQualifiedName(sb2.toString()), interestedKind);
+                } finally {
+                    ResolverFactory.releaseResolver(aResolver);
                 }
             }
         }
@@ -964,7 +982,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private boolean needClassifiers() {
-        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses();
+        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses() || needTemplateClasses();
     }
 
     private boolean needNamespaces() {
@@ -972,6 +990,14 @@ public final class Resolver3 implements Resolver {
     }
 
     private boolean needClasses() {
-        return (interestedKind & CLASS) == CLASS;
+        return (interestedKind & CLASS) == CLASS || needTemplateClasses();
+    }
+
+    private boolean needTemplateClasses() {
+        return (interestedKind & TEMPLATE_CLASS) == TEMPLATE_CLASS;
+    }
+    
+    private boolean needTemplateClassesOnly() {
+        return interestedKind == TEMPLATE_CLASS;
     }
 }

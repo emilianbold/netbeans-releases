@@ -6,6 +6,14 @@
             <code-name-base>org.netbeans.modules.cnd.utils</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.libs.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.utilities</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -73,12 +81,16 @@
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.sun.tools.analytics.codemodel.bridge</friend>
+                <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
@@ -89,6 +101,7 @@
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.cesredirector</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>

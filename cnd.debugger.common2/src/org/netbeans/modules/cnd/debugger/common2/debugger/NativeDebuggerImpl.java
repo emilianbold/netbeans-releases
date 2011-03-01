@@ -268,7 +268,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private PathMap cachedPathMap;
     private boolean lookedPathMap;
 
-    public final PathMap getPathMap() {
+    private PathMap getPathMap() {
 	if (!lookedPathMap) {
 	    lookedPathMap = true;
 	    Configuration conf = getNDI().getConfiguration();
@@ -1272,10 +1272,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         private StateListener runToCursorListener = null;
 
         // interface Controller
-        abstract public void requestDis();
+        abstract public void requestDis(boolean withSource);
 
         // interface Controller
-        abstract public void requestDis(String start, int count);
+        abstract public void requestDis(String start, int count, boolean withSource);
 
 
 	protected abstract void setBreakpointHelp(String address);
@@ -1548,7 +1548,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    this.location = location;
 
             if (retrieve && !inRange(location.pc())) {
-		disController().requestDis();
+		disController().requestDis(true);
             } else {
                 for (Listener l : listeners) {
                     l.stateUpdated();

@@ -140,6 +140,10 @@ public abstract class CsmResultItem implements CompletionItem {
         this.hint = hint;
     }
     
+    protected SubstitutionHint getHint() {
+        return this.hint;
+    }
+    
     protected static Color getTypeColor(CsmType type) {
         return type.isBuiltInBased(false) ? KEYWORD_COLOR : TYPE_COLOR;
     }
@@ -1172,17 +1176,27 @@ public abstract class CsmResultItem implements CompletionItem {
                                 c.setCaretPosition(offset + len);
                                 res[0] = false;
                             }
-                            doc.remove(offset, len);
-                            doc.insertString(offset, text, null);
+                            int insertOffset = offset;
+                            int removeLength = len;
+                            String insertText = text;
+                            if (!isDeclaration && getHint() == SubstitutionHint.DOT_TO_ARROW) {
+                                if (doc.getChars(insertOffset - 1, 1)[0] == '.') {// NOI18N
+                                    insertOffset--;
+                                    removeLength++;
+                                    insertText = "->" + insertText; // NOI18N
+                                }
+                            }
+                            doc.remove(insertOffset, removeLength);
+                            doc.insertString(insertOffset, insertText, null);
                             if (isDeclaration) {
-                                c.setCaretPosition(offset + text.length());
+                                c.setCaretPosition(insertOffset + insertText.length());
                             } else if (selectionStartOffset >= 0) {
-                                c.select(offset + selectionStartOffset,
-                                        offset + selectionEndOffset);
+                                c.select(insertOffset + selectionStartOffset,
+                                        insertOffset + selectionEndOffset);
                             } else if ("(".equals(thisItem.toAdd)) { // NOI18N
-                                int index = text.lastIndexOf(')');
+                                int index = insertText.lastIndexOf(')');
                                 if (index > -1) {
-                                    c.setCaretPosition(offset + index);
+                                    c.setCaretPosition(insertOffset + index);
                                 }
                             }
                         } catch (BadLocationException e) {

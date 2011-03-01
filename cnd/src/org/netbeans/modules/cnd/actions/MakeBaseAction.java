@@ -70,11 +70,13 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.WindowManager;
@@ -165,6 +167,14 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
 
+        if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
+            try {
+                envMap.put("LD_PRELOAD", BuildTraceHelper.INSTANCE.getLibraryName(execEnv) /*+ ":${LD_PRELOAD}"*/); // NOI18N
+                envMap.put("LD_LIBRARY_PATH", BuildTraceHelper.INSTANCE.getLDPaths(execEnv) + ":${LD_LIBRARY_PATH}"); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         if (inputOutput == null) {
             // Tab Name
             String tabName = execEnv.isLocal() ? getString("MAKE_LABEL", node.getName(), target) : getString("MAKE_REMOTE_LABEL", node.getName(), target, execEnv.getDisplayName()); // NOI18N
@@ -225,5 +235,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         return set;
+    }
+    private static final class BuildTraceHelper extends HelperLibraryUtility {
+        private static final BuildTraceHelper INSTANCE = new BuildTraceHelper();
+        private BuildTraceHelper() {
+            super("org.netbeans.modules.cnd.actions", "bin/${osname}-${platform}${_isa}/libBuildTrace.so"); // NOI18N
+        }
     }
 }

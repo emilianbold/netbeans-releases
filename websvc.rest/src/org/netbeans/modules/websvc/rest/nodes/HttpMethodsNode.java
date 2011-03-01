@@ -54,23 +54,25 @@ import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
-public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeListener{
-    private static final Image HTTP_METHODS_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/httpmethods.png", true ); // NOI18N
+public class HttpMethodsNode extends AbstractNode { 
+    private static final Image HTTP_METHODS_BADGE = ImageUtilities.loadImage( 
+            "org/netbeans/modules/websvc/rest/nodes/resources/httpmethods.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
-    private String serviceName;
     
     public HttpMethodsNode(Project project, RestServicesModel model, 
             String serviceName) {
-        super(new HttpMethodsChildren(project, model, serviceName));
-        this.serviceName = serviceName;
-        setDisplayName(NbBundle.getBundle(HttpMethodsNode.class).getString("LBL_HttpMethods"));
+        super(Children.create( new HttpMethodsChildren(project, model, 
+                serviceName), true));
+        setDisplayName(NbBundle.getBundle(HttpMethodsNode.class).
+                getString("LBL_HttpMethods"));          // NOI18N
         
     }
     

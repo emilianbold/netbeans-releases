@@ -59,12 +59,13 @@ import org.openide.nodes.Node;
 /**
  *
  * @author Roderico Cruz
+ * @author (modified by) ads
  */
 public interface WSEditor {
     /**
      * Return the main panel of the editor
      */
-    JComponent createWSEditorComponent(Node node);   
+    JComponent createWSEditorComponent(Node node) throws InvalidDataException;   
 
     /**
      * The title text that will be displayed in the tab corresponding

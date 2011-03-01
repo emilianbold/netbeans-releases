@@ -60,6 +60,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -97,6 +98,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
 
 /**
@@ -333,7 +335,7 @@ public class HgCommand {
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
     private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
-    private static final String ENCODING = getEncoding();
+    public static final String ENCODING = getEncoding();
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -879,26 +881,27 @@ public class HgCommand {
 
     private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails, OutputLogger logger){
         String proxy = null;
-        if(defaultPath != null &&
-                (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
-            HgProxySettings ps = new HgProxySettings();
-            if (ps.isManualSetProxy()) {
-                if ((defaultPath.startsWith("http:") && !ps.getHttpHost().equals(""))||
-                    (defaultPath.startsWith("https:") && !ps.getHttpHost().equals("") && ps.getHttpsHost().equals(""))) { // NOI18N
-                    proxy = ps.getHttpHost();
-                    if (proxy != null && !proxy.equals("")) {
-                        proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
-                    } else {
-                        proxy = null;
-                    }
-                } else if (defaultPath.startsWith("https:") && !ps.getHttpsHost().equals("")) { // NOI18N
-                    proxy = ps.getHttpsHost();
-                    if (proxy != null && !proxy.equals("")) {
-                        proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
-                    } else {
-                        proxy = null;
-                    }
-                }
+        if( defaultPath != null &&
+           (defaultPath.startsWith("http:") ||                                  // NOI18N
+            defaultPath.startsWith("https:")))                                  // NOI18N
+        { 
+        
+            URI uri = null;
+            try {
+                uri = new URI(defaultPath);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+        
+            String proxyHost = NetworkSettings.getProxyHost(uri);
+
+            // check DIRECT connection
+            if(proxyHost != null && proxyHost.length() > 0) {
+                proxy = proxyHost;
+                String proxyPort = NetworkSettings.getProxyPort(uri);
+                assert proxyPort != null;
+
+                proxy += !proxyPort.equals("") ? ":" + proxyPort : ""; // NOI18N
             }
         }
         if(proxy != null && bOutputDetails){

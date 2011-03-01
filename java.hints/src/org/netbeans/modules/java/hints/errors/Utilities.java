@@ -597,7 +597,8 @@ public class Utilities {
 
         Element el = info.getTrees().getElement(tp);
 
-        if (el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String) {
+        if (el != null && (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.LOCAL_VARIABLE)
+                && ((VariableElement) el).getConstantValue() instanceof String) {
             return true;
         }
 
@@ -1075,6 +1076,47 @@ public class Utilities {
             }
 
             return qnString;
+        }
+    }
+
+    public static Visibility effectiveVisibility(TreePath tp) {
+        Visibility result = null;
+
+        while (tp != null) {
+            Visibility current = Visibility.forTree(tp.getLeaf());
+
+            if (current != null) {
+                if (result != null) result = result.enclosedBy(current);
+                else result = current;
+            }
+            
+            tp = tp.getParentPath();
+        }
+
+        return result;
+    }
+
+    public enum Visibility {
+        PRIVATE,
+        PACKAGE_PRIVATE,
+        PROTECTED,
+        PUBLIC;
+        public Visibility enclosedBy(Visibility encl) {
+            return Visibility.values()[Math.min(ordinal(), encl.ordinal())];
+        }
+        public static Visibility forModifiers(ModifiersTree mt) {
+            if (mt.getFlags().contains(Modifier.PUBLIC)) return PUBLIC;
+            if (mt.getFlags().contains(Modifier.PROTECTED)) return PROTECTED;
+            if (mt.getFlags().contains(Modifier.PRIVATE)) return PRIVATE;
+            return PACKAGE_PRIVATE;
+        }
+        public static Visibility forTree(Tree t) {
+            switch (t.getKind()) {
+                case CLASS: return forModifiers(((ClassTree) t).getModifiers());
+                case VARIABLE: return forModifiers(((VariableTree) t).getModifiers());
+                case METHOD: return forModifiers(((MethodTree) t).getModifiers());
+                default: return null;
+            }
         }
     }
 }

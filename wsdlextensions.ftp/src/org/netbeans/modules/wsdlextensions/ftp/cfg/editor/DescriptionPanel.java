@@ -95,7 +95,6 @@ public class DescriptionPanel extends javax.swing.JPanel {
         initComponents();
         mInstance = this;
 //        initListener();     
-        setAccessibility();
     }
 
     public void setText(String title, String desc) {
@@ -148,11 +147,6 @@ public class DescriptionPanel extends javax.swing.JPanel {
                 }
             });
         }
-    }
-    
-    private void setAccessibility() {
-        editorPane.getAccessibleContext().setAccessibleName(SHOW_DESCRIPTION); // NOI18N                   
-        editorPane.getAccessibleContext().setAccessibleDescription(SHOW_DESCRIPTION); // NOI18N                           
     }
     
     public void setText(String desc) {
@@ -235,6 +229,8 @@ public class DescriptionPanel extends javax.swing.JPanel {
         htmlKit.setStyleSheet(css);
     }
     editorPane.setEditorKit( htmlKit );
+    editorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DescriptionPanel.class, "DescriptionPanel.editorPane.AccessibleContext.accessibleName")); // NOI18N
+    editorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DescriptionPanel.class, "DescriptionPanel.editorPane.AccessibleContext.accessibleDescription")); // NOI18N
 
     setMinimumSize(new java.awt.Dimension(200, 50));
     setName("DescriptionPanel"); // NOI18N
@@ -253,7 +249,6 @@ public class DescriptionPanel extends javax.swing.JPanel {
     descriptionTextPane.setBackground(tmpPanel.getBackground());
     descriptionTextPane.getAccessibleContext().setAccessibleName("Description Text Area");
     descriptionTextPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DescriptionPanel.class, "DescriptionPanel.descriptionTextPane.AccessibleContext.accessibleDescription")); // NOI18N
-    descriptionTextPane.getAccessibleContext().setAccessibleParent(editorPane);
 
     jPanel1.add(descriptionScrollPane, java.awt.BorderLayout.CENTER);
 

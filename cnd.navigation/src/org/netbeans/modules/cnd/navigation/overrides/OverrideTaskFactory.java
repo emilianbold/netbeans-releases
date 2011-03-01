@@ -127,12 +127,11 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         return result;
     }
 
-    private static class PhaseRunnerImpl implements PhaseRunner {
+    private static final class PhaseRunnerImpl implements PhaseRunner {
 
         private final DataObject dobj;
         private final CsmFile file;
         private final WeakReference<StyledDocument> weakDoc;
-        private final Collection<BaseAnnotation> annotations = new ArrayList<BaseAnnotation>();
 
         private PhaseRunnerImpl(DataObject dobj,CsmFile file, Document doc){
             this.dobj = dobj;
@@ -171,7 +170,6 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
             ComputeAnnotations.getInstance(file, doc, dobj).computeAnnotations(toAdd);
             time = System.currentTimeMillis() - time;
             BaseAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
-            final Collection<BaseAnnotation> toClear;
             AnnotationsHolder.get(dobj).setNewAnnotations(toAdd);
         }
 
@@ -192,6 +190,15 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         @Override
         public boolean isHighPriority() {
             return false;
+        }
+
+        @Override
+        public String toString() {
+            if (file == null) {
+                return "OverrideTaskFactory runner"; //NOI18N
+            } else {
+                return "OverrideTaskFactory runner for "+file.getAbsolutePath(); //NOI18N
+            }
         }
     }
 }

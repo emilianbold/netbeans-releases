@@ -124,6 +124,10 @@ public class LexerUtils {
 
       /** returns top most joined html token seuence for the document at the specified offset. */
     public static TokenSequence getJoinedTokenSequence(Document doc, int offset, Language language) {
+        return getTokenSequence(doc, offset, language, true);
+    }
+    
+    public static TokenSequence getTokenSequence(Document doc, int offset, Language language, boolean joined) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence ts = th.tokenSequence();
         if(ts == null) {

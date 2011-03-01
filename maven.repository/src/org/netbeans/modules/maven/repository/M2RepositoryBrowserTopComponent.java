@@ -48,8 +48,6 @@ import java.io.Serializable;
 import java.util.List;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
@@ -59,7 +57,6 @@ import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.awt.Toolbar;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -149,7 +146,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         jSplitPane1 = new javax.swing.JSplitPane();
         pnlBrowse = new javax.swing.JPanel();
         pnlFind = new javax.swing.JPanel();
-        jToolBar1 = new EditorToolbar();
+        toolbar = new javax.swing.JToolBar();
         btnIndex = new javax.swing.JButton();
         btnAddRepo = new javax.swing.JButton();
         btnFind = new javax.swing.JButton();
@@ -171,7 +168,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
 
         add(pnlExplorer, java.awt.BorderLayout.CENTER);
 
-        jToolBar1.setFloatable(false);
+        toolbar.setFloatable(false);
 
         btnIndex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/maven/repository/refreshRepo.png"))); // NOI18N
         btnIndex.setToolTipText(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_REPO_Update_Indexes")); // NOI18N
@@ -180,7 +177,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
                 btnIndexActionPerformed(evt);
             }
         });
-        jToolBar1.add(btnIndex);
+        toolbar.add(btnIndex);
         btnIndex.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnIndex.AccessibleContext.accessibleName")); // NOI18N
         btnIndex.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnIndex.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -193,7 +190,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
                 btnAddRepoActionPerformed(evt);
             }
         });
-        jToolBar1.add(btnAddRepo);
+        toolbar.add(btnAddRepo);
         btnAddRepo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnAddRepo.AccessibleContext.accessibleName")); // NOI18N
         btnAddRepo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnAddRepo.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -206,11 +203,11 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
                 btnFindActionPerformed(evt);
             }
         });
-        jToolBar1.add(btnFind);
+        toolbar.add(btnFind);
         btnFind.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnFind.AccessibleContext.accessibleName")); // NOI18N
         btnFind.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "M2RepositoryBrowserTopComponent.btnFind.AccessibleContext.accessibleDescription")); // NOI18N
 
-        add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+        add(toolbar, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
     private void btnIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIndexActionPerformed
         btnIndex.setEnabled(false);
@@ -274,10 +271,10 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     private javax.swing.JButton btnFind;
     private javax.swing.JButton btnIndex;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel pnlBrowse;
     private javax.swing.JPanel pnlExplorer;
     private javax.swing.JPanel pnlFind;
+    private javax.swing.JToolBar toolbar;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -395,26 +392,4 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         }
     }
 
-    public static class EditorToolbar extends Toolbar {
-        public EditorToolbar() {
-            Border b = UIManager.getBorder("Nb.Editor.Toolbar.border"); //NOI18N
-            setBorder(b);
-            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-            }
-        }
-
-        @Override
-        public String getUIClassID() {
-            if( UIManager.get("Nb.Toolbar.ui") != null ) { //NOI18N
-                return "Nb.Toolbar.ui"; //NOI18N
-            }
-            return super.getUIClassID();
-        }
-
-        @Override
-        public String getName() {
-            return "editorToolbar"; //NOI18N
-        }
-    }
 }

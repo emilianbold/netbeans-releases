@@ -69,8 +69,6 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions;
-import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions.Function;
 import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
@@ -123,7 +121,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         Element resolved =
                 typeUtilities.resolveElement(element, nodeToResolve);
 
-        if (ELTypeUtilities.isScopeObject(nodeToResolve)) {
+        if (typeUtilities.isRawObject(nodeToResolve)) {
+            proposeRawObjectProperties(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);            
+        } else if(typeUtilities.isScopeObject(nodeToResolve)) {
             // seems to be something like "sessionScope.^", so complete beans from the scope
             proposeBeansFromScope(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);
         } else if(resolved == null) {
@@ -210,7 +210,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     private void proposeImpicitObjects(CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
-        for (org.netbeans.modules.web.core.syntax.spi.ELImplicitObject implicitObject : ELTypeUtilities.getImplicitObjects()) {
+        for (org.netbeans.modules.web.el.spi.ImplicitObject implicitObject : typeUtilities.getImplicitObjects()) {
             if (prefix.matches(implicitObject.getName())) {
                 ELImplictObjectCompletionItem item = new ELImplictObjectCompletionItem(implicitObject.getName(), implicitObject.getClazz());
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
@@ -269,12 +269,26 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             scope = scope.substring(0, scope.length() - scopeString.length());
         }
 
-        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(scope, getFileObject(context))) {
+        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(scope, context.getParserResult().getSnapshot())) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
             ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            item.setSmart(true);
+            proposals.add(item);
+        }
+    }
+
+    private void proposeRawObjectProperties(CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, Node scopeNode, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        for (VariableInfo property : ELVariableResolvers.getRawObjectProperties(scopeNode.getImage(), context.getParserResult().getSnapshot())) {
+            if (!prefix.matches(property.name)) {
+                continue;
+            }
+            ELRawObjectPropertyCompletionItem item = new ELRawObjectPropertyCompletionItem(property.name);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
             proposals.add(item);
@@ -288,14 +302,24 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
-            Element element = typeUtilities.getElementForType(bean.clazz);
-            if (element == null) {
-                continue;
+            if(bean.clazz == null) {
+                //probably a refered (w/o type) variable, just show it in the completion w/o type
+                ELVariableCompletionItem item = new ELVariableCompletionItem(bean.name, bean.expression);
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                item.setSmart(true);
+                proposals.add(item);
+
+            } else {
+                //resolved variable
+                Element element = typeUtilities.getElementForType(bean.clazz);
+                if (element == null) {
+                    continue;
+                }
+                ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                item.setSmart(true);
+                proposals.add(item);
             }
-            ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
-            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            item.setSmart(true);
-            proposals.add(item);
         }
     }
 
@@ -339,17 +363,17 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeFunctions(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
-
-        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix.prefix)) {
-            ELFunctionCompletionItem item =
-                    new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
-            item.setSmart(true);
-            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            proposals.add(item);
-        }
-    }
+//    private void proposeFunctions(CodeCompletionContext context,
+//            PrefixMatcher prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+//
+//        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix.prefix)) {
+//            ELFunctionCompletionItem item =
+//                    new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
+//            item.setSmart(true);
+//            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+//            proposals.add(item);
+//        }
+//    }
 
     @Override
     public String document(ParserResult info, final ElementHandle element) {

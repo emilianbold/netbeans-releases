@@ -219,7 +219,7 @@ public class WebProjectUtilities {
                 serverInstanceID, projectDir, createData.getServerLibraryName() != null);
 
         final AntProjectHelper h = setupProject(projectDir, name, serverInstanceID,
-                j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName);
+                j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName, createData.skipTests());
         
         FileObject srcFO = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject confFolderFO = null;
@@ -248,7 +248,9 @@ public class WebProjectUtilities {
         }
         
         //test folder
-        FileUtil.createFolder(projectDir, DEFAULT_TEST_FOLDER);
+        if (!createData.skipTests()) {
+            FileUtil.createFolder(projectDir, DEFAULT_TEST_FOLDER);
+        }
         
         FileObject webFO = projectDir.createFolder(DEFAULT_DOC_BASE_FOLDER);
         final FileObject webInfFO = webFO.createFolder(WEB_INF);
@@ -480,7 +482,7 @@ public class WebProjectUtilities {
                 serverInstanceID, projectDir, createData.getServerLibraryName() != null);
         
         final AntProjectHelper antProjectHelper = setupProject(projectDir, name,
-                serverInstanceID, j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName);
+                serverInstanceID, j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName, createData.skipTests());
         
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();
@@ -650,10 +652,10 @@ public class WebProjectUtilities {
         if (!h.isSharableProject()) {
             return;
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
+        if (!data.skipTests() && rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
+        if (!data.skipTests() && rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
         Profile j2eeProfile = data.getJavaEEProfile();
@@ -705,7 +707,8 @@ public class WebProjectUtilities {
     }
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
-            String serverInstanceID, Profile j2eeProfile, String librariesDefinition, String serverLibraryName) throws IOException {
+            String serverInstanceID, Profile j2eeProfile, String librariesDefinition, 
+            String serverLibraryName, boolean skipTests) throws IOException {
 
         Utils.logUI(NbBundle.getBundle(WebProjectUtilities.class), "UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
                 new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
@@ -775,7 +778,10 @@ public class WebProjectUtilities {
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_javac.compilerargs"), // NOI18N
         }, false);
         
-        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
+        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, skipTests ? new String[] {
+            "${javac.classpath}:", // NOI18N
+            "${build.classes.dir}", // NOI18N
+        } :new String[] {
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}:", // NOI18N
