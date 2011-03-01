@@ -85,8 +85,7 @@ public class NbBundleProcessor extends AbstractProcessor {
             return false;
         }
         Map</*package*/String,Map</*key*/String,/*value*/String>> pairs = new HashMap<String,Map<String,String>>();
-        Map</*package*/String,Set</*identifier*/String>> identifiers = new HashMap<String,Set<String>>();
-        Map</*package*/String,List<Element>> originatingElements = new HashMap<String,List<Element>>();
+        Map</*package*/String,Map</*identifier*/String,Element>> identifiers = new HashMap<String,Map<String,Element>>();
         Map</*package*/String,Map</*key*/String,/*simplename*/String>> compilationUnits = new HashMap<String,Map<String,String>>();
         Map</*package*/String,Map</*key*/String,/*line*/String[]>> comments = new HashMap<String,Map<String,String[]>>();
         for (Element e : roundEnv.getElementsAnnotatedWith(NbBundle.Messages.class)) {
@@ -96,15 +95,10 @@ public class NbBundleProcessor extends AbstractProcessor {
                 pairsByPackage = new HashMap<String, String>();
                 pairs.put(pkg, pairsByPackage);
             }
-            Set<String> identifiersByPackage = identifiers.get(pkg);
+            Map<String,Element> identifiersByPackage = identifiers.get(pkg);
             if (identifiersByPackage == null) {
-                identifiersByPackage = new HashSet<String>();
+                identifiersByPackage = new HashMap<String,Element>();
                 identifiers.put(pkg, identifiersByPackage);
-            }
-            List<Element> originatingElementsByPackage = originatingElements.get(pkg);
-            if (originatingElementsByPackage == null) {
-                originatingElementsByPackage = new ArrayList<Element>();
-                originatingElements.put(pkg, originatingElementsByPackage);
             }
             Map<String,String> compilationUnitsByPackage = compilationUnits.get(pkg);
             if (compilationUnitsByPackage == null) {
@@ -136,13 +130,12 @@ public class NbBundleProcessor extends AbstractProcessor {
                     processingEnv.getMessager().printMessage(Kind.ERROR, "Whitespace not permitted in key: " + keyValue, e);
                     continue;
                 }
-                if (!identifiersByPackage.add(toIdentifier(key))) {
+                if (identifiersByPackage.put(toIdentifier(key), e) != null) {
                     processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, e);
                     continue;
                 }
                 String value = keyValue.substring(i + 1);
                 pairsByPackage.put(key, value);
-                originatingElementsByPackage.add(e);
                 compilationUnitsByPackage.put(key, findCompilationUnitName(e));
                 if (!runningComments.isEmpty()) {
                     commentsByPackage.put(key, runningComments.toArray(new String[runningComments.size()]));
@@ -156,7 +149,8 @@ public class NbBundleProcessor extends AbstractProcessor {
         for (Map.Entry<String,Map<String,String>> entry : pairs.entrySet()) {
             String pkg = entry.getKey();
             Map<String,String> keysAndValues = entry.getValue();
-            Element[] elements = originatingElements.get(pkg).toArray(new Element[0]);
+            Map<String, Element> identifiersByPackage = identifiers.get(pkg);
+            Element[] elements = new HashSet<Element>(identifiersByPackage.values()).toArray(new Element[0]);
             try {
                 EditableProperties p = new EditableProperties(true);
                 // Load any preexisting bundle so we can just add our keys.
@@ -172,7 +166,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                 }
                 for (String key : p.keySet()) {
                     if (keysAndValues.containsKey(key)) {
-                        processingEnv.getMessager().printMessage(Kind.ERROR, "Key " + key + " is a duplicate of one from Bundle.properties", elements[0]);
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Key " + key + " is a duplicate of one from Bundle.properties", identifiersByPackage.get(toIdentifier(key)));
                     }
                 }
                 // Also check class output for (1) incremental builds, (2) preexisting bundles from Maven projects.
@@ -200,10 +194,20 @@ public class NbBundleProcessor extends AbstractProcessor {
                     os.close();
                 }
                 Map</*identifier*/String,/*method body*/String> methods = new TreeMap<String,String>();
+                Map</*key*/String,/*simplename*/String> compilationUnitsByPackage = compilationUnits.get(pkg);
                 try {
-                    Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
+                    Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*] @see (\\w+)\r?\n     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
                     while (m.find()) {
-                        methods.put(m.group(1), m.group());
+                        String simplename = m.group(1);
+                        String identifier = m.group(2);
+                        methods.put(identifier, m.group());
+                        if (!compilationUnitsByPackage.values().contains(simplename)) {
+                            Element redefined = identifiersByPackage.get(identifier);
+                            if (redefined != null) {
+                                // #194958: identifier defined by something not in this processing round.
+                                processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate identifier: " + identifier, redefined);
+                            }
+                        }
                     }
                 } catch (IOException x) {
                     // OK, not there
@@ -242,7 +246,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     m.appendTail(annotatedValue);
                     annotatedValue.append("</i>");
                     method.append("     * @return ").append(annotatedValue.toString().replace("<i></i>", "")).append('\n');
-                    method.append("     * @see ").append(compilationUnits.get(pkg).get(key)).append('\n');
+                    method.append("     * @see ").append(compilationUnitsByPackage.get(key)).append('\n');
                     method.append("     */\n");
                     String name = toIdentifier(key);
                     method.append("    static String ").append(name).append("(");
