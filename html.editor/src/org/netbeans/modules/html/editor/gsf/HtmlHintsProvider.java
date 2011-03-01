@@ -220,7 +220,8 @@ public class HtmlHintsProvider implements HintsProvider {
                             e.getFile(),
                             new OffsetRange(from, to),
                             fixes,
-                            20);
+                            20,
+                            e);
 
                     hints.add(h);
             }

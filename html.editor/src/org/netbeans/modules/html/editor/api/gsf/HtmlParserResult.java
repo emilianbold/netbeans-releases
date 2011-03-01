@@ -242,7 +242,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             Collection<Error> errs = new ArrayList<Error>();
             for (ProblemDescription pd : res.getProblems()) {
                 DefaultError error = new DefaultError(pd.getKey(),
-                        "nu.validator issue", //NOI18N
+                        pd.getText(), //NOI18N
                         pd.getText(),
                         res.getContext().getFile(),
                         pd.getFrom(),

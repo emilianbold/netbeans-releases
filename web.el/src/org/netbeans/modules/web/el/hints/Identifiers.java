@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELParserResult;
 import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -90,9 +91,10 @@ public final class Identifiers extends ELRule {
     }
 
     @Override
-    protected void run(final ELRuleContext ruleContext, final List<Hint> result) {
+    protected void run(RuleContext ruleContext, final List<Hint> result) {
+        final ELParserResult elResult = (ELParserResult)ruleContext.parserResult;
         final ELTypeUtilities typeUtilities = ELTypeUtilities.create(this.context);
-        for (final ELElement each : ruleContext.getELParserResult().getElements()) {
+        for (final ELElement each : elResult.getElements()) {
             if (!each.isValid()) {
                 // broken AST, skip
                 continue;
@@ -119,7 +121,7 @@ public final class Identifiers extends ELRule {
                         if (resolvedElement == null) {
                             Hint hint = new Hint(Identifiers.this,
                                     getMsg(node),
-                                    ruleContext.getELParserResult().getFileObject(),
+                                    elResult.getFileObject(),
                                     each.getOriginalOffset(node),
                                     Collections.<HintFix>emptyList(), 200);
                             result.add(hint);
