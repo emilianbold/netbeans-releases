@@ -90,7 +90,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private final byte arrayDepth;
     private byte flags;
     private CharSequence classifierText;
-    private int parseCount;
+    private volatile CachePair lastCache = EMPTY_CACHE_PAIR;
 
     final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
 
@@ -493,17 +493,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     classifier = null;
                 }
             }
-        } else {
-            // let's recalculate invalid classifiers for types
-            // may be we can use parseCount && start file pair to remember context, but not only parseCount as now
-            // see #194826 -  The code model can become corrupt, causing false errors
-            // sample projects https://netbeans.org/bugzilla/attachment.cgi?id=106540
-            classifier = null;
         }
         if (needToRender) {
-            int newParseCount = FileImpl.getParseCount();
+            CachePair newCachePair = new CachePair(FileImpl.getParseCount(), ResolverFactory.getCurrentStartFile(this));
             if (classifier != null) {                
-                if (newParseCount == parseCount) {
+                if (newCachePair.equals(lastCache)) {
                     return classifier;
                 }
             }
@@ -516,7 +510,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
             synchronized (this) {
                 _setClassifier(classifier);
-                parseCount = newParseCount;
+                lastCache = newCachePair;
             }
             classifier = _getClassifier();
         }
@@ -749,4 +743,47 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         instantiationParams.trimToSize();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
+    
+    private final static CachePair EMPTY_CACHE_PAIR = new CachePair(-1, null);
+    
+    private static final class CachePair {
+        private final int parseCount;
+        private final CsmUID<CsmFile> fileUID;
+
+        public CachePair(int parseCount, CsmUID<CsmFile> fileUID) {
+            this.parseCount = parseCount;
+            this.fileUID = fileUID;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CachePair other = (CachePair) obj;
+            if (this.parseCount != other.parseCount) {
+                return false;
+            }
+            if (this.fileUID != other.fileUID && (this.fileUID == null || !this.fileUID.equals(other.fileUID))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + this.parseCount;
+            hash = 37 * hash + (this.fileUID != null ? this.fileUID.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "CachePair{" + "parseCount=" + parseCount + ", fileUID=" + fileUID + '}'; // NOI18N
+        }
+    }    
 }
