@@ -488,7 +488,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
             userIncludes = new ArrayList<String>(aUserIncludes.size());
             for(String s : aUserIncludes){
-                if (s.startsWith("/") && pathMapper != null) {
+                if (s.startsWith("/") && pathMapper != null) { // NOI18N
                     s = pathMapper.getLocalPath(what);
                 }
                 userIncludes.add(PathCache.getString(s));

@@ -108,7 +108,7 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    public RemoteDirectory createRemoteDirectory(FileObject parent, String remotePath, File cacheFile) {
+    public RemoteDirectory createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request

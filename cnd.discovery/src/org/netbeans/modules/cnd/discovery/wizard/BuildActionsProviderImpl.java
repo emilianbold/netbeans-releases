@@ -204,7 +204,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 if (executionEnvironment.isRemote()) {
                     try {
                         HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                        String remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName();
+                        String remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
                         if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
                             /*int rc =*/ task.get();
