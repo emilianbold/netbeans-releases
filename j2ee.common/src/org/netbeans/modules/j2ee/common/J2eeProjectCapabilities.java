@@ -138,7 +138,7 @@ public final class J2eeProjectCapabilities {
      * @retunr <code>true</code> if the server used by project supports JSF 2.x
      * @since 1.61
      */
-    public boolean isJsf2Supported() {
+    public boolean isJsf2Included() {
         if (webProfile == null || !webProfile.equals(Profile.JAVA_EE_6_FULL)
                 && !webProfile.equals(Profile.JAVA_EE_6_WEB)) {
             return false;
