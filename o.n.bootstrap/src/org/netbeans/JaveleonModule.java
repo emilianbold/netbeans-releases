@@ -60,7 +60,7 @@ public final class JaveleonModule extends StandardModule {
     static {
         boolean present = false;
         try {
-            Thread.currentThread().getContextClassLoader().loadClass("org.javeleon.reload.ReloadFacade");
+            Class.forName("org.javeleon.reload.ReloadFacade");
             present = true;
         } catch (ClassNotFoundException ex) {
             // Javeleon was not present... nothing to do then!
@@ -68,17 +68,18 @@ public final class JaveleonModule extends StandardModule {
         isJaveleonPresent = present;
     }
 
-    public static Method javeleonReloadMethod;
+    public static final Method javeleonReloadMethod;
 
     static {
-        if(JaveleonModule.isJaveleonPresent) {
+        Method m = null;
+        if (JaveleonModule.isJaveleonPresent) {
             try {
-                Class javeleonReloadClass = Thread.currentThread().getContextClassLoader().loadClass("org.javeleon.reload.ReloadModule");
-                javeleonReloadMethod = javeleonReloadClass.getDeclaredMethod("incrementGlobalId", new Class[]{});
+                m = Class.forName("org.javeleon.reload.ReloadModule").getDeclaredMethod("incrementGlobalId");
             } catch (Exception ex) {
                // No worries, javeleon is just not enabled
             }
         }
+        javeleonReloadMethod = m;
     }
 
     private static HashMap<String,ClassLoader> currentClassLoaders = new HashMap<String, ClassLoader>();

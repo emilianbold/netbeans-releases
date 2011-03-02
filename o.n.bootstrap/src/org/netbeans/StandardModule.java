@@ -139,8 +139,7 @@ class StandardModule extends Module {
     static {
         if(JaveleonModule.isJaveleonPresent) {
             try {
-                Class javeleonFacadeClass = Thread.currentThread().getContextClassLoader().loadClass("org.javeleon.reload.ReloadFacade");
-                javeleonFacadeMethod = javeleonFacadeClass.getDeclaredMethod("registerClassLoader", new Class[]{ClassLoader.class, String.class});
+                javeleonFacadeMethod = Class.forName("org.javeleon.reload.ReloadFacade").getDeclaredMethod("registerClassLoader", ClassLoader.class, String.class);
             } catch (Exception ex) {
                 // Javeleon was not present... nothing to do then!
             }
