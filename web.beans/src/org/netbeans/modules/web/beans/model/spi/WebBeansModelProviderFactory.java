@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,38 +40,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.model.spi;
 
-import javax.lang.model.element.Element;
+import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 
 
 /**
- * This exception could be thrown when injection point deifinition 
- * contains error. 
  * @author ads
  *
  */
-public class InjectionPointDefinitionError extends Exception {
+public interface WebBeansModelProviderFactory {
 
-    private static final long serialVersionUID = -6893993336079352757L;
-
-    public InjectionPointDefinitionError(Element errorElement, String msg) {
-        super( msg );
-        myElement = errorElement;
-    }
-    
-    /**
-     * There could be errors detected when element is checked as injection point.
-     * In most such cases possible injection point is the error element.
-     * But in some cases error could be detected on enclosing element.
-     * F.e. method could be wrongly defined . In this case its parameters
-     * cannot be considered as correct injection points.     
-     * 
-     * @return element that is wrongly defined
-     */
-    public Element getErrorElement(){
-        return myElement;
-    }
-    
-    private Element myElement;
+    WebBeansModelProvider createWebBeansModelProvider( AbstractModelImplementation model);
 }
