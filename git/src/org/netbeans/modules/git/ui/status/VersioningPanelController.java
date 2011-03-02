@@ -396,6 +396,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
+                            if (evt.getFile().equals(root)) {
+                                // huh? this is weird
+                                LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { evt.getFile(), root, displayStatuses });
+                                LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(evt.getFile()).getStatus());
+                            }
                             toAdd.add(new GitStatusNode(new GitFileNode(root, evt.getFile()), mode));
                         }
                     }

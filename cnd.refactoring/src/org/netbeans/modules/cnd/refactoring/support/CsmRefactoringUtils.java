@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
@@ -144,7 +146,12 @@ public final class CsmRefactoringUtils {
                 // try another projects which could share the same file
                 FileObject fileObject = CsmUtilities.getFileObject(contextFile);
                 if (fileObject != null) {
-                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(fileObject, false);
+                    CsmFile[] csmFiles;
+                    try {
+                        csmFiles = CsmUtilities.getCsmFiles(DataObject.find(fileObject), false, false);
+                    } catch (DataObjectNotFoundException ex) {
+                        csmFiles = new CsmFile[0];
+                    }
                     for (CsmFile csmFile : csmFiles) {
                         prjs.add(csmFile.getProject());
                     }

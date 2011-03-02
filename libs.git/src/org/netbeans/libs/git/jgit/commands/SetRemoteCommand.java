@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -74,6 +75,7 @@ public class SetRemoteCommand extends GitCommand {
     protected void run () throws GitException {
         Repository repository = getRepository();
         StoredConfig config = repository.getConfig();
+        boolean finished = false;
         try {
             config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_URL);
             config.unset(ConfigConstants.CONFIG_REMOTE_SECTION, remote.getRemoteName(), KEY_PUSHURL);
@@ -94,13 +96,21 @@ public class SetRemoteCommand extends GitCommand {
             }
             cfg.update(config);
             config.save();
+            finished = true;
         } catch (Exception ex) {
-            try {
-                config.load();
-            } catch (Exception e) {
-                
-            }
             throw new GitException(ex);
+        } finally {
+            if (!finished) {
+                try {
+                    if (config instanceof FileBasedConfig) {
+                        FileBasedConfig fileConfig = (FileBasedConfig) config;
+                        fileConfig.clear();
+                    }
+                    config.load();
+                } catch (Exception e) {
+
+                }
+            }
         }
     }
 

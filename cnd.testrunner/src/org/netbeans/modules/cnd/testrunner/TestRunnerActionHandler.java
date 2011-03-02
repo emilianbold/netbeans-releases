@@ -149,7 +149,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         ArrayList<String> args = new ArrayList<String>(Arrays.asList(pae.getProfile().getArgsArray()));
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
-        boolean unbuffer = false;
+        boolean unbuffer = true;
 
         final CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String csdirs = compilerSet.getDirectory();

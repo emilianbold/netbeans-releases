@@ -411,6 +411,7 @@
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
+                <package>org.netbeans.modules.cnd.makeproject.spi</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>
             </friend-packages>
         </data>

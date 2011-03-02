@@ -82,7 +82,6 @@ import org.openide.util.Exceptions;
  */
 public class RemoteDirectory extends RemoteFileObjectBase {
 
-    public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
     private static final boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
     private static boolean LS_VIA_SFTP = ! Boolean.getBoolean("remote.parse.ls");
 
@@ -390,7 +389,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         DirectoryStorage storage = null;
 
-        File storageFile = new File(getCache(), FLAG_FILE_NAME);
+        File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
 
         // check whether it is cached in memory
         synchronized (refLock) {
@@ -754,7 +753,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             cache.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     if (pathname.isDirectory()) {
-                        File childCache = new File(pathname, FLAG_FILE_NAME);
+                        File childCache = new File(pathname, RemoteFileSystem.CACHE_FILE_NAME);
                         setStorageTimestamp(childCache, timestamp, true);
                     }
                     return false;
@@ -766,7 +765,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     protected void refreshImpl(boolean recursive) {
         final long timestamp = getFileSystem().getDirtyTimestamp() - 1;
         trace("setting last modified to {0}", timestamp); // NOI18N
-        setStorageTimestamp(new File(getCache(), FLAG_FILE_NAME), timestamp, true);
+        setStorageTimestamp(new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME), timestamp, true);
     }
 
     @Override

@@ -241,6 +241,35 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     }
     
     @ForAllEnvironments
+    public void testReservedRfsNames() throws Exception {
+        String tempDir = null;
+        try {
+            tempDir = mkTemp(true);
+            FileObject tempDirFO = rootFO.getFileObject(tempDir);
+            assertNotNull("Null file object for " + tempDir, tempDirFO);
+            //assertTrue("FileObject should be writable: " + tempDirFO.getPath(), tempDirFO.canWrite());
+            String resName1 = RemoteFileSystem.CACHE_FILE_NAME;
+            String resName2 = RemoteFileSystem.ATTRIBUTES_FILE_NAME;
+            String refText = "QWE";
+            runScript("cd " + tempDir + "\n" +
+                "echo \"" + refText + "\" > " + resName1 + "\n" +
+                "echo \"" + refText + "\" > " + resName2 + "\n");
+            FileObject fo1 = tempDirFO.getFileObject(resName1);
+            assertNotNull("Null file object for " + resName1, fo1);
+            FileObject fo2 = tempDirFO.getFileObject(resName2);
+            assertNotNull("Null file object for " + resName1, fo2);
+            String text1 = readFile(fo1);
+            assertEquals("content of " + fo1.getPath(), refText, text1);
+            String text2 = readFile(fo1);
+            assertEquals("content of " + fo2.getPath(), refText, text2);
+        } finally {
+            if (tempDir != null) {
+                CommonTasksSupport.rmFile(execEnv, tempDir, new OutputStreamWriter(System.err));
+            }
+        }
+    }    
+    
+    @ForAllEnvironments
     public void testDate() throws Exception {
         String path = mkTemp();
         Date localDate = new Date();
