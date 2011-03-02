@@ -1024,6 +1024,7 @@ public final class MakeActionProvider implements ActionProvider {
                 || command.equals(COMMAND_DEBUG)
                 || command.equals(COMMAND_DEBUG_STEP_INTO)
                 || command.equals(COMMAND_DEBUG_TEST)
+                || command.equals(COMMAND_DEBUG_TEST_SINGLE)
                 || command.equals(COMMAND_DEBUG_STEP_INTO_TEST)
                 || command.equals(COMMAND_CUSTOM_ACTION)) {
             MakeConfigurationDescriptor pd = getProjectDescriptor();
