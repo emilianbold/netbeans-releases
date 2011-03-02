@@ -377,7 +377,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         CsmFile ret = null;
         for (CsmProject curPrj : projects) {
             if (curPrj instanceof ProjectBase) {
-                ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath);
+                ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath, createIfPossible);
                 if (ownerPrj != null) {
                     CsmFile csmFile = ownerPrj.findFile(absPath, createIfPossible, snapShot);
                     if (csmFile != null) {

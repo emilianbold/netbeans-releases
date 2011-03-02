@@ -1748,7 +1748,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //    private static final boolean isValid(APTPreprocHandler.State state) {
 //        return state != null && state.isValid();
 //    }
-    public ProjectBase findFileProject(CharSequence absPath) {
+    public ProjectBase findFileProject(CharSequence absPath, boolean waitFilesCreated) {
         // check own files
         // Wait while files are created. Otherwise project file will be recognized as library file.
         ensureFilesCreated();
