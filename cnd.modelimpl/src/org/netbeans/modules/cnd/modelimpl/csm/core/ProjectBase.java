@@ -1751,14 +1751,18 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public ProjectBase findFileProject(CharSequence absPath, boolean waitFilesCreated) {
         // check own files
         // Wait while files are created. Otherwise project file will be recognized as library file.
-        ensureFilesCreated();
+        if (waitFilesCreated) {
+            ensureFilesCreated();
+        }
         if (getFileUID(absPath, false) != null) {
             return this;
         } else {
             // else check in libs
             for (CsmProject prj : getLibraries()) {
                 // Wait while files are created. Otherwise project file will be recognized as library file.
-                ((ProjectBase) prj).ensureFilesCreated();
+                if (waitFilesCreated) {
+                    ((ProjectBase) prj).ensureFilesCreated();
+                }
                 if (((ProjectBase) prj).getFileUID(absPath, false) != null) {
                     return (ProjectBase) prj;
                 }
