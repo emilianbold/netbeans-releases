@@ -307,6 +307,13 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-actions-ConfigurationManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.ConfigurationManagerAction"/>
             </file>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.cnd.makeproject.actions.OpenRemoteProjectAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.makeproject.actions.Bundle#OpenRemoteProjectAction.title"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.makeproject.actions.Bundle#CTL_ImportProjectMenuItem"/>
+            </file>            
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance">
@@ -321,10 +328,18 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance"/>
                 <attr name="position" intvalue="210"/>
             </file>
-
-
-
         </folder>
+        <folder name="File">
+            <folder name="Import">
+                <attr name="position" intvalue="1426"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.sun.tools.ide.remote.resources.Bundle"/>
+                <file name="org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.instance"/>
+                    <attr name="position" intvalue="200"/>
+                    <attr name="ergonomics" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>       
         <!--
         <folder name="File">
             <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.shadow">
