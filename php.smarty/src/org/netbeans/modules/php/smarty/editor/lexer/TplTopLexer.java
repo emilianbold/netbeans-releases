@@ -194,7 +194,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                 char cc = (char) c;
                 text = input.readText();
                 textLength = text.length();
-                switch (state) {
+               switch (state) {
                 case INIT:
                 case OUTER:
                     if (isSmartyOpenDelimiter(text)) {

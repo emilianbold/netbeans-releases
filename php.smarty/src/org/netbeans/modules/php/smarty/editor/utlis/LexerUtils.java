@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.smarty.editor.utlis;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.php.smarty.editor.TplKit;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.text.CloneableEditor;
@@ -70,14 +71,21 @@ public class LexerUtils {
                 TopComponent[] topComponents = WindowManager.getDefault().getOpenedTopComponents(WindowManager.getDefault().findMode("editor"));
                 for (TopComponent topComponent : topComponents) {
                     if (topComponent instanceof CloneableEditor) {
-                        Document doc = ((CloneableEditor) topComponent).getEditorPane().getDocument();
+                        final Document doc = ((CloneableEditor) topComponent).getEditorPane().getDocument();
                         if (((CloneableEditor) topComponent).getEditorPane().getEditorKit() instanceof TplKit) {
                             ((TplKit) ((CloneableEditor) topComponent).getEditorPane().getEditorKit()).initLexerColoringListener(doc);
                         }
-                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-                        if (mti != null) {
-                            mti.tokenHierarchyControl().rebuild();
-                        }
+                        NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                        nbdoc.runAtomic(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                                if (mti != null) {
+                                    mti.tokenHierarchyControl().rebuild();
+                                }
+                            }
+                        });
                     }
                 }
             }

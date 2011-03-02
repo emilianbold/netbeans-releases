@@ -45,6 +45,7 @@ package org.netbeans.modules.php.smarty.editor;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorKit;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
@@ -53,10 +54,10 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
 import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
 import org.netbeans.spi.lexer.MutableTextInput;
-import sun.rmi.runtime.Log;
 
 /**
  * Editor kit implementation for TPL content type
@@ -115,7 +116,7 @@ public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         return TextAction.augmentList(super.createActions(), javaActions);
     }
 
-    public void initLexerColoringListener(Document doc) {
+    public void initLexerColoringListener(final Document doc) {
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
 
@@ -127,10 +128,23 @@ public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         inputAttributes.setValue(TplTopTokenId.language(), TplMetaData.class, tplMetaData, false);
         doc.putProperty(InputAttributes.class, inputAttributes);
 
-        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-        if (mti != null) {
-            mti.tokenHierarchyControl().rebuild();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override
