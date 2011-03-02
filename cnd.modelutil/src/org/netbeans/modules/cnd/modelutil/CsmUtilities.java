@@ -395,7 +395,7 @@ public class CsmUtilities {
         return CndPathUtilitities.isPathAbsolute(fo.getPath());
     }
 
-    public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
+    public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
@@ -462,17 +462,9 @@ public class CsmUtilities {
         }
         return new CsmFile[0];
     }
-
-    public static CsmFile[] getCsmFiles(FileObject fo, boolean snapShot) {
-        try {
-            return getCsmFiles(DataObject.find(fo), snapShot);
-        } catch (DataObjectNotFoundException ex) {
-            return new CsmFile[0];
-        }
-    }
-
+    
     public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing, boolean snapShot) {
-        CsmFile[] files = getCsmFiles(dobj, snapShot);
+        CsmFile[] files = getCsmFiles(dobj, waitParsing, snapShot);
         if (files == null || files.length == 0) {
             return null;
         } else {
