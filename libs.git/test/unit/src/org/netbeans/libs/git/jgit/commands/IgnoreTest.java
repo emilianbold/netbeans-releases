@@ -219,14 +219,10 @@ public class IgnoreTest extends AbstractGitTestCase {
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "#ignoreFile\nfolder/");
-        // test fails, there's an already fixed error in jgit, see http://egit.eclipse.org/w/?p=jgit.git;a=commit;h=c87ae94c70158ba2bcb310aa242102853d221f11
-        // but we need to wait for the next JGit release
-        GitStatus st = getClient(workDir).getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(new File(f, "file"));
-        assertNotNull(st);
-//        File[] ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        assertTrue(gitIgnore.exists());
-//        assertEquals("#ignoreFile\nfolder/", read(gitIgnore));
-//        assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
+        ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(gitIgnore.exists());
+        assertEquals("#ignoreFile\nfolder/", read(gitIgnore));
+        assertEquals(0, ignores.length);
     }
     
     public void testIgnoreRemoveNegation () throws Exception {
@@ -530,6 +526,17 @@ public class IgnoreTest extends AbstractGitTestCase {
         ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(excludeFile.exists());
         assertEquals("file", read(excludeFile));
+        assertEquals(0, ignores.length);
+    }
+    
+    public void test195841 () throws Exception {
+        File f = new File(new File(new File(workDir, "suite"), "build"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        File excludeFile = new File(workDir, ".gitignore");
+        write(excludeFile, "build/");
+        File[] ignores = getClient(workDir).ignore(new File[] { f.getParentFile() }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(excludeFile.exists());
         assertEquals(0, ignores.length);
     }
 }
