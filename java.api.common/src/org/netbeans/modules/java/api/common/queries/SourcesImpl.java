@@ -144,7 +144,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                     if (libLoc != null) {
                         SourceGroup[] grps = new SourceGroup[groups.length + 1];
                         System.arraycopy(groups, 0, grps, 0, groups.length);
-                        grps[grps.length - 1] = GenericSources.group(null, libLoc,
+                        grps[grps.length - 1] = GenericSources.group(project, libLoc,
                                 "sharedlibraries", // NOI18N
                                 NbBundle.getMessage(SourcesImpl.class, "LibrarySourceGroup_DisplayName"),
                                 null, null);
