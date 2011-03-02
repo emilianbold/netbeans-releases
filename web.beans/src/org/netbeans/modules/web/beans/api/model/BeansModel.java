@@ -56,7 +56,7 @@ public interface BeansModel {
     /**
      * @return all interceptor classes FQNs found in beans.xml files 
      */
-    Set<String> getIntercetorClasses();
+    Set<String> getInterceptorClasses();
     
     /**
      * @return all decorator classes FQNs found in beans.xml files

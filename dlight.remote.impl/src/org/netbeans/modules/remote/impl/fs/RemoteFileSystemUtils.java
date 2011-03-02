@@ -122,6 +122,14 @@ public class RemoteFileSystemUtils {
     }
 
     public static String escapeFileName(String name) {
+//        if (RemoteFileSystem.CACHE_FILE_NAME.equals(name)) {
+//            name = name + '_';
+//        } else if (RemoteFileSystem.ATTRIBUTES_FILE_NAME.equals(name)) {
+//            name = name + '_';
+//        }
+        if (name.startsWith(RemoteFileSystem.RESERVED_PREFIX)) {
+            name = RemoteFileSystem.RESERVED_PREFIX_ESCAPED + name.substring(RemoteFileSystem.RESERVED_PREFIX.length());
+        }
         if (!isWindows) {
             return name;
         }

@@ -519,8 +519,9 @@ public final class CompletionSupport implements DocumentListener {
                 int pos2 = findLastAssignmentBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset());
                 if(pos2 != -1) {
                     CsmType type = findExactVarType(file, var, varObj.getInitialValue().getStartOffset() + pos2, refContext);
-                    if(type != null) { 
-                        String varName = expr.substring(pos2).replaceAll("\\.(\\w*)(\\s)*=(.|\\n)*", "$1"); // NOI18N
+                    if(type != null) {
+                        String varName = expr.substring(pos2);
+                        varName = varName.substring(1, varName.indexOf("=")).trim(); // NOI18N
                         CsmClassifier cls = type.getClassifier();
                         if(cls != null) {
                             cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, file);

@@ -384,11 +384,6 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 modifiersTree =
                         maker.addModifiersAnnotation(modifiersTree, genUtils.createAnnotation(RestConstants.PATH, Collections.<ExpressionTree>singletonList(annArgument)));
                 
-                if ( Util.isCDIEnabled(project)){
-                    modifiersTree =maker.addModifiersAnnotation(modifiersTree,
-                            genUtils.createAnnotation(Constants.FQN_REQUESTED_SCOPE));
-                }
-
                 ClassTree newClassTree = maker.Class(
                         modifiersTree,
                         classTree.getSimpleName(),

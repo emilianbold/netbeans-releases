@@ -260,7 +260,7 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         String logFileContent[] = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("commit : Merge new_branch into HEAD", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
+        assertEquals("commit : Merge new_branch", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
         
         client.reset("master~1", GitClient.ResetType.HARD, ProgressMonitor.NULL_PROGRESS_MONITOR);
         result = client.merge(branchInfo.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -276,6 +276,6 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         logFileContent = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("commit : Merge commit '" + branchInfo.getRevision() + "' into HEAD", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
+        assertEquals("commit : Merge commit '" + branchInfo.getRevision() + "'", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
     }
 }

@@ -395,7 +395,7 @@ public class CsmUtilities {
         return CndPathUtilitities.isPathAbsolute(fo.getPath());
     }
 
-    public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
+    public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
@@ -406,7 +406,7 @@ public class CsmUtilities {
                     for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
                         if (csmProject != null) {
-                            CsmFile file = csmProject.findFile(item, snapShot);
+                            CsmFile file = csmProject.findFile(item, waitParsing, snapShot);
                             if (file != null) {
                                 if (item.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                     saFiles.add(file);
@@ -423,7 +423,7 @@ public class CsmUtilities {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
                         String normPath = fo.getPath();
-                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, waitParsing, snapShot);
                         if (csmFile != null) {
                             files.add(csmFile);
                         }
@@ -462,17 +462,9 @@ public class CsmUtilities {
         }
         return new CsmFile[0];
     }
-
-    public static CsmFile[] getCsmFiles(FileObject fo, boolean snapShot) {
-        try {
-            return getCsmFiles(DataObject.find(fo), snapShot);
-        } catch (DataObjectNotFoundException ex) {
-            return new CsmFile[0];
-        }
-    }
-
+    
     public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing, boolean snapShot) {
-        CsmFile[] files = getCsmFiles(dobj, snapShot);
+        CsmFile[] files = getCsmFiles(dobj, waitParsing, snapShot);
         if (files == null || files.length == 0) {
             return null;
         } else {

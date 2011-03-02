@@ -388,8 +388,8 @@ public final class ProjectImpl extends ProjectBase {
 
     public 
     @Override
-    ProjectBase findFileProject(CharSequence absPath) {
-        ProjectBase retValue = super.findFileProject(absPath);
+    ProjectBase findFileProject(CharSequence absPath, boolean waitFilesCreated) {
+        ProjectBase retValue = super.findFileProject(absPath, waitFilesCreated);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
         if (retValue == null && ParserThreadManager.instance().isStandalone()) {
             retValue = absPath.toString().startsWith("/usr") ? retValue : this; // NOI18N

@@ -98,11 +98,11 @@ public class DirectoryStorage {
                     throw new FormatException("wrong version format " + file.getAbsolutePath(), nfe); // NOI18N
                 }
                 if (version > VERSION) {
-                    throw new FormatException("attributes file version " + version +  //NNOI18N
+                    throw new FormatException("directory cache file version " + version +  //NNOI18N
                             " not supported: " + file.getAbsolutePath(), true); //NOI18N
                 }
                 if (version < ODD_VERSION) {
-                    throw new FormatException("Discarding old attributes file version " + version +  //NNOI18N
+                    throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
                             ' ' + file.getAbsolutePath(), true); //NOI18N
                 }
                 while ((line = br.readLine()) != null) {
