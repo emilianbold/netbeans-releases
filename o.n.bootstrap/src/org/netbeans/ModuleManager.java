@@ -445,45 +445,15 @@ public final class ModuleManager extends Modules {
         }
     }
 
-    public void setupClassLoaderForJaveleonModule(Module javeleonModule) throws InvalidException {
-        try {
-            JaveleonModule jm = (JaveleonModule) javeleonModule;
-            // Calculate the parents to initialize the classloader with.
-            Dependency[] dependencies = jm.getDependenciesArray();
-            Set<Module> parents = new HashSet<Module>(dependencies.length * 4 / 3 + 1);
-            for (int i = 0; i < dependencies.length; i++) {
-                Dependency dep = dependencies[i];
-                if (dep.getType() != Dependency.TYPE_MODULE) {
-                    // Token providers do *not* go into the parent classloader
-                    // list. The providing module must have been turned on first.
-                    // But you cannot automatically access classes from it.
-                    continue;
-                }
-                String name = (String) Util.parseCodeName(dep.getName())[0];
-                Module parent = get(name);
-                // Should not happen:
-                if (parent == null) {
-                    throw new IOException("Parent " + name + " not found!"); // NOI18N
-                }
-                parents.add(parent);
-            }
-            javeleonModule.classLoaderUp(parents);
-//            classLoader.append(new ClassLoader[]{javeleonModule.getClassLoader()});
-        } catch (IOException ioe) {
-            InvalidException ie = new InvalidException(javeleonModule, ioe.toString());
-            ie.initCause(ioe);
-            throw ie;
-        }
-    }
-
-    public void replaceJaveleonModule (Module module, Module newModule) {
+    /** Only for use with Javeleon modules. */
+    public void replaceJaveleonModule(Module module, Module newModule) {
+        assert newModule instanceof JaveleonModule;
         modules.remove(module);
         modulesByName.remove(module.getCodeNameBase());
         modules.add(newModule);
         modulesByName.put(newModule.getCodeNameBase(), newModule);
         invalidateClassLoader();
     }
-
 
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
@@ -625,16 +595,6 @@ public final class ModuleManager extends Modules {
         ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
         subCreate(m);
         return m;
-    }
-
-    public Module createJaveleonModule(File jar, Object history) throws IOException {
-        try {
-            Module m = moduleFactory.createJaveleon(jar.getAbsoluteFile(), history, this, ev);
-            return m;
-        } catch (IOException ex) {
-            System.err.println("EXCEPTION IN MGR.createJav...");
-            throw ex;
-        }
     }
 
     /** Create a fixed module (e.g. from classpath).
@@ -1350,19 +1310,42 @@ public final class ModuleManager extends Modules {
         return true;
     }
 
+    /** Only for use from Javeleon code. */
     public List<Module> simulateJaveleonReload(Module moduleToReload) throws IllegalArgumentException {
         Set<Module> transitiveDependents = new HashSet<Module>(20);
         addToJaveleonDisableList(transitiveDependents, moduleToReload);
-        Map<Module, List<Module>> deps = Util.moduleDependencies(transitiveDependents, modulesByName, providersOf);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(transitiveDependents, modulesByName, providersOf);
         try {
             LinkedList<Module> orderedForEnabling = new LinkedList<Module>();
-            for(Module m :  Utilities.topologicalSort(transitiveDependents, deps)) {
-                if(m != moduleToReload)
+            for (Module m : Utilities.topologicalSort(transitiveDependents, deps)) {
+                if (m != moduleToReload) {
                     orderedForEnabling.addFirst(m);
+                }
             }
             return orderedForEnabling;
         } catch (TopologicalSortException ex) {
             return new ArrayList<Module>(transitiveDependents);
+        }
+    }
+    private void addToJaveleonDisableList(Set<Module> willDisable, Module m) {
+        if (willDisable.contains(m)) {
+            return;
+        }
+        willDisable.add(m);
+        for (Module other : modules) {
+            if (! other.isEnabled() || willDisable.contains(other)) {
+                continue;
+            }
+            Dependency[] depenencies = other.getDependenciesArray();
+            for (int i = 0; i < depenencies.length; i++) {
+                Dependency dep = depenencies[i];
+                if (dep.getType() == Dependency.TYPE_MODULE) {
+                    if (dep.getName().equals(m.getCodeName())) {
+                        addToDisableList(willDisable, other);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -1458,36 +1441,6 @@ public final class ModuleManager extends Modules {
             }
         }
     }
-
-    private void addToJaveleonDisableList(Set<Module> willDisable, Module m) {
-        if (willDisable.contains(m)) {
-            // E.g. if original set had A then B, B depends on A.
-            return;
-        }
-        willDisable.add(m);
-        // Find any modules depending on this one which are currently enabled.
-        // (And not already here.)
-        // If there are any, add them.
-        for (Module other : modules) {
-            if (! other.isEnabled() || willDisable.contains(other)) {
-                continue;
-            }
-            Dependency[] depenencies = other.getDependenciesArray();
-            for (int i = 0; i < depenencies.length; i++) {
-                Dependency dep = depenencies[i];
-                if (dep.getType() == Dependency.TYPE_MODULE) {
-                    if (dep.getName().equals(m.getCodeName())) {
-                        // Need to disable this one too.
-                        addToDisableList(willDisable, other);
-                        // No need to scan the rest of its dependencies.
-                        break;
-                    }
-                } 
-                // else some other kind of dependency, we do not care
-            }
-        }
-    }
-
     private boolean searchForUnusedAutoloads(Set<Module> willDisable, Set<Module> stillEnabled) {
         // Check for any autoloads in stillEnabled which are not used by anything else
         // in stillEnabled. For each such, remove it from stillEnabled and add

@@ -44,12 +44,12 @@ package org.netbeans.core.startup;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,10 +61,9 @@ import org.netbeans.InvalidException;
 import org.netbeans.JaveleonModule;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.Util;
+import org.openide.modules.Dependency;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -104,7 +103,7 @@ class JaveleonModuleReloader {
         // the existing module if any
         Module m = null;
         // the new updated module
-        Module tm = null;
+        JaveleonModule tm = null;
         // Anything that needs to have class loaders refreshed
         List<Module> dependents;
         // First see if this refers to an existing module.
@@ -113,7 +112,7 @@ class JaveleonModuleReloader {
                 if (jar.equals(module.getJarFile())) {
                     // Hah, found it.
                     m = module;
-                    tm = mgr.createJaveleonModule(jar, new ModuleHistory(jar.getAbsolutePath()));
+                    tm = createJaveleonModule(mgr, jar, new ModuleHistory(jar.getAbsolutePath()));
                     break;
                 }
             }
@@ -126,7 +125,7 @@ class JaveleonModuleReloader {
 
         // setup the class loader for the new Javeleon module
         // That's all we need to do to update the module with Javeleon!
-        mgr.setupClassLoaderForJaveleonModule(tm);
+        setupClassLoaderForJaveleonModule(mgr, tm);
         refreshLayer(m, tm, installer, mgr);
 
         // OK so far, then create new Javeleon modules for the
@@ -134,14 +133,52 @@ class JaveleonModuleReloader {
         // them as well
         for (Module m3 : dependents) {
             File moduleJar = m3.getJarFile();
-            Module toRefresh = mgr.createJaveleonModule(moduleJar, new ModuleHistory(moduleJar.getAbsolutePath()));
-            mgr.setupClassLoaderForJaveleonModule(toRefresh);
+            JaveleonModule toRefresh = createJaveleonModule(mgr, moduleJar, new ModuleHistory(moduleJar.getAbsolutePath()));
+            setupClassLoaderForJaveleonModule(mgr, toRefresh);
             refreshLayer(m3, toRefresh, installer, mgr);
         }
         // done...
         System.err.println("Javeleon finished module update...");
         ev.log(Events.FINISH_DEPLOY_TEST_MODULE, jar);
         return true;
+    }
+
+    private JaveleonModule createJaveleonModule(ModuleManager mgr, File jar, Object history) throws IOException {
+        try {
+            return new JaveleonModule(mgr, jar.getAbsoluteFile(), history, mgr.getEvents());
+        } catch (IOException ex) {
+            System.err.println("EXCEPTION IN MGR.createJav...");
+            throw ex;
+        }
+    }
+
+    private void setupClassLoaderForJaveleonModule(ModuleManager mgr, JaveleonModule javeleonModule) throws InvalidException {
+        try {
+            // Calculate the parents to initialize the classloader with.
+            Dependency[] dependencies = javeleonModule.getDependenciesArray();
+            Set<Module> parents = new HashSet<Module>(dependencies.length * 4 / 3 + 1);
+            for (Dependency dep : dependencies) {
+                if (dep.getType() != Dependency.TYPE_MODULE) {
+                    // Token providers do *not* go into the parent classloader
+                    // list. The providing module must have been turned on first.
+                    // But you cannot automatically access classes from it.
+                    continue;
+                }
+                String name = (String) Util.parseCodeName(dep.getName())[0];
+                Module parent = mgr.get(name);
+                // Should not happen:
+                if (parent == null) {
+                    throw new IOException("Parent " + name + " not found!"); // NOI18N
+                }
+                parents.add(parent);
+            }
+            javeleonModule.classLoaderUp(parents);
+//            classLoader.append(new ClassLoader[]{javeleonModule.getClassLoader()});
+        } catch (IOException ioe) {
+            InvalidException ie = new InvalidException(javeleonModule, ioe.toString());
+            ie.initCause(ioe);
+            throw ie;
+        }
     }
 
     private Map<Object, Object[]> retainOpenTopComponents(ClassLoader loader) {

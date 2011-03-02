@@ -93,18 +93,6 @@ public class ModuleFactory {
         Module m = new FixedModule(mgr, ev, mani, history, loader, autoload, eager);
         return m;
     }
-
-    public Module createJaveleon(File jar, Object history, ModuleManager mgr, Events ev)
-            throws IOException {
-        try {
-            JaveleonModule m = new JaveleonModule(mgr, jar, history, ev);
-            m.setEnabled(true);
-            return m;
-        } catch (InvalidException ex) {
-            throw ex;
-        }
-    }
-
     /**
      * Allows specifying different parent classloader of all modules classloaders.
      */

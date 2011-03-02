@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -83,8 +84,9 @@ public final class JaveleonModule extends AbstractStandardModule {
     private static HashMap<String,ClassLoader> currentClassLoaders = new HashMap<String, ClassLoader>();
 
 
-    JaveleonModule(ModuleManager mgr, File jar, Object history, Events ev) throws IOException {
+    public JaveleonModule(ModuleManager mgr, File jar, Object history, Events ev) throws IOException {
         super(mgr, ev, jar, history, true, false, false);
+        setEnabled(true);
     }
 
     @Override
@@ -92,6 +94,10 @@ public final class JaveleonModule extends AbstractStandardModule {
         ClassLoader cl = new BaseModuleClassLoader(classp, parents.toArray(new ClassLoader[parents.size()]));
         currentClassLoaders.put(getCodeNameBase(), cl);
         return cl;
+    }
+
+    public @Override void classLoaderUp(Set<Module> parents) throws IOException {
+        super.classLoaderUp(parents);
     }
 
     @Override
