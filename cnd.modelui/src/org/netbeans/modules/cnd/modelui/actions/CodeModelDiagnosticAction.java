@@ -131,7 +131,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 final DataObject dob = node.getLookup().lookup(DataObject.class);
                 if (dob != null) {
                     lookupObjects.add(dob);
-                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false);
+                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false, false);
                     if (csmFiles != null) {
                         files.addAll(Arrays.asList(csmFiles));
                     }

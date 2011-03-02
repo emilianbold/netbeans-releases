@@ -45,18 +45,8 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -70,7 +60,6 @@ import org.openide.util.NbBundle;
  */
 public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
 
-    private final PendingFilesQueue pendingFilesQueue = new PendingFilesQueue();
     private final ExecutionEnvironment execEnv;
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
@@ -104,78 +93,11 @@ public class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
 
     // NB: it is always called in a specially created thread
     private void onConnect() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(getClass(), "Progress_Title", getDisplayName(execEnv)));
-        handle.start();
-        handle.switchToDeterminate(pendingFilesQueue.size());
-        int cnt = 0;
-        try {
-            RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
-            PendingFile pendingFile;
-            // die after half a minute inactivity period
-            while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
-                RemoteFileObjectBase dir = fs.findResource(pendingFile.remotePath);
-                if (dir != null) {
-                    dir.ensureSync();
-                } else {
-                    RemoteLogger.getInstance().log(Level.INFO, "Directory {0}:{1} does not exist (was it removed?)", new Object[]{execEnv, pendingFile.remotePath});
-                }
-                handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
-            }
-        } finally {
-            handle.finish();
-            RemoteFileSystemManager.getInstance().fireDownloadListeners(execEnv);
-        }
+        RemoteFileSystemManager.getInstance().fireDownloadListeners(execEnv);
     }
 
     public void addPendingFile(RemoteFileObjectBase fo) {
         RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, fo.getPath()}); //NOI18N
-        //pendingFilesQueue.add(fo.remotePath);
         ConnectionNotifier.addTask(execEnv, this);
-    }
-
-    private static class PendingFile {
-        public final String remotePath;
-        public PendingFile(String remotePath) {
-            this.remotePath = remotePath;
-        }
-    }
-
-    /**
-     * NB: the class is not optimized, for in fact it's used from CndFileUtils,
-     * which perform all necessary caching.
-     */
-    private static class PendingFilesQueue {
-
-        private final BlockingQueue<PendingFile> queue = new LinkedBlockingQueue<PendingFile>();
-        private final Set<String> remoteAbsPaths = new TreeSet<String>();
-
-        public synchronized void add(String remotePath) {
-            if (remoteAbsPaths.add(remotePath)) {
-                queue.add(new PendingFile(remotePath));
-            }
-        }
-
-        public synchronized PendingFile take() throws InterruptedException {
-            PendingFile pendingFile = queue.take();
-            remoteAbsPaths.remove(pendingFile.remotePath);
-            return pendingFile;
-        }
-
-        public synchronized PendingFile poll(long timeout, TimeUnit unit) throws InterruptedException {
-            PendingFile pendingFile = queue.poll(timeout, unit);
-            if (pendingFile != null) {
-                remoteAbsPaths.remove(pendingFile.remotePath);
-            }
-            return pendingFile;
-        }
-        
-        public synchronized List<String> getPendingFiles() {
-            return Collections.unmodifiableList(new ArrayList<String>(remoteAbsPaths));
-        }
-
-        public int size() {
-            return remoteAbsPaths.size();
-        }
     }
 }
