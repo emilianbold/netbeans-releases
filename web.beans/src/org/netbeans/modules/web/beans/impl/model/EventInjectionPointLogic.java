@@ -51,8 +51,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -73,8 +73,6 @@ import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 
 
 /**
@@ -87,22 +85,20 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         "javax.enterprise.event.Event";             // NOI18N
 
 
+    EventInjectionPointLogic(WebBeansModelImplementation model ) {
+        super( model );
+    }
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getObservers(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getObservers(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
      */
     @Override
     public List<ExecutableElement> getObservers( VariableElement element,
-            DeclaredType parentType,
-            AbstractModelImplementation modelImplementation )
+            DeclaredType parentType)
     {
-        WebBeansModelImplementation impl = WebBeansModelProviderImpl
-                .getImplementation(modelImplementation);
-        if ( impl == null ){
-            return Collections.emptyList();
-        }
         DeclaredType parent = parentType;
         try {
-            parent = getParent(element, parentType, impl);
+            parent = getParent(element, parentType);
         }
         catch (DefinitionError e) {
             return null;
@@ -111,12 +107,11 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         /*TypeMirror type = impl.getHelper().getCompilationController().
             getTypes().asMemberOf(parent, element );*/
         
-        TypeMirror type = getParameterType(element, parent, 
-                impl.getHelper().getCompilationController(), EVENT_INTERFACE);
+        TypeMirror type = getParameterType(element, parent, EVENT_INTERFACE);
         
         List<AnnotationMirror> qualifierAnnotations = new LinkedList<AnnotationMirror>();
         try {
-            hasAnyQualifier(element, impl, true, true ,qualifierAnnotations);
+            hasAnyQualifier(element,  true, true ,qualifierAnnotations);
         }
         catch(InjectionPointDefinitionError e ){
             return null;
@@ -124,7 +119,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         boolean hasAny = qualifierAnnotations.size()==0;
         
         final List<ObserverTriple> methodObservesParameters = 
-            findObservesParameters(impl.getHelper());
+            findObservesParameters();
         
         Map<Element, TypeMirror> parameterTypesMap = 
                 new HashMap<Element, TypeMirror>();
@@ -132,11 +127,11 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             ExecutableElement method = triple.getFirst();
             VariableElement parameter = triple.getSecond();
             int index = triple.getThird();
-            TypeElement typeElement = impl.getHelper().getCompilationController().
+            TypeElement typeElement = getCompilationController().
                 getElementUtilities().enclosingTypeElement( method );
             TypeMirror typeMirror = typeElement.asType();
             if ( typeMirror instanceof DeclaredType ){
-                ExecutableType methodType = (ExecutableType)impl.getHelper().
+                ExecutableType methodType = (ExecutableType)
                     getCompilationController().getTypes().asMemberOf(
                             (DeclaredType)typeMirror, method );
                 List<? extends TypeMirror> parameterTypes = methodType.getParameterTypes();
@@ -148,15 +143,13 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         }
         if ( !hasAny ){
             Set<Element> elements = parameterTypesMap.keySet();
-            filterByQualifiers( qualifierAnnotations , elements, 
-                    impl.getHelper().getCompilationController());
-            filterBindingsByMembers(qualifierAnnotations, elements, impl, 
-                    Element.class);
+            filterByQualifiers( qualifierAnnotations , elements);
+            filterBindingsByMembers(qualifierAnnotations, elements, Element.class);
         }
         
         List<ExecutableElement> result = new ArrayList<ExecutableElement>( 
                 parameterTypesMap.size());
-        filterParametersByType( parameterTypesMap , type , impl );
+        filterParametersByType( parameterTypesMap , type  );
         for( Element parameter : parameterTypesMap.keySet() ){
             Element method = parameter.getEnclosingElement();
             if ( method.getKind() == ElementKind.METHOD){
@@ -167,19 +160,12 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getObserverParameter(javax.lang.model.element.ExecutableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getObserverParameter(javax.lang.model.element.ExecutableElement)
      */
-    public VariableElement getObserverParameter( ExecutableElement element,
-            AbstractModelImplementation modelImplementation )
+    public VariableElement getObserverParameter( ExecutableElement element )
     {
-        WebBeansModelImplementation impl = WebBeansModelProviderImpl
-                .getImplementation(modelImplementation);
-        if ( impl == null ){
-            return null;
-        }
-        
         Triple<VariableElement, Integer, Void> result = 
-            doGetObserverParameter(element, impl);
+            doGetObserverParameter(element);
         if ( result == null ){
             return null;
         }
@@ -189,31 +175,25 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getEventInjectionPoints(javax.lang.model.element.ExecutableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getEventInjectionPoints(javax.lang.model.element.ExecutableElement, javax.lang.model.type.DeclaredType)
      */
     @Override
     public List<VariableElement> getEventInjectionPoints(
-            ExecutableElement element, DeclaredType parentType,
-            AbstractModelImplementation modelImplementation )
+            ExecutableElement element, DeclaredType parentType )
     {
-        final WebBeansModelImplementation impl = WebBeansModelProviderImpl
-            .getImplementation(modelImplementation);
-        if ( impl == null ){
-            return null;
-        }
         DeclaredType parent = parentType;
         try {
-            parent = getParent(element, parentType, impl);
+            parent = getParent(element, parentType);
         }
         catch (DefinitionError e) {
             return null;
         }
         
-        TypeMirror type = impl.getHelper().getCompilationController().
-            getTypes().asMemberOf(parent, element );
+        TypeMirror type = getCompilationController().getTypes().asMemberOf(parent, 
+                element );
         
         Triple<VariableElement, Integer, Void> parameterInfo = 
-            doGetObserverParameter(element, impl);
+            doGetObserverParameter(element);
         VariableElement  parameter = parameterInfo.getFirst();
         int index = parameterInfo.getSecond();
         
@@ -221,31 +201,30 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             return Collections.emptyList();
         }
         
-        List<VariableElement> eventInjectionPoints = getEventInjectionPoints(impl);
+        List<VariableElement> eventInjectionPoints = getEventInjectionPoints();
     
-        filterByQualifiers( eventInjectionPoints, parameter, impl );
+        filterByQualifiers( eventInjectionPoints, parameter);
         
         List<? extends TypeMirror> parameterTypes = ((ExecutableType)type).getParameterTypes();
         
         TypeMirror parameterType = parameterTypes.get( index );
         
-        filterEventInjectionsByType( eventInjectionPoints, parameterType,impl);
+        filterEventInjectionsByType( eventInjectionPoints, parameterType);
         return eventInjectionPoints;
     }
 
-    private List<VariableElement> getEventInjectionPoints( final WebBeansModelImplementation impl )
+    private List<VariableElement> getEventInjectionPoints( )
     {
         final List<VariableElement> eventInjection = new LinkedList<VariableElement>();
         try {
-            impl.getHelper().getAnnotationScanner().findAnnotations(INJECT_ANNOTATION, 
+            getModel().getHelper().getAnnotationScanner().findAnnotations(INJECT_ANNOTATION, 
                     EnumSet.of( ElementKind.FIELD),  new AnnotationHandler() {
                         
                         @Override
                         public void handleAnnotation( TypeElement type, 
                                 Element element, AnnotationMirror annotation )
                         {
-                           Element typeElement = impl.getHelper().
-                               getCompilationController().getTypes().
+                           Element typeElement = getCompilationController().getTypes().
                                    asElement( element.asType() );
                             if ( typeElement instanceof TypeElement && 
                                     element instanceof VariableElement )
@@ -265,14 +244,14 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
 
     private void filterByQualifiers( List<? extends AnnotationMirror> qualifierAnnotations,
-            Set<Element> elements , CompilationController compilationController )
+            Set<Element> elements  )
     {
         Set<String> requiredQualifiers = getAnnotationFqns(qualifierAnnotations);
         
         for (Iterator<Element>  iterator = elements.iterator(); iterator.hasNext(); ) {
             Element  element = iterator.next();
             List<? extends AnnotationMirror> annotationMirrors = 
-                compilationController.getElements().getAllAnnotationMirrors( element );
+                getCompilationController().getElements().getAllAnnotationMirrors( element );
             Set<String> availableAnnotations = getAnnotationFqns(annotationMirrors);
             if ( !availableAnnotations.containsAll( requiredQualifiers )){
                 iterator.remove();
@@ -281,11 +260,10 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
     
     private void filterByQualifiers(List<VariableElement> injectionPoints,
-            VariableElement parameter, WebBeansModelImplementation impl )
+            VariableElement parameter )
     {
-        List<? extends AnnotationMirror> annotationMirrors = impl.getHelper().
-            getCompilationController().getElements().
-                getAllAnnotationMirrors( parameter );
+        List<? extends AnnotationMirror> annotationMirrors = getCompilationController().
+            getElements().getAllAnnotationMirrors( parameter );
         Set<String> parameterAnnotations = getAnnotationFqns(annotationMirrors);
         for (Iterator<VariableElement> iterator = injectionPoints.iterator(); 
             iterator.hasNext() ; ) 
@@ -293,8 +271,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             VariableElement eventInjection = iterator.next();
             List<AnnotationMirror> eventQualifiers = new LinkedList<AnnotationMirror>();
             try {
-                hasAnyQualifier(eventInjection, impl, true, true, 
-                        eventQualifiers);
+                hasAnyQualifier(eventInjection, true, true, eventQualifiers);
             }
             catch (InjectionPointDefinitionError e) {
                 iterator.remove();
@@ -309,7 +286,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
                 iterator.remove();
                 continue;
             }
-            if ( !checkQualifierMembers( eventQualifiers , annotationMirrors, impl)){
+            if ( !checkQualifierMembers( eventQualifiers , annotationMirrors)){
                 iterator.remove();
                 continue;
             }
@@ -318,16 +295,15 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     
     private boolean checkQualifierMembers(
             List<AnnotationMirror> eventQualifiers,
-            List<? extends AnnotationMirror> observerAnnotations,
-            WebBeansModelImplementation impl )
+            List<? extends AnnotationMirror> observerAnnotations )
     {
         for (AnnotationMirror annotation : eventQualifiers) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> 
                 elementValues = annotation.getElementValues();
             Set<ExecutableElement> qualifierMembers = MemberBindingFilter.
-                collectBindingMembers( annotation, impl);
+                collectBindingMembers( annotation, getModel());
             if ( !checkMember( elementValues , qualifierMembers, 
-                    observerAnnotations , impl ))
+                    observerAnnotations  ))
             {
                 return false;
             }
@@ -338,8 +314,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     private boolean checkMember(
             Map<? extends ExecutableElement, ? extends AnnotationValue> memberValues,
             Set<ExecutableElement> qualifierMembers,
-            List<? extends AnnotationMirror> observerAnnotations ,
-            WebBeansModelImplementation impl)
+            List<? extends AnnotationMirror> observerAnnotations )
     {
         for( Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
             memberValues.entrySet())
@@ -353,7 +328,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
                 }
                 String annotationName = ((TypeElement)annotationElement).
                                                         getQualifiedName().toString();
-                AnnotationMirror annotationMirror = impl.getHelper()
+                AnnotationMirror annotationMirror = getModel().getHelper()
                     .getAnnotationsByType(observerAnnotations).get(annotationName);
                 if ( annotationMirror == null ){
                     return false;
@@ -369,14 +344,14 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         return true;
     }
 
-    private Triple<VariableElement, Integer, Void> doGetObserverParameter( ExecutableElement element,
-            WebBeansModelImplementation impl )
+    private Triple<VariableElement, Integer, Void> doGetObserverParameter( 
+            ExecutableElement element )
     {
         List<? extends VariableElement> parameters = element.getParameters();
         int index = 0 ; 
         for (VariableElement parameter : parameters) {
             List<? extends AnnotationMirror> allAnnotationMirrors = 
-                impl.getHelper().getCompilationController().getElements().
+                getCompilationController().getElements().
                 getAllAnnotationMirrors( parameter );
             for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
                 DeclaredType annotationType = annotationMirror.getAnnotationType();
@@ -403,8 +378,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
     
     private void filterParametersByType(
-            Map<Element, TypeMirror> parameterTypesMap, TypeMirror type,
-            WebBeansModelImplementation impl )
+            Map<Element, TypeMirror> parameterTypesMap, TypeMirror type )
     {
         AssignabilityChecker checker = new AssignabilityChecker( true );
         for (Iterator<Entry<Element, TypeMirror>> iterator =
@@ -413,7 +387,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             Entry<Element, TypeMirror> entry = iterator.next();
             TypeMirror typeMirror = entry.getValue();
             
-            boolean assignable = isAssignable(type, typeMirror, checker, impl);
+            boolean assignable = isAssignable(type, typeMirror, checker);
             
             if ( !assignable ){
                 iterator.remove();
@@ -423,18 +397,17 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     
     private void filterEventInjectionsByType(
             List<VariableElement> eventInjectionPoints,
-            TypeMirror parameterType, WebBeansModelImplementation impl )
+            TypeMirror parameterType)
     {
         AssignabilityChecker checker = new AssignabilityChecker( true );
         for (Iterator<VariableElement> iterator =
             eventInjectionPoints.iterator();iterator.hasNext() ; ) 
         {
             VariableElement injection = iterator.next();
-            TypeMirror type = getParameterType(injection, null, 
-                    impl.getHelper().getCompilationController(), EVENT_INTERFACE);
+            TypeMirror type = getParameterType(injection, null, EVENT_INTERFACE);
             
             boolean assignable = isAssignable(type, parameterType, 
-                    checker, impl);
+                    checker);
             
             if ( !assignable ){
                 iterator.remove();
@@ -443,17 +416,16 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
     
     private boolean isAssignable( TypeMirror subject , TypeMirror toType ,
-            AssignabilityChecker checker, WebBeansModelImplementation impl)
+            AssignabilityChecker checker)
     {
         boolean assignable = false;
         
-        Element typeElement = impl.getHelper().
-            getCompilationController().getTypes().asElement( toType );
+        Element typeElement = getCompilationController().getTypes().asElement( toType );
     
         boolean isGeneric = (typeElement instanceof TypeElement) &&
             ((TypeElement)typeElement).getTypeParameters().size() != 0;
         
-        if ( !isGeneric && impl.getHelper().getCompilationController().
+        if ( !isGeneric && getCompilationController().
                 getTypes().isAssignable( subject, toType))
         {
             return true;
@@ -462,7 +434,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         if ( subject instanceof ReferenceType && 
                 toType instanceof ReferenceType)
         {
-            checker.init((ReferenceType)toType,  (ReferenceType)subject, impl);
+            checker.init((ReferenceType)toType,  (ReferenceType)subject, getModel());
             assignable = checker.check();
         }
         return assignable;
@@ -474,11 +446,11 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
      * work for them. So this method performs find usages of @Observes annotation
      * and chooses appropriate elements.   
      */
-    private List<ObserverTriple> findObservesParameters(AnnotationModelHelper helper )
+    private List<ObserverTriple> findObservesParameters()
     {
         List<ObserverTriple> result = new LinkedList<ObserverTriple>();
         CompilationController compilationController = 
-            helper.getCompilationController();
+            getModel().getHelper().getCompilationController();
         TypeElement observesType = compilationController.getElements().getTypeElement(
                 OBSERVES_ANNOTATION);
         ElementHandle<TypeElement> observesHandle = ElementHandle.create(observesType);
@@ -501,7 +473,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
                     List<? extends AnnotationMirror> annotationMirrors = 
                         compilationController.getElements().
                         getAllAnnotationMirrors( parameter);
-                    if ( helper.hasAnnotation( annotationMirrors, 
+                    if ( getModel().getHelper().hasAnnotation( annotationMirrors, 
                             OBSERVES_ANNOTATION) ){
                         result.add( new ObserverTriple( method, parameter, index)  );
                     }

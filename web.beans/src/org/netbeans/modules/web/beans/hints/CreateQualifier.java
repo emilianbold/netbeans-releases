@@ -173,7 +173,7 @@ public class CreateQualifier implements ErrorRule<Void> {
         }
         
         Element element = compilationInfo.getTrees().getElement(errorPath);
-        if ( element == null || element.getSimpleName() == null || 
+        if ( element.getSimpleName() == null || 
                 errorPath.getLeaf().getKind() != Kind.IDENTIFIER )
         {
             return Collections.<Fix>emptyList();
