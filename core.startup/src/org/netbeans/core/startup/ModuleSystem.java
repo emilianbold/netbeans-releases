@@ -318,7 +318,7 @@ public final class ModuleSystem {
         }
         return res;
     }
-    
+  
     /** Load a module in test (reloadable) mode.
      * If there is an existing module with a different JAR, get
      * rid of it and load this one instead.
@@ -329,6 +329,11 @@ public final class ModuleSystem {
      */
     final void deployTestModule(File jar) throws IOException {
         if (! jar.isAbsolute()) throw new IOException("Absolute paths only please"); // NOI18N
+
+        // Check to see if Javeleon is enabled. If so,
+        // let Javeleon handle the module reloading.
+        if(JaveleonModuleReloader.getDefault().reloadJaveleonModule(jar, mgr, installer, ev)) return;
+        
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_DEPLOY_TEST_MODULE, jar);
         // For now, just print to stderr directly; could also go thru Events.

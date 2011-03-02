@@ -44,9 +44,11 @@
 
 package org.netbeans.core.startup;
 
+import java.lang.reflect.Field;
 import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -89,7 +91,7 @@ public final class MainLookup extends ProxyLookup {
                    instanceLookup
                });
     }
-
+    
     /** Called when a system classloader changes.
      */
     public static final void systemClassLoaderChanged (ClassLoader nue) {
