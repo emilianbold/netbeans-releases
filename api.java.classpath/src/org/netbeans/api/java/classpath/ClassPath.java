@@ -69,6 +69,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -620,7 +622,7 @@ public final class ClassPath {
      *         there is no classpath available
      * @see ClassPathProvider
      */
-    public static ClassPath getClassPath(FileObject f, String id) {
+    public static @CheckForNull ClassPath getClassPath(@NonNull FileObject f, @NonNull String id) {
         if (f == null) {
             // What else can we do?? Backwards compatibility only.
             Thread.dumpStack();
