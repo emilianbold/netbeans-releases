@@ -190,10 +190,10 @@ public class ModelSource implements SourceFileProperties {
                     if (!file.getProject().isArtificial()) {
                         Item aItem = projectSearchBase.get(fullPath);
                         if (aItem != null) {
-                            resolved = file.getProject().findFile(aItem, false);
+                            resolved = file.getProject().findFile(aItem, true, false);
                         }
                     } else {
-                        resolved = file.getProject().findFile(fullPath, false);
+                        resolved = file.getProject().findFile(fullPath, true, false);
                     }
                     path = getRelativepath(path);
                     res.add(path);
@@ -248,7 +248,7 @@ public class ModelSource implements SourceFileProperties {
                                 logger.log(Level.FINE, "Directive resolved in project on path: {0} instead {1}", new Object[]{path, resolvedPath}); // NOI18N
                             }
                             String fullPath = CndFileUtils.normalizeAbsolutePath(path+File.separatorChar+include.getIncludeName());
-                            resolved = file.getProject().findFile(fullPath, false);
+                            resolved = file.getProject().findFile(fullPath, true, false);
                             path = getRelativepath(path);
                             res.add(path);
                             reResolve = true;

@@ -746,7 +746,12 @@ public class ModelSupport implements PropertyChangeListener {
                             CndFileUtils.clearFileExistenceCache();
                         }
                    } else {
-                        CsmFile[] files = CsmUtilities.getCsmFiles(fo, false);
+                        CsmFile[] files;
+                        try {
+                            files = CsmUtilities.getCsmFiles(DataObject.find(fo), false, false);
+                        } catch (DataObjectNotFoundException ex) {
+                            files = new CsmFile[0];
+                        }                        
                         for (int i = 0; i < files.length; ++i) {
                             FileImpl file = (FileImpl) files[i];
                             ProjectBase project = file.getProjectImpl(true);

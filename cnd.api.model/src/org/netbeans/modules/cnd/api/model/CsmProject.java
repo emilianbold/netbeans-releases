@@ -106,7 +106,7 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
     /**
      * Finds file by object that can be absolute path or native file item
      */
-    public abstract CsmFile findFile(Object absolutePathOrNativeFileItem, boolean snapShot);
+    public abstract CsmFile findFile(Object absolutePathOrNativeFileItem, boolean createIfPossible, boolean snapShot);
 
     /**
      * Gets the collection of source project files.
