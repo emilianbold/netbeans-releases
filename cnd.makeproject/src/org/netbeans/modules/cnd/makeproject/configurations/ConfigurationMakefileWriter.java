@@ -232,29 +232,34 @@ public class ConfigurationMakefileWriter {
     private void cleanup(Collection<MakeConfiguration> okConfs) {
         List<MakeConfiguration> protectedConfs = new ArrayList<MakeConfiguration>();
         Configuration[] confs = projectDescriptor.getConfs().toArray();
-        for (Configuration c : projectDescriptor.getConfs().toArray()) {
+        for (Configuration c : confs) {
             MakeConfiguration conf = (MakeConfiguration) c;
             if (!okConfs.contains(conf)) {
                 protectedConfs.add(conf);
             }
         }
-
-        File folder = CndFileUtils.createLocalFile(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
-        File[] children = folder.listFiles();
-        if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                String filename = children[i].getName();
-                if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
-                    boolean protect = false;
-                    for (MakeConfiguration conf : protectedConfs) {
-                        if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
-                                || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
-                            protect = true;
-                            break;
+        FileObject folder = projectDescriptor.getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        if (folder != null && folder.isValid()) {
+            FileObject[] children = folder.getChildren();
+            if (children != null) {
+                for (int i = 0; i < children.length; i++) {
+                    String filename = children[i].getNameExt();
+                    if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
+                        boolean protect = false;
+                        for (MakeConfiguration conf : protectedConfs) {
+                            if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
+                                    || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
+                                protect = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!protect) {
-                        children[i].delete();
+                        if (!protect) {
+                            try {
+                                children[i].delete();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                     }
                 }
             }
