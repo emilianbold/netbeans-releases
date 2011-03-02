@@ -21,6 +21,12 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-tpl">
+                <folder name="RefactoringActions">
+                    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+                    <attr name="position" intvalue="430"/>
+                    </file>
+                </folder>
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
@@ -48,6 +54,18 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
                 </file>
+
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
+                        <attr name="position" intvalue="1300"/>
+                        <attr name="location" stringvalue="North"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                    </file>
+                </folder>
+
                 <file name="org-netbeans-modules-php-smarty-editor-embedding-TplEmbeddingProvider$Factory.instance"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
                 <folder name="FontsColors">
@@ -60,34 +78,38 @@
                     </folder>
                 </folder>
                 <folder name="Popup">
-                    <file name="in-place-refactoring">
-                    <attr intvalue="680" name="position"/></file>
+                    <file name="generate-code">
+                        <attr name="position" intvalue="1480"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="1290"/>
+                    </file>
 
                     <folder name="goto">
                         <attr intvalue="500" name="position"/>
                         <attr name="displayName" bundlevalue="org.netbeans.modules.csl.core.Bundle#generate-goto-popup"/>
                         <file name="goto">
-                        <attr intvalue="600" name="position"/></file>
+                            <attr intvalue="600" name="position"/>
+                        </file>
                     </folder>
 
                     <file name="SeparatorBeforeCut.instance">
                         <attr intvalue="1200" name="position"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
 
                     <file name="SeparatorAfterFormat.instance">
                         <attr intvalue="780" name="position"/>
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
 
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-csl-hints-GsfUpToDateStateProviderFactory.instance"/>
-
-                    <file name="org-netbeans-modules-csl-editor-semantic-OccurrencesMarkProviderCreator.instance"/>
-                </folder>
-
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
-                    <attr intvalue="1200" name="position"/></file>
                 </folder>
 
                 <folder name="HyperlinkProviders">
@@ -133,53 +155,45 @@
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
                 <!-- eof GSF -->
                 <folder name="Actions">
-                    <file name="org-openide-actions-CopyAction.shadow">
+                    <file name="CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="500"/>
+                        <attr name="position" intvalue="120"/>
                     </file>
-                    <file name="org-openide-actions-CutAction.shadow">
+                    <file name="CutAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="110"/>
                     </file>
-                    <file name="org-openide-actions-DeleteAction.shadow">
+                    <file name="DeleteAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="700"/>
+                        <attr name="position" intvalue="140"/>
                     </file>
-                    <file name="org-openide-actions-OpenAction.shadow">
+                    <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
                         <attr name="position" intvalue="100"/>
                     </file>
-                    <file name="org-openide-actions-PasteAction.shadow">
+                    <file name="PasteAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="550"/>
+                        <attr name="position" intvalue="130"/>
                     </file>
-                    <file name="org-openide-actions-PropertiesAction.shadow">
+                    <file name="PropertiesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1300"/>
+                        <attr name="position" intvalue="190"/>
                     </file>
-                    <file name="RefactoringAll.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
-                        <attr name="position" intvalue="850"/>
+                    <file name="RenameAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                        <attr name="position" intvalue="150"/>
                     </file>
-                    <file name="org-openide-actions-ToolsAction.shadow">
+                    <file name="FileSystemAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
+                        <attr name="position" intvalue="170"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
+                        <attr name="position" intvalue="160"/>
+                    </file>
+                    <file name="ToolsAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="sep-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="sep-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="sep-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="sep-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1100"/>
+                        <attr name="position" intvalue="250"/>
                     </file>
                 </folder>
                 <folder name="Factories">
@@ -233,6 +247,14 @@
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/smarty/smarty.properties"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.smarty.resources.Bundle#LBL_SmartyExportName"/>
                 <attr name="position" intvalue="500"/>
+            </file>
+        </folder>
+    </folder>
+
+     <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.refactoring.actions.HtmlRefactoringActionsFactory.extractInlinedStyleAction"/>
             </file>
         </folder>
     </folder>
