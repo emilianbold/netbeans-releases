@@ -101,6 +101,7 @@ static int init() {
     }
 
     LOG("\n>>>NBBUILD: TOOLS=%s\n\tLOG=%s\n", env_map, env_log);
+    env_log = strdup(env_log);
 
     char * token;
     int i = 0;
@@ -167,6 +168,7 @@ static void __logprint(const char* fname, char *const argv[], ...) {
         
         LOG("\n>>>NBBUILD: found %s\n", *found);
         FILE* flog = fopen(env_log, "a");
+        LOG("\n>>>NBBUILD: opened file %s\n", env_log);
 
         if (flog == NULL) {
             LOG("\n>>>ERROR: can not open%s!!!\n", env_log);
@@ -266,6 +268,10 @@ static void
 __attribute((destructor))
 fini_function(void) {
     int i = 0;
-    for (; i < filter_sz; i++)
+    for (; i < filter_sz; i++) {
         free(filter[i]);
+    }
+    if (env_log) {
+        free(env_log);
+    }
 }
