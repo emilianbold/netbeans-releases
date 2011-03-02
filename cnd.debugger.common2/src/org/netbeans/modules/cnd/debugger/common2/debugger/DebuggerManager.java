@@ -1203,7 +1203,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 	    ndi.setTarget("-"); //NOI18N
         } else {
             String execPath = ndi.getTarget();
-            if (host.getPlatform() != Platform.Windows_x86) {
+            if (host.getPlatform() != Platform.Windows_x86 && host.getPlatform() != Platform.MacOSX_x86) {
                 execPath = executor.readlink(dt.getPid());
             }
             ndi.setTarget(execPath);
