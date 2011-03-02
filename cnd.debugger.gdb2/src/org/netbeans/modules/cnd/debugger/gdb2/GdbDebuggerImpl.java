@@ -1859,7 +1859,7 @@ import org.openide.util.Exceptions;
             
             // try to find frame arguments
             MIResult frameArgs = null;
-            if (args_list != null && vx <= args_list.size()) {
+            if (args_list != null && vx < args_list.size()) {
                 frameArgs = (MIResult) args_list.get(vx);
             }
             
