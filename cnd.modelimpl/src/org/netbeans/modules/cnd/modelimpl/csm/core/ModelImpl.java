@@ -371,7 +371,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     @Override
-    public CsmFile findFile(CharSequence absPath, boolean snapShot) {
+    public CsmFile findFile(CharSequence absPath, boolean createIfPossible, boolean snapShot) {
         CndUtils.assertAbsolutePathInConsole(absPath.toString());
         Collection<CsmProject> projects = projects();
         CsmFile ret = null;
@@ -379,7 +379,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             if (curPrj instanceof ProjectBase) {
                 ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath);
                 if (ownerPrj != null) {
-                    CsmFile csmFile = ownerPrj.findFile(absPath, snapShot);
+                    CsmFile csmFile = ownerPrj.findFile(absPath, createIfPossible, snapShot);
                     if (csmFile != null) {
                         ret = csmFile;
                         if (!CsmStandaloneFileProvider.getDefault().isStandalone(csmFile)) {
@@ -397,7 +397,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             canonical = null;
         }
         if (canonical != null && !canonical.equals(absPath)) {
-            CsmFile out = findFile(canonical, snapShot);
+            CsmFile out = findFile(canonical, true, snapShot);
             if (out != null) {
                 ret = out;
             }

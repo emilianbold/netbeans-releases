@@ -406,7 +406,7 @@ public class CsmUtilities {
                     for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
                         if (csmProject != null) {
-                            CsmFile file = csmProject.findFile(item, snapShot);
+                            CsmFile file = csmProject.findFile(item, true, snapShot);
                             if (file != null) {
                                 if (item.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                     saFiles.add(file);
@@ -423,7 +423,7 @@ public class CsmUtilities {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null && fo.isValid() && CsmUtilities.isCsmSuitable(fo)) {
                         String normPath = fo.getPath();
-                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, true, snapShot);
                         if (csmFile != null) {
                             files.add(csmFile);
                         }

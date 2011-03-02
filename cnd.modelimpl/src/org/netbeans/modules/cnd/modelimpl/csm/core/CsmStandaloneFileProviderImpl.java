@@ -161,7 +161,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(absPath, false);
+            CsmFile csmFile = ModelImpl.instance().findFile(absPath, true, false);
             if (csmFile != null) {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
