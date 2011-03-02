@@ -233,40 +233,6 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         return ret;
     }
     
-    /*
-     * Return true, if debuggee (corefile, <pid>, executable) is 64-bit,
-     * only needed on linux
-     * to compliment the limitation of 64-bit engine can't debug
-     * 32-bit app.
-     * If there is no debuggee, then base on arch of host
-     */
-    public static boolean is64Debuggee(NativeDebuggerInfo ndi, Host host) {
-        int act = ndi.getAction();
-        String debuggee = null;
-        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
-
-        if ((act & DebuggerManager.CORE) != 0) {
-            debuggee = ndi.getCorefile();
-        } else if ((act & DebuggerManager.ATTACH) != 0) {
-	    debuggee = executor.readlink(ndi.getPid());
-	    if (debuggee == null)
-		return false;
-
-        } else {
-            debuggee = ndi.getTarget();
-        }
-
-        // for starting empty engine session, base on host's machine type
-	// for both local and remote
-        if (debuggee == null || debuggee.length() == 0) {
-	    // No debuggee provided
-	    return host.isLinux64();
-
-        } else {
-	    return executor.is_64(debuggee);
-	}
-    }
-
     /**
      * Return true we're using per-debug-target breakpoints.
      * Default is per-debug-target bpts.
