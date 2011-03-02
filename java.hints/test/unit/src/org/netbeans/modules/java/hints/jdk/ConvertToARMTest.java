@@ -1106,7 +1106,30 @@ public class ConvertToARMTest extends TestBase {
                        "}");
     }
 
-    
+    public void testAssignmentToResource() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "import java.io.InputStream;"+
+                            "import java.io.FileInputStream;"+
+                            "import java.io.File;"+
+                            "public class Test {" +
+                            "     public void test(boolean b) throws Exception {" +
+                            "        System.out.println(\"Start\");" +
+                            "        InputStream ins = null;" +
+                            "        if (b) {" +
+                            "            ins = new FileInputStream(\"\");" +
+                            "        }" +
+                            "        if (ins == null) {" +
+                            "            ins = new FileInputStream(\"\");" +
+                            "        }" +
+                            "        ins.read();"+
+                            "        ins.close();"+
+                            "     }" +
+                            "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";

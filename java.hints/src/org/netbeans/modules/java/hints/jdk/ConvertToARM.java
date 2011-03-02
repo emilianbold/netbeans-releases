@@ -242,10 +242,10 @@ public class ConvertToARM {
             if (isSupportedSourceLevel(ctx.getInfo().getFileObject())  && (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType())))) {
                 final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
                 final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
-                if (!stms.isEmpty()) {
+                final Trees trees = ctx.getInfo().getTrees();
+                final VariableElement resElement = (VariableElement) trees.getElement(varVar);
+                if (!stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
                     final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
-                    final Trees trees = ctx.getInfo().getTrees();
-                    final VariableElement resElement = (VariableElement) trees.getElement(varVar);
                     final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
                     final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
                     if (!hasNonCleanUpUsages(usages, cleanUpStatements)) {
@@ -657,6 +657,31 @@ public class ConvertToARM {
                 return true;
             }
             cleanupStatements.add(parentParent);
+        }
+        return false;
+    }
+
+    private static boolean isAssigned(
+            final Element what,
+            final Iterable<? extends TreePath> where,
+            final Trees trees) {
+        TreePathScanner<Boolean, Void> scanner = new TreePathScanner<Boolean, Void>() {
+            @Override public Boolean visitAssignment(AssignmentTree node, Void p) {
+                if (trees.getElement(new TreePath(getCurrentPath(), node.getVariable())) == what) {
+                    return true;
+                }
+                return super.visitAssignment(node, p);
+            }
+            @Override
+            public Boolean reduce(Boolean r1, Boolean r2) {
+                return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+            }
+        };
+        
+        for (TreePath usage : where) {
+            if (scanner.scan(usage, null)) {
+                return true;
+            }
         }
         return false;
     }
