@@ -49,14 +49,9 @@ public class Hint {
     private final OffsetRange range;
     private final Rule rule;
     private int priority;
-    private Error error;
-    
-    public Hint(@NonNull Rule rule, @NonNull String description, @NonNull FileObject file, OffsetRange range, @NullAllowed List<HintFix> fixes, int priority) {
-        this(rule, description, file, range, fixes, priority, null);
-    }
     
     //TODO: unclear whether range is @NonNull or @NullAllowed
-    public Hint(@NonNull Rule rule, @NonNull String description, @NonNull FileObject file, OffsetRange range, @NullAllowed List<HintFix> fixes, int priority, Error error) {
+    public Hint(@NonNull Rule rule, @NonNull String description, @NonNull FileObject file, OffsetRange range, @NullAllowed List<HintFix> fixes, int priority) {
         Parameters.notNull("rule", rule);
         Parameters.notNull("description", description);
         Parameters.notNull("file", file);
@@ -67,7 +62,6 @@ public class Hint {
         this.range = range;
         this.fixes = fixes;
         this.priority = priority;
-        this.error = error;
     }
     
     public @NonNull Rule getRule() {
@@ -92,10 +86,6 @@ public class Hint {
     
     public int getPriority() {
         return priority;
-    }
-    
-    public Error getError() {
-        return error;
     }
     
     @Override
