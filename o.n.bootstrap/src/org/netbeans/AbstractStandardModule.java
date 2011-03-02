@@ -559,14 +559,6 @@ abstract class AbstractStandardModule extends Module {
         }
     }
     
-    /** Used as a flag to tell if this module was really successfully released.
-     * Currently does not work, so if it cannot be made to work, delete it.
-     * (Someone seems to be holding a strong reference to the classloader--who?!)
-     */
-    protected transient boolean released;
-    /** Count which release() call is really being checked. */
-    protected transient int releaseCount = 0;
-
     /** Reload this module. Access from ModuleManager.
      * If an exception is thrown, the module is considered
      * to be in an invalid state.
@@ -671,19 +663,11 @@ abstract class AbstractStandardModule extends Module {
             ((ProxyClassLoader)classloader).destroy();
         }
         classloader = null;
-        Util.err.fine("classLoaderDown on " + this + ": releaseCount=" + releaseCount + " released=" + released);
-        released = false;
     }
     /** Should be called after turning off the classloader of one or more modules & GC'ing. */
     protected void cleanup() {
         if (isEnabled()) throw new IllegalStateException("cleanup on enabled module: " + this); // NOI18N
         if (classloader != null) throw new IllegalStateException("cleanup on module with classloader: " + this); // NOI18N
-        if (! released) {
-            Util.err.fine("Warning: not all resources associated with module " + jar + " were successfully released.");
-            released = true;
-        } else {
-            Util.err.fine("All resources associated with module " + jar + " were successfully released.");
-        }
         // XXX should this rather be done when the classloader is collected?
         destroyPhysicalJar();
     }

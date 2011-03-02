@@ -87,7 +87,6 @@ final class StandardModule extends AbstractStandardModule {
      * Auto-localizing, multi-parented, permission-granting, the works.
      */
     class OneModuleClassLoader extends BaseModuleClassLoader {
-        private int rc;
         /** Create a new loader for a module.
          * @param classp the List of all module jars of code directories;
          *      includes the module itself, its locale variants,
@@ -97,18 +96,6 @@ final class StandardModule extends AbstractStandardModule {
          */
         public OneModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents);
-            rc = releaseCount++;
-        }
-
-        protected @Override void finalize() throws Throwable {
-            super.finalize();
-            Util.err.fine("Finalize for " + this + ": rc=" + rc + " releaseCount=" + releaseCount + " released=" + released); // NOI18N
-            if (rc == releaseCount) {
-                // Hurrah! release() worked.
-                released = true;
-            } else {
-                Util.err.fine("Now resources for " + getCodeNameBase() + " have been released."); // NOI18N
-            }
         }
     }
 
