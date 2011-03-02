@@ -1048,18 +1048,14 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                FileObject fileObject = items[i].getFileObject();
-                if(fileObject != null) {
-                    if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                            MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
-                            file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                            MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
-                            file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
-                        }
+
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    if(provider.isProCItem(items[i])) {
+                        file = provider.getProCOutput(items[i], conf);
                     }
                 }
+                
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -1269,19 +1265,11 @@ public class ConfigurationMakefileWriter {
                 } else if(itemConfiguration.isCompilerToolConfiguration()) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration != null) {
-                        FileObject fileObject = items[i].getFileObject();
-                        if (fileObject != null) {
-                            if ("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                                if (compilerSet != null) {
-                                    String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                                    String target = file;
-                                    if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                        MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
-                                        target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                                        MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
-                                        target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
-                                    }
+                        if (compilerSet != null) {
+                            DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                            if(provider != null) {
+                                if(provider.isProCItem(items[i])) {
+                                    String target = provider.getProCOutput(items[i], conf);
                                     bw.write("\t${RM} " + target + "\n"); // NOI18N
                                 }
                             }
@@ -1490,30 +1478,11 @@ public class ConfigurationMakefileWriter {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
             bw.write("# " + makeConf.getName() + " configuration\n"); // NOI18N
             // Sys includes
-            CompilerSet compilerSet = makeConf.getCompilerSet().getCompilerSet();
-            if (compilerSet != null) {
-                AbstractCompiler cComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
-                bw.write("CND_SYSINCLUDES_C_" + makeConf.getName() + "=" + // NOI18N
-                        dumpList(cComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
-                AbstractCompiler cppComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                bw.write("CND_SYSINCLUDES_CPP_" + makeConf.getName() + "=" + // NOI18N
-                        dumpList(cppComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
+            DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+            if(provider != null) {
+                provider.writePrivateVariables(makeConf, bw);
             }
         }
-    }
-
-    private String dumpList(List<String> list) {
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for (String item : list) {
-            if (!first) {
-                sb.append(',');
-            } else {
-                first = false;
-            }
-            sb.append(item);
-        }
-        return sb.toString();
     }
 
     private void writePackagingScript(MakeConfiguration conf) {

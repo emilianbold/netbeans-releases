@@ -65,5 +65,6 @@ public interface DatabaseProjectProvider {
     String getProCOutput(Item item, MakeConfiguration conf);
     
     void writePrelude(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException;
+    void writePrivateVariables(MakeConfiguration makeConf, Writer bw) throws IOException;
     void writeProCTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException;
 }
