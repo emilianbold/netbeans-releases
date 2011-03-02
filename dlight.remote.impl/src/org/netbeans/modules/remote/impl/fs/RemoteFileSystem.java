@@ -87,7 +87,12 @@ import org.openide.windows.WindowManager;
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
-    private static final String ATTRIBUTES_FILE_NAME = ".attr"; // NOI18N
+    
+    public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
+    public static final String CACHE_FILE_NAME = ".rfs_cache"; // NOI18N
+    public static final String RESERVED_PREFIX = ".rfs_"; // NOI18N
+    public static final String RESERVED_PREFIX_ESCAPED = "._rfs_"; // NOI18N
+    
     private static final String READONLY_ATTRIBUTES = "readOnlyAttrs"; //NOI18N
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
