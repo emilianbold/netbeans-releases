@@ -68,15 +68,15 @@ short name Iterator and import java.util.Iterator if possible.
 </ul>
 
 <h3>Pre-defined Parameters</h3>
-<p>NetBeans comes with some pre-defined parameters that you can use when creating code templates. Some of these code templates are only
-relevant to Java templates. You can add parameter definitions in the Template Manager. Note also special rules for changing
+<p>NetBeans comes with a number of pre-defined parameters that you can use when creating code templates. You can add parameter 
+    definitions in the Template Manager. Note also special rules for changing the
 the format of the <tt>${date}</tt> variable.</p>
 <ul>
     <li><tt>${date}</tt> inserts the current date, in this format: Feb 16, 2008 </li>
     <li><tt>${encoding}</tt> inserts the default encoding, such as: UTF-8 </li>
     <li><tt>${name}</tt> inserts the name of the file. </li>
     <li><tt>${nameAndExt}</tt> inserts the name of the file, together with its extension. </li>
-    <li><tt>${package}</tt> inserts the name of the package where the file is created. </li>
+    <li><tt>${package}</tt> inserts the name of the package where the file is created. (Java only)</li>
     <li><tt>${time}</tt> inserts the current time, in this format: 7:37:58 PM </li>
     <li><tt>${project.license}</tt> based on the value (e.g., 'CDDL'), the license header is found and is inserted into the template. </li>
     <li><tt>${project.name}</tt> inserts the project name. </li>
@@ -89,7 +89,7 @@ the format of the <tt>${date}</tt> variable.</p>
 </li><li> Expand the Other category. Double-click on Properties. The User.properties file opens in the editor.
 </li><li> Define a parameter. For example, define the <tt>${user}</tt> parameter for adding your name to templates you create. The syntax is
 <pre>user=LorumIpsum@mycompany.com</pre>
-<p>When a code template is expanded, all ocuurances of <tt>${user}</tt> in that template are replaced with 'LorumIpsum@mycompany.com'.</p></li>
+<p>When a code template is expanded, all occurrences of <tt>${user}</tt> in that template are replaced with 'LorumIpsum@mycompany.com'.</p></li>
 <li>Add as many additional parameters as you want, with the syntax name=value.</li>
 </ol>
 <p>Parameter definition follows the FreeMarker Java template language. For more information, see the 
@@ -101,7 +101,8 @@ the format of the <tt>${date}</tt> variable.</p>
   </object>.</p>
 <h4>Formatting the ${date} Parameter</h4>
 <p>The <tt>${date}</tt> variable is of type String, not type Date. You have to cast 
-    <tt>${date}</tt> to a Date type in order to change its format. For example, to show the year only, do this:
+    <tt>${date}</tt> to a Date type in order to change its format. For example, 
+    to show the year only, add the following parameter to your code template:
 </p>
 <pre>${date?date?string(&quot;yyyy&quot;)} </pre>
 
