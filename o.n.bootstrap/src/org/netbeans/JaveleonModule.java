@@ -113,12 +113,6 @@ public final class JaveleonModule extends AbstractStandardModule {
         return "Javeleon module " + getJarFile().toString();
     }
 
-    /** Open the JAR, load its manifest, and do related things. */
-    protected void loadManifest() throws IOException {
-       setManifest(getManager().loadManifest(getPhysicalJar()));
-       parseManifest();
-    }
-
     @Override
     protected void classLoaderDown() {
         // do not touch the class loader... Javeleon system will handle it

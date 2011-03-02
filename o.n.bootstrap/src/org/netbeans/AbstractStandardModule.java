@@ -178,10 +178,6 @@ abstract class AbstractStandardModule extends Module {
         return manifest;
     }
 
-    protected final void setManifest(Manifest manifest) {
-        this.manifest = manifest;
-    }
-
     public @Override void releaseManifest() {
         manifest = null;
     }
