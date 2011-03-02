@@ -33,6 +33,7 @@ package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.util.Lookup;
 
 /**
@@ -50,6 +51,8 @@ class JBAbilitiesSupport {
     private Boolean remoteManagementSupported = null;
 
     private Boolean isJB4x = null;
+    
+    private Boolean isJB6x = null;
 
     /**
      * Constructs the JBAbilitiesSupport.
@@ -90,5 +93,14 @@ class JBAbilitiesSupport {
         }
         return isJB4x;
     }
+    
+    public boolean isJB6x() {
+        if (isJB6x == null) {
+            JBDeploymentManager dm = lookup.lookup(JBDeploymentManager.class);
+            Version version = dm.getProperties().getServerVersion();
+            isJB6x = version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0;
+        }
+        return isJB6x;
+    }    
 
 }

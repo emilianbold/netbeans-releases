@@ -1,5 +1,5 @@
 Name: JGit Library
-Version: 0.10.1
+Version: 0.11.3
 Description: Integration library for git client
 License: Eclipse Distribution License v1.0
 OSR: 1234

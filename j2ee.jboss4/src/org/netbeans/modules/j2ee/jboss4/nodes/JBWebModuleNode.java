@@ -70,7 +70,8 @@ public class JBWebModuleNode extends AbstractNode {
         super(new JBServletsChildren(fileName, lookup));
         setDisplayName(fileName.substring(0, fileName.indexOf('.')));
         this.abilitiesSupport = new JBAbilitiesSupport(lookup);
-        if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+        if (abilitiesSupport.isRemoteManagementSupported()
+                && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
             // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
             getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
         }
@@ -86,7 +87,8 @@ public class JBWebModuleNode extends AbstractNode {
             };
         }
         else {
-            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+            if (abilitiesSupport.isRemoteManagementSupported()
+                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
                 return new SystemAction[] {
                     SystemAction.get(OpenURLAction.class),
                     SystemAction.get(UndeployModuleAction.class)

@@ -45,13 +45,11 @@ package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -59,9 +57,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -96,7 +92,7 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
                 "import javax.inject.*; "+
-                "public class CustomClass<E extends One>  {" +
+                "public class CustomClass<E extends Two>  {" +
                 " @Inject @CustomBinding(\"a\") Generic myField1; "+
                 " @Inject @CustomBinding(\"b\") Generic myField2; "+
                 " @Inject @CustomBinding(\"b\") Generic<One> myField3; "+
@@ -106,6 +102,7 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 " @Inject @CustomBinding(\"e\") Generic5<? super Two> myField7; "+
                 " @Inject @CustomBinding(\"d\") Generic4<Two> myField8; "+
                 " @Inject @CustomBinding(\"d\") Generic4<E> myField9; "+
+                " @Inject @CustomBinding(\"d\") Generic<E> myField10; "+
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
@@ -143,12 +140,27 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic4.java",
                 "package foo; " +
                 " @CustomBinding(\"d\") "+ 
-                "public class Generic4<T extends Two>  {}");
+                "public class Generic4<T extends One>  {}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Generic5.java",
                 "package foo; " +
                 " @CustomBinding(\"e\") "+ 
                 "public class Generic5<T super One>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic6.java",
+                "package foo; " +
+                " @CustomBinding(\"a\") "+ 
+                "public class Generic6<T> extends Generic<T>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic7.java",
+                "package foo; " +
+                " @CustomBinding(\"d\") "+ 
+                "public class Generic7<T extends One> extends Generic<T> {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic8.java",
+                "package foo; " +
+                " @CustomBinding(\"d\") "+ 
+                "public class Generic8<T extends Three> extends Generic<T> {}");
         
         inform("start generic types tests");
         
@@ -174,12 +186,12 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        assertFindVariableResultInjectables(element, provider, "foo.Generic");
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic",
+                                "foo.Generic6");
                         assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        assertFindVariableResultInjectables(element, provider, "foo.Generic1",
-                                "foo.Generic2");
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic1");
                         assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
@@ -210,6 +222,10 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                         assertFindVariableResultInjectables(element, provider, "foo.Generic4");
                         assertFindVariableResultProductions(element, provider);
                     }
+                    else if ( element.getSimpleName().contentEquals("myField10")){
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic7");
+                        assertFindVariableResultProductions(element, provider);
+                    }
                 }
 
                 assert names.contains("myField1");
@@ -221,6 +237,7 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 assert names.contains("myField7");
                 assert names.contains("myField8");
                 assert names.contains("myField9");
+                assert names.contains("myField10");
                 
                 return null;
             }
