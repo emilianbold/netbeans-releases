@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.DuplicateException;
 import org.netbeans.Events;
+import org.netbeans.JaveleonModule;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
@@ -318,7 +319,7 @@ public final class ModuleSystem {
         }
         return res;
     }
-  
+    
     /** Load a module in test (reloadable) mode.
      * If there is an existing module with a different JAR, get
      * rid of it and load this one instead.
@@ -332,7 +333,9 @@ public final class ModuleSystem {
 
         // Check to see if Javeleon is enabled. If so,
         // let Javeleon handle the module reloading.
-        if(JaveleonModuleReloader.getDefault().reloadJaveleonModule(jar, mgr, installer, ev)) return;
+        if (JaveleonModule.isJaveleonPresent && JaveleonModuleReloader.getDefault().reloadJaveleonModule(jar, mgr, installer, ev)) {
+            return;
+        }
         
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_DEPLOY_TEST_MODULE, jar);

@@ -88,8 +88,6 @@ class JaveleonModuleReloader {
     }
 
     boolean reloadJaveleonModule(File jar, ModuleManager mgr, NbInstaller installer, Events ev) throws IOException {
-        if(!JaveleonModule.isJaveleonPresent) return false;
-
         try {
             JaveleonModule.javeleonReloadMethod.invoke(null);
         } catch (Exception ex) {
