@@ -53,7 +53,7 @@ import java.util.Set;
  *
  * @author Allan Gregersen
  */
-public final class JaveleonModule extends AbstractStandardModule {
+public final class JaveleonModule extends StandardModule {
 
     public static final boolean isJaveleonPresent;
 
@@ -91,11 +91,12 @@ public final class JaveleonModule extends AbstractStandardModule {
 
     @Override
     protected ClassLoader createNewClassLoader(List<File> classp, List<ClassLoader> parents) {
-        ClassLoader cl = new BaseModuleClassLoader(classp, parents.toArray(new ClassLoader[parents.size()]));
+        ClassLoader cl = super.createNewClassLoader(classp, parents);
         currentClassLoaders.put(getCodeNameBase(), cl);
         return cl;
     }
 
+    /** public for use from JaveleonModuleReloader */
     public @Override void classLoaderUp(Set<Module> parents) throws IOException {
         super.classLoaderUp(parents);
     }

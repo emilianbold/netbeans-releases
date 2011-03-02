@@ -89,7 +89,7 @@ public final class MainLookup extends ProxyLookup {
                    instanceLookup
                });
     }
-    
+
     /** Called when a system classloader changes.
      */
     public static final void systemClassLoaderChanged (ClassLoader nue) {
