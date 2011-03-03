@@ -110,6 +110,9 @@ public class MissingJavaEEForUnitTestExecutionHint extends AbstractHint {
         String name = el.asType().toString();
         FileObject testFile = info.getFileObject();
         Project prj = FileOwnerQuery.getOwner(testFile);
+        if (prj == null) {
+            return null;
+        }
         NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
         if (mp == null) {
             // handles only Maven projects; Ant projects solves this issue differently
