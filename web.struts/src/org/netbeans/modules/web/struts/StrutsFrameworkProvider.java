@@ -85,6 +85,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -93,6 +94,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -138,7 +140,12 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
 
             try {
-                FileSystem fs = wm.getWebInf().getFileSystem();
+                FileObject webInf = wm.getWebInf();
+                if (webInf == null) {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                }
+                assert webInf != null;
+                FileSystem fs = webInf.getFileSystem();
                 fs.runAtomicAction(new CreateStrutsConfig(wm));
                 result.add(wm.getDocumentBase().getFileObject("welcomeStruts", "jsp"));
             } catch (FileNotFoundException exc) {
@@ -287,7 +294,13 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     name = sresource.substring(sresource.lastIndexOf(".")+1);    //NOI18N
                 }
                 name = name + ".properties";   //NOI18N
-                FileObject targetFolder = sourceGroups[0].getRootFolder();
+                FileObject targetFolder = null;
+                if (isMaven(project)) {
+                    SourceGroup[] resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                    targetFolder = resourceGroups[0].getRootFolder();
+                } else {
+                    targetFolder = sourceGroups[0].getRootFolder();
+                }
                 String folders[] = path.split("\\.");
                 for (int i = 0; i < folders.length; i++){
                     if (targetFolder.getFileObject(folders[i])== null)
@@ -337,6 +350,9 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             
             // Enter servlet into the deployment descriptor
             FileObject dd = wm.getDeploymentDescriptor();
+            if(dd == null) {
+                dd = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+            }
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
@@ -467,6 +483,8 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
         }
     }
-    
-    
+
+    private static boolean isMaven(Project project) {
+        return project.getLookup().lookup(AntArtifactProvider.class) == null;
+    }
 }

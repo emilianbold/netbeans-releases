@@ -40,66 +40,63 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.repository;
+package org.netbeans.core.ui.sampler;
 
-import java.io.DataInput;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class FileReferencesKey extends ProjectFileNameBasedKey {
+public class SelfSampleVFSTest extends NbTestCase {
+    private SelfSampleVFS fs;
 
-    public FileReferencesKey(FileImpl file) {
-	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
-    }
-
-    public FileReferencesKey(DataInput aStream) throws IOException {
-	super(aStream);
-    }
-
-    FileReferencesKey(KeyDataPresentation presentation) {
-        super(presentation);
+    public SelfSampleVFSTest(String s) {
+        super(s);
     }
 
     @Override
-    public String toString() {
-	return "FileReferencesKey (" + getProjectName() + ", " + getFileNameSafe() + ")"; // NOI18N
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        
+        File a = new File(getWorkDir(), "A.txt");
+        File b = new File(getWorkDir(), "B.txt");
+        
+        write(a, "Ahoj");
+        write(b, "Kuk");
+        
+        fs = new SelfSampleVFS(new String[] { "x.pdf", "y.ps" }, new File[] { a, b });
+    }
+    
+    public void testCanList() {
+        FileObject[] arr = fs.getRoot().getChildren();
+        assertEquals("Two", 2, arr.length);
+        assertEquals("x.pdf", arr[0].getNameExt());
+        assertEquals("y.ps", arr[1].getNameExt());
     }
 
-    @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_FILE_REFERENCES_KEY + super.hashCode();
+    public void testCanReadContent() throws Exception {
+        FileObject fo = fs.findResource("x.pdf");
+        assertNotNull("File Object found", fo);
+        assertEquals("The right content for x.pdf", "Ahoj", fo.asText());
     }
 
-    @Override
-    public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
+    public void testGetAttribute() throws Exception {
+        FileObject fo = fs.findResource("x.pdf");
+        assertNull("No attribute value", fo.getAttribute("doesnotexist"));
     }
 
-    @Override
-    public int getSecondaryDepth() {
-	return 1;
-    }
-
-    @Override
-    public int getSecondaryAt(int level) {
-	assert level == 0;
-	return KeyObjectFactory.KEY_FILE_REFERENCES_KEY;
-    }
-
-    @Override
-    public boolean hasCache() {
-        return true;
-    }
-
-    @Override
-    public final short getKindPresentation() {
-	return KeyObjectFactory.KEY_FILE_REFERENCES_KEY;
+    
+    private static void write(File f, String content) throws IOException {
+        FileOutputStream os = new FileOutputStream(f);
+        try {
+            os.write(content.getBytes());
+        } finally {
+            os.close();
+        }
     }
 }

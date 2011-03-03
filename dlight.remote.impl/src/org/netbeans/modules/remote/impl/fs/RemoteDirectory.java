@@ -111,7 +111,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
         try {
-            DirectoryStorage storage = getDirectoryStorage(true);
+            DirectoryStorage storage = getDirectoryStorage();
             DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canWrite(getExecutionEnvironment()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
@@ -132,7 +132,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         try {
-            DirectoryStorage storage = getDirectoryStorage(true);
+            DirectoryStorage storage = getDirectoryStorage();
             DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canRead(getExecutionEnvironment());
         } catch (ConnectException ex) {
@@ -173,10 +173,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     protected void postDeleteChild(FileObject child) {
         try {
-            DirectoryStorage ds = getDirectoryStorage(false);
-            ds.removeEntry(child.getNameExt());
-            ds.store();
-            fireFileDeletedEvent(getListeners(), new FileEvent(child));
+            DirectoryStorage ds = refreshDirectoryStorage(); // it will fire events itself
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
@@ -214,8 +211,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (res.isOK()) {
             try {
-                refreshImpl(false);
-                ensureSync();
+                refreshImpl();
                 FileObject fo = getFileObject(name);
                 if (fo == null) {
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
@@ -284,7 +280,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
-            DirectoryStorage storage = getDirectoryStorage(true);
+            DirectoryStorage storage = getDirectoryStorage();
             DirEntry entry = storage.getEntry(relativePath);
             if (entry == null) {
                 return null;
@@ -324,10 +320,24 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
+    private RemoteFileObjectBase[] getExistentChildren() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        DirectoryStorage storage = getDirectoryStorage();
+        List<DirEntry> entries = storage.list();
+        List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
+        for (DirEntry entry : entries) {
+            String path = getPath() + '/' + entry.getName();
+            RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(path);
+            if (fo != null) {
+                result.add(fo);
+            }
+        }
+        return result.toArray(new RemoteFileObjectBase[result.size()]);
+    }
+            
     @Override
     public RemoteFileObjectBase[] getChildren() {
         try {
-            DirectoryStorage storage = getDirectoryStorage(true);
+            DirectoryStorage storage = getDirectoryStorage();
             List<DirEntry> entries = storage.list();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
@@ -367,57 +377,56 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return new RemoteFileObjectBase[0];
     }
 
-    @Override
-    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        getDirectoryStorage(true);
-    }
-
-    private DirectoryStorage getDirectoryStorage(boolean sync) throws
+    private DirectoryStorage getDirectoryStorage() throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(sync);
+            return getDirectoryStorageImpl(false);
         } finally {
             if (trace) {
-                trace("sync took {0} ms", System.currentTimeMillis() - time); // NOI18N
+                trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
+            }
+        }
+    }
+    
+    private DirectoryStorage refreshDirectoryStorage() throws
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        long time = System.currentTimeMillis();
+        try {
+            return getDirectoryStorageImpl(true);
+        } finally {
+            if (trace) {
+                trace("refreshDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
             }
         }
     }
 
-    private DirectoryStorage getDirectoryStorageImpl(boolean sync) throws
+    private DirectoryStorage getDirectoryStorageImpl(boolean force) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        if (force && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+            RemoteLogger.getInstance().warning("getDirectoryStorage is called with force == true while host is not connected");
+            force = false;
+        }
 
         DirectoryStorage storage = null;
 
         File storageFile = new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME);
 
-        // check whether it is cached in memory
-        synchronized (refLock) {
-            if (storageRef != null) {
-                storage = storageRef.get();
+        if (!force) {
+            // check whether it is cached in memory
+            synchronized (refLock) {
+                if (storageRef != null) {
+                    storage = storageRef.get();
+                }
             }
-        }
-        if (storage != null) {
-            if (storageFile.lastModified() >= getFileSystem().getDirtyTimestamp()) {
-                trace("timestamps check passed; returning cached storage"); // NOI18N
-                return storage;
-            } else if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-                trace("timestamps check NOT passed, but the host is offline; returning cached storage"); // NOI18N
-                getFileSystem().getRemoteFileSupport().addPendingFile(this);
-                return storage;
-            } else if (!sync) {
-                trace("timestamps check NOT passed, but no sync is required; returning cached storage"); // NOI18N
-                getFileSystem().getRemoteFileSupport().addPendingFile(this);
+            if (storage != null) {
                 return storage;
             }
-        }
-
-        if (trace && storageFile.lastModified() < getFileSystem().getDirtyTimestamp()) {
-            trace("dirty directory: file={0} fs={1}", storageFile.lastModified(), getFileSystem().getDirtyTimestamp()); // NOI18N
         }
 
         boolean loaded;
-
+        
         if (storage == null) {
             // try loading from disk
             loaded = false;
@@ -448,35 +457,24 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } else {
             loaded = true;
         }
+        
+        if (force) {
+            loaded = false;
+        }
 
         if (loaded) {
-            boolean ok = false;
-            if (storageFile.lastModified() >= getFileSystem().getDirtyTimestamp()) {
-                trace("timestamps check passed; returning just loaded storage"); // NOI18N
-                ok = true;
-            } else if(!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-                trace("timestamps check NOT passed, but the host is offline; returning just loaded storage"); // NOI18N
-                ok = true;
-                getFileSystem().getRemoteFileSupport().addPendingFile(this);
-            } else if (!sync) {
-                trace("timestamps check NOT passed, but no sync is required; returning just loaded storage"); // NOI18N
-                ok = true;
-                getFileSystem().getRemoteFileSupport().addPendingFile(this);
-            }
-            if (ok) {
-                synchronized (refLock) {
-                    if (storageRef != null) {
-                        DirectoryStorage s = storageRef.get();
-                        if (s != null) {
-                            if (trace) { trace("returning storage that was loaded by other thread"); } // NOI18N
-                            return s;
-                        }
+            synchronized (refLock) {
+                if (storageRef != null) {
+                    DirectoryStorage s = storageRef.get();
+                    if (s != null) {
+                        if (trace) { trace("returning storage that was loaded by other thread"); } // NOI18N
+                        return s;
                     }
-                    storageRef = new SoftReference<DirectoryStorage>(storage);
                 }
-                if (trace) { trace("returning just loaded storage"); } // NOI18N
-                return storage;
+                storageRef = new SoftReference<DirectoryStorage>(storage);
             }
+            if (trace) { trace("returning just loaded storage"); } // NOI18N
+            return storage;
         }
 
         // neither memory nor disk cache helped
@@ -486,14 +484,15 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (trace) { trace("waiting for lock"); } // NOI18N
         lock.lock();
         try {
-            // in case another thread synchronized content while we were waiting for lock
-            synchronized (refLock) {
-                if (trace) { trace("checking storageRef and timestamp: ref={0} file={1} fs: {2}", storageRef, storageFile.lastModified(), getFileSystem().getDirtyTimestamp()); } // NOI18N
-                if (storageRef != null && storageFile.lastModified() >= getFileSystem().getDirtyTimestamp()) {
-                    DirectoryStorage stor = storageRef.get();
-                    if (trace) { trace("got storage: {0} -> {1}", storageRef, stor); } // NOI18N
-                    if (stor != null) {
-                        return stor;
+            if (!force) {
+                // in case another thread synchronized content while we were waiting for lock
+                synchronized (refLock) {
+                    if (storageRef != null) {
+                        DirectoryStorage stor = storageRef.get();
+                        if (trace) { trace("got storage: {0} -> {1}", storageRef, stor); } // NOI18N
+                        if (stor != null) {
+                            return stor;
+                        }
                     }
                 }
             }
@@ -658,7 +657,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             lock.unlock();
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(true); // do we need this?
+        DirectoryStorage storage = getDirectoryStorage(); // do we need this?
         return new CachedRemoteInputStream(child, getExecutionEnvironment());
     }
     
@@ -675,7 +674,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             lock.unlock();
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(true); // do we need this?
+        DirectoryStorage storage = getDirectoryStorage(); // do we need this?
         lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
         lock.lock();
         try {
@@ -732,9 +731,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private void invalidate(DirEntry oldEntry) {
-        getFileSystem().getFactory().invalidate(getPath() + '/' + oldEntry.getName());
+        FileObject fo = getFileSystem().getFactory().invalidate(getPath() + '/' + oldEntry.getName());
         File oldEntryCache = new File(getCache(), oldEntry.getCache());
         removeFile(oldEntryCache);
+        if (fo != null) {
+            fireFileDeletedEvent(getListeners(), new FileEvent(fo));
+        }
     }
 
     private void removeFile(File cache) {
@@ -762,22 +764,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    protected void refreshImpl(boolean recursive) {
-        final long timestamp = getFileSystem().getDirtyTimestamp() - 1;
-        trace("setting last modified to {0}", timestamp); // NOI18N
-        setStorageTimestamp(new File(getCache(), RemoteFileSystem.CACHE_FILE_NAME), timestamp, true);
-    }
-
     @Override
-    public void refresh(boolean expected) {
-        refreshImpl(true);
+    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        refreshDirectoryStorage();
+        for (RemoteFileObjectBase child : getExistentChildren()) {
+            child.refreshImpl();
+        }
     }
-
-    @Override
-    public void refresh() {
-        refreshImpl(true);
-    }
-
+    
     private void trace(String message, Object... args) {
         if (trace) {
             message = "SYNC [" + getPath() + "][" + System.identityHashCode(this) + "][" + Thread.currentThread().getId() + "]: " + message; // NOI18N
@@ -791,7 +785,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private DirEntry getChildEntry(RemoteFileObjectBase child) {
         try {
-            DirectoryStorage directoryStorage = getDirectoryStorage(false);
+            DirectoryStorage directoryStorage = getDirectoryStorage();
             if (directoryStorage != null) {
                 DirEntry entry = directoryStorage.getEntry(child.getNameExt());
                 if (entry != null) {

@@ -55,8 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
-/*package*/
-class NamespaceKey extends ProjectNameBasedKey {
+/*package*/ class NamespaceKey extends ProjectNameBasedKey {
 
     private final CharSequence fqn;
     private final int hashCode; // cashed hash code

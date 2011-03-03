@@ -185,6 +185,20 @@ is the proper place.
       <class package="org.netbeans.swing.outline" name="CheckRenderDataProvider"/>
       <issue number="159546"/>
     </change>
+    <change id="columns_clean">
+      <api name="etable_outline"/>
+      <summary>Add a way to clean all columns from the column model, including hidden ones.</summary>
+      <version major="1" minor="12"/>
+      <date day="3" month="3" year="2011"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Added <code>ETableColumnModel.clean()</code> method.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.etable" name="ETableColumnModel"/>
+      <issue number="195226"/>
+    </change>
 
 </changes>
 

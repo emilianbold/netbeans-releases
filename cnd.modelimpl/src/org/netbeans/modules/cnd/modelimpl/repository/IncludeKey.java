@@ -55,8 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * A key for CsmInclude objects (file and offset -based)
  */
 
-/*package*/
-final class IncludeKey extends OffsetableKey {
+/*package*/ final class IncludeKey extends OffsetableKey {
 
     IncludeKey(CsmInclude obj) {
         super(obj, Utils.getCsmIncludeKindKey(), obj.getIncludeName()); // NOI18N

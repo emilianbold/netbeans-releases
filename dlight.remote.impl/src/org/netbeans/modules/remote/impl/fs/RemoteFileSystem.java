@@ -53,6 +53,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -98,6 +99,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final String filePrefix;
     private final RootFileObject root;
     private final RemoteFileSupport remoteFileSupport;
+    private final RefreshManager refreshManager;
     private final File cache;
     private final RemoteFileObjectFactory factory;
     private long dirtyTimestamp;
@@ -113,6 +115,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
         factory = new RemoteFileObjectFactory(this);
+        refreshManager = new RefreshManager(execEnv);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
         this.filePrefix = FileSystemCacheProvider.getCacheRoot(execEnv);
@@ -128,7 +131,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
             public void windowGainedFocus(WindowEvent e) {
-                resetDirtyTimestamp();
+                refreshManager.scheduleRefresh(filterDirectories(factory.getCachedFileObjects()));
             }
 
             public void windowLostFocus(WindowEvent e) {
@@ -141,16 +144,27 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
             }
         });
-        resetDirtyTimestamp();
         ConnectionManager.getInstance().addConnectionListener(this);
     }
     
     public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
-            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
+            Collection<RemoteFileObjectBase> cachedFileObjects = factory.getCachedFileObjects();
+            refreshManager.scheduleRefresh(filterDirectories(cachedFileObjects));
+            for (RemoteFileObjectBase fo : cachedFileObjects) {
                 fo.connectionChanged();
             }
         }
+    }
+    
+    private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
+        Collection<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>();
+        for (RemoteFileObjectBase fo : fileObjects) {
+            if (fo != null && fo.isValid() && fo.isFolder()) {
+                result.add(fo);
+            }
+        }
+        return result;
     }
 
     public void disconnected(ExecutionEnvironment env) {
@@ -161,13 +175,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
-
-    
-
-    /*package for test needs*/ void testResetDirtyTimestamp() {
-        resetDirtyTimestamp();
-    }
-
     private void resetDirtyTimestamp() {
         cache.setLastModified(System.currentTimeMillis());
         dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
@@ -187,6 +194,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return factory;
     }
 
+    public RefreshManager getRefreshManager() {
+        return refreshManager;
+    }
+    
     public String normalizeAbsolutePath(String absPath) {
         //BZ#192265 as vkvashin stated the URI i sused to normilize the path
         //but URI is really very restrictive so let's use another way
@@ -466,10 +477,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         public RemoteDirectory getParent() {
             return null;
         }
-
-        @Override
-        protected void refreshImpl(boolean recursive) {
-            getFileSystem().resetDirtyTimestamp();
-        }
+                
     }
 }

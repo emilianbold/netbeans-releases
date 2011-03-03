@@ -48,6 +48,7 @@ import java.util.Arrays;
 import org.eclipse.jgit.lib.Constants;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitMergeResult.MergeStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -277,5 +278,38 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         logFileContent = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
         assertEquals("commit : Merge commit '" + branchInfo.getRevision() + "'", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("commit : ")));
+    }
+    
+    public void testMergeFailOnLocalChanges () throws Exception {
+        File f = new File(workDir, "file");
+        write(f, "init");
+        File f2 = new File(workDir, "file2");
+        write(f2, "init");
+        File[] files = { f, f2 };
+        add(files);
+        commit(files);
+        
+        GitClient client = getClient(workDir);
+        client.createBranch(BRANCH_NAME, Constants.MASTER, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutBranch(BRANCH_NAME, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(f, BRANCH_NAME);
+        add(f);
+        write(f2, BRANCH_NAME);
+        add(f2);
+        GitRevisionInfo branchInfo = client.commit(files, "change on branch", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutBranch(Constants.MASTER, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        
+        assertEquals("init", read(f));
+        assertEquals("init", read(f2));
+        
+        write(f, Constants.MASTER);
+        write(f2, Constants.MASTER);
+        
+        try {
+            client.merge(branchInfo.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        } catch (GitException.CheckoutConflictException ex) {
+            // OK
+            assertEquals(Arrays.asList(new String[] { f.getName(), f2.getName() }), Arrays.asList(ex.getConflicts()));
+        }
     }
 }

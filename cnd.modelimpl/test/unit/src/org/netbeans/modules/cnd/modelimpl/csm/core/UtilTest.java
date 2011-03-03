@@ -52,6 +52,11 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyPresentationFactoryImpl;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -68,7 +73,11 @@ public class UtilTest {
                 assert false : "Duplicated key "+csmDeclarationKindkey+" for "+kind;
             }
             set.add(csmDeclarationKindkey);
-            assert Utils.getCsmDeclarationKind(csmDeclarationKindkey.charAt(0)) == kind : "Undefined kind for char"+csmDeclarationKindkey.charAt(0);
+            char charAt = csmDeclarationKindkey.charAt(0);
+            assert Utils.getCsmDeclarationKind(charAt) == kind : "Undefined kind for char"+csmDeclarationKindkey.charAt(0);
+            Key key = presentationFactory((short)charAt);
+            assert key != null;
+            assert KeyUtilities.getKeyChar(key) == charAt;
         }
         for(final CsmVisibility kind : CsmVisibility.values()) {
             String csmInheritanceKindKey = Utils.getCsmInheritanceKindKey(new CsmInheritance() {
@@ -132,14 +141,68 @@ public class UtilTest {
                 assert false : "Duplicated key "+csmInheritanceKindKey+" for "+kind;
             }
             set.add(csmInheritanceKindKey);
-            assert Utils.getCsmVisibility(csmInheritanceKindKey.charAt(0)) == kind : "Undefined kind for char"+csmInheritanceKindKey.charAt(0);
+            char charAt = csmInheritanceKindKey.charAt(0);
+            assert Utils.getCsmVisibility(charAt) == kind : "Undefined kind for char"+csmInheritanceKindKey.charAt(0);
+            Key key = presentationFactory((short)charAt);
+            assert key != null;
+            assert KeyUtilities.getKeyChar(key) == charAt;
         }
-        assert !set.contains(Utils.getCsmIncludeKindKey()) : "Duplicated key "+Utils.getCsmIncludeKindKey();
-        set.add(Utils.getCsmIncludeKindKey());
-        assert !set.contains(Utils.getCsmParamListKindKey()) : "Duplicated key "+Utils.getCsmParamListKindKey();
-        set.add(Utils.getCsmParamListKindKey());
-        assert !set.contains(Utils.getCsmInstantiationKindKey()) : "Duplicated key "+Utils.getCsmInstantiationKindKey();
-        set.add(Utils.getCsmInstantiationKindKey());
+        String key = Utils.getCsmIncludeKindKey();
+        assert !set.contains(key) : "Duplicated key "+key;
+        set.add(key);
+        Key aKey = presentationFactory((short)key.charAt(0));
+        assert aKey != null;
+        assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
+        
+        key = Utils.getCsmParamListKindKey();
+        assert !set.contains(key) : "Duplicated key "+key;
+        set.add(key);
+        aKey = presentationFactory((short)key.charAt(0));
+        assert aKey != null;
+        assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
+
+        key = Utils.getCsmInstantiationKindKey();
+        assert !set.contains(key) : "Duplicated key "+key;
+        set.add(key);
+        aKey = presentationFactory((short)key.charAt(0));
+        assert aKey != null;
+        assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
     }
 
+    private Key presentationFactory(final short kind) {
+        KeyDataPresentation presentation = new KeyDataPresentation() {
+
+            @Override
+            public short getUnitPresentation() {
+                return 0;
+            }
+
+            @Override
+            public CharSequence getNamePresentation() {
+                return CharSequences.empty();
+            }
+
+            @Override
+            public short getKindPresentation() {
+                return (short) kind;
+            }
+
+            @Override
+            public int getFilePresentation() {
+                return 0;
+            }
+
+            @Override
+            public int getStartPresentation() {
+                return 0;
+            }
+
+            @Override
+            public int getEndPresentation() {
+                return 0;
+            }
+        };
+        KeyPresentationFactoryImpl impl = new KeyPresentationFactoryImpl();
+        return impl.create(presentation);
+    }
 }

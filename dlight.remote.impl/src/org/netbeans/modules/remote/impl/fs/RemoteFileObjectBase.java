@@ -264,6 +264,31 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
     }
 
+    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
+    }
+
+    @Override
+    public void refresh(boolean expected) {
+        try {
+            refreshImpl();
+        } catch (ConnectException ex) {
+            RemoteLogger.finest(ex);
+        } catch (IOException ex) {
+            RemoteLogger.info(ex);
+        } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex);
+        } catch (CancellationException ex) {
+            RemoteLogger.finest(ex);
+        } catch (ExecutionException ex) {
+            RemoteLogger.info(ex);
+        }
+    }
+
+    @Override
+    public void refresh() {
+        refresh(false);
+    }
+    
     @Override
     public boolean isRoot() {
         return false;
@@ -326,8 +351,6 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     public void setImportant(boolean b) {
         // Deprecated. Noithing to do.
     }
-
-    protected abstract void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     public abstract FileType getType();
 

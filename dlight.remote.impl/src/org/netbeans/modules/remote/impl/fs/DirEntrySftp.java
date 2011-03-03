@@ -188,5 +188,10 @@ public class DirEntrySftp implements DirEntry {
             text = text.replace("\\ ", " "); // NOI18N
             return text;
         }
-    }    
+    }
+
+    @Override
+    public String toString() {
+        return "DirEntrySftp{" + "statInfo=" + statInfo + ", cache=" + cache + '}';
+    }
 }
