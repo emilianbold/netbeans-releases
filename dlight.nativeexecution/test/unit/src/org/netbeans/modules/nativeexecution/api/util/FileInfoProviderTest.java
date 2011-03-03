@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.Date;
 import java.util.concurrent.Future;
 import junit.framework.Test;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -226,20 +225,34 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
             System.err.printf("\t%s\n", info);
         }
         StatInfo statInfo;        
-        statInfo = find(res, PathUtilities.getBaseName(remoteFile));
+        statInfo = find(res, getBaseName(remoteFile));
         assertExpected(statInfo, remoteFile, false, null);
         
         statInfo = getStatInfo(remoteLink);
-        statInfo = find(res, PathUtilities.getBaseName(remoteLink));
+        statInfo = find(res, getBaseName(remoteLink));
         assertExpected(statInfo, remoteLink, false, remoteFile);
 
         statInfo = getStatInfo(remoteSubdir);
-        statInfo = find(res, PathUtilities.getBaseName(remoteSubdir));
+        statInfo = find(res, getBaseName(remoteSubdir));
         assertExpected(statInfo, remoteSubdir, true, null);
         
         statInfo = getStatInfo(remoteSubdirLink);
-        statInfo = find(res, PathUtilities.getBaseName(remoteSubdirLink));
+        statInfo = find(res, getBaseName(remoteSubdirLink));
         assertExpected(statInfo, remoteSubdirLink, false, remoteSubdir);
+    }
+    // copied from org.netbeans.modules.dlight.libs.common.PathUtilities
+    private static String getBaseName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
+        int sep = path.lastIndexOf('/');
+        if (sep == -1) {
+            sep = path.lastIndexOf('\\');
+        }
+        if (sep != -1) {
+            return path.substring(sep + 1);
+        }
+        return path;
     }
     
     private StatInfo find(StatInfo[] infList, String name) throws Exception {
