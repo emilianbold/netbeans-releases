@@ -285,15 +285,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (entry == null) {
                 return null;
             }
-            File childCache = new File(getCache(), entry.getCache());
-            String remoteAbsPath = getPath() + '/' + relativePath;
-            if (entry.isDirectory()) {
-                return getFileSystem().getFactory().createRemoteDirectory(this, remoteAbsPath, childCache);
-            }  else if (entry.isLink()) {
-                return getFileSystem().getFactory().createRemoteLink(this, remoteAbsPath, entry.getLinkTarget());
-            } else {
-                return getFileSystem().getFactory().createRemotePlainFile(this, remoteAbsPath, childCache, FileType.File);
-            }
+            return createFileObject(entry, false);
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
             return null;
@@ -319,6 +311,31 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             return null;
         }
     }
+    
+    private RemoteFileObjectBase createFileObject(DirEntry entry, boolean fire) {
+        File childCache = new File(getCache(), entry.getCache());
+        String childPath = getPath() + '/' + entry.getName();
+        RemoteFileObjectBase fo;
+        if (entry.isDirectory()) {
+            fo = getFileSystem().getFactory().createRemoteDirectory(this, childPath, childCache);
+        }  else if (entry.isLink()) {
+            fo = getFileSystem().getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
+        } else {
+            fo = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
+        }
+        if (fire) {
+            FileEvent e = new FileEvent(fo);
+            if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
+                fireFileFolderCreatedEvent(getListeners(), e);
+            } else if (fo instanceof RemotePlainFile) {
+                fireFileDataCreatedEvent(getListeners(), e);
+            } else {
+                RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
+                fireFileDataCreatedEvent(getListeners(), e);
+            }
+        }
+        return fo;
+    }
 
     private RemoteFileObjectBase[] getExistentChildren() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         DirectoryStorage storage = getDirectoryStorage();
@@ -342,15 +359,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirEntry entry = entries.get(i);
-                String childPath = getPath() + '/' + entry.getName(); //NOI18N
-                File childCache = new File(getCache(), entry.getCache());
-                if (entry.isDirectory()) {
-                    childrenFO[i] = getFileSystem().getFactory().createRemoteDirectory(this, childPath, childCache);
-                } else if(entry.isLink()) {
-                    childrenFO[i] = getFileSystem().getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
-                } else {
-                    childrenFO[i] = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
-                }
+                childrenFO[i] = createFileObject(entry, false);
             }
             return childrenFO;
         } catch (InterruptedException ex) {
@@ -536,13 +545,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             getFileSystem().incrementDirSyncCount();
             Map<String, List<DirEntry>> dupLowerNames = new HashMap<String, List<DirEntry>>();
             boolean hasDups = false;
-            Map<String, DirEntry> entries = new HashMap<String, DirEntry>();
+            Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();
             for (DirEntry entry : directoryReader.getEntries()) {
-                entries.put(entry.getName(), entry);
+                newEntries.put(entry.getName(), entry);
             }
             boolean changed = false;
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
-            for (DirEntry newEntry : entries.values()) {
+            for (DirEntry newEntry : newEntries.values()) {
                 String cacheName;
                 DirEntry oldEntry = storage.getEntry(newEntry.getName());
                 if (oldEntry == null) {
@@ -592,12 +601,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     dupEntries.add(newEntry);
                 }
             }
-            if (changed || entries.size() != storage.size()) {
+            if (changed || newEntries.size() != storage.size()) {
                 // Check for removal
                 for (DirEntry oldEntry : storage.list()) {
-                    if (!entries.containsKey(oldEntry.getName())) {
+                    if (!newEntries.containsKey(oldEntry.getName())) {
                         changed = true;
                         invalidate(oldEntry);
+                    }
+                }
+                for (DirEntry newEntry : newEntries.values()) {
+                    DirEntry oldEntry = storage.getEntry(newEntry.getName());
+                    if (oldEntry == null) {
+                        createFileObject(newEntry, true);
                     }
                 }
             }
@@ -629,7 +644,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                     }
                 }
-                storage.setEntries(entries.values());
+                storage.setEntries(newEntries.values());
                 storage.store();
             } else {
                 storage.touch();
