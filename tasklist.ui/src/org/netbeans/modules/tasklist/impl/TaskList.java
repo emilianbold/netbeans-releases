@@ -233,8 +233,8 @@ public class TaskList {
     }
     
     public List<? extends Task> getTasks() {
+        lock.readLock().lock();
         try {
-            lock.readLock().lock();
             return new ArrayList<Task>( sortedTasks );
         } finally {
             lock.readLock().unlock();
