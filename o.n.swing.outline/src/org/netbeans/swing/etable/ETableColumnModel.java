@@ -334,8 +334,11 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         return sortedColumns;
     }
 
-    /** Removes all columns, including hidden ones. TODO: Add to public APIs */
-    void clean() {
+    /**
+     * Removes all columns, including hidden ones.
+     * @since 1.12
+     */
+    public void clean() {
         List<TableColumn> allColumns = new ArrayList<TableColumn>(tableColumns.size() + hiddenColumns.size());
         allColumns.addAll(tableColumns);
         allColumns.addAll(hiddenColumns);
