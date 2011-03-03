@@ -359,6 +359,11 @@ public class Utilities {
         
     }
 
+    public static final String TAG_SELECT = "select";
+    public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff) throws IOException {
+        return commitAndComputeChangeInfo(target, diff, TAG_SELECT);
+    }
+
     /**
      * Commits changes and provides selection bounds
      *
