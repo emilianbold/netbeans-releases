@@ -668,12 +668,13 @@ public final class ClassPath {
         WARN,
         /**
          * {@link #toString(ClassPath.PathConversionMode)} will fail with an {@link IllegalArgumentException}.
+         * Useful for unit tests.
          */
         FAIL,
         /**
          * The entry is simply displayed as a URL.
-         * Useful for debug logging or unit tests.
-         * Used by {@link ClassPath#toString}.
+         * Useful for logging.
+         * @see ClassPath#toString()
          */
         PRINT,
     }
@@ -720,6 +721,10 @@ public final class ClassPath {
         return b.toString();
     }
 
+    /**
+     * Calls {@link #toString(ClassPath.PathConversionMode)} with {@link ClassPath.PathConversionMode#PRINT}.
+     * @return a classpath suitable for logging or debugging
+     */
     public @Override String toString() {
         return toString(PathConversionMode.PRINT);
     }

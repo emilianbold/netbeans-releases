@@ -60,11 +60,11 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -KPIC -norunpath -h libBuildTrace.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -s -KPIC -h libBuildTrace.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -g -KPIC  -o ${OBJECTDIR}/execint.o execint.c
+	$(COMPILE.c) -fast -xipo -g -s -KPIC  -o ${OBJECTDIR}/execint.o execint.c
 
 # Subprojects
 .build-subprojects:
