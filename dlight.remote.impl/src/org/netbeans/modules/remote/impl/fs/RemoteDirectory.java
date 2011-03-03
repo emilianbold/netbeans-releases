@@ -325,12 +325,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (fire) {
             FileEvent e = new FileEvent(fo);
-            if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
+//            if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
+//                fireFileFolderCreatedEvent(getListeners(), e);
+//            } else if (fo instanceof RemotePlainFile) {
+//                fireFileDataCreatedEvent(getListeners(), e);
+//            } else {
+//                RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
+//                fireFileDataCreatedEvent(getListeners(), e);
+//            }
+            if (fo.isFolder()) { // fo.isFolder() very slow if it is a link
                 fireFileFolderCreatedEvent(getListeners(), e);
-            } else if (fo instanceof RemotePlainFile) {
-                fireFileDataCreatedEvent(getListeners(), e);
             } else {
-                RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
                 fireFileDataCreatedEvent(getListeners(), e);
             }
         }
@@ -467,11 +472,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             loaded = true;
         }
         
-        if (force) {
-            loaded = false;
-        }
-
-        if (loaded) {
+        if (loaded && !force) {
             synchronized (refLock) {
                 if (storageRef != null) {
                     DirectoryStorage s = storageRef.get();
@@ -523,7 +524,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     // connection was broken while we read directory content -
                     // add notification and return cache if available
                     getFileSystem().getRemoteFileSupport().addPendingFile(this);
-                    if (loaded && storage != null) {
+                    if (loaded && !force && storage != null) {
                         return storage;
                     } else {
                         throw new ConnectException(ex.getMessage());
@@ -535,7 +536,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     // connection was broken while we read directory content -
                     // add notification and return cache if available
                     getFileSystem().getRemoteFileSupport().addPendingFile(this);
-                    if (loaded && storage != null) {
+                    if (loaded && !force && storage != null) {
                         return storage;
                     } else {
                         throw ex;
@@ -609,10 +610,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         invalidate(oldEntry);
                     }
                 }
-                for (DirEntry newEntry : newEntries.values()) {
-                    DirEntry oldEntry = storage.getEntry(newEntry.getName());
-                    if (oldEntry == null) {
-                        createFileObject(newEntry, true);
+                if (loaded) {
+                    for (DirEntry newEntry : newEntries.values()) {
+                        DirEntry oldEntry = storage.getEntry(newEntry.getName());
+                        if (oldEntry == null) {
+                            createFileObject(newEntry, true);
+                        }
                     }
                 }
             }
