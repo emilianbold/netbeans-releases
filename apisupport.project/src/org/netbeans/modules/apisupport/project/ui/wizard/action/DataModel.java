@@ -325,14 +325,16 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     null
                 ));
             }
-            /*
             // create editor context menu item
             if (edContextEnabled) {
-                generateShadowWithOrderAndSeparator(edContextType, shadow,
-                        dashedFqClassName, instanceFullPath, edContextSeparatorBefore,
-                        edContextSeparatorAfter, edContextPosition);
+                refs.add(createActionReference(
+                    edContextType,
+                    edContextSeparatorBefore ? Position.toInteger(edContextPosition, getProject(), edContextType, Boolean.TRUE) : -1,
+                    edContextSeparatorAfter ? Position.toInteger(edContextPosition, getProject(), edContextType, Boolean.FALSE) : -1,
+                    Position.toInteger(edContextPosition, getProject(), edContextType),
+                    null
+                ));
             }
-            */
             replaceTokens.put("REFERENCES", refs);
         }
         
@@ -439,13 +441,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                         dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
                         ftContextSeparatorAfter, ftContextPosition);
             }
-        }
-        // create editor context menu item
-        // XXX why is this not also done using @ActionReference?
-        if (edContextEnabled) {
-            generateShadowWithOrderAndSeparator(edContextType, shadow,
-                    dashedFqClassName, instanceFullPath, edContextSeparatorBefore,
-                    edContextSeparatorAfter, edContextPosition);
+            // create editor context menu item
+            if (edContextEnabled) {
+                generateShadowWithOrderAndSeparator(edContextType, shadow,
+                        dashedFqClassName, instanceFullPath, edContextSeparatorBefore,
+                        edContextSeparatorAfter, edContextPosition);
+            }
         }
     }
     
