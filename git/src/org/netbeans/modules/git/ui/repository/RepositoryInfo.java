@@ -234,7 +234,7 @@ public class RepositoryInfo {
         boolean changed = false;
         synchronized (branches) {
             oldBranches = new HashMap<String, GitBranch>(branches);
-            if (oldBranches.size() != newBranches.size() || !branches.keySet().equals(newBranches.keySet())) {
+            if (!equalsBranches(oldBranches, newBranches)) {
                 branches.clear();
                 branches.putAll(newBranches);
                 changed = true;
@@ -250,7 +250,7 @@ public class RepositoryInfo {
         boolean changed = false;
         synchronized (remotes) {
             oldRemotes = new HashMap<String, GitRemoteConfig>(remotes);
-            if (!equals(oldRemotes, newRemotes)) {
+            if (!equalsRemotes(oldRemotes, newRemotes)) {
                 remotes.clear();
                 remotes.putAll(newRemotes);
                 changed = true;
@@ -310,7 +310,7 @@ public class RepositoryInfo {
         }
     }
 
-    private boolean equals (Map<String, GitRemoteConfig> oldRemotes, Map<String, GitRemoteConfig> newRemotes) {
+    private static boolean equalsRemotes (Map<String, GitRemoteConfig> oldRemotes, Map<String, GitRemoteConfig> newRemotes) {
         boolean retval = oldRemotes.size() == newRemotes.size() && oldRemotes.keySet().equals(newRemotes.keySet());
         if (retval) {
             for (Map.Entry<String, GitRemoteConfig> e : oldRemotes.entrySet()) {
@@ -318,6 +318,21 @@ public class RepositoryInfo {
                 GitRemoteConfig newRemote = newRemotes.get(e.getKey());
                 if (!(oldRemote.getFetchRefSpecs().equals(newRemote.getFetchRefSpecs()) && oldRemote.getPushRefSpecs().equals(newRemote.getPushRefSpecs()) && 
                         oldRemote.getUris().equals(newRemote.getUris()) && oldRemote.getPushUris().equals(newRemote.getPushUris()))) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        return retval;
+    }
+    
+    private static boolean equalsBranches (Map<String, GitBranch> oldBranches, Map<String, GitBranch> newBranches) {
+        boolean retval = oldBranches.size() == newBranches.size() && oldBranches.keySet().equals(newBranches.keySet());
+        if (retval) {
+            for (Map.Entry<String, GitBranch> e : oldBranches.entrySet()) {
+                GitBranch oldBranch = e.getValue();
+                GitBranch newBranch = newBranches.get(e.getKey());
+                if (!oldBranch.getId().equals(newBranch.getId())) {
                     retval = false;
                     break;
                 }
