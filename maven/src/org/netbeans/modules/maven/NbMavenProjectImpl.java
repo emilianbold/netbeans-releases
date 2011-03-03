@@ -84,6 +84,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -101,6 +102,7 @@ import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -1250,6 +1252,9 @@ public final class NbMavenProjectImpl implements Project {
             }
             packaging = packaging.trim();
             if (NbMavenProject.TYPE_POM.equals(packaging)) {
+                if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+                    return JAR_APPLICATION_TYPES; // #192735
+                }
                 return POM_APPLICATION_TYPES;
             }
             if (NbMavenProject.TYPE_JAR.equals(packaging)) {
