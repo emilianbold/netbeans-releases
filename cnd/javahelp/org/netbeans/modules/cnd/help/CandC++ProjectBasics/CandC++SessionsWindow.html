@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2007, 2011 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -14,7 +13,8 @@ type="text/css">
 <h2>C and C++ Sessions Window</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>The Sessions window lists the debugging sessions currently running 
-in the IDE. You can open the Sessions window by choosing Window &gt; 
+in the IDE. When you start a second debugging session, the window opens automatically. 
+You can open the Sessions window by choosing Window &gt; 
 Debugging &gt; Sessions. If you open the Sessions window when a 
 debugging session is running, it closes automatically when you end 
 the debugging session. If you open the window when no debugging 
@@ -28,6 +28,11 @@ considered the current session, unless no sessions are running. By
 default, the current session is the session that you most recently 
 started.
 </p>
+<p>By default, the window displays the name, process ID, process state, 
+and host for each session. To display additional information, click the 
+Change Visible Columns button <img src="../images/visibleColumns.png">&nbsp;and 
+select columns in the Change Visible Columns dialog box.
+</p> 
 <h3>Session States</h3>
 The following table describes the session states.
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
@@ -38,8 +43,8 @@ the state. The right column describes the state.">
 </tr>
 <tr valign="top">
 <td>Starting</td>
-<td>The program is being started. You cannot pause, resume, o
-r single-step the application.
+<td>The program is being started. You cannot pause, resume, or single-step 
+the application.
 </td>
 </tr>
 <tr valign="top">
@@ -47,13 +52,18 @@ r single-step the application.
 <td>The application being debugged has been started and is 
 executing instructions.
 </td>
-</tr
+</tr>
 <tr valign="top">
-<td>Stopped</td>
+<td>Paused</td>
 <td>The application is suspended because it hit a breakpoint or 
 because you either paused the application or performed a step 
 command (Step Into, Step Over, Step Out, or Run to Cursor).
 </td>
+</tr>
+<tr valign="top">
+<td>Core file</td
+<td>The session is debugging a core file.</td>
+</tr>
 </table>
 <h3>Icons</h3>
 The following table describes the icons displayed in the Sessions window.
@@ -64,17 +74,12 @@ the icon. The right column describes the icon.">
 <th scope="col" align="left">Description</th>
 </tr>
 <tr valign="top">
-<td><img src="../images/CurrentSession.gif"></td>
+<td><img src="../images/CurrentSession.gif" alt="Current Session icon"></td>
 <td>The current session</td>
 </tr>
 <tr valign="top">
-<td><img src="../images/Session.gif"></td>
+<td><img src="../images/Session.gif" alt="Session icon"></td>
 <td>A session other than the current session
-</td>
-</tr>
-<tr valign="top">
-<td><img src="../images/visibleColumns.png"></td>
-<td>Click this icon in the top right to add or remove columns from the Sessions window.
 </td>
 </tr>
 </table>

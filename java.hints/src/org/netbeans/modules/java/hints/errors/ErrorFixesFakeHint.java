@@ -163,6 +163,22 @@ public class ErrorFixesFakeHint extends AbstractHint {
     public static void setUseExceptions(Preferences p, boolean v) {
         p.putBoolean(SURROUND_USE_EXCEPTIONS, v);
     }
+
+    public static boolean isRethrowAsRuntimeException() {
+        return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_RETHROW_AS_RUNTIME, false);
+    }
+
+    public static void setRethrowAsRuntimeException(Preferences p, boolean v) {
+        p.putBoolean(SURROUND_RETHROW_AS_RUNTIME, v);
+    }
+
+    public static boolean isRethrow() {
+        return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_RETHROW, false);
+    }
+
+    public static void setRethrow(Preferences p, boolean v) {
+        p.putBoolean(SURROUND_RETHROW, v);
+    }
     
     public static boolean isUseLogger() {
         return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_JAVA_LOGGER, true);
@@ -178,6 +194,8 @@ public class ErrorFixesFakeHint extends AbstractHint {
     
     public static final String LOCAL_VARIABLES_INPLACE = "create-local-variables-in-place"; // NOI18N
     public static final String SURROUND_USE_EXCEPTIONS = "surround-try-catch-org-openide-util-Exceptions"; // NOI18N
+    public static final String SURROUND_RETHROW_AS_RUNTIME = "surround-try-catch-rethrow-runtime"; // NOI18N
+    public static final String SURROUND_RETHROW = "surround-try-catch-rethrow"; // NOI18N
     public static final String SURROUND_USE_JAVA_LOGGER = "surround-try-catch-java-util-logging-Logger"; // NOI18N
     public static final String FINAL_FIELDS_FROM_CTOR = "create-final-fields-from-ctor"; // NOI18N
 

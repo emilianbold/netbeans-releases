@@ -1859,7 +1859,7 @@ import org.openide.util.Exceptions;
             
             // try to find frame arguments
             MIResult frameArgs = null;
-            if (args_list != null && vx <= args_list.size()) {
+            if (args_list != null && vx < args_list.size()) {
                 frameArgs = (MIResult) args_list.get(vx);
             }
             
@@ -2058,22 +2058,11 @@ import org.openide.util.Exceptions;
 
 	NativeWatch nativeWatch = template;
 
-        GdbWatch gdbWatch;
-	Object key = nativeWatch.getExpression();
-	if (watches.byKey(key) != null) {
-	    // duplicate watch
-	    gdbWatch =
-		new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-	    // set "value"
-	    final String msg = String.format("Duplicate of %d", 999); // NOI18N
-	    gdbWatch.setAsText(msg);
-
-	} else {
-	    gdbWatch =
-		new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-	    createMIVar(gdbWatch);
-	}
-
+        // see IZ 194721
+        // No need to check for duplicates - gdb will create different vars
+        GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
+        createMIVar(gdbWatch);
+        
 	updateMIVar();
 	nativeWatch.setSubWatchFor(gdbWatch, this);
         watches.add(gdbWatch);
@@ -2513,14 +2502,14 @@ import org.openide.util.Exceptions;
 			      final int level) {
 
         String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
-		    @Override
-                    protected void onDone(MIRecord record) {
-                        interpMIChildren(parent, record, level);
-                        finish();
-                    }
-                };
+        MiCommandImpl cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                interpMIChildren(parent, record, level);
+                finish();
+            }
+        };
+        cmd.dontReportError();
         gdb.sendCommand(cmd);
     }
 
