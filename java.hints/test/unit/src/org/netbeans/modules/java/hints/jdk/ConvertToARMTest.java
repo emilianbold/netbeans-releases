@@ -177,13 +177,14 @@ public class ConvertToARMTest extends TestBase {
                        "     public void test() throws Exception {" +
                        "         System.out.println(\"Start\");" +
                        "         InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         in.read();"+
                        "         in.close();"+
                        "         System.out.println(\"Done\");"+                                              
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:Convert to Automatic Resource Management",
                        "FixImpl",
-                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { } System.out.println(\"Done\"); }}");
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
     public void testNoTry1Stm() throws Exception {
@@ -900,7 +901,258 @@ public class ConvertToARMTest extends TestBase {
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test {public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try ( InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) {int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } }}}"
                 );
     }
+
+    public void testSimpleVarDeclUsedAfterClose() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         System.out.println(\"Start\");" +
+                       "         InputStream ins = new FileInputStream(\"\");"+
+                       "         int r = ins.read();"+
+                       "         ins.close();"+
+                       "         System.out.println(r);"+
+                       "     }" +
+                       "}",
+                       "0:210-0:213:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");int r; try (InputStream ins = new FileInputStream(\"\")) { r = ins.read(); } System.out.println(r); }}");
+    }
+
+    public void testSimpleVarDeclUsedAfterClose2() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         System.out.println(\"Start\");" +
+                       "         InputStream ins = new FileInputStream(\"\");"+
+                       "         int r;" +
+                       "         r = ins.read();"+
+                       "         ins.close();"+
+                       "         System.out.println(r);"+
+                       "     }" +
+                       "}",
+                       "0:210-0:213:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");int r; try (InputStream ins = new FileInputStream(\"\")) { r = ins.read(); } System.out.println(r); }}");
+    }
+
+    public void testComplexVarDeclUsedAfterClose() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         System.out.println(\"Start\");" +
+                       "         InputStream ins = new FileInputStream(\"\");"+
+                       "         int r1 = ins.read();"+
+                       "         int r2 = ins.read();"+
+                       "         int sum = r1 + r2;"+
+                       "         ins.close();"+
+                       "         System.out.println(r1);"+
+                       "         System.out.println(sum);"+
+                       "     }" +
+                       "}",
+                       "0:210-0:213:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");int r1; int sum; try (InputStream ins = new FileInputStream(\"\")) { r1 = ins.read(); int r2 = ins.read(); sum = r1 + r2; } System.out.println(r1); System.out.println(sum); }}");
+    }
+
+    public void testResourceUsedAfterClose1() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "        System.out.println(\"Start\");" +
+                       "	InputStream ins = new FileInputStream(\"\");" +
+                       "        ins.read();"+
+                       "        ins.close();"+
+                       "        ins = null;"+
+                       "        System.out.println(r);"+
+                       "     }" +
+                       "}",
+                       "0:201-0:204:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } System.out.println(r); }}");
+    }
+
+    public void testResourceUsedAfterClose2() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "        System.out.println(\"Start\");" +
+                       "	InputStream ins = new FileInputStream(\"\");" +
+                       "        ins.read();"+
+                       "        ins.close();"+
+                       "        ins.available();"+
+                       "        System.out.println(r);"+
+                       "     }" +
+                       "}");
+    }
+
+    public void testResourceUsedAfterClose3() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "        System.out.println(\"Start\");" +
+                       "	InputStream ins = new FileInputStream(\"\");" +
+                       "        ins.read();"+
+                       "        ins.close();"+
+                       "        if (true) {" +
+                       "           ins = null;"+
+                       "           System.out.println(r);"+
+                       "        }"+
+                       "     }" +
+                       "}",
+                       "0:201-0:204:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } if (true) { System.out.println(r); } }}");
+    }
+
+    public void testNullResourceNoIfCheck() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "        System.out.println(\"Start\");" +
+                       "        InputStream ins = null;" +
+                       "        try {"+
+                       "            ins = new FileInputStream(\"\");" +
+                       "            ins.read();"+
+                       "        } finally {"+
+                       "             ins.close();"+
+                       "        }"+
+                       "        System.out.println(\"Done\");" +
+                       "     }" +
+                       "}",
+                       "0:208-0:211:verifier:Convert to Automatic Resource Management",
+                       "FixImpl",
+                       "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } System.out.println(\"Done\"); }}");
+    }
+
+    public void testNoStatements() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "        System.out.println(\"Start\");" +
+                       "        InputStream ins = new FileInputStream(\"\");" +
+                       "        ins.close();"+
+                       "        System.out.println(\"Done\");" +
+                       "     }" +
+                       "}");
+    }
+
+    public void testNoARMHintForSourceLevelLessThen17() throws Exception {
+        setSourceLevel("1.6");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                       "package test;" +
+                       "import java.io.InputStream;"+
+                       "import java.io.FileInputStream;"+
+                       "import java.io.File;"+
+                       "public class Test {" +
+                       "     public void test() throws Exception {" +
+                       "         System.out.println(\"Start\");" +
+                       "         final InputStream in = new FileInputStream(new File(\"a\"));"+
+                       "         try {"+
+                       "            in.read();"+
+                       "         } finally {"+
+                       "            in.close();"+
+                       "         }"+
+                       "         System.out.println(\"Done\");"+
+                       "     }" +
+                       "}");
+    }
+
+    public void testAssignmentToResource() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "import java.io.InputStream;"+
+                            "import java.io.FileInputStream;"+
+                            "import java.io.File;"+
+                            "public class Test {" +
+                            "     public void test(boolean b) throws Exception {" +
+                            "        System.out.println(\"Start\");" +
+                            "        InputStream ins = null;" +
+                            "        if (b) {" +
+                            "            ins = new FileInputStream(\"\");" +
+                            "        }" +
+                            "        if (ins == null) {" +
+                            "            ins = new FileInputStream(\"\");" +
+                            "        }" +
+                            "        ins.read();"+
+                            "        ins.close();"+
+                            "     }" +
+                            "}");
+    }
     
+    public void testCannotSplitVariable() throws Exception {
+        setSourceLevel("1.7");
+        ConvertToARM.checkAutoCloseable = false;    //To allow run on JDK 1.6
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "import java.io.InputStream;"+
+                            "import java.io.FileInputStream;"+
+                            "import java.io.File;"+
+                            "public class Test {" +
+                            "     public int test(boolean b) throws Exception {" +
+                            "        System.out.println(\"Start\");" +
+                            "        InputStream ins = new FileInputStream(\"\");" +
+                            "        if (b) {" +
+                            "            int r = 0;" +
+                            "            System.err.println(r);" +
+                            "        }" +
+                            "        int r = ins.read();"+
+                            "        ins.close();"+
+                            "        return r;"+
+                            "     }" +
+                            "}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";

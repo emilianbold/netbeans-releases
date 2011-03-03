@@ -58,6 +58,7 @@ import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,9 +66,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import org.openide.LifecycleManager;
@@ -76,7 +77,6 @@ import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
@@ -1083,6 +1083,12 @@ public final class ModuleManager extends Modules {
         firer.fire();
     }
 
+    private static class CodeNameBaseComparator implements Comparator<Module> {
+        public @Override int compare(Module m1, Module m2) {
+            return m1.getCodeNameBase().compareTo(m2.getCodeNameBase());
+        }
+    }
+
     /** Simulate what would happen if a set of modules were to be enabled.
      * None of the listed modules may be autoload modules, nor eager, nor currently enabled,
      * though they may be fixed (if they have not yet been enabled).
@@ -1122,7 +1128,7 @@ public final class ModuleManager extends Modules {
         }
          */
         // XXX also optimize for modules.size == 1
-        Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1);
+        Set<Module> willEnable = new TreeSet<Module>(new CodeNameBaseComparator());
         for (Module m: modules) {
             if (honorAutoloadEager) {
                 if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
@@ -1313,7 +1319,7 @@ public final class ModuleManager extends Modules {
         }
         // XXX also optimize for modules.size == 1
         // Probably not a very efficient algorithm. But it probably does not need to be.
-        Set<Module> willDisable = new HashSet<Module>(20);
+        Set<Module> willDisable = new TreeSet<Module>(new CodeNameBaseComparator());
         for (Module m : modules) {
             if (m.isAutoload()) throw new IllegalArgumentException("Cannot disable autoload: " + m); // NOI18N
             if (m.isEager()) throw new IllegalArgumentException("Cannot disable eager module: " + m); // NOI18N

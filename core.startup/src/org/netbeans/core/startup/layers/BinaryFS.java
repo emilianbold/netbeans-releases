@@ -907,7 +907,11 @@ final class BinaryFS extends FileSystem {
         }
 
         /** Retrieve file or folder contained in this folder by name. */
+        @Override
         public FileObject getFileObject(String name, String ext) {
+            if ("..".equals(name) && ext == null) { // NOI18N
+                return getParent();
+            }
             initialize();
             String fullName = ext == null ? name : name + "." + ext; // XXX - ??
             return childrenMap.get(fullName);

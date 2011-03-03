@@ -67,6 +67,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -119,6 +120,13 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     public Action[] actions(Set files) {
         if (files.isEmpty()) return new Action[0];
 
+        if(!VersioningManager.isInitialized()) {
+            return new Action[] {
+                SystemAction.get(InitVersioningSystemAction.class),
+                SystemAction.get(InitLHSystemAction.class)
+            };
+        }
+        
         List<Action> actions = new ArrayList<Action>();
         LocalHistoryActions localHistoryAction = null;
 
@@ -172,6 +180,34 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     public static class LocalHistoryActions extends AbstractVersioningSystemActions {
+    }
+    
+    public static class InitLHSystemAction extends InitVersioningSystemAction {
+        public InitLHSystemAction() {
+            super();
+        }
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(VersioningAnnotationProvider.class, "CTL_MenuItem_LocalHistory");
+        }
+    }
+    
+    public static class InitVersioningSystemAction extends SystemAction implements Presenter.Popup {
+
+        @Override
+        public void actionPerformed(ActionEvent ae) { }
+        @Override
+        public JMenuItem getPopupPresenter() {
+            return InitMenuItem.create(getName());            
+        }
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(VersioningAnnotationProvider.class, "CTL_MenuItem_VersioningMenu");
+        }
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
     }
     
     public abstract static class AbstractVersioningSystemActions extends SystemAction implements ContextAwareAction {

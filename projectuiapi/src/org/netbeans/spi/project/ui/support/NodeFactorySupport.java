@@ -97,7 +97,7 @@ public class NodeFactorySupport {
      * @param nodes a fixed set of nodes to display
      * @return a constant node list
      */
-    public static NodeList fixedNodeList(Node... nodes) {
+    public static NodeList<?> fixedNodeList(Node... nodes) {
         return new FixedNodeList(nodes);
     }
     

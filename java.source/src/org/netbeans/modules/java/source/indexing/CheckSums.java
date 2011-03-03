@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.java.source.indexing;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -104,10 +107,9 @@ public final class CheckSums {
     }
 
     public void store () throws IOException {
-        FileObject indexDir = context.getIndexFolder();
-        FileObject f = FileUtil.createData(indexDir, CHECK_SUMS_FILE);
-        assert f != null;
-        final OutputStream out = f.getOutputStream();
+        final File indexDir = FileUtil.toFile(context.getIndexFolder());
+        final File f = new File (indexDir, CHECK_SUMS_FILE);
+        final OutputStream out = new FileOutputStream(f);
         try {
             props.store(out, ""); //NOI18N
         } finally {
@@ -116,10 +118,10 @@ public final class CheckSums {
     }
 
     private void load() throws IOException {
-        FileObject indexDir = context.getIndexFolder();
-        FileObject f = indexDir.getFileObject(CHECK_SUMS_FILE);
-        if (f != null) {
-            final InputStream in = f.getInputStream();
+        final File indexDir = FileUtil.toFile(context.getIndexFolder());
+        final File f = new File (indexDir, CHECK_SUMS_FILE);
+        if (f.canRead()) {
+            final InputStream in = new FileInputStream(f);
             try {
                 props.load(in);
             } finally {

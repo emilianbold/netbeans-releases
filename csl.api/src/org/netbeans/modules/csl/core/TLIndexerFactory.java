@@ -52,10 +52,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
+import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Error.Badging;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -78,7 +84,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
 
     public static final String  INDEXER_NAME = "TLIndexer"; //NOI18N
-    public static final int     INDEXER_VERSION = 4;
+    public static final int     INDEXER_VERSION = 5;
 
     public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
     public static final String FIELD_DESCRIPTION = "description"; //NOI18N
@@ -156,18 +162,19 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         public ErrorConvertorImpl(List<Integer> lineStartOffsets) {
             this.lineStartOffsets = lineStartOffsets;
         }
+        @Override
         public ErrorKind getKind(Error error) {
             if (error.getSeverity() == Severity.WARNING) {
                 return ErrorKind.WARNING;
             } else if (error instanceof Badging && ((Badging) error).showExplorerBadge()) {
-                return ErrorKind.ERROR;
-            } else {
-                return ErrorKind.ERROR_NO_BADGE;
+                    return ErrorKind.ERROR;
+                } else {
+                    return ErrorKind.ERROR_NO_BADGE;
+                }
             }
-        }
+        @Override
         public int getLineNumber(Error error) {
-            // #172100, ParserResult.getDiagnostics() uses document offsets rather then snapshot offsets
-            int originalOffset = error.getStartPosition();
+            int originalOffset = error.getStartPosition(); //snapshot offset
             int lineNumber = 1;
             if (originalOffset >= 0) {
                 int idx = Collections.binarySearch(lineStartOffsets, originalOffset);
@@ -186,6 +193,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
             return lineNumber;
         }
+        @Override
         public String getMessage(Error error) {
             return error.getDisplayName();
         }
@@ -234,9 +242,45 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
             }
 
-            storedErrors.addAll(gsfParserResult.getDiagnostics ());
-        }
+            String mimeType = parserResult.getSnapshot().getMimeType();
+            Language cslLanguage = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            HintsProvider hintsProvider = cslLanguage != null ? cslLanguage.getHintsProvider() : null;
+            
+            if(hintsProvider != null) {
+                HintsManager hintsManager = HintsManager.getManagerForMimeType(mimeType);
+                RuleContext ruleContext = new RuleContext();
+                ruleContext.manager = hintsManager;
+                ruleContext.doc = (BaseDocument) parserResult.getSnapshot().getSource().getDocument(true);
+                ruleContext.parserResult = (ParserResult) parserResult;
 
+                List<Hint> hints = new LinkedList<Hint>();
+                List<Error> unhandledErrors = new LinkedList<Error>();
+                hintsProvider.computeErrors(hintsManager, ruleContext, hints, unhandledErrors);
+
+                //filter out non-warning||error hints
+                List<Error> filtered = new LinkedList<Error>();
+                for(Hint hint : hints) {
+                    HintSeverity s = hint.getRule().getDefaultSeverity();
+                    if(s == HintSeverity.ERROR || s == HintSeverity.WARNING) {
+                        Error error = hint.getError();
+                        if(error != null) {
+                            filtered.add(error);
+                        }
+                    }
+                }
+                //add all errors from hints
+                storedErrors.addAll(filtered);
+
+                //add also the unhandled errors
+                storedErrors.addAll(unhandledErrors);
+
+            } else {
+                //no csl language or hints provider. lets use the default
+                storedErrors.addAll(gsfParserResult.getDiagnostics());
+            }
+            
+        }
+        
         private static List<Integer> getLineStartOffsets(Source source) {
             List<Integer> lineStartOffsets = new ArrayList<Integer>();
 

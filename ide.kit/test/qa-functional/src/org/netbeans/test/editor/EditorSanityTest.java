@@ -75,19 +75,27 @@ public class EditorSanityTest extends NbTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(EditorSanityTest.class).
+            NbModuleSuite.emptyConfiguration().addTest(Init.class).
+                addTest(EditorSanityTest.class).
                 clusters(".*").enableModules(".*").gui(false)
         );
     }
-
-    public void testInitBindings() {
-        try {
-            org.openide.awt.AcceleratorBinding.setAccelerator(null, null);
-            fail("Just initialize the class, otherwise it has to throw NPE");
-        } catch (NullPointerException ex) {
-            // OK
+    
+    public static final class Init extends NbTestCase {
+        public Init(String name) {
+            super(name);
+        }
+        
+        public void testInitBindings() {
+            try {
+                org.openide.awt.AcceleratorBinding.setAccelerator(null, null);
+                fail("Just initialize the class, otherwise it has to throw NPE");
+            } catch (NullPointerException ex) {
+                // OK
+            }
         }
     }
+
 
     public void testHTMLEditorKits() {
         JEditorPane pane = new JEditorPane();

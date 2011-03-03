@@ -261,7 +261,7 @@ public class PHPDocCommentParser {
     private PHPDocTag.Type findTagOnLine(String line) {
         PHPDocTag.Type type = null;
         if (line.length() > 0 && line.charAt(0) == '@') {
-            String[] tokens = line.trim().split("[ ]+");
+            String[] tokens = line.trim().split("[ \t]+");
             if (tokens.length > 0) {
                 String tag = tokens[0].substring(1).toUpperCase();
                 if (tag.indexOf('-') > -1) {

@@ -225,6 +225,11 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/iz175505.cc", 13, 6, "sys_include/iz175505.h", 4, 9);
     }
     
+    public void testBug179048() throws Exception {
+        // Bug 179048 - Unable to resolve using of global function in namespace
+        performTest("src/bug179048.cpp", 10, 22, "src/bug179048.cpp", 2, 1);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

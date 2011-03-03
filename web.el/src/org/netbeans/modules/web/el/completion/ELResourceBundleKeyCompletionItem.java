@@ -113,7 +113,7 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
 
         @Override
         public FileObject getFileObject() {
-            return element.getParserResult().getFileObject();
+            return element.getSnapshot().getSource().getFileObject();
         }
 
         @Override

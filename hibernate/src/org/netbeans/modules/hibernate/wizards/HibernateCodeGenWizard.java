@@ -393,11 +393,18 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 } else {
 
                     // Generate cfg.xml with hbm files
+                    enumarate:
                     while (enumeration.hasMoreElements()) {
                         FileObject fo = enumeration.nextElement();
                         if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
                             int mappingIndex = sf.addMapping(true);
-                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation()));
+                            String path = HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation());
+                            //check for duplicates
+                            for(int i=0;i<mappingIndex;i++){
+                                String tmpPath = sf.getAttributeValue(SessionFactory.MAPPING, i, resourceAttr);
+                                if(tmpPath == null ? path == null : tmpPath.equals(path))continue enumarate;
+                            }
+                            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, path);
                             hco.modelUpdatedFromUI();
                             hco.save();
                         }

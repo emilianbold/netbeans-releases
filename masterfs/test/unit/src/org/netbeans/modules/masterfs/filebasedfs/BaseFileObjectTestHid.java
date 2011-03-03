@@ -150,6 +150,53 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue(newFile.getAbsolutePath(), fo.isData());
     }
 
+    public void testFinePathsAroundRoot() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir()).getFileSystem().getRoot();
+        StringBuilder sb = new StringBuilder();
+        deep(fo, 3, sb, true);
+        if (sb.indexOf("\\") >= 0) {
+            fail("\\ is not allowed in getPath()s:\n" + sb);
+        }
+        if (sb.indexOf("//") >= 0) {
+            fail("Two // are not allowed\n" + sb);
+        }
+    }
+
+    public void testFineNamesAroundRoot() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir()).getFileSystem().getRoot();
+        StringBuilder sb = new StringBuilder();
+        deep(fo, 3, sb, false);
+        if (sb.indexOf("\\") >= 0) {
+            fail("\\ is not allowed in getName()s:\n" + sb);
+        }
+        if (sb.indexOf("//") >= 0) {
+            fail("Two // are not allowed\n" + sb);
+        }
+        if (sb.indexOf("/\n") >= 0) {
+            fail("There is a slash at end of line, which is not allowed\n" + sb);
+        }
+    }
+    
+    private static void deep(FileObject fo, int depth, StringBuilder sb, boolean path) {
+        if (depth-- == 0) {
+            return;
+        }
+        sb.append("  ");
+        String n;
+        if (path) {
+            n = fo.getPath();
+        } else {
+            n = fo.getNameExt();
+        }
+        if (n.length() > 1) {
+            sb.append(n);
+        }
+        sb.append("\n");
+        for (FileObject ch : fo.getChildren()) {
+            deep(ch, depth, sb, path);
+        }
+    }
+    
     public void testCaseSensitiveFolderRename() throws Exception {
         FileObject parent = root.getFileObject("testdir/mountdir10");
         List<FileObject> arr = Arrays.asList(parent.getChildren());
@@ -157,6 +204,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         final String up = parent.getName().toUpperCase();
         parent.rename(lock, up, null);
         assertEquals("Capital name", up, parent.getNameExt());
+        File real = FileUtil.toFile(parent);
+        assertNotNull("Real file exists", real);
+        assertEquals("It is capitalized too", up, real.getName());
         
         List<FileObject> now = Arrays.asList(parent.getChildren());
         assertEquals("Same children: ", arr, now);

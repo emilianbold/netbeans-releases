@@ -195,7 +195,6 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableFrameworks = new javax.swing.JTable();
-        jSeparator1 = new javax.swing.JSeparator();
         jLabelConfig = new javax.swing.JLabel();
         jPanelConfig = new javax.swing.JPanel();
 
@@ -233,20 +232,17 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jLabelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jLabelConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
@@ -260,7 +256,6 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     private javax.swing.JLabel jLabelConfig;
     private javax.swing.JPanel jPanelConfig;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTableFrameworks;
     // End of variables declaration//GEN-END:variables
 
@@ -376,7 +371,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     }
     
     public Component[] getConfigComponents() {
-        return new Component[] {jSeparator1, jLabelConfig, jPanelConfig};
+        return new Component[] {jLabelConfig, jPanelConfig};
     }
     
     /** Help context where to find more about the paste type action.

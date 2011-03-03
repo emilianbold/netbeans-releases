@@ -288,6 +288,15 @@ made subject to such option by the copyright holder.
                 <condition property="is.server.weblogic" value="true">
                     <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
                 </condition>
+                <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
+                    <and>
+                        <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
+                        <not>
+                            <os family="unix"/>
+                        </not>
+                    </and>
+                </condition>
+                <property name="javac.fork" value="${{jdkBug6558476}}"/>
             </target>
             
             <target name="-post-init">
@@ -419,8 +428,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>                            
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:attribute name="fork">${javac.fork}</xsl:attribute> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                                 <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             </xsl:if>

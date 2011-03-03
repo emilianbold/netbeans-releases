@@ -1192,7 +1192,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return true;
     }
 
-    private boolean isCacheFile(FileObject f) {
+    public boolean isCacheFile(FileObject f) {
         return FileUtil.isParentOf(CacheFolder.getCacheFolder(), f);
     }
 
@@ -3031,7 +3031,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // check for differencies from the initialState
                     final Map<URL,List<URL>> removed = new HashMap<URL,List<URL>>();
                     final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
+                    final Map<URL,List<URL>> removedPeers = new HashMap<URL,List<URL>>();
+                    final Map<URL,List<URL>> addedOrChangedPeers = new HashMap<URL,List<URL>>();
                     diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
+                    diff(depCtx.initialRoots2Peers, depCtx.newRoots2Peers, addedOrChangedPeers, removedPeers);
+
 
                     final Level logLevel = Level.FINE;
                     if (LOGGER.isLoggable(logLevel) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
@@ -3048,8 +3052,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
-                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());                                                
-//                    depCtx.fullRescanSourceRoots = new HashSet<URL>(addedOrChanged.keySet()); - probably unneeded, only hurts performance. The indexer should be responsible for dependencies.
+                    final Set<URL> toScan = new HashSet<URL>(addedOrChanged.keySet());
+                    toScan.addAll(addedOrChangedPeers.keySet());
+                    depCtx.newRootsToScan.retainAll(toScan);
                 }
             } else {
                 restarted = true;

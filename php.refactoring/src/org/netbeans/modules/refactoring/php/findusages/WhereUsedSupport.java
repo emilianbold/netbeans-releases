@@ -199,7 +199,7 @@ public final class WhereUsedSupport {
                 try {
                     final FileObject fileObject = declarationElement.getFileObject();
                     FileObject parserFo = info.getSnapshot().getSource().getFileObject();
-                    if (parserFo != fileObject) {
+                    if (fileObject != null && parserFo != fileObject) {
                         ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
 
                             @Override

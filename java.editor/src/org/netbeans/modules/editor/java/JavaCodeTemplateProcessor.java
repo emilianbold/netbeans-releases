@@ -45,7 +45,6 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
 
 import java.io.IOException;
@@ -476,7 +475,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private VariableElement instanceOf(String typeName, String name) {
         try {
             if (cInfo != null) {
-                TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
+                TypeMirror type = type(typeName);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
                 if (type != null) {
@@ -506,7 +505,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         try {
             if (cInfo != null) {
                 final TreeUtilities tu = cInfo.getTreeUtilities();
-                TypeMirror type = tu.parseType(typeName, enclClass);
+                TypeMirror type = type(typeName);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
                 if (type != null) {
@@ -572,7 +571,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private String valueOf(String typeName) {
         try {
             if (cInfo != null) {
-                TypeMirror type = cInfo.getTreeUtilities().parseType(typeName, enclClass);
+                TypeMirror type = type(typeName);
                 if (type != null) {
                     if (type.getKind() == TypeKind.DECLARED)
                         return NULL;
@@ -610,8 +609,26 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
 
     private TypeMirror type(String typeName) {
-        typeName = typeName.trim();
-        return cInfo != null && typeName.length() > 0 ? cInfo.getTreeUtilities().parseType(typeName, enclClass) : null;
+        try {
+            typeName = typeName.trim();
+            if (cInfo != null && typeName.length() > 0) {
+                SourcePositions[] sourcePositions = new SourcePositions[1];
+                TreeUtilities tu = cInfo.getTreeUtilities();
+                StatementTree stmt = tu.parseStatement("{" + typeName + " a;}", sourcePositions); //NOI18N
+                if (!errChecker.containsErrors(stmt) && stmt.getKind() == Tree.Kind.BLOCK) {
+                    List<? extends StatementTree> stmts = ((BlockTree)stmt).getStatements();
+                    if (!stmts.isEmpty()) {
+                        StatementTree var = stmts.get(0);
+                        if (var.getKind() == Tree.Kind.VARIABLE) {
+                            tu.attributeTree(stmt, scope);
+                            return cInfo.getTrees().getTypeMirror(new TreePath(treePath, ((VariableTree)var).getType()));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {            
+        }
+        return null;
     }
     
     private TypeMirror iterableElementType(int caretOffset) {
@@ -895,7 +912,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         return cInfo != null;
     }
-
+    
     public static final class Factory implements CodeTemplateProcessorFactory {
         
         public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {

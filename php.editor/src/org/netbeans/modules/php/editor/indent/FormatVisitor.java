@@ -79,6 +79,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
+    private boolean isFirstUseStatementPart;
 
     public FormatVisitor(BaseDocument document) {
 	this.document = document;
@@ -534,7 +535,8 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(node.getStartOffset());
 	    if (ts.moveNext()) {
 		addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
-		boolean addIndent = !(node.getExpression() instanceof MethodInvocation);
+                Expression expression = node.getExpression();
+		boolean addIndent = !(expression instanceof MethodInvocation || expression instanceof StaticMethodInvocation);
 		if (addIndent) {
 		    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
 		    super.visit(node);
@@ -1030,12 +1032,33 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	includeWSBeforePHPDoc = true;
 
-
+        isFirstUseStatementPart = true;
 	super.visit(node);
 	if (isNextNodeTheSameInBlock(path.get(1), node)) {
 	    addRestOfLine();
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_USE, ts.offset() + ts.token().length()));
 	}
+    }
+
+    @Override
+    public void visit(UseStatementPart statementPart) {
+        FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
+        boolean lastRemoved = false;
+        if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR 
+                && lastFormatToken.getId() == FormatToken.Kind.TEXT
+                && "\\".equals(lastFormatToken.getOldText())) {
+            formatTokens.remove(formatTokens.size() - 1);
+            lastRemoved = true;
+        }
+        if (isFirstUseStatementPart) {
+            formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
+            isFirstUseStatementPart = false;
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USES_PART, ts.offset()));
+        if (lastRemoved) {
+            formatTokens.add(lastFormatToken);
+        }
+        super.visit(statementPart);
     }
 
     private int lastIndex = -1;

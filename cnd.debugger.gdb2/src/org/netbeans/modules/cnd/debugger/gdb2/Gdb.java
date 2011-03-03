@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 
@@ -87,6 +86,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 
 public class Gdb {
     protected class StartProgressManager extends ProgressManager {
@@ -110,24 +110,24 @@ public class Gdb {
         void clearCancelListener() {
             super.setCancelListener(null);
         }
-        public boolean startProgress(PhasedProgress.CancelListener cancelListener,
-                                     boolean shortNames, String hostname) {
-
-            if (super.startProgress(cancelListener, shortNames)) {
-                phasedProgress().setCancelMsg(Catalog.get("CancelNoted"));// NOI18N
-                String msg;
-                if (hostname != null) {
-                    msg = MessageFormat.format(Catalog.get("StartingDbgOn"), // NOI18N
-                                               hostname);
-                } else {
-                    msg = Catalog.get("StartingDbg"); // NOI18N
+        public void startProgress(final boolean shortNames,
+                                  final String hostname) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (StartProgressManager.super.startProgress(cancelListener, shortNames)) {
+                        phasedProgress().setCancelMsg(Catalog.get("CancelNoted"));// NOI18N
+                        String msg;
+                        if (hostname != null) {
+                            msg = MessageFormat.format(Catalog.get("StartingDbgOn"), // NOI18N
+                                                       hostname);
+                        } else {
+                            msg = Catalog.get("StartingDbg"); // NOI18N
+                        }
+                        phasedProgress().setMessageFor(0, msg, 0);
+                        phasedProgress().setVisible(true);
+                    }
                 }
-                phasedProgress().setMessageFor(0, msg, 0);
-                phasedProgress().setVisible(true);
-                return true;
-            } else {
-                return false;
-            }
+            });
         }
 
         @Override
@@ -155,7 +155,7 @@ public class Gdb {
         }
     }
 
-    protected final PhasedProgress.CancelListener cancelListener =
+    private final PhasedProgress.CancelListener cancelListener =
         new PhasedProgress.CancelListener() {
             public void cancelled() {
                 interrupt();
@@ -187,6 +187,7 @@ public class Gdb {
 	private Map<String, String> additionalEnv;
 	private IOPack ioPack;
 	private boolean remote;
+        private final String runDir;
 	private NativeDebuggerInfo ndi;	// TMP
 
 	public Factory(Executor executor,
@@ -197,6 +198,7 @@ public class Gdb {
 		       String gdbInitFile,
 		       Host host,
 		       boolean connectExisting,
+                       String runDir,
 		       GdbDebuggerInfo gdi) {
 	    this.executor = executor;
 	    this.additionalArgv = additionalArgv;
@@ -206,6 +208,7 @@ public class Gdb {
 	    this.gdbInitFile = gdbInitFile;
 	    this.host = host;
 	    this.connectExisting = connectExisting;
+            this.runDir = runDir;
 	    this.ndi = gdi;
 	}
 
@@ -224,6 +227,8 @@ public class Gdb {
             public void assignGdb(Gdb tentativeGdb);
             public void assignIOPack(IOPack ioPack);
         }
+        
+        private final RequestProcessor START_RP = new RequestProcessor("GDB start", 5); // NOI18N
 
 	public void start() {
 	    if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
@@ -237,18 +242,6 @@ public class Gdb {
 	    if (executor != null)
 		assert executor.host() == host;
 	    remote = host.isRemote();
-
-	    if (!connectExisting) {
-		//
-		// Figure gdb'a exec path
-		//
-		gdbname = NativeDebuggerImpl.getDebuggerString((MakeConfiguration)ndi.getConfiguration());
-                if (gdbname == null) {
-                    listener.connectFailed("gdb", Catalog.get("MSG_NoGgb"), null); // NOI18N
-                    return;
-                }
-	    }
-
 
 	    /* OLD
 	    Host host = null;
@@ -276,8 +269,7 @@ public class Gdb {
 	    if (remote)
 		hostName = host.getHostName();
 	    
-	    tentativeGdb.startProgressManager().startProgress(null, 
-							      shortNames,
+	    tentativeGdb.startProgressManager().startProgress(shortNames,
 							      hostName);
 	    tentativeGdb.startProgressManager().setCancelListener();
 	    tentativeGdb.startProgressManager().updateProgress('>', 1,
@@ -296,7 +288,94 @@ public class Gdb {
 //		ioPack.pio().getTerm().pushStream(new LineDiscipline());
 	    }
 
+	    //
+	    // pass on control to startAsync ...
+	    //
+            
+            START_RP.post(new Runnable() {
+                public void run() {
+                    startAsync();
+                }
+            } );
+
+//	    if (DebuggerManager.isAsyncStart()) {
+//		RequestProcessor.getDefault().post(new Runnable() {
+//		    public void run() {
+//			start2();
+//		    }
+//		} );
+//	    } else {
+//		start2();
+//	    }
+
+
+	    /* OLD
 	    // We need the slave name ahead of time
+	    boolean havePio = executor.startIO(getIOPack().pio);
+	    if (!havePio) {
+		;   // SHOULD do something
+	    }
+
+
+	    String gdbname = "gdb";
+
+	    // Startup arguments to gdb:
+
+
+
+	    // Arrange for gdb victims to run under the Pio
+	    boolean ioInWindow =
+		true;
+	    if (executor.slaveName() != null && ioInWindow) {
+		avec.add("-tty");
+		avec.add(executor.slaveName());
+	    }
+
+	    String[] gdb_argv = new String[avec.size()];
+	    for (int vx = 0; vx < avec.size(); vx++) {
+		gdb_argv[vx] = (String) avec.elementAt(vx);
+	    }
+
+
+	    gdb = new Gdb(this);
+
+	    // setup back- and convenience links from Gdb
+	    gdb.setDebugger(this);
+
+
+	    ioPack.console().getTerm().pushStream(gdb.tap());
+	    ioPack.console().getTerm().setCustomColor(0,
+		Color.yellow.darker().darker());
+	    ioPack.console().getTerm().setCustomColor(1,
+		Color.green.darker());
+	    ioPack.console().getTerm().setCustomColor(2,
+		Color.blue.brighter());
+
+
+
+	    int pid = 0;
+	    pid = executor.startEngine(gdbname, gdb_argv, null,
+		ioPack.console());
+	    if (pid == 0) {
+		return;
+	    }
+
+	    */
+	}
+
+	private void startAsync() {
+            if (!connectExisting) {
+		//
+		// Figure gdb'a exec path
+		//
+		gdbname = NativeDebuggerImpl.getDebuggerString((MakeConfiguration)ndi.getConfiguration());
+                if (gdbname == null) {
+                    listener.connectFailed("gdb", Catalog.get("MSG_NoGgb"), null); // NOI18N
+                    return;
+                }
+	    }
+            
+            // We need the slave name ahead of time
 	    boolean havePio = false;
 	    if (!connectExisting) {
                 havePio = ioPack.start();
@@ -363,80 +442,8 @@ public class Gdb {
 		}
 	    }
 
-
-
 	    additionalEnv = new HashMap<String, String>();
-
-	    //
-	    // pass on control to start2 ...
-	    //
-
-	    if (DebuggerManager.isAsyncStart()) {
-		RequestProcessor.getDefault().post(new Runnable() {
-		    public void run() {
-			start2();
-		    }
-		} );
-	    } else {
-		start2();
-	    }
-
-
-	    /* OLD
-	    // We need the slave name ahead of time
-	    boolean havePio = executor.startIO(getIOPack().pio);
-	    if (!havePio) {
-		;   // SHOULD do something
-	    }
-
-
-	    String gdbname = "gdb";
-
-	    // Startup arguments to gdb:
-
-
-
-	    // Arrange for gdb victims to run under the Pio
-	    boolean ioInWindow =
-		true;
-	    if (executor.slaveName() != null && ioInWindow) {
-		avec.add("-tty");
-		avec.add(executor.slaveName());
-	    }
-
-	    String[] gdb_argv = new String[avec.size()];
-	    for (int vx = 0; vx < avec.size(); vx++) {
-		gdb_argv[vx] = (String) avec.elementAt(vx);
-	    }
-
-
-	    gdb = new Gdb(this);
-
-	    // setup back- and convenience links from Gdb
-	    gdb.setDebugger(this);
-
-
-	    ioPack.console().getTerm().pushStream(gdb.tap());
-	    ioPack.console().getTerm().setCustomColor(0,
-		Color.yellow.darker().darker());
-	    ioPack.console().getTerm().setCustomColor(1,
-		Color.green.darker());
-	    ioPack.console().getTerm().setCustomColor(2,
-		Color.blue.brighter());
-
-
-
-	    int pid = 0;
-	    pid = executor.startEngine(gdbname, gdb_argv, null,
-		ioPack.console());
-	    if (pid == 0) {
-		return;
-	    }
-
-	    */
-	}
-
-	private void start2() {
+            
 	    int pid = 0;
 
 	    // 
@@ -452,7 +459,13 @@ public class Gdb {
 		ioPack.console().getTerm().setCustomColor(2,
 		    Color.red.darker());
 
-		pid = executor.startEngine(gdbname, gdb_argv, null,
+                // On windows we need to run gdb itself with the correct path
+                Map<String, String> env = null;
+                if (!executor.isRemote() && Utilities.isWindows()) {
+                    env = ndi.getProfile().getEnvironment().getenvAsMap();
+                }
+                
+		pid = executor.startEngine(gdbname, gdb_argv, env, runDir,
 		    ioPack.console(), false, false);
 		if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		    System.out.printf("CommonGdb.Factory.start(): " + // NOI18N
@@ -504,11 +517,6 @@ public class Gdb {
 	    if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
 		System.out.printf("CommonGdb.Factory.start(): remote %s\n", // NOI18N
 		    remote);
-	    }
-
-	    String hostName = null;
-	    if (remote) {
-		hostName = host.getHostName();
 	    }
 
 	    tentativeGdb.startProgressManager().updateProgress('<', 1, null, 0, 0);
@@ -1047,6 +1055,13 @@ public class Gdb {
 
         public MyMIProxy(MICommandInjector injector, String encoding) {
             super(injector, "(gdb)", encoding); // NOI18N
+        }
+    
+        @Override
+        protected void dispatch(MIRecord record) {
+            if (!debugger.postedKillEngine()) {
+                super.dispatch(record);
+            }
         }
 
         private static final String SWITCHING_PREFIX = "[Switching to process "; //NOI18N

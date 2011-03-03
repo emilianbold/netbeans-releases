@@ -7,13 +7,13 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Code Navigation: Quick Reference</title>
+        <title>Code Template Syntax</title>
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
         
     </head>
     
     <body>
-        <h2>Special Code Template Syntax</h2>
+        <h2>Code Template Syntax</h2>
         
         <p>You can use code templates to speed up the entry of commonly used 
             sequences of reserved words and common code patterns. For example, 
@@ -37,6 +37,7 @@ Syntax for parameter definition is as follows:
 <p>However, boolean hints that can be written without the value part:
 
 <p><tt>${param_name hint}  translates to  ${param_name hint=true}</tt>
+<h3>Reserved Parameter and Hint Names</h3>
 
 <p>Some parameter names are reserved by the code template infrastructure:
 
@@ -65,6 +66,46 @@ short name Iterator and import java.util.Iterator if possible.
 <li><tt>${param_name cast}</tt> defines that the parameter value would be a type cast if necessary.
 <li><tt>${param_name newVarName}</tt> defines that the parameter value should be a 'fresh' unused variable name in the given context.
 </ul>
+
+<h3>Pre-defined Parameters</h3>
+<p>NetBeans comes with a number of pre-defined parameters that you can use when creating code templates. You can add parameter 
+    definitions in the Template Manager. Note also special rules for changing the
+the format of the <tt>${date}</tt> variable.</p>
+<ul>
+    <li><tt>${date}</tt> inserts the current date, in this format: Feb 16, 2008 </li>
+    <li><tt>${encoding}</tt> inserts the default encoding, such as: UTF-8 </li>
+    <li><tt>${name}</tt> inserts the name of the file. </li>
+    <li><tt>${nameAndExt}</tt> inserts the name of the file, together with its extension. </li>
+    <li><tt>${package}</tt> inserts the name of the package where the file is created. (Java only)</li>
+    <li><tt>${time}</tt> inserts the current time, in this format: 7:37:58 PM </li>
+    <li><tt>${project.license}</tt> based on the value (e.g., 'CDDL'), the license header is found and is inserted into the template. </li>
+    <li><tt>${project.name}</tt> inserts the project name. </li>
+    <li><tt>${project.displayName}</tt> inserts the project displayname. </li>
+</ul>
+<h4>Adding Parameter Definitions</h4>
+<p>You can define additional parameters in the Template Manager.</p>
+<p><b>To define a parameter: </b>
+<ol><li> In the IDE's menu bar, to Tools &gt; Templates. The Template Manager opens.
+</li><li> Expand the Other category. Double-click on Properties. The User.properties file opens in the editor.
+</li><li> Define a parameter. For example, define the <tt>${user}</tt> parameter for adding your name to templates you create. The syntax is
+<pre>user=LorumIpsum@mycompany.com</pre>
+<p>When a code template is expanded, all occurrences of <tt>${user}</tt> in that template are replaced with 'LorumIpsum@mycompany.com'.</p></li>
+<li>Add as many additional parameters as you want, with the syntax name=value.</li>
+</ol>
+<p>Parameter definition follows the FreeMarker Java template language. For more information, see the 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://wiki.netbeans.org/FaqFreeMarker">
+    <param name="text" value="<html><u>NetBeans wiki page on FreeMarker</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object>.</p>
+<h4>Formatting the ${date} Parameter</h4>
+<p>The <tt>${date}</tt> variable is of String type, not Date type. You have to cast 
+    <tt>${date}</tt> to a Date type in order to change its format. For example, 
+    to show the year only, add the following parameter to your code template:
+</p>
+<pre>${date?date?string(&quot;yyyy&quot;)}</pre>
+
         <hr>
         
         <small><a href="../credits.html">Legal Notices</a></small>

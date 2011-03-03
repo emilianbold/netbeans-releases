@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -272,6 +273,9 @@ public class CsmContextUtilities {
                     if (CsmKindUtilities.isFunction(entry.getScope())) {
                         incAll = include = true;
                     }
+                    if (CsmKindUtilities.isFunctionExplicitInstantiation(entry.getScope())) {
+                        incAll = include = true;
+                    }
                 } else if (!includeFunctionVars) {
                     assert (includeFileLocal);
                     // we have sorted context entries => if we reached function or class =>
@@ -352,7 +356,8 @@ public class CsmContextUtilities {
             int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
-                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION},
+                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION, 
+                    CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT},
                                    null, match, caseSensitive, true);
                 for (Iterator itFile = CsmSelect.getDeclarations(file, fileFilter); itFile.hasNext();) {
                     CsmDeclaration decl = (CsmDeclaration) itFile.next();
@@ -375,6 +380,19 @@ public class CsmContextUtilities {
                             }
                             if (CsmKindUtilities.isEnum(nsDecl)) {
                                 CsmEnum en = (CsmEnum)nsDecl;
+                                if (en.getName().length()==0){
+                                    addEnumerators(res, en, strPrefix, match, caseSensitive);
+                                }
+                            }
+                        }
+                    } else if (CsmKindUtilities.isClass(decl) && decl.getName().length()==0){
+                        CsmClass cls = (CsmClass) decl;
+                        for (CsmMember member : cls.getMembers()) {
+                            if (canBreak(offsetInScope, member, context)) {
+                                break;
+                            }                            
+                            if (CsmKindUtilities.isEnum(member)) {
+                                CsmEnum en = (CsmEnum)member;
                                 if (en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
@@ -550,6 +568,18 @@ public class CsmContextUtilities {
         return null;
     }    
 
+    public static CsmFunctionInstantiation getFunctionInstantiation(CsmContext context, boolean inScope) {
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            int offset = context.getOffset();
+            if (CsmKindUtilities.isFunctionExplicitInstantiation(scope)
+                    && (!inScope || CsmOffsetUtilities.isInObject(scope, offset))) {
+                return (CsmFunctionInstantiation)scope;
+            }
+        }
+        return null;
+    }    
+    
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
         CsmFunctionDefinition fun = null;
         for (Iterator it = context.iterator(); it.hasNext();) {
@@ -625,6 +655,11 @@ public class CsmContextUtilities {
         return fun != null;
     }     
 
+    public static boolean isInFunctionInstantiation(CsmContext context, int offset) {
+        CsmFunctionInstantiation fi = getFunctionInstantiation(context, true);
+        return fi != null;
+    }     
+    
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         CsmType type = null;

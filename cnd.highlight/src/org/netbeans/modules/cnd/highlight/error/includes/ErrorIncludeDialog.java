@@ -92,11 +92,11 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
@@ -793,7 +793,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     
     private void gatherSubFolders(File d, HashSet<String> set){
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (DiscoveryUtils.ignoreFolder(d)){
+            if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath();

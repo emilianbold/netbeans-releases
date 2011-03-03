@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="79">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>execint.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="SunOS-x86" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="SunOS-x86_64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="SunOS-sparc" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="SunOS-sparc_64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Linux-x86" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+          <linkerLibItems>
+            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Linux-x86_64" type="2">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+          <linkerLibItems>
+            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>

@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 
 /**
+ * @todo use the document's offsets instead of the html snapshot embedded offsets.            
  *
  * @author marekfukala
  */

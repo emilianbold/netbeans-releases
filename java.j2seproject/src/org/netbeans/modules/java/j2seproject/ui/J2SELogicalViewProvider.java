@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -54,8 +55,10 @@ import java.net.URL;
 import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -313,9 +316,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
                 dispName = XMLUtil.toElementContent(dispName);
             } catch (CharConversionException ex) {
                 return dispName;
-            }
-            // XXX text colors should be taken from UIManager, not hard-coded!
-            return broken || illegalState ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
+            }            
+            return broken || illegalState ? "<font color=\"#"+Integer.toHexString(getErrorForeground().getRGB() & 0xffffff) +"\">" + dispName + "</font>" : null; //NOI18N
         }
         
         @Override
@@ -400,6 +402,14 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private void setCompileOnSaveDisabled (boolean value) {
         this.compileOnSaveDisabled = value;
         changeSupport.fireChange();
+    }
+
+    private static @NonNull Color getErrorForeground() {
+        Color result = UIManager.getDefaults().getColor("nb.errorForeground");  //NOI18N
+        if (result == null) {
+            result = Color.RED;
+        }
+        return result;
     }
 
     @ActionID(id = "org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$BrokenLinksActionFactory", category = "Project")

@@ -44,6 +44,7 @@ masterfs,\
 maven,\
 maven.apisupport,\
 maven.embedder,\
+maven.hints,\
 maven.indexer,\
 maven.junit,\
 maven.model,\

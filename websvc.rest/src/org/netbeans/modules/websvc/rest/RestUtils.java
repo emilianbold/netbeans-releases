@@ -67,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
-import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.FileUtil;
@@ -255,7 +254,7 @@ public class RestUtils {
         List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(rSrc);
         for (AnnotationMirror annotation : annotations) {
             String cAnonType = annotation.getAnnotationType().toString();
-            if (RestConstants.PATH.equals(cAnonType) || RestConstants.PATH_ANNOTATION.equals(cAnonType)) {
+            if (RestConstants.PATH.equals(cAnonType) ) {
                 path = getValueFromAnnotation(annotation);
             }
         }
@@ -269,9 +268,7 @@ public class RestUtils {
                 String classAnonType = annotation.getAnnotationType().toString();
                 if (RestConstants.PATH.equals(classAnonType)) {
                     return true;
-                } else {
-                    return false;
-                }
+                } 
             }
         }
         return false;
@@ -374,8 +371,9 @@ public class RestUtils {
     }
     
     public static String getValueFromAnnotation(String value) {
-        if (value.indexOf("\"") != -1)
+        if (value.indexOf("\"") != -1) {
             value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
+        }
         return value;
     }
     
@@ -388,17 +386,6 @@ public class RestUtils {
         }
         return Collections.emptyList();
     }     
-
-    public static String createGetterMethodName(ClientStubModel.RepresentationNode n) {
-        String mName = "get";
-        if(n.getLink() != null)
-            mName = escapeJSReserved(n.getLink().getName().toString());
-        else {
-            mName = n.getName();
-            mName = "get"+mName.substring(0, 1).toUpperCase()+mName.substring(1);
-        }
-        return mName;
-    }  
             
     public static String escapeJSReserved(String key) {
         if(key.equals("delete"))

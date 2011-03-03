@@ -64,6 +64,13 @@ public class FolderName extends FileName {
         }
     }
 
+    @Override
+    void updateCase(String name) {
+        super.updateCase(name);
+        synchronized (FolderName.class) {
+            FolderName.fileCache.remove(this);
+        }
+    }
 
     public @Override File getFile() {
         File retValue;

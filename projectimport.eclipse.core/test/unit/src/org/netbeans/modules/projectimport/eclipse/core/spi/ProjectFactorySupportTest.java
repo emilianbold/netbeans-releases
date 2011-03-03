@@ -80,7 +80,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         clearWorkDir();
         MockLookup.setInstances();
         FileObject reg = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-java-j2seproject.instance");
-        assertNotNull("j2seproject definition is registered", reg);
+        assertNotNull("j2seproject definition is registered", reg); // NB-Core-Build #5975 starting in testTransitiveDependencies
         Object abpt = reg.getAttribute("instanceCreate");
         assertNotNull("j2seproject definition is well-formed", abpt); // NB-Core-Build #5317
         MockLookup.setInstances(abpt);

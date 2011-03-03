@@ -79,7 +79,7 @@ import org.openide.util.Exceptions;
  *
  * @author Pavel Flaska
  */
-public class AnnotationTest extends GeneratorTest {
+public class AnnotationTest extends GeneratorTestBase {
 
     /** Creates a new instance of ClassMemberTest */
     public AnnotationTest(String testName) {

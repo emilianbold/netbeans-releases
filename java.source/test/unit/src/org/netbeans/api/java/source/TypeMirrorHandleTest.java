@@ -185,5 +185,24 @@ public class TypeMirrorHandleTest extends NbTestCase {
             }
         }, true);
     }
+
+    public void testTypeMirrorHandle196070() throws Exception {
+        prepareTest();
+        writeIntoFile(testSource, "package test; public class Test<T extends IA & IB> {} interface IA {} interface IB {}");
+        ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
+        JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), empty, empty), testSource);
+        final boolean[] finished = new boolean[1];
+
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(Phase.RESOLVED);
+                TypeMirror tm = info.getTreeUtilities().parseType("T", info.getTopLevelElements().get(0));
+                assertTrue(info.getTypes().isSameType(tm, TypeMirrorHandle.create(tm).resolve(info)));
+                finished[0] = true;
+            }
+        }, true);
+
+        assertTrue(finished[0]);
+    }
     
 }

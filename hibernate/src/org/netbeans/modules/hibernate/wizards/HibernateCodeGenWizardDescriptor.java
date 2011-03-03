@@ -45,11 +45,16 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -72,6 +77,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         this.title = title;
     }
 
+    @Override
     public HibernateCodeGenerationPanel getComponent() {
         if (component == null) {
             component = new HibernateCodeGenerationPanel();
@@ -80,18 +86,22 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         return component;
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(HibernateCodeGenWizardDescriptor.class);
     }
 
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         wizardDescriptor.putProperty("NewFileWizard_Title", title);
@@ -106,8 +116,35 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         }       
     }
 
+    @Override
     public boolean isValid() {
         SourceGroup sourceGroup = getComponent().getLocationValue();
+
+        DataObject cfgDataObject = null;
+        try {
+            cfgDataObject = DataObject.find(getComponent().getConfigurationFile());
+        } catch (DataObjectNotFoundException ex) {
+            //
+        }
+        if(cfgDataObject != null){
+            HibernateCfgDataObject hco = (HibernateCfgDataObject) cfgDataObject;
+            HibernateConfiguration config = hco.getHibernateConfiguration();
+            String dbDriver = HibernateUtil.getDbConnectionDetails(config,
+                    "hibernate.connection.driver_class"); //NOI18N
+
+            if (dbDriver == null || "".equals(dbDriver)) {
+                dbDriver = HibernateUtil.getDbConnectionDetails(config,
+                        "connection.driver_class"); //NOI18N
+
+            }
+
+            if (dbDriver == null || "".equals(dbDriver)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_No_DB_ConnectionDriver_Exists")); // NOI18N
+                return false;
+            }
+        }
+
+
         if (getComponent().getConfigurationFile() == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_ConfFileChooser")); // NOI18N
             return false;
@@ -142,6 +179,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         return true;
     }
 
+    @Override
     public void storeSettings(Object settings) {
         Object buttonPressed = ((WizardDescriptor) settings).getValue();
         if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
@@ -160,6 +198,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent event) {
         changeSupport.fireChange();
     }

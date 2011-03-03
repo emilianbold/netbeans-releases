@@ -377,5 +377,10 @@ public class FileModel2Test extends TraceModelTestBase {
         //  improving specialisations - skip explicit template function specialisation
         performTest("explicit_specialization.cc");
     }
+
+    public void testBug195338() throws Exception {
+        // Bug 195338 - Unnamed bit sets issue
+        performTest("bug195338.cpp");
+    }
     
 }

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.hints.errors;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
@@ -57,6 +56,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 
 /**
@@ -75,8 +75,8 @@ final class ChangeTypeFix implements Fix {
     
     public ChangeTypeFix(JavaSource js, String treeName, String type, int position) {
         this.js = js;
-        this.treeName = treeName;
-        this.type = type;
+        this.treeName = escape(treeName);
+        this.type = escape(type);
         this.position = position;
     }
     
@@ -115,4 +115,17 @@ final class ChangeTypeFix implements Fix {
         return NbBundle.getMessage(ChangeTypeFix.class, "MSG_ChangeVariablesType", treeName, type); // NOI18N
     }
 
+    private static String escape(String s) {
+        if (s != null) {
+            try {
+                return XMLUtil.toAttributeValue(s);
+            } catch (Exception ex) {}
+        }
+        return s;
+    }
+
+    static {
+        NbBundle.setBranding("test");
+    }
+    
 }

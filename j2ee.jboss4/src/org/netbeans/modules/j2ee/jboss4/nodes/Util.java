@@ -47,6 +47,8 @@ package org.netbeans.modules.j2ee.jboss4.nodes;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,6 +122,22 @@ public class Util {
         return n;
     }
 
+    public static Method fixJava4071957(Method method) {
+        try {
+            method.setAccessible(true);
+            return method;
+        } catch (SecurityException ex) {
+            while (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) {
+                try {
+                    method = method.getDeclaringClass().getSuperclass().getMethod(method.getName(), method.getParameterTypes());
+                } catch (NoSuchMethodException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            return method;
+        }
+    }
+
     /**
      * Checks if the Jboss installation has installed remote management package
      *
@@ -133,9 +151,11 @@ public class Util {
             
             ObjectName searchPattern;
             searchPattern = new ObjectName("jboss.management.local:*");
-            Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
+            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+            method = fixJava4071957(method);
+            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
 
-            if(managedObj.size() == 0) {
+            if (managedObj.isEmpty()) {
                 return false;
             }
         } catch (SecurityException ex) {
@@ -168,7 +188,9 @@ public class Util {
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-            Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
+            Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+            method = fixJava4071957(method);
+            Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
 
             if(managedObj.size() > 0)
                 return true;

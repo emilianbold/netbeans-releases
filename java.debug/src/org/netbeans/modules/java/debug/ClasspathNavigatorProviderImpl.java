@@ -30,9 +30,12 @@
  */
 package org.netbeans.modules.java.debug;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import javax.swing.ActionMap;
@@ -40,6 +43,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.explorer.ExplorerManager;
@@ -186,6 +190,28 @@ public class ClasspathNavigatorProviderImpl implements NavigatorPanel {
                         true,
                         getMessage(ClasspathNavigatorProviderImpl.class, "PROP_JavaNode_boot_classpath_tr"),
                         getMessage(ClasspathNavigatorProviderImpl.class, "HINT_JavaNode_boot_classpath_tr")),
+                        new PropertySupport.ReadOnly<String>("ClassPathDefiner", String.class, getMessage(ClasspathNavigatorProviderImpl.class, "DN_ClassPathDefiner"), getMessage(ClasspathNavigatorProviderImpl.class, "HINT_ClassPathDefiner")) {
+                            @Override public String getValue() throws IllegalAccessException, InvocationTargetException {
+                                for (ClassPathProvider impl  : Lookup.getDefault().lookupResult(ClassPathProvider.class).allInstances()) {
+                                    if (impl.findClassPath(file, ClassPath.SOURCE) != null) {
+                                        return impl.getClass().getName();
+                                    }
+                                }
+
+                                return "<none>";
+                            }
+                        },
+                        new PropertySupport.ReadOnly<String>("OwningProject", String.class, getMessage(ClasspathNavigatorProviderImpl.class, "DN_OwningProject"), getMessage(ClasspathNavigatorProviderImpl.class, "HINT_OwningProject")) {
+                            @Override public String getValue() throws IllegalAccessException, InvocationTargetException {
+                                Project prj = FileOwnerQuery.getOwner(file);
+
+                                if (prj != null) {
+                                    return prj.toString() + "(" + prj.getClass().getName() + ")";
+                                }
+
+                                return "<none>";
+                            }
+                        }
                     });
             sheet.put(ps);
             return sheet.toArray();

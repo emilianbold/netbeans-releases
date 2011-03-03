@@ -163,7 +163,9 @@ public class EjbJarProjectGenerator {
 
         FileObject srcRoot = projectDir.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         srcRoot.createFolder(DEFAULT_JAVA_FOLDER); //NOI18N
-        projectDir.createFolder(DEFAULT_TEST_FOLDER);
+        if (!createData.skipTests()) {
+            projectDir.createFolder(DEFAULT_TEST_FOLDER);
+        }
         FileObject confRoot = srcRoot.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
         
         //create a default manifest
@@ -174,7 +176,7 @@ public class EjbJarProjectGenerator {
         
         final AntProjectHelper h = setupProject(projectDir, name,
                 "src", "test", null, null, null, createData.getJavaEEProfile(), serverInstanceID,
-                createData.getLibrariesDefinition(), realServerLibraryName);
+                createData.getLibrariesDefinition(), realServerLibraryName, createData.skipTests());
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(EjbJarProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
@@ -329,7 +331,8 @@ public class EjbJarProjectGenerator {
                 j2eeProfile,
                 serverInstanceID,
                 createData.getLibrariesDefinition(),
-                realServerLibraryName);
+                realServerLibraryName,
+                createData.skipTests());
         
         final EjbJarProject p = (EjbJarProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
@@ -419,10 +422,10 @@ public class EjbJarProjectGenerator {
         if (!h.isSharableProject()) {
             return;
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
+        if (!data.skipTests() && rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
+        if (!data.skipTests() && rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
         Profile j2eeProfile = data.getJavaEEProfile();
@@ -474,7 +477,7 @@ public class EjbJarProjectGenerator {
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, File configFiles, File libraries, String resources,
-            Profile j2eeProfile, String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
+            Profile j2eeProfile, String serverInstanceID, String librariesDefinition, String serverLibraryName, boolean skipTests) throws IOException {
 
         Utils.logUI(NbBundle.getBundle(EjbJarProjectGenerator.class), "UI_EJB_PROJECT_CREATE_SHARABILITY", // NOI18N
                 new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
@@ -558,7 +561,10 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");
         
-        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
+        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, skipTests ? new String[] {
+            "${javac.classpath}:", // NOI18N
+            "${build.classes.dir}", // NOI18N
+        } : new String[] {
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}:", // NOI18N
