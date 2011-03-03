@@ -60,9 +60,9 @@ public final class SharabilityFilter implements FileFilter {
     public final boolean accept(File file) {
         // the ProjectSharabilityQuery filters out nbproject/private,
         // but we need it for remote build
-        if (file.getName().equals("private")) {
+        if (file.getName().equals("private")) { // NOI18N
             File parent = file.getParentFile();            
-            if (parent != null && parent.getName().equals("nbproject")) {
+            if (parent != null && parent.getName().equals("nbproject")) { // NOI18N
                 return true;
             }
         }

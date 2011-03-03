@@ -44,13 +44,13 @@ package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -66,6 +66,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,7 +81,10 @@ import org.xml.sax.SAXException;
  * @author Alexander Simon
  * @author Vladimir Kvashin
  */
-public class OpenRemoteProjectAction extends AbstractAction {
+@ActionID(id = "org.netbeans.modules.cnd.makeproject.actions.OpenRemoteProjectAction", category = "Project")
+@ActionRegistration(iconInMenu = false, displayName = "#CTL_ImportProjectMenuItem")
+@ActionReference(path = "Menu/File/Import", position = 3000)
+public class OpenRemoteProjectAction implements ActionListener {
 
     private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     
@@ -105,6 +111,7 @@ public class OpenRemoteProjectAction extends AbstractAction {
                     NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.text"), 
                     NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.title"), 
                     JOptionPane.ERROR_MESSAGE);
+            return;
         }
 //        if (record.isOffline()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
@@ -189,18 +196,6 @@ public class OpenRemoteProjectAction extends AbstractAction {
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-
-    @Override
-    public boolean isEnabled() {
-        Collection<? extends org.netbeans.modules.cnd.api.remote.ServerRecord> records = ServerList.getRecords();
-        for(ServerRecord record : records) {
-            if (record.isRemote()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static final class MyFileView extends FileView {

@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.IIOException;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -79,6 +81,8 @@ public class ShadowProjectSynchronizer {
     private final FileObject remoteProject;
     private final FileObject localProject;
     private final ExecutionEnvironment env;
+    
+    private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
     public ShadowProjectSynchronizer(FileObject remoteProject, FileObject localProject, ExecutionEnvironment env) {
         this.remoteProject = remoteProject;
@@ -96,16 +100,66 @@ public class ShadowProjectSynchronizer {
     
     public void updateRemoteProject() throws IOException, SAXException {
         FileObject localNbprojectFO = localProject.getFileObject("nbproject"); // NOI18N
-        FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
-        remoteNbprojectFO.refresh();
-        copy(localNbprojectFO, remoteProject, "nbproject"); //NOI18N
-        updateRemoteProjectXml();
-        updateRemoteConfiguration();
-        updateRemotePrivateConfiguration();
-    }    
+        if (localNbprojectFO == null || ! localNbprojectFO.isValid()) {
+            return;
+        }
+        FileObject tmpFO = createTempDir(localProject.getName(), ".tmp"); // NOI18N
+        copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N        
+        try {
+            FileObject tmpNbProjFO = copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N
+            updateRemoteProjectXml(tmpFO);
+            updateRemoteConfiguration(tmpFO);
+            updateRemotePrivateConfiguration(tmpFO);
+            FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
+            remoteNbprojectFO.refresh();
+            copy(tmpNbProjFO, remoteProject, "nbproject"); //NOI18N
+        } finally {
+            remove(tmpFO);
+        }
+    }
     
-    private void updateRemoteProjectXml() throws IOException, SAXException {
-        FileObject projectFO = remoteProject.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+    private static FileObject createTempDir(String prefix, String suffix) throws IOException {
+        File tmpFile = File.createTempFile(prefix, suffix);
+        if (!tmpFile.delete()) {
+            throw new IOException("Can not delete temporary file " + tmpFile.getAbsolutePath()); //NOI18N
+        }
+        if (!tmpFile.mkdirs()) {
+            throw new IOException("Can create temporary directory " + tmpFile.getAbsolutePath()); //NOI18N
+        }
+        FileObject tmpFO = FileUtil.toFileObject(tmpFile);
+        return tmpFO;
+    }
+    
+    private boolean remove(FileObject fo) {
+        if (fo.isFolder()) {
+            boolean success = true;
+            for (FileObject child : fo.getChildren()) {
+                if (!remove(child)) {
+                    success = false;
+                }
+            }
+            if (success) {
+                try {
+                    fo.delete();
+                } catch (IOException ex) {
+                    success = false;
+                    LOGGER.log(Level.INFO, "Exception when performing cleanup in " + fo.getPath(), ex);
+                }
+            }
+            return success;
+        } else {
+            try {
+                fo.delete();
+                return true;
+            } catch (IOException ex) {                
+                LOGGER.log(Level.INFO, "Exception when performing cleanup in " + fo.getPath(), ex);
+                return false;
+            }
+        }
+    }
+    
+    private static void updateRemoteProjectXml(FileObject remoteProjectCopy) throws IOException, SAXException {
+        FileObject projectFO = remoteProjectCopy.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
         Document doc = XMLUtil.parse(new InputSource(projectFO.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -122,11 +176,11 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        saveXml(doc, remoteProject, AntProjectHelper.PROJECT_XML_PATH);
+        saveXml(doc, remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
     }
 
-    private void updateRemoteConfiguration() throws IOException, SAXException {
-        FileObject fo = remoteProject.getFileObject(PROJECT_CONFIGURATION_FILE);
+    private static void updateRemoteConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+        FileObject fo = remoteProjectCopy.getFileObject(PROJECT_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -149,11 +203,11 @@ public class ShadowProjectSynchronizer {
                 node.appendChild(el);
             }
         }
-        saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
+        saveXml(doc, remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
     }
     
-    private void updateRemotePrivateConfiguration() throws IOException, SAXException {
-        FileObject fo = remoteProject.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+    private static void updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+        FileObject fo = remoteProjectCopy.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -175,7 +229,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        saveXml(doc, remoteProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
+        saveXml(doc, remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
     }
 
     private void updateLocalProjectXml() throws IOException, SAXException {

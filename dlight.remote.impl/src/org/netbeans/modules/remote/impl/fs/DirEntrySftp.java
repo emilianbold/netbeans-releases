@@ -192,6 +192,6 @@ public class DirEntrySftp implements DirEntry {
 
     @Override
     public String toString() {
-        return "DirEntrySftp{" + "statInfo=" + statInfo + ", cache=" + cache + '}';
+        return "DirEntrySftp{" + "statInfo=" + statInfo + ", cache=" + cache + '}'; // NOI18N
     }
 }
