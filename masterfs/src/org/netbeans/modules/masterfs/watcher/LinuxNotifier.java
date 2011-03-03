@@ -47,6 +47,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * A {@link Notifier} implementation based on Linux inotify mechanism.
@@ -54,7 +59,8 @@ import java.util.Map;
  * @author nenik
  */
 public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
-
+    private static final Logger LOG = Logger.getLogger(LinuxNotifier.class.getName());
+    
     private static interface InotifyImpl extends Library {
 	public int inotify_init();
 	public int inotify_init1(int flags);
@@ -97,7 +103,28 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
          IMPL = (InotifyImpl) Native.loadLibrary("c", InotifyImpl.class);
          buff.position(buff.capacity()); // make the buffer empty
          buff.order(ByteOrder.nativeOrder());
-         fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
+        String osVersion = System.getProperty("os.version");
+        if (lessThan227(osVersion)) {
+            LOG.log(Level.INFO, "Linux kernel {0} less than 2.6.27, using inotify_init", osVersion);
+            fd = IMPL.inotify_init();
+        } else {
+            LOG.log(Level.FINE, "Linux kernel {0} is OK, using inotify_init1", osVersion);
+            fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
+        }
+    }
+
+    private boolean lessThan227(String osVersion) throws NumberFormatException {
+        final Matcher m = Pattern.compile("([0-9\\.]+).*").matcher(osVersion);
+        if (m.matches()) {
+            SpecificationVersion v = new SpecificationVersion(m.group(1));
+            LOG.log(Level.FINE, "Version: {0}", v);
+            if (new SpecificationVersion("2.6.27").compareTo(v) > 0) { // NOI18N
+                return true;
+            }
+        } else {
+            LOG.log(Level.FINE, "Not mached {0}", osVersion);
+        }
+        return false;
     }
 
     private String getString(int maxLen) {
