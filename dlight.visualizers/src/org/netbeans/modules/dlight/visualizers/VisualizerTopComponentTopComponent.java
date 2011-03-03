@@ -44,6 +44,8 @@ package org.netbeans.modules.dlight.visualizers;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -54,6 +56,7 @@ import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponent;
 import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponentsProvider;
 import org.netbeans.modules.dlight.visualizers.util.TimeIntervalPanel;
 import org.openide.util.NbBundle;
@@ -69,12 +72,14 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     private static final String PREFERRED_ID = "VisualizerTopComponentTopComponent"; // NOI18N
     private JComponent visualizerContent;
     private final TimeIntervalPanel timeFilterPanel = new TimeIntervalPanel(null);
-    private final JPanel extraToolbarContent = new JPanel(new FlowLayout(FlowLayout.LEADING));
+    private final JPanel eastToolbarContent = new JPanel(new FlowLayout(FlowLayout.LEADING));
+    private final JPanel westToolbarContent = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
     private VisualizerTopComponentTopComponent() {
         initComponents();
+        toolbarPanel.add(westToolbarContent);
         toolbarPanel.add(timeFilterPanel);
-        toolbarPanel.add(extraToolbarContent);
+        toolbarPanel.add(eastToolbarContent);
 
         updateToolbar(null);
 
@@ -174,12 +179,37 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         visualizerPanel.removeAll();
         visualizerPanel.add(viewComponent);
 
-        extraToolbarContent.removeAll();
+        eastToolbarContent.removeAll();
+        westToolbarContent.removeAll();
+
 
         if (viewComponent instanceof VisualizerToolbarComponentsProvider) {
-            VisualizerToolbarComponentsProvider p = (VisualizerToolbarComponentsProvider) viewComponent;
-            for (Component c : p.getToolbarComponents()) {
-                extraToolbarContent.add(c);
+            final VisualizerToolbarComponentAccessor vcompAccess = VisualizerToolbarComponentAccessor.getDefault();
+            final VisualizerToolbarComponentsComparator cmp = new VisualizerToolbarComponentsComparator();
+            final TreeSet<VisualizerToolbarComponent> eastComponents = new TreeSet<VisualizerToolbarComponent>(cmp);
+            final TreeSet<VisualizerToolbarComponent> westComponents = new TreeSet<VisualizerToolbarComponent>(cmp);
+            final VisualizerToolbarComponentsProvider p = (VisualizerToolbarComponentsProvider) viewComponent;
+            
+            for (VisualizerToolbarComponent c : p.getToolbarComponents()) {
+                switch (vcompAccess.getConstraints(c)) {
+                    case EAST:
+                        eastComponents.add(c);
+                        break;
+                    case WEST:
+                        westComponents.add(c);
+                        break;
+                    default:
+                }
+            }
+
+            for (VisualizerToolbarComponent c : westComponents) {
+                Component comp = vcompAccess.getComponent(c);
+                westToolbarContent.add(comp);
+            }
+
+            for (VisualizerToolbarComponent c : eastComponents) {
+                Component comp = vcompAccess.getComponent(c);
+                eastToolbarContent.add(comp);
             }
         }
 
@@ -251,7 +281,8 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     private void updateToolbar(DLightSession session) {
         timeFilterPanel.setVisible(session != null);
         timeFilterPanel.update(session);
-        extraToolbarContent.setVisible(extraToolbarContent.getComponentCount() > 0);
+        eastToolbarContent.setVisible(eastToolbarContent.getComponentCount() > 0);
+        westToolbarContent.setVisible(westToolbarContent.getComponentCount() > 0);
     }
 
     private static final class ResolvableHelper implements Serializable {
@@ -283,5 +314,15 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
         setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "RunMonitorDetailes"));
         repaint();
+    }
+
+    private static class VisualizerToolbarComponentsComparator implements Comparator<VisualizerToolbarComponent> {
+
+        private final VisualizerToolbarComponentAccessor vcompAccess = VisualizerToolbarComponentAccessor.getDefault();
+
+        @Override
+        public int compare(VisualizerToolbarComponent o1, VisualizerToolbarComponent o2) {
+            return Integer.valueOf(vcompAccess.getPosition(o1)).compareTo(Integer.valueOf(vcompAccess.getPosition(o2)));
+        }
     }
 }

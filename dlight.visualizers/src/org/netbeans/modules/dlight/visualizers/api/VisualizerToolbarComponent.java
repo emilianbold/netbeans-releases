@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
-import java.util.Collection;
+import java.awt.Component;
+import org.netbeans.modules.dlight.visualizers.VisualizerToolbarComponentAccessor;
 
 /**
- * 
+ *
  * @author ak119685
  */
-public interface VisualizerToolbarComponentsProvider {
+public final class VisualizerToolbarComponent {
 
-    public Collection<VisualizerToolbarComponent> getToolbarComponents();
+    static {
+        VisualizerToolbarComponentAccessor.setDefault(new Accessor());
+    }
+    private final Component component;
+    private final int position;
+    private final Constraints constraints;
+
+    public VisualizerToolbarComponent(Component component) {
+        this(component, Constraints.EAST, Integer.MAX_VALUE);
+    }
+
+    public VisualizerToolbarComponent(Component component, Constraints constrains, int position) {
+        this.component = component;
+        this.constraints = constrains;
+        this.position = position;
+    }
+
+    public static enum Constraints {
+
+        EAST,
+        WEST
+    }
+
+    private static class Accessor extends VisualizerToolbarComponentAccessor {
+
+        @Override
+        public Component getComponent(VisualizerToolbarComponent component) {
+            return component.component;
+        }
+
+        @Override
+        public Constraints getConstraints(VisualizerToolbarComponent component) {
+            return component.constraints;
+        }
+
+        @Override
+        public int getPosition(VisualizerToolbarComponent component) {
+            return component.position;
+        }
+    }
 }

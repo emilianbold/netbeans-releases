@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.visualizers.api;
+package org.netbeans.modules.dlight.visualizers;
 
-import java.util.Collection;
+import java.awt.Component;
+import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponent;
 
 /**
- * 
+ *
  * @author ak119685
  */
-public interface VisualizerToolbarComponentsProvider {
+public abstract class VisualizerToolbarComponentAccessor {
 
-    public Collection<VisualizerToolbarComponent> getToolbarComponents();
+    private static volatile VisualizerToolbarComponentAccessor DEFAULT;
+
+    public static VisualizerToolbarComponentAccessor getDefault() {
+        VisualizerToolbarComponentAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(VisualizerToolbarComponent.class.getName(), true, VisualizerToolbarComponent.class.getClassLoader());
+        } catch (Exception e) {
+        }
+        return DEFAULT;
+    }
+
+    public static void setDefault(VisualizerToolbarComponentAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public VisualizerToolbarComponentAccessor() {
+    }
+
+    public abstract Component getComponent(VisualizerToolbarComponent component);
+
+    public abstract VisualizerToolbarComponent.Constraints getConstraints(VisualizerToolbarComponent component);
+
+    public abstract int getPosition(VisualizerToolbarComponent component);
 }
