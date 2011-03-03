@@ -54,6 +54,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.StyledDocument;
@@ -61,6 +62,7 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
+import org.netbeans.modules.java.source.usages.Pair;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -715,12 +717,13 @@ public abstract class PositionEstimator {
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
                     break;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
-                    int indexOf = token.text().toString().lastIndexOf('\n');
-                    if (indexOf > -1) {
-                        sectionStart = seq.offset() + indexOf + 1;
-                    } else {
-                        sectionStart = seq.offset();
-                    }
+                    //#196053: not removing leading whitespaces, see ClassMemberTest.test196053b:
+//                    int indexOf = token.text().toString().lastIndexOf('\n');
+//                    if (indexOf > -1) {
+//                        sectionStart = seq.offset() + indexOf + 1;
+//                    } else {
+//                        sectionStart = seq.offset();
+//                    }
                 }
             }
             seq.move(sectionEnd);
@@ -739,7 +742,7 @@ public abstract class PositionEstimator {
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
                     } else {
-                        sectionEnd += seq.offset() + token.text().length();
+                        sectionEnd = seq.offset() + token.text().length();
                     }
                 }
             }
@@ -963,7 +966,9 @@ public abstract class PositionEstimator {
                             }
                             break;
                         case LINE_COMMENT:
-                            previousEnd = seq.offset() + token.text().length();
+                        case BLOCK_COMMENT:
+                        case JAVADOC_COMMENT:
+                            localResult = seq.offset();
                             break;
                     }
                     if (localResult > 0) {
@@ -977,26 +982,63 @@ public abstract class PositionEstimator {
                 }
                 seq.move(treeEnd);
                 int wideEnd = treeEnd;
-                while (seq.moveNext() && (nonRelevant.contains((token = seq.token()).id()) || JavaTokenId.SEMICOLON == seq.token().id())) {
-                    if (JavaTokenId.WHITESPACE == token.id()) {
-                        int indexOf = token.text().toString().indexOf('\n');
-                        if (indexOf > -1) {
-                            wideEnd = seq.offset() + indexOf + 1;
-                        } else {
-                            wideEnd = seq.offset();
-                        }
-                    } else if (JavaTokenId.LINE_COMMENT == token.id()) {
-                        wideEnd = seq.offset() + token.text().length();
-                        break;
-                    } else if (JavaTokenId.JAVADOC_COMMENT == token.id()) {
-                        break;
-                    } else if (skipTrailingSemicolons && JavaTokenId.SEMICOLON == token.id()) {
-                        wideEnd = seq.offset() + token.text().length();
+
+                LinkedList<Pair<Integer, Integer>> commentEndPos = new LinkedList<Pair<Integer, Integer>>();
+                int maxLines = 0;
+                int newlines = 0;
+                boolean cont = true;
+                while (cont && seq.moveNext()) {
+                    Token<JavaTokenId> t = seq.token();
+                    switch(t.id()) {
+                        case WHITESPACE:
+                            if (newlines == 0) {
+                                int indexOf = t.text().toString().indexOf('\n');
+                                if (indexOf > -1) {
+                                    if (commentEndPos.isEmpty()) {
+                                        wideEnd = seq.offset() + indexOf + 1;
+                                    } else {
+                                        commentEndPos.add(Pair.of(commentEndPos.getLast().first, seq.offset() + indexOf + 1));                                            
+                                    }
+                                }
+                            }
+                            newlines += numberOfNL(t);
+                            break;
+                        case LINE_COMMENT:
+                        case BLOCK_COMMENT:
+                            if (seq.offset() > minimalLeftPosition)
+                                commentEndPos.add(Pair.of(newlines, seq.offset() + t.text().length()));
+                            maxLines = Math.max(maxLines, newlines);
+                            if (t.id() == JavaTokenId.LINE_COMMENT) {
+                                newlines = 1;
+                            } else {
+                                newlines = 0;
+                            }
+                            break;
+                        case SEMICOLON:
+                            if (skipTrailingSemicolons) {
+                                wideEnd = seq.offset() + t.text().length();
+                            } else {
+                                cont = false;
+                            }
+                            break;
+                        case RBRACE:
+                            maxLines = Integer.MAX_VALUE;
+                        case JAVADOC_COMMENT:
+                        default:
+                            cont = false;
+                            break;
                     }
-                    if (wideEnd > treeEnd)
+                }
+                maxLines = Math.max(maxLines, newlines);
+                for (Pair<Integer, Integer> comment : commentEndPos) {
+                    if (comment.first < maxLines || comment.first == 0) {
+                        wideEnd = comment.second;
+                    } else {
                         break;
+                    }
                 }
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
+                if (minimalLeftPosition < wideEnd) minimalLeftPosition = wideEnd;
                 data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos });
                 append.add(itemAppend);
             }
@@ -1009,6 +1051,18 @@ public abstract class PositionEstimator {
             return false;
         }
         
+        private int numberOfNL(Token<JavaTokenId> t) {
+            int count = 0;
+            CharSequence charSequence = t.text();
+            for (int i = 0; i < charSequence.length(); i++) {
+                char a = charSequence.charAt(i);
+                if ('\n' == a) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
         @Override()
         public int getInsertPos(int index) {
             if (!initialized) initialize();

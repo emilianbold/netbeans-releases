@@ -53,7 +53,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
-import org.netbeans.modules.dlight.api.storage.types.Time;
+import org.netbeans.modules.dlight.api.storage.StandardColumns;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
@@ -96,13 +96,13 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         Column fileCountColumn = new Column("file_count", Long.class, getMessage("Column.FileCount"), null); // NOI18N
 
         List<Column> fopsColumns = Arrays.asList(
-                new Column("timestamp", Time.class, getMessage("Column.Timestamp"), null), // NOI18N
+                StandardColumns.TIMESTAMP_COLUMN,
                 opColumn,
                 new Column("sid", Integer.class, getMessage("Column.SID"), null), // NOI18N
                 fileColumn,
                 sizeColumn,
                 fileCountColumn,
-                new Column("stack_id", Long.class, getMessage("Column.StackId"), null)); // NOI18N
+                StandardColumns.STACK_COLUMN);
 
         final DataTableMetadata dtraceFopsMetadata =
                 new DataTableMetadata("fops", fopsColumns, null); // NOI18N

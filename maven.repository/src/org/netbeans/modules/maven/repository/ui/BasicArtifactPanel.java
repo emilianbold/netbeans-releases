@@ -76,7 +76,6 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
-import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -89,6 +88,8 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class BasicArtifactPanel extends TopComponent implements MultiViewElement {
+
+    private static final RequestProcessor RP = new RequestProcessor(BasicArtifactPanel.class);
     
     private MultiViewElementCallback callback;
     private JToolBar toolbar;
@@ -446,7 +447,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
+            toolbar = new JToolBar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
@@ -516,7 +517,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         final DefaultListModel dlm = new DefaultListModel();
         dlm.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
         lstVersions.setModel(dlm);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId());
                 final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
@@ -535,7 +536,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         final DefaultListModel mdl = new DefaultListModel();
         mdl.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
         lstClassifiers.setModel(mdl);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
                 final Set<String> classifiers = new TreeSet<String>();

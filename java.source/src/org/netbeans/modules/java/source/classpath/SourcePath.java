@@ -48,10 +48,12 @@ import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -75,19 +77,21 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     private final PropertyChangeSupport listeners = new PropertyChangeSupport(this);
     private final ClassPath delegate;
     private final ClassIndexManager manager;
-    private final boolean forcePrefSources;
-    private final boolean apt;
+    private final Function<List<ClassPath.Entry>,List<PathResourceImplementation>> f;
     private List<PathResourceImplementation> resources;
     private long eventId;
     
     @SuppressWarnings("LeakingThisInConstructor")
-    private SourcePath (final ClassPath delegate, final boolean bkgComp, final boolean apt) {
+    private SourcePath (
+            @NonNull final ClassPath delegate,
+            @NonNull final Function<List<ClassPath.Entry>,List<PathResourceImplementation>> f) {
+        assert delegate != null;
+        assert f != null;
         this.delegate = delegate;
+        this.f = f;
         this.manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
         delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, delegate));
-        this.forcePrefSources = bkgComp;
-        this.apt = apt;
     }
     
     @Override
@@ -100,22 +104,8 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
             currentEventId = this.eventId;
         }
         
-        List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
-        final Set<? extends URL> aptBuildGenerated = apt ? null : getAptBuildGeneratedFolders(delegate);
-        for (ClassPath.Entry entry : delegate.entries()) {
-            if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
-                if (!apt) {
-                    if (!aptBuildGenerated.contains(entry.getURL())) {
-                        res.add(new FR (entry));
-                    }
-                } else {
-                    final URL aptRoot = AptCacheForSourceQuery.getAptFolder(entry.getURL());
-                    if (aptRoot != null) {
-                        res.add(ClassPathSupport.createResource(aptRoot));
-                    }
-                }
-            }
-        }                
+        List<PathResourceImplementation> res = f.apply(delegate.entries());
+
         synchronized (this) {
             if (currentEventId == this.eventId) {
                 if (this.resources == null) {
@@ -144,7 +134,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     
     @Override
     public void classIndexAdded(ClassIndexManagerEvent event) {
-        if (forcePrefSources) {
+        if (f.forcePrefSources) {
             return;
         }
         final Set<? extends URL> newRoots = event.getRoots();
@@ -177,23 +167,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         }
         listeners.firePropertyChange(PROP_RESOURCES, null, null);
     }
-    
-    @NonNull
-    private static Set<? extends URL> getAptBuildGeneratedFolders(@NonNull final ClassPath cp) {
-        final Set<URL> roots = new HashSet<URL>();
-        final Set<URL> aptRoots = new HashSet<URL>();
-        for (ClassPath.Entry entry : cp.entries()) {
-            roots.add(entry.getURL());
-        }
-        for (FileObject fo : cp.getRoots()) {
-            final URL aptRoot = AnnotationProcessingQuery.getAnnotationProcessingOptions(fo).sourceOutputDirectory();
-            if (roots.contains(aptRoot)) {
-                aptRoots.add(aptRoot);
-            }
-        }
-        return aptRoots;
-    }
-    
+            
     private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener {
         
         private final ClassPath classPath;
@@ -248,12 +222,107 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     
     public static ClassPath sources (final ClassPath cp, final boolean bkgComp) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp, false));
+        return ClassPathFactory.createClassPath(new SourcePath(cp, new MapToSources(bkgComp)));
     }
 
     public static ClassPath apt (final ClassPath cp, final boolean bkgComp) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp, true));
+        return ClassPathFactory.createClassPath(new SourcePath(cp, new MapToAptCache(bkgComp)));
+    }
+
+    public static ClassPath aptOputput(final ClassPath cp, final boolean bkgComp) {
+        assert cp != null;
+        return ClassPathFactory.createClassPath(new SourcePath(cp, new MapToAptGenerated(bkgComp)));
+    }
+
+    @NonNull
+    static Set<? extends URL> getAptBuildGeneratedFolders(@NonNull final List<ClassPath.Entry> entries) {
+        final Set<URL> roots = new HashSet<URL>();
+        final Set<URL> aptRoots = new LinkedHashSet<URL>();
+        for (ClassPath.Entry entry : entries) {
+            roots.add(entry.getURL());
+        }
+        for (ClassPath.Entry entry : entries) {
+            final FileObject fo = entry.getRoot();
+            if (fo != null) {
+                final URL aptRoot = AnnotationProcessingQuery.getAnnotationProcessingOptions(fo).sourceOutputDirectory();
+                if (roots.contains(aptRoot)) {
+                    aptRoots.add(aptRoot);
+                }
+            }
+        }
+        return aptRoots;
+    }
+
+    private static abstract class Function<P,R> {
+
+        protected final boolean forcePrefSources;
+
+        public Function(final boolean forcePrefSources) {
+            this.forcePrefSources = forcePrefSources;
+        }
+
+        abstract R apply(P param);        
+    }
+
+    private static class MapToSources extends  Function<List<ClassPath.Entry>,List<PathResourceImplementation>> {
+
+        private MapToSources(final boolean forcePrefSources) {
+            super(forcePrefSources);
+        }
+
+        @Override
+        List<PathResourceImplementation> apply(List<ClassPath.Entry> entries) {
+            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
+            final Set<? extends URL> aptBuildGenerated = getAptBuildGeneratedFolders(entries);
+            for (ClassPath.Entry entry : entries) {
+                if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {                    
+                    if (!aptBuildGenerated.contains(entry.getURL())) {
+                        res.add(new FR (entry));
+                    }
+                }
+            }
+            return res;
+        }
+    }
+
+    private static class MapToAptCache extends Function<List<ClassPath.Entry>,List<PathResourceImplementation>> {
+        
+        private MapToAptCache(final boolean forcePrefSources) {
+            super(forcePrefSources);
+        }
+
+        @Override
+        List<PathResourceImplementation> apply(List<Entry> entries) {
+            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
+            for (ClassPath.Entry entry : entries) {
+                if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
+                    final URL aptRoot = AptCacheForSourceQuery.getAptFolder(entry.getURL());
+                    if (aptRoot != null) {
+                        res.add(ClassPathSupport.createResource(aptRoot));
+                    }
+                }
+            }
+            return res;
+        }
+
+    }
+
+    private static class MapToAptGenerated extends Function<List<ClassPath.Entry>,List<PathResourceImplementation>> {
+
+        private MapToAptGenerated(final boolean forcePrefSources) {
+            super(forcePrefSources);
+        }
+
+        @Override
+        List<PathResourceImplementation> apply(List<Entry> entries) {
+            final Set<? extends URL> aptGenerated = getAptBuildGeneratedFolders(entries);
+            final List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>(aptGenerated.size());
+            for (URL agr : aptGenerated) {
+                resources.add(ClassPathSupport.createResource(agr));
+            }
+            return resources;
+        }
     }
 
 }

@@ -99,7 +99,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final Writer error) {
 
-        return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFileName, error);
+        return SftpSupport.getInstance(srcExecEnv).downloadFile(srcFileName, dstFileName, error);
     }
 
     /**
@@ -125,7 +125,7 @@ public final class CommonTasksSupport {
             final File dstFile,
             final Writer error) {
 
-        return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFile.getAbsolutePath(), error);
+        return SftpSupport.getInstance(srcExecEnv).downloadFile(srcFileName, dstFile.getAbsolutePath(), error);
     }
 
     /**
@@ -226,7 +226,8 @@ public final class CommonTasksSupport {
     }
 
     public static Future<Integer> uploadFile(UploadParameters parameters) {
-        return SftpSupport.uploadFile(parameters.copy());
+        parameters = parameters.copy();
+        return SftpSupport.getInstance(parameters.dstExecEnv).uploadFile(parameters);
     }
 
     /**
@@ -254,8 +255,7 @@ public final class CommonTasksSupport {
             final ExecutionEnvironment dstExecEnv,
             final String dstFileName,
             final int mask, final Writer error) {
-
-        return SftpSupport.uploadFile(new UploadParameters(
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
                 new File(srcFileName), dstExecEnv, dstFileName, mask, error, false, null));
     }
 
@@ -287,7 +287,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error, boolean checkMd5) {
 
-        return SftpSupport.uploadFile(new UploadParameters(
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
                 new File(srcFileName), dstExecEnv, dstFileName, mask, error, checkMd5, null));
     }
 
@@ -317,7 +317,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error) {
 
-        return SftpSupport.uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, error, false, null));
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, error, false, null));
     }
 
     /**
@@ -348,7 +348,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error, boolean checkMd5) {
 
-        return SftpSupport.uploadFile(new UploadParameters(
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
                 srcFile, dstExecEnv, dstFileName, mask, error, checkMd5, null));
     }
 

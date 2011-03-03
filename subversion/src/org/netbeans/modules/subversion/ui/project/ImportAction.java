@@ -89,19 +89,21 @@ public final class ImportAction extends NodeAction {
     protected boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            File dir = lookupImportDirectory(nodes[0]);
-            if (dir != null && dir.isDirectory()) {
-                FileInformation status = cache.getCachedStatus(dir);
-                // mutually exclusive enablement logic with commit
-                if (!SvnUtils.isManaged(dir) && (status == null || (status.getStatus() & FileInformation.STATUS_MANAGED) == 0)) {
-                    // do not allow to import partial/nonatomic project, all must lie under imported common root
-                    FileObject fo = FileUtil.toFileObject(dir);
-                    Project p = FileOwnerQuery.getOwner(fo);
-                    if (p == null) {
-                        return true;
+            if (cache.ready()) {
+                File dir = lookupImportDirectory(nodes[0]);
+                if (dir != null && dir.isDirectory()) {
+                    FileInformation status = cache.getCachedStatus(dir);
+                    // mutually exclusive enablement logic with commit
+                    if (!SvnUtils.isManaged(dir) && (status == null || (status.getStatus() & FileInformation.STATUS_MANAGED) == 0)) {
+                        // do not allow to import partial/nonatomic project, all must lie under imported common root
+                        FileObject fo = FileUtil.toFileObject(dir);
+                        Project p = FileOwnerQuery.getOwner(fo);
+                        if (p == null) {
+                            return true;
+                        }
+                        FileObject projectDir = p.getProjectDirectory();
+                        return FileUtil.isParentOf(projectDir, fo) == false;
                     }
-                    FileObject projectDir = p.getProjectDirectory();
-                    return FileUtil.isParentOf(projectDir, fo) == false;
                 }
             }
         }

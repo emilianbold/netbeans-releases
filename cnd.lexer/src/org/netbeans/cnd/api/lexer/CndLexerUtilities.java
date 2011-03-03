@@ -143,6 +143,24 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    public static TokenSequence<TokenId> getCppTokenSequenceWithoutEmbeddings(final Document doc, final int offset) {
+        if (doc == null) {
+            return null;
+        }
+        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, true);
+        if(!tsList.isEmpty()) {
+            TokenSequence<?> ts = tsList.get(0);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (isCppLanguage(lang, false)) {
+                @SuppressWarnings("unchecked")
+                TokenSequence<TokenId> cppTS = (TokenSequence<TokenId>) ts;
+                return cppTS;
+            }
+        }
+        return null;
+    }
+    
     private static final Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
 
     public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {

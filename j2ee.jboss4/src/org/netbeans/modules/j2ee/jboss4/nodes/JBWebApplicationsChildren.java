@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -98,7 +100,8 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                 try {
                     // Query to the jboss server
                     ObjectName searchPattern;
-                    if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+                    if (abilitiesSupport.isRemoteManagementSupported()
+                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
                     }
                     else {
@@ -107,8 +110,10 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
 
                     Object server = Util.getRMIServer(lookup);
                     Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
-
-                    Set managedObj = (Set) server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class}).invoke(server, new Object[]  {searchPattern, null});
+                    
+                    Method method = server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class});
+                    method = Util.fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(server, new Object[]  {searchPattern, null});
 
                     JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
 
@@ -124,7 +129,8 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                                 name = name.substring(0, name.lastIndexOf(".war"));
                             }
 
-                            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+                            if (abilitiesSupport.isRemoteManagementSupported()
+                                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
                                 if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
                                     continue;
                                 }

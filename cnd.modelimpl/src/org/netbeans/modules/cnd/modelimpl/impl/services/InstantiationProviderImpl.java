@@ -66,7 +66,10 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -84,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
@@ -173,6 +177,30 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 StringBuilder fqn = new StringBuilder(templateDecl.getUniqueName());
                 fqn.append('<'); // NOI18N
                 Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
+                return specs;
+            }
+        } else if (CsmKindUtilities.isMethod(templateDecl)) {
+            // try to find explicit specialization of method if any
+            CsmClass cls = CsmBaseUtilities.getFunctionClass((CsmFunction) templateDecl);
+            if (CsmKindUtilities.isTemplate(cls)) {
+                Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>();
+                CharSequence funName = templateDecl.getName();
+                Collection<CsmOffsetableDeclaration> specializations = getSpecializations(cls, contextFile, contextOffset);
+                for (CsmOffsetableDeclaration specialization : specializations) {
+                    CsmTemplate spec = (CsmTemplate) specialization;
+                    Iterator<CsmMember> classMembers = CsmSelect.getClassMembers((CsmClass) spec, CsmSelect.getFilterBuilder().createNameFilter(funName, true, true, false));
+                    //if (spec.isExplicitSpecialization()) {
+                    while(classMembers.hasNext()) {
+                        CsmMember next = classMembers.next();
+                        if (CsmKindUtilities.isFunctionDeclaration(next)) {
+                            CsmFunctionDefinition definition = ((CsmFunction) next).getDefinition();
+                            if (definition != null && !definition.equals(next)) {
+                                specs.add(definition);
+                            }
+                        }
+                    }
+                    //}
+                }
                 return specs;
             }
         }

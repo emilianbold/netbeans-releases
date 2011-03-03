@@ -129,9 +129,13 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     
     @Override
     public CsmFile getContainingFile() {
-        return _getFile();
+        return _getFile(true);
     }
 
+    protected final CsmFile getContainingFileImpl(boolean checkNull) {
+        return _getFile(checkNull);
+    }
+    
     @Override
     public CharSequence getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
@@ -150,11 +154,11 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         }
     }
     
-    private synchronized CsmFile _getFile() {
+    private synchronized CsmFile _getFile(boolean checkNull) {
         CsmFile file = this.fileRef;
         if (file == null) {
             file = UIDCsmConverter.UIDtoFile(fileUID);
-            assert file != null : "no object for UID " + fileUID;
+            assert file != null || !checkNull: "no object for UID " + fileUID + " in object " + getClass() + ":" + getOffsetString();
         }
         return file;
     }

@@ -64,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -147,7 +148,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
-            project = findInOpenedProject(fileObject);
+            project = FileOwnerQuery.getOwner(fileObject);
         }
         ExecutionEnvironment developmentHost = null;
         if (project != null) {
@@ -166,24 +167,6 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         return developmentHost;
-    }
-
-    private static Project findInOpenedProject(FileObject fileObject) {
-        // First platform provider uses simplified algorithm for search that finds project in parent folder.
-        // Fixed algorithm try to find opened project by second make project provider.
-        //return FileOwnerQuery.getOwner(fileObject);
-        Collection<? extends FileOwnerQueryImplementation> instances = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
-        for (FileOwnerQueryImplementation provider : instances) {
-            Project project = provider.getOwner(fileObject);
-            if (project != null) {
-                for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                    if (project == p) {
-                        return project;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private static Project findProject(Node node) {
@@ -217,7 +200,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             project = findProject(node);
         }
         if (project == null) {
-            project = findInOpenedProject(fileObject);
+            project = FileOwnerQuery.getOwner(fileObject);
         }
         CompilerSet set = null;
         if (project != null) {
@@ -497,10 +480,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             if (project != null) {
                 remoteProject = project.getLookup().lookup(RemoteProject.class);
             }
-            PathMap mapper;
+            PathMap mapper = null;
             if (remoteProject != null) {
-                mapper = remoteProject.getSyncFactory().getPathMap(execEnv);
-            } else {
+                RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+                if (syncFactory != null) {
+                    mapper = syncFactory.getPathMap(execEnv);
+                }
+            }
+            if (mapper == null) {
                 mapper = HostInfoProvider.getMapper(execEnv);
             }
             return mapper.getRemotePath(localDir, false);

@@ -190,6 +190,9 @@ public class JsfBinaryIndexer extends BinaryIndexer {
         Enumeration<? extends FileObject> fos = classpathRoot.getChildren(true); //scan all files in the jar
         while (fos.hasMoreElements()) {
             FileObject file = fos.nextElement();
+            if(!file.isValid() || !file.isData()) {
+                continue;
+            }
             if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
                 //found library, create a new instance and cache it
                 files.add(file);

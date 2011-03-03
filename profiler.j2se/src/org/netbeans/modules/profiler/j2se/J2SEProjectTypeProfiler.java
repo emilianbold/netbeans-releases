@@ -179,7 +179,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             String profiledClass = pp.getProperty("main.class"); // NOI18N
 
             if ((profiledClass == null) || "".equals(profiledClass)
-                    || (SourceUtils.findFileObjectByClassName(profiledClass, project) == null)) { // NOI18N
+                    || (SourceUtils.resolveClassByName(profiledClass, project) == null)) { // NOI18N
                 mainClassSetManually = ProjectUtilities.selectMainClass(project, null, ProjectUtilities.getProjectName(project),
                                                                         -1);
 

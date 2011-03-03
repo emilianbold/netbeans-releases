@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -103,7 +104,7 @@ public class ManDocumentation {
 //        return manPath;
 //    }
     public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) throws IOException {
-        if (obj instanceof CsmFunction) {
+        if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isClassMember(obj)) {
             return getDocumentation(((CsmFunction) obj).getName().toString(), file);
         }
         return null;

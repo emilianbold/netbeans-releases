@@ -65,7 +65,7 @@ import org.openide.filesystems.FileStateInvalidException;
  *
  * @author  Pavel Flaska
  */
-public class FieldTest4 extends GeneratorTest {
+public class FieldTest4 extends GeneratorTestBase {
     
     /** Creates a new instance of FieldTest4 */
     public FieldTest4(String name) {

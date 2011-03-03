@@ -127,7 +127,7 @@ public final class FileUtil extends Object {
         transientAttributes.add("displayName"); // NOI18N
         transientAttributes.add("iconBase"); // NOI18N
         transientAttributes.add("position"); // NOI18N
-        transientAttributes.add("weight"); // NOI18N
+        transientAttributes.add(MultiFileObject.WEIGHT_ATTRIBUTE); // NOI18N
     }
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */

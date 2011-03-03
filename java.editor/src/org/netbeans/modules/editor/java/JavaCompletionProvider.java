@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.SourceVersion;
@@ -94,8 +96,8 @@ import org.openide.util.NbBundle;
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (typedText != null && typedText.length() > 0
-                && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(typedText.length() - 1)) >= 0
+        if (typedText != null && typedText.length() == 1
+                && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
                 || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText)))) {
             if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
                 return COMPLETION_QUERY_TYPE;
@@ -303,8 +305,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (toolTip != null && toolTip.hasData())
                                 resultSet.setToolTip(toolTip);
                         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                            if (documentation != null)
+                            if (documentation instanceof JavaCompletionDoc) {
+                                while (!isTaskCancelled()) {
+                                    try {
+                                        ((JavaCompletionDoc)documentation).getFutureText().get(250, TimeUnit.MILLISECONDS);
+                                        resultSet.setDocumentation(documentation);
+                                        break;
+                                    } catch (TimeoutException timeOut) {/*retry*/}
+                                }
+                                
+                            } else if (documentation != null) {
                                 resultSet.setDocumentation(documentation);
+                            }
                         }
                         if (anchorOffset > -1)
                             resultSet.setAnchorOffset(anchorOffset);
@@ -1436,6 +1448,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     boolean insideNew = false;
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree)parent).getExtendsClause() == fa) {
                         kinds = EnumSet.of(CLASS);
+                        env.afterExtends();
                     } else if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree)parent).getImplementsClause().contains(fa)) {
                         kinds = EnumSet.of(INTERFACE);
                     } else if (parent.getKind() == Tree.Kind.IMPORT) {
@@ -2919,6 +2932,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
+                                    (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees)) &&
                                     env.isAccessible(scope, e, t, isSuperCall) && isStatic;
                         case CONSTRUCTOR:
                             ctorSeen[0] = true;
@@ -3076,7 +3090,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Set<? extends Element> excludes = env.getExcludes();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if ((excludes == null || !excludes.contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || !e.getModifiers().contains(Modifier.FINAL))) {
+                    if ((excludes == null || !excludes.contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
                         String name = e.getSimpleName().toString();
                         return name.length() > 0 && !Character.isDigit(name.charAt(0)) && startsWith(env, name, prefix) &&
                                 (!isStatic || e.getModifiers().contains(STATIC) || e.getEnclosingElement() == enclMethod) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
@@ -3102,7 +3116,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if ((e.getKind().isClass() || e.getKind().isInterface())) {
                         return (excludes == null || !excludes.contains(e)) && startsWith(env, e.getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) &&
-                                isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || !e.getModifiers().contains(Modifier.FINAL));
+                                isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees));
                     }
                     return false;
                 }
@@ -3889,6 +3903,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                 DeclaredType dt = (DeclaredType)e.asType();
                 for (Element ee : e.getEnclosedElements())
                     if (trees.isAccessible(scope, ee, dt) && isOfKindAndType(ee.asType(), ee, kinds, base, scope, trees, types))
+                        return true;
+            }
+            return false;
+        }
+        
+        private boolean containsAccessibleNonFinalType(Element e, Scope scope, Trees trees) {
+            if (e.getKind().isClass() || e.getKind().isInterface()) {
+                if (!e.getModifiers().contains(Modifier.FINAL)) {
+                    return true;
+                }
+                DeclaredType dt = (DeclaredType)e.asType();
+                for (Element ee : e.getEnclosedElements())
+                    if (trees.isAccessible(scope, ee, dt) && containsAccessibleNonFinalType(ee, scope, trees))
                         return true;
             }
             return false;

@@ -52,7 +52,11 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -823,7 +827,27 @@ public class ProviderUtil {
      * @throws NullPointerException if either project or persistenceUnit was null.
      */
     public static boolean makePortableIfPossible(Project project, PersistenceUnit persistenceUnit) {
+        return normalizeIfPossible(project, persistenceUnit, true);
+    }
 
+    /**
+     * Makes the given persistence unit portable if possible, i.e. removes the provider class from it.
+     * A persistence unit may be made portable if it uses the default provider of the project's target
+     * server, it doesn't specify any properties and it is not defined in Java SE environment.
+     * Restore provider class if necessary if there are properties and pu can't be fully portable
+     *
+     * @param project the project in which the given persistence unit is defined. Must not be null.
+     * @param persistenceUnit the persistence unit to be made portable. Must not be null.
+     *
+     * @return true if given persistence unit could be made portable, false otherwise.
+     *
+     * @throws NullPointerException if either project or persistenceUnit was null.
+     */
+    public static boolean normalizeIfPossible(Project project, PersistenceUnit persistenceUnit) {
+        return normalizeIfPossible(project, persistenceUnit, false);
+    }
+
+    private static boolean normalizeIfPossible(Project project, PersistenceUnit persistenceUnit, boolean donotrestore) {
         Parameters.notNull("project", project); //NOI18N
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
 
@@ -837,16 +861,20 @@ public class ProviderUtil {
             return false;
         }
 
-        if (defaultProvider.getProviderClass()!=null && defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())
-                && (persistenceUnit.getProperties() == null || persistenceUnit.getProperties().sizeProperty2() == 0)) {
+        boolean requiredTag = isProviderTagRequired(project);
 
-            persistenceUnit.setProvider(null);
-            return true;
+        if((persistenceUnit.getProperties() == null || persistenceUnit.getProperties().sizeProperty2() == 0) && !requiredTag){
+            if (defaultProvider.getProviderClass()!=null && defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())) {
+
+                persistenceUnit.setProvider(null);
+                return true;
+            }
+        } else if (persistenceUnit.getProvider() == null && (persistenceUnit.getProperties().sizeProperty2() > 0 || requiredTag) && !donotrestore){
+            persistenceUnit.setProvider(defaultProvider.getProviderClass());
         }
 
         return false;
     }
-
     /**
      * Checks whether the given <code>project</code>'s target server is present.
      *
@@ -914,5 +942,27 @@ public class ProviderUtil {
                 }
             }
         }
+    }
+
+    /*
+     * currently it's workaroud for spring support. spring support rrequires provider class in pu even for jee environment with default provider support
+     * see issue #195973
+     * TODO: consider if it should be implemented in some persistence provider (but it's likely will duplicate code for each project)
+     * TODO: consider if it should be in J2eeProjectCapabilities
+     */
+    private static boolean isProviderTagRequired(Project project){
+        // check if swdp is already part of classpath
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        //this package name will change when open source, should just rely on subclass to use file names
+        FileObject utxClass = classPath.findResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
+        if (utxClass != null) {
+            return true;
+        }
+        return false;
     }
 }

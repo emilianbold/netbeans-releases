@@ -61,14 +61,21 @@ import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
-import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.core.api.JspColoringData;
+import org.netbeans.modules.web.core.api.JspContextInfo;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 public class JspUtils {
 
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+
+    //XXX probably already done somewhere...
+    public static boolean isJSPOrTagFile(FileObject fo) {
+        String mimeType = fo.getMIMEType();
+        return JspKit.JSP_MIME_TYPE.equals(mimeType) || JspKit.TAG_MIME_TYPE.equals(mimeType);
+    }
+    
 
     /** Create a TokenHierarchy instance for file based Snapshot.
      * Use this method of getting the token hierarchy instead of

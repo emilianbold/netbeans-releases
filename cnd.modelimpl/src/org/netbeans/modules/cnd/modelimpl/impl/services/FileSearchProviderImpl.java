@@ -139,5 +139,12 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
             }
             return include;
         }
+
+        @Override
+        public String toString() {
+            return "APTFileSearchImplementationImpl{" + "project=" + project + '}'; // NOI18N
+        }
+        
+        
     }
 }

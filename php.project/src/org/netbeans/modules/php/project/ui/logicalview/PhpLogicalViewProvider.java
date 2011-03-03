@@ -73,6 +73,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.openide.LifecycleManager;
 import org.openide.actions.FindAction;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
@@ -399,6 +400,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             putValue(NAME, name);
             putValue(SHORT_DESCRIPTION, name);
         }
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
@@ -426,6 +428,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    LifecycleManager.getDefault().saveAll();
                     docProvider.generateDocumentation(phpModule);
                 }
             });
