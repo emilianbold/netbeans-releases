@@ -285,7 +285,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (entry == null) {
                 return null;
             }
-            return createFileObject(entry);
+            return createFileObject(entry, false);
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex);
             return null;
@@ -312,16 +312,29 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private RemoteFileObjectBase createFileObject(DirEntry entry) {
+    private RemoteFileObjectBase createFileObject(DirEntry entry, boolean fire) {
         File childCache = new File(getCache(), entry.getCache());
         String childPath = getPath() + '/' + entry.getName();
+        RemoteFileObjectBase fo;
         if (entry.isDirectory()) {
-            return getFileSystem().getFactory().createRemoteDirectory(this, childPath, childCache);
+            fo = getFileSystem().getFactory().createRemoteDirectory(this, childPath, childCache);
         }  else if (entry.isLink()) {
-            return getFileSystem().getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
+            fo = getFileSystem().getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
         } else {
-            return getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
+            fo = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.File);
         }
+        if (fire) {
+            FileEvent e = new FileEvent(fo);
+            if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
+                fireFileFolderCreatedEvent(getListeners(), e);
+            } else if (fo instanceof RemotePlainFile) {
+                fireFileDataCreatedEvent(getListeners(), e);
+            } else {
+                RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
+                fireFileDataCreatedEvent(getListeners(), e);
+            }
+        }
+        return fo;
     }
 
     private RemoteFileObjectBase[] getExistentChildren() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
@@ -346,7 +359,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirEntry entry = entries.get(i);
-                childrenFO[i] = createFileObject(entry);
+                childrenFO[i] = createFileObject(entry, false);
             }
             return childrenFO;
         } catch (InterruptedException ex) {
@@ -594,6 +607,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     if (!newEntries.containsKey(oldEntry.getName())) {
                         changed = true;
                         invalidate(oldEntry);
+                    }
+                }
+                for (DirEntry newEntry : newEntries.values()) {
+                    DirEntry oldEntry = storage.getEntry(newEntry.getName());
+                    if (oldEntry == null) {
+                        createFileObject(newEntry, true);
                     }
                 }
             }
