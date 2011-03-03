@@ -129,23 +129,6 @@ class StandardModule extends Module {
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
     
-    /** Used to reflectively register a class loader to the Javeleon
-     * runtime system. Invocation of this method must always be guarded
-     * by JaveleonModule.isJaveleonPresent.
-     */
-    private static Method javeleonFacadeMethod;
-
-    /** Setup the javeleonFacadeMethod in case of a Javeleon run. */
-    static {
-        if(JaveleonModule.isJaveleonPresent) {
-            try {
-                javeleonFacadeMethod = Class.forName("org.javeleon.reload.ReloadFacade").getDeclaredMethod("registerClassLoader", ClassLoader.class, String.class);
-            } catch (Exception ex) {
-                // Javeleon was not present... nothing to do then!
-            }
-        }
-    }
-
     /** Use ModuleManager.create as a factory. */
     public StandardModule(ModuleManager mgr, Events ev, File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, JaveleonModule.isJaveleonPresent || reloadable, autoload, eager);
@@ -712,7 +695,7 @@ class StandardModule extends Module {
             // to the Javeleon runtime to allow the module to be updated
             // by Javeleon.
             try {
-                javeleonFacadeMethod.invoke(null, this, getCodeNameBase());
+                JaveleonModule.javeleonFacadeMethod.invoke(null, this, getCodeNameBase());
             } catch (Exception ex) {
                 // OK, give up. Javeleon is not enabled!
             }

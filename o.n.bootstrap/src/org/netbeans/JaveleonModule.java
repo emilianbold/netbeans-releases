@@ -82,6 +82,25 @@ public final class JaveleonModule extends StandardModule {
         javeleonReloadMethod = m;
     }
 
+     /** Used to reflectively register a class loader to the Javeleon
+     * runtime system. Invocation of this method must always be guarded
+     * by JaveleonModule.isJaveleonPresent.
+     */
+    public static final Method javeleonFacadeMethod;
+
+    /** Setup the javeleonFacadeMethod in case of a Javeleon run. */
+    static {
+        Method m = null;
+        if(JaveleonModule.isJaveleonPresent) {
+            try {
+                m = Class.forName("org.javeleon.reload.ReloadFacade").getDeclaredMethod("registerClassLoader", ClassLoader.class, String.class);
+            } catch (Exception ex) {
+                // Javeleon was not present... nothing to do then!
+            }
+        }
+        javeleonFacadeMethod = m;
+    }
+
     private static HashMap<String,ClassLoader> currentClassLoaders = new HashMap<String, ClassLoader>();
 
 
