@@ -94,7 +94,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -282,8 +281,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
             
             //MessageResource.properties
-            Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());
-            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());            
             String sresource = panel.getAppResource();
             if (sresource != null && sresource.trim().length()>0) {
                 int index = sresource.lastIndexOf('.');
@@ -294,13 +292,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     name = sresource.substring(sresource.lastIndexOf(".")+1);    //NOI18N
                 }
                 name = name + ".properties";   //NOI18N
-                FileObject targetFolder = null;
-                if (isMaven(project)) {
-                    SourceGroup[] resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-                    targetFolder = resourceGroups[0].getRootFolder();
-                } else {
-                    targetFolder = sourceGroups[0].getRootFolder();
+                SourceGroup[] resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                if (resourceGroups.length == 0) {
+                    resourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 }
+                FileObject targetFolder = resourceGroups[0].getRootFolder();
                 String folders[] = path.split("\\.");
                 for (int i = 0; i < folders.length; i++){
                     if (targetFolder.getFileObject(folders[i])== null)
@@ -482,9 +478,5 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 createFile(indexjsp, content, "UTF-8"); //NOI18N
             }
         }
-    }
-
-    private static boolean isMaven(Project project) {
-        return project.getLookup().lookup(AntArtifactProvider.class) == null;
     }
 }
