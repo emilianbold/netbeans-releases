@@ -190,9 +190,9 @@ public class DirectoryStorage {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DirectoryStorage");
-        sb.append(" file=").append(file.getAbsolutePath());
-        sb.append(" entries.size()=").append(entries.size()).append("\n");
+        StringBuilder sb = new StringBuilder("DirectoryStorage"); // NOI18N
+        sb.append(" file=").append(file.getAbsolutePath()); // NOI18N
+        sb.append(" entries.size()=").append(entries.size()).append("\n"); // NOI18N
         int cnt = 0;
         for (DirEntry entry : entries.values()) {
             if (cnt > 0) {
@@ -201,7 +201,7 @@ public class DirectoryStorage {
             if (cnt++ <= 10) {
                 sb.append(entry);
             } else {
-                sb.append("...");
+                sb.append("..."); // NOI18N
                 break;
             }
         }
