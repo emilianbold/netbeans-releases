@@ -84,9 +84,13 @@ public class GitException extends Exception {
     public static class CheckoutConflictException extends GitException {
         private final String[] conflicts;
 
-        public CheckoutConflictException (String[] conflicts) {
-            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"));
+        public CheckoutConflictException (String[] conflicts, Throwable cause) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"), cause);
             this.conflicts = conflicts;
+        }
+
+        public CheckoutConflictException (String[] conflicts) {
+            this(conflicts, null);
         }
 
         public String[] getConflicts () {

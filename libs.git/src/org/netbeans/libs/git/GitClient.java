@@ -283,9 +283,10 @@ public interface GitClient {
      * @param revision
      * @param monitor
      * @return result of the merge
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
      * @throws GitException an error occurs
      */
-    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException;
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree
