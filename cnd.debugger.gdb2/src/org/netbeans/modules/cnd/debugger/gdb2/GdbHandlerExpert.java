@@ -454,7 +454,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    String funcString;
 	    if (funcValue != null) {
 		funcString = funcValue.asConst().value();
-	    } else {
+            } else {
 		// We'll get an 'at' instead of a 'func' if there's 
 		// no src debugging information at the given function.
 		MIValue atValue = props.valueOf("at"); // NOI18N
@@ -480,7 +480,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 			funcString = funcString.substring(0, plx);
 
 		} else {
-		    funcString = "";
+		    funcString = ((FunctionBreakpoint)template).getFunction();
 		}
 	    }
 

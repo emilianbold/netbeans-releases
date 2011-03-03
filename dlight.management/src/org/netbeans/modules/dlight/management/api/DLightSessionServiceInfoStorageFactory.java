@@ -42,57 +42,92 @@
 package org.netbeans.modules.dlight.management.api;
 
 import java.sql.SQLException;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.spi.support.SQLExceptions;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  *
  * @author masha
  */
 public class DLightSessionServiceInfoStorageFactory extends SQLDataStorageFactory<DLightSessionServiceInfoStorage> {
-    /* use holder to prevent connect during lookup of service */
 
-    private final static class InstanceHolder {
+    private static final Lock lock = new Lock();
 
-        public static final DLightSessionServiceInfoStorage serviceInfoStorage = new DLightSessionServiceInfoStorage("test"); // NOI18N
+    private static class Lock {
 
-        static {
-            try {
-                serviceInfoStorage.connect();
-            } catch (SQLException ex) {
-                SQLExceptions.printStackTrace(serviceInfoStorage, ex);
-            }
+        public Lock() {
         }
     }
+    
     static final String ANALYTICS_SERVICE_INFO_DATA_STORAGE_TYPE = "analytics:serviceinfo"; // NOI18N
 
-    public static DLightSessionServiceInfoStorage getStorageInstance() {
-        return InstanceHolder.serviceInfoStorage;
-    }
 
     @Override
     public DLightSessionServiceInfoStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        synchronized (lock) {
+            try {
+                DLightSessionServiceInfoStorage result = new DLightSessionServiceInfoStorage(uniqueKey);
+                result.connect();
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
+                return result;
+            } catch (SQLException ex) {
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+
     }
 
     @Override
     public DLightSessionServiceInfoStorage createStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        synchronized(lock){
+            try {
+                DLightSessionServiceInfoStorage result = new DLightSessionServiceInfoStorage(uniqueKey);
+                result.connect();
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
+                return result;
+            } catch (SQLException ex) {
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.SEVERE, null, ex);
+                return null;
+            }
+         }
+        
     }
 
     @Override
     public DLightSessionServiceInfoStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        synchronized(lock){
+            try {
+                DLightSessionServiceInfoStorage result = new DLightSessionServiceInfoStorage(uniqueKey);
+                result.connect();
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
+                return result;
+            } catch (SQLException ex) {
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
     }
 
     @Override
     public String getUniqueKey(DLightSessionServiceInfoStorage storage) {
-        return DLightSessionServiceInfoStorage.DLIGHT_SERVICE_INFO_H2_DATABASE_URL;
+        return storage.dbURL;
     }
 
     @Override
-    public synchronized DLightSessionServiceInfoStorage createStorage() {
-        return InstanceHolder.serviceInfoStorage;
+    public  DLightSessionServiceInfoStorage createStorage() {
+        synchronized(lock){
+            try {
+                DLightSessionServiceInfoStorage result = new DLightSessionServiceInfoStorage("");
+                result.connect();
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
+                return result;
+            } catch (SQLException ex) {
+                DLightLogger.getLogger(DLightSessionServiceInfoStorageFactory.class).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
     }
 }
