@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2007, 2011 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -22,10 +21,10 @@ and tools.</p>
 <li><b>Project Name.</b> Specifies the display name of the project. 
 This name is also used to create the project folder.
 </li>
-<li><b>Project Location.</b> Specifies the folder where you want to store the 
-project metadata and source code. When you create an empty C, C++, or Fortran project, you 
-cannot store the project folder and project source code in separate locations like 
-you can with projects based on existing makefiles.</li>
+<li><b>Project Location.</b> Specifies the directory in which 
+the project will be created.</li>
+<li><b>Project Folder.</b> Specifies the folder where you want to store the 
+project metadata.</li>
 </ul>
 <p>You can also set the following properties:
 <ul>
@@ -33,9 +32,9 @@ you can with projects based on existing makefiles.</li>
 If a makefile already exists in the project folder, the default name is Makefile-<i>project</i>.mk; otherwise, 
 the default name is Makefile.</li>
 <li><b>Create Main File. </b> You can change the default name of the main program file, and select the
-C or C++ language from a list.  By default the name is <tt>main</tt> and the language is C++. For Qt projects,
+C, C++, or Fortran language from the drop-down list.  By default the name is <tt>main</tt> and the language is C++. For Qt projects,
 the language can only be C++.</li>
-<li><b>Development Host.</b> You can select the localhost or a remote development host
+<li><b>Development Host.</b> You can select the local host or a remote development host
 that you have previously set up. The project will be built and run on the selected development host.</li>
 <li><b>Tool Collection.</b> You can select a tool collection that has been previously configured for the selected development host.
 The tool collection will be used to build and run the project.</li>

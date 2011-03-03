@@ -95,6 +95,9 @@ import org.openide.util.NbBundle;
 
         @Override
         public boolean accept(File file) {
+            if (file.equals(fileData.getDataFile())) {
+                return false; // SharabilityFilter now includes nbproject/private. Exclude our storage
+            }
             boolean accepted = delegate.accept(file);
             if (accepted && ! file.isDirectory()) {
                 accepted = needsCopying(file);

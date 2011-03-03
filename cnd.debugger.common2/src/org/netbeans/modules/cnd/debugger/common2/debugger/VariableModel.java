@@ -359,7 +359,9 @@ public abstract class VariableModel extends ModelListenerSupport
 			return value.toString();
 		}
 	    else return null;
-	} else {
+	} else if (node instanceof WatchModel.EmptyWatch){
+            return "";
+        } else {
 	    throw new UnknownTypeException(node);
         }
     }

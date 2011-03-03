@@ -111,16 +111,13 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private final boolean puRequired;
     private final JMenuItem allToUpdateItem;
     private final JMenuItem allToRecreateItem;
+    private final boolean JAXBRequired;
 
 
     private EntityClassesPanel(boolean puRequired, boolean JAXBRequired) {
         this.puRequired = puRequired;
-
+        this.JAXBRequired = JAXBRequired;
         initComponents();
-
-        if (JAXBRequired) {
-            generateJAXBCheckBox.setEnabled(false);
-        }
 
         allToUpdateItem = tableActionsPopup.add(new AllToUpdateAction());
         allToRecreateItem = tableActionsPopup.add(new AllToRecreateAction());
@@ -219,6 +216,18 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         updatePersistenceUnitButton(true);
 
+        generateJAXBCheckBox.setEnabled(false);
+        generateJAXBCheckBox.setSelected(false);
+        SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
+        if (groups.length > 0) {
+            ClassPath compileCP = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
+            if (compileCP.findResource("javax/xml/bind/annotation/XmlRootElement.class") == null) { // NOI18N
+                generateJAXBCheckBox.setSelected(true);
+                if (!JAXBRequired) {
+                    generateJAXBCheckBox.setEnabled(true);
+                }
+            }
+        }
     }
 
     public void update(TableClosure tableClosure, String tableSourceName) {
