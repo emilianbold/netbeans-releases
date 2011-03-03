@@ -60,6 +60,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
@@ -67,6 +68,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -317,9 +319,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             if (ftContextEnabled) {
                 refs.add(createActionReference(
                     ftContextType,
-                    ftContextSeparatorBefore ? Position.toInteger(ftContextPosition, getProject(), toolbar, Boolean.TRUE) : -1,
-                    ftContextSeparatorAfter ? Position.toInteger(ftContextPosition, getProject(), toolbar, Boolean.FALSE) : -1,
-                    Position.toInteger(ftContextPosition, getProject(), toolbar),
+                    ftContextSeparatorBefore ? Position.toInteger(ftContextPosition, getProject(), ftContextType, Boolean.TRUE) : -1,
+                    ftContextSeparatorAfter ? Position.toInteger(ftContextPosition, getProject(), ftContextType, Boolean.FALSE) : -1,
+                    Position.toInteger(ftContextPosition, getProject(), ftContextType),
                     null
                 ));
             }
@@ -725,15 +727,18 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             return beforeText + POSITION_HERE + afterText;
         }
 
-        static int toInteger(Position p, Project project, String layerPath) {
+        static int toInteger(Position p, Project project, @NonNull String layerPath) {
             return toInteger(p, project, layerPath, null);
         }
-        static int toInteger(Position p, Project project, String layerPath, Boolean middleBelowAbove) {
+        static int toInteger(Position p, Project project, @NonNull String layerPath, Boolean middleBelowAbove) {
             if (p == null) {
                 return -1;
             }
             try {
-                FileObject merged = LayerUtils.getEffectiveSystemFilesystem(project).findResource(layerPath);
+                assert layerPath != null;
+                FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
+                assert sfs != null;
+                FileObject merged = sfs.findResource(layerPath);
                 assert merged != null : layerPath;
                 Integer beforePos = getPosition(merged, p.getBefore());
                 Integer afterPos = getPosition(merged, p.getAfter());
