@@ -19,7 +19,6 @@ CCC=CC
 CXX=CC
 FC=f95
 AS=as
-PROC=proc
 
 # Macros
 CND_PLATFORM=OracleSolarisStudio-Linux-x86
@@ -64,7 +63,7 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so: ${OBJECTFILES}
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -fast -g -s -KPIC  -o ${OBJECTDIR}/execint.o execint.c
+	$(COMPILE.c) -g -KPIC  -o ${OBJECTDIR}/execint.o execint.c
 
 # Subprojects
 .build-subprojects:
