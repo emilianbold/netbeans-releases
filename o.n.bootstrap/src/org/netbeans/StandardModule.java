@@ -73,7 +73,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
-import org.netbeans.Module.PackageExport;
 import org.netbeans.LocaleVariants.FileWithSuffix;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
@@ -86,9 +85,9 @@ import org.openide.util.NbBundle;
  * and creating a classloader for use by the installer.
  * Methods not defined in ModuleInfo must be called from within
  * the module manager's read mutex as a rule.
- * @author Jesse Glick
+ * @author Jesse Glick, Allan Gregersen
  */
-final class StandardModule extends Module {
+class StandardModule extends Module {
     
     /** JAR file holding the module */
     private final File jar;
@@ -131,7 +130,7 @@ final class StandardModule extends Module {
     
     /** Use ModuleManager.create as a factory. */
     public StandardModule(ModuleManager mgr, Events ev, File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
-        super(mgr, ev, history, reloadable, autoload, eager);
+        super(mgr, ev, history, JaveleonModule.isJaveleonPresent || reloadable, autoload, eager);
         this.jar = jar;
         loadManifest();
         parseManifest();
@@ -538,14 +537,6 @@ final class StandardModule extends Module {
         }
     }
     
-    /** Used as a flag to tell if this module was really successfully released.
-     * Currently does not work, so if it cannot be made to work, delete it.
-     * (Someone seems to be holding a strong reference to the classloader--who?!)
-     */
-    private transient boolean released;
-    /** Count which release() call is really being checked. */
-    private transient int releaseCount = 0;
-
     /** Reload this module. Access from ModuleManager.
      * If an exception is thrown, the module is considered
      * to be in an invalid state.
@@ -597,7 +588,7 @@ final class StandardModule extends Module {
                     continue;
                 }
             }
-            ClassLoader l = parent.getClassLoader();
+            ClassLoader l = getParentLoader(parent);
             if (parent.isFixed() && loaders.contains(l)) {
                 Util.err.log(Level.FINE, "#24996: skipping duplicate classloader from {0}", parent);
                 continue;
@@ -627,32 +618,36 @@ final class StandardModule extends Module {
         getManager().refineClassLoader(this, loaders);
         
         try {
-            classloader = new OneModuleClassLoader(classp, loaders.toArray(new ClassLoader[loaders.size()]));
+            classloader = createNewClassLoader(classp, loaders);
         } catch (IllegalArgumentException iae) {
             // Should not happen, but just in case.
             throw (IOException) new IOException(iae.toString()).initCause(iae);
         }
     }
     
+    /** Setup a new module with the given class path and the set of parent
+     * class loaders.
+     */
+    protected ClassLoader createNewClassLoader(List<File> classp, List<ClassLoader> parents) {
+        return new OneModuleClassLoader(classp, parents.toArray(new ClassLoader[parents.size()]));
+    }
+
+    /** Get the class loader of a particular parent module. */
+    protected ClassLoader getParentLoader(Module parent) {
+        return parent.getClassLoader();
+    }
+
     /** Turn off the classloader and release all resources. */
     protected void classLoaderDown() {
         if (classloader instanceof ProxyClassLoader) {
             ((ProxyClassLoader)classloader).destroy();
         }
         classloader = null;
-        Util.err.fine("classLoaderDown on " + this + ": releaseCount=" + releaseCount + " released=" + released);
-        released = false;
     }
     /** Should be called after turning off the classloader of one or more modules & GC'ing. */
     protected void cleanup() {
         if (isEnabled()) throw new IllegalStateException("cleanup on enabled module: " + this); // NOI18N
         if (classloader != null) throw new IllegalStateException("cleanup on module with classloader: " + this); // NOI18N
-        if (! released) {
-            Util.err.fine("Warning: not all resources associated with module " + jar + " were successfully released.");
-            released = true;
-        } else {
-            Util.err.fine("All resources associated with module " + jar + " were successfully released.");
-        }
         // XXX should this rather be done when the classloader is collected?
         destroyPhysicalJar();
     }
@@ -685,7 +680,6 @@ final class StandardModule extends Module {
      * Auto-localizing, multi-parented, permission-granting, the works.
      */
     class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
-        private int rc;
         /** Create a new loader for a module.
          * @param classp the List of all module jars of code directories;
          *      includes the module itself, its locale variants,
@@ -695,7 +689,7 @@ final class StandardModule extends Module {
          */
         public OneModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents, false, StandardModule.this);
-            rc = releaseCount++;
+            JaveleonModule.registerClassLoader(this, getCodeNameBase());
         }
         
         public Module getModule() {
@@ -749,17 +743,5 @@ final class StandardModule extends Module {
         public @Override String toString() {
             return "ModuleCL@" + Integer.toHexString(System.identityHashCode(this)) + "[" + getCodeNameBase() + "]"; // NOI18N
         }
-
-        protected @Override void finalize() throws Throwable {
-            super.finalize();
-            Util.err.fine("Finalize for " + this + ": rc=" + rc + " releaseCount=" + releaseCount + " released=" + released); // NOI18N
-            if (rc == releaseCount) {
-                // Hurrah! release() worked.
-                released = true;
-            } else {
-                Util.err.fine("Now resources for " + getCodeNameBase() + " have been released."); // NOI18N
-            }
-        }
     }
-
 }

@@ -445,6 +445,16 @@ public final class ModuleManager extends Modules {
         }
     }
 
+    /** Only for use with Javeleon modules. */
+    public void replaceJaveleonModule(Module module, Module newModule) {
+        assert newModule instanceof JaveleonModule;
+        modules.remove(module);
+        modulesByName.remove(module.getCodeNameBase());
+        modules.add(newModule);
+        modulesByName.put(newModule.getCodeNameBase(), newModule);
+        invalidateClassLoader();
+    }
+
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
 
@@ -1298,6 +1308,45 @@ public final class ModuleManager extends Modules {
             // else some other dep type
         }
         return true;
+    }
+
+    /** Only for use from Javeleon code. */
+    public List<Module> simulateJaveleonReload(Module moduleToReload) throws IllegalArgumentException {
+        Set<Module> transitiveDependents = new HashSet<Module>(20);
+        addToJaveleonDisableList(transitiveDependents, moduleToReload);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(transitiveDependents, modulesByName, providersOf);
+        try {
+            LinkedList<Module> orderedForEnabling = new LinkedList<Module>();
+            for (Module m : Utilities.topologicalSort(transitiveDependents, deps)) {
+                if (m != moduleToReload) {
+                    orderedForEnabling.addFirst(m);
+                }
+            }
+            return orderedForEnabling;
+        } catch (TopologicalSortException ex) {
+            return new ArrayList<Module>(transitiveDependents);
+        }
+    }
+    private void addToJaveleonDisableList(Set<Module> willDisable, Module m) {
+        if (willDisable.contains(m)) {
+            return;
+        }
+        willDisable.add(m);
+        for (Module other : modules) {
+            if (! other.isEnabled() || willDisable.contains(other)) {
+                continue;
+            }
+            Dependency[] depenencies = other.getDependenciesArray();
+            for (int i = 0; i < depenencies.length; i++) {
+                Dependency dep = depenencies[i];
+                if (dep.getType() == Dependency.TYPE_MODULE) {
+                    if (dep.getName().equals(m.getCodeName())) {
+                        addToDisableList(willDisable, other);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /** Simulate what would happen if a set of modules were to be disabled.

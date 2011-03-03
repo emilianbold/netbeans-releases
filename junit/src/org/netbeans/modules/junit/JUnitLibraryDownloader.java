@@ -42,9 +42,22 @@
 
 package org.netbeans.modules.junit;
 
+import java.awt.event.ActionEvent;
+import org.netbeans.api.options.OptionsDisplayer;
+import javax.swing.JButton;
+import javax.swing.JTextArea;
+import javax.swing.JPanel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.awt.Dialog;
+import java.awt.event.ActionListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import org.openide.DialogDisplayer;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import javax.swing.JScrollPane;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -52,18 +65,46 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
+import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import static org.netbeans.modules.junit.Bundle.*;
 
 /**
  * Defines JUnit 3.x/4.x libraries by downloading their defining modules.
  */
 @ServiceProvider(service=LibraryDefiner.class)
 public class JUnitLibraryDownloader implements LibraryDefiner {
+    private static RequestProcessor RP = new RequestProcessor(JUnitLibraryDownloader.class.getName(), 1);
+    private static final Logger LOG = Logger.getLogger(JUnitLibraryDownloader.class.getName());
 
+    @Messages({
+        "searching_handle=Searching for \"junit\" library on NetBeans plugin portal...",
+        "resolve_title=Resolve \"junit\" Reference Problem",
+        "networkproblem_header=Unable to connect  to the NetBeans plugin portal",
+        "networkproblem_message=Check your proxy settings or try again later. "
+            + "The server may be unavailable at the moment. "
+            + "You may also want to make sure that your firewall is not blocking network traffic. \n\n"
+            + "If you have the missing \"junit\" library, you can resolve the reference "
+            + "problem manually using Library Manager.",
+        "proxy_button=&Proxy Settings...",
+        "library_button=&Library Manager...",
+        "tryagain_button=Try &Again",
+        "nodownload_header=\"junit\" library has not been downloaded",
+        "nodownload_message=You can try to download \"junit\" library again, or \n\n"
+            + "if you have the missing \"junit\" library, you can resolve the reference "
+            + "problem manually using Library Manager."
+    })
+    
     public @Override Callable<Library> missingLibrary(final String name) {
         if (!name.matches("junit(_4)?")) {
             return null;
@@ -74,18 +115,82 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
             }
         };
     }
+    
+    private JButton libraryManager;
+    private JButton tryAgain;
+    private JButton proxySettings;
 
     @SuppressWarnings("SleepWhileInLoop")
     private Library download(String name) throws Exception {
         UpdateUnit unit = findJUnitLib();
         if (unit == null) {
-            // May be first start, when no update lists have yet been downloaded.
-            for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true)) {
-                p.refresh(null, true);
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(searching_handle());
+            initButtons();
+            final DialogDescriptor searching = new DialogDescriptor(searchingPanel(new JLabel(searching_handle()),
+                    ProgressHandleFactory.createProgressComponent(handle)), resolve_title(), true, null);
+            handle.setInitialDelay (0);
+            handle.start ();
+            searching.setOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
+            searching.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
+            final Dialog dlg = DialogDisplayer.getDefault().createDialog(searching);
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    // May be first start, when no update lists have yet been downloaded.
+                    try {
+                        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(true)) {
+                            p.refresh(handle, true);
+                        }
+                        // close searching
+                        dlg.dispose();
+                    } catch (IOException ex) {
+                        Logger.getLogger(JUnitLibraryDownloader.class.getName()).log(Level.FINE, ex.getMessage(), ex);
+                        if (! dlg.isVisible()) {
+                            LOG.fine("dialog not visible => do nothing");
+                            return ;
+                        }
+                        DialogDescriptor networkProblem = new DialogDescriptor(
+                                problemPanel(resolve_title(), networkproblem_message()), // message
+                                networkproblem_header(), // title
+                                true, // modal
+                                null);
+                        networkProblem.setOptions(new Object[] {tryAgain, proxySettings, NotifyDescriptor.CANCEL_OPTION});
+                        networkProblem.setAdditionalOptions(new Object[] {libraryManager});
+                        networkProblem.setClosingOptions(new Object[] {libraryManager, tryAgain, NotifyDescriptor.CANCEL_OPTION});
+                        networkProblem.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+                        Dialog networkProblemDialog = DialogDisplayer.getDefault().createDialog(networkProblem);
+                        networkProblemDialog.setVisible(true);
+                        Object answer = networkProblem.getValue();
+                        if (NotifyDescriptor.CANCEL_OPTION.equals(answer) || answer.equals(-1) /* escape */ ) {
+                            LOG.fine("cancel network problem dialog");
+                            searching.setValue(answer);
+                            dlg.dispose();
+                        } else if (tryAgain.equals(answer)) {
+                            LOG.fine("try again searching");
+                            RP.post(this);
+                        } else if (libraryManager.equals(answer)) {
+                            LOG.fine("open library manager");
+                            searching.setValue(answer);
+                            dlg.dispose();
+                        } else {
+                            assert false : "Unknown " + answer;
+                        }
+                    }
+                }
+            });
+            dlg.setVisible(true);
+            handle.finish();
+            if (NotifyDescriptor.CANCEL_OPTION.equals(searching.getValue()) || searching.getValue().equals(-1) /* escape */) {
+                LOG.fine("user canceled searching JUnit");
+                return showNoDownloadDialog(name);
+            } else if (libraryManager.equals(searching.getValue())) {
+                throw new Exception("user canceled searching");
             }
             unit = findJUnitLib();
             if (unit == null) {
-                throw new Exception("could not find junitlib on any update site");
+                LOG.fine("could not find junitlib on any update site");
+                return showNoDownloadDialog(name);
             }
         }
         List<UpdateElement> updates = unit.getAvailableUpdates();
@@ -101,7 +206,8 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
             oc.add(req);
         }
         if (!PluginManager.openInstallWizard(oc)) {
-            throw new Exception("user canceled update");
+            LOG.fine("user canceled PM");
+            return showNoDownloadDialog(name);
         }
         // XXX new library & build.properties apparently do not show up immediately... how to listen properly?
         for (int i = 0; i < 10; i++) {
@@ -111,7 +217,8 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
             }
             Thread.sleep(1000);
         }
-        throw new Exception("junitlib failed to install properly");
+        LOG.info("junitlib failed to install properly");
+        return showNoDownloadDialog(name);
     }
 
     private UpdateUnit findJUnitLib() throws IOException {
@@ -121,6 +228,125 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
             }
         }
         return null;
+    }
+    
+    private void initButtons() {
+        if (libraryManager != null) {
+            return ;
+        }
+        libraryManager = new JButton();
+        tryAgain = new JButton();
+        proxySettings = new JButton();
+        Mnemonics.setLocalizedText(tryAgain, tryagain_button());
+        Mnemonics.setLocalizedText(libraryManager, library_button());
+        Mnemonics.setLocalizedText(proxySettings, proxy_button());
+        proxySettings.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LOG.fine("show proxy options");
+                OptionsDisplayer.getDefault().open("General"); // NOI18N
+            }
+        });
+    }
+    
+    private Library showNoDownloadDialog(String name) throws Exception {
+        DialogDescriptor networkProblem = new DialogDescriptor(
+                problemPanel(nodownload_header(), nodownload_message()), // message
+                resolve_title(), // title
+                true, // modal
+                null);
+        initButtons();
+        networkProblem.setOptions(new Object[] {tryAgain, NotifyDescriptor.CANCEL_OPTION});
+        networkProblem.setAdditionalOptions(new Object[] {libraryManager});
+        networkProblem.setClosingOptions(new Object[] {libraryManager, tryAgain, NotifyDescriptor.CANCEL_OPTION});
+        networkProblem.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+        Dialog networkProblemDialog = DialogDisplayer.getDefault().createDialog(networkProblem);
+        networkProblemDialog.setVisible(true);
+        Object answer = networkProblem.getValue();
+        if (NotifyDescriptor.CANCEL_OPTION.equals(answer) || answer.equals(-1) /* escape */ ) {
+            LOG.fine("cancel no download dialog");
+            //throw new InterruptedException("user canceled download & install JUnit");
+            return null;
+        } else if (tryAgain.equals(answer)) {
+            LOG.fine("try again download()");
+            return download(name);
+        } else if (libraryManager.equals(answer)) {
+            LOG.fine("open library manager");
+            throw new Exception("junitlib failed/canceled to install properly, open library manager instaed");            
+        } else {
+            assert false : "Unknown " + answer;
+        }
+        assert false : "Unknown " + answer;
+        return null;
+    }
+    
+    private static JPanel searchingPanel(JLabel progressLabel, JComponent progressComponent) {
+        JPanel panel = new JPanel();
+        progressLabel.setLabelFor(progressComponent);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(progressLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(progressComponent, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(96, 96, 96)
+                .addComponent(progressLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressComponent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(109, Short.MAX_VALUE))
+        );
+        return panel;
+    }
+    
+    private static JPanel problemPanel(String header, String message) {
+        JPanel panel = new JPanel();
+        JLabel jLabel1 = new javax.swing.JLabel();
+        JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+        JTextArea jTextArea1 = new javax.swing.JTextArea();
+
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel1.setText(header);
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
+        jTextArea1.setLineWrap(true);
+        jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setRows(5);
+        jTextArea1.setText(message);
+        jTextArea1.setOpaque(false);
+        jScrollPane1.setViewportView(jTextArea1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(107, 107, 107)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                .addGap(82, 82, 82))
+        );
+        return panel;
     }
 
 }

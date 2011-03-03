@@ -119,14 +119,14 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         assertGC("File Object can disappear", ref);
 
         class L extends FileChangeAdapter {
-            int cnt;
-            FileEvent event;
+            volatile int cnt;
+            volatile FileEvent event;
 
             @Override
             public void fileChanged(FileEvent fe) {
-                LOG.log(Level.INFO, "file change {0}", fe.getFile());
                 cnt++;
                 event = fe;
+                LOG.log(Level.INFO, "file change {0} cnt: {1}", new Object[]{fe.getFile(), cnt});
             }
         }
         L listener = new L();

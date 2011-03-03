@@ -665,7 +665,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                     e,
                     "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, getDocumentInternalErrorMsg(), e);
+            LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
                     "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");

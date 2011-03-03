@@ -354,7 +354,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     }
 
     @Override
-    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException {
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         Repository repository = gitRepository.getRepository();
         MergeCommand cmd = new MergeCommand(repository, revision, monitor);
         cmd.execute();

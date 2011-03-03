@@ -48,6 +48,9 @@ import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTree;
@@ -59,7 +62,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  * Tests for class BeanTreeViewTest
@@ -76,6 +78,13 @@ public class BeanTreeViewTest extends NbTestCase {
         super(name);
     }
     
+    public void testOnlyChildRemoveCausesSelectionOfParent() throws Throwable {
+        ExplorerManager em = doChildRemovalTest("one", "one");
+        final List<Node> arr = Arrays.asList(em.getSelectedNodes());
+        assertEquals("One selected: " + arr, 1, arr.size());
+        assertEquals("Root selected", em.getRootContext(), arr.get(0));
+    }
+    
     public void testFirstChildRemovalCausesSelectionOfSibling() throws Throwable {
         doChildRemovalTest("foo");
     }
@@ -89,15 +98,20 @@ public class BeanTreeViewTest extends NbTestCase {
     private static Object holder;
     
     private void doChildRemovalTest(final String name) throws Throwable {
+        doChildRemovalTest(name, "foo", "bar", "bla");
+    }
+    private ExplorerManager doChildRemovalTest(final String name, final String... childrenNames) throws Throwable {
 
         class AWTTst implements Runnable {
-
             AbstractNode root = new AbstractNode(new Children.Array());
-            Node[] children = {
-                createLeaf("foo"),
-                createLeaf("bar"),
-                createLeaf("bla")
-            };
+            Node[] children;
+            {
+                List<Node> arr = new ArrayList<Node>();
+                for (String s : childrenNames) {
+                    arr.add(createLeaf(s));
+                }
+                children = arr.toArray(new Node[0]);
+            }
             Panel p = new Panel();
             BeanTreeView btv = new BeanTreeView();
             JFrame f = new JFrame();
@@ -109,11 +123,12 @@ public class BeanTreeViewTest extends NbTestCase {
                 root.getChildren().add(children);
                 p.getExplorerManager().setRootContext(root);
                 p.add(BorderLayout.CENTER, btv);
-                f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 f.getContentPane().add(BorderLayout.CENTER, p);
                 f.setVisible(true);
             }
 
+            @Override
             public void run() {
 
                 for (int i = 0;; i++) {
@@ -156,6 +171,7 @@ public class BeanTreeViewTest extends NbTestCase {
             throw ex.getTargetException();
         }
         awt.tryGc();
+        return awt.p.getExplorerManager();
     }
     
     public void testVisibleVisNodesAreNotGCed() throws InterruptedException, Throwable {

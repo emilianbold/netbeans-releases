@@ -1,22 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-The contents of this file are subject to the terms of the Common Development
-and Distribution License (the License). You may not use this file except in
-compliance with the License.
-
-You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-or http://www.netbeans.org/cddl.txt.
-
-When distributing Covered Code, include this CDDL Header Notice in each file
-and include the License file at http://www.netbeans.org/cddl.txt.
-If applicable, add the following below the CDDL Header, with the fields
-enclosed by brackets [] replaced by your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
-Microsystems, Inc. All Rights Reserved.
--->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
@@ -47,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+   Provides an API and SPI for accessing native keyrings, used for securely storing passwords.
   </p>
  </answer>
 
@@ -330,7 +312,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   JNA is used for native integration with Windows, GNOME, Solaris, and Mac OS X; an external process for KDE.
   </p>
  </answer>
 
@@ -418,9 +400,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="deploy-packages">
-  <p>
-   XXX no answer for deploy-packages
-  </p>
+     <api category="official" group="java" type="export" name="Keyring-API">
+         Other modules can access the keyring, or add implementations.
+     </api>
  </answer>
 
 
@@ -580,67 +562,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-      <api name="org.netbeans.log.startup" category="friend" group="systemproperty" type="export">
-          <p>
-          If started with <code>-J-Dorg.netbeans.log.startup=print</code> parameter, then
-          times of various start operations are printed to console. If the value is
-          <code>-J-Dorg.netbeans.log.startup=file</code> then the values are printed into
-          file specified by <code>-J-Dorg.netbeans.log.startup.logfile=filename</code>.
-          </p>
-          
-          <p>
-          Moreover if any module logs data to <code>Logger.getLogger("org.netbeans.log.startup")</code>
-          with calls like <code>log(Level.FINE, "start", "msg")</code> and
-          <code>log(Level.FINE, "end", "msg")</code> or
-          <code>log(Level.FINE, "progress", "msg")</code>, then these messages
-          are collected into the start log as well.
-          </p>
-      </api>
-      <api name="netbeans.logger.noSystem" category="friend" group="systemproperty" type="export">
-          Allows unit tests to prevent changes to <code>System.err</code> and
-          <code>System.out</code> by the logging infrastructure.
-      </api>
-      <api name="org.netbeans.core.startup.ModuleList.firstModuleJarWins" category="friend" group="systemproperty" type="export">
-          Disables #113341 so that the first version of a module JAR to be encountered is loaded,
-          even if a later cluster contains a newer version of the same module.
-      </api>
-      <api name="org.netbeans.core.systemfilesystem.custom" category="devel" group="systemproperty" type="export">
-          <p>
-          This property can contain name of a class implementing 
-          <a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html">FileSystem</a>
-          with a public default constructor. Such filesystem is then used during
-          initialization of writable layer of system file system (see 
-          <a href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#getConfigRoot()">getConfigRoot</a>).
-          The filesystem may use or may ignore value of 
-          <code>System.getProperty("netbeans.user")</code>.
-          </p>
-          <p>
-          <em>Note:</em> The class is loaded sooner then modules are initialized,
-          as such the class providing it must be from a JAR file placed in
-          to <code>$cluster/core/</code> directory. Such JAR may have just a
-          limited dependencies - e.g. only module system and filesystem API.
-          </p>
-      </api>
-      <api name="netbeans.bootdelegation" category="devel" group="systemproperty" type="export">
-          <p>
-          Similar to OSGi's <code>org.osgi.framework.bootdelegation</code> property.
-          Allows unit tests (or even regular code) to prevent classloading from
-          application classloader for other, then explicitly enumerated packages.
-          </p>
-          <p>
-          This property shall contain a set of comma separated values of 
-          package names. Classes from those packages will be loaded by the 
-          classloader framework from application classloader. If the name of
-          a package ends with <code>.*</code> suffix, all packages under the
-          given package name are allowed for delegation (but not the package by itself).
-          </p>
-          <p>
-          The classes from the <code>java.*</code> namespace are allowed
-          and do not need to be enumerated at all. If this property is not
-          specified at all, all classes visible by the application classloader
-          can be accessed. Available since version 1.26.
-          </p>
-      </api>
+   XXX no answer for exec-property
   </p>
  </answer>
 
@@ -657,9 +579,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-reflection">
-        <api category="friend" group="java" name="Javeleon" type="import" url="https://netbeans.org/bugzilla/show_bug.cgi?id=195074">
-            <p>When present as a Java agent on the boot classpath, Javeleon is invoked reflectively to enhance module reloading.</p>
-        </api>
+  <p>
+   XXX no answer for exec-reflection
+  </p>
  </answer>
 
 
@@ -800,7 +722,7 @@ Microsystems, Inc. All Rights Reserved.
         <question id="lookup-register" when="final">
             Do you register anything into lookup for other code to find?
             <hint>
-            Do you register using layer file or using <code>META-INF/services</code>?
+            Do you register using layer file or using a declarative annotation such as <code>@ServiceProvider</code>?
             Who is supposed to find your component?
             </hint>
         </question>

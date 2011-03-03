@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.snaptracer.impl;
-
-import java.io.IOException;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
- *
- * @author Tomas Hurka
+ * Service provider interface for adding native keyring implementations.
  */
-public class NpssDataObject extends MultiDataObject implements OpenCookie {
-
-    public NpssDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-
-    }
-
-    @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
-
-    @Override
-    public void open() {
-        IdeSnapshot snapshot;
-        FileObject primary = getPrimaryFile();
-        FileObject uigestureFO = primary.getParent().getFileObject(primary.getName(), "log");
-        
-        try {
-            snapshot = new IdeSnapshot(primary, uigestureFO);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        IdeSnapshotAction.openSnapshot(snapshot);
-    }
-}
+package org.netbeans.spi.keyring;
