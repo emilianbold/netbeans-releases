@@ -175,15 +175,11 @@ public final class H2DataStorage extends SQLDataStorage {
     @Override
     public boolean shutdown() {
         //do not remove if it is persistent
-        if (isPersistent) {
-            return true;
-        }
-
         boolean result = super.shutdown();
-        //do nor remove if it is persistent, but close the connection
-        if (isPersistent){
+        if (isPersistent) {
             return result;
-        }        
+        }
+          
         //find current DB folder we are placing H2 database files
         final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1); // NOI18N
         result = result && Util.deleteLocalDirectory(new File(folderToDelete));
