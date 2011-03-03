@@ -88,9 +88,7 @@ class JaveleonModuleReloader {
     }
 
     boolean reloadJaveleonModule(File jar, ModuleManager mgr, NbInstaller installer, Events ev) throws IOException {
-        try {
-            JaveleonModule.javeleonReloadMethod.invoke(null);
-        } catch (Exception ex) {
+        if (!JaveleonModule.incrementGlobalId()) {
             // oops, we shouldn't end up in here, since Javeleon was
             // supposed to be present given the above test succeeeded!
             // Oh well, just fall back to normal reload operation then

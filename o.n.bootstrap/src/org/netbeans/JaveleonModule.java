@@ -48,6 +48,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,50 +57,51 @@ import java.util.Set;
  */
 public final class JaveleonModule extends StandardModule {
 
+    private static final Logger LOG = Logger.getLogger(JaveleonModule.class.getName());
+
     public static final boolean isJaveleonPresent;
-
+    private static final Method incrementGlobalId;
+    private static final Method registerClassLoader;
     static {
-        boolean present = false;
+        Method _incrementGlobalId = null;
+        Method _registerClassLoader = null;
         try {
-            Class.forName("org.javeleon.reload.ReloadFacade");
-            present = true;
-        } catch (ClassNotFoundException ex) {
+            _incrementGlobalId = Class.forName("org.javeleon.reload.ReloadModule").getDeclaredMethod("incrementGlobalId");
+            _registerClassLoader = Class.forName("org.javeleon.reload.ReloadFacade").getDeclaredMethod("registerClassLoader", ClassLoader.class, String.class);
+        } catch (ClassNotFoundException x) {
             // Javeleon was not present... nothing to do then!
+        } catch (Exception x) {
+            LOG.log(Level.INFO, "Could not load Javeleon integration", x);
         }
-        isJaveleonPresent = present;
+        isJaveleonPresent = _incrementGlobalId != null && _registerClassLoader != null;
+        incrementGlobalId = _incrementGlobalId;
+        registerClassLoader = _registerClassLoader;
     }
 
-    public static final Method javeleonReloadMethod;
-
-    static {
-        Method m = null;
-        if (JaveleonModule.isJaveleonPresent) {
-            try {
-                m = Class.forName("org.javeleon.reload.ReloadModule").getDeclaredMethod("incrementGlobalId");
-            } catch (Exception ex) {
-               // No worries, javeleon is just not enabled
-            }
+    public static boolean incrementGlobalId() {
+        assert isJaveleonPresent;
+        try {
+            incrementGlobalId.invoke(null);
+            return true;
+        } catch (Exception x) {
+            LOG.log(Level.INFO, "Could not reload", x);
+            return false;
         }
-        javeleonReloadMethod = m;
     }
 
-     /** Used to reflectively register a class loader to the Javeleon
-     * runtime system. Invocation of this method must always be guarded
-     * by JaveleonModule.isJaveleonPresent.
+
+    /**
+     * Registers a module class loader according to module CNB.
+     * No-op if {@link #isJaveleonPresent} is false (no need to guard).
      */
-    public static final Method javeleonFacadeMethod;
-
-    /** Setup the javeleonFacadeMethod in case of a Javeleon run. */
-    static {
-        Method m = null;
-        if(JaveleonModule.isJaveleonPresent) {
+    static void registerClassLoader(ClassLoader loader, String codeNameBase) {
+        if (isJaveleonPresent) {
             try {
-                m = Class.forName("org.javeleon.reload.ReloadFacade").getDeclaredMethod("registerClassLoader", ClassLoader.class, String.class);
-            } catch (Exception ex) {
-                // Javeleon was not present... nothing to do then!
+                registerClassLoader.invoke(null, loader, codeNameBase);
+            } catch (Exception x) {
+                LOG.log(Level.INFO, "Could not register " + codeNameBase, x);
             }
         }
-        javeleonFacadeMethod = m;
     }
 
     private static HashMap<String,ClassLoader> currentClassLoaders = new HashMap<String, ClassLoader>();
