@@ -172,11 +172,14 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         return new CompoundComparator();
     }
 
-     /** This method marks this column as sorted. Value 0 of the parameter rank
-     * means that this column is not sorted.
-      * @param etc column in ETable column model
-      * @param ascending true means ascending
-      * @param newRank value 1 means that this is the most important sorted
+    /** This method marks this column as sorted. Value 0 of the parameter rank
+     * means that this column is not sorted. <p>
+     * This method does not refresh the table UI.
+     * Use {@link ETable#setColumnSorted(int, boolean, int)} instead when the UI
+     * should be changed accordingly.
+     * @param etc column in ETable column model
+     * @param ascending true means ascending
+     * @param newRank value 1 means that this is the most important sorted
      *        column, number 2 means second etc.
      * @since 1.3
      */
@@ -196,7 +199,9 @@ public class ETableColumnModel extends DefaultTableColumnModel {
          } else {
             etc.setSorted(newRank, ascending);
          }
-         sortedColumns.add(newRank-1, etc);
+         if (newRank > 0) {
+            sortedColumns.add(newRank-1, etc);
+         }
     }
     
     /**
