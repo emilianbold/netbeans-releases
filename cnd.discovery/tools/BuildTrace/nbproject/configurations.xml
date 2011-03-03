@@ -35,12 +35,9 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>6</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -52,12 +49,9 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>6</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -69,12 +63,9 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>6</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -86,12 +77,9 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>6</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
@@ -103,8 +91,6 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>5</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
         <linkerTool>
@@ -123,12 +109,9 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>5</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
           <linkerLibItems>
             <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>

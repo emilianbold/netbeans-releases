@@ -88,24 +88,23 @@ static int init() {
         return interpose_init;
     }
 
-    char* env_map = getenv("__CND_TOOLS__");
-    env_log = getenv("__CND_BUILD_LOG__");
-
-    if (env_map == NULL) {
+    char* map = getenv("__CND_TOOLS__");
+    if (map == NULL) {
         LOG("\n>>>ERROR: __CND_TOOLS__ is not set!!!\n");
         return interpose_init = -1;
     }
-    if (env_log == NULL) {
+
+    char* log = getenv("__CND_BUILD_LOG__");
+    if (log == NULL) {
         LOG("\n>>>ERROR: __CND_BUILD_LOG__ is not set!!!\n");
         return interpose_init = -1;
     }
+    LOG("\n>>>NBBUILD: TOOLS=%s\n\tLOG=%s\n", map, log);
 
-    LOG("\n>>>NBBUILD: TOOLS=%s\n\tLOG=%s\n", env_map, env_log);
-    env_log = strdup(env_log);
-
+    env_log = strdup(log);
+    char* env_map = strdup(map);
     char * token;
     int i = 0;
-    env_map = strdup(env_map);
     for (token = strtok(env_map, ":");
             token;
             token = strtok(NULL, ":")) {
@@ -205,15 +204,19 @@ static void __logprint(const char* fname, char *const argv[], ...) {
 #define ENV , arg, env
 
 #define INSTRUMENT(func, param, actual) \
-int func (const char * p param) { \
+int func (const char * p_original param) { \
     int prev_errno = errno; \
+    char * p = strdup(p_original); \
     static int (* ORIG(func))(const char* p param) = NULL; \
     INIT(func); \
     LOG(">>>EXECINT: %s called. PATH=%s\n", QUOTE(func), p); \
     __logprint(p actual); \
     errno = prev_errno; \
     int ret = ORIG(func) (p actual); \
+    prev_errno = errno; \
     LOG(">>>EXECINT: %s  returned\n", QUOTE(func)); \
+    free(p); \
+    errno = prev_errno; \
     return ret; \
 }
 
