@@ -70,17 +70,16 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.html.editor.HtmlErrorFilter;
 import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
 
 /**
  *
@@ -220,8 +219,7 @@ public class HtmlHintsProvider implements HintsProvider {
                             e.getFile(),
                             new OffsetRange(from, to),
                             fixes,
-                            20,
-                            e);
+                            20);
 
                     hints.add(h);
             }
@@ -407,21 +405,7 @@ public class HtmlHintsProvider implements HintsProvider {
             return severity;
         }
     }
-    static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
-
-    private static boolean isErrorCheckingEnabled(SyntaxAnalyzerResult result) {
-        return !isErrorCheckingDisabledForFile(result) && isErrorCheckingEnabledForMimetype(result);
-    }
-
-    private static boolean isErrorCheckingDisabledForFile(SyntaxAnalyzerResult result) {
-        FileObject fo = result.getSource().getSourceFileObject();
-        return fo != null && fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) != null;
-    }
-
-    private static boolean isErrorCheckingEnabledForMimetype(SyntaxAnalyzerResult result) {
-        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(getWebPageMimeType(result));
-    }
-
+   
     private static final class DisableErrorChecksFix implements HintFix {
 
         private Snapshot snapshot;
@@ -517,7 +501,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         protected String getMimeType() {
-            return getWebPageMimeType(result);
+            return HtmlErrorFilter.getWebPageMimeType(result);
         }
 
         protected Snapshot getSnapshot() {
@@ -526,36 +510,7 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
-    //and now the magic...
-    //the method returns an artificial mimetype so the user can enable/disable the error checks
-    //for particular content. For example the text/facelets+xhtml mimetype is returned for
-    //.xhtml pages with facelets content. This allows to normally verify the plain xhtml file
-    //even if their mimetype is text/html
-    //sure the correct solution would be to let the mimeresolver to create different mimetype,
-    //but since the resolution can be pretty complex it is not done this way
-    private static String getWebPageMimeType(SyntaxAnalyzerResult result) {
-        InstanceContent ic = new InstanceContent();
-        ic.add(result);
-        WebPageMetadata wpmeta = WebPageMetadata.getMetadata(new AbstractLookup(ic));
-
-        if (wpmeta != null) {
-            //get an artificial mimetype for the web page, this doesn't have to be equal
-            //to the fileObjects mimetype.
-            String mimeType = (String) wpmeta.value(WebPageMetadata.MIMETYPE);
-            if (mimeType != null) {
-                return mimeType;
-            }
-        }
-
-        FileObject fo = result.getSource().getSourceFileObject();
-        if(fo != null) {
-            return fo.getMIMEType();
-        } else {
-            //no fileobject?
-            return result.getSource().getSnapshot().getMimeType();
-        }
-
-    }
+    
 
     private static final class DisableErrorChecksForMimetypeFix extends AbstractErrorChecksForMimetypeFix {
 
