@@ -58,6 +58,8 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
         this.p = p;
         exceptions.setSelected(ErrorFixesFakeHint.isUseExceptions());
         logger.setSelected(ErrorFixesFakeHint.isUseLogger());
+        rethrowRuntime.setSelected(ErrorFixesFakeHint.isRethrowAsRuntimeException());
+        rethrow.setSelected(ErrorFixesFakeHint.isRethrow());
     }
 
     /** This method is called from within the constructor to
@@ -73,6 +75,8 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
         logger = new javax.swing.JCheckBox();
         printStackTrace = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        rethrowRuntime = new javax.swing.JCheckBox();
+        rethrow = new javax.swing.JCheckBox();
 
         exceptions.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(exceptions, org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.exceptions.text")); // NOI18N
@@ -96,21 +100,37 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.jLabel1.text")); // NOI18N
 
+        rethrowRuntime.setText(org.openide.util.NbBundle.getMessage(SurroundWithTryCatchLog.class, "SurroundWithTryCatchLog.rethrowRuntime.text")); // NOI18N
+        rethrowRuntime.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rethrowRuntimeActionPerformed(evt);
+            }
+        });
+
+        rethrow.setText(org.openide.util.NbBundle.getMessage(SurroundWithTryCatchLog.class, "SurroundWithTryCatchLog.rethrow.text")); // NOI18N
+        rethrow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rethrowActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(logger)
                             .addComponent(exceptions)
+                            .addComponent(rethrowRuntime)
+                            .addComponent(rethrow)
                             .addComponent(printStackTrace))))
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addContainerGap(57, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -122,8 +142,12 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(logger)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rethrowRuntime)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rethrow)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(printStackTrace)
-                .addContainerGap(188, Short.MAX_VALUE))
+                .addContainerGap(134, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -135,12 +159,22 @@ private void exceptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     ErrorFixesFakeHint.setUseExceptions(p, exceptions.isSelected());
 }//GEN-LAST:event_exceptionsActionPerformed
 
+private void rethrowRuntimeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rethrowRuntimeActionPerformed
+    ErrorFixesFakeHint.setRethrowAsRuntimeException(p, rethrowRuntime.isSelected());
+}//GEN-LAST:event_rethrowRuntimeActionPerformed
+
+private void rethrowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rethrowActionPerformed
+    ErrorFixesFakeHint.setRethrow(p, rethrow.isSelected());
+}//GEN-LAST:event_rethrowActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox exceptions;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox logger;
     private javax.swing.JCheckBox printStackTrace;
+    private javax.swing.JCheckBox rethrow;
+    private javax.swing.JCheckBox rethrowRuntime;
     // End of variables declaration//GEN-END:variables
 
 }
