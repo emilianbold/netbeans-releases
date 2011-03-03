@@ -44,13 +44,13 @@ package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -78,7 +78,7 @@ import org.xml.sax.SAXException;
  * @author Alexander Simon
  * @author Vladimir Kvashin
  */
-public class OpenRemoteProjectAction extends AbstractAction {
+public class OpenRemoteProjectAction implements ActionListener {
 
     private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     
@@ -105,6 +105,7 @@ public class OpenRemoteProjectAction extends AbstractAction {
                     NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.text"), 
                     NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectNoHost.title"), 
                     JOptionPane.ERROR_MESSAGE);
+            return;
         }
 //        if (record.isOffline()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
@@ -189,18 +190,6 @@ public class OpenRemoteProjectAction extends AbstractAction {
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-
-    @Override
-    public boolean isEnabled() {
-        Collection<? extends org.netbeans.modules.cnd.api.remote.ServerRecord> records = ServerList.getRecords();
-        for(ServerRecord record : records) {
-            if (record.isRemote()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static final class MyFileView extends FileView {
