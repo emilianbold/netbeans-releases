@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2007, 2011 Oracle and/or its affiliatesc. All rights reserved.
  -->
 <html>
 <head>
@@ -66,7 +65,7 @@ folder in the NetBeans
 installation directory
 into the <tt>etc</tt> directory in your NetBeans user directory (<tt>$HOME/.netbeans/6.9/etc</tt>).
 You might need to create the <tt>etc</tt> directory.
-</li><br>
+</li>
 <li>In the <tt>netbeans.conf</tt> file in your user
 directory, add the <tt>-J-Xmx</tt>
 command line Java startup switch (bolded below) in the <tt>netbeans.conf</tt> file.
@@ -78,11 +77,10 @@ netbeans_default_options="-J-Xms32m <b>-J-Xmx2g</b> -J-XX:PermSize=32m
 </pre></li>
 <li>Restart the IDE.</li>
 </ol>
-
-<ul class="note">To insure that you do not run out of memory while the built-in parser is
+<p>To insure that you do not run out of memory while the built-in parser is
 running, you can also add the garbage collector switches <tt>-J-XX:+UseConcMarkSweepGC</tt>
 (concurrent collector) and <tt>-J-XX:+UseParNewGC</tt> (parallel collector) to the 
-<tt>netbeans.conf</tt> file.</ul>
+<tt>netbeans.conf</tt> file.</p>
 <hr>
 <small>
 <a href="../credits.html">Legal Notices</a></small>

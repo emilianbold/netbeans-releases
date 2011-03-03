@@ -82,7 +82,10 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
         b.setOpaque(false);
         b.setFocusable(false);
         b.setBorderPainted(true);
-        b.setBorder( BorderFactory.createEmptyBorder(6,2,2,2) );
+        if( isMainToolbarButtonUI )
+            b.setBorder( BorderFactory.createEmptyBorder(1,2,1,2) );
+        else
+            b.setBorder( BorderFactory.createEmptyBorder(6,2,2,2) );
         b.setRolloverEnabled(isMainToolbarButtonUI);
    }
 

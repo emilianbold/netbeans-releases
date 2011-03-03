@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -51,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,10 +60,15 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
  *  You can use the storage to store any information which should be persistent for the session
@@ -73,20 +80,43 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
     private static final Logger logger = DLightLogger.getLogger(DLightSessionServiceInfoStorage.class);
     static String DLIGHT_SERVICE_INFO_H2_DATABASE_URL;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+    String dbURL;
+    static {
+        String tempDir = null;
+        try {
+            HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+            tempDir = hi.getTempDir();
+            if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                tempDir = WindowsSupport.getInstance().convertToWindowsPath(tempDir);
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
 
+        if (tempDir == null || tempDir.trim().equals("")) {// NOI18N
+            tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
+        }
+        if (System.getProperty("dlight.storages.host.url") != null) {
+            DLIGHT_SERVICE_INFO_H2_DATABASE_URL = System.getProperty("dlight.storages.host.url");
+        } else if (PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_HOST != null) {
+            String host = PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_HOST;
+            String analytics_serviceinfo_folder = System.getProperty("dlight.storages.host.folder", "/export/home/analytics");
+            DLIGHT_SERVICE_INFO_H2_DATABASE_URL = "jdbc:h2:tcp://" + host + analytics_serviceinfo_folder;
+        } else {
 
+            DLIGHT_SERVICE_INFO_H2_DATABASE_URL = "jdbc:h2:" + tempDir + "/service_info_h2_db_dlight"; // NOI18N
+        }
+    }
     public static final DataTableMetadata.Column ID_COLUMN =
             new DataTableMetadata.Column("id", Integer.class); // NOI18N
     public static final DataTableMetadata.Column SERVICE_INFO_NAME =
             new DataTableMetadata.Column("name", String.class); // NOI18N
     public static final DataTableMetadata.Column SERVICE_INFO_VALUE =
             new DataTableMetadata.Column("value", String.class); // NOI18N
-
     public static final DataTableMetadata SERVICE_INFO_TABLE = new DataTableMetadata(
             "ServiceInfo", // NOI18N
             Arrays.asList(ID_COLUMN, SERVICE_INFO_NAME, SERVICE_INFO_VALUE),
             null);
-
     private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
 
     static {
@@ -99,7 +129,8 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
     }
 
     DLightSessionServiceInfoStorage(String storageUniq) {
-        super(DLIGHT_SERVICE_INFO_H2_DATABASE_URL);
+        super(DLIGHT_SERVICE_INFO_H2_DATABASE_URL + storageUniq + ";FILE_LOCK=NO"); // NOI18N
+        dbURL = storageUniq;
     }
 
     @Override
@@ -144,6 +175,28 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
     @Override
     protected final Connection doConnect() throws SQLException {
         return DriverManager.getConnection(getDbURL(), "admin", ""); // NOI18N
+    }
+
+    @Override
+    protected void postConnectInit() {
+        super.postConnectInit();
+        loadSchema();
+        initTables();
+    }
+
+    private void initTables() {
+        //all tables should be created if there are no needed tables
+        //create list of names
+        DataTableMetadata[] requiredTables = new DataTableMetadata[]{SERVICE_INFO_TABLE};
+        List<String> existingTables = new ArrayList<String>();
+        for (DataTableMetadata table : tables.values()) {
+            existingTables.add(table.getName().toLowerCase());
+        }
+        for (DataTableMetadata table : requiredTables) {
+            if (!existingTables.contains(table.getName().toLowerCase())) {
+                createTable(table);
+            }
+        }
     }
 
     @Override

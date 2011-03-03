@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSessionServiceInfoStorageFactory;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
@@ -103,6 +104,10 @@ public final class DataStorageManager {
         }
         String storageUniqueKey = DLightSessionAccessor.getDefault().getSharedStorageUniqueKey(session);
         if (storageUniqueKey != null) {
+            ServiceInfoDataStorage serviceInfoStorage = serviceInfoStorages.get(storageUniqueKey);
+            if (serviceInfoStorage != null && serviceInfoStorage instanceof DataStorage){
+                ((DataStorage)serviceInfoStorage).shutdown();
+            }
             List<DLightSession> sessions = sharedStoragesSessions.get(storageUniqueKey);
             if (sessions != null && sessions.contains(session)) {
                 sessions.remove(session);
@@ -149,7 +154,7 @@ public final class DataStorageManager {
         }
         ServiceInfoDataStorage result = serviceInfoStorages.get(uniqueKey);
         if (result == null) {
-            result = new ServiceInfoDataStorageImpl();
+            result = (new DLightSessionServiceInfoStorageFactory()).openStorage(uniqueKey);
             serviceInfoStorages.put(uniqueKey, result);
         }
         return result;
