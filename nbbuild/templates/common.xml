@@ -994,6 +994,7 @@ made subject to such option by the copyright holder.
         <delete includeemptydirs="true" failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->
             <fileset dir="${cluster}">
                 <patternset refid="module.files"/>
+                <exclude name="config/Modules/${code.name.base.dashes}.xml" if="${do.not.clean.module.config.xml}"/>
             </fileset>
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>

@@ -242,13 +242,13 @@ public class ConvertToARM {
             if (isSupportedSourceLevel(ctx.getInfo().getFileObject())  && (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType())))) {
                 final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
                 final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
-                if (!stms.isEmpty()) {
+                final Trees trees = ctx.getInfo().getTrees();
+                final VariableElement resElement = (VariableElement) trees.getElement(varVar);
+                if (!stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
                     final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
-                    final Trees trees = ctx.getInfo().getTrees();
-                    final VariableElement resElement = (VariableElement) trees.getElement(varVar);
                     final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
                     final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
-                    if (!hasNonCleanUpUsages(usages, cleanUpStatements)) {
+                    if (!hasNonCleanUpUsages(usages, cleanUpStatements) && !splitVariablesClash(stms, tail, trees)) {
                         result.add(ErrorDescriptionFactory.forName(
                             ctx,
                             varVar,
@@ -272,7 +272,7 @@ public class ConvertToARM {
         }
         return Collections.unmodifiableList(result);
     }
-    
+
     private static final class ConvertToARMFix extends JavaFix {
         
         private final NestingKind nestingKind;
@@ -659,6 +659,70 @@ public class ConvertToARM {
             cleanupStatements.add(parentParent);
         }
         return false;
+    }
+
+    private static boolean isAssigned(
+            final Element what,
+            final Iterable<? extends TreePath> where,
+            final Trees trees) {
+        TreePathScanner<Boolean, Void> scanner = new TreePathScanner<Boolean, Void>() {
+            @Override public Boolean visitAssignment(AssignmentTree node, Void p) {
+                if (trees.getElement(new TreePath(getCurrentPath(), node.getVariable())) == what) {
+                    return true;
+                }
+                return super.visitAssignment(node, p);
+            }
+            @Override
+            public Boolean reduce(Boolean r1, Boolean r2) {
+                return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+            }
+        };
+        
+        for (TreePath usage : where) {
+            if (scanner.scan(usage, null) == Boolean.TRUE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean splitVariablesClash(
+            final Collection<? extends TreePath> statementsPaths,
+            final Collection<? extends TreePath> tail,
+            final Trees trees) {
+        if (tail == null || tail.isEmpty()) return false;
+        
+        List<StatementTree> statements = new ArrayList<StatementTree>(statementsPaths.size());
+
+        for (TreePath tp : statementsPaths) {
+            statements.add((StatementTree) tp.getLeaf());
+        }
+
+        final Set<VariableTree> usedAfterCloseVarDecls = new HashSet<VariableTree>(findVarsUsages(
+                findVariableDecls(statements, statementsPaths.isEmpty()? null : statementsPaths.iterator().next().getParentPath().getLeaf()),
+                ConvertToARMFix.<StatementTree>asList(tail),
+                tail.iterator().next().getCompilationUnit(),
+                trees));
+
+        final Set<String> usedAfterCloseVarNames = new HashSet<String>();
+
+        for (VariableTree vt : usedAfterCloseVarDecls) {
+            usedAfterCloseVarNames.add(vt.getName().toString());
+        }
+        
+        TreeScanner<Boolean, Void> scanner = new TreeScanner<Boolean, Void>() {
+            @Override public Boolean visitVariable(VariableTree node, Void p) {
+                if (usedAfterCloseVarNames.contains(node.getName().toString()) && !usedAfterCloseVarDecls.contains(node)) {
+                    return true;
+                }
+                return super.visitVariable(node, p);
+            }
+            @Override public Boolean reduce(Boolean r1, Boolean r2) {
+                return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+            }
+        };
+
+        return scanner.scan(statements, null) == Boolean.TRUE;
     }
 
     private static boolean isSupportedSourceLevel(final FileObject file) {
