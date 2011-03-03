@@ -59,7 +59,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -97,6 +96,8 @@ public class ShadowProjectSynchronizer {
     
     public void updateRemoteProject() throws IOException, SAXException {
         FileObject localNbprojectFO = localProject.getFileObject("nbproject"); // NOI18N
+        FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
+        remoteNbprojectFO.refresh();
         copy(localNbprojectFO, remoteProject, "nbproject"); //NOI18N
         updateRemoteProjectXml();
         updateRemoteConfiguration();
@@ -267,7 +268,16 @@ public class ShadowProjectSynchronizer {
             fo = null;
         }
         if (fo == null || ! fo.isValid()) {
-            fo = folder ? dstParent.createFolder(name) : dstParent.createData(name);
+            try {
+                fo = folder ? dstParent.createFolder(name) : dstParent.createData(name);
+            } catch (IOException ex) {
+                dstParent.refresh();
+                // it might happen that it has been already created; check this
+                fo = dstParent.getFileObject(name);
+                if (fo == null || ! fo.isValid() && (fo.isFolder() != folder)) {
+                    throw ex;
+                }
+            }
         }
         if (fo == null || ! fo.isValid()) {
             throw new IIOException("Can not create " + (folder ? "folder " : "file ") + name + " in " + dstParent); //NOI18N

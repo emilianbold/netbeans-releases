@@ -56,8 +56,7 @@ import org.openide.util.CharSequences;
  * that are based on (project, file) pair
  */
 
-/*package*/
-abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
+/*package*/ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     protected static final CharSequence NO_PROJECT = CharSequences.create("<No Project Name>"); // NOI18N
 
     protected final int fileNameIndex;
