@@ -2115,19 +2115,34 @@ public class Installer extends ModuleInstall implements Runnable {
 
         private void showProfilerSnapshot(ActionEvent e){
              File tempFile = null;
-             try {
-                tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
-                tempFile = FileUtil.normalizeFile(tempFile);
-                OutputStream os = new FileOutputStream(tempFile);
-                os.write(slownData.getNpsContent());
-                os.close();
-                FileObject fo = FileUtil.toFileObject(tempFile);
-                final Node obj = DataObject.find(fo).getNodeDelegate();
-                Action a = obj.getPreferredAction();
-                if (a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
-                }
-                a.actionPerformed(e);
+             try { 
+                 tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
+                 tempFile = FileUtil.normalizeFile(tempFile);
+                 OutputStream os = new FileOutputStream(tempFile);
+                 os.write(slownData.getNpsContent());
+                 os.close();
+
+                 File gestures = new File(new File(new File(
+                         new File(System.getProperty("netbeans.user")), // NOI18N
+                         "var"), "log"), "uigestures"); // NOI18N
+
+                 SelfSampleVFS fs;
+                 if (gestures.exists()) {
+                     fs = new SelfSampleVFS(
+                             new String[]{"selfsampler.npss", "selfsampler.log"},
+                             new File[]{tempFile, gestures});
+                 } else {
+                     fs = new SelfSampleVFS(
+                             new String[]{"selfsampler.npss"},
+                             new File[]{tempFile});
+                 }
+                 FileObject fo = fs.findResource("selfsampler.npss");
+                 final Node obj = DataObject.find(fo).getNodeDelegate();
+                 Action a = obj.getPreferredAction();
+                 if (a instanceof ContextAwareAction) {
+                     a = ((ContextAwareAction)a).createContextAwareInstance(obj.getLookup());
+                 }
+                 a.actionPerformed(e);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {

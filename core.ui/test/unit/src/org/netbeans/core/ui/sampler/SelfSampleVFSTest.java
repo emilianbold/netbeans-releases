@@ -37,55 +37,66 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.snaptracer.impl;
 
+package org.netbeans.core.ui.sampler;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import org.openide.cookies.OpenCookie;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Hurka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NpssDataObject extends MultiDataObject implements OpenCookie {
+public class SelfSampleVFSTest extends NbTestCase {
+    private SelfSampleVFS fs;
 
-    public NpssDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-
+    public SelfSampleVFSTest(String s) {
+        super(s);
     }
 
     @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
-
-    @Override
-    public void open() {
-        IdeSnapshot snapshot;
-        FileObject primary = getPrimaryFile();
-        FileObject uigestureFO = primary.getParent().getFileObject(primary.getName(), "log");
+    protected void setUp() throws Exception {
+        clearWorkDir();
         
+        File a = new File(getWorkDir(), "A.txt");
+        File b = new File(getWorkDir(), "B.txt");
+        
+        write(a, "Ahoj");
+        write(b, "Kuk");
+        
+        fs = new SelfSampleVFS(new String[] { "x.pdf", "y.ps" }, new File[] { a, b });
+    }
+    
+    public void testCanList() {
+        FileObject[] arr = fs.getRoot().getChildren();
+        assertEquals("Two", 2, arr.length);
+        assertEquals("x.pdf", arr[0].getNameExt());
+        assertEquals("y.ps", arr[1].getNameExt());
+    }
+
+    public void testCanReadContent() throws Exception {
+        FileObject fo = fs.findResource("x.pdf");
+        assertNotNull("File Object found", fo);
+        assertEquals("The right content for x.pdf", "Ahoj", fo.asText());
+    }
+
+    public void testGetAttribute() throws Exception {
+        FileObject fo = fs.findResource("x.pdf");
+        assertNull("No attribute value", fo.getAttribute("doesnotexist"));
+    }
+
+    
+    private static void write(File f, String content) throws IOException {
+        FileOutputStream os = new FileOutputStream(f);
         try {
-            snapshot = new IdeSnapshot(primary, uigestureFO);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
+            os.write(content.getBytes());
+        } finally {
+            os.close();
         }
-        IdeSnapshotAction.openSnapshot(snapshot);
     }
 }
