@@ -2058,22 +2058,11 @@ import org.openide.util.Exceptions;
 
 	NativeWatch nativeWatch = template;
 
-        GdbWatch gdbWatch;
-	Object key = nativeWatch.getExpression();
-	if (watches.byKey(key) != null) {
-	    // duplicate watch
-	    gdbWatch =
-		new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-	    // set "value"
-	    final String msg = String.format("Duplicate of %d", 999); // NOI18N
-	    gdbWatch.setAsText(msg);
-
-	} else {
-	    gdbWatch =
-		new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-	    createMIVar(gdbWatch);
-	}
-
+        // see IZ 194721
+        // No need to check for duplicates - gdb will create different vars
+        GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
+        createMIVar(gdbWatch);
+        
 	updateMIVar();
 	nativeWatch.setSubWatchFor(gdbWatch, this);
         watches.add(gdbWatch);
