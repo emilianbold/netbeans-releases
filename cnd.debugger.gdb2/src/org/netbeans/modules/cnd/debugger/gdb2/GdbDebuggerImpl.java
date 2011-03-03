@@ -2513,14 +2513,14 @@ import org.openide.util.Exceptions;
 			      final int level) {
 
         String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
-		    @Override
-                    protected void onDone(MIRecord record) {
-                        interpMIChildren(parent, record, level);
-                        finish();
-                    }
-                };
+        MiCommandImpl cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                interpMIChildren(parent, record, level);
+                finish();
+            }
+        };
+        cmd.dontReportError();
         gdb.sendCommand(cmd);
     }
 
