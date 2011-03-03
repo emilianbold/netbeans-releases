@@ -162,11 +162,16 @@ public class RemoteFileObjectFactory {
         return (RemoteLink) fileObjectsCache.putIfAbsent(remotePath, fo);
     }
 
-    public void invalidate(String remotePath) {
+    /** 
+     * Removes file object from cache and invalidates it.
+     * @return an invalidated object or null
+     */
+    public RemoteFileObjectBase invalidate(String remotePath) {
         RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
         if (fo != null) {
             fo.invalidate();
         }
+        return fo;
     }
 
     public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {

@@ -91,6 +91,18 @@ public class RemoteLogger {
             instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
+    
+    public static void assertNotNull(Object value, String message) {
+        if (assertionsEnabled && value == null) {
+            instance.log(Level.SEVERE, message + " should not be null", lastAssertion = new Exception(message));
+        }
+    }
+
+    public static void assertNull(Object value, String message) {
+        if (assertionsEnabled && value != null) {
+            instance.log(Level.SEVERE, message + " should be null", lastAssertion = new Exception(message));
+        }
+    }
 
     public static void assertFalse(boolean value) {
         if (assertionsEnabled && value) {

@@ -173,10 +173,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     protected void postDeleteChild(FileObject child) {
         try {
-            DirectoryStorage ds = refreshDirectoryStorage();
-            ds.removeEntry(child.getNameExt());
-            ds.store();
-            fireFileDeletedEvent(getListeners(), new FileEvent(child));
+            DirectoryStorage ds = refreshDirectoryStorage(); // it will fire events itself
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
@@ -429,11 +426,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
 
         boolean loaded;
-
-        if (force) {
-            loaded = false;
-            storage = new DirectoryStorage(storageFile);
-        } else if (storage == null) {
+        
+        if (storage == null) {
             // try loading from disk
             loaded = false;
             storage = new DirectoryStorage(storageFile);
@@ -462,6 +456,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
         } else {
             loaded = true;
+        }
+        
+        if (force) {
+            loaded = false;
         }
 
         if (loaded) {
@@ -733,9 +731,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private void invalidate(DirEntry oldEntry) {
-        getFileSystem().getFactory().invalidate(getPath() + '/' + oldEntry.getName());
+        FileObject fo = getFileSystem().getFactory().invalidate(getPath() + '/' + oldEntry.getName());
         File oldEntryCache = new File(getCache(), oldEntry.getCache());
         removeFile(oldEntryCache);
+        if (fo != null) {
+            fireFileDeletedEvent(getListeners(), new FileEvent(fo));
+        }
     }
 
     private void removeFile(File cache) {
