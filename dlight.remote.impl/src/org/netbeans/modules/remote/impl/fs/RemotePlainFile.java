@@ -55,7 +55,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -176,7 +175,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
         if (parent != null) {
             parent.ensureChildSync(this);

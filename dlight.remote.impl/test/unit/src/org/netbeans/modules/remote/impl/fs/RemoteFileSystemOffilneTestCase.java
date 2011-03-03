@@ -73,7 +73,6 @@ public class RemoteFileSystemOffilneTestCase extends RemoteFileTestBase {
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 content.indexOf(text2search) >= 0);
         ConnectionManager.getInstance().disconnect(execEnv);
-        fs.testResetDirtyTimestamp();
         assertFalse("Shouldn't be connected now", ConnectionManager.getInstance().isConnectedTo(execEnv));
         fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);

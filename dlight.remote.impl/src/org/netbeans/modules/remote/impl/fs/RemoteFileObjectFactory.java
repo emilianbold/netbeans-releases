@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
-import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -79,7 +78,11 @@ public class RemoteFileObjectFactory {
     }
 
     /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
-        return fileObjectsCache.values();
+        return fileObjectsCache.values(); // WeakCache returns a copy => no need to copy here
+    }
+    
+    public RemoteFileObjectBase getCachedFileObject(String path) {
+        return fileObjectsCache.get(path);
     }
     
     private void scheduleCleanDeadEntries() {

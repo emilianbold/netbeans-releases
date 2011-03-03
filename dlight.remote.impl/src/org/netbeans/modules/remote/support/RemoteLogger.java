@@ -118,4 +118,16 @@ public class RemoteLogger {
     public static void finest(Exception exception) {
         instance.log(Level.FINEST, "FYI:", exception);
     }
+    
+    public static void fine(Exception exception) {
+        instance.log(Level.FINE, "FYI:", exception);
+    }
+    
+    public static void info(Exception exception) {
+        instance.log(Level.WARNING, "Exception occurred:", exception);
+    }
+
+    public static void warning(Exception exception) {
+        instance.log(Level.WARNING, "Exception occurred:", exception);
+    }
 }
