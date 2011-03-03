@@ -625,6 +625,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         return new RunProfileXMLCodec(this);
     }
 
+
     // interface ProfileAuxObject
     @Override
     public boolean hasChanged() {
@@ -645,14 +646,18 @@ public final class RunProfile implements ConfigurationAuxObject {
             return;
         }
         String oldEnv = getEnvironment().toString();
+        String oldArgs = getArgsFlat();
 
         RunProfile p = (RunProfile) profileAuxObject;
         setDefault(p.isDefault());
         //setArgs(p.getArgsFlat());
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
-        setRunCommand(p.getRunCommand());
-        runCommandPicklist = p.getRunCommand().getPicklist();
+        getRunCommand().assign(p.getRunCommand());
+        if (pcs != null && !CndPathUtilitities.sameString(oldArgs, getArgsFlat())) {
+            pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, getArgsFlat());
+        }
+        //runCommandPicklist = p.getRunCommand().getPicklist();
         setConfigurationArguments(p.getConfigurationArguments());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());

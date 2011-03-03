@@ -125,6 +125,7 @@ public class ComboStringConfiguration {
     // Clone and Assign
     public void assign(ComboStringConfiguration conf) {
         dirty = !getValue().equals(conf.getValue());
+        picklist = (DefaultPicklistModel)conf.getPicklist().clonePicklist();
         setValue(conf.getValue());
         setModified(conf.getModified());
     }
