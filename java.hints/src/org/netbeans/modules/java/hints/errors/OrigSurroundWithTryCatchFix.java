@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -94,7 +95,7 @@ class OrigSurroundWithTryCatchFix implements Fix {
     }
 
     public ChangeInfo implement() throws Exception {
-        javaSource.runModificationTask(new Task<WorkingCopy>() {
+        ModificationResult mr = javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy parameter) throws Exception {
                 parameter.toPhase(Phase.RESOLVED);
                 
@@ -175,8 +176,9 @@ class OrigSurroundWithTryCatchFix implements Fix {
                 
                 parameter.rewrite(leaf, tryTree);
             }
-        }).commit();
-        return null;
+        });
+
+        return Utilities.commitAndComputeChangeInfo(javaSource.getFileObjects().iterator().next(), mr);
     }
     
     private TreePath findStatement(TreePath path) {
