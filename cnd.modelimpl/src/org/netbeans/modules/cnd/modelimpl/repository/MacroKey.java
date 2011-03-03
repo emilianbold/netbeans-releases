@@ -59,8 +59,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * A key for CsmMacro objects
  */
 
-/*package*/
-final class MacroKey extends OffsetableKey {
+/*package*/ final class MacroKey extends OffsetableKey {
     
     MacroKey(CsmMacro obj) {
 	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getManager().getString(obj.getName())); // NOI18N

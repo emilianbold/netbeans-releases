@@ -88,6 +88,8 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                 return new ProjectSettingsValidatorKey(presentation);
             case 'I':
                 return new IncludeKey(presentation);
+            case 'i':
+                return new InstantiationKey(presentation);
             case 'h':
             case 'y':
             case 'H':
@@ -132,4 +134,5 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
         }
         return null;
     }
+    
 }
