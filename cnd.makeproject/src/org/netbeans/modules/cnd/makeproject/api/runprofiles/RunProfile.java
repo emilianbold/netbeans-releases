@@ -644,6 +644,8 @@ public final class RunProfile implements ConfigurationAuxObject {
             System.err.print("Profile - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
             return;
         }
+        String oldEnv = getEnvironment().toString();
+
         RunProfile p = (RunProfile) profileAuxObject;
         setDefault(p.isDefault());
         //setArgs(p.getArgsFlat());
@@ -655,6 +657,9 @@ public final class RunProfile implements ConfigurationAuxObject {
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
+        if (pcs != null && !oldEnv.equals(environment.toString())) {
+            pcs.firePropertyChange(PROP_ENVVARS_CHANGED, oldEnv, environment);
+        }
         getConsoleType().assign(p.getConsoleType());
         getTerminalType().assign(p.getTerminalType());
         getRemoveInstrumentation().assign(p.getRemoveInstrumentation());
