@@ -66,6 +66,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,6 +81,9 @@ import org.xml.sax.SAXException;
  * @author Alexander Simon
  * @author Vladimir Kvashin
  */
+@ActionID(id = "org.netbeans.modules.cnd.makeproject.actions.OpenRemoteProjectAction", category = "Project")
+@ActionRegistration(iconInMenu = false, displayName = "#CTL_ImportProjectMenuItem")
+@ActionReference(path = "Menu/File/Import", position = 3000)
 public class OpenRemoteProjectAction implements ActionListener {
 
     private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
