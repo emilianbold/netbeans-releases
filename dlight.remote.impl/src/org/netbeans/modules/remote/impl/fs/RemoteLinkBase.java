@@ -219,10 +219,10 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void ensureSync() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            delegate.ensureSync();
+            delegate.refreshImpl();
         }
     }
 
