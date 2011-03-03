@@ -376,6 +376,28 @@ public final class TimeSeriesIndicator
         return true;
     }
 
+    /**
+     * Loads previously saved state from the storage. <p>
+     * Requires an <code>SQLStorage</code> ! <p>
+     * If aux is not empty and contains mapping for the key &quot;sql_query&quot;, then
+     * storage is queried with this query (<code>aux.get(&quot;sql_query&quot;).toString()</code>)
+     * to re-create indicator's state. (see initFromStorage())
+     * 
+     */
+    @Override
+    public boolean loadState(DataStorage storage, Map<String, Object> aux) {
+        boolean result;
+        String sql_query = (aux == null) ? null : aux.get("sql_query").toString(); // NOI18N
+        
+        if (sql_query == null) {
+            result = loadState(storage);
+        } else {
+            result = initFromStorage((SQLDataStorage)storage, sql_query);
+        }
+        
+        return result;
+    }
+    
     @Override
     public boolean loadState(DataStorage storage) {
         if (1 < data.size()) {

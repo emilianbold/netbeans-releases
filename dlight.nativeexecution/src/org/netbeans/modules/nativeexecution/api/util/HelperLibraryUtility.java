@@ -131,11 +131,18 @@ public class HelperLibraryUtility {
         List<String> paths = getPaths(env);
         StringBuilder buf = new StringBuilder();
         for(String p : paths) {
-            final File file = new File(p);
             if (buf.length()>0) {
                 buf.append(':'); // NOI18N
             }
-            buf.append(file.getParent());
+            p = p.replace('\\', '/'); // NOI18N
+            int i = p.lastIndexOf('/'); // NOI18N
+            String parent;
+            if (i >= 0) {
+                parent = p.substring(0,i);
+            } else {
+                parent = p;
+            }
+            buf.append(parent);
         }
         return buf.toString();
     }

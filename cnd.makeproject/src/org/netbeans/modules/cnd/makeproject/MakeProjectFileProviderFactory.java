@@ -198,7 +198,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     private final static class FileProviderImpl implements FileProvider, NativeFileSearch {
         private final AtomicBoolean cancel = new AtomicBoolean();
         private final Set<SearchContext> searchedProjects = new HashSet<SearchContext>();
-        private SearchContext lastContext = null;
+        private Context lastContext = null;
         
         public FileProviderImpl() {
         }
@@ -210,9 +210,9 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 Project project = context.getProject();
                 SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
                 if (project != null) {
-                    SearchContext curContext = new SearchContext(context.getText(), context.getSearchType(), null);
-                    if (!curContext.equals(lastContext)) {
-                        lastContext = curContext;
+                    // check if anything have changed in context, just compare context instances
+                    if (context != lastContext) {
+                        lastContext = context;
                         searchedProjects.clear();
                     }
                     if (searchedProjects.add(searchContext)) {

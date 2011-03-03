@@ -52,8 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
  * A common ancestor for nearly all keys 
  */
 
-/*package*/
-abstract class ProjectNameBasedKey extends AbstractKey {
+/*package*/ abstract class ProjectNameBasedKey extends AbstractKey {
 
     private final short unitIndex;
 

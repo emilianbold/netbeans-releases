@@ -55,8 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  * A key for CsmInclude objects (file and offset -based)
  */
 
-/*package*/
-final class InheritanceKey extends OffsetableKey {
+/*package*/ final class InheritanceKey extends OffsetableKey {
 
     InheritanceKey(CsmInheritance obj) {
         super(obj, Utils.getCsmInheritanceKindKey(obj), obj.getAncestorType().getClassifierText()); // NOI18N

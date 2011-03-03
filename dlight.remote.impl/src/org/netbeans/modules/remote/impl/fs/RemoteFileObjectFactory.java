@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.support.RemoteLogger;
-import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -79,7 +78,11 @@ public class RemoteFileObjectFactory {
     }
 
     /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
-        return fileObjectsCache.values();
+        return fileObjectsCache.values(); // WeakCache returns a copy => no need to copy here
+    }
+    
+    public RemoteFileObjectBase getCachedFileObject(String path) {
+        return fileObjectsCache.get(path);
     }
     
     private void scheduleCleanDeadEntries() {
@@ -159,11 +162,16 @@ public class RemoteFileObjectFactory {
         return (RemoteLink) fileObjectsCache.putIfAbsent(remotePath, fo);
     }
 
-    public void invalidate(String remotePath) {
+    /** 
+     * Removes file object from cache and invalidates it.
+     * @return an invalidated object or null
+     */
+    public RemoteFileObjectBase invalidate(String remotePath) {
         RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
         if (fo != null) {
             fo.invalidate();
         }
+        return fo;
     }
 
     public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {

@@ -456,13 +456,7 @@ public class OutlineView extends JScrollPane {
         if (doCleanColumns) {
             TableColumnModel tcm = outline.getColumnModel();
             if (tcm instanceof ETableColumnModel) {
-                try {
-                    java.lang.reflect.Method cleanMethod = ETableColumnModel.class.getDeclaredMethod("clean");
-                    cleanMethod.setAccessible(true);
-                    cleanMethod.invoke(tcm);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                ((ETableColumnModel) tcm).clean();
             }
         }
         rowModel.setProperties(newProperties);

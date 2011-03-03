@@ -2441,7 +2441,7 @@ public abstract class TreeView extends JScrollPane {
                     TreePath path = findSiblingTreePath(e.getTreePath(), e.getChildIndices());
 
                     // bugfix #39564, don't select again the same object
-                    if ((path == null) || path.equals(e.getTreePath())) {
+                    if ((path == null) || e.getChildIndices().length == 0) {
                         return;
                     } else if (path.getPathCount() > 0) {
                         tree.setSelectionPath(path);
