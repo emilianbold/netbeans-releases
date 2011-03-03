@@ -966,6 +966,11 @@ public class ETable extends JTable {
      * Make the column sorted. Value of columnIndex is in the model coordinates.
      * <strong>Be careful</strong> with the columnIndes parameter: again, it
      * is in the <strong>model</strong> coordinates.
+     * @param columnIndex column in ETable column model
+     * @param ascending true means ascending
+     * @param rank value 1 means that this is the most important sorted
+     *        column, number 2 means second etc. Value 0 means that this column
+     *        is not sorted.
      */
     public void setColumnSorted(int columnIndex, boolean ascending, int rank) {
         int ii = convertColumnIndexToView(columnIndex);
@@ -985,7 +990,7 @@ public class ETable extends JTable {
                 int wasSelectedColumn = getSelectedColumn();
                 etcm.setColumnSorted(etc, ascending, rank);
                 resetPermutation ();
-                ETable.super.tableChanged(new TableModelEvent(getModel(), 0, getRowCount()));
+                ETable.super.tableChanged(new TableModelEvent(getModel(), -1, getRowCount()));
                 changeSelectionInModel(selectedRows, wasSelectedColumn);
 
             }
