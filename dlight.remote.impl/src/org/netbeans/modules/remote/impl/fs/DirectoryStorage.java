@@ -187,4 +187,24 @@ public class DirectoryStorage {
             entries.put(entry.getName(), entry);
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DirectoryStorage");
+        sb.append(" file=").append(file.getAbsolutePath());
+        sb.append(" entries.size()=").append(entries.size()).append("\n");
+        int cnt = 0;
+        for (DirEntry entry : entries.values()) {
+            if (cnt > 0) {
+                sb.append('\n');
+            }
+            if (cnt++ <= 10) {
+                sb.append(entry);
+            } else {
+                sb.append("...");
+                break;
+            }
+        }
+        return sb.toString();
+    }    
 }
