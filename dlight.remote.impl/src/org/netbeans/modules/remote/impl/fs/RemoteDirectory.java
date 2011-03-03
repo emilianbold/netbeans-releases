@@ -325,19 +325,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (fire) {
             FileEvent e = new FileEvent(fo);
-//            if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
-//                fireFileFolderCreatedEvent(getListeners(), e);
-//            } else if (fo instanceof RemotePlainFile) {
-//                fireFileDataCreatedEvent(getListeners(), e);
-//            } else {
-//                RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
-//                fireFileDataCreatedEvent(getListeners(), e);
-//            }
-            if (fo.isFolder()) { // fo.isFolder() very slow if it is a link
+            if (fo instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
                 fireFileFolderCreatedEvent(getListeners(), e);
+            } else if (fo instanceof RemotePlainFile) {
+                fireFileDataCreatedEvent(getListeners(), e);
             } else {
+                RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
                 fireFileDataCreatedEvent(getListeners(), e);
             }
+//            if (fo.isFolder()) { // fo.isFolder() very slow if it is a link
+//                fireFileFolderCreatedEvent(getListeners(), e);
+//            } else {
+//                fireFileDataCreatedEvent(getListeners(), e);
+//            }
         }
         return fo;
     }
