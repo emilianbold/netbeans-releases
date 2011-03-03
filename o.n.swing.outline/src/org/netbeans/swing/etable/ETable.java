@@ -134,6 +134,12 @@ import javax.swing.table.*;
  * @author David Strupl
  */
 public class ETable extends JTable {
+    /** Property that is fired when calling {@link #setQuickFilter(int, java.lang.Object)} or
+     * {@link #unsetQuickFilter()}. 
+     * @since 1.13
+     */
+    public static final String PROP_QUICK_FILTER = "quickFilter";
+    
     
     /** Action key for up/down focus action */
     private static final String ACTION_FOCUS_NEXT = "focusNext"; //NOI18N
@@ -780,6 +786,7 @@ public class ETable extends JTable {
         resetPermutation ();
         filteredRowCount = -1; // force to recompute the rowCount
         super.tableChanged(new TableModelEvent(getModel()));
+        firePropertyChange(PROP_QUICK_FILTER, null, null);
     }
 
     /**
@@ -812,6 +819,7 @@ public class ETable extends JTable {
         filteredRowCount = -1;
         resetPermutation ();
         super.tableChanged(new TableModelEvent(getModel()));
+        firePropertyChange(PROP_QUICK_FILTER, null, null);
     }
     
     /**
