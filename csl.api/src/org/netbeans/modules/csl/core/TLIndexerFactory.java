@@ -52,16 +52,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
-import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Error.Badging;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -241,44 +236,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             if (lineStartOffsets == null) {
                 lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
             }
-
-            String mimeType = parserResult.getSnapshot().getMimeType();
-            Language cslLanguage = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-            HintsProvider hintsProvider = cslLanguage != null ? cslLanguage.getHintsProvider() : null;
             
-            if(hintsProvider != null) {
-                HintsManager hintsManager = HintsManager.getManagerForMimeType(mimeType);
-                RuleContext ruleContext = new RuleContext();
-                ruleContext.manager = hintsManager;
-                ruleContext.doc = (BaseDocument) parserResult.getSnapshot().getSource().getDocument(true);
-                ruleContext.parserResult = (ParserResult) parserResult;
-
-                List<Hint> hints = new LinkedList<Hint>();
-                List<Error> unhandledErrors = new LinkedList<Error>();
-                hintsProvider.computeErrors(hintsManager, ruleContext, hints, unhandledErrors);
-
-                //filter out non-warning||error hints
-                List<Error> filtered = new LinkedList<Error>();
-                for(Hint hint : hints) {
-                    HintSeverity s = hint.getRule().getDefaultSeverity();
-                    if(s == HintSeverity.ERROR || s == HintSeverity.WARNING) {
-                        Error error = hint.getError();
-                        if(error != null) {
-                            filtered.add(error);
-                        }
-                    }
-                }
-                //add all errors from hints
-                storedErrors.addAll(filtered);
-
-                //add also the unhandled errors
-                storedErrors.addAll(unhandledErrors);
-
-            } else {
-                //no csl language or hints provider. lets use the default
-                storedErrors.addAll(gsfParserResult.getDiagnostics());
-            }
-            
+            storedErrors.addAll(ErrorFilterQuery.getFilteredErrors(gsfParserResult, ErrorFilter.FEATURE_TASKLIST));
         }
         
         private static List<Integer> getLineStartOffsets(Source source) {
