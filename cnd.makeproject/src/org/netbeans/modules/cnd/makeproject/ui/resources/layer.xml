@@ -332,7 +332,7 @@ made subject to such option by the copyright holder.
         <folder name="File">
             <folder name="Import">
                 <attr name="position" intvalue="1426"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.sun.tools.ide.remote.resources.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.actions.Bundle"/>
                 <file name="org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-OpenRemoteProjectAction.instance"/>
                     <attr name="position" intvalue="200"/>
