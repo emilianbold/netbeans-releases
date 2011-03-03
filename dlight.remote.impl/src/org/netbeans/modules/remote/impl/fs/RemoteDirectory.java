@@ -111,7 +111,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
         try {
-            DirectoryStorage storage = getDirectoryStorage(false);
+            DirectoryStorage storage = getDirectoryStorage();
             DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canWrite(getExecutionEnvironment()); //TODO:rfs - check groups
         } catch (ConnectException ex) {
@@ -132,7 +132,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         try {
-            DirectoryStorage storage = getDirectoryStorage(false);
+            DirectoryStorage storage = getDirectoryStorage();
             DirEntry entry = storage.getEntry(childNameExt);
             return entry != null && entry.canRead(getExecutionEnvironment());
         } catch (ConnectException ex) {
@@ -173,7 +173,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     protected void postDeleteChild(FileObject child) {
         try {
-            DirectoryStorage ds = getDirectoryStorage(true);
+            DirectoryStorage ds = refreshDirectoryStorage();
             ds.removeEntry(child.getNameExt());
             ds.store();
             fireFileDeletedEvent(getListeners(), new FileEvent(child));
@@ -283,7 +283,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
-            DirectoryStorage storage = getDirectoryStorage(false);
+            DirectoryStorage storage = getDirectoryStorage();
             DirEntry entry = storage.getEntry(relativePath);
             if (entry == null) {
                 return null;
@@ -324,7 +324,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private RemoteFileObjectBase[] getExistentChildren() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        DirectoryStorage storage = getDirectoryStorage(false);
+        DirectoryStorage storage = getDirectoryStorage();
         List<DirEntry> entries = storage.list();
         List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
         for (DirEntry entry : entries) {
@@ -340,7 +340,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public RemoteFileObjectBase[] getChildren() {
         try {
-            DirectoryStorage storage = getDirectoryStorage(false);
+            DirectoryStorage storage = getDirectoryStorage();
             List<DirEntry> entries = storage.list();
             RemoteFileObjectBase[] childrenFO = new RemoteFileObjectBase[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
@@ -380,14 +380,26 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return new RemoteFileObjectBase[0];
     }
 
-    private DirectoryStorage getDirectoryStorage(boolean force) throws
+    private DirectoryStorage getDirectoryStorage() throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(force);
+            return getDirectoryStorageImpl(false);
         } finally {
             if (trace) {
-                trace("sync took {0} ms", System.currentTimeMillis() - time); // NOI18N
+                trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
+            }
+        }
+    }
+    
+    private DirectoryStorage refreshDirectoryStorage() throws
+            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        long time = System.currentTimeMillis();
+        try {
+            return getDirectoryStorageImpl(true);
+        } finally {
+            if (trace) {
+                trace("refreshDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
             }
         }
     }
@@ -647,7 +659,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             lock.unlock();
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(false); // do we need this?
+        DirectoryStorage storage = getDirectoryStorage(); // do we need this?
         return new CachedRemoteInputStream(child, getExecutionEnvironment());
     }
     
@@ -664,7 +676,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             lock.unlock();
         }
         checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(false); // do we need this?
+        DirectoryStorage storage = getDirectoryStorage(); // do we need this?
         lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
         lock.lock();
         try {
@@ -753,7 +765,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        getDirectoryStorage(true);
+        refreshDirectoryStorage();
         for (RemoteFileObjectBase child : getExistentChildren()) {
             child.refreshImpl();
         }
@@ -772,7 +784,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private DirEntry getChildEntry(RemoteFileObjectBase child) {
         try {
-            DirectoryStorage directoryStorage = getDirectoryStorage(false);
+            DirectoryStorage directoryStorage = getDirectoryStorage();
             if (directoryStorage != null) {
                 DirEntry entry = directoryStorage.getEntry(child.getNameExt());
                 if (entry != null) {
