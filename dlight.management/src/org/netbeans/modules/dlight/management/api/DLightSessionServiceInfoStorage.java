@@ -129,7 +129,7 @@ public final class DLightSessionServiceInfoStorage extends SQLDataStorage implem
     }
 
     DLightSessionServiceInfoStorage(String storageUniq) {
-        super(DLIGHT_SERVICE_INFO_H2_DATABASE_URL + storageUniq + ";FILE_LOCK=NO");
+        super(DLIGHT_SERVICE_INFO_H2_DATABASE_URL + storageUniq + ";FILE_LOCK=NO"); // NOI18N
         dbURL = storageUniq;
     }
 

@@ -106,6 +106,11 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.apache</friend>
+                <friend>com.sun.tools.dlight.mysql</friend>
+                <friend>com.sun.tools.dlight.php</friend>
+                <friend>com.sun.tools.dlight.sysmon</friend>
+                <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>
@@ -116,12 +121,8 @@
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.toolsui</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>com.sun.tools.dlight.apache</friend>
-                <friend>com.sun.tools.dlight.php</friend>
-                <friend>com.sun.tools.dlight.mysql</friend>
                 <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.indicators</package>
-                <package>org.netbeans.modules.dlight.indicators.spi</package>
                 <package>org.netbeans.modules.dlight.indicators.support</package>
             </friend-packages>
         </data>
