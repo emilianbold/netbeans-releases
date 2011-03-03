@@ -121,6 +121,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     // at most 5 instances starting stopping at the same time
     private static final RequestProcessor SERVER_CONTROL_RP = new RequestProcessor("Tomcat Control", 5); 
     
+    private static final RequestProcessor SERVER_STREAMS_RP = new RequestProcessor("Tomcat Streams", 5 * 2); 
+    
     /** Normal mode */
     private static final int MODE_RUN     = 0;
     /** Debug mode */
@@ -542,8 +544,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         openLogs();
                     } else {
                         // #58554 workaround
-                        RequestProcessor.getDefault().post(new StreamConsumer(p.getInputStream()), 0, Thread.MIN_PRIORITY);
-                        RequestProcessor.getDefault().post(new StreamConsumer(p.getErrorStream()), 0, Thread.MIN_PRIORITY);
+                        SERVER_STREAMS_RP.post(new StreamConsumer(p.getInputStream()), 0, Thread.MIN_PRIORITY);
+                        SERVER_STREAMS_RP.getDefault().post(new StreamConsumer(p.getErrorStream()), 0, Thread.MIN_PRIORITY);
                     }
                 } catch (java.io.IOException ioe) {
                     LOGGER.log(Level.FINE, null, ioe);    // NOI18N
