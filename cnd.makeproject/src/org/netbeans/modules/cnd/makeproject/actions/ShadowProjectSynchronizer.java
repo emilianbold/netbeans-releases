@@ -103,7 +103,7 @@ public class ShadowProjectSynchronizer {
         if (localNbprojectFO == null || ! localNbprojectFO.isValid()) {
             return;
         }
-        FileObject tmpFO = createTempDir(localProject.getName(), ".tmp");
+        FileObject tmpFO = createTempDir(localProject.getName(), ".tmp"); // NOI18N
         copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N        
         try {
             FileObject tmpNbProjFO = copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N
