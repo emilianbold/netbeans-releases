@@ -106,6 +106,8 @@ import org.sonatype.aether.util.DefaultRepositorySystemSession;
 @ServiceProvider( service=ArtifactViewerFactory.class )
 public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
+    private static final RequestProcessor RP = new RequestProcessor(ArtifactMultiViewFactory.class);
+
     public TopComponent createTopComponent(Artifact artifact, List<ArtifactRepository> repos) {
         return createTopComponent(null, null, artifact, repos);
     }
@@ -142,7 +144,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
             return existing;
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
                 MavenProject mvnprj;
