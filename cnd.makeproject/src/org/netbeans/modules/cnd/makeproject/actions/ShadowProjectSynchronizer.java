@@ -119,7 +119,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private static FileObject createTempDir(String prefix, String suffix) throws IOException {
-        File tmpFile = File.createTempFile(prefix, suffix);
+        File tmpFile = FileUtil.normalizeFile(File.createTempFile(prefix, suffix));
         if (!tmpFile.delete()) {
             throw new IOException("Can not delete temporary file " + tmpFile.getAbsolutePath()); //NOI18N
         }
