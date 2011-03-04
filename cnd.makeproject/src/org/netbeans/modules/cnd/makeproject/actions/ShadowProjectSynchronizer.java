@@ -42,9 +42,8 @@
 
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -100,7 +99,7 @@ public class ShadowProjectSynchronizer {
     }
     
     public void createShadowProject() throws IOException, SAXException {
-        FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
+        FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
         copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
         updateLocalProjectXml();
         updateLocalConfiguration();
@@ -119,7 +118,7 @@ public class ShadowProjectSynchronizer {
             updateRemoteProjectXml(tmpFO);
             updateRemoteConfiguration(tmpFO, remoteProject);
             updateRemotePrivateConfiguration(tmpFO);
-            FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
+            FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
             remoteNbprojectFO.refresh();
             copy(tmpNbProjFO, remoteProject, "nbproject"); //NOI18N
         } finally {
@@ -168,7 +167,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private static void updateRemoteProjectXml(FileObject remoteProjectCopy) throws IOException, SAXException {
-        FileObject projectFO = remoteProjectCopy.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        FileObject projectFO = getFileObject(remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
         Document doc = XMLUtil.parse(new InputSource(projectFO.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -189,7 +188,7 @@ public class ShadowProjectSynchronizer {
     }
 
     private static String getOrigCompilerSet(FileObject remoteProjectOrig) throws IOException, SAXException {
-        FileObject origPublicConfigurationsFO = remoteProjectOrig.getFileObject(PROJECT_CONFIGURATION_FILE);
+        FileObject origPublicConfigurationsFO = getFileObject(remoteProjectOrig, PROJECT_CONFIGURATION_FILE);
         Document origDoc = XMLUtil.parse(new InputSource(origPublicConfigurationsFO.getInputStream()), false, true, null, null);
         Element origRoot = origDoc.getDocumentElement();
         return getOrigCompilerSet(origRoot);
@@ -207,9 +206,17 @@ public class ShadowProjectSynchronizer {
         return origCsName;
     }
     
+    private static FileObject getFileObject(FileObject base, String relPath) throws FileNotFoundException {
+        FileObject fo = base.getFileObject(relPath);
+        if (fo == null) {
+            throw new FileNotFoundException(base.getPath() + File.separatorChar + PROJECT_CONFIGURATION_FILE);
+        }
+        return fo;
+    }
+    
     private static void updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
         String origCsName = getOrigCompilerSet(remoteProjectOrig);
-        FileObject fo = remoteProjectCopy.getFileObject(PROJECT_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -236,7 +243,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private static void updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
-        FileObject fo = remoteProjectCopy.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -262,7 +269,7 @@ public class ShadowProjectSynchronizer {
     }
 
     private void updateLocalProjectXml() throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        FileObject fo = getFileObject(localProject, AntProjectHelper.PROJECT_XML_PATH);
         File projXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
@@ -285,7 +292,7 @@ public class ShadowProjectSynchronizer {
     }
 
     private void updateLocalConfiguration() throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(PROJECT_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(localProject, PROJECT_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
@@ -338,7 +345,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private void updateLocalPrivateConfiguration() throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
