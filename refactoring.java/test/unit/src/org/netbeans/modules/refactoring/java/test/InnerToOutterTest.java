@@ -76,6 +76,16 @@ public class InnerToOutterTest extends RefactoringTestBase {
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
+    public void test195947() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } static class F { } }")); 
+        performEncapsulateFieldsTest(false);
+        verifyContent(src,
+                      new File("t/F.java", "package t; class F { }\n"),
+                      new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } }"));
+
+}
+    
     public void test138204b() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));

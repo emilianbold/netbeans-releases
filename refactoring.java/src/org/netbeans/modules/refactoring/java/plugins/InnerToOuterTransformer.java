@@ -104,8 +104,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         if (inner.equals(current)) {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);
-        } else if (isThisReferenceToOuter()) {
-            if (current.getModifiers().contains(Modifier.PRIVATE) && isThisInInner()) {
+        } else if (isThisReferenceToOuter() && isThisInInner()) {
+            if (current.getModifiers().contains(Modifier.PRIVATE)) {
                 referencedPrivateElement.add(current);
             }
             if (!workingCopy.getTypes().isSubtype(inner.asType(), workingCopy.getElementUtilities().enclosingTypeElement(current).asType())) {
