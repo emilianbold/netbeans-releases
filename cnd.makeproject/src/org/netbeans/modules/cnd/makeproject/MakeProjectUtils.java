@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.makeproject;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -65,5 +65,15 @@ public class MakeProjectUtils {
             }
         }
         return env;
+    }
+    
+    public static boolean isFullRemote(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                return remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES;
+            }
+        }
+        return false;
     }
 }
