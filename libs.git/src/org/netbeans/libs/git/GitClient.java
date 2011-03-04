@@ -267,16 +267,20 @@ public interface GitClient {
      * @param revision
      * @param monitor
      * @return revision
+     * @throws GitException.MissingObjectException no such revision exists
+     * @throws GitException other error occurs
      */
-    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
      * @param searchCriteria
      * @param monitor 
      * @return revisions that fall between the given boundaries
+     * @throws GitException.MissingObjectException revision specified in search criteria (or head if no such revision is specified) does not exist
+     * @throws GitException other error occurs
      */
-    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
     
     /**
      * Merges a given revision with the current head
