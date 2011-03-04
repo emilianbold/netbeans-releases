@@ -172,7 +172,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                     buf.append('\n');
                 }
                 buf.append(entry.getKey()).append('=').append(entry.getValue());
-                if (entry.getKey().equals("skipTests") && entry.getValue().equals("true")) { // NOI18N
+                if (entry.getKey().equals(TestSkippingChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
                     cbSkipTests.setSelected(true);
                 }
             }
@@ -210,7 +210,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                     buf.append('\n');
                 }
                 buf.append(entry.getKey()).append('=').append(entry.getValue());
-                if (entry.getKey().equals("skipTests") && entry.getValue().equals("true")) { // NOI18N
+                if (entry.getKey().equals(TestSkippingChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
                     cbSkipTests.setSelected(true);
                 }
             }
