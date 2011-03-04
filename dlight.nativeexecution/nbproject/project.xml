@@ -209,6 +209,9 @@
                 <friend>com.sun.tools.dlight.util</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.sendto</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
+                <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
