@@ -104,6 +104,10 @@ public final class DDProvider {
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clients planning to read only the deployment descriptor
      * or to listen to the changes.
+     * <p>
+     * There is no guarantee the return value will contain all the changes
+     * which happened in the underlaying file recently due to caching. 
+     * 
      * @param fo FileObject representing the application.xml file
      * @return Application object - root of the deployment descriptor bean graph
      */

@@ -109,7 +109,7 @@ public final class BuildImplTest extends NbTestCase {
             proj = new File(getWorkDir(), subFolder);
         }
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, subFolder != null ? subFolder : getName(), (String)null, (String)null, null);
+        AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, subFolder != null ? subFolder : getName(), (String)null, (String)null, null, false);
         EditableProperties ep = aph.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.put(ProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
         aph.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

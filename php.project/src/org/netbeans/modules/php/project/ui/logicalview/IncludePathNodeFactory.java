@@ -80,8 +80,7 @@ public class IncludePathNodeFactory implements NodeFactory {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public NodeList<Node> createNodes(Project p) {
+    public NodeList<?> createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
         return NodeFactorySupport.fixedNodeList(new Nodes.DummyNode(new IncludePathRootNode(project)) {
             @Override

@@ -329,7 +329,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_VMHint")); // NOI18N
 
         lblConfiguration.setLabelFor(comConfiguration);
-        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, "&Configuration:");
+        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, NbBundle.getMessage(RunJarPanel.class, "RunJarPanel.lblConfiguration.text")); // NOI18N
 
         comConfiguration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 

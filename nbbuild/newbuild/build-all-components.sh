@@ -32,7 +32,7 @@ else
     mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-src.zip
 fi
 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.name=nb.cluster.platform build-source
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=platform build-source-config
 ERROR_CODE=$?
 
 create_test_result "build.source.platform" "Build Platform Source package" $ERROR_CODE
@@ -95,7 +95,7 @@ fi
 rm -rf $NB_ALL/nbbuild/netbeans/nb/servicetag
 rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false -Dbuild.compiler.debuglevel=source,lines 
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
 ERROR_CODE=$?
 
 create_test_result "build.test.dist" "Build Test Distribution" $ERROR_CODE
@@ -206,7 +206,7 @@ fi
 #ML_BUILD
 if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
-    hg clone $ML_REPO $NB_ALL/l10n
+    hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
     cd $NB_ALL/l10n
     ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc -Dnbms.dist.dir=${DIST}/ml/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
     ERROR_CODE=$?

@@ -189,28 +189,27 @@ implements FileChangeListener {
         FileSystem user;
         LocalFileSystem home;
 
-        if (userDir != null) {
-            // only one file system
-            if (!userDir.exists ()) {
-                userDir.mkdirs ();
+        String customFSClass = System.getProperty("org.netbeans.core.systemfilesystem.custom"); // NOI18N
+        if (customFSClass != null) {
+            try {
+                Class clazz = Class.forName(customFSClass);
+                Object instance = clazz.newInstance();
+                user = (FileSystem)instance;
+            } catch (Exception x) {
+                ModuleLayeredFileSystem.err.log(
+                    Level.WARNING,
+                    "Custom system file system writable layer init failed ", x); // NOI18N
+                user = FileUtil.createMemoryFileSystem ();
             }
-            LocalFileSystem l = new LocalFileSystemEx ( true );
-            l.setRootDirectory (userDir);
-            user = l;
         } else {
-            // use some replacement
-            String customFSClass = System.getProperty("org.netbeans.core.systemfilesystem.custom"); // NOI18N
-            if (customFSClass != null) {
-                try {
-                    Class clazz = Class.forName(customFSClass);
-                    Object instance = clazz.newInstance();
-                    user = (FileSystem)instance;
-                } catch (Exception x) {
-                    ModuleLayeredFileSystem.err.log(
-                        Level.WARNING,
-                        "Custom system file system writable layer init failed ", x); // NOI18N
-                    user = FileUtil.createMemoryFileSystem ();
+            if (userDir != null) {
+                // only one file system
+                if (!userDir.exists()) {
+                    userDir.mkdirs();
                 }
+                LocalFileSystem l = new LocalFileSystemEx(true);
+                l.setRootDirectory(userDir);
+                user = l;
             } else {
                 user = FileUtil.createMemoryFileSystem ();
             }

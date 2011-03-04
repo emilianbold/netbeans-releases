@@ -58,6 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class GdbDebuggerInfo extends NativeDebuggerInfo {
 
     private DbgProfile gdbProfile = null;
+    private String remoteTarget = null;
 
     private GdbDebuggerInfo() {
 	super(GdbEngineCapabilityProvider.getGdbEngineType());
@@ -81,6 +82,14 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
 
     public static GdbDebuggerInfo create() {
 	return new GdbDebuggerInfo();
+    }
+    
+    public String getRemoteTarget() {
+        return remoteTarget;
+    }
+
+    public void setRemoteTarget(String remoteTarget) {
+        this.remoteTarget = remoteTarget;
     }
 
     @ServiceProvider(service = NativeDebuggerInfo.Factory.class)

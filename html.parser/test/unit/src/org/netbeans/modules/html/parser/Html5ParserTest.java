@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +64,7 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
 /**
@@ -75,8 +77,8 @@ public class Html5ParserTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
-        String testName = "testIssue194037";
+    public static Test Xsuite() {
+        String testName = "testIsAttributeQuoted";
 
         System.err.println("Only " + testName + " test is going to be run!!!!");
         System.err.println("******************************************************\n");
@@ -192,7 +194,7 @@ public class Html5ParserTest extends NbTestCase {
         Attribute attr = body.getAttributes().iterator().next();
         assertNotNull(attr);
         assertEquals("onclick", attr.name());
-        assertEquals("alert()", attr.value());
+        assertEquals("\"alert()\"", attr.value());
     }
 
 //    public void testProblemsReporting() throws ParseException {
@@ -583,16 +585,39 @@ public class Html5ParserTest extends NbTestCase {
         String code = "@@@<div> @@@ </div>";
         assertEquals("   <div>     </div>", Html5Parser.maskTemplatingMarks(code));
     }
-
-    private HtmlParseResult parse(CharSequence code) throws ParseException {
-        HtmlSource source = new HtmlSource(code);
-        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
-
-        assertNotNull(result);
-
-        return result;
+    
+    
+    public void testParseFileTest1() throws ParseException {
+        parse(getTestFile("testfiles/test1.html"));
     }
+    
+    public void testParseFileTest2() throws ParseException {
+        parse(getTestFile("testfiles/test2.html"));
+    }
+    
+    public void testParseFileTest3() throws ParseException {
+        parse(getTestFile("testfiles/test3.html"));
+    }
+    
+    public void testParseFileTest4() throws ParseException {
+        parse(getTestFile("testfiles/test4.html"));
+    }
+    
+    public void testParseFileTest5() throws ParseException {
+        parse(getTestFile("testfiles/test5.html"));
+    }
+    
+    protected FileObject getTestFile(String relFilePath) {
+        File wholeInputFile = new File(getDataDir(), relFilePath);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
 
+        return fo;
+    }
+    
     public void testHtml5Model() throws ParseException {
         String code = "<!doctype html><title>hi</title>";
         HtmlParseResult result = parse(code);
@@ -747,6 +772,50 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(130, scriptEnd.endOffset());
 
     }
+    
+    //[Bug 195103] Refactoring changes a changed filename incorrectly in the html <script> tag
+    public void testIsAttributeQuoted() throws ParseException {
+        String code = "<!doctype html>"
+                + "<html>"
+                + "<head>"
+                + "<title></title>"
+                + "</head>"
+                + "<body>"
+                + "<div onclick=\"alert()\">x</div>"
+                + "<p onclick='alert()'>x</p>"
+                + "<a onclick=alert>x</a>"
+                + "</body>"
+                + "</html>";
+        
+        HtmlParseResult result = parse(code);
+        AstNode root = result.root();
+
+        assertNotNull(root);
+//        AstNodeUtils.dumpTree(root);
+
+        AstNode div = AstNodeUtils.query(root, "html/body/div");
+        assertNotNull(div);
+
+        AstNode.Attribute attr = div.getAttribute("onclick");
+        assertNotNull(attr);
+        assertTrue(attr.isValueQuoted());
+        
+        AstNode p = AstNodeUtils.query(root, "html/body/p");
+        assertNotNull(p);
+
+        attr = p.getAttribute("onclick");
+        assertNotNull(attr);
+        assertTrue(attr.isValueQuoted());
+        
+        AstNode a = AstNodeUtils.query(root, "html/body/a");
+        assertNotNull(a);
+
+        attr = a.getAttribute("onclick");
+        assertNotNull(attr);
+        assertFalse(attr.isValueQuoted());
+
+    }
+
 
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
@@ -762,6 +831,24 @@ public class Html5ParserTest extends NbTestCase {
 //
 //    }
 
+    private HtmlParseResult parse(FileObject file) throws ParseException {
+        HtmlSource source = new HtmlSource(file);
+        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+
+        assertNotNull(result);
+
+        return result;
+    }
+
+    private HtmlParseResult parse(CharSequence code) throws ParseException {
+        HtmlSource source = new HtmlSource(code);
+        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+
+        assertNotNull(result);
+
+        return result;
+    }
+    
     private static class HtmlTagImpl implements HtmlTag {
 
         private String name;

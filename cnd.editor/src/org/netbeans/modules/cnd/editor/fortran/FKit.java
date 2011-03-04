@@ -44,35 +44,25 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import java.awt.Cursor;
 import java.util.ArrayList;
 
-import java.awt.event.ActionEvent;
 
 import javax.swing.JEditorPane;
 import javax.swing.Action;
-import javax.swing.text.Caret;
-import javax.swing.text.Position;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Utilities;
 
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
 * Fortran editor kit with appropriate document
@@ -129,7 +119,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     protected Action[] createActions() {
-	int arraySize = 4;
+	int arraySize = 3;
 	int numAddClasses = 0;
 	if (actionClasses != null) {
 	    numAddClasses = actionClasses.size();
@@ -150,7 +140,6 @@ public class FKit extends NbEditorKit {
 		index++;
 	    }
 	}
-	fortranActions[index++] = new FFormatAction();
 	fortranActions[index++] = new CommentAction("!"); // NOI18N
 	fortranActions[index++] = new UncommentAction("!"); // NOI18N
 	fortranActions[index++] = new ToggleCommentAction("!"); // NOI18N
@@ -171,73 +160,4 @@ public class FKit extends NbEditorKit {
 	actionClasses.add(action);
     }
 
-    @Override
-    protected void updateActions() {
-	super.updateActions();
-        addSystemActionMapping(formatAction, FFormatAction.class);
-    }
-    
-    public static class FFormatAction extends BaseAction {
-
-	public FFormatAction() {
-	    super(BaseKit.formatAction,
-		  MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-	    putValue ("helpID", FFormatAction.class.getName ()); // NOI18N
-	}
-
-        
-        @Override
-   	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-	    if (target != null) {
-
-		if (!target.isEditable() || !target.isEnabled()) {
-		    target.getToolkit().beep();
-		    return;
-		}
-
-		final BaseDocument doc = (BaseDocument)target.getDocument();
-                // Set hourglass cursor
-                Cursor origCursor = target.getCursor();
-                target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                
-                doc.runAtomic(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Caret caret = target.getCaret();
-                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-                            int startPos;
-                            Position endPosition;
-                            if (Utilities.isSelectionShowing(caret)) {
-                                startPos = target.getSelectionStart();
-                                endPosition = doc.createPosition(target.getSelectionEnd());
-                            } else {
-                                startPos = 0;
-                                endPosition = doc.createPosition(doc.getLength());
-                            }
-
-                            int pos = startPos;
-                            Reformat reformat = Reformat.get(doc);
-                            reformat.lock();
-                            try {
-                                reformat.reformat(pos, endPosition.getOffset());
-                            } finally {
-                                reformat.unlock();
-                            }
-
-                            // Restore the line
-                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-                            if (pos >= 0) {
-                                caret.setDot(pos);
-                            }
-                        } catch (BadLocationException e) {
-                            //failed to format
-                        }
-                    }
-                });
-                target.setCursor(origCursor);
-
-            }
-        }
-    }    
 }

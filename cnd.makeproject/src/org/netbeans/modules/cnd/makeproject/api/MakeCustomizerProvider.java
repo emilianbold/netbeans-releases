@@ -224,7 +224,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put(project, dialog);
         currentCommand = COMMAND_CANCEL;
-        
+
         try {
             dialog.setVisible(true);
         } catch (Throwable th) {
@@ -235,7 +235,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         } finally {
             dialog.dispose();
         }
-        
+
         MakeContext lastContext = innerPane.getLastContext();
         String nodeName = innerPane.getCurrentNodeName();
         if (lastContext != null) {
@@ -277,7 +277,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                     boolean issueRequiredProjectBuildWarning = false;
                     if (previousVersion < 76) {
                         for (Configuration configuration : projectDescriptor.getConfs().getConfigurations()) {
-                            MakeConfiguration makeConfiguration = (MakeConfiguration)configuration;
+                            MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
                             if (!makeConfiguration.isMakefileConfiguration()) {
                                 continue;
                             }
@@ -360,6 +360,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             it.next().actionPerformed(e);
         }
     }
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getBundle(MakeCustomizerProvider.class).getString(s);

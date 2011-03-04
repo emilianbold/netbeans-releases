@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import java.awt.EventQueue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -148,6 +149,7 @@ public class JavadocHelper {
                 LOG.log(Level.FINE, "loaded cached content for {0}", url);
                 return new ByteArrayInputStream(cache);
             }
+            assert !isRemote() || !EventQueue.isDispatchThread();
             InputStream uncached;
             if (stream != null) {
                 uncached = stream;
@@ -155,7 +157,7 @@ public class JavadocHelper {
             } else {
                 uncached = JavadocHelper.openStream(url);
             }
-            if (url.getProtocol().startsWith("http")) { // NOI18N
+            if (isRemote()) {
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
                     FileUtil.copy(uncached, baos);
@@ -169,6 +171,16 @@ public class JavadocHelper {
                 return uncached;
             }
         }
+        /**
+         * @return true if this looks to be a web location
+         */
+        public boolean isRemote() {
+            return JavadocHelper.isRemote(url);
+        }
+    }
+
+    private static boolean isRemote(URL url) {
+        return url.getProtocol().startsWith("http"); // NOI18N
     }
     
     /**
@@ -370,13 +382,16 @@ public class JavadocHelper {
                     URL url = new URL(root, pkgName + "/" + pageName + ".html");
                     InputStream is = null;
                     String rootS = root.toString();
-                    if (knownGoodRoots.contains(rootS)) {
+                    boolean useKnownGoodRoots = result.length == 1 && isRemote(url);
+                    if (useKnownGoodRoots && knownGoodRoots.contains(rootS)) {
                         LOG.log(Level.FINE, "assumed valid Javadoc stream at {0}", url);
                     } else {
                         try {
                             is = openStream(url);
-                            knownGoodRoots.add(rootS);
-                            LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
+                            if (useKnownGoodRoots) {
+                                knownGoodRoots.add(rootS);
+                                LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
+                            }
                         } catch (IOException x) {
                             LOG.log(Level.FINE, "invalid Javadoc stream at {0}: {1}", new Object[] {url, x});
                             continue;

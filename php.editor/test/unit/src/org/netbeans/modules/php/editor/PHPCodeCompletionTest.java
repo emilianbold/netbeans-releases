@@ -746,6 +746,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/classConstructorOptionalParam.php", "$var = new A^", false);
     }
     
+    public void testIssue194836() throws Exception {
+        checkCompletion("testfiles/completion/lib/test194836/index.php", "$user->^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

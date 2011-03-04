@@ -135,7 +135,7 @@ public final class ParserThread implements Runnable {
                         if (stw != null) {
                             long parseTime;
                             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                                parseTime = stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N
+                                parseTime = stw.stopAndReport("parsing " + file.getBuffer().getUrl()); // NOI18N
                             } else {
                                 parseTime = stw.stop();
                             }

@@ -100,7 +100,7 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
         if(absPath == null) {
             return;
         }
-        CsmFile file = CsmModelAccessor.getModel().findFile(absPath, false);
+        CsmFile file = CsmModelAccessor.getModel().findFile(absPath, true, false);
         if(file == null) {
             return;
         }

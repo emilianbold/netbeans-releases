@@ -298,7 +298,7 @@ public class ProxyFileManager implements JavaFileManager {
                         }
                         sb.append(surl);
                     }
-                    LOG.log(Level.INFO, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL{0} using: {1}",  //NOI18N
+                    LOG.log(Level.FINE, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
                             new Object[]{sb.toString(), bestSoFar});
                 }
                 siblings.push(bestSoFar);

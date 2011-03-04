@@ -450,6 +450,10 @@ class FilesystemInterceptor extends VCSInterceptor {
          * @param timestamp new timestamp, value 0 and missing indexFile.getParentFile() will remove the item from the cache
          */
         private void refreshIndexFileTimestamp (File indexFile, long timestamp) {
+            if (Utils.isAncestorOrEqual(new File(System.getProperty("java.io.tmpdir")), indexFile)) { //NOI18N
+                // skip repositories in temp folder
+                return;
+            }
             final File gitFolder = FileUtil.normalizeFile(indexFile.getParentFile());
             boolean exists = timestamp > 0 || gitFolder.exists();
             synchronized (indexFiles) {

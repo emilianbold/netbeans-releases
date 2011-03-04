@@ -88,7 +88,7 @@ public interface NodeFactory {
     public @interface Registration {
         /**
          * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
-         * @return
+         * {@link NodeFactorySupport#createCompositeChildren} may be passed a path of {@code Projects/TYPE/Nodes}.
          */
         String[] projectType();
 

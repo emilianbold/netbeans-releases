@@ -56,7 +56,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.ClientStubsGenerator;
-import org.netbeans.modules.websvc.rest.codegen.JMakiRestWidgetGenerator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -122,7 +121,6 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
         final Project[] projectsToStub = (Project[]) wizard.getProperty(WizardProperties.PROJECTS_TO_STUB);
         final FileObject wadlFile = (FileObject) wizard.getProperty(WizardProperties.WADL_TO_STUB);
         final boolean overwrite = (Boolean) wizard.getProperty(WizardProperties.OVERWRITE_EXISTING);
-        final boolean createJmaki = (Boolean) wizard.getProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS);
         final Set<FileObject> result = new HashSet<FileObject>();
         
         try {
@@ -137,14 +135,14 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                     try {
                         if(isProjectSelected) {
                             for (Project project : projectsToStub) {
-                                if(createJmaki)
-                                    result.addAll(new JMakiRestWidgetGenerator(stubRoot, stubFolder, project, createJmaki, overwrite).generate(pHandle));
-                                else
-                                    result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, project, overwrite).generate(pHandle));
+                                result.addAll(new ClientStubsGenerator(stubRoot, 
+                                        stubFolder, project, overwrite).
+                                        generate(pHandle));
                             }
                         } else {
-                            if(!createJmaki)
-                                result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile, overwrite).generate(pHandle));
+                            result.addAll(new ClientStubsGenerator(stubRoot, 
+                                    stubFolder, wadlFile, overwrite).
+                                        generate(pHandle));
                         }
                     } catch(Exception iox) {
                         Exceptions.printStackTrace(iox);
@@ -163,8 +161,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
             params[1] = project.getClass().getName();
             J2eeModule j2eeModule = RestUtils.getJ2eeModule(project);
             params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)";//NOI18N
-            boolean isJMaki = (Boolean)wizard.getProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS);
-            params[3] = isJMaki ? "REST CLIENT JMAKI" : "REST CLIENT"; //NOI18N
+            params[3] = "REST CLIENT"; //NOI18N
             params[4] = wizard.getProperty(WizardProperties.WADL_TO_STUB) != null ?
                         "FROM WADL" : "FROM PROJECT";
             LogUtils.logWsWizard(params);

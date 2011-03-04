@@ -76,6 +76,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AttributeSet;
+import org.openide.NotifyDescriptor.InputLine;
 
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
@@ -104,6 +105,8 @@ import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.api.IOResizable;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -131,7 +134,7 @@ import org.openide.windows.OutputListener;
  * </pre>
  * @author ivan
  */
-/* package */ final class Terminal extends JComponent {
+public final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -143,7 +146,7 @@ import org.openide.windows.OutputListener;
     private final CallBacks callBacks = new CallBacks();
 
     // Not final so we can dispose of them
-    private ActiveTerm term;
+    private final ActiveTerm term;
     private final TermListener termListener;
     private FindState findState;
 
@@ -361,7 +364,6 @@ import org.openide.windows.OutputListener;
 	term.removeListener(termListener);
 	term.setActionListener(null);
 	findState = null;
-	term = null;
         termOptions.removePropertyChangeListener(termOptionsPCL);
 	tio.dispose();
 	TerminalIOProvider.dispose(tio);
@@ -510,6 +512,28 @@ import org.openide.windows.OutputListener;
 	    return closable;
 	}
     }
+    
+    private final class SetTitleAction extends AbstractAction {
+
+	public SetTitleAction() {
+	    super(Catalog.get("CTL_SetTitle"));	// NOI18N
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+	    InputLine inputLine = new NotifyDescriptor.InputLine(Catalog.get("LBL_Title"), Catalog.get("LBL_SetTitle"));// NOI18N
+	    String title = getTitle();
+	    inputLine.setInputText(title);
+	    if (DialogDisplayer.getDefault().notify(inputLine) == NotifyDescriptor.OK_OPTION) {
+		String newTitle = inputLine.getInputText().trim();
+		if (!newTitle.equals(title)) {
+		    setTitle(newTitle);
+		}
+	    }
+	    
+	}
+	
+    }
 
     private final class CopyAction extends AbstractAction {
         public CopyAction() {
@@ -604,6 +628,7 @@ import org.openide.windows.OutputListener;
     }
 
     private final Action copyAction = new CopyAction();
+    private final Action setTitleAction = new SetTitleAction();
     private final Action pasteAction = new PasteAction();
     private final Action findAction = new FindAction();
     private final Action wrapAction = new WrapAction();
@@ -806,6 +831,8 @@ import org.openide.windows.OutputListener;
         addMenuItem(menu, findAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, wrapAction);
+	addMenuItem(menu, new JSeparator());
+	addMenuItem(menu, setTitleAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, clearAction);
 	if (isClosable())

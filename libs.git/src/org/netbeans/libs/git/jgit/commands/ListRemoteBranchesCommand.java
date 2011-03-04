@@ -43,7 +43,6 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +53,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.FetchConnection;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
@@ -65,12 +65,12 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  * TODO merge with listRemoteTagsCommand when it's implemented
  * @author ondra
  */
-public class ListRemoteBranchesCommand extends GitCommand {
+public class ListRemoteBranchesCommand extends TransportCommand {
     private HashMap<String, GitBranch> remoteBranches;
-    private final URL remoteUrl;
+    private final String remoteUrl;
 
-    public ListRemoteBranchesCommand (Repository repository, URL remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
+        super(repository, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
 
@@ -79,17 +79,17 @@ public class ListRemoteBranchesCommand extends GitCommand {
         Repository repository = getRepository();
         Transport t = null;
         FetchConnection conn = null;
-        Map<String, Ref> refs;
+        Map<String, Ref> refs = null;
         try {
-            t = Transport.open(repository, new URIish(remoteUrl.toString()));
+            t = openTransport();
             conn = t.openFetch();
             refs = conn.getRefsMap();
         } catch (URISyntaxException ex) {
             throw new GitException(ex);
         } catch (NotSupportedException ex) {
             throw new GitException(ex);
-        } catch (TransportException ex) {
-            throw new GitException(ex);
+        } catch (TransportException e) {
+            handleException(e);
         } finally {
             if (conn != null) {
                 conn.close();

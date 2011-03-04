@@ -152,6 +152,7 @@ public final class SearchBar extends JPanel {
     private Map<Object, Object> findProps;
     private JPopupMenu expandPopup;
     private JPanel padding;
+    private boolean searched = false;
     
     /**
      * contains everything that is in Search bar and is possible to move to expand popup
@@ -268,6 +269,11 @@ public final class SearchBar extends JPanel {
             new AbstractAction() {
             @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (!CLOSE_ON_ENTER) {
+                        if (!searched) {
+                            findNext();
+                        }
+                    }
                     looseFocus();
                 }
             });
@@ -344,10 +350,12 @@ public final class SearchBar extends JPanel {
         incrementalSearchTextFieldListener = new DocumentListener() {
             @Override
             public void changedUpdate(DocumentEvent e) {
+                searched = false;
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
+                searched = false;
                 // text changed - attempt incremental search
                 computeLayout();
                 if(incrementalSearchTextField.getText().length() > 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
@@ -356,6 +364,7 @@ public final class SearchBar extends JPanel {
 
             @Override
             public void removeUpdate(DocumentEvent e) {
+                searched = false;
                 // text changed - attempt incremental search
                 computeLayout();
                 if(incrementalSearchTextField.getText().length() <= 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
@@ -380,6 +389,9 @@ public final class SearchBar extends JPanel {
             new AbstractAction() {
             @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (!CLOSE_ON_ENTER && !searched) {
+                        findNext();
+                    }
                     findNext();
                     if (CLOSE_ON_ENTER) {
                         looseFocus();
@@ -724,6 +736,7 @@ public final class SearchBar extends JPanel {
         matchCaseCheckBox.setSelected(getMatchCase());
         regexpCheckBox.setSelected(getRegExp());
         highlightCheckBox.setSelected(getHighlightResults());
+        searched = false;
     }
 
     private void looseFocus() {
@@ -843,6 +856,7 @@ public final class SearchBar extends JPanel {
         if (findSupport.find(findProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
             incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
+            searched = true;
         } else {
             // text not found - indicate error in incremental search text field with red foreground
             incrementalSearchTextField.setForeground(NOT_FOUND);

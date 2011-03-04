@@ -1,3 +1,0 @@
-antcall extract-for-l10n
-${l10n-module}/src/**/Bundle.properties
-${l10n-module}/build/**/messages.properties

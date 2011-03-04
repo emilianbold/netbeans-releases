@@ -61,7 +61,9 @@ import javax.swing.text.Position;
 public final class BasePosition implements Position {
 
     /** The mark that serves this position */
-    private MultiMark mark;
+    private MultiMark mark; // 8-super + 4 = 12 bytes
+    
+//    public java.util.List<StackTraceElement> allocStack;
 
     public BasePosition() throws BadLocationException {
     }

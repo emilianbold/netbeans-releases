@@ -240,6 +240,15 @@ public final class FilePreprocessorConditionState {
                 addBlockImpl(startDeadBlock, endDeadBlock);
             }
         }
+        
+        /**
+         * Implements APTParseFileWalker.EvalCallback -
+         * adds offset of dead branch to offsets array
+         */        
+        @Override
+        public void onStoppedDirective(APT apt) {
+            addBlockImpl(apt.getToken().getOffset(), Integer.MAX_VALUE);
+        }
 
         /**
          * Implements APTParseFileWalker.EvalCallback -
@@ -291,11 +300,21 @@ public final class FilePreprocessorConditionState {
         }
 
         public FilePreprocessorConditionState build() {
-            int[] offsets = new int[blocks.size()*2];
+            int size = 0;
+            for (int[] deadInterval : blocks) {
+                size++;
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
+            }
+            int[] offsets = new int[size*2];
             int index = 0;
             for (int[] deadInterval : blocks) {
                 offsets[index++] = deadInterval[0];
                 offsets[index++] = deadInterval[1];
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
             }
             return build(this.name, offsets);
         }
@@ -326,6 +345,9 @@ public final class FilePreprocessorConditionState {
                 sb.append(deadInterval[0]);
                 sb.append("-");//NOI18N
                 sb.append(deadInterval[1]);
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
             }
             sb.append("]");//NOI18N
             return sb.toString();

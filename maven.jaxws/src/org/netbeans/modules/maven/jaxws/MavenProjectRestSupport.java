@@ -222,7 +222,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
         if (config != null) {
             boolean added = false;
             if (config.isServerJerseyLibSelected()) {
-                added = addDeployableServerJerseyLibrary();
+                added = addDeployableServerJerseyLibraries();
             }
             if (!added && config.isJerseyLibSelected()) {
                 Library swdpLibrary = LibraryManager.getDefault().getLibrary(

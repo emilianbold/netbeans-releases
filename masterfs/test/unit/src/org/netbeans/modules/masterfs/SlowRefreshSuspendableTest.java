@@ -117,14 +117,14 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         assertGC("File Object can disappear", ref);
 
         class L extends FileChangeAdapter {
-            int cnt;
-            FileEvent event;
+            volatile int cnt;
+            volatile FileEvent event;
 
             @Override
             public void fileChanged(FileEvent fe) {
-                LOG.info("file change " + fe.getFile());
                 cnt++;
                 event = fe;
+                LOG.log(Level.INFO, "file change {0} cnt: {1}", new Object[]{fe.getFile(), cnt});
             }
         }
         L listener = new L();
@@ -147,8 +147,8 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         Runnable r = (Runnable)obj;
         class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
-            boolean boosted;
-            boolean finished;
+            volatile boolean boosted;
+            volatile boolean finished;
             int goingIdle;
             
             public AE() {
@@ -223,7 +223,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         LOG.info("Starting refresh");
         // do the refresh
         r.run();
-        LOG.info("Refresh finished");
+        LOG.log(Level.INFO, "Refresh finished {0} cnt: {1}", new Object[]{counter.finished, listener.cnt});
 
         assertTrue("Background I/O access needs to stop before we finish our task", counter.finished);
 

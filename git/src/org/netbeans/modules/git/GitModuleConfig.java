@@ -74,7 +74,8 @@ public final class GitModuleConfig {
     private static final String REMOVE_WT_NEW           = "removeWTNew";        // NOI18N
     private static final String PROP_LAST_USED_COMMIT_VIEW_MODE = "lastUsedCommitViewMode"; //NOI18N
     private static final String AUTO_IGNORE_FILES        = "autoIgnoreFiles"; //NOI18N
-    
+    private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
+
     private String lastCanceledCommitMessage;
     
     public static GitModuleConfig getDefault () {
@@ -261,4 +262,13 @@ public final class GitModuleConfig {
     public void setAutoIgnoreFiles (boolean flag) {
         getPreferences().putBoolean(AUTO_IGNORE_FILES, flag);
     }
+
+    public boolean getShowCloneCompleted() {
+        return getPreferences().getBoolean(SHOW_CLONE_COMPLETED, true);
+    }
+    
+    public void setShowCloneCompleted(boolean bl) {
+        getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
+    }
+    
 }

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,6 +70,7 @@ public final class OperationContainerImpl<Support> {
     private OperationContainerImpl () {}
     private static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
     private List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
+    private Throwable lastModified;
     private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
@@ -153,6 +156,11 @@ public final class OperationContainerImpl<Support> {
                 retval = Trampoline.API.createOperationInfo (new OperationInfoImpl<Support> (updateUnit, updateElement));
                 assert retval != null : "Null support for " + updateUnit + " and " + updateElement;
                 changeState (operations.add (retval));
+                boolean asserts = false;
+                assert asserts = true;
+                if (asserts) {
+                    lastModified = new Exception("Added operation: " + retval);
+                }
             }
         }
         return retval;
@@ -374,6 +382,11 @@ public final class OperationContainerImpl<Support> {
             changeState (operations.remove (op));
             changeState (operations.removeAll (affectedEagers));
             affectedEagers.clear ();
+            boolean asserts = false;
+            assert asserts = true;
+            if (asserts) {
+                lastModified = new Exception("Removed " + op); // NOI18N
+            }
         }
     }
     public synchronized void removeAll () {
@@ -381,7 +394,25 @@ public final class OperationContainerImpl<Support> {
             changeState (true);
             operations.clear ();
             affectedEagers.clear ();
+            boolean asserts = false;
+            assert asserts = true;
+            if (asserts) {
+                lastModified = new Exception("Removed all"); // NOI18N
+            }
         }
+    }
+
+    @Override
+    public String toString() {
+        StringWriter sb = new StringWriter();
+        PrintWriter pw = new PrintWriter(sb);
+        pw.print(super.toString());
+        if (lastModified != null) {
+            pw.println();
+            lastModified.printStackTrace(pw);
+        }
+        pw.flush();
+        return sb.toString();
     }
     
     private void clearCache () {

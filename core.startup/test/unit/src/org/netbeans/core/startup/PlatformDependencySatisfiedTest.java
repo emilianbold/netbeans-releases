@@ -66,6 +66,11 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
     public PlatformDependencySatisfiedTest(String name) {
         super(name);
     }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
     
     @Override
     protected void setUp() throws Exception {

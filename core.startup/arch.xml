@@ -604,6 +604,23 @@ Microsystems, Inc. All Rights Reserved.
           Disables #113341 so that the first version of a module JAR to be encountered is loaded,
           even if a later cluster contains a newer version of the same module.
       </api>
+      <api name="org.netbeans.core.systemfilesystem.custom" category="devel" group="systemproperty" type="export">
+          <p>
+          This property can contain name of a class implementing 
+          <a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html">FileSystem</a>
+          with a public default constructor. Such filesystem is then used during
+          initialization of writable layer of system file system (see 
+          <a href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#getConfigRoot()">getConfigRoot</a>).
+          The filesystem may use or may ignore value of 
+          <code>System.getProperty("netbeans.user")</code>.
+          </p>
+          <p>
+          <em>Note:</em> The class is loaded sooner then modules are initialized,
+          as such the class providing it must be from a JAR file placed in
+          to <code>$cluster/core/</code> directory. Such JAR may have just a
+          limited dependencies - e.g. only module system and filesystem API.
+          </p>
+      </api>
       <api name="netbeans.bootdelegation" category="devel" group="systemproperty" type="export">
           <p>
           Similar to OSGi's <code>org.osgi.framework.bootdelegation</code> property.
@@ -640,9 +657,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-reflection">
-  <p>
-   XXX no answer for exec-reflection
-  </p>
+        <api category="friend" group="java" name="Javeleon" type="import" url="https://netbeans.org/bugzilla/show_bug.cgi?id=195074">
+            <p>When present as a Java agent on the boot classpath, Javeleon is invoked reflectively to enhance module reloading.</p>
+        </api>
  </answer>
 
 
