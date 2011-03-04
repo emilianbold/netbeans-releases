@@ -204,7 +204,7 @@ public class OpenRemoteProjectAction implements ActionListener {
     private static final class MyFileView extends FileView implements Runnable {
         private final JFileChooser chooser;
         private final Map<File,Icon> knownProjectIcons = new HashMap<File,Icon>();
-        private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);
+        private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);//NOI18N
         private File lookingForIcon;
         
         public MyFileView(JFileChooser chooser) {
@@ -214,7 +214,7 @@ public class OpenRemoteProjectAction implements ActionListener {
         @Override
         public Icon getIcon(File f) {
             if (f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
-                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
+                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. //NOI18N
                     f.getParentFile() != null) { // do not consider drive roots
                 synchronized (this) {
                     Icon icon = knownProjectIcons.get(f);
