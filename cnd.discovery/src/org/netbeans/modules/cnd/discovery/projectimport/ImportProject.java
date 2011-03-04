@@ -815,7 +815,7 @@ public class ImportProject implements PropertyChangeListener {
         if (makeLog == null) {
             makeLog = createTempFile("make"); // NOI18N
         }
-        if(BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
+        if(BuildTraceSupport.useBuildTrace()) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 switch (hostInfo.getOSFamily()) {
