@@ -71,6 +71,7 @@ class FetchWizard  implements ChangeListener {
     private PanelsIterator wizardIterator;
     private WizardDescriptor wizardDescriptor;
     private final File repository;
+    private static final String ORIGIN = "origin"; //NOI18N
 
     public FetchWizard (File repository, Map<String, GitRemoteConfig> remotes) {
         this.repository = repository;
@@ -172,7 +173,7 @@ class FetchWizard  implements ChangeListener {
                 Map<String, GitBranch> remoteBranches = selectUriStep.getRemoteBranches();
                 GitRemoteConfig remote = remotes.get(selectedRemote);
                 if (remote == null) {
-                    remote = RemoteConfig.createUpdatableRemote(repository, selectedUri);
+                    remote = RemoteConfig.createUpdatableRemote(repository, ORIGIN);
                 }
                 fetchBranchesStep.setRemote(remote);
                 fetchBranchesStep.setFetchUri(selectedUri, false);
