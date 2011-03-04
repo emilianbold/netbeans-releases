@@ -345,7 +345,9 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
                         return false;
                     storeKeyStore();
                 }
-                
+            
+            } catch (IndexOutOfBoundsException e) {
+                return false;    
             } catch (NoSuchAlgorithmException e) {
                 return false;
             } catch (CertificateException e) {
