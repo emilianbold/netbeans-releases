@@ -351,6 +351,7 @@
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <package>org.netbeans.modules.cnd.discovery.api</package>
                 <package>org.netbeans.modules.cnd.discovery.wizard.api</package>
+                <package>org.netbeans.modules.cnd.discovery.wizard.api.support</package>
             </friend-packages>
         </data>
     </configuration>

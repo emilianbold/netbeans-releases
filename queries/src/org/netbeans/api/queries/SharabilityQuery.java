@@ -48,6 +48,8 @@ import java.io.File;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 // XXX perhaps should be in the Filesystems API instead of here?
 
@@ -103,12 +105,19 @@ public final class SharabilityQuery {
     
     /**
      * Check whether an existing file is sharable.
-     * @param file a file or directory (may or may not already exist)
+     * @param file a file or directory (may or may not already exist); should be {@linkplain FileUtil#normalizeFile normalized}
      * @return one of the constants in this class
      */
     public static int getSharability(File file) {
-        if (file == null) throw new IllegalArgumentException();
-        assert file.equals(FileUtil.normalizeFile(file)) : "Must pass a normalized file: " + file + " vs. " + FileUtil.normalizeFile(file);
+        Parameters.notNull("file", file);
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts && !Utilities.isMac()) {
+            File normFile = FileUtil.normalizeFile(file);
+            if (!file.equals(normFile)) {
+                throw new IllegalArgumentException("Must pass a normalized file: " + file + " vs. " + normFile);
+            }
+        }
         for (SharabilityQueryImplementation sqi : implementations.allInstances()) {
             int x = sqi.getSharability(file);
             if (x != UNKNOWN) {

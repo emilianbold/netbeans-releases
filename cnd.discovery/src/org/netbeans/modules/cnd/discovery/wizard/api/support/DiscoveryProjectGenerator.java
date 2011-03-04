@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.discovery.wizard.api.support;
 
-package org.netbeans.libs.git;
+import java.io.IOException;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 
 /**
  *
- * @author ondra
+ * @author Alexander Simon
  */
-public enum GitObjectType {
-    COMMIT {
-        @Override
-        public String toString() {
-            return "COMMIT"; //NOI18N
-        }
-    },
-    BLOB {
-        @Override
-        public String toString() {
-            return "BLOB"; //NOI18N
-        }
-    },
-    HEAD {
-        @Override
-        public String toString() {
-            return "HEAD"; //NOI18N
-        }
+public final class DiscoveryProjectGenerator {
+
+    private DiscoveryProjectGenerator() {
+    }
+    
+    public static void generateProjects(DiscoveryDescriptor descriptor) throws IOException {
+        DiscoveryProjectGeneratorImpl impl = new DiscoveryProjectGeneratorImpl(descriptor);
+        impl.process();
     }
 }

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.bridge;
+package org.netbeans.modules.cnd.discovery.wizard.api.support;
 
 import java.io.File;
 import java.io.IOException;
@@ -569,7 +569,7 @@ public class ProjectBridge {
         return res;
     }
 
-    void dispose(){
+    public void dispose(){
         cache.clear();
     }
     
