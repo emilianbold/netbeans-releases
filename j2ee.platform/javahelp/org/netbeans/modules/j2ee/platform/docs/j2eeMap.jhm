@@ -261,7 +261,8 @@ Other names may be trademarks of their respective owners.
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled" url="ejb/csh/stand-ejb-properties-webservices-disabled.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHostDisabled" url="ejb/csh/stand-ejb-properties-webservices.html" />
-    
+
+
     <!-- Add Library dialog (EJB Module) CSH -->
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser" url="ejb/csh/stand-ejb-add-library.html" />
 
