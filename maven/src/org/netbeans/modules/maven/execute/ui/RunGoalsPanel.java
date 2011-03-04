@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.execute.ui;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -136,18 +135,15 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         });
     }
 
-    
-    
-    private String createSpaceSeparatedList(List list) {
-        String str = ""; //NOI18N
-        if (list != null) {
-            Iterator it = list.iterator();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
-                str = str + elem + " "; //NOI18N
+    private static String createSpaceSeparatedList(List<String> list) {
+        StringBuilder b = new StringBuilder();
+        for (String s : list) {
+            if (b.length() > 0) {
+                b.append(' ');
             }
+            b.append(s);
         }
-        return str;
+        return b.toString();
     }
 
     public void readMapping(NetbeansActionMapping mapp, NbMavenProjectImpl project, ActionToGoalMapping historyMappings) {
