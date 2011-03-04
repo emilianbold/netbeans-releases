@@ -648,6 +648,9 @@ public class VariableFormatterEditPanel extends javax.swing.JPanel {
         }
         if (!childrenVariablesRadioButton.isSelected() || !childrenVariablesRadioButton.isEnabled()) {
             childrenVariablesTable.getSelectionModel().clearSelection();
+            if (childrenVariablesTable.isEditing()) {
+                childrenVariablesTable.getCellEditor().stopCellEditing();
+            }
             childrenVariablesTable.setEnabled(false);
             addVarButton.setEnabled(false);
             removeVarButton.setEnabled(false);
