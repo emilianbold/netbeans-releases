@@ -156,7 +156,8 @@ public class OpenRemoteProjectAction implements ActionListener {
         final ExecutionEnvironment env = record.getExecutionEnvironment();
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(env,
-                record.getDisplayName(), NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
+                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.title"),//NOI18N
+                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
                 JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
 //        fileChooser.setFileView(new MyFileView(fileChooser));
         int ret = fileChooser.showOpenDialog(mainWindow);
