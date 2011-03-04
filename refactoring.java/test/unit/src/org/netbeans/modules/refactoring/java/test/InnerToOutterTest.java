@@ -61,7 +61,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test178451() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; public static class F { } }"));
-        performEncapsulateFieldsTest(false);
+        performInnerToOuterTest(false);
         verifyContent(src,
                       new File("t/F.java", "package t;\n\npublic class F { }\n"),//TODO: why outer reference?
                       new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; }"));
@@ -70,16 +70,26 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test138204a() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
-        performEncapsulateFieldsTest(true);
+        performInnerToOuterTest(true);
         verifyContent(src,
                       new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
+    public void test195947() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } static class F { } }")); 
+        performInnerToOuterTest(false);
+        verifyContent(src,
+                      new File("t/F.java", "package t; class F { }\n"),
+                      new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } }"));
+
+}
+    
     public void test138204b() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
-        performEncapsulateFieldsTest(true);
+        performInnerToOuterTest(true);
         verifyContent(src,
                       new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
@@ -88,7 +98,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test138204c() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
-        performEncapsulateFieldsTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
+        performInnerToOuterTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
         verifyContent(src,
                       new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
@@ -97,7 +107,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test180364() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { int i; static class F extends A { private void t() { i = 0; } } }"));
-        performEncapsulateFieldsTest(false);
+        performInnerToOuterTest(false);
         verifyContent(src,
                       new File("t/F.java", "package t; class F extends A {  private void t() { i = 0; } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { int i; }"));
@@ -154,7 +164,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                           "    }\n" +
                                           "\n" +
                                           "}\n"));
-        performEncapsulateFieldsTest(false);
+        performInnerToOuterTest(false);
         verifyContent(src,
                                  new File("t/A.java",
                                           "package t;\n" +
@@ -213,7 +223,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                           "}\n"));
     }
 
-    private void performEncapsulateFieldsTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
+    private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
         
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
