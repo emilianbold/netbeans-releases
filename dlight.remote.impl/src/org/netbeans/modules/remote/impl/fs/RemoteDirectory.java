@@ -420,8 +420,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (force && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-            RemoteLogger.getInstance().warning("getDirectoryStorage is called with force == true while host is not connected");
-            force = false;
+            //RemoteLogger.getInstance().warning("refreshDirectoryStorage is called while host is not connected");
+            //force = false;
+            throw new ConnectException();
         }
 
         DirectoryStorage storage = null;
