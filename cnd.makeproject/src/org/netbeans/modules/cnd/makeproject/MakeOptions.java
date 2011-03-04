@@ -82,6 +82,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
     public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
     public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
+    public static final String USE_BUILD_TRACE = "useBuildTrace"; // NOI18N
 
     static {
     }
@@ -333,6 +334,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(FIX_UNRESOLVED_INCLUDE, value);
         if (oldValue != value) {
             firePropertyChange(FIX_UNRESOLVED_INCLUDE, oldValue, value);
+        }
+    }
+
+    // Use smart build analyzer to configure code assistance
+    public boolean isUseBuildTrace() {
+        return getPreferences().getBoolean(USE_BUILD_TRACE, false);
+    }
+
+    public void setUseBuildTrace(boolean value) {
+        boolean oldValue = isUseBuildTrace();
+        getPreferences().putBoolean(USE_BUILD_TRACE, value);
+        if (oldValue != value) {
+            firePropertyChange(USE_BUILD_TRACE, oldValue, value);
         }
     }
 

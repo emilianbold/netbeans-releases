@@ -41,15 +41,18 @@
  */
 package org.netbeans.modules.cnd.discovery.buildsupport;
 
-import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 
 /**
  *
  * @author Alexander Simon
  */
 public class BuildTraceSupport {
-    public static final boolean CND_BUILD_TOOLS_ENABLED = DebugUtils.getBoolean("cnd.buildtrace.enabled", true); //NOI18N
     public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
     public static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
     public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
+    
+    public static boolean useBuildTrace() {
+        return CommonUtilities.isUseBuildTrace();
+    }
 }
