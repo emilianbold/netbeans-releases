@@ -117,12 +117,12 @@ public class OpenRemoteProjectAction implements ActionListener {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        RemoteProjectImportWizard wizard = new RemoteProjectImportWizard();
-        wizard.start();
-        List<ImportedProject> projectsToImport = wizard.getProjectsToImport();
-        if (wizard.isCancelled() || projectsToImport == null || projectsToImport.isEmpty()) {
-            return;
-        }
+//        RemoteProjectImportWizard wizard = new RemoteProjectImportWizard();
+//        wizard.start();
+//        List<ImportedProject> projectsToImport = wizard.getProjectsToImport();
+//        if (wizard.isCancelled() || projectsToImport == null || projectsToImport.isEmpty()) {
+//            return;
+//        }
 //        if (record.isOffline()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private volatile String homeDir;
