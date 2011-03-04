@@ -1245,7 +1245,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
-                    if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")) {
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
