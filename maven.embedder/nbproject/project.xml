@@ -251,37 +251,37 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>../maven/lib/commons-cli-1.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-aether-provider-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-aether-provider-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-artifact-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-artifact-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-compat-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-compat-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-core-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-core-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-embedder-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-embedder-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-model-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-model-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-model-builder-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-model-builder-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-plugin-api-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-plugin-api-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-repository-metadata-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-repository-metadata-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-settings-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-settings-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/maven-settings-builder-3.0.3-RC1.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/maven-settings-builder-3.0.3.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/nekohtml-1.9.6.2.jar</runtime-relative-path>
