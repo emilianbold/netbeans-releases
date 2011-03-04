@@ -334,9 +334,9 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
 
     void enableControls(boolean enable) {
         rbExistent.setEnabled(enable);
-        rbExistent.setEnabled(enable);
+        rbNew.setEnabled(enable);
         lstDevHosts.setEnabled(enable);
-        createHostPanel.setEnabled(enable);
+        createHostPanel.setEnabled(rbNew.isSelected() ? enable : false);
     }
     // End of variables declaration
 
