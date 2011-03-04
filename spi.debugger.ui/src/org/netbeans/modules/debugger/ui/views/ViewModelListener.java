@@ -592,9 +592,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                         }
                         GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(3, 3, 3, 3), 0, 0);
                         javax.swing.JPanel pushUpPanel = new javax.swing.JPanel();
-                        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-                            pushUpPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-                        }
+                        pushUpPanel.setBackground(buttonsPane.getBackground());
                         buttonsPane.add(pushUpPanel, c); // Push-panel
                         //Exceptions.printStackTrace(new IllegalArgumentException("L&F = '"+UIManager.getLookAndFeel().getID()+"'"));
 
