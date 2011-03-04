@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -188,7 +187,7 @@ public class ProjectSupport {
         if (execEnv.isRemote()) {
             if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
-                return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+                return mapper.getRemotePath(localDir, false);
             } else {
                 return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
             }

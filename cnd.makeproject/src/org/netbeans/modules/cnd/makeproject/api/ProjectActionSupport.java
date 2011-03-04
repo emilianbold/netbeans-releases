@@ -804,7 +804,7 @@ public class ProjectActionSupport {
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
                 if (env.isRemote()) {
                     if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
-                        dir = HostInfoProvider.getMapper(env).getRemotePath(dir);
+                        dir = RemoteSyncSupport.getPathMap(pae.getProject()).getRemotePath(dir);
                     }
                 }
                 TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N

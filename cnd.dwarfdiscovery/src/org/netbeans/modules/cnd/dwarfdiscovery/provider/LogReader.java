@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
@@ -123,13 +124,8 @@ public class LogReader {
     private PathMap getPathMapper(ProjectProxy project) {
         Project p = project.getProject();
         if (p != null) {
-            RemoteProject info = p.getLookup().lookup(RemoteProject.class);
-            if (info != null) {
-                ExecutionEnvironment developmentHost = info.getDevelopmentHost();
-                if (developmentHost != null && developmentHost.isRemote()) {
-                    return HostInfoProvider.getMapper(developmentHost);
-                }
-            }
+            // it won't now return null for local environment
+            return RemoteSyncSupport.getPathMap(p);
         }
         return null;
     }
