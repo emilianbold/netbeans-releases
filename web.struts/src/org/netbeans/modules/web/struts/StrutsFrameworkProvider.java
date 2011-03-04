@@ -172,6 +172,9 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
     }
 
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
+        if (wm == null) {
+            return null;
+        }
         FileObject webinf = wm.getWebInf();
         List files = new ArrayList();
         // The JavaEE 5 introduce web modules without deployment descriptor. 
