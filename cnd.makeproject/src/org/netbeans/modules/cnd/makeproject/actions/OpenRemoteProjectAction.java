@@ -74,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
 
@@ -155,8 +156,10 @@ public class OpenRemoteProjectAction implements ActionListener {
         final ExecutionEnvironment env = record.getExecutionEnvironment();
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(env,
-                record.getDisplayName(), NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
+                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.title"),//NOI18N
+                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
                 JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
+        fileChooser.setFileView(new MyFileView(fileChooser));
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
@@ -198,49 +201,86 @@ public class OpenRemoteProjectAction implements ActionListener {
         }
     }
 
-    private static final class MyFileView extends FileView {
+    private static final class MyFileView extends FileView implements Runnable {
         private final JFileChooser chooser;
         private final Map<File,Icon> knownProjectIcons = new HashMap<File,Icon>();
-
+        private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);//NOI18N
+        private File lookingForIcon;
+        
         public MyFileView(JFileChooser chooser) {
             this.chooser = chooser;
         }
 
         @Override
         public Icon getIcon(File f) {
-            Icon res = knownProjectIcons.get(f);
-            if (res == null) {
-                res = _getIcon(f);
-                knownProjectIcons.put(f, res);
-            }
-            return res;
-        }
-
-        public Icon _getIcon(File f) {
-            try {
-                if (f != null &&
-                    f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
-                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. // NOI18N
+            if (f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
+                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. //NOI18N
                     f.getParentFile() != null) { // do not consider drive roots
-                    String path = f.getAbsolutePath();
-                    String project = path+"/nbproject"; // NOI18N
-                    File projectDir = chooser.getFileSystemView().createFileObject(project);
-                    if (projectDir.exists() && projectDir.isDirectory() && projectDir.canRead()) {
-                        String projectXml = path+"/nbproject/project.xml"; // NOI18N
-                        File projectFile = chooser.getFileSystemView().createFileObject(projectXml);
-                        if (projectFile.exists()) {
-                            String conf = path+"/nbproject/configurations.xml"; // NOI18N
-                            File configuration = chooser.getFileSystemView().createFileObject(conf);
-                            if (configuration.exists()) {
-                                return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
-                            }
-                        }
+                synchronized (this) {
+                    Icon icon = knownProjectIcons.get(f);
+                    if (icon != null) {
+                        return icon;
+                    } else if (lookingForIcon == null) {
+                        lookingForIcon = f;
+                        task.schedule(20);
+                        // Only calculate one at a time.
+                        // When the view refreshes, the next unknown icon
+                        // should trigger the task to be reloaded.
                     }
                 }
-            } catch (Throwable t) {
-                //
             }
             return chooser.getFileSystemView().getSystemIcon(f);
+        }
+
+//        public Icon _getIcon(File f) {
+//            try {
+//                if (f != null &&
+//                    f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
+//                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. // NOI18N
+//                    f.getParentFile() != null) { // do not consider drive roots
+//                    String path = f.getAbsolutePath();
+//                    String project = path+"/nbproject"; // NOI18N
+//                    File projectDir = chooser.getFileSystemView().createFileObject(project);
+//                    if (projectDir.exists() && projectDir.isDirectory() && projectDir.canRead()) {
+//                        String projectXml = path+"/nbproject/project.xml"; // NOI18N
+//                        File projectFile = chooser.getFileSystemView().createFileObject(projectXml);
+//                        if (projectFile.exists()) {
+//                            String conf = path+"/nbproject/configurations.xml"; // NOI18N
+//                            File configuration = chooser.getFileSystemView().createFileObject(conf);
+//                            if (configuration.exists()) {
+//                                return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
+//                            }
+//                        }
+//                    }
+//                }
+//            } catch (Throwable t) {
+//                //
+//            }
+//            return chooser.getFileSystemView().getSystemIcon(f);
+//        }
+        
+        @Override
+        public void run() {
+            String path = lookingForIcon.getAbsolutePath();
+            String project = path + "/nbproject"; // NOI18N
+            File projectDir = chooser.getFileSystemView().createFileObject(project);
+            Icon icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);;
+            if (projectDir.exists() && projectDir.isDirectory() && projectDir.canRead()) {
+                String projectXml = path + "/nbproject/project.xml"; // NOI18N
+                File projectFile = chooser.getFileSystemView().createFileObject(projectXml);
+                if (projectFile.exists()) {
+                    String conf = path + "/nbproject/configurations.xml"; // NOI18N
+                    File configuration = chooser.getFileSystemView().createFileObject(conf);
+                    if (configuration.exists()) {
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
+                    }
+                }
+            }
+            synchronized (this) {
+                knownProjectIcons.put(lookingForIcon, icon);
+                lookingForIcon = null;
+            }
+            chooser.repaint();
         }
     }
 }

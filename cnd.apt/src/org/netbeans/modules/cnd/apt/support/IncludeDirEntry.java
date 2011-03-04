@@ -96,32 +96,45 @@ public final class IncludeDirEntry {
         CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(CndFileSystemProvider.toUrl(fs, dir));
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
+        boolean create = false;
+        IncludeDirEntry out;
         synchronized (delegate) {
-            IncludeDirEntry out = delegate.get(key);
+            out = delegate.get(key);
             if (out == null) {
-                boolean framework = dir.endsWith("/Frameworks"); // NOI18N
-                // FIXME XXX:FullRemote 
-                if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
-                    fs = CndFileUtils.getLocalFileSystem();
-                }
-                boolean exists = CndFileUtils.isExistingDirectory(fs, dir);
-                FileSystem entryFS = fs;
-                if (exists) {
-                    FileObject fo = CndFileUtils.toFileObject(fs, dir);
-                    try {
-                        entryFS = fo.getFileSystem();
-                        // FIXME XXX:FullRemote 
-                        dir = CndFileUtils.normalizePath(fo);
-                    } catch (FileStateInvalidException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
-                out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq);
-                delegate.put(key, out);
+                create = true;
             }
-            return out;
         }
+        if (create) {
+            // #196267 -  slow parsing in Full Remote
+            // do expensive work out of sync block
+            boolean framework = dir.endsWith("/Frameworks"); // NOI18N
+            // FIXME XXX:FullRemote 
+            if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
+                fs = CndFileUtils.getLocalFileSystem();
+            }
+            boolean exists = CndFileUtils.isExistingDirectory(fs, dir);
+            FileSystem entryFS = fs;
+            if (exists) {
+                FileObject fo = CndFileUtils.toFileObject(fs, dir);
+                try {
+                    entryFS = fo.getFileSystem();
+                    // FIXME XXX:FullRemote 
+                    dir = CndFileUtils.normalizePath(fo);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
+            // then go into sync block again
+            synchronized (delegate) {
+                out = delegate.get(key);
+                if (out == null) {
+                    out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq);
+                    delegate.put(key, out);
+                }
+            } 
+        }
+        return out;
     }
 
     public CharSequence getAsSharedCharSequence() {
