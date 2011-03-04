@@ -55,6 +55,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import org.netbeans.modules.web.beans.impl.model.AbstractAssignabilityChecker.AssignabilityType;
+
 
 
 /**
@@ -68,11 +70,12 @@ class TypeBindingFilter extends Filter<TypeElement> {
         return new TypeBindingFilter();
     }
     
-    void init( TypeMirror varType , String name, WebBeansModelImplementation modelImpl )
+    void init( TypeMirror varType , Element injectionPoint, WebBeansModelImplementation modelImpl )
     {
-        mySimpleName = name;
+        mySimpleName = injectionPoint.getSimpleName().toString();
         myImpl = modelImpl;
         myVarType = varType;
+        myInjectionPoint = injectionPoint;
         
         setIsGeneric();
     }
@@ -175,7 +178,17 @@ class TypeBindingFilter extends Filter<TypeElement> {
         if ( !(type instanceof ReferenceType )){
             return false;
         }
-        AssignabilityChecker checker = AssignabilityChecker.get( false );
+        Element injectionPoint = getInjectionPoint();
+        AssignabilityType assignType = AssignabilityType.PLAIN;
+        if ( injectionPoint != null && AnnotationObjectProvider.
+                hasAnnotation(injectionPoint, 
+                        FieldInjectionPointLogic.DELEGATE_ANNOTATION, 
+                        getImplementation().getHelper()))
+        {
+            assignType = AssignabilityType.DECORATOR;
+        }
+        AbstractAssignabilityChecker checker = AbstractAssignabilityChecker.get( 
+                assignType);
         checker.init((DeclaredType)getType(),  (ReferenceType)type, 
                 originalElement, getImplementation());
         return checker.check();
@@ -186,6 +199,10 @@ class TypeBindingFilter extends Filter<TypeElement> {
         return myVarType;
     }
     
+    private Element getInjectionPoint(){
+        return myInjectionPoint;
+    }
+    
     private WebBeansModelImplementation getImplementation(){
         return myImpl;
     }
@@ -194,5 +211,6 @@ class TypeBindingFilter extends Filter<TypeElement> {
     private WebBeansModelImplementation myImpl;
     private String mySimpleName;
     private boolean isGeneric;
+    private Element myInjectionPoint;
     
 }

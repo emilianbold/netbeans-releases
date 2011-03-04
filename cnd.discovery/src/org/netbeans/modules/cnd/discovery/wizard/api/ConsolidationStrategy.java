@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.discovery.wizard.api;
 
-package org.netbeans.modules.cnd.makeproject.api;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 
 /**
- * Utility class for misc make project related functions
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon
  */
-public class MakeProjectUtils {
-
-    private MakeProjectUtils() {
+public final class ConsolidationStrategy {
+    public static final String PROJECT_LEVEL = "project"; // NOI18N
+    public static final String FOLDER_LEVEL = "folder"; // NOI18N
+    public static final String FILE_LEVEL = "file"; // NOI18N
+    
+    private ConsolidationStrategy() {
     }
 
-    public static ExecutionEnvironment getSourceFileSystemHost(Project project) {
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-        if (project != null) {
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null) {
-                env = remoteProject.getSourceFileSystemHost();
-            }
+    public static void consolidateModel(ProjectConfiguration project, String level){
+        if (ConsolidationStrategy.PROJECT_LEVEL.equals(level)){
+            ConfigurationFactory.consolidateProject((ProjectConfigurationImpl)project);
+        } else if (ConsolidationStrategy.FOLDER_LEVEL.equals(level)){
+            ConfigurationFactory.consolidateFolder((ProjectConfigurationImpl)project);
+        } else if (ConsolidationStrategy.FILE_LEVEL.equals(level)){
+            ConfigurationFactory.consolidateFile((ProjectConfigurationImpl)project);
         }
-        return env;
     }
 }

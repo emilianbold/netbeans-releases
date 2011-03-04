@@ -40,29 +40,40 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.cnd.makeproject;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
- *
- * @author ondra
+ * Utility class for misc make project related functions
+ * @author Vladimir Kvashin
  */
-public enum GitObjectType {
-    COMMIT {
-        @Override
-        public String toString() {
-            return "COMMIT"; //NOI18N
+public class MakeProjectUtils {
+
+    private MakeProjectUtils() {
+    }
+
+    public static ExecutionEnvironment getSourceFileSystemHost(Project project) {
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                env = remoteProject.getSourceFileSystemHost();
+            }
         }
-    },
-    BLOB {
-        @Override
-        public String toString() {
-            return "BLOB"; //NOI18N
+        return env;
+    }
+    
+    public static boolean isFullRemote(Project project) {
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                return remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES;
+            }
         }
-    },
-    HEAD {
-        @Override
-        public String toString() {
-            return "HEAD"; //NOI18N
-        }
+        return false;
     }
 }

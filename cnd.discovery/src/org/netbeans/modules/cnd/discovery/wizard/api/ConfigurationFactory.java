@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.tree;
+package org.netbeans.modules.cnd.discovery.wizard.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,19 +56,20 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.discovery.api.FolderProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
-import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
+import org.netbeans.modules.cnd.discovery.wizard.tree.FileConfigurationImpl;
+import org.netbeans.modules.cnd.discovery.wizard.tree.FolderConfigurationImpl;
+import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ConfigurationFactory {
+public final class ConfigurationFactory {
     
     private ConfigurationFactory() {
     }
     
-    public static ProjectConfigurationImpl makeRoot(ProjectProperties project, String rootFolder){
+    public static ProjectConfiguration makeRoot(ProjectProperties project, String rootFolder){
         Collection<FolderProperties> folders = project.getConfiguredFolders();
         FolderConfigurationImpl root = new FolderConfigurationImpl("");
         for(FolderProperties folder : folders){
@@ -98,8 +99,8 @@ public class ConfigurationFactory {
         return new ProjectConfigurationImpl(project, root);
     }
     
-    private static FolderConfigurationImpl addChild(String child, FolderConfigurationImpl folder){
-        FolderConfigurationImpl current = folder;
+    private static FolderConfigurationImpl addChild(String child, FolderConfiguration folder){
+        FolderConfigurationImpl current = (FolderConfigurationImpl) folder;
         StringTokenizer st = new StringTokenizer(child,"/\\"); // NOI18N
         StringBuilder currentName = new StringBuilder();
         boolean first = true;
@@ -120,7 +121,7 @@ public class ConfigurationFactory {
         return current;
     }
     
-    public static void consolidateProject(ProjectConfigurationImpl project){
+    public static void consolidateProject(ProjectConfiguration project){
         FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
         Set<String> userIncludes = new LinkedHashSet<String>();
         Map<String,String> userMacros = new HashMap<String,String>();
@@ -129,8 +130,8 @@ public class ConfigurationFactory {
         root.setOverrideMacros(false);
         root.setUserInludePaths(null);
         root.setUserMacros(null);
-        project.setUserInludePaths(userIncludes);
-        project.setUserMacros(userMacros);
+        ((ProjectConfigurationImpl)project).setUserInludePaths(userIncludes);
+        ((ProjectConfigurationImpl)project).setUserMacros(userMacros);
     }
     
     private static void consolidateProject(FolderConfigurationImpl folder, Set<String> userIncludes, Map<String,String> userMacros){
@@ -153,11 +154,11 @@ public class ConfigurationFactory {
         }
     }
     
-    public static void consolidateFolder(ProjectConfigurationImpl project){
+    public static void consolidateFolder(ProjectConfiguration project){
         FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
         consolidateFolder(root);
-        project.setUserInludePaths(null);
-        project.setUserMacros(null);
+        ((ProjectConfigurationImpl)project).setUserInludePaths(null);
+        ((ProjectConfigurationImpl)project).setUserMacros(null);
     }
     
     private static void consolidateFolder(FolderConfigurationImpl folder){
@@ -191,11 +192,11 @@ public class ConfigurationFactory {
         }
     }
     
-    public static void consolidateFile(ProjectConfigurationImpl project){
+    public static void consolidateFile(ProjectConfiguration project){
         FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
         consolidateFile(root);
-        project.setUserInludePaths(root.getUserInludePaths(false));
-        project.setUserMacros(root.getUserMacros(false));
+        ((ProjectConfigurationImpl)project).setUserInludePaths(root.getUserInludePaths(false));
+        ((ProjectConfigurationImpl)project).setUserMacros(root.getUserMacros(false));
     }
     
     private static void consolidateFile(FolderConfigurationImpl folder){

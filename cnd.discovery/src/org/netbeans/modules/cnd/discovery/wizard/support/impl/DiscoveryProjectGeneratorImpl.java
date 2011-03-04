@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.bridge;
+package org.netbeans.modules.cnd.discovery.wizard.support.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.AbstractRoot;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -77,7 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class DiscoveryProjectGenerator {
+public class DiscoveryProjectGeneratorImpl {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
     private static boolean TRUNCATE_BEGINNING_PATH = true;
     private ProjectBridge projectBridge;
@@ -86,7 +87,7 @@ public class DiscoveryProjectGenerator {
     private String level;
 
     /** Creates a new instance of PrjectGenerator */
-    public DiscoveryProjectGenerator(DiscoveryDescriptor wizard) throws IOException {
+    public DiscoveryProjectGeneratorImpl(DiscoveryDescriptor wizard) throws IOException {
         this.wizard = wizard;
         baseFolder = wizard.getRootFolder();
         Project project = wizard.getProject();
@@ -515,7 +516,7 @@ public class DiscoveryProjectGenerator {
                         if (prefferedFolder != null) {
                             item = projectBridge.createItem(name);
                             item = prefferedFolder.addItem(item);
-                            projectBridge.setHeaderTool(item);
+                            ProjectBridge.setHeaderTool(item);
                             if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
                                 needCheck.add(path);
                             } else {
@@ -532,7 +533,7 @@ public class DiscoveryProjectGenerator {
             } else {
                 if (!usedItems.contains(item)) {
                     ProjectBridge.setExclude(item,false);
-                    projectBridge.setHeaderTool(item);
+                    ProjectBridge.setHeaderTool(item);
                 } else {
                     if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
                         needCheck.add(path);
@@ -623,12 +624,12 @@ public class DiscoveryProjectGenerator {
                         }
                     }
                     ProjectBridge.setExclude(item,false);
-                    projectBridge.setHeaderTool(item);
+                    ProjectBridge.setHeaderTool(item);
                 } else {
                     item = projectBridge.createItem(file);
                     item = added.addItem(item);
                     ProjectBridge.setExclude(item,false);
-                    projectBridge.setHeaderTool(item);
+                    ProjectBridge.setHeaderTool(item);
                 }
             }
         }
