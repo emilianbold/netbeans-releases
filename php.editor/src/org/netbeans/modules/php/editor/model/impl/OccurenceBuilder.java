@@ -1711,7 +1711,6 @@ class OccurenceBuilder {
                 LazyBuild scope = (LazyBuild)entry.getValue();
                 if (!scope.isScanned()) {
                     scope.scan();
-                    System.out.println("Scanned " + scope.toString());
                 }
             }
         }
