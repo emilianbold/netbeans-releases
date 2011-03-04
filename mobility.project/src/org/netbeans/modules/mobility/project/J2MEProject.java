@@ -348,7 +348,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         if (fo != null && !isJ2MEFile(fo)) {
             synchronized (roots) {
                 if (roots.add(fo))
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             final Enumeration en = fo.getChildren(true);
                             while (en.hasMoreElements()) try {
