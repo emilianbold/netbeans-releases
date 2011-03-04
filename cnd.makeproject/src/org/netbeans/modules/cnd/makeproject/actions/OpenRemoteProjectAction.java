@@ -159,7 +159,7 @@ public class OpenRemoteProjectAction implements ActionListener {
                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.title"),//NOI18N
                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.open"), //NOI18N
                 JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
-//        fileChooser.setFileView(new MyFileView(fileChooser));
+        fileChooser.setFileView(new MyFileView(fileChooser));
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
