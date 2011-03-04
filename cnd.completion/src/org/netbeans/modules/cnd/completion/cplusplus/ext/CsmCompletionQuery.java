@@ -2833,6 +2833,8 @@ abstract public class CsmCompletionQuery {
                 return getCsmItemFactory().createLabelResultItem((CsmLabel) csmObj);
             } else if (CsmKindUtilities.isNamespaceAlias(csmObj)) {
                 return getCsmItemFactory().createNamespaceAliasResultItem((CsmNamespaceAlias) csmObj, false);
+            } else if (CsmKindUtilities.isTemplateParameter(csmObj)) {
+                return getCsmItemFactory().createTemplateParameterResultItem((CsmTemplateParameter)csmObj);
             } else if(csmObj instanceof CsmTemplateBasedReferencedObject) {
                 return new TemplateBasedReferencedObjectResultItem((CsmObject) obj);
             }

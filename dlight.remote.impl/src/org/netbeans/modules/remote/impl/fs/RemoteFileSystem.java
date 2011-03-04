@@ -131,7 +131,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
             public void windowGainedFocus(WindowEvent e) {
-                refreshManager.scheduleRefresh(filterDirectories(factory.getCachedFileObjects()));
+                if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
+                    refreshManager.scheduleRefresh(filterDirectories(factory.getCachedFileObjects()));
+                }
             }
 
             public void windowLostFocus(WindowEvent e) {
@@ -160,13 +162,14 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
         Collection<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>();
         for (RemoteFileObjectBase fo : fileObjects) {
-            if (fo != null && fo.isValid() && fo.isFolder()) {
+            // Don't call isValid() or isFolder() - they might be SLOW!
+            if (fo != null && ((fo instanceof RemoteLinkBase) || (fo instanceof RemoteDirectory))) {
                 result.add(fo);
             }
         }
         return result;
     }
-
+    
     public void disconnected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {

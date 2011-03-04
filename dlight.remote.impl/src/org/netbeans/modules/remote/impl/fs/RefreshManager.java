@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.util.RequestProcessor;
 
@@ -111,6 +112,9 @@ public class RefreshManager {
     }        
     
     public void scheduleRefresh(RemoteFileObjectBase fo) {
+        if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
+            RemoteLogger.getInstance().warning("scheduleRefresh(FileObject) is called while host is not connected");
+        }        
         synchronized (queueLock) {
             queue.add(fo);
             set.add(fo);
@@ -119,6 +123,9 @@ public class RefreshManager {
     }
     
     public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
+        if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
+            RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
+        }        
         synchronized (queueLock) {
             queue.addAll(fileObjects);
             set.addAll(fileObjects);

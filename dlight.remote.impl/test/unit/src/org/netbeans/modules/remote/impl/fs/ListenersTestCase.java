@@ -135,7 +135,6 @@ public class ListenersTestCase extends RemoteFileTestBase {
     public void testListeners() throws Exception {
         String baseDir = mkTemp(true);
         try {            
-            baseDir = mkTemp(true);
             Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.addFileChangeListener(new FCL("baseDir", evMap));
