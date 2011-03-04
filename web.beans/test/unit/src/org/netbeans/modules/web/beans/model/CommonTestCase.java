@@ -304,6 +304,18 @@ public class CommonTestCase extends JavaSourceTestCase {
                 " void fire( T event ); "+
                 "}");
         
+        TestUtilities.copyStringToFileObject(srcFO, "javax/decorator/Delegate.java",
+                "package javax.decorator; " +
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({FIELD, PARAMETER}) "+          
+                "public @interface Delegate  {" +
+                "}");
+        
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Instance.java",
                 "package javax.enterprise.inject; " +
                 "public interface Instance<T>  extends java.lang.Iterable<T> {" +
