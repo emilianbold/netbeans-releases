@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeConfigurationSaveListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
@@ -771,9 +772,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         updateExtensionList();
         if (!isModified()) {
-            // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
-            new ConfigurationMakefileWriter(this).writeMissingMakefiles();
-
+            if (!MakeProjectUtils.isFullRemote(project)) {
+                // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
+                new ConfigurationMakefileWriter(this).writeMissingMakefiles();
+            }
             ConfigurationPrivateXMLWriter();
             saveProject();
 
