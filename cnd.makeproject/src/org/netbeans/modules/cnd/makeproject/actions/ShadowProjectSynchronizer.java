@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,16 +52,23 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.IIOException;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,7 +99,7 @@ public class ShadowProjectSynchronizer {
     }
     
     public void createShadowProject() throws IOException, SAXException {
-        FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
+        FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
         copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
         updateLocalProjectXml();
         updateLocalConfiguration();
@@ -110,7 +118,7 @@ public class ShadowProjectSynchronizer {
             updateRemoteProjectXml(tmpFO);
             updateRemoteConfiguration(tmpFO, remoteProject);
             updateRemotePrivateConfiguration(tmpFO);
-            FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
+            FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
             remoteNbprojectFO.refresh();
             copy(tmpNbProjFO, remoteProject, "nbproject"); //NOI18N
         } finally {
@@ -159,7 +167,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private static void updateRemoteProjectXml(FileObject remoteProjectCopy) throws IOException, SAXException {
-        FileObject projectFO = remoteProjectCopy.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        FileObject projectFO = getFileObject(remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
         Document doc = XMLUtil.parse(new InputSource(projectFO.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -179,23 +187,36 @@ public class ShadowProjectSynchronizer {
         saveXml(doc, remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
     }
 
-    private static void updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
+    private static String getOrigCompilerSet(FileObject remoteProjectOrig) throws IOException, SAXException {
+        FileObject origPublicConfigurationsFO = getFileObject(remoteProjectOrig, PROJECT_CONFIGURATION_FILE);
+        Document origDoc = XMLUtil.parse(new InputSource(origPublicConfigurationsFO.getInputStream()), false, true, null, null);
+        Element origRoot = origDoc.getDocumentElement();
+        return getOrigCompilerSet(origRoot);
+    }
 
+    private static String getOrigCompilerSet(Element origRoot) throws IOException, SAXException {
         String origCsName = "default"; //NOI18N
-        {
-            FileObject origPublicConfigurationsFO = remoteProjectOrig.getFileObject(PROJECT_CONFIGURATION_FILE);
-            Document origDoc = XMLUtil.parse(new InputSource(origPublicConfigurationsFO.getInputStream()), false, true, null, null);
-            Element origRoot = origDoc.getDocumentElement();
-            NodeList origCSList = origRoot.getElementsByTagName(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
-            if (origCSList.getLength() > 0) {
-                Node origCsNode = origCSList.item(0);
-                if (origCsNode.getChildNodes().getLength() >0) {
-                    origCsName = origCsNode.getChildNodes().item(0).getNodeValue();
-                }
+        NodeList origCSList = origRoot.getElementsByTagName(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
+        if (origCSList.getLength() > 0) {
+            Node origCsNode = origCSList.item(0);
+            if (origCsNode.getChildNodes().getLength() >0) {
+                origCsName = origCsNode.getChildNodes().item(0).getNodeValue();
             }
         }
-        
-        FileObject fo = remoteProjectCopy.getFileObject(PROJECT_CONFIGURATION_FILE);
+        return origCsName;
+    }
+    
+    private static FileObject getFileObject(FileObject base, String relPath) throws FileNotFoundException {
+        FileObject fo = base.getFileObject(relPath);
+        if (fo == null) {
+            throw new FileNotFoundException(base.getPath() + File.separatorChar + PROJECT_CONFIGURATION_FILE);
+        }
+        return fo;
+    }
+    
+    private static void updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
+        String origCsName = getOrigCompilerSet(remoteProjectOrig);
+        FileObject fo = getFileObject(remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -222,7 +243,7 @@ public class ShadowProjectSynchronizer {
     }
     
     private static void updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
-        FileObject fo = remoteProjectCopy.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
@@ -248,7 +269,7 @@ public class ShadowProjectSynchronizer {
     }
 
     private void updateLocalProjectXml() throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        FileObject fo = getFileObject(localProject, AntProjectHelper.PROJECT_XML_PATH);
         File projXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
@@ -271,11 +292,24 @@ public class ShadowProjectSynchronizer {
     }
 
     private void updateLocalConfiguration() throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(PROJECT_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(localProject, PROJECT_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
+            String origCsNameAndFlavor = getOrigCompilerSet(root); //NOI18N
+            CompilerSetManager csManager = CompilerSetManager.get(env);
+            int pos = origCsNameAndFlavor.indexOf('|');            
+            String origCsName = (pos > 0) ? origCsNameAndFlavor.substring(0, pos) : origCsNameAndFlavor;            
+            CompilerSet existentCompilerSet = csManager.getCompilerSet(origCsName);
+            String csNameAndFlavor;
+            if (existentCompilerSet == null) {
+                CompilerSet defaultCs = csManager.getDefaultCompilerSet();
+                csNameAndFlavor = "default"; //NOI18N
+                reportNotFoundCompilerSet(origCsName, defaultCs);
+            } else {
+                csNameAndFlavor = origCsNameAndFlavor;
+            }
             NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
             if (toolSetList.getLength() > 0) {
                 for(int i = 0; i < toolSetList.getLength(); i++) {
@@ -295,7 +329,7 @@ public class ShadowProjectSynchronizer {
                     remoteMode.setTextContent(RemoteProject.Mode.REMOTE_SOURCES.name());
                     node.appendChild(remoteMode);
                     remoteMode = doc.createElement(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
-                    remoteMode.setTextContent("default"); //NOI18N
+                    remoteMode.setTextContent(csNameAndFlavor);
                     node.appendChild(remoteMode);
                 }
             }
@@ -303,8 +337,15 @@ public class ShadowProjectSynchronizer {
         saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
     }
 
+    private void reportNotFoundCompilerSet(String origCsName, CompilerSet defaultCs) {
+        String title = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Title", remoteProject.getName());
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false); // NOI18N
+        String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Details", origCsName, defaultCs.getDisplayName());
+        Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
+    }
+    
     private void updateLocalPrivateConfiguration() throws IOException, SAXException {
-        FileObject fo = localProject.getFileObject(PROJECT_PRIVATE_CONFIGURATION_FILE);
+        FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
