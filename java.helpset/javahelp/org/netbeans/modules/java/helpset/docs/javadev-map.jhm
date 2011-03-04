@@ -328,8 +328,9 @@
 <mapID target="org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel" url="project/csh/proj_j2sestand_props_webstart.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerApplication" url="project/csh/proj_j2sestand_props_common-app.html" />
 <mapID target="org.netbeans.modules.swingapp.ProjectCustomizerPanel" url="project/csh/proj_j2sestand_props_desktop-app.html"/>
+<mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />
+<!-- the following target may be obsolete -->
 <mapID target="org.netbeans.modules.options.indentation.FormattingCustomizerPanel" url="project/csh/proj_j2sestand_props_formatting.html"/>
-
 
 <!-- Freeform J2SE and Web Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
