@@ -559,26 +559,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (!initialized) {
             return false;
         }
-        if (!isValidProjectName(projectNameTextField.getText())) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
-            return false; // Display name not specified
-        }
-        if (!CndPathUtilitities.isPathAbsolute(projectLocationTextField.getText())) { // empty field imcluded
-            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
-            return false;
-        }
-        File f = CndFileUtils.createLocalFile(projectLocationTextField.getText()).getAbsoluteFile();
-        if (getCanonicalFile(f) == null) {
-            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
-            return false;
-        }
-        final File destFolder = getCanonicalFile(CndFileUtils.createLocalFile(createdFolderTextField.getText()).getAbsoluteFile()); // project folder always local
-        if (destFolder == null) {
-            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName"); // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+        if (!isValidLocalProjectNameAndLocation(wizardDescriptor, projectNameTextField.getText(), projectLocationTextField.getText(), createdFolderTextField.getText())) {
             return false;
         }
         if (makefileTextField.getText().indexOf(" ") >= 0) { // NOI18N
@@ -595,6 +576,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return false;
         }
 
+        final File destFolder = getCanonicalFile(CndFileUtils.createLocalFile(createdFolderTextField.getText()).getAbsoluteFile()); // project folder always local
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
@@ -823,6 +805,32 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.createMainTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_MAIN_NAME, null, this.createMainTextField.getText());
         }
+    }
+
+    static boolean isValidLocalProjectNameAndLocation(WizardDescriptor wizardDescriptor, String projectNameTextField, String projectLocationTextField, String createdFolderTextField) {
+        if (!isValidProjectName(projectNameTextField)) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
+            return false; // Display name not specified
+        }
+        if (!CndPathUtilitities.isPathAbsolute(projectLocationTextField)) { // empty field imcluded
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            return false;
+        }
+        File f = CndFileUtils.createLocalFile(projectLocationTextField).getAbsoluteFile();
+        if (getCanonicalFile(f) == null) {
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            return false;
+        }
+        final File destFolder = getCanonicalFile(CndFileUtils.createLocalFile(createdFolderTextField).getAbsoluteFile()); // project folder always local
+        if (destFolder == null) {
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName"); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            return false;
+        }
+        return true;
     }
 
     class MakefileDocumentListener implements DocumentListener {
