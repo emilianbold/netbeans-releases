@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -80,9 +80,9 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
                     if (wizard.isSimpleMode()){
                         new DiscoveryExtension().canApply(wizard);
                     }
-                    DiscoveryProjectGenerator generator;
+                    DiscoveryProjectGeneratorImpl generator;
                     try {
-                        generator = new DiscoveryProjectGenerator(wizard);
+                        generator = new DiscoveryProjectGeneratorImpl(wizard);
                         generator.makeProject();
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
