@@ -108,7 +108,7 @@ public class ShadowProjectSynchronizer {
         try {
             FileObject tmpNbProjFO = copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N
             updateRemoteProjectXml(tmpFO);
-            updateRemoteConfiguration(tmpFO);
+            updateRemoteConfiguration(tmpFO, remoteProject);
             updateRemotePrivateConfiguration(tmpFO);
             FileObject remoteNbprojectFO = remoteProject.getFileObject("nbproject"); // NOI18N
             remoteNbprojectFO.refresh();
@@ -179,7 +179,22 @@ public class ShadowProjectSynchronizer {
         saveXml(doc, remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
     }
 
-    private static void updateRemoteConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+    private static void updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
+
+        String origCsName = "default"; //NOI18N
+        {
+            FileObject origPublicConfigurationsFO = remoteProjectOrig.getFileObject(PROJECT_CONFIGURATION_FILE);
+            Document origDoc = XMLUtil.parse(new InputSource(origPublicConfigurationsFO.getInputStream()), false, true, null, null);
+            Element origRoot = origDoc.getDocumentElement();
+            NodeList origCSList = origRoot.getElementsByTagName(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
+            if (origCSList.getLength() > 0) {
+                Node origCsNode = origCSList.item(0);
+                if (origCsNode.getChildNodes().getLength() >0) {
+                    origCsName = origCsNode.getChildNodes().item(0).getNodeValue();
+                }
+            }
+        }
+        
         FileObject fo = remoteProjectCopy.getFileObject(PROJECT_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
@@ -199,7 +214,7 @@ public class ShadowProjectSynchronizer {
                 el.setTextContent(RemoteProject.Mode.LOCAL_SOURCES.name());
                 node.appendChild(el);
                 el = doc.createElement(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
-                el.setTextContent("default"); //NOI18N
+                el.setTextContent(origCsName); //NOI18N
                 node.appendChild(el);
             }
         }
