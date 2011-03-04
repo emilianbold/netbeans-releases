@@ -177,15 +177,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         } else {
             taProperties.setText(""); //NOI18N
         }
-        List<String> activatedProfiles = config.getActivatedProfiles();
-        if (config.getProject() != null) {
-            ProjectProfileHandler profileHandler=config.getProject().getLookup().lookup(ProjectProfileHandler.class);
-            List<String> retrieveMergedActiveProfiles =
-                    profileHandler.getMergedActiveProfiles(false);
-            txtProfiles.setText(createSpaceSeparatedList(retrieveMergedActiveProfiles));
-        } else {
-            txtProfiles.setText(createSpaceSeparatedList(activatedProfiles));
-        }
+        txtProfiles.setText(createSpaceSeparatedList(config.getActivatedProfiles()));
         
         setUpdateSnapshots(config.isUpdateSnapshots());
         setOffline(config.isOffline() != null ? config.isOffline().booleanValue() : false);
