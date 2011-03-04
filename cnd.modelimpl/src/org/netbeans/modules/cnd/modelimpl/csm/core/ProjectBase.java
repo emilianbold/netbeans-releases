@@ -1904,24 +1904,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private FileImpl findFileImpl(CharSequence absPath, boolean treatSymlinkAsSeparateFile, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = null;
+        boolean create = false;
         synchronized (fileContainerLock) {
             impl = getFile(absPath, treatSymlinkAsSeparateFile);
             if (impl == null) {
-                assert preprocHandler != null : "null preprocHandler for " + absPath;
-                FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
-                CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
-                impl = new FileImpl(ModelSupport.createFileBuffer(fo), this, fileType, nativeFileItem);
-                if (nativeFileItem != null) {
-                    putNativeFileItem(impl.getUID(), nativeFileItem);
-                }
-                putFile(impl, initial);
-                // NB: parse only after putting into a map
-                if (scheduleParseIfNeed) {
-                    APTPreprocHandler.State ppState = preprocHandler.getState();
-                    ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                create = true;
+            }
+        }
+        if (create) {
+            // it is expensive in Full Remote mode to create buffer, so do the work out of sync block
+            assert preprocHandler != null : "null preprocHandler for " + absPath;
+            FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
+            CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
+            FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
+            // and all other under lock again
+            synchronized (fileContainerLock) {
+                impl = getFile(absPath, treatSymlinkAsSeparateFile);
+                if (impl == null) {
+                    impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
+                    if (nativeFileItem != null) {
+                        putNativeFileItem(impl.getUID(), nativeFileItem);
+                    }
+                    putFile(impl, initial);
+                    // NB: parse only after putting into a map
+                    if (scheduleParseIfNeed) {
+                        APTPreprocHandler.State ppState = preprocHandler.getState();
+                        ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                    }
                 }
             }
         }
+
         if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
             impl.setSourceFile();
         } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
