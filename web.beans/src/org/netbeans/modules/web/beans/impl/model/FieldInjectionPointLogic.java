@@ -95,6 +95,9 @@ abstract class FieldInjectionPointLogic {
     
     static final String TYPED_RESTRICTION = 
                         "javax.enterprise.inject.Typed";            // NOI18N
+    
+    static final String DELEGATE_ANNOTATION =
+                        "javax.decorator.Delegate";                 // NOI18N
 
     static final Logger LOGGER = Logger.getLogger(WebBeansModelProvider.class
             .getName());
@@ -585,7 +588,7 @@ abstract class FieldInjectionPointLogic {
             Set<Element> productionElements )
     {
         TypeProductionFilter filter = TypeProductionFilter.get( );
-        filter.init( elementType, element.getSimpleName().toString(), getModel());
+        filter.init( elementType, element, getModel());
         filter.filter( productionElements );
         return filter.getResult();
     }
@@ -632,7 +635,7 @@ abstract class FieldInjectionPointLogic {
         
         // Now filter all found child classes according to real element type ( type mirror )  
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( elementType, element.getSimpleName().toString(), getModel() );
+        filter.init( elementType, element, getModel() );
         filter.filter( result );
         return result;
     }
@@ -641,7 +644,7 @@ abstract class FieldInjectionPointLogic {
             TypeMirror elementType,Set<TypeElement> typesWithBindings)
     {
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init( elementType, element.getSimpleName().toString(), getModel() );
+        filter.init( elementType, element, getModel() );
         filter.filter( typesWithBindings );
     }
     /*

@@ -80,13 +80,13 @@ class TypeProductionFilter extends Filter<Element> {
         return new TypeProductionFilter();
     }
     
-    void init( TypeMirror elementType , String name ,
+    void init( TypeMirror elementType , Element injectionPoint ,
             WebBeansModelImplementation model)
     {
-        myName = name;
         myImpl = model;
         myType = elementType;
         myResult = new HashMap<Element, List<DeclaredType>>();
+        myOriginalElement = injectionPoint;
     }
     
     /* (non-Javadoc)
@@ -104,7 +104,7 @@ class TypeProductionFilter extends Filter<Element> {
         }
         
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init(getElementType(), getName(), getImplementation());
+        filter.init(getElementType(), getOriginalElement(), getImplementation());
         
         // this cycle care only about declared types.
         for ( Iterator<? extends Element> iterator = productionElements.iterator() ; 
@@ -342,14 +342,14 @@ class TypeProductionFilter extends Filter<Element> {
         return myType;
     }
     
-    private String getName(){
-        return myName;
+    private Element getOriginalElement(){
+        return myOriginalElement;
     }
 
     private WebBeansModelImplementation myImpl;
     private TypeMirror myType;
     private Map<Element, List<DeclaredType>> myResult;
-    private String myName;
+    private Element myOriginalElement;
     
     
     private static final Set<String> WRAPPERS = new HashSet<String>();
