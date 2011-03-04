@@ -854,7 +854,7 @@ public class ImportProject implements PropertyChangeListener {
                 } else {
                     importResult.put(Step.Make, State.Fail);
                 }
-                if (executionEnvironment.isRemote()) {
+                if (executionEnvironment.isRemote() && execLog != null) {
                     try {
                         if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
