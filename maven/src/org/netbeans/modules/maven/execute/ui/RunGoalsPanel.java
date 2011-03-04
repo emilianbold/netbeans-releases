@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -163,17 +164,20 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         btnNext.setVisible(false);
         btnPrev.setVisible(false);
         txtGoals.setText(createSpaceSeparatedList(config.getGoals()));
-        if (config.getProperties() != null) {
-            StringBuffer buf = new StringBuffer();
-            Iterator it = config.getProperties().keySet().iterator();
-            while (it.hasNext()) {
-                String key = (String) it.next();
-                buf.append(key).append("=").append(config.getProperties().getProperty(key)).append("\n"); //NOI18N
+        Properties properties = config.getProperties();
+        if (properties != null) {
+            StringBuilder buf = new StringBuilder();
+            for (Map.Entry<?,?> entry : properties.entrySet()) {
+                if (buf.length() > 0) {
+                    buf.append('\n');
+                }
+                buf.append(entry.getKey()).append('=').append(entry.getValue());
+                if (entry.getKey().equals("skipTests") && entry.getValue().equals("true")) { // NOI18N
+                    cbSkipTests.setSelected(true);
+                }
             }
             taProperties.setText(buf.toString());
-            if (buf.toString().matches(".*maven\\.test\\.skip\\s*=\\s*true\\s*.*")) { //NOI18N
-                cbSkipTests.setSelected(true);
-            }
+            taProperties.setCaretPosition(0);
         } else {
             taProperties.setText(""); //NOI18N
         }
@@ -198,17 +202,20 @@ public class RunGoalsPanel extends javax.swing.JPanel {
 
     private void readMapping(NetbeansActionMapping mapp) {
         txtGoals.setText(createSpaceSeparatedList(mapp.getGoals()));
-        if (mapp.getProperties() != null) {
-            StringBuffer buf = new StringBuffer();
-            Iterator it = mapp.getProperties().keySet().iterator();
-            while (it.hasNext()) {
-                String key = (String) it.next();
-                buf.append(key).append("=").append(mapp.getProperties().getProperty(key)).append("\n"); //NOI18N
+        Properties properties = mapp.getProperties();
+        if (properties != null) {
+            StringBuilder buf = new StringBuilder();
+            for (Map.Entry<?,?> entry : properties.entrySet()) {
+                if (buf.length() > 0) {
+                    buf.append('\n');
+                }
+                buf.append(entry.getKey()).append('=').append(entry.getValue());
+                if (entry.getKey().equals("skipTests") && entry.getValue().equals("true")) { // NOI18N
+                    cbSkipTests.setSelected(true);
+                }
             }
             taProperties.setText(buf.toString());
-            if (buf.toString().matches(".*maven\\.test\\.skip\\s*=\\s*true\\s*.*")) { //NOI18N
-                cbSkipTests.setSelected(true);
-            }
+            taProperties.setCaretPosition(0);
         } else {
             taProperties.setText(""); //NOI18N
         }
