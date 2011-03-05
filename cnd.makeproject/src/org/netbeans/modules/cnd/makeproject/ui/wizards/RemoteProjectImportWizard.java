@@ -65,7 +65,12 @@ public class RemoteProjectImportWizard {
         iterator = new RemoteProjectImportWizardIterator();
     }
     
-    public void importProjects() {
+    public static void showImportWizard() {
+        RemoteProjectImportWizard wizard = new RemoteProjectImportWizard();
+        wizard.importProjects();
+    }
+
+    private void importProjects() {
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         iterator.addChangeListener(new ChangeListener() {
 
@@ -89,12 +94,12 @@ public class RemoteProjectImportWizard {
     /**
      * Returns whether user canceled the wizard.
      */
-    public boolean isCancelled() {
+    private boolean isCancelled() {
         return cancelled;
     }
     
     /** Returns project selected by user with the help of the wizard. */
-    public List<ImportedProject> getProjectsToImport() {
+    private List<ImportedProject> getProjectsToImport() {
         return iterator.getProjects();
     }
     
