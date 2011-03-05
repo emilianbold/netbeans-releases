@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.HashSet;
@@ -125,6 +126,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -1380,7 +1382,24 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
             for (SourceGroup g : groups) {
                 try {
-                    list.add(new PathResourceImpl(ClassPathSupport.createResource(g.getRootFolder().getURL())));
+                    FileObject rootFolder = g.getRootFolder();
+                    URL url = rootFolder.getURL();
+                    // A workaround for #196328 - IllegalArgumentException on save Project properties
+                    if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
+                        try {
+                            URL url2 = url = new URL(url.toExternalForm() + '/'); //NOI18N                     
+                            FileObject fo = URLMapper.findFileObject(url);
+                            if (fo != null && fo.equals(rootFolder)) {
+                                url = url2;
+                            }                            
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    // end of workaround for #196328
+                    list.add(new PathResourceImpl(ClassPathSupport.createResource(url)));
                 } catch (FileStateInvalidException ex) {
                     Logger.getLogger(MakeProject.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -1393,7 +1412,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             }
             return list;
         }
-
+        
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
