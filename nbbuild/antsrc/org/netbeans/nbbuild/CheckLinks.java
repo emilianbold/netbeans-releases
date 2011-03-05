@@ -313,7 +313,7 @@ public class CheckLinks extends MatchingTask {
             //System.out.println("u.getPath:" + u.getPath());
             //If no module base name is specified as host name check if given
             //resource is available in current module or globally.
-            if (u.toURL().getHost() == null) {
+            if (toURL(u).getHost().isEmpty()) {
                 errors.add("Missing host in nbdocs protocol URL. URI: " + u);
                 errors.add("Referrer: " + referrer);
                 String name = u.getPath();
@@ -362,10 +362,10 @@ public class CheckLinks extends MatchingTask {
                     //System.out.println("name:" + name);
                 }
                 URL res = null;
-                URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(u.toURL().getHost());
+                URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(toURL(u).getHost());
                 //Log warning
                 if (moduleClassLoader == null) {
-                    errors.add("Module " + u.toURL().getHost() + " not found among modules containing helpsets. URI: " + u);
+                    errors.add("Module " + toURL(u).getHost() + " not found among modules containing helpsets. URI: " + u);
                     errors.add("Referrer: " + referrer);
                 }
                 if (moduleClassLoader != null) {
@@ -384,7 +384,7 @@ public class CheckLinks extends MatchingTask {
                 }
                 if (res == null) {
                     if (moduleClassLoader != null) {
-                        errors.add("Link not found in module " + u.toURL().getHost() + " URI: " + u);
+                        errors.add("Link not found in module " + toURL(u).getHost() + " URI: " + u);
                         errors.add("Referrer: " + referrer);
                     }
                     res = globalClassLoader.getResource(name);
@@ -425,7 +425,7 @@ public class CheckLinks extends MatchingTask {
         String mimeType;
         try {
             // XXX for protocol 'file', could more efficiently use a memmapped char buffer
-            URLConnection conn = base.toURL().openConnection();
+            URLConnection conn = toURL(base).openConnection();
             //System.out.println("CALL OF connect");
             conn.connect();
             mimeType = conn.getContentType ();
@@ -631,6 +631,13 @@ public class CheckLinks extends MatchingTask {
             }
         }
         return ":" + line + ":" + col;
+    }
+
+    static final ThreadLocal<URLStreamHandlerFactory> handlerFactory = new ThreadLocal<URLStreamHandlerFactory>();
+    static URL toURL(URI uri) throws MalformedURLException {
+        URLStreamHandlerFactory f = handlerFactory.get();
+        URLStreamHandler h = f != null && uri.getScheme() != null ? f.createURLStreamHandler(uri.getScheme()) : null;
+        return h != null ? new URL(null, uri.toString(), h) : uri.toURL();
     }
 
     public final class Filter extends Object {

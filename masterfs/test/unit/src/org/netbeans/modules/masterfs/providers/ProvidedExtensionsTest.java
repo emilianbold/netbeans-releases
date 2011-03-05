@@ -61,10 +61,10 @@ import java.util.Set;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.ProvidedExtensionsAccessor;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
-import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileChangeAdapter;
@@ -480,6 +480,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         assertEquals(3,events.size());
     }
 
+    @RandomlyFails // as of 0314825d7d9d on deadlock
     public void testImplsRename3() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);

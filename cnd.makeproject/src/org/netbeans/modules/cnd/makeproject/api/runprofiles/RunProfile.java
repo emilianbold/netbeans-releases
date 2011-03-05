@@ -399,6 +399,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         String runBinary = getRunBinary();
         String oldArgsFlat = getRunArgs();
         getRunCommand().setValue(runBinary + " " + argsFlat); // NOI18N
+        arguments.setValue(argsFlat);
         if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
@@ -423,7 +424,12 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     public String getArgsFlat() {
-        return getRunArgs();
+        if ("on".equals(System.getProperty("spro.dbxtool"))) { // NOI18N
+            return getArguments();
+        }
+        else {
+            return getRunArgs();
+        }
     }
 
     public String[] getArgsArray() {
@@ -654,11 +660,11 @@ public final class RunProfile implements ConfigurationAuxObject {
         setBaseDir(p.getBaseDir());
         setRunDir(p.getRunDir());
         getRunCommand().assign(p.getRunCommand());
+        //runCommandPicklist = p.getRunCommand().getPicklist();
+        setConfigurationArguments(p.getConfigurationArguments().clone());
         if (pcs != null && !CndPathUtilitities.sameString(oldArgs, getArgsFlat())) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, getArgsFlat());
         }
-        //runCommandPicklist = p.getRunCommand().getPicklist();
-        setConfigurationArguments(p.getConfigurationArguments());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         getEnvironment().assign(p.getEnvironment());
@@ -682,7 +688,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         p.setDefault(isDefault());
         p.setRunDir(getRunDir());
         p.setRunCommand(getRunCommand().clone());
-        p.setConfigurationArguments(getConfigurationArguments());
+        p.setConfigurationArguments(getConfigurationArguments().clone());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
         p.setConsoleType(getConsoleType().clone());
