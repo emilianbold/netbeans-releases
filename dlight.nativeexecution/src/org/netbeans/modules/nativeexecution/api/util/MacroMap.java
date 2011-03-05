@@ -241,8 +241,8 @@ public final class MacroMap implements Cloneable {
         }
     }
 
-    public void remove(String name) {
-        map.remove(name);
+    public String remove(String name) {
+        return map.remove(name);
     }
 
     public Map<String, String> toMap() {
