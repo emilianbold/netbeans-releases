@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -67,6 +68,8 @@ public class RefreshManager {
     private final LinkedList<RemoteFileObjectBase> queue = new LinkedList<RemoteFileObjectBase>();
     private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
     private final Object queueLock = new Object();
+    
+    private static final boolean REFRESH_ON_FOCUS = getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
     
     private final class RefreshWorker implements Runnable {
         public void run() {
@@ -111,18 +114,40 @@ public class RefreshManager {
         updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker()); //NOI18N
     }        
     
-    public void scheduleRefresh(RemoteFileObjectBase fo) {
-        if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
-            RemoteLogger.getInstance().warning("scheduleRefresh(FileObject) is called while host is not connected");
-        }        
-        synchronized (queueLock) {
-            queue.add(fo);
-            set.add(fo);
-            updateTask.schedule(0);
+    public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {
+        if (REFRESH_ON_FOCUS) {
+            scheduleRefresh(filterDirectories(fileObjects));        
         }
     }
     
-    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
+    public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
+        scheduleRefresh(filterDirectories(fileObjects));        
+    }
+    
+    private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
+        Collection<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>();
+        for (RemoteFileObjectBase fo : fileObjects) {
+            // Don't call isValid() or isFolder() - they might be SLOW!
+            if (fo != null && ((fo instanceof RemoteLinkBase) || (fo instanceof RemoteDirectory))) {
+                result.add(fo);
+            }
+        }
+        return result;
+    }    
+  
+// not used so far    
+//    private void scheduleRefresh(RemoteFileObjectBase fo) {
+//        if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
+//            RemoteLogger.getInstance().warning("scheduleRefresh(FileObject) is called while host is not connected");
+//        }        
+//        synchronized (queueLock) {
+//            queue.add(fo);
+//            set.add(fo);
+//            updateTask.schedule(0);
+//        }
+//    }
+    
+    private void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
         if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
             RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
         }        
@@ -132,4 +157,12 @@ public class RefreshManager {
         }
         updateTask.schedule(0);
     }    
+    
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }
 }
