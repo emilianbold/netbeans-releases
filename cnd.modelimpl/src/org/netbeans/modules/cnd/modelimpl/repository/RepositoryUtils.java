@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -177,7 +178,7 @@ public final class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             put(key, (Persistent) csmObj);
-            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject))){
+            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject)||(csmObj instanceof CsmInstantiation))){
                 assert uid.getObject() != null;
             }
         }

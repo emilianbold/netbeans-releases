@@ -193,6 +193,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
             } else if (type.equals("6")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
+            } else if (type.equals("7")) {// FIXUP // NOI18N
+                confType = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType);
 

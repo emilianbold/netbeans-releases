@@ -56,6 +56,7 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
 import org.openide.text.Line;
 
@@ -277,7 +278,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    } else {
 		MakeConfiguration mc = (MakeConfiguration) conf;
 		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
-		cachedPathMap = mc.getRemoteSyncFactory().getPathMap(ee);
+                RemoteSyncFactory syncFactory = mc.getRemoteSyncFactory();                
+		cachedPathMap = (syncFactory == null) ? null : syncFactory.getPathMap(ee);
 	    }
 	}
 	return cachedPathMap;

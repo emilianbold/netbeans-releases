@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -66,6 +67,8 @@ public final class ResolvedPath {
         this.path = FilePathCache.getManager().getString(path);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;
+        assert CndFileUtils.isExistingFile(fileSystem, this.path.toString()) : "isExistingFile failed in " + fileSystem + " for " + path;
+        assert fileSystem.findResource(path.toString()) != null : "no FileObject in " + fileSystem + " for " + path;
         CndUtils.assertNormalized(fileSystem, folder);
         CndUtils.assertNormalized(fileSystem, path);
     }

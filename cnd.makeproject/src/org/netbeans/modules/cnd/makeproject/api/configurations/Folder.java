@@ -1137,7 +1137,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileDeleted(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(new File(thisPath));
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             File file = CndFileUtils.toFile(fileObject);
