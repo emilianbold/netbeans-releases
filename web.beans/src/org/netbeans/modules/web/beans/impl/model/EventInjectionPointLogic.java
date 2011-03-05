@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
+import org.netbeans.modules.web.beans.impl.model.AbstractAssignabilityChecker.AssignabilityType;
 
 
 /**
@@ -380,7 +381,8 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     private void filterParametersByType(
             Map<Element, TypeMirror> parameterTypesMap, TypeMirror type )
     {
-        AssignabilityChecker checker = new AssignabilityChecker( true );
+        AbstractAssignabilityChecker checker = AbstractAssignabilityChecker.get( 
+                AssignabilityType.EVENT);
         for (Iterator<Entry<Element, TypeMirror>> iterator =
             parameterTypesMap.entrySet().iterator();iterator.hasNext() ; ) 
         {
@@ -399,7 +401,8 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             List<VariableElement> eventInjectionPoints,
             TypeMirror parameterType)
     {
-        AssignabilityChecker checker = new AssignabilityChecker( true );
+        AbstractAssignabilityChecker checker = AbstractAssignabilityChecker.get( 
+                AssignabilityType.EVENT );
         for (Iterator<VariableElement> iterator =
             eventInjectionPoints.iterator();iterator.hasNext() ; ) 
         {
@@ -416,7 +419,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     }
     
     private boolean isAssignable( TypeMirror subject , TypeMirror toType ,
-            AssignabilityChecker checker)
+            AbstractAssignabilityChecker checker)
     {
         boolean assignable = false;
         

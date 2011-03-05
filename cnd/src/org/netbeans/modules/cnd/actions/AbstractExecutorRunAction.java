@@ -61,15 +61,12 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -88,7 +85,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -96,7 +92,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -476,21 +471,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return null;
         }
         if (execEnv.isRemote()) {
-            RemoteProject remoteProject = null;
-            if (project != null) {
-                remoteProject = project.getLookup().lookup(RemoteProject.class);
-            }
-            PathMap mapper = null;
-            if (remoteProject != null) {
-                RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
-                if (syncFactory != null) {
-                    mapper = syncFactory.getPathMap(execEnv);
-                }
-            }
-            if (mapper == null) {
-                mapper = HostInfoProvider.getMapper(execEnv);
-            }
-            return mapper.getRemotePath(localDir, false);
+            return RemoteSyncSupport.getPathMap(execEnv, project).getRemotePath(localDir, false);
         }
         return localDir;
     }

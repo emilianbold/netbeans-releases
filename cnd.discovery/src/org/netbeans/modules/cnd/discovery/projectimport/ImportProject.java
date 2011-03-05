@@ -93,14 +93,14 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
-import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
-import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
+import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
@@ -170,7 +170,7 @@ public class ImportProject implements PropertyChangeListener {
     private boolean runMake;
     private String includeDirectories = ""; // NOI18N
     private String macros = ""; // NOI18N
-    private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
+    private String consolidationStrategy = ConsolidationStrategy.FILE_LEVEL;
     private Iterator<SourceFolderInfo> sources;
     private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
@@ -815,7 +815,7 @@ public class ImportProject implements PropertyChangeListener {
         if (makeLog == null) {
             makeLog = createTempFile("make"); // NOI18N
         }
-        if(BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
+        if(BuildTraceSupport.useBuildTrace()) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 switch (hostInfo.getOSFamily()) {
@@ -854,7 +854,7 @@ public class ImportProject implements PropertyChangeListener {
                 } else {
                     importResult.put(Step.Make, State.Fail);
                 }
-                if (executionEnvironment.isRemote()) {
+                if (executionEnvironment.isRemote() && execLog != null) {
                     try {
                         if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
@@ -1327,7 +1327,7 @@ public class ImportProject implements PropertyChangeListener {
             descriptor.setProject(makeProject);
             SelectConfigurationPanel.buildModel(descriptor);
             try {
-                DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
+                DiscoveryProjectGeneratorImpl generator = new DiscoveryProjectGeneratorImpl(descriptor);
                 generator.makeProject();
                 importResult.put(Step.DiscoveryModel, State.Successful);
             } catch (IOException ex) {

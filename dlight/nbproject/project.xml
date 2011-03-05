@@ -124,9 +124,9 @@
                 <friend>com.sun.tools.dlight.systemwide.threadmap</friend>
                 <friend>com.sun.tools.dlight.systemwide.visualizers</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
-                <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>com.sun.tools.dlight.txtrace</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.dlight.util</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>

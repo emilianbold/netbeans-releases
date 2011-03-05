@@ -379,6 +379,7 @@
                 <friend>com.sun.tools.dlight.target</friend>
                 <friend>com.sun.tools.dlight.xyplot</friend>
                 <friend>com.sun.tools.ide.remote</friend>
+                <friend>com.sun.tools.ide.remote.project</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
@@ -392,6 +393,7 @@
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
@@ -404,7 +406,6 @@
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
-                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations.ui</package>

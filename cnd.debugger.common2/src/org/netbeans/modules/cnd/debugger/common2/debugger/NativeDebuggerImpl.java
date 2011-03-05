@@ -276,8 +276,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 		cachedPathMap = null;
 	    } else {
 		MakeConfiguration mc = (MakeConfiguration) conf;
-		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();
-		cachedPathMap = HostInfoProvider.getMapper(ee);
+		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
+		cachedPathMap = mc.getRemoteSyncFactory().getPathMap(ee);
 	    }
 	}
 	return cachedPathMap;

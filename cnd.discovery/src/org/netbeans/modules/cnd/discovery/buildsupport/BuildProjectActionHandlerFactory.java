@@ -71,7 +71,7 @@ public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFac
                 MakeConfiguration conf = (MakeConfiguration) configuration;
                 final ExecutionEnvironment executionEnvironment = conf.getDevelopmentHost().getExecutionEnvironment();
                 if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                    if (BuildTraceSupport.CND_BUILD_TOOLS_ENABLED) {
+                    if (BuildTraceSupport.useBuildTrace()) {
                         try {
                             HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                             switch (hostInfo.getOSFamily()) {

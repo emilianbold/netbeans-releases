@@ -82,7 +82,6 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class ProjectInfoPanel extends TopComponent implements MultiViewElement, LookupListener {
-    private MultiViewElementCallback callback;
     private Lookup.Result<MavenProject> result;
     private JToolBar toolbar;
 
@@ -101,6 +100,10 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             this.pnlMailingLists.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             this.pnlScm.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+    }
+
+    public @Override int getPersistenceType() {
+        return PERSISTENCE_NEVER;
     }
 
     /** This method is called from within the constructor to
@@ -486,9 +489,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     }
 
 
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
-    }
+    public @Override void setMultiViewCallback(MultiViewElementCallback callback) {}
 
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
