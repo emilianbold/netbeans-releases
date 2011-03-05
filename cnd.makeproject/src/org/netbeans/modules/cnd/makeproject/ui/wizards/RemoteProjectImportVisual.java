@@ -80,7 +80,6 @@ import org.openide.windows.WindowManager;
 final class RemoteProjectImportVisual extends SettingsPanel implements DocumentListener, HelpCtx.Provider {
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     
-    private String localProjectName;
     private volatile boolean initialized = false;
     private final RemoteProjectImportWizardPanel controller;
     private static final class RemotePathCheckState {
@@ -102,7 +101,6 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
     public RemoteProjectImportVisual(RemoteProjectImportWizardPanel controller) {
         initComponents();
         this.controller = controller;
-        localProjectName = "";
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(RemoteProjectImportVisual.this);
         projectLocationTextField.getDocument().addDocumentListener(RemoteProjectImportVisual.this);
@@ -509,7 +507,16 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
             }
             String baseName = CndPathUtilitities.getBaseName(remotePath);
             if (baseName != null && !baseName.isEmpty() && !baseName.endsWith("/")) { // NOI18N
-                projectNameTextField.setText(baseName+"_shadow");// NOI18N
+                String projectFolder = projectLocationTextField.getText().trim();
+                while (projectFolder.endsWith("/")) { // NOI18N
+                    projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
+                }
+                int index = 0;
+                String prjName;
+                do {
+                    prjName = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.shadowName", baseName, index++ == 0 ? "" : index);
+                } while (CndFileUtils.exists(new File(projectFolder, prjName)));
+                projectNameTextField.setText(prjName);
             }
             controller.fireChangeEvent();
         }
