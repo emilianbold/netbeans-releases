@@ -78,6 +78,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -496,6 +497,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             rightList.invalidate();
                             rightList.repaint();
                             CsmOffsetable error = m.getFailedDirective(0);
+                            guessList.setText(NbBundle.getMessage(ErrorIncludeDialog.class, "MSG_Loading"));
                             guess(error, (String)model.getElementAt(selected));
                         } else {
                             guessList.setText("");
@@ -514,6 +516,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                     if (selected >=0 && baseProject != null && baseProject.isValid()){
                         ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
                         CsmOffsetable error = m.getFailedDirective(selected);
+                        guessList.setText(NbBundle.getMessage(ErrorIncludeDialog.class, "MSG_Loading"));
                         guess(error, (String)model.getElementAt(leftList.getSelectedIndex()));
                     } else {
                         guessList.setText("");
@@ -583,86 +586,105 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
     }
     
-    private void guess(CsmOffsetable error, String found){
-        StringBuilder buf = new StringBuilder();
-        boolean handleIncludeError = CsmKindUtilities.isInclude(error);
-        if (handleIncludeError) {
-            if (searchBase == null) {
-                searchBase = search(error);
-            }
-            found = found.replace("<",""); // NOI18N
-            found = found.replace(">",""); // NOI18N
-            found = found.replace("\"",""); // NOI18N
-            found = found.replace("\\","/"); // NOI18N
-            if(found.indexOf('/')>=0){
-                found = found.substring(found.lastIndexOf('/')+1);
-            }
-            List<String> result = searchBase.get(found);
-            if (result != null){
-                for (Iterator<String> it = result.iterator(); it.hasNext();) {
-                    String elem = it.next();
-                    buf.append(elem).append("\n<br>"); // NOI18N
-                }
-            }
-        } else {
-            buf.append(error.getText()).append("\n<br>"); // NOI18N
-        }
+    private RequestProcessor.Task guessTask = null;
+    private void guess(final CsmOffsetable error, final String item) {
+        Runnable worker = new Runnable() {
 
-        CsmFile file = error.getContainingFile();
-        if (handleIncludeError) {
-            getObjectFile(found, file.getAbsolutePath().toString(), buf);
-        }
-        if (file.isHeaderFile()){
-            List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
-            if (list.size()>0) {
-                buf.append(i18n("PathToHeader"));  // NOI18N
-                file = list.get(0).getContainingFile();
-                for (CsmInclude inc : list){
-                    buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                    buf.append(inc.getContainingFile().getAbsolutePath());
-                    buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
+            @Override
+            public void run() {
+                final StringBuilder buf = new StringBuilder();
+                String found = item;
+                boolean handleIncludeError = CsmKindUtilities.isInclude(error);
+                if (handleIncludeError) {
+                    if (searchBase == null) {
+                        searchBase = search(error);
+                    }
+                    found = found.replace("<", ""); // NOI18N
+                    found = found.replace(">", ""); // NOI18N
+                    found = found.replace("\"", ""); // NOI18N
+                    found = found.replace("\\", "/"); // NOI18N
+                    if (found.indexOf('/') >= 0) {
+                        found = found.substring(found.lastIndexOf('/') + 1);
+                    }
+                    List<String> result = searchBase.get(found);
+                    if (result != null) {
+                        for (Iterator<String> it = result.iterator(); it.hasNext();) {
+                            String elem = it.next();
+                            buf.append(elem).append("\n<br>"); // NOI18N
+                        }
+                    }
+                } else {
+                    buf.append(error.getText()).append("\n<br>"); // NOI18N
                 }
-                buf.append("\n<br>"); // NOI18N
-            } else {
-                file = null;
-            }
-        }
-        if (file != null){
-            List<FSPath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
-            if (list.size()>0) {
-                buf.append(i18n("SourceUserPaths"));  // NOI18N
-                for (FSPath fsPath : list){
-                    buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                    FileObject fo = fsPath.getFileObject();
-                    if (fo != null && fo.isValid() && fo.isFolder()) {
-                        buf.append(fsPath.getPath());
+                
+                CsmFile file = error.getContainingFile();
+                if (handleIncludeError) {
+                    getObjectFile(found, file.getAbsolutePath().toString(), buf);
+                }
+                if (file.isHeaderFile()) {
+                    List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+                    if (list.size() > 0) {
+                        buf.append(i18n("PathToHeader"));  // NOI18N
+                        file = list.get(0).getContainingFile();
+                        for (CsmInclude inc : list) {
+                            buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                            buf.append(inc.getContainingFile().getAbsolutePath());
+                            buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
+                        }
+                        buf.append("\n<br>"); // NOI18N
                     } else {
-                        buf.append("<font color='red'>");  // NOI18N
-                        buf.append(fsPath.getPath());
-                        buf.append("</font>");  // NOI18N
+                        file = null;
                     }
                 }
-                buf.append("\n<br>"); // NOI18N
-            }
-            list = CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
-            if (list.size()>0) {
-                buf.append(i18n("SourceSystemPaths"));  // NOI18N
-                for (FSPath fsPath : list){
-                    buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                    FileObject fo = fsPath.getFileObject();
-                    if (fo != null && fo.isValid() && fo.isFolder()) {
-                        buf.append(fsPath.getPath());
-                    } else {
-                        buf.append("<font color='red'>");  // NOI18N
-                        buf.append(fsPath.getPath());
-                        buf.append("</font>");  // NOI18N
+                if (file != null) {
+                    List<FSPath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
+                    if (list.size() > 0) {
+                        buf.append(i18n("SourceUserPaths"));  // NOI18N
+                        for (FSPath fsPath : list) {
+                            buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                            FileObject fo = fsPath.getFileObject();
+                            if (fo != null && fo.isValid() && fo.isFolder()) {
+                                buf.append(fsPath.getPath());
+                            } else {
+                                buf.append("<font color='red'>");  // NOI18N
+                                buf.append(fsPath.getPath());
+                                buf.append("</font>");  // NOI18N
+                            }
+                        }
+                        buf.append("\n<br>"); // NOI18N
+                    }
+                    list = CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
+                    if (list.size() > 0) {
+                        buf.append(i18n("SourceSystemPaths"));  // NOI18N
+                        for (FSPath fsPath : list) {
+                            buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                            FileObject fo = fsPath.getFileObject();
+                            if (fo != null && fo.isValid() && fo.isFolder()) {
+                                buf.append(fsPath.getPath());
+                            } else {
+                                buf.append("<font color='red'>");  // NOI18N
+                                buf.append(fsPath.getPath());
+                                buf.append("</font>");  // NOI18N
+                            }
+                        }
+                        buf.append("\n<br>"); // NOI18N
                     }
                 }
-                buf.append("\n<br>"); // NOI18N
+                //System.err.println(guessList.getText());
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        guessList.setText("<html><head></head><body>" + buf.toString() + "</body></html>"); // NOI18N
+                    }
+                });
             }
+        };
+        if (guessTask != null) {
+            guessTask.cancel();
+            guessTask = null;
         }
-        guessList.setText("<html><head></head><body>"+buf.toString()+"</body></html>"); // NOI18N
-        //System.err.println(guessList.getText());
+        guessTask = RP.post(worker);
     }
     
     private void getObjectFile(String searchFor, String in, StringBuilder buf){
