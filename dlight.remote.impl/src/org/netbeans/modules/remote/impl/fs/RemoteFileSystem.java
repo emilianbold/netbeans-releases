@@ -132,7 +132,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
             public void windowGainedFocus(WindowEvent e) {
                 if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
-                    refreshManager.scheduleRefresh(filterDirectories(factory.getCachedFileObjects()));
+                    refreshManager.scheduleRefreshOnFocusGained(factory.getCachedFileObjects());
                 }
             }
 
@@ -151,25 +151,14 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
-            Collection<RemoteFileObjectBase> cachedFileObjects = factory.getCachedFileObjects();
-            refreshManager.scheduleRefresh(filterDirectories(cachedFileObjects));
+            Collection<RemoteFileObjectBase> cachedFileObjects = factory.getCachedFileObjects();            
+            refreshManager.scheduleRefreshOnConnect(cachedFileObjects);
             for (RemoteFileObjectBase fo : cachedFileObjects) {
                 fo.connectionChanged();
             }
         }
     }
-    
-    private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>();
-        for (RemoteFileObjectBase fo : fileObjects) {
-            // Don't call isValid() or isFolder() - they might be SLOW!
-            if (fo != null && ((fo instanceof RemoteLinkBase) || (fo instanceof RemoteDirectory))) {
-                result.add(fo);
-            }
-        }
-        return result;
-    }
-    
+        
     public void disconnected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
