@@ -18,11 +18,12 @@ CC=gcc
 CCC=g++
 CXX=g++
 FC=gfortran
-AS=gas
+AS=as
+PROC=proc
 
 # Macros
-CND_PLATFORM=GNU-Solaris-Sparc
-CND_CONF=Solaris_sparc64
+CND_PLATFORM=Cygwin-Windows
+CND_CONF=Windows_x86
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 
@@ -41,7 +42,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-m64 --std=c99
+CFLAGS=-m32 --std=c99
 
 # CC Compiler Flags
 CCFLAGS=
@@ -58,9 +59,9 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
@@ -90,7 +91,7 @@ ${OBJECTDIR}/src/loop.o: src/loop.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport.exe
 
 # Subprojects
 .clean-subprojects:

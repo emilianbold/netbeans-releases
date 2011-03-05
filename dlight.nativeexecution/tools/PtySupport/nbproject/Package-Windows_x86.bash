@@ -6,8 +6,8 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=GNU-Solaris-Sparc
-CND_CONF=Solaris_sparc64
+CND_PLATFORM=Cygwin-Windows
+CND_CONF=Windows_x86
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
@@ -60,7 +60,7 @@ mkdir -p ${NBTMPDIR}
 # Copy files and create directories and links
 cd "${TOP}"
 makeDirectory "${NBTMPDIR}/ptysupport/bin"
-copyFileToTmpDir "${OUTPUT_PATH}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
+copyFileToTmpDir "${OUTPUT_PATH}.exe" "${NBTMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}.exe" 0755
 
 
 # Generate tar file
