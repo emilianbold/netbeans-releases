@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -799,37 +800,51 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     private static final class SpiAccessor {
 
-        private UserOptionsProvider provider;
+        private Collection<? extends UserOptionsProvider> providers;
 
-        private synchronized UserOptionsProvider getProvider() {
-            if (provider == null) {
-                provider = Lookup.getDefault().lookup(UserOptionsProvider.class);
+        private synchronized Collection<? extends UserOptionsProvider> getProviders() {
+            if (providers == null) {
+                providers = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
             }
-            return provider;
+            return providers;
         }
 
         private SpiAccessor() {
         }
 
         private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if (getProvider() != null) {
-                return getProvider().getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
+            if(!getProviders().isEmpty()) {
+                List<String> res = new ArrayList<String>();
+                for (UserOptionsProvider provider : getProviders()) {
+                    res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
+                }
+                return res;
             } else {
                 return includes;
             }
         }
 
         private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if (getProvider() != null) {
-                return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
+            if(!getProviders().isEmpty()) {
+                List<String> res = new ArrayList<String>();
+                for (UserOptionsProvider provider : getProviders()) {
+                    res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
+                }
+                return res;
             } else {
                 return macros;
             }
         }
 
         private LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if (getProvider() != null) {
-                return getProvider().getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
+            if(!getProviders().isEmpty()) {
+                for (UserOptionsProvider provider : getProviders()) {
+                    LanguageFlavor languageFlavor = provider.getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
+                    if(languageFlavor != null && languageFlavor != LanguageFlavor.UNKNOWN) {
+                        return languageFlavor;
+                    }
+                }
+                return LanguageFlavor.UNKNOWN;
             } else {
                 return LanguageFlavor.UNKNOWN;
             }
