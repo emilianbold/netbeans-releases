@@ -311,10 +311,13 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         txtRemember = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
 
+        lblGoals.setLabelFor(txtGoals);
         org.openide.awt.Mnemonics.setLocalizedText(lblGoals, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Goals")); // NOI18N
 
+        lblProfiles.setLabelFor(txtProfiles);
         org.openide.awt.Mnemonics.setLocalizedText(lblProfiles, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Profiles")); // NOI18N
 
+        jLabel2.setLabelFor(taProperties);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Properties")); // NOI18N
 
         taProperties.setColumns(20);

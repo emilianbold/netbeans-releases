@@ -152,7 +152,7 @@ public class DependencyNode extends AbstractNode {
     private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
 
-    private static final RequestProcessor RP = new RequestProcessor("DependencyNode",1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
 
     public static Children createChildren(Artifact art, boolean longLiving) {
         assert art != null;
@@ -731,9 +731,8 @@ public class DependencyNode extends AbstractNode {
         
         @Override
         public void actionPerformed(ActionEvent evnt) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
+            RP.post(new Runnable() {
+                public @Override void run() {
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
                    
                     ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
