@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.IIOException;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -59,8 +58,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -92,18 +93,21 @@ public class ShadowProjectSynchronizer {
     
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
-    public ShadowProjectSynchronizer(FileObject remoteProject, FileObject localProject, ExecutionEnvironment env) {
-        this.remoteProject = remoteProject;
-        this.localProject = localProject;
+    public ShadowProjectSynchronizer(String remoteProject, String localProject, ExecutionEnvironment env) throws IOException {
+        // TODO: handle all in create and throw IOException
+        this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProject);
+        // TODO: check existence, remove on failed import
+        this.localProject = FileUtil.createFolder(new File(localProject));
         this.env = env;
     }
     
-    public void createShadowProject() throws IOException, SAXException {
+    public FileObject createShadowProject() throws IOException, SAXException {
         FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
         copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
         updateLocalProjectXml();
         updateLocalConfiguration();
         updateLocalPrivateConfiguration();
+        return localProject;
     }
     
     public void updateRemoteProject() throws IOException, SAXException {
@@ -304,9 +308,8 @@ public class ShadowProjectSynchronizer {
             CompilerSet existentCompilerSet = csManager.getCompilerSet(origCsName);
             String csNameAndFlavor;
             if (existentCompilerSet == null) {
-                CompilerSet defaultCs = csManager.getDefaultCompilerSet();
                 csNameAndFlavor = "default"; //NOI18N
-                reportNotFoundCompilerSet(origCsName, defaultCs);
+                reportNotFoundCompilerSet(origCsName);
             } else {
                 csNameAndFlavor = origCsNameAndFlavor;
             }
@@ -337,10 +340,10 @@ public class ShadowProjectSynchronizer {
         saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
     }
 
-    private void reportNotFoundCompilerSet(String origCsName, CompilerSet defaultCs) {
+    private void reportNotFoundCompilerSet(String origCsName) {
         String title = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Title", remoteProject.getName());
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false); // NOI18N
-        String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Details", origCsName, defaultCs.getDisplayName());
+        String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Details", origCsName);
         Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }
     
@@ -390,7 +393,7 @@ public class ShadowProjectSynchronizer {
             }
         }
         if (fo == null || ! fo.isValid()) {
-            throw new IIOException("Can not create " + (folder ? "folder " : "file ") + name + " in " + dstParent); //NOI18N
+            throw new IOException("Can not create " + (folder ? "folder " : "file ") + name + " in " + dstParent); //NOI18N
         }
         return fo;
     }

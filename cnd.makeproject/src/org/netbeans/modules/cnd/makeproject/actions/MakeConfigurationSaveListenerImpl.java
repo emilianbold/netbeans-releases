@@ -128,8 +128,9 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
                         return;                                
                     }
                     FileObject localProjectFO = mkd.getProjectDirFileObject();
-                    ShadowProjectSynchronizer sync = new ShadowProjectSynchronizer(remoteProjectFO, localProjectFO, env);
                     try {
+                        // TODO:FullRemote it's better not to hide IOException, but show it to user
+                        ShadowProjectSynchronizer sync = new ShadowProjectSynchronizer(remotePath, localProjectFO.getPath(), env);
                         sync.updateRemoteProject();
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
