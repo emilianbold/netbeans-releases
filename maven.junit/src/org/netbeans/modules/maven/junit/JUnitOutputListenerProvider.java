@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -124,7 +125,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
-                generateTest(new File(outputDir, "TEST-" + runningTestClass + ".xml"));
+                generateTest();
             }
             runningTestClass = match.group(1);
             return;
@@ -168,7 +169,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            generateTest(new File(outputDir, "TEST-" + runningTestClass + ".xml"));
+            generateTest();
         }
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;
@@ -203,7 +204,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
     
-    private void generateTest(File report) {
+    private void generateTest() {
+        File report = new File(outputDir, "TEST-" + runningTestClass + ".xml");
         if (!report.isFile()) {
             return;
         }
@@ -258,6 +260,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
+            File output = new File(outputDir, runningTestClass + "-output.txt");
+            if (output.isFile()) {
+                Manager.getInstance().displayOutput(session, FileUtils.fileRead(output), false);
+            }
         } catch (JDOMException x) {
             LOG.log(Level.INFO, "parsing " + report, x);
         } catch (Exception x) {
