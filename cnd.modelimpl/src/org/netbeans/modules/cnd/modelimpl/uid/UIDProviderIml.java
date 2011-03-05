@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -95,7 +96,7 @@ public final class UIDProviderIml implements UIDProvider {
                 Object object = uid.getObject();
                 if (object == null) {
                     // this could happen in clients delayed threads
-                    if (checkNull && CsmKindUtilities.isCsmObject(obj) && CsmBaseUtilities.isValid((CsmObject)obj)) {
+                    if (checkNull && CsmKindUtilities.isCsmObject(obj) && CsmBaseUtilities.isValid((CsmObject)obj) && !(obj instanceof CsmInstantiation)) {
                         String prefix = "no deref object for uid["; // NOI18N
                         if (Thread.currentThread().getName().contains("FileTaskFactory")) { // NOI18N
                             prefix = "it's OK to have invalidated object with uid["; // NOI18N
