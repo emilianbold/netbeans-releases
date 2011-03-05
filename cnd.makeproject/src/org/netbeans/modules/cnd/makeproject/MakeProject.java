@@ -1387,8 +1387,8 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     // A workaround for #196328 - IllegalArgumentException on save Project properties
                     if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
                         try {
-                            URL url2 = url = new URL(url.toExternalForm() + '/'); //NOI18N                     
-                            FileObject fo = URLMapper.findFileObject(url);
+                            URL url2 = new URL(url.toExternalForm() + '/'); //NOI18N                     
+                            FileObject fo = URLMapper.findFileObject(url2);
                             if (fo != null && fo.equals(rootFolder)) {
                                 url = url2;
                             }                            
