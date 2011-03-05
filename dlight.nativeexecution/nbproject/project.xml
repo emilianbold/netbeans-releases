@@ -211,6 +211,7 @@
                 <friend>com.sun.tools.dlight.util</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
@@ -250,6 +251,7 @@
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.procfs</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
+                <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
                 <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
@@ -257,7 +259,6 @@
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.nativeexecution.terminal</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
                 <package>org.netbeans.modules.nativeexecution.api.execution</package>

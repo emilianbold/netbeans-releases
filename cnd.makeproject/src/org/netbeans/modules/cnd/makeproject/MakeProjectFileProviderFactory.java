@@ -97,7 +97,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Lookup.Provider, Map<Folder, List<CharSequence>>>();
     private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Lookup.Provider, ConcurrentMap<CharSequence, List<CharSequence>>>();
-    private static final UserOptionsProvider packageSearch = Lookup.getDefault().lookup(UserOptionsProvider.class);
+    private static final Collection<? extends UserOptionsProvider> packageSearch = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
 
     /**
      * Store/update/remove list of non cnd files for project folder
@@ -271,8 +271,13 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             boolean runPackagesSearchInRemote  =
                                     Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
 
-                            if (packageSearch != null && (isLocalHost || runPackagesSearchInRemote)) {
-                                res = packageSearch.getPackageFileSearch((Project)p).searchFile(project, fileName);
+                            if (!packageSearch.isEmpty() && (isLocalHost || runPackagesSearchInRemote)) {
+                                for (UserOptionsProvider userOptionsProvider : packageSearch) {
+                                    res = userOptionsProvider.getPackageFileSearch((Project)p).searchFile(project, fileName);
+                                    if(res != null) {
+                                        break;
+                                    }
+                                }
                             }
                             if (res != null && res.size() > 0) {
                                 return res;

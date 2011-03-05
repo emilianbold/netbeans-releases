@@ -88,6 +88,7 @@
                 <friend>com.sun.tools.dlight.ui</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
