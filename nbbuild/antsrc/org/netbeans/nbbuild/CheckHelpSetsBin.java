@@ -46,10 +46,13 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -62,24 +65,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.jar.JarEntry;
+import java.util.TreeMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
-import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Mapper;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /** Task to check various aspects of JavaHelp helpsets.
  * <ol>
@@ -93,11 +100,13 @@ import org.apache.tools.ant.types.Mapper;
  */
 public class CheckHelpSetsBin extends Task {
     
+    private static final EntityResolver NO_DTDS = new EntityResolver() {
+        public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+            return new InputSource(new ByteArrayInputStream(new byte[0]));
+        }
+    };
+
     private List<FileSet> filesets = new ArrayList<FileSet>();
-    
-    private ClassLoader globalClassLoader;
-    
-    private Map<String,URLClassLoader> classLoaderMap;
     
     private Set<String> excludedModulesSet;
     
@@ -108,162 +117,35 @@ public class CheckHelpSetsBin extends Task {
         filesets.add(fs);
     }
     
-    private URLClassLoader createGlobalClassLoader (File dir, String [] files) {
-        List<File> globalFileList = new ArrayList<File>();
-        URL [] globalClassPath = null;
+    private URLClassLoader createGlobalClassLoader(File dir, String[] files) throws MalformedURLException {
+        URL[] globalClassPath = new URL[files.length];
         for (int i = 0; i < files.length; i++) {
-            List<File> fileList = new ArrayList<File>();
-            File moduleJar = new File(dir, files[i]);
-            fileList.add(moduleJar);
-            boolean hsFound = false;
-
-            JarFile jar = null;
-            Manifest manifest = null;
-            try {
-                jar = new JarFile(moduleJar);
-                manifest = jar.getManifest();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            if (manifest == null) {
-                log("Manifest is not present in jar. Skipping.", Project.MSG_WARN);
-                continue;
-            }
-            File parent = moduleJar.getParentFile();
-            java.util.jar.Attributes attrs = manifest.getMainAttributes();
-
-            String value = JarWithModuleAttributes.extractCodeName(attrs);
-            if (value == null) {
-                log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
-                continue;
-            }
-            //Look for *.hs
-            for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
-                JarEntry je = en.nextElement();
-                if (je.getName().endsWith(".hs")) {
-                    hsFound = true;
-                }
-            }
-            value = attrs.getValue("Class-Path"); // XXX bad, look for hsref instead
-            if (value != null) {
-                StringTokenizer tok = new StringTokenizer(value);
-                while (tok.hasMoreElements()) {
-                    String s = tok.nextToken();
-                    File extJar = new File(parent, s);
-                    fileList.add(extJar);
-                    try {
-                        jar = new JarFile(extJar);
-                    } catch (IOException ex) {
-                        log("Error: Cannot open file: " + extJar, Project.MSG_WARN);
-                        ex.printStackTrace();
-                    }
-                    //Look for *.hs
-                    for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
-                        JarEntry je = en.nextElement();
-                        if (je.getName().endsWith(".hs")) {
-                            hsFound = true;
-                        }
-                    }
-                }
-            }
-            if (hsFound) {
-                globalFileList.addAll(fileList);
-            }
+            globalClassPath[i] = new File(dir, files[i]).toURI().toURL();
         }
-        globalClassPath = new URL[globalFileList.size()];
-        for (int i = 0; i < globalFileList.size(); i++) {
-            try {
-                globalClassPath[i] = globalFileList.get(i).toURI().toURL();
-            } catch (MalformedURLException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return new URLClassLoader(globalClassPath,this.getClass().getClassLoader().getParent(),new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
+        return new URLClassLoader(globalClassPath, ClassLoader.getSystemClassLoader().getParent(), new NbDocsStreamHandler.Factory());
     }
 
-    private Map<String,URLClassLoader> createClassLoaderMap (File dir, String [] files) {
-        Map<String,URLClassLoader> m = new HashMap<String,URLClassLoader>();
+    private Map<String,URLClassLoader> createClassLoaderMap(File dir, String[] files) throws IOException {
+        Map<String,URLClassLoader> m = new TreeMap<String,URLClassLoader>();
         for (int i = 0; i < files.length; i++) {
-            List<File> fileList = new ArrayList<File>();
             File moduleJar = new File(dir, files[i]);
-            fileList.add(moduleJar);
-            boolean hsFound = false;
-            URL [] classPath = {};
-
-            JarFile jar = null;
-            Manifest manifest = null;
+            Manifest manifest;
+            JarFile jar = new JarFile(moduleJar);
             try {
-                jar = new JarFile(moduleJar);
                 manifest = jar.getManifest();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            } finally {
+                jar.close();
             }
             if (manifest == null) {
-                log("Manifest is not present in jar. Skipping.", Project.MSG_WARN);
+                log(moduleJar + " has no manifest", Project.MSG_WARN);
                 continue;
             }
-            File parent = moduleJar.getParentFile();
-            java.util.jar.Attributes attrs = manifest.getMainAttributes();
-            String value = attrs.getValue("Class-Path"); // XXX bad, look for hsref instead
-            if (value != null) {
-                StringTokenizer tok = new StringTokenizer(value);
-                while (tok.hasMoreElements()) {
-                    String s = tok.nextToken();
-                    File extJar = new File(parent, s);
-                    fileList.add(extJar);
-                }
-                classPath = new URL[fileList.size()];
-                for (int j = 0; j < fileList.size(); j++) {
-                    try {
-                        classPath[j] = fileList.get(j).toURI().toURL();
-                    } catch (MalformedURLException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-
-            String key = attrs.getValue("OpenIDE-Module");
-            if (key == null) {
-                log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
+            String codename = JarWithModuleAttributes.extractCodeName(manifest.getMainAttributes());
+            if (codename == null) {
+                log(moduleJar + " is not a module", Project.MSG_WARN);
                 continue;
             }
-            int pos = key.indexOf('/');
-            if (pos != -1) {
-                key = key.substring(0,pos);
-            }
-            //Look for *.hs
-            for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
-                JarEntry je = en.nextElement();
-                if (je.getName().endsWith(".hs")) {
-                    hsFound = true;
-                }
-            }
-            value = attrs.getValue("Class-Path"); // XXX bad, look for hsref instead
-            if (value != null) {
-                StringTokenizer tok = new StringTokenizer(value);
-                while (tok.hasMoreElements()) {
-                    String s = tok.nextToken();
-                    File extJar = new File(parent, s);
-                    try {
-                        jar = new JarFile(extJar);
-                    } catch (IOException ex) {
-                        log("Error: Cannot open file: " + extJar, Project.MSG_WARN);
-                        ex.printStackTrace();
-                    }
-                    //Look for *.hs
-                    for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
-                        JarEntry je = en.nextElement();
-                        if (je.getName().endsWith(".hs")) {
-                            hsFound = true;
-                        }
-                    }
-                }
-            }
-            if (hsFound) {
-                ClassLoader clParent = this.getClass().getClassLoader().getParent();
-                URLClassLoader moduleClassLoader = new URLClassLoader(classPath,clParent,new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
-                m.put(key,moduleClassLoader);
-            }
+            m.put(codename.replaceFirst("/[0-9]+$", ""), new URLClassLoader(new URL[] {moduleJar.toURI().toURL()}, ClassLoader.getSystemClassLoader().getParent(), new NbDocsStreamHandler.Factory()));
         }
         return m;
     }
@@ -276,112 +158,122 @@ public class CheckHelpSetsBin extends Task {
     }
     
     public @Override void execute() throws BuildException {
-        try {
-            URL.setURLStreamHandlerFactory(new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
-        } catch (Error ex) {
-            log("StreamHandlerFactory already set", Project.MSG_WARN);
-        }
         String p = getProject().getProperty("javahelpbin.exclude.modules");
         excludedModulesSet = parseExcludeModulesProperty(p);
         for (FileSet fs : filesets) {
             FileScanner scanner = fs.getDirectoryScanner(getProject());
             File dir = scanner.getBasedir();
             String[] files = scanner.getIncludedFiles();
-            
-            globalClassLoader = createGlobalClassLoader(dir,files);
-            classLoaderMap = createClassLoaderMap(dir,files);
-            
-            for (String file : files) {
-                List<File> fileList = new ArrayList<File>();
-                File moduleJar = new File(dir, file);
-                fileList.add(moduleJar);
-                
-                JarFile jar = null;
-                Manifest manifest = null;
-                try {
-                    jar = new JarFile(moduleJar);
-                    manifest = jar.getManifest();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                if (manifest == null) {
-                    log("Manifest is not present in jar. Skipping.", Project.MSG_WARN);
-                    continue;
-                }
-                File parent = moduleJar.getParentFile();
-                java.util.jar.Attributes attrs = manifest.getMainAttributes();
-                        
-                String key = attrs.getValue("OpenIDE-Module");
-                if (key == null) {
-                    log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
-                    continue;
-                }
-                int pos = key.indexOf('/');
-                if (pos != -1) {
-                    key = key.substring(0,pos);
-                }
-                if (excludedModulesSet.contains(key)) {
-                    log("", Project.MSG_WARN);
-                    log("* * * *", Project.MSG_WARN);
-                    log("Skip module: " + key, Project.MSG_WARN);
-                    log("* * * *", Project.MSG_WARN);
-                    continue;
-                }
-                URLClassLoader classLoader = classLoaderMap.get(key);
-                if (classLoader == null) {
-                    //If module class loader was not added to map it does not contain
-                    //any helpset => skip it.
-                    continue;
-                }
-                log("", Project.MSG_WARN);
-                log("* * * *", Project.MSG_WARN);
-                log("Parsing module: " + key, Project.MSG_WARN);
-                log("* * * *", Project.MSG_WARN);
-                //Look for *.hs
-                for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
-                    JarEntry je = en.nextElement();
-                    if (je.getName().endsWith(".hs")) {
-                        URLClassLoader moduleClassLoader = classLoaderMap.get(key);
-                        URL hsURL = moduleClassLoader.findResource(je.getName());
-                        if (hsURL == null) {
-                            log("No resource " + je.getName() + " in " + Arrays.toString(moduleClassLoader.getURLs()), Project.MSG_WARN);
+
+            URLClassLoader globalClassLoader;
+            Map<String,URLClassLoader> classLoaderMap;
+            try {
+                globalClassLoader = createGlobalClassLoader(dir, files);
+                classLoaderMap = createClassLoaderMap(dir, files);
+                NbDocsStreamHandler.NbDocsURLConnection.globalClassLoader.set(globalClassLoader);
+                NbDocsStreamHandler.NbDocsURLConnection.classLoaderMap.set(classLoaderMap);
+                CheckLinks.handlerFactory.set(new NbDocsStreamHandler.Factory());
+                for (Map.Entry<String,URLClassLoader> entry : classLoaderMap.entrySet()) {
+                    String cnb = entry.getKey();
+                    if (excludedModulesSet.contains(cnb)) {
+                        log("skipping module: " + cnb, Project.MSG_INFO);
+                        continue;
+                    }
+                    URLClassLoader l = entry.getValue();
+                    Manifest m;
+                    InputStream is = l.getResourceAsStream("META-INF/MANIFEST.MF");
+                    if (is != null) {
+                        try {
+                            m = new Manifest(is);
+                        } finally {
+                            is.close();
+                        }
+                    } else {
+                        log("No manifest in " + Arrays.toString(l.getURLs()), Project.MSG_WARN);
+                        continue;
+                    }
+                    for (String resource : new String[] {m.getMainAttributes().getValue("OpenIDE-Module-Layer"), "META-INF/generated-layer.xml"}) {
+                        if (resource == null) {
                             continue;
                         }
-                        checkHelpSetURL(hsURL,globalClassLoader,moduleClassLoader,classLoaderMap,moduleJar);
-                    }
-                }
-                String value = attrs.getValue("Class-Path");
-                if (value != null) {
-                    StringTokenizer tok = new StringTokenizer(value);
-                    while (tok.hasMoreElements()) {
-                        String s = tok.nextToken();
-                        File extJar = new File(parent, s);
-                        try {
-                            jar = new JarFile(extJar);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
+                        URL layer = l.getResource(resource);
+                        if (layer == null) {
+                            log("No layer " + resource, Project.MSG_VERBOSE);
+                            continue;
                         }
-                        //Look for *.hs
-                        for (Enumeration<JarEntry> en = jar.entries(); en.hasMoreElements(); ) {
-                            JarEntry je = en.nextElement();
-                            if (je.getName().endsWith(".hs")) {
-                                URLClassLoader moduleClassLoader = classLoaderMap.get(key);
-                                URL hsURL = moduleClassLoader.getResource(je.getName());
-                                if (hsURL == null) {
-                                    log("No resource " + je.getName() + " in " + Arrays.toString(moduleClassLoader.getURLs()), Project.MSG_WARN);
+                        Document doc;
+                        try {
+                            doc = XMLUtil.parse(new InputSource(layer.toString()), false, false, null, NO_DTDS);
+                        } catch (SAXException x) {
+                            log("Could not parse " + layer, x, Project.MSG_WARN);
+                            continue;
+                        }
+                        for (Element services : XMLUtil.findSubElements(doc.getDocumentElement())) {
+                            if (!services.getTagName().equals("folder") || !services.getAttribute("name").equals("Services")) {
+                                continue;
+                            }
+                            for (Element javahelp : XMLUtil.findSubElements(services)) {
+                                if (!javahelp.getTagName().equals("folder") || !javahelp.getAttribute("name").equals("JavaHelp")) {
                                     continue;
                                 }
-                                checkHelpSetURL(hsURL,globalClassLoader,moduleClassLoader,classLoaderMap,extJar);
+                                JAVAHELP: for (Element registration : XMLUtil.findSubElements(javahelp)) {
+                                    if (!registration.getTagName().equals("file")) {
+                                        continue;
+                                    }
+                                    InputSource input = null;
+                                    String url = registration.getAttribute("url");
+                                    if (!url.isEmpty()) {
+                                        input = new InputSource(new URL(layer, url).toString());
+                                    } else {
+                                        NodeList nl = registration.getChildNodes();
+                                        for (int i = 0; i < nl.getLength(); i++) {
+                                            if (nl.item(i).getNodeType() == Node.CDATA_SECTION_NODE) {
+                                                if (input == null) {
+                                                    input = new InputSource(new StringReader(nl.item(i).getNodeValue()));
+                                                } else {
+                                                    log("Multiple content for " + registration.getAttribute("name") + " in " + layer, Project.MSG_WARN);
+                                                    continue JAVAHELP;
+                                                }
+                                            }
+                                        }
+                                        if (input == null) {
+                                            log("No content for " + registration.getAttribute("name") + " in " + layer, Project.MSG_WARN);
+                                        }
+                                    }
+                                    Document doc2;
+                                    try {
+                                        doc2 = XMLUtil.parse(input, false, false, null, NO_DTDS);
+                                    } catch (SAXException x) {
+                                        log("Could not parse " + registration.getAttribute("name") + " in " + layer, x, Project.MSG_WARN);
+                                        continue;
+                                    }
+                                    URI helpsetref = URI.create(doc2.getDocumentElement().getAttribute("url"));
+                                    if ("nbdocs".equals(helpsetref.getScheme()) && helpsetref.getAuthority() == null) {
+                                        try {
+                                            helpsetref = new URI(helpsetref.getScheme(), cnb, helpsetref.getPath(), helpsetref.getQuery(), helpsetref.getFragment());
+                                        } catch (URISyntaxException x) {
+                                            throw new BuildException(x);
+                                        }
+                                    }
+                                    log("checking: " + helpsetref, Project.MSG_INFO);
+                                    checkHelpSetURL(CheckLinks.toURL(helpsetref), globalClassLoader, l, classLoaderMap, cnb);
+                                }
                             }
                         }
                     }
                 }
+            } catch (IOException x) {
+                throw new BuildException(x);
+            } finally {
+                NbDocsStreamHandler.NbDocsURLConnection.globalClassLoader.set(null);
+                NbDocsStreamHandler.NbDocsURLConnection.classLoaderMap.set(null);
+                CheckLinks.handlerFactory.set(null);
             }
         }
     }
     
     private void checkHelpSetURL
-    (URL hsURL, ClassLoader globalClassLoader, ClassLoader moduleClassLoader, Map<String,URLClassLoader> classLoaderMap, File extJar) {
+    (URL hsURL, ClassLoader globalClassLoader, ClassLoader moduleClassLoader, Map<String,URLClassLoader> classLoaderMap, String cnb) {
         HelpSet hs = null;
         try {
             hs = new HelpSet(moduleClassLoader, hsURL);
@@ -403,7 +295,7 @@ public class CheckHelpSetsBin extends Task {
                 ex.printStackTrace();
             }
             if (u == null) {
-                throw new BuildException("Bogus map ID: " + id.id, new Location(extJar.getAbsolutePath()));
+                throw new BuildException("Bogus map ID: " + id.id + " in: " + cnb);
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
             try {
@@ -583,9 +475,9 @@ public class CheckHelpSetsBin extends Task {
     }
     */
     
-    public static class NbDocsStreamHandler extends URLStreamHandler {
+    private static class NbDocsStreamHandler extends URLStreamHandler {
 
-        public static class Factory implements URLStreamHandlerFactory {
+        static class Factory implements URLStreamHandlerFactory {
 
             public URLStreamHandler createURLStreamHandler(String protocol) {
                 if (protocol.equals("nbdocs")) { // NOI18N
@@ -611,7 +503,10 @@ public class CheckHelpSetsBin extends Task {
 
         /** A URL connection that reads from the docs classloader.
          */
-        private static class NbDocsURLConnection extends URLConnection {
+        static class NbDocsURLConnection extends URLConnection {
+
+            static ThreadLocal<URLClassLoader> globalClassLoader = new ThreadLocal<URLClassLoader>();
+            static ThreadLocal<Map<String,URLClassLoader>> classLoaderMap = new ThreadLocal<Map<String,URLClassLoader>>();
 
             /** underlying URL connection
              */
@@ -633,15 +528,10 @@ public class CheckHelpSetsBin extends Task {
              * @throws IOException for the usual reasons
              */
             public synchronized void connect() throws IOException {
+                tryToConnect();
                 if (exception != null) {
-                    IOException e = exception;
-                    exception = null;
-                    throw e;
-                }
-                if (! connected) {
-                    real = url.openConnection();
-                    real.connect();
-                    connected = true;
+                    exception.printStackTrace();//XXX
+                    throw exception;
                 }
             }
 
@@ -652,7 +542,24 @@ public class CheckHelpSetsBin extends Task {
                     return;
                 }
                 try {
-                    connect();
+                    URLClassLoader l;
+                    String cnb = url.getHost();
+                    if (cnb.isEmpty()) {
+                        l = globalClassLoader.get();
+                    } else {
+                        l = classLoaderMap.get().get(cnb);
+                        if (l == null) {
+                            throw new IOException("no loader for " + cnb);
+                        }
+                    }
+                    String path = url.getPath().substring(1);
+                    URL u = l.getResource(path);
+                    if (u == null) {
+                        throw new FileNotFoundException(path + " in " + Arrays.toString(l.getURLs()));
+                    }
+                    real = u.openConnection();
+                    real.connect();
+                    connected = true;
                 } catch (IOException ioe) {
                     exception = ioe;
                 }
