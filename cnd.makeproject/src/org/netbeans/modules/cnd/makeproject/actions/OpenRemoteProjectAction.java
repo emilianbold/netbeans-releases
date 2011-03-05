@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import javax.swing.Icon;
@@ -63,7 +62,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard.ImportedProject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -89,7 +87,7 @@ import org.xml.sax.SAXException;
 @ActionRegistration(iconInMenu = false, displayName = "#CTL_ImportProjectMenuItem")
 @ActionReference(path = "Menu/File/Import", position = 3000)
 public class OpenRemoteProjectAction implements ActionListener {
-
+    private static final boolean OLD_ACTION = Boolean.getBoolean("old.remote.import.project"); // NOI18N
     private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
     
     private ServerRecord getDefaultRemoteServerRecord() {
@@ -109,6 +107,11 @@ public class OpenRemoteProjectAction implements ActionListener {
     
     @Override
     public void actionPerformed(ActionEvent e) {       
+        if (!OLD_ACTION) {
+            RemoteProjectImportWizard wizard = new RemoteProjectImportWizard();
+            wizard.importProjects();
+            return;
+        }
         final ServerRecord record = getDefaultRemoteServerRecord();
         if (record == null) {
             JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), 
@@ -117,12 +120,7 @@ public class OpenRemoteProjectAction implements ActionListener {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-//        RemoteProjectImportWizard wizard = new RemoteProjectImportWizard();
-//        wizard.start();
-//        List<ImportedProject> projectsToImport = wizard.getProjectsToImport();
-//        if (wizard.isCancelled() || projectsToImport == null || projectsToImport.isEmpty()) {
-//            return;
-//        }
+
 //        if (record.isOffline()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private volatile String homeDir;
