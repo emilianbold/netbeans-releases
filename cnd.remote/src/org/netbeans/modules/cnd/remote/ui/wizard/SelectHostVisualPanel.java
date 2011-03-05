@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Vladimir Kvashin
  */
-public final class SelectHostVisualPanel extends javax.swing.JPanel {
+final class SelectHostVisualPanel extends javax.swing.JPanel {
 
     private final SelectHostWizardPanel controller;
     private final boolean allowLocal;
@@ -320,7 +320,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         if (rbExistent.isSelected()) {
             ServerRecord record = (ServerRecord) lstDevHosts.getSelectedValue();
             execEnv =  (record == null) ? null : record.getExecutionEnvironment();
-        } else if (allowToCreateNewHostDirectly) {
+        } else if (allowToCreateNewHostDirectly && controller.isValid()) {
             execEnv = ExecutionEnvironmentFactory.createNew(createHostPanel.getUser(), createHostPanel.getHostname(), createHostPanel.getPort());
         }
         return execEnv;
