@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.IIOException;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -389,7 +388,7 @@ public class ShadowProjectSynchronizer {
             }
         }
         if (fo == null || ! fo.isValid()) {
-            throw new IIOException("Can not create " + (folder ? "folder " : "file ") + name + " in " + dstParent); //NOI18N
+            throw new IOException("Can not create " + (folder ? "folder " : "file ") + name + " in " + dstParent); //NOI18N
         }
         return fo;
     }
