@@ -67,6 +67,7 @@ import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -87,34 +88,57 @@ public class ShadowProjectSynchronizer {
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
     private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
     
-    private final FileObject remoteProject;
-    private final FileObject localProject;
     private final ExecutionEnvironment env;
+    private final String remoteProjectPath;
+    private final String localProjectPath;
+    private FileObject remoteProject;
+    private FileObject localProject;
     
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
-    public ShadowProjectSynchronizer(String remoteProject, String localProject, ExecutionEnvironment env) throws IOException {
-        // TODO: handle all in create and throw IOException
-        this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProject);
-        // TODO: check existence, remove on failed import
-        this.localProject = FileUtil.createFolder(new File(localProject));
+    public ShadowProjectSynchronizer(String remoteProjectPath, String localProjectPath, ExecutionEnvironment env) {
+        this.remoteProjectPath = remoteProjectPath;
+        this.localProjectPath = localProjectPath;
         this.env = env;
     }
     
     public FileObject createShadowProject() throws IOException, SAXException {
-        FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
-        copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
-        updateLocalProjectXml();
-        updateLocalConfiguration();
-        updateLocalPrivateConfiguration();
+        File localProjectFile = new File(localProjectPath);
+        if (localProjectFile.exists()) {
+            throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirAlreadyExists", localProjectFile.getAbsolutePath()));
+        }        
+        this.localProject = FileUtil.createFolder(FileUtil.normalizeFile(localProjectFile));
+
+        boolean success = false;
+        try {
+            this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProjectPath);
+            if (remoteProject == null || ! remoteProject.isValid()) {
+                throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", remoteProjectPath));
+            }
+            FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
+            copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
+            updateLocalProjectXml();
+            updateLocalConfiguration();
+            updateLocalPrivateConfiguration();
+            success = true;
+        } finally {
+            if (!success) {
+                remove(localProject);
+            }
+            
+        }
         return localProject;
     }
-    
+        
     public void updateRemoteProject() throws IOException, SAXException {
-        FileObject localNbprojectFO = localProject.getFileObject("nbproject"); // NOI18N
-        if (localNbprojectFO == null || ! localNbprojectFO.isValid()) {
-            return;
-        }
+        File localProjectFile = new File(localProjectPath);
+        if (!localProjectFile.exists()) {
+            throw new FileNotFoundException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", localProjectPath));
+        }        
+        this.localProject = FileUtil.createFolder(FileUtil.normalizeFile(localProjectFile));
+        FileObject localNbprojectFO = getFileObject(localProject, "nbproject"); // NOI18N
+        
+        this.remoteProject = getFileObject(env, remoteProjectPath);        
         FileObject tmpFO = createTempDir(localProject.getName(), ".tmp"); // NOI18N
         copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N        
         try {
@@ -210,10 +234,26 @@ public class ShadowProjectSynchronizer {
         return origCsName;
     }
     
+    private static FileObject getFileObject(ExecutionEnvironment env, String absPath) throws FileNotFoundException {
+        FileObject fo = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), absPath);
+        if (fo == null || ! fo.isValid()) {
+            String text = env.getDisplayName() + ':' + absPath; //NOI18N
+            throw new FileNotFoundException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", text));
+        }        
+        return fo;
+    }
+
     private static FileObject getFileObject(FileObject base, String relPath) throws FileNotFoundException {
         FileObject fo = base.getFileObject(relPath);
-        if (fo == null) {
-            throw new FileNotFoundException(base.getPath() + File.separatorChar + PROJECT_CONFIGURATION_FILE);
+        if (fo == null || ! fo.isValid()) {
+            String text;
+            try {
+                text = base.getURL().toString();
+                text += (text.endsWith("/") ? "" : "/") + relPath; //NOI18N
+            } catch (FileStateInvalidException ex) {
+                text = base.getPath() + '/' + relPath; //NOI18N
+            }
+            throw new FileNotFoundException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", text));
         }
         return fo;
     }
@@ -346,7 +386,7 @@ public class ShadowProjectSynchronizer {
         String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Details", origCsName);
         Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }
-    
+
     private void updateLocalPrivateConfiguration() throws IOException, SAXException {
         FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
