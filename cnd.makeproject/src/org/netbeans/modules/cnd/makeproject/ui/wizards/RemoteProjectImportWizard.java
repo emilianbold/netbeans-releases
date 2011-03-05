@@ -49,7 +49,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,6 +56,8 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class RemoteProjectImportWizard {
+    public static final String PROPERTY_REMOTE_PROJECTS = "RemoteImportedProjects"; // Collection<ImportedProject> // NOI18N
+
     private boolean cancelled;
     private final RemoteProjectImportWizardIterator iterator;
 
@@ -64,7 +65,7 @@ public class RemoteProjectImportWizard {
         iterator = new RemoteProjectImportWizardIterator();
     }
     
-    public void start() {
+    public void importProjects() {
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         iterator.addChangeListener(new ChangeListener() {
 
@@ -99,13 +100,16 @@ public class RemoteProjectImportWizard {
     
     public static final class ImportedProject {
 
-        private final FileObject remoteProjectFolder;
+        private final String remoteProjectFolder;
         private final ExecutionEnvironment remoteEnv;
-        private final FileObject localProjectFolder;
+        private final String localProjectFolder;
 
-        public ImportedProject(ExecutionEnvironment env, FileObject remotePrjFolder, FileObject localPrjFolder) {
+        public ImportedProject(ExecutionEnvironment env, String remotePrjFolder, String localPrjFolder) {
+            assert env != null;
             this.remoteEnv = env;
+            assert remotePrjFolder != null;
             this.remoteProjectFolder = remotePrjFolder;
+            assert localPrjFolder != null;
             this.localProjectFolder = localPrjFolder;
         }
 
@@ -113,12 +117,47 @@ public class RemoteProjectImportWizard {
             return remoteEnv;
         }
 
-        public FileObject getRemoteProjectFolder() {
+        public String getRemoteProjectFolder() {
             return remoteProjectFolder;
         }
 
-        public FileObject getLocalProjectDestinationFolder() {
+        public String getLocalProjectDestinationFolder() {
             return localProjectFolder;
+        }
+
+        @Override
+        public String toString() {
+            return "ImportedProject{" + "remoteProjectFolder=" + remoteProjectFolder + ", remoteEnv=" + remoteEnv + ", localProjectFolder=" + localProjectFolder + '}'; // NOI18N
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ImportedProject other = (ImportedProject) obj;
+            if (this.remoteProjectFolder != other.remoteProjectFolder && (this.remoteProjectFolder == null || !this.remoteProjectFolder.equals(other.remoteProjectFolder))) {
+                return false;
+            }
+            if (this.remoteEnv != other.remoteEnv && (this.remoteEnv == null || !this.remoteEnv.equals(other.remoteEnv))) {
+                return false;
+            }
+            if (this.localProjectFolder != other.localProjectFolder && (this.localProjectFolder == null || !this.localProjectFolder.equals(other.localProjectFolder))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 47 * hash + (this.remoteProjectFolder != null ? this.remoteProjectFolder.hashCode() : 0);
+            hash = 47 * hash + (this.remoteEnv != null ? this.remoteEnv.hashCode() : 0);
+            hash = 47 * hash + (this.localProjectFolder != null ? this.localProjectFolder.hashCode() : 0);
+            return hash;
         }
     }
 }

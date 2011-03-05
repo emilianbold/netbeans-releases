@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -82,11 +83,20 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
     private String localProjectName;
     private volatile boolean initialized = false;
     private final RemoteProjectImportWizardPanel controller;
-    // null - all is fine
-    // TRUE - check in progress
-    // FALSE - check failed
-    private volatile Boolean checkingRemote = null;
-    private volatile String remoteCheckError = "";
+    private static final class RemotePathCheckState {
+        // null - all is fine
+        // TRUE - check in progress
+        // FALSE - check failed
+        private final Boolean checkingRemote;
+        private final String remoteCheckError;
+
+        private RemotePathCheckState(Boolean checking, String error) {
+            this.checkingRemote = checking;
+            this.remoteCheckError = error;
+        }
+    }
+    
+    private volatile RemotePathCheckState currentState = new RemotePathCheckState(null, "");
     private ExecutionEnvironment remoteHost;
     /** Creates new form RemoteProjectImportVisual */
     public RemoteProjectImportVisual(RemoteProjectImportWizardPanel controller) {
@@ -339,9 +349,10 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
         String folder = createdFolderTextField.getText().trim();
 
         if (CndPathUtilitities.isPathAbsolute(folder)) {
-            File file = CndFileUtils.createLocalFile(folder);
-            file = FileUtil.normalizeFile(file);
-            settings.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, file);
+            String localFolder = FileUtil.normalizePath(folder);
+            settings.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(localFolder));
+            RemoteProjectImportWizard.ImportedProject importProject = new RemoteProjectImportWizard.ImportedProject(remoteHost, remoteProjectFolder.getText().trim(), localFolder);
+            settings.putProperty(RemoteProjectImportWizard.PROPERTY_REMOTE_PROJECTS, Collections.singleton(importProject));
         }
         settings.putProperty(WizardConstants.PROPERTY_NAME, projectName);
     }
@@ -350,7 +361,7 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
     void read(WizardDescriptor settings) {
         initialized = false;
         String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        remoteHost = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+        remoteHost = hostUID == null ? null : ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         File projectLocation = (File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // File - SIC! for projects always local
         String projectName = null;
         if (projectLocation == null) {
@@ -391,23 +402,23 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
         if (!initialized) {
             return false;
         }
-        if (this.remoteProjectFolder.getText().trim().isEmpty()) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_EmptyRemoteProjectName")); // NOI18N
-            return false; // remote project is not specified
-        }
         if (remoteHost == null || !ConnectionManager.getInstance().isConnectedTo(remoteHost)) {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_RemoteHostIsNotConnected")); // NOI18N
             return false; // remote project is not specified
         }
-        String remoteError = this.remoteCheckError;
-        if (checkingRemote == Boolean.TRUE) {
+        if (this.remoteProjectFolder.getText().trim().isEmpty()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_EmptyRemoteProjectName")); // NOI18N
+            return false; // remote project is not specified
+        }
+        RemotePathCheckState curState = currentState;
+        if (curState.checkingRemote == Boolean.TRUE) {
             settings.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_CheckingRemoteProject")); // NOI18N
             return false; // checking remote project 
-        } else if (checkingRemote == Boolean.FALSE) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, remoteError);
+        } else if (curState.checkingRemote == Boolean.FALSE) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, curState.remoteCheckError);
             return false; // checking remote project folder failed
         }
         if (!PanelProjectLocationVisual.isValidLocalProjectNameAndLocation(settings, projectNameTextField.getText(), projectLocationTextField.getText(), createdFolderTextField.getText())) {
@@ -471,7 +482,7 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
     
     private class RemoteProjectListener implements DocumentListener, Runnable {
         private final RequestProcessor.Task task = new RequestProcessor("Checking remote project folder", 1).create(this); // NOI18N
-        private String lastCheckError = "";// NOI18N
+        private RemotePathCheckState lastCheck = null;
         private String remotePath = "";// NOI18N
         private Color defColor = remoteProjectFolder.getForeground();
         @Override
@@ -491,49 +502,54 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
 
         private void update() {
             if (remoteHost != null) {
-                checkingRemote = Boolean.TRUE;
+                currentState = new RemotePathCheckState(Boolean.TRUE, "");
                 remotePath = remoteProjectFolder.getText().trim();
                 remoteProjectFolder.setForeground(Color.red);
                 task.schedule(10);
-                controller.fireChangeEvent();
             }
             String baseName = CndPathUtilitities.getBaseName(remotePath);
             if (baseName != null && !baseName.isEmpty() && !baseName.endsWith("/")) { // NOI18N
                 projectNameTextField.setText(baseName+"_shadow");// NOI18N
             }
+            controller.fireChangeEvent();
         }
 
         @Override
         public void run() {
             if (SwingUtilities.isEventDispatchThread()) {
-                String status = lastCheckError;
-                checkingRemote = status.isEmpty() ? null : Boolean.FALSE;
-                if (checkingRemote == null) {
+                RemotePathCheckState curStatus = lastCheck;
+                if (curStatus.checkingRemote == null) {
                     remoteProjectFolder.setForeground(defColor);
                 }
-                remoteCheckError = status;
+                currentState = curStatus;
                 controller.fireChangeEvent();
             } else {
                 String curRemotePath = this.remotePath;
+                String msgError;
+                Boolean exists = null;
                 try {
                     assert remoteHost != null;
                     ConnectionManager.getInstance().connectTo(remoteHost);
-                    boolean fileExists = HostInfoUtils.fileExists(remoteHost, curRemotePath);
-                    String msgError = "";
-                    msgError = fileExists ? "" : NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExists", curRemotePath);
-                    if (fileExists) {
+                    if (HostInfoUtils.fileExists(remoteHost, curRemotePath)) {
                         // check that this is project
                         String conf = curRemotePath + "/nbproject/configurations.xml"; // NOI18N
                         String projectXml = curRemotePath + "/nbproject/project.xml"; // NOI18N
-                        fileExists = HostInfoUtils.fileExists(remoteHost, conf) && HostInfoUtils.fileExists(remoteHost, projectXml);
-                        if (!fileExists) {
+                        if (!HostInfoUtils.fileExists(remoteHost, conf) && HostInfoUtils.fileExists(remoteHost, projectXml)) {
                             msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotProject", curRemotePath);
+                            exists = Boolean.FALSE;
+                        } else {
+                            msgError = "";
+                            exists = null;
                         }
+                    } else {
+                        msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExists", curRemotePath);
+                        exists = Boolean.FALSE;
                     }
-                    lastCheckError = msgError;
                 } catch (Throwable ex) {
-                    lastCheckError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExistsError", curRemotePath, ex.getMessage());
+                    exists = Boolean.FALSE;
+                    msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExistsError", curRemotePath, ex.getMessage());
                 }
+                lastCheck = new RemotePathCheckState(exists, msgError);
                 SwingUtilities.invokeLater(this);
             }
         }

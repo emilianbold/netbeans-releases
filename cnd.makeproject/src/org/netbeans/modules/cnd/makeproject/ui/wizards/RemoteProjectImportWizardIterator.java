@@ -42,8 +42,10 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,11 +56,23 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard.ImportedProject;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 public final class RemoteProjectImportWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
@@ -82,6 +96,7 @@ public final class RemoteProjectImportWizardIterator implements WizardDescriptor
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private final List<ImportedProject> projects = new ArrayList<ImportedProject>();
+    private WizardDescriptor wizard;
 
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -89,7 +104,7 @@ public final class RemoteProjectImportWizardIterator implements WizardDescriptor
      */
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         if (panels == null) {
-            SelectHostWizardProvider hostPanelProvider = SelectHostWizardProvider.createInstance(false, new ChangeListener() {
+            SelectHostWizardProvider hostPanelProvider = SelectHostWizardProvider.createInstance(false, true, new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
                       fireChangeEvent();
@@ -197,26 +212,58 @@ public final class RemoteProjectImportWizardIterator implements WizardDescriptor
 
     @Override
     public Set<ImportedProject> instantiate() throws IOException {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return Collections.emptySet();
+        return instantiate(null);
     }
-        
+    
     @Override
     public Set<ImportedProject> instantiate(ProgressHandle handle) throws IOException {
         try {
-            handle.start();
-            return instantiate();
+            if (handle != null) {
+                handle.start();
+            }
+            try {
+                this.projects.clear();
+                @SuppressWarnings("unchecked")
+                Collection<RemoteProjectImportWizard.ImportedProject> remoteProjects = (Collection<RemoteProjectImportWizard.ImportedProject>) wizard.getProperty(RemoteProjectImportWizard.PROPERTY_REMOTE_PROJECTS);
+                this.projects.addAll(remoteProjects);
+                for (ImportedProject importedProject : remoteProjects) {
+                    ExecutionEnvironment remoteEnvironment = importedProject.getRemoteEnvironment();
+                    if (handle != null) {
+                        handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.setupRecord", remoteEnvironment.getDisplayName()));
+                    }
+                    ServerRecord record = ServerList.get(remoteEnvironment);
+                    if (record.isSetUp() || record.setUp()) {
+                        FileObject remoteFO = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(remoteEnvironment), importedProject.getRemoteProjectFolder());
+                        if (handle != null) {
+                            handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.import", remoteFO.getNameExt()));
+                        }
+                        FileObject localProject = FileUtil.createFolder(new File(importedProject.getLocalProjectDestinationFolder()));
+                        ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteFO, localProject, remoteEnvironment);
+                        synchronizer.createShadowProject();
+                        Project findProject = ProjectManager.getDefault().findProject(localProject);
+                        if (findProject != null) {
+                            OpenProjects.getDefault().open(new Project[]{findProject}, false);
+                        }
+                    }
+                }
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return Collections.emptySet();
         } finally {
-            handle.finish();
+            if (handle != null) {
+                handle.finish();
+            }
         }
     }
 
     @Override
     public void initialize(WizardDescriptor wizard) {
+        this.wizard = wizard;
         getPanels();
     }
 

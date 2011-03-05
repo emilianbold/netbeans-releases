@@ -252,7 +252,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private SelectHostWizardProvider getSelectHostWizardProvider() {
         if (selectHostWizardProvider == null) {
-            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, new ChangeListener() {
+            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, false, new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     fireStateChanged();
