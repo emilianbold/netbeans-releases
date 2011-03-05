@@ -184,11 +184,9 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
                     .addComponent(projectNameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(localProjectPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, localProjectPanelLayout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(createdFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
-                    .addComponent(projectLocationTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .addComponent(projectNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
+                    .addComponent(createdFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                    .addComponent(projectLocationTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                    .addComponent(projectNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(browseLocalButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -402,24 +400,26 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
         if (!initialized) {
             return false;
         }
-        if (remoteHost == null || !ConnectionManager.getInstance().isConnectedTo(remoteHost)) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_RemoteHostIsNotConnected")); // NOI18N
-            return false; // remote project is not specified
-        }
-        if (this.remoteProjectFolder.getText().trim().isEmpty()) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_EmptyRemoteProjectName")); // NOI18N
-            return false; // remote project is not specified
-        }
         RemotePathCheckState curState = currentState;
         if (curState.checkingRemote == Boolean.TRUE) {
             settings.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_CheckingRemoteProject")); // NOI18N
             return false; // checking remote project 
+        }   
+        String errorMessage = null;
+        if (remoteHost == null || !ConnectionManager.getInstance().isConnectedTo(remoteHost)) {
+            // remote host is not connected
+            errorMessage = NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_RemoteHostIsNotConnected"); // NOI18N
+        } else if (this.remoteProjectFolder.getText().trim().isEmpty()) {
+            // remote project is not specified
+            errorMessage = NbBundle.getMessage(RemoteProjectImportVisual.class, "MSG_EmptyRemoteProjectName"); // NOI18N
         } else if (curState.checkingRemote == Boolean.FALSE) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, curState.remoteCheckError);
-            return false; // checking remote project folder failed
+            // checking remote project folder failed
+            errorMessage = curState.remoteCheckError;
+        }
+        if (errorMessage != null) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+            return false; 
         }
         if (!PanelProjectLocationVisual.isValidLocalProjectNameAndLocation(settings, projectNameTextField.getText(), projectLocationTextField.getText(), createdFolderTextField.getText())) {
             return false;
@@ -525,6 +525,11 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
                 controller.fireChangeEvent();
             } else {
                 String curRemotePath = this.remotePath;
+                String prjDirName = CndPathUtilitities.getBaseName(curRemotePath);
+                String dir = CndPathUtilitities.getDirName(curRemotePath);
+                if (dir == null) {
+                    prjDirName = "";
+                }
                 String msgError;
                 Boolean exists = null;
                 try {
@@ -534,20 +539,20 @@ final class RemoteProjectImportVisual extends SettingsPanel implements DocumentL
                         // check that this is project
                         String conf = curRemotePath + "/nbproject/configurations.xml"; // NOI18N
                         String projectXml = curRemotePath + "/nbproject/project.xml"; // NOI18N
-                        if (!HostInfoUtils.fileExists(remoteHost, conf) && HostInfoUtils.fileExists(remoteHost, projectXml)) {
-                            msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotProject", curRemotePath);
+                        if (!HostInfoUtils.fileExists(remoteHost, conf) || !HostInfoUtils.fileExists(remoteHost, projectXml)) {
+                            msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotProject", prjDirName);
                             exists = Boolean.FALSE;
                         } else {
                             msgError = "";
                             exists = null;
                         }
                     } else {
-                        msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExists", curRemotePath);
+                        msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExists", prjDirName);
                         exists = Boolean.FALSE;
                     }
                 } catch (Throwable ex) {
                     exists = Boolean.FALSE;
-                    msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExistsError", curRemotePath, ex.getMessage());
+                    msgError = NbBundle.getMessage(RemoteProjectImportVisual.class, "RemoteProjectImportVisual.remotePathNotExistsError", prjDirName, ex.getMessage());
                 }
                 lastCheck = new RemotePathCheckState(exists, msgError);
                 SwingUtilities.invokeLater(this);

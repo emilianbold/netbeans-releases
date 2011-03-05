@@ -102,12 +102,9 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="createdFolderTextField" pref="222" max="32767" attributes="2"/>
-                      </Group>
-                      <Component id="projectLocationTextField" alignment="1" pref="222" max="32767" attributes="2"/>
-                      <Component id="projectNameTextField" alignment="0" pref="222" max="32767" attributes="2"/>
+                      <Component id="createdFolderTextField" alignment="1" pref="241" max="32767" attributes="2"/>
+                      <Component id="projectLocationTextField" alignment="1" pref="241" max="32767" attributes="2"/>
+                      <Component id="projectNameTextField" alignment="0" pref="241" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="browseLocalButton" min="-2" pref="70" max="-2" attributes="0"/>
