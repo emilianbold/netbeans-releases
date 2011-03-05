@@ -80,7 +80,7 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
                     synchronized (lock) {
                         savingProjects.add(mkd);
-                    }
+                    }   
                 }
             }
         }
