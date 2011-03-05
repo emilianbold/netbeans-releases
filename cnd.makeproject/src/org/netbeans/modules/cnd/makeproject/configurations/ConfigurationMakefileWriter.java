@@ -47,7 +47,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -96,8 +95,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.MIMEExtensions;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -122,7 +119,7 @@ public class ConfigurationMakefileWriter {
 
     public void write() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(true);
-        cleanup(okConfs);
+        cleanup();
         if (isMakefileProject()) {
             for (MakeConfiguration conf : okConfs) {
                 writePackagingScript(conf);
@@ -208,7 +205,7 @@ public class ConfigurationMakefileWriter {
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
             final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
             if (CndUtils.isUnitTestMode()) {
-                new Exception(msg).printStackTrace();
+                new Exception(msg).printStackTrace(System.err);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -230,31 +227,24 @@ public class ConfigurationMakefileWriter {
      *
      * @param protectedConfs
      */
-    private void cleanup(Collection<MakeConfiguration> okConfs) {
-        List<MakeConfiguration> protectedConfs = new ArrayList<MakeConfiguration>();
-        Configuration[] confs = projectDescriptor.getConfs().toArray();
-        for (Configuration c : confs) {
-            MakeConfiguration conf = (MakeConfiguration) c;
-            if (!okConfs.contains(conf)) {
-                protectedConfs.add(conf);
-            }
-        }
+    private void cleanup() {
         FileObject folder = projectDescriptor.getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+        
         if (folder != null && folder.isValid()) {
             FileObject[] children = folder.getChildren();
             if (children != null) {
                 for (int i = 0; i < children.length; i++) {
                     String filename = children[i].getNameExt();
                     if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
-                        boolean protect = false;
-                        for (MakeConfiguration conf : protectedConfs) {
+                        boolean known = false;
+                        for (Configuration conf : projectDescriptor.getConfs().toArray()) {
                             if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
                                     || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
-                                protect = true;
+                                known = true;
                                 break;
                             }
                         }
-                        if (!protect) {
+                        if (!known) {
                             try {
                                 children[i].delete();
                             } catch (IOException ex) {
