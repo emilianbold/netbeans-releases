@@ -85,7 +85,6 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
-    private MultiViewElementCallback callback;
     private Lookup.Result<DependencyNode> result;
     private final static Icon dirIcon;
     private final static Icon trIcon;
@@ -125,6 +124,10 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+    }
+
+    public @Override int getPersistenceType() {
+        return PERSISTENCE_NEVER;
     }
 
     /** This method is called from within the constructor to
@@ -297,20 +300,15 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         super.componentDeactivated();
     }
 
-
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
-    }
+    public @Override void setMultiViewCallback(MultiViewElementCallback callback) {}
 
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
 
     private void populateFields() {
-        boolean loading = true;
         Iterator<? extends DependencyNode> iter = result.allInstances().iterator();
         if (iter.hasNext()) {
-            loading = false;
             final DependencyNode root = iter.next();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

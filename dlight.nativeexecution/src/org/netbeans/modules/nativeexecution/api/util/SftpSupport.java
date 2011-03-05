@@ -503,7 +503,7 @@ class SftpSupport {
         }
 
         public String getTraceName() {
-            return "Getting stat for " + path; //NOI18N
+            return "listing directory " + path; //NOI18N
         }
     }
     
@@ -524,7 +524,7 @@ class SftpSupport {
         StatLoader loader = new StatLoader(absPath);
         FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
         getReadRequestProcessor().post(ftask);
-        LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
+        LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
         return ftask;
     }
 
@@ -532,7 +532,7 @@ class SftpSupport {
         LsLoader loader = new LsLoader(absPath);
         FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
         getReadRequestProcessor().post(ftask);
-        LOG.log(Level.FINE, "Getting stat for {0} schedulled", loader.getTraceName());
+        LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
         return ftask;
     }
     

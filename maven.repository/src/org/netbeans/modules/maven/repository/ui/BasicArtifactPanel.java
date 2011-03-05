@@ -157,6 +157,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Mb", mbytes);
     }
 
+    public @Override int getPersistenceType() {
+        return PERSISTENCE_NEVER;
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.

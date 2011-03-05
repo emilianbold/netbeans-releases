@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -323,14 +324,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
         private PathMap getPathMapper(ProjectProxy project) {
             Project p = project.getProject();
-            if (p != null) {
-                RemoteProject info = p.getLookup().lookup(RemoteProject.class);
-                if (info != null) {
-                    ExecutionEnvironment developmentHost = info.getDevelopmentHost();
-                    if (developmentHost != null && developmentHost.isRemote()) {
-                        return HostInfoProvider.getMapper(developmentHost);
-                    }
-                }
+            if (p != null) {                
+                return RemoteSyncSupport.getPathMap(p);
             }
             return null;
         }
