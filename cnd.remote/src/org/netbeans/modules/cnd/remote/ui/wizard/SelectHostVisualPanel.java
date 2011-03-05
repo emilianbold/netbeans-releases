@@ -111,6 +111,11 @@ final class SelectHostVisualPanel extends javax.swing.JPanel {
                 requestFocusInEDT(lstDevHosts);
             }
         });
+        if (setupNewHost.get()) {
+            requestFocusInEDT(SelectHostVisualPanel.this.createHostPanel);
+        } else {
+            requestFocusInEDT(lstDevHosts);
+        }
     }
 
     private void requestFocusInEDT(final Component c) {
