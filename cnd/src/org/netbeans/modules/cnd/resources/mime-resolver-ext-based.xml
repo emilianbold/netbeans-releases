@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
         <resolver mime="application/x-stobj+elf"/>
     </file>
     <file>
-        <ext name="">
+        <ext name=""/>
         <name name="core" substring="false"/>
         <resolver mime="application/x-core+elf"/>
     </file>
