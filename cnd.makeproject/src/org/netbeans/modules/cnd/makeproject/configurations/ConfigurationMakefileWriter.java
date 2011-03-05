@@ -509,7 +509,11 @@ public class ConfigurationMakefileWriter {
             bw.write("\n"); // NOI18N
         }
         bw.write("# Link Libraries and Options\n"); // NOI18N
-        bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + "\n"); // NOI18N
+        String oicLibOptions = ""; //NOI18N
+        if(provider != null) {
+             oicLibOptions = provider.getLibraryOptions(projectDescriptor, conf);
+        }        
+        bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptions + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
@@ -838,7 +842,15 @@ public class ConfigurationMakefileWriter {
                                 fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
                             }
                         }
-                        command += compilerConfiguration.getOptions(compiler) + fromLinker + " "; // NOI18N
+                        command += compilerConfiguration.getOptions(compiler);
+
+                        if(provider != null) {
+                            if(provider.isProCItem(items[i])) {
+                                command += provider.getCompileOptions(items[i], conf);
+                            }
+                        }
+                        
+                        command += fromLinker + " "; // NOI18N
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                             command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                         }
@@ -954,6 +966,13 @@ public class ConfigurationMakefileWriter {
                             target = compilerConfiguration.getOutputFile(items[i], conf, false);
                             if (compiler != null && compiler.getDescriptor() != null) {
                                 command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
+                                
+                                if(provider != null) {
+                                    if(provider.isProCItem(items[i])) {
+                                        command += provider.getCompileOptions(items[i], conf);
+                                    }
+                                }
+                                
                                 if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                                     command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                                 }
@@ -1080,7 +1099,15 @@ public class ConfigurationMakefileWriter {
                                 fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
                             }
                         }
-                        command += compilerConfiguration.getOptions(compiler) + fromLinker + " -Dmain=__nomain "; // NOI18N
+                        command += compilerConfiguration.getOptions(compiler);
+                        
+                        if(provider != null) {
+                            if(provider.isProCItem(items[i])) {
+                                command += provider.getCompileOptions(items[i], conf);
+                            }
+                        }
+                        
+                        command += fromLinker + " -Dmain=__nomain "; // NOI18N
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                             command = "${RM} $@.d;\\\n\t    " + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                         }
