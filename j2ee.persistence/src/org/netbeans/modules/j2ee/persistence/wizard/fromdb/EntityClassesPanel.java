@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
@@ -66,6 +67,10 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -218,7 +223,28 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         updatePersistenceUnitButton(true);
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup firstGroup=groups[0];
+        FileObject fo=firstGroup.getRootFolder();
+        ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
+        JavaSource javaSource = JavaSource.create(classpathInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
 
+                @Override
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement jc = controller.getElements().getTypeElement("javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                    if(jc == null){
+                        generateJAXBCheckBox.setSelected(false);
+                        generateJAXBCheckBox.setEnabled(false);
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void update(TableClosure tableClosure, String tableSourceName) {
