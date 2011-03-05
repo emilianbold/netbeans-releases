@@ -58,8 +58,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -91,18 +93,21 @@ public class ShadowProjectSynchronizer {
     
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
-    public ShadowProjectSynchronizer(FileObject remoteProject, FileObject localProject, ExecutionEnvironment env) {
-        this.remoteProject = remoteProject;
-        this.localProject = localProject;
+    public ShadowProjectSynchronizer(String remoteProject, String localProject, ExecutionEnvironment env) throws IOException {
+        // TODO: handle all in create and throw IOException
+        this.remoteProject = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(env), remoteProject);
+        // TODO: check existence, remove on failed import
+        this.localProject = FileUtil.createFolder(new File(localProject));
         this.env = env;
     }
     
-    public void createShadowProject() throws IOException, SAXException {
+    public FileObject createShadowProject() throws IOException, SAXException {
         FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
         copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
         updateLocalProjectXml();
         updateLocalConfiguration();
         updateLocalPrivateConfiguration();
+        return localProject;
     }
     
     public void updateRemoteProject() throws IOException, SAXException {

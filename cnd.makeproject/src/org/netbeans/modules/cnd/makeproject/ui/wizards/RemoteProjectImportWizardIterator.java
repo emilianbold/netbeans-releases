@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,12 +63,11 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.actions.ShadowProjectSynchronizer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.RemoteProjectImportWizard.ImportedProject;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
@@ -231,24 +229,36 @@ public final class RemoteProjectImportWizardIterator implements WizardDescriptor
                     if (handle != null) {
                         handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.setupRecord", remoteEnvironment.getDisplayName()));
                     }
-                    ServerRecord record = ServerList.get(remoteEnvironment);
-                    if (record.isSetUp() || record.setUp()) {
-                        FileObject remoteFO = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(remoteEnvironment), importedProject.getRemoteProjectFolder());
-                        if (handle != null) {
-                            handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.import", remoteFO.getNameExt()));
+                    boolean newHost = true;
+                    for (ExecutionEnvironment Env : ServerList.getEnvironments()) {
+                        if (remoteEnvironment.equals(Env)) {
+                            newHost = false;
+                            break;
                         }
-                        FileObject localProject = FileUtil.createFolder(new File(importedProject.getLocalProjectDestinationFolder()));
-                        ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteFO, localProject, remoteEnvironment);
-                        synchronizer.createShadowProject();
+                    }
+                    ServerRecord record;
+                    if (newHost) {
+                        record = ServerList.addServer(remoteEnvironment, remoteEnvironment.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
+                    } else {
+                        record = ServerList.get(remoteEnvironment);
+                    }
+                    if (record.isSetUp() || record.setUp()) {
+                        String remoteProjectFolder = importedProject.getRemoteProjectFolder();
+                        if (handle != null) {
+                            handle.progress(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.import", CndPathUtilitities.getDirName(remoteProjectFolder)));
+                        }
+                        ShadowProjectSynchronizer synchronizer = new ShadowProjectSynchronizer(remoteProjectFolder, importedProject.getLocalProjectDestinationFolder(), remoteEnvironment);
+                        FileObject localProject = synchronizer.createShadowProject();
+                        assert localProject != null;
                         Project findProject = ProjectManager.getDefault().findProject(localProject);
                         if (findProject != null) {
                             OpenProjects.getDefault().open(new Project[]{findProject}, false);
-                        }
+                        } else {
+                            throw new IOException(NbBundle.getMessage(RemoteProjectImportWizardIterator.class, "RemoteProjectImportWizardIterator.canNotOpenProject"));
+                        }                   
                     }
                 }
             } catch (SAXException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalArgumentException ex) {
                 Exceptions.printStackTrace(ex);
