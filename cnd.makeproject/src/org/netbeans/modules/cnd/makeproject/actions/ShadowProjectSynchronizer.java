@@ -304,9 +304,8 @@ public class ShadowProjectSynchronizer {
             CompilerSet existentCompilerSet = csManager.getCompilerSet(origCsName);
             String csNameAndFlavor;
             if (existentCompilerSet == null) {
-                CompilerSet defaultCs = csManager.getDefaultCompilerSet();
                 csNameAndFlavor = "default"; //NOI18N
-                reportNotFoundCompilerSet(origCsName, defaultCs);
+                reportNotFoundCompilerSet(origCsName);
             } else {
                 csNameAndFlavor = origCsNameAndFlavor;
             }
@@ -337,10 +336,10 @@ public class ShadowProjectSynchronizer {
         saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
     }
 
-    private void reportNotFoundCompilerSet(String origCsName, CompilerSet defaultCs) {
+    private void reportNotFoundCompilerSet(String origCsName) {
         String title = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Title", remoteProject.getName());
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false); // NOI18N
-        String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Details", origCsName, defaultCs.getDisplayName());
+        String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_CS_Details", origCsName);
         Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }
     
