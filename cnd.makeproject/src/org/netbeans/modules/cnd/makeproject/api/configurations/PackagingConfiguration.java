@@ -428,7 +428,8 @@ public class PackagingConfiguration {
     
     public String getOutputName() {
         String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
-        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
+        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
+            getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
             outputName = outputName.toLowerCase();
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             Platform platform = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform());

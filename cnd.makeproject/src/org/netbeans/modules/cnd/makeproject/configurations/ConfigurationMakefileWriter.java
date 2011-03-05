@@ -1314,6 +1314,7 @@ public class ConfigurationMakefileWriter {
             case PlatformTypes.PLATFORM_WINDOWS:
                 switch (conf.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_APPLICATION:
+                    case MakeConfiguration.TYPE_DB_APPLICATION:
                     case MakeConfiguration.TYPE_QT_APPLICATION:
                         output = mangleAppnameWin(output);
                         break;

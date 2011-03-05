@@ -457,7 +457,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             } else if (wizardtype == TYPE_QT_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_QT_STATIC_LIB;
             } else if (wizardtype == TYPE_DB_APPLICATION) {
-                conftype = MakeConfiguration.TYPE_APPLICATION;
+                conftype = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             String mainFile = null;
             if (((Boolean) wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N

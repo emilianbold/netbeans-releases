@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  * APT Walker which only gathers macromap. Shouldn't be used directly but
@@ -67,26 +68,30 @@ public class APTSelfWalker extends APTAbstractWalker {
     @Override
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
         if (resolvedPath != null) {
-            IncludeState pushInclude = getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex());
-            if (pushInclude == IncludeState.Success) {
-                try {
-                    APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
-                    APTPreprocHandler preprocHandler = getPreprocHandler();
-                    APTFileCacheEntry cache = APTFileCacheManager.getInstance(resolvedPath.getFileSystem()).getEntry(resolvedPath.getPath(), preprocHandler, null);
-                    createIncludeWalker(apt, this, resolvedPath.getPath(), cache).visit();
-                    // does not remember walk to safe memory
-                    // APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);
-                } catch (FileNotFoundException ex) {
-                    APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
-                    DiagnosticExceptoins.register(ex);
-                } catch (IOException ex) {
-                    APTUtils.LOG.log(Level.SEVERE, "APTSelfWalker: error on including {0}:\n{1}", new Object[] {resolvedPath.getPath(), ex});
-                    DiagnosticExceptoins.register(ex);
-                } finally {
-                    getIncludeHandler().popInclude();
+            CharSequence path = resolvedPath.getPath();
+            FileObject fileObject = resolvedPath.getFileObject();
+            if (fileObject != null) {
+                IncludeState pushInclude = getIncludeHandler().pushInclude(path, aptInclude, resolvedPath.getIndex());
+                if (pushInclude == IncludeState.Success) {
+                    try {
+                        APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fileObject));
+                        APTPreprocHandler preprocHandler = getPreprocHandler();
+                        APTFileCacheEntry cache = APTFileCacheManager.getInstance(resolvedPath.getFileSystem()).getEntry(path, preprocHandler, null);
+                        createIncludeWalker(apt, this, path, cache).visit();
+                        // does not remember walk to safe memory
+                        // APTFileCacheManager.setAPTCacheEntry(resolvedPath.getPath(), preprocHandler, cache, false);
+                    } catch (FileNotFoundException ex) {
+                        APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {path});// NOI18N
+                        DiagnosticExceptoins.register(ex);
+                    } catch (IOException ex) {
+                        APTUtils.LOG.log(Level.SEVERE, "APTSelfWalker: error on including {0}:\n{1}", new Object[] {path, ex});
+                        DiagnosticExceptoins.register(ex);
+                    } finally {
+                        getIncludeHandler().popInclude();
+                    }
                 }
+                return (postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState();
             }
-            return (postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState();
         }
         return false;
     }

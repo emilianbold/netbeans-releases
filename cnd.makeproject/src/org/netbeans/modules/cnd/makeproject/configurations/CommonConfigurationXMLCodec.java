@@ -476,6 +476,7 @@ public abstract class CommonConfigurationXMLCodec
         writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_DB_APPLICATION:
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
             case MakeConfiguration.TYPE_QT_APPLICATION:
             case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
