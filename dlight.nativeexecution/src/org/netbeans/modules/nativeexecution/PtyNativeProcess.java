@@ -45,11 +45,16 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
@@ -63,7 +68,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
     private String tty;
     private AbstractNativeProcess delegate = null;
-    
 
     public PtyNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -93,11 +97,37 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             processExecutable = WindowsSupport.getInstance().convertToShellPath(processExecutable);
         }
 
+        // TODO: Clone Info!!!!
+        info.setExecutable(executable);
+
+        final MacroMap envMap = info.getEnvironment();
+
+        // We don't want pty to be affected by passed environment.
+        // So at least defend ourselfs from LD_PRELOAD
+        final Map<String, String> removedEntries = new HashMap<String, String>();
+        removedEntries.put("LD_PRELOAD", envMap.remove("LD_PRELOAD")); // NOI18N
+        removedEntries.put("LD_PRELOAD_32", envMap.remove("LD_PRELOAD_32")); // NOI18N
+        removedEntries.put("LD_PRELOAD_64", envMap.remove("LD_PRELOAD_64")); // NOI18N
+        removedEntries.put("DYLD_INSERT_LIBRARIES", envMap.remove("DYLD_INSERT_LIBRARIES")); // NOI18N
+
+        Iterator<Entry<String, String>> it = removedEntries.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Entry<String, String> entry = it.next();
+            if (entry.getValue() == null) {
+                it.remove();
+                continue;
+            }
+
+            if (!entry.getValue().isEmpty()) {
+                newArgs.add("--env"); // NOI18N
+                newArgs.add(entry.getKey().trim() + "=" + entry.getValue().trim()); // NOI18N
+            }
+        }
+
         newArgs.add(processExecutable);
         newArgs.addAll(info.getArguments());
 
-        // TODO: Clone Info!!!!
-        info.setExecutable(executable);
         info.setArguments(newArgs.toArray(new String[0]));
 
         // no need to preload unbuffer in case of running in internal terminal
@@ -120,6 +150,9 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         delegate.createAndStart();
+
+        // Restroe environment map... Do we need this?
+        envMap.putAll(removedEntries);
 
         if (pty != null) {
             setInputStream(pty.getInputStream());
