@@ -63,6 +63,9 @@ public interface DatabaseProjectProvider {
     
     boolean isProCItem(Item item);
     String getProCOutput(Item item, MakeConfiguration conf);
+    String getCompileOptions(Item item, MakeConfiguration conf);
+    String getLibraryOptions(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf);
+//    List<String> getAdditionalLibs(MakeConfiguration conf);
     
     void writePrelude(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException;
     void writePrivateVariables(MakeConfiguration makeConf, Writer bw) throws IOException;
