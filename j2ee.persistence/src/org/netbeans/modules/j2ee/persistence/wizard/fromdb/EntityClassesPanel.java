@@ -243,7 +243,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }, true);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            //no need to throw exception as it just will not disable option possibly unsupported, it's not severe
+            LOGGER.log(Level.FINE, "Fail to check if jaxb is supported");//NOI18N
         }
     }
 
