@@ -303,6 +303,9 @@ public class ConfigurationDescriptorProvider {
             case MakeConfiguration.TYPE_APPLICATION:
                 type = "APPLICATION"; // NOI18N
                 break;
+            case MakeConfiguration.TYPE_DB_APPLICATION:
+                type = "DB_APPLICATION"; // NOI18N
+                break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
                 type = "DYNAMIC_LIB"; // NOI18N
                 break;

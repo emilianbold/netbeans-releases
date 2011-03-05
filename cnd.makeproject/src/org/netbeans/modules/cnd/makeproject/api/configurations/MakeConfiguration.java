@@ -103,6 +103,9 @@ public class MakeConfiguration extends Configuration {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),};
+    private static String[] TYPE_NAMES_MANAGED_DB = {
+        getString("DBApplicationName")
+    };
     private static String[] TYPE_NAMES_MANAGED_QT = {
         getString("QtApplicationName"),
         getString("QtDynamicLibraryName"),
@@ -115,6 +118,7 @@ public class MakeConfiguration extends Configuration {
     public static final int TYPE_QT_APPLICATION = 4;
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
+    public static final int TYPE_DB_APPLICATION = 7;
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -156,6 +160,8 @@ public class MakeConfiguration extends Configuration {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
         } else if (configurationTypeValue == TYPE_APPLICATION || configurationTypeValue == TYPE_DYNAMIC_LIB || configurationTypeValue == TYPE_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null, TYPE_APPLICATION);
+        } else if (configurationTypeValue == TYPE_DB_APPLICATION) {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_DB, null, TYPE_DB_APPLICATION);
         } else if (configurationTypeValue == TYPE_QT_APPLICATION || configurationTypeValue == TYPE_QT_DYNAMIC_LIB || configurationTypeValue == TYPE_QT_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_QT, null, TYPE_QT_APPLICATION);
         } else {
@@ -281,6 +287,7 @@ public class MakeConfiguration extends Configuration {
     public boolean isApplicationConfiguration() {
         switch (getConfigurationType().getValue()) {
             case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
             case TYPE_QT_APPLICATION:
                 return true;
             default:
@@ -289,7 +296,10 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isCompileConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB || getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+               getConfigurationType().getValue() == TYPE_STATIC_LIB;
     }
 
     public boolean isLibraryConfiguration() {
@@ -305,7 +315,9 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isLinkerConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
     }
 
     public final boolean isMakefileConfiguration() {
@@ -340,6 +352,7 @@ public class MakeConfiguration extends Configuration {
     public final boolean isStandardManagedConfiguration() {
         switch (getConfigurationType().getValue()) {
             case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
             case TYPE_DYNAMIC_LIB:
             case TYPE_STATIC_LIB:
                 return true;

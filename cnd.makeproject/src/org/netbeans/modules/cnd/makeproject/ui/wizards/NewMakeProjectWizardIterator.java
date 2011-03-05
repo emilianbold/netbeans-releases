@@ -252,7 +252,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private SelectHostWizardProvider getSelectHostWizardProvider() {
         if (selectHostWizardProvider == null) {
-            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, new ChangeListener() {
+            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, false, new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     fireStateChanged();
@@ -457,7 +457,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             } else if (wizardtype == TYPE_QT_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_QT_STATIC_LIB;
             } else if (wizardtype == TYPE_DB_APPLICATION) {
-                conftype = MakeConfiguration.TYPE_APPLICATION;
+                conftype = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             String mainFile = null;
             if (((Boolean) wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N

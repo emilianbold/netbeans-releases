@@ -174,13 +174,13 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return new DelegateOutputStream();
     }
 
-    @Override
-    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
-        if (parent != null) {
-            parent.ensureChildSync(this);
-        }
-    }
+//    @Override
+//    protected void refreshImpl() throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+//        RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this);
+//        if (parent != null) {
+//            parent.ensureChildSync(this);
+//        }
+//    }
 
     @Override
     public FileType getType() {

@@ -47,15 +47,16 @@ import java.util.LinkedList;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.MakeConfigurationSaveListener;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
@@ -122,22 +123,27 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
                         }
                     }                            
                     String remotePath = remoteProject.resolveRelativeRemotePath("."); //NOI18N
-                    FileObject remoteProjectFO = FileSystemProvider.getFileObject(env, remotePath);
-                    if (remoteProjectFO == null || !remoteProjectFO.isValid()) {
-                        LOGGER.severe(NbBundle.getMessage(MakeConfigurationSaveListenerImpl.class, "ERR_Remote_Project_Deleted"));
-                        return;                                
-                    }
                     FileObject localProjectFO = mkd.getProjectDirFileObject();
-                    ShadowProjectSynchronizer sync = new ShadowProjectSynchronizer(remoteProjectFO, localProjectFO, env);
                     try {
-                        sync.updateRemoteProject();
+                        // TODO:FullRemote it's better not to hide IOException, but show it to user
+                        ShadowProjectSynchronizer sync = new ShadowProjectSynchronizer(remotePath, localProjectFO.getPath(), env);
+                        sync.updateRemoteProject(); 
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        reportException(ex, localProjectFO, remotePath, env);
                     } catch (SAXException ex) {
-                        Exceptions.printStackTrace(ex);
+                        reportException(ex, localProjectFO, remotePath, env);
                     }
                 }
             }            
         }
     }    
+    
+    public void reportException(Exception ex, FileObject localProjectFO, String remotePath, ExecutionEnvironment env) {
+        String title = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_SyncToRemote", env.getDisplayName());
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false); // NOI18N
+//        String localName = localProjectFO.getNameExt();
+//        String remoteName = env.getDisplayName() + ':' + remotePath;
+        String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_SyncToRemote_Details", ex.getLocalizedMessage());
+        NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
+    }        
 }

@@ -1040,6 +1040,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 case MakeConfiguration.TYPE_APPLICATION:
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
                     break;
+                case MakeConfiguration.TYPE_DB_APPLICATION:
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-database.png", false); // NOI18N
+                    break;
                 case MakeConfiguration.TYPE_DYNAMIC_LIB:
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
                     break;
