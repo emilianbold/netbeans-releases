@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -150,6 +151,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
     private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 10);//NOI18N
+    
+    private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
     public MakeConfigurationDescriptor(FileObject projectDirFO) {
         this(projectDirFO, projectDirFO);
@@ -724,6 +727,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
+    private static Object getWriteLock(Project project) {
+        Object lock = new Object();
+        Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
+        return (oldLock == null) ? lock : oldLock;
+    }
+    
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
@@ -735,18 +744,25 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         @Override
         public void run() {
-            Collection<? extends MakeConfigurationSaveListener> listeners = 
-                    Lookup.getDefault().lookupAll(MakeConfigurationSaveListener.class);
-            for (MakeConfigurationSaveListener listener : listeners) {
-                listener.configurationSaving(MakeConfigurationDescriptor.this);
+            Project project = getProject();
+            if (project == null) {
+                return;
             }
-            try {
-                ret = saveWorker(extraMessage);
-            } finally {
+            synchronized (getWriteLock(project)) {
+                Collection<? extends MakeConfigurationSaveListener> listeners = 
+                        Lookup.getDefault().lookupAll(MakeConfigurationSaveListener.class);
                 for (MakeConfigurationSaveListener listener : listeners) {
-                    listener.configurationSaved(MakeConfigurationDescriptor.this, ret);
+                    listener.configurationSaving(MakeConfigurationDescriptor.this);
+                }
+                try {
+                    ret = saveWorker(extraMessage);
+                } finally {
+                    for (MakeConfigurationSaveListener listener : listeners) {
+                        listener.configurationSaved(MakeConfigurationDescriptor.this, ret);
+                    }
                 }
             }
+            
         }
     }
 
