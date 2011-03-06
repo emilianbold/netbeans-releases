@@ -101,6 +101,7 @@ import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
+import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -847,7 +848,17 @@ public class InstallSupportImpl {
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
-        assert dest.exists () : dest.getAbsolutePath();        
+        if (!dest.exists()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot find ").append(dest).append("\n");
+            sb.append("Parent directory contains:").append(Arrays.toString(dest.getParentFile().list())).append("\n");
+            for (File f : UpdateTracking.clusters(true)) {
+                sb.append("Trying to find result in ").append(f).append(" = ");
+                File alt = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
+                sb.append(alt).append(" exists ").append(alt.exists()).append("\n");
+            }
+            throw new OperationException(OperationException.ERROR_TYPE.INSTALL, sb.toString());
+        }
         
         int wasVerified = 0;
 
