@@ -96,6 +96,8 @@ import org.xml.sax.SAXException;
  * @author Vladimir Kvashin
  */
 public class ShadowProjectSynchronizer {
+    
+    public static final String DEFAULT = "default";
 
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
     private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
@@ -341,7 +343,7 @@ public class ShadowProjectSynchronizer {
     }
 
     private static String getOrigCompilerSet(Element origRoot) throws IOException, SAXException {
-        String origCsName = "default"; //NOI18N
+        String origCsName = DEFAULT; //NOI18N
         NodeList origCSList = origRoot.getElementsByTagName(CommonConfigurationXMLCodec.COMPILER_SET_ELEMENT);
         if (origCSList.getLength() > 0) {
             Node origCsNode = origCSList.item(0);
@@ -459,17 +461,21 @@ public class ShadowProjectSynchronizer {
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
-            String origCsNameAndFlavor = getOrigCompilerSet(root); //NOI18N
-            CompilerSetManager csManager = CompilerSetManager.get(env);
-            int pos = origCsNameAndFlavor.indexOf('|');            
-            String origCsName = (pos > 0) ? origCsNameAndFlavor.substring(0, pos) : origCsNameAndFlavor;            
-            CompilerSet existentCompilerSet = csManager.getCompilerSet(origCsName);
             String csNameAndFlavor;
-            if (existentCompilerSet == null) {
-                csNameAndFlavor = "default"; //NOI18N
-                reportNotFoundCompilerSet(origCsName);
+            String origCsNameAndFlavor = getOrigCompilerSet(root); //NOI18N
+            if (DEFAULT.equals(origCsNameAndFlavor)) {
+                csNameAndFlavor = DEFAULT;
             } else {
-                csNameAndFlavor = origCsNameAndFlavor;
+                CompilerSetManager csManager = CompilerSetManager.get(env);
+                int pos = origCsNameAndFlavor.indexOf('|');            
+                String origCsName = (pos > 0) ? origCsNameAndFlavor.substring(0, pos) : origCsNameAndFlavor;            
+                CompilerSet existentCompilerSet = csManager.getCompilerSet(origCsName);                
+                if (existentCompilerSet == null) {
+                    csNameAndFlavor = DEFAULT; //NOI18N
+                    reportNotFoundCompilerSet(origCsName);
+                } else {
+                    csNameAndFlavor = origCsNameAndFlavor;
+                }
             }
             NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
             if (toolSetList.getLength() > 0) {
