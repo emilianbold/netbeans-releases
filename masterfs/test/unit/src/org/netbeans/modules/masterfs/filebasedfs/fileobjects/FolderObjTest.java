@@ -144,6 +144,27 @@ public class FolderObjTest extends NbTestCase {
         assertEquals("One children", 1, folder.getChildren().length);
     }
 
+    public void testMoveWithAttributes() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        FileObject target = workDirFo.createFolder("target");
+        FileObject folder = workDirFo.createFolder("a");
+        folder.createData("non.empty");
+        folder.setAttribute("name", "jmeno");
+        assertEquals("jmeno", folder.getAttribute("name"));
+        FileLock lock = folder.lock();
+        FileObject newF = folder.move(lock, target, "b", null);
+        assertFalse("Invalidated", folder.isValid());
+        lock.releaseLock();
+        assertEquals("Name is not b", "b", newF.getNameExt());
+        WeakReference<?> ref = new WeakReference<FileObject>(newF);
+        newF = null;
+        assertGC("Folder can disappear", ref);
+        folder = target.getFileObject("b");
+        assertNotNull("Folder b found", folder);
+        assertEquals("The attribute remains even after rename", "jmeno", folder.getAttribute("name"));
+        assertEquals("One children", 1, folder.getChildren().length);
+    }
+
     public void testBug127256() throws Exception {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
         FileObject folder = workDirFo.createFolder("a");
