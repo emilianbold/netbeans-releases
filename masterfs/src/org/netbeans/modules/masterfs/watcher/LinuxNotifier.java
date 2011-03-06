@@ -103,28 +103,18 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
          IMPL = (InotifyImpl) Native.loadLibrary("c", InotifyImpl.class);
          buff.position(buff.capacity()); // make the buffer empty
          buff.order(ByteOrder.nativeOrder());
-        String osVersion = System.getProperty("os.version");
-        if (lessThan227(osVersion)) {
-            LOG.log(Level.INFO, "Linux kernel {0} less than 2.6.27, using inotify_init", osVersion);
-            fd = IMPL.inotify_init();
-        } else {
-            LOG.log(Level.FINE, "Linux kernel {0} is OK, using inotify_init1", osVersion);
-            fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
-        }
-    }
-
-    private boolean lessThan227(String osVersion) throws NumberFormatException {
-        final Matcher m = Pattern.compile("([0-9\\.]+).*").matcher(osVersion);
-        if (m.matches()) {
-            SpecificationVersion v = new SpecificationVersion(m.group(1));
-            LOG.log(Level.FINE, "Version: {0}", v);
-            if (new SpecificationVersion("2.6.27").compareTo(v) > 0) { // NOI18N
-                return true;
-            }
-        } else {
-            LOG.log(Level.FINE, "Not mached {0}", osVersion);
-        }
-        return false;
+         fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
+         if (fd < 0) {
+             LOG.log(
+                 Level.INFO, "Linux kernel {0} returned {1} from inotify_init1",
+                 new Object[] { System.getProperty("os.version"), fd }
+             );
+             fd = IMPL.inotify_init();
+             LOG.log(Level.INFO, "Trying inotify_init: {0}", fd);
+         }
+         if (fd < 0) {
+             throw new IllegalStateException("inotify_init failed: " + fd);
+         }
     }
 
     private String getString(int maxLen) {
