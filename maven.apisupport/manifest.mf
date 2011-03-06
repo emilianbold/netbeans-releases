@@ -5,5 +5,4 @@ OpenIDE-Module-Layer: org/netbeans/modules/maven/apisupport/layer.xml
 OpenIDE-Module-Public-Packages: -
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Specification-Version: 1.12
-OpenIDE-Module-Provides: org.netbeans.modules.maven.apisupport
 
