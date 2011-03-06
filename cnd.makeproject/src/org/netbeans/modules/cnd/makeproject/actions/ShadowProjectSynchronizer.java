@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +70,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -130,7 +132,7 @@ public class ShadowProjectSynchronizer {
         return localProject;
     }
         
-    public void updateRemoteProject() throws IOException, SAXException {
+    public void updateRemoteProject() throws IOException, SAXException, InterruptedException {
         File localProjectFile = new File(localProjectPath);
         if (!localProjectFile.exists()) {
             throw new FileNotFoundException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", localProjectPath));
@@ -148,7 +150,10 @@ public class ShadowProjectSynchronizer {
             updateRemotePrivateConfiguration(tmpFO);
             FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
             remoteNbprojectFO.refresh();
-            copy(tmpNbProjFO, remoteProject, "nbproject"); //NOI18N
+            Collection<FileObject> objectsToTrack = new ArrayList<FileObject>();
+            copy(tmpNbProjFO, remoteProject, "nbproject", objectsToTrack); //NOI18N
+            Collection<String> failed = new ArrayList<String>();
+            FileSystemProvider.waitWrites(env, objectsToTrack, failed);
         } finally {
             remove(tmpFO);
         }
@@ -194,9 +199,9 @@ public class ShadowProjectSynchronizer {
         }
     }
     
-    private static void updateRemoteProjectXml(FileObject remoteProjectCopy) throws IOException, SAXException {
-        FileObject projectFO = getFileObject(remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
-        Document doc = XMLUtil.parse(new InputSource(projectFO.getInputStream()), false, true, null, null);
+    private static FileObject updateRemoteProjectXml(FileObject remoteProjectCopy) throws IOException, SAXException {
+        FileObject projectXmlFO = getFileObject(remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
+        Document doc = XMLUtil.parse(new InputSource(projectXmlFO.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
         if (root != null) {
             String[] tagsToRemove = new String[] { 
@@ -212,7 +217,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        saveXml(doc, remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);
+        return saveXml(doc, remoteProjectCopy, AntProjectHelper.PROJECT_XML_PATH);        
     }
 
     private static String getOrigCompilerSet(FileObject remoteProjectOrig) throws IOException, SAXException {
@@ -258,7 +263,7 @@ public class ShadowProjectSynchronizer {
         return fo;
     }
     
-    private static void updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
+    private static FileObject updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
         String origCsName = getOrigCompilerSet(remoteProjectOrig);
         FileObject fo = getFileObject(remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
@@ -283,10 +288,10 @@ public class ShadowProjectSynchronizer {
                 node.appendChild(el);
             }
         }
-        saveXml(doc, remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
+        return saveXml(doc, remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
     }
     
-    private static void updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+    private static FileObject updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
         FileObject fo = getFileObject(remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
@@ -309,10 +314,10 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        saveXml(doc, remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
+        return saveXml(doc, remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
     }
 
-    private void updateLocalProjectXml() throws IOException, SAXException {
+    private FileObject updateLocalProjectXml() throws IOException, SAXException {
         FileObject fo = getFileObject(localProject, AntProjectHelper.PROJECT_XML_PATH);
         File projXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
@@ -332,10 +337,10 @@ public class ShadowProjectSynchronizer {
                 masterConfs.appendChild(remoteBaseDir);
             }
         }
-        saveXml(doc, localProject, AntProjectHelper.PROJECT_XML_PATH);
+        return saveXml(doc, localProject, AntProjectHelper.PROJECT_XML_PATH);
     }
 
-    private void updateLocalConfiguration() throws IOException, SAXException {
+    private FileObject updateLocalConfiguration() throws IOException, SAXException {
         FileObject fo = getFileObject(localProject, PROJECT_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
@@ -377,7 +382,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
+        return saveXml(doc, localProject, PROJECT_CONFIGURATION_FILE);
     }
 
     private void reportNotFoundCompilerSet(String origCsName) {
@@ -387,7 +392,7 @@ public class ShadowProjectSynchronizer {
         Notification n = NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }
 
-    private void updateLocalPrivateConfiguration() throws IOException, SAXException {
+    private FileObject updateLocalPrivateConfiguration() throws IOException, SAXException {
         FileObject fo = getFileObject(localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
         File confXml = FileUtil.toFile(fo);
         Document doc = XMLUtil.parse(new InputSource(confXml.toURI().toString()), false, true, null, null);
@@ -411,7 +416,7 @@ public class ShadowProjectSynchronizer {
                 }
             }
         }
-        saveXml(doc, localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
+        return saveXml(doc, localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
     }
 
     private static FileObject getOrCreateFileObject(FileObject dstParent, String name, boolean folder) throws IOException {
@@ -439,11 +444,17 @@ public class ShadowProjectSynchronizer {
     }
             
     private FileObject copy(FileObject src, FileObject dstParent, String name) throws IOException {
+        return copy(src, dstParent, name, new ArrayList<FileObject>());
+    }
+
+    private FileObject copy(FileObject src, FileObject dstParent, String name, Collection<FileObject> createdFileObjects) throws IOException {
         if (src.isFolder()) {
             FileObject dst = getOrCreateFileObject(dstParent, name, true);
             FileUtil.copyAttributes(src, dst);
+            createdFileObjects.add(dst);
             for (FileObject fo : src.getChildren()) {
-                copy(fo, dst, fo.getNameExt());
+                FileObject copiedFO = copy(fo, dst, fo.getNameExt());
+                createdFileObjects.add(copiedFO);
             }
             return dst;
         } else {
@@ -491,7 +502,7 @@ public class ShadowProjectSynchronizer {
      * Save an XML configuration file to a named path.
      * If the file does not yet exist, it is created.
      */
-    private static void saveXml(Document doc, FileObject dir, String path) throws IOException {
+    private static FileObject saveXml(Document doc, FileObject dir, String path) throws IOException {
         FileObject xml = getOrCreateFileObject(dir, path, false);
         FileLock lock = xml.lock();
         try {
@@ -504,5 +515,6 @@ public class ShadowProjectSynchronizer {
         } finally {
             lock.releaseLock();
         }
+        return xml;
     }
 }

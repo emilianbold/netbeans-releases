@@ -132,6 +132,8 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
                         reportException(ex, localProjectFO, remotePath, env);
                     } catch (SAXException ex) {
                         reportException(ex, localProjectFO, remotePath, env);
+                    } catch (InterruptedException ex) {
+                        reportException(ex, localProjectFO, remotePath, env);
                     }
                 }
             }            
