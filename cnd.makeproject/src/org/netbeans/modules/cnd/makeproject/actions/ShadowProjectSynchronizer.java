@@ -47,21 +47,31 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.awt.Notification;
@@ -70,9 +80,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -89,7 +99,10 @@ public class ShadowProjectSynchronizer {
 
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
     private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
-    
+
+    private static final String TMP_NBPROJECT_SUBFOLDER_NAME = "full_remote_tmp"; // NOI18N
+    private static final String TMP_NBPROJECT_SUBFOLDER_PATH = "private/" + TMP_NBPROJECT_SUBFOLDER_NAME; // NOI18N
+
     private final ExecutionEnvironment env;
     private final String remoteProjectPath;
     private final String localProjectPath;
@@ -118,7 +131,8 @@ public class ShadowProjectSynchronizer {
                 throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", remoteProjectPath));
             }
             FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
-            copy(remoteNbprojectFO, localProject, "nbproject"); //NOI18N
+            remoteNbprojectFO.refresh();
+            copy(remoteNbprojectFO, localProject, "nbproject", null); //NOI18N
             updateLocalProjectXml();
             updateLocalConfiguration();
             updateLocalPrivateConfiguration();
@@ -131,34 +145,133 @@ public class ShadowProjectSynchronizer {
         }
         return localProject;
     }
-        
+            
     public void updateRemoteProject() throws IOException, SAXException, InterruptedException {
         File localProjectFile = new File(localProjectPath);
         if (!localProjectFile.exists()) {
             throw new FileNotFoundException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_DirDoesNotExist", localProjectPath));
         }        
         this.localProject = FileUtil.createFolder(FileUtil.normalizeFile(localProjectFile));
+        ProgressHandle progress = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync", localProject.getNameExt(), env.getDisplayName()));
+        progress.start();
+        try {
+            updateRemoteProjectImpl(progress);
+        } finally {
+            progress.finish();
+        }
+    }
+
+    public void updateRemoteProjectImpl(ProgressHandle progress) throws IOException, SAXException, InterruptedException {
         FileObject localNbprojectFO = getFileObject(localProject, "nbproject"); // NOI18N
         
-        this.remoteProject = getFileObject(env, remoteProjectPath);        
+        this.remoteProject = getFileObject(env, remoteProjectPath);
+        FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
+
+        progress.switchToDeterminate(6);
+        
+        // Schedule remote temporary directory creation
+        AtomicReference<FileObject> remoteTmpFoRef = new AtomicReference<FileObject>();
+        final AtomicReference<Boolean> remoteTmpFOCreationSuccess = new AtomicReference<Boolean>(false);
+        AtomicReference<String> remoteTmpFOErrMsg = new AtomicReference<String>();
+        RequestProcessor.Task remoteTmpFOTask = prepareRemoteNbProject(remoteNbprojectFO, remoteTmpFoRef, 
+                remoteTmpFOCreationSuccess, remoteTmpFOErrMsg);
+        
         FileObject tmpFO = createTempDir(localProject.getName(), ".tmp"); // NOI18N
-        copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N        
         try {
-            FileObject tmpNbProjFO = copy(localNbprojectFO, tmpFO, "nbproject"); //NOI18N
+            // Create local temp dir and copy project files there
+            progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_local_tmp"));
+            FileObject tmpNbProjFO = copy(localNbprojectFO, tmpFO, "nbproject", null); //NOI18N
+            progress.progress(1);            
+            
+            // Process files in local temp dir
+            progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_local_merge"));
             updateRemoteProjectXml(tmpFO);
             updateRemoteConfiguration(tmpFO, remoteProject);
             updateRemotePrivateConfiguration(tmpFO);
-            FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
-            remoteNbprojectFO.refresh();
+            progress.progress(2);
+            
+            // wait for remote temporary directory creation, make sure it's ok
+            progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_remote_temp"));
+            remoteTmpFOTask.waitFinished();
+            if (!remoteTmpFOCreationSuccess.get()) {
+                throw new IOException(remoteTmpFOErrMsg.get());
+            }
+            FileObject remoteTmpFo = remoteTmpFoRef.get();
+            CndUtils.assertNotNull(remoteTmpFo, "Null remote temp file object"); //NOI18N
+            progress.progress(3);
+
+            // copy prepared files from local temp dir to remote tmp dir
+            progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_copy_to_remote"));
             Collection<FileObject> objectsToTrack = new ArrayList<FileObject>();
-            copy(tmpNbProjFO, remoteProject, "nbproject", objectsToTrack); //NOI18N
+            copy(tmpNbProjFO, remoteTmpFo, objectsToTrack); //NOI18N
             Collection<String> failed = new ArrayList<String>();
             FileSystemProvider.waitWrites(env, objectsToTrack, failed);
+            progress.progress(4);
+            
+            // ok, all files are ready and delivered to the remote host
+            // now change project content
+            progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_update_project"));
+            ExitStatus moveStatus = ProcessUtils.executeInDir(remoteNbprojectFO.getPath(), env, "/bin/sh", "-c", //NOI18N
+                    "mv " + TMP_NBPROJECT_SUBFOLDER_PATH + "/private/* " + "private/; " + //NOI18N
+                    "rmdir " + TMP_NBPROJECT_SUBFOLDER_PATH + "/private; " + //NOI18N
+                    "mv " + TMP_NBPROJECT_SUBFOLDER_PATH + "/* ."); //NOI18N
+            progress.progress(5);
+            if (!moveStatus.isOK()) {
+                throw new IOException(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_MovingRemoteTmpToProject", moveStatus.error));
+            }
+            
+            progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_cleanup"));
+            Future<Integer> rmTask = CommonTasksSupport.rmDir(
+                    env, remoteNbprojectFO.getPath() + '/' + TMP_NBPROJECT_SUBFOLDER_PATH, true, new PrintWriter(System.err));
+            // it's better to wait, otherwise subsequent save might clash with this cleanup
+            try {
+                int rc = rmTask.get().intValue();
+                if (rc != 0) {
+                    LOGGER.info("Error cleaning up remote temporary directory");
+                }
+            } catch (InterruptedException ex) {
+                // don't log InterruptedException
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.INFO, "Exception when cleaning up remote temporary directory", ex);
+            }
         } finally {
             remove(tmpFO);
+            progress.progress(6);
         }
     }
     
+    private RequestProcessor.Task prepareRemoteNbProject(
+            final FileObject remoteNbprojectFO,
+            final AtomicReference<FileObject> createdFO,
+            final AtomicReference<Boolean> success,
+            final AtomicReference<String> errMsg) {
+        
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                ExitStatus status = ProcessUtils.executeInDir(remoteNbprojectFO.getPath(), env, "/bin/sh", "-c", //NOI18N
+                        "mkdir -p " + TMP_NBPROJECT_SUBFOLDER_PATH + " && " + //NOI18N
+                        "rm -rf " + TMP_NBPROJECT_SUBFOLDER_PATH + "/*; "); //NOI18N
+                if (status.isOK()) {
+                    remoteNbprojectFO.refresh();
+                    FileObject fo = remoteNbprojectFO.getFileObject(TMP_NBPROJECT_SUBFOLDER_PATH);
+                    if (fo == null) {
+                        success.set(false);
+                        errMsg.set(NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_RemoteTmpDirNotFound"));
+                    } else {
+                        createdFO.set(fo);
+                        success.set(true);
+                    }
+                } else {
+                    errMsg.set(status.error);
+                    success.set(false);
+                }
+            }
+        };
+        return new RequestProcessor("Preparing to sync back project " + remoteProjectPath, 1).post(r);
+    }
+        
     private static FileObject createTempDir(String prefix, String suffix) throws IOException {
         File tmpFile = FileUtil.normalizeFile(File.createTempFile(prefix, suffix));
         if (!tmpFile.delete()) {
@@ -443,22 +556,31 @@ public class ShadowProjectSynchronizer {
         return fo;
     }
             
-    private FileObject copy(FileObject src, FileObject dstParent, String name) throws IOException {
-        return copy(src, dstParent, name, new ArrayList<FileObject>());
+    private FileObject copy(FileObject src, FileObject dst, Collection<FileObject> createdFileObjects) throws IOException {
+        return copy(src, dst.getParent(), dst.getNameExt(), createdFileObjects);
     }
-
+    
     private FileObject copy(FileObject src, FileObject dstParent, String name, Collection<FileObject> createdFileObjects) throws IOException {
         if (src.isFolder()) {
             FileObject dst = getOrCreateFileObject(dstParent, name, true);
             FileUtil.copyAttributes(src, dst);
-            createdFileObjects.add(dst);
+            if (createdFileObjects != null && dst != null) {
+                createdFileObjects.add(dst);
+            }
             for (FileObject fo : src.getChildren()) {
-                FileObject copiedFO = copy(fo, dst, fo.getNameExt());
-                createdFileObjects.add(copiedFO);
+                if (!TMP_NBPROJECT_SUBFOLDER_NAME.equals(fo.getNameExt())) {
+                    FileObject copiedFO = copy(fo, dst, fo.getNameExt(), createdFileObjects);
+                    if (createdFileObjects != null && copiedFO != null) {
+                        createdFileObjects.add(copiedFO);
+                    }
+                }
             }
             return dst;
         } else {
             FileObject dest = copyImpl(src, dstParent, name);
+            if (createdFileObjects != null && dest != null) {
+                createdFileObjects.add(dest);
+            }
             return dest;
         }
     }

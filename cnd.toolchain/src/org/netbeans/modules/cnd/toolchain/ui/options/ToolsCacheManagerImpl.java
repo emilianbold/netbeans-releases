@@ -111,7 +111,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
 
     @Override
     public void applyChanges() {
-        applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
+        applyChanges(null);
     }
 
     @Override
@@ -238,8 +238,15 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
                         liveServers.add(rec.getExecutionEnvironment());
                     }
                     serverUpdateCache = null;
-                } else if (selectedRecord != null) {
-                    ServerList.setDefaultRecord(selectedRecord);
+                } else {
+                    if (selectedRecord == null) {
+                        ServerRecord defaultRecord = ServerList.getDefaultRecord();
+                        if (defaultRecord == null) { // or is it a paranoya?
+                            ServerList.setDefaultRecord(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
+                        }
+                    } else {
+                        ServerList.setDefaultRecord(selectedRecord);
+                    }
                 }
 
                 saveCompileSetManagers(liveServers);
