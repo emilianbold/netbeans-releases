@@ -165,6 +165,15 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             return true;
         }
     }
+    
+    @Override
+    public boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
+        if (env.isRemote()) {
+            return WritingQueue.getInstance(env).waitFinished(filesToWait, failedFiles);
+        } else {
+            return true;
+        }
+    }    
 
     @Override
     public FileObject urlToFileObject(String path) {

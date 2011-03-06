@@ -69,6 +69,7 @@ public interface FileSystemProviderImplementation {
     boolean isAbsolute(String path);
     ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem);
     boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException;
+    boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException;
     void addDownloadListener(FileSystemProvider.DownloadListener listener);
     void removeDownloadListener(FileSystemProvider.DownloadListener listener);
     FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;

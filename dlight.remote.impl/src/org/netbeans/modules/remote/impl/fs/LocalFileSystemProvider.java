@@ -216,6 +216,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
+        return true;
+    }
+
+    @Override
     public FileObject urlToFileObject(String absoluteURL) {
         File file = new File(absoluteURL);
         return FileUtil.toFileObject(FileUtil.normalizeFile(file));

@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -112,14 +114,23 @@ public class WritingQueue {
     // TODO: re-queue failed files?
     // TODO: what if a file changed on remote host?
 
-    private boolean entriesEmpty(Collection<String> failedFiles) {
+    private boolean entriesEmpty(Collection<FileObject> filesToWait, Collection<String> failedFiles) {
         synchronized (lock) {
             if(entries.isEmpty()) {
                 failedFiles.clear();
                 failedFiles.addAll(failed);
                 return true;
             } else {
-                return false;
+                if (filesToWait.isEmpty()) {
+                    return false;
+                } else {
+                    for (FileObject fo : filesToWait) {
+                        if (entries.containsKey(fo.getPath())) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }                
             }
         }
     }
@@ -135,7 +146,7 @@ public class WritingQueue {
             failedFiles = new ArrayList<String>();
         }
         while (true) {
-            if (entriesEmpty(failedFiles)) {
+            if (entriesEmpty(Collections.<FileObject>emptyList(), failedFiles)) {
                 if (entries.isEmpty()) {
                     break;
                 }
@@ -147,6 +158,23 @@ public class WritingQueue {
         return failedFiles.isEmpty();
     }
 
+    public boolean waitFinished(Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
+        if (failedFiles == null) {
+            failedFiles = new ArrayList<String>();
+        }
+        while (true) {
+            if (entriesEmpty(filesToWait, failedFiles)) {
+                if (entries.isEmpty()) {
+                    break;
+                }
+            }
+            synchronized (monitor) {
+                monitor.wait();
+            }
+        }
+        return failedFiles.isEmpty();
+    }
+    
     private class Entry implements ChangeListener {
 
         private volatile Future<Integer> currentTask;

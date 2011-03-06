@@ -107,6 +107,16 @@ public final class FileSystemProvider {
         return null;
     }
 
+    public static boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.waitWrites(env, filesToWait, failedFiles);
+            }
+        }
+        noProvidersWarning(env);
+        return true;
+    }
+    
     public static boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(env)) {
