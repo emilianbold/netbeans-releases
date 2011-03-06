@@ -146,6 +146,7 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
 //        String localName = localProjectFO.getNameExt();
 //        String remoteName = env.getDisplayName() + ':' + remotePath;
         String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_SyncToRemote_Details", ex.getLocalizedMessage());
+        LOGGER.log(Level.INFO, "{0}: {1}", new Object[]{title, details});
         NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }        
 }
