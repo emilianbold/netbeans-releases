@@ -217,12 +217,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         updatePersistenceUnitButton(true);
 
         generateJAXBCheckBox.setEnabled(false);
-        generateJAXBCheckBox.setVisible(false);
+        generateJAXBCheckBox.setSelected(false);
         SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
         if (groups.length > 0) {
             ClassPath compileCP = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
-            if (compileCP.findResource("javax/xml/bind/annotation/XmlRootElement.class") != null) { // NOI18N
-                generateJAXBCheckBox.setVisible(true);
+            if (compileCP.findResource("javax/xml/bind/annotation/XmlRootElement.class") == null) { // NOI18N
+                generateJAXBCheckBox.setSelected(true);
                 if (!JAXBRequired) {
                     generateJAXBCheckBox.setEnabled(true);
                 }
@@ -274,7 +274,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     }
 
     public boolean getGenerateJAXB() {
-        return generateJAXBCheckBox.isVisible() && generateJAXBCheckBox.isSelected();
+        return generateJAXBCheckBox.isSelected();
     }
 
     public boolean getGenerateValidationConstraints() {
