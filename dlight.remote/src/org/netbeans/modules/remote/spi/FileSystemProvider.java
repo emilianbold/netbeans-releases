@@ -45,7 +45,6 @@ package org.netbeans.modules.remote.spi;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -108,7 +107,7 @@ public final class FileSystemProvider {
         return null;
     }
 
-    public static boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException {
+    public static boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(env)) {
                 return provider.waitWrites(env, failedFiles);

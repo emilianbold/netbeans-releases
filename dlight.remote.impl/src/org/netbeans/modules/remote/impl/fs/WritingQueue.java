@@ -45,9 +45,9 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -112,7 +112,7 @@ public class WritingQueue {
     // TODO: re-queue failed files?
     // TODO: what if a file changed on remote host?
 
-    private boolean entriesEmpty(List<String> failedFiles) {
+    private boolean entriesEmpty(Collection<String> failedFiles) {
         synchronized (lock) {
             if(entries.isEmpty()) {
                 failedFiles.clear();
@@ -130,7 +130,7 @@ public class WritingQueue {
         }
     }
 
-    public boolean waitFinished(List<String> failedFiles) throws InterruptedException {
+    public boolean waitFinished(Collection<String> failedFiles) throws InterruptedException {
         if (failedFiles == null) {
             failedFiles = new ArrayList<String>();
         }

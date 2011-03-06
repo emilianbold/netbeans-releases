@@ -44,7 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
@@ -158,7 +158,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
-    public boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException {
+    public boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException {
         if (env.isRemote()) {
             return WritingQueue.getInstance(env).waitFinished(failedFiles);
         } else {

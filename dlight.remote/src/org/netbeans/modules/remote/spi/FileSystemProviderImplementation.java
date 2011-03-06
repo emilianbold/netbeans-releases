@@ -44,7 +44,7 @@ package org.netbeans.modules.remote.spi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -68,7 +68,7 @@ public interface FileSystemProviderImplementation {
     boolean isMine(File file);
     boolean isAbsolute(String path);
     ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem);
-    boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException;
+    boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException;
     void addDownloadListener(FileSystemProvider.DownloadListener listener);
     void removeDownloadListener(FileSystemProvider.DownloadListener listener);
     FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;
