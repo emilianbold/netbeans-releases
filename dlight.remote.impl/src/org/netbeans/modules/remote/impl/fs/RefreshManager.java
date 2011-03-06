@@ -70,6 +70,7 @@ public class RefreshManager {
     private final Object queueLock = new Object();
     
     private static final boolean REFRESH_ON_FOCUS = getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
+    private static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
     
     private final class RefreshWorker implements Runnable {
         public void run() {
@@ -121,7 +122,9 @@ public class RefreshManager {
     }
     
     public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
-        scheduleRefresh(filterDirectories(fileObjects));        
+        if (REFRESH_ON_CONNECT) {
+            scheduleRefresh(filterDirectories(fileObjects));        
+        }
     }
     
     private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
