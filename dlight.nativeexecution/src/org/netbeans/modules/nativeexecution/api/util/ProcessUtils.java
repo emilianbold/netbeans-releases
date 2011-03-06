@@ -425,6 +425,11 @@ public final class ProcessUtils {
         public boolean isOK() {
             return exitCode == 0;
         }
+
+        @Override
+        public String toString() {
+            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + error + "\noutput=" + output;
+        }
     }
 
     public static interface PostExecutor {
