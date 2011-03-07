@@ -272,6 +272,9 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         NodeActionsProvider original, 
         Object node
     ) throws UnknownTypeException {
+        if (fixedWatches.containsKey (new KeyWrapper(node))) {
+            return ;
+        }
         original.performDefaultAction (node);
     }
 
@@ -282,10 +285,15 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         if (fixedWatches.containsKey (new KeyWrapper(node))) {
             KeyStroke deleteKey = KeyStroke.getKeyStroke ("DELETE");
             int deleteIndex = -1;
+            int editIndex = -1;
             for (int i = 0; i < actions.length; i++) {
-                if (actions[i] != null && deleteKey.equals(actions[i].getValue(Action.ACCELERATOR_KEY))) {
-                    deleteIndex = i;
-                    break;
+                if (actions[i] != null) {
+                    if (deleteKey.equals(actions[i].getValue(Action.ACCELERATOR_KEY))) {
+                        deleteIndex = i;
+                    }
+                    if (Boolean.TRUE.equals(actions[i].getValue("edit"))) {
+                        editIndex = i;
+                    }
                 }
             }
             if (deleteIndex >= 0) {
@@ -295,6 +303,16 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
                 }
             } else {
                 myActions.add (0, DELETE_ACTION);
+            }
+            if (editIndex >= 0) {
+                if (editIndex == actions.length - 1) {
+                    actions = Arrays.copyOf(actions, actions.length - 1);
+                } else {
+                    Action[] actions2 = new Action[actions.length - 1];
+                    System.arraycopy(actions, 0, actions2, 0, editIndex);
+                    System.arraycopy(actions, editIndex + 1, actions2, editIndex, actions2.length - editIndex);
+                    actions = actions2;
+                }
             }
         } else
         if (node instanceof Variable) {
@@ -405,6 +423,9 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     }
 
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        if (fixedWatches.containsKey (new KeyWrapper(node))) {
+            return false;
+        }
         return original.canRename(node);
     }
 

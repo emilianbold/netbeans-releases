@@ -336,6 +336,7 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
+        tree.setInvokesStopCellEditing(true);
         int rowHeight = rend.getTreeCellRendererComponent(tree, null, false, false, false, 0, true).getPreferredSize().height;
         tree.setRowHeight(rowHeight);
         tree.setLargeModel(true);
@@ -1607,6 +1608,7 @@ public abstract class TreeView extends JScrollPane {
         /* clicking adapter */
         @Override
         public void mouseClicked(MouseEvent e) {
+            tree.stopEditing();
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
 
             if ((selRow != -1) && SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
