@@ -56,6 +56,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.TreeExpansionListener;
@@ -96,7 +97,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         outlineView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         outlineView.getAccessibleContext().setAccessibleName(browserAcsn);
         if(singleSelection) {
-            outlineView.getOutline().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            outlineView.getOutline().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
         outlineView.setPopupAllowed(true);
         
