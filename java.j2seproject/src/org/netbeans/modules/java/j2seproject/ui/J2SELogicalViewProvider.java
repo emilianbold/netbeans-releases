@@ -55,9 +55,7 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.UIManager;
@@ -122,7 +120,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private final ReferenceHelper resolver;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final PropertyChangeListener pcl;
-    private Set<URL> activeLibManLocs;
+    private Map<URL,Object[]> activeLibManLocs;
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
@@ -149,14 +147,18 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     }
 
     private void addLibraryManagerListener() {
-        final Set<URL> currentLMs;
+        final Map<URL,Object[]> oldLMs;
         final boolean attachToDefault;
         synchronized (this) {
             attachToDefault = activeLibManLocs == null;
             if (attachToDefault) {
-                activeLibManLocs = new HashSet<URL>();
+                activeLibManLocs = new HashMap<URL,Object[]>();
             }
-            currentLMs = new HashSet<URL>(activeLibManLocs);
+            oldLMs = new HashMap<URL,Object[]>(activeLibManLocs);
+        }
+        if (attachToDefault) {
+            final LibraryManager manager = LibraryManager.getDefault();
+            manager.addPropertyChangeListener(WeakListeners.propertyChange(pcl, manager));
         }
         final Collection<? extends LibraryManager> managers = LibraryManager.getOpenManagers();
         final Map<URL,LibraryManager> managerByLocation = new HashMap<URL, LibraryManager>();
@@ -166,15 +168,22 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
                 managerByLocation.put(url, manager);
             }
         }
-        final Set<URL> toRemove = new HashSet<URL>(currentLMs);
-        toRemove.removeAll(managerByLocation.keySet());
-        managerByLocation.keySet().removeAll(currentLMs);
-        for (LibraryManager manager : managerByLocation.values()) {
-            manager.addPropertyChangeListener(WeakListeners.propertyChange(pcl, manager));
+        final HashMap<URL,Object[]> toRemove = new HashMap<URL,Object[]>(oldLMs);
+        toRemove.keySet().removeAll(managerByLocation.keySet());
+        for (Object[] pair : toRemove.values()) {
+            ((LibraryManager)pair[0]).removePropertyChangeListener((PropertyChangeListener)pair[1]);
+        }
+        managerByLocation.keySet().removeAll(oldLMs.keySet());
+        final HashMap<URL,Object[]> toAdd = new HashMap<URL,Object[]>();
+        for (Map.Entry<URL,LibraryManager> e : managerByLocation.entrySet()) {
+            final LibraryManager manager = e.getValue();
+            final PropertyChangeListener listener = WeakListeners.propertyChange(pcl, manager);
+            manager.addPropertyChangeListener(listener);
+            toAdd.put(e.getKey(), new Object[] {manager, listener});
         }
         synchronized (this) {
-            activeLibManLocs.removeAll(toRemove);
-            activeLibManLocs.addAll(managerByLocation.keySet());
+            activeLibManLocs.keySet().removeAll(toRemove.keySet());
+            activeLibManLocs.putAll(toAdd);
         }
     }
     
@@ -253,7 +262,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
      * about project's broken references and advises him to use BrokenLinksAction to correct it.
      */
     public @Override void testBroken() {
-        task.schedule(100);
+        task.schedule(500);
     }
     
     // Private innerclasses ----------------------------------------------------
