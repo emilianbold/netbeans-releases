@@ -59,21 +59,22 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 
 import org.netbeans.api.project.*;
-import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
-import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -87,6 +88,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -101,7 +103,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private static final ModelSupport instance = new ModelSupport();
     private ModelImpl theModel;
-    private final Set<Project> openedProjects = new HashSet<Project>();
+    private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = false;
@@ -147,7 +149,7 @@ public class ModelSupport implements PropertyChangeListener {
                     System.out.println("Model support: Open projects in Init"); // NOI18N
                 }
                 postponeParse = false;
-                OpenProjects.getDefault().addPropertyChangeListener(this);
+                NativeProjectRegistry.getDefault().addPropertyChangeListener(this);
                 openProjects();
             } else {
                 if (TRACE_STARTUP) {
@@ -166,7 +168,7 @@ public class ModelSupport implements PropertyChangeListener {
 
                             @Override
                             public void run() {
-                                OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
+                                NativeProjectRegistry.getDefault().addPropertyChangeListener(ModelSupport.this);
                                 openProjects();
                             }
                         };
@@ -196,7 +198,7 @@ public class ModelSupport implements PropertyChangeListener {
             if (TRACE_STARTUP) {
                 System.out.println("Model support event:" + evt.getPropertyName());
             }
-            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+            if (evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECTS)) {
                 if (!postponeParse) {
                     if (TRACE_STARTUP) {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
@@ -216,25 +218,26 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private void openProjects() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
 
         synchronized (openedProjects) {
-            Set<Project> nowOpened = new HashSet<Project>();
-            for (int i = 0; i < projects.length; i++) {
-                nowOpened.add(projects[i]);
-                if (!openedProjects.contains(projects[i])) {
-                    addProject(projects[i]);
+            Set<Lookup.Provider> nowOpened = new HashSet<Lookup.Provider>();
+            for(NativeProject project : projects) {
+                Provider makeProject = project.getProject();
+                nowOpened.add(makeProject);
+                if (!openedProjects.contains(makeProject)) {
+                    addProject(makeProject);
                 }
             }
 
-            Set<Project> toClose = new HashSet<Project>();
-            for (Project project : openedProjects) {
+            Set<Lookup.Provider> toClose = new HashSet<Lookup.Provider>();
+            for (Lookup.Provider project : openedProjects) {
                 if (!nowOpened.contains(project)) {
                     toClose.add(project);
                 }
             }
 
-            for (Project project : toClose) {
+            for (Lookup.Provider project : toClose) {
                 closeProject(project);
             }
         }
@@ -255,19 +258,19 @@ public class ModelSupport implements PropertyChangeListener {
     public static void dumpNativeProject(NativeProject nativeProject) {
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
-        for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) {
+        for (Iterator<FSPath> it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) {
             System.err.println("    " + it.next());
         }
         System.err.println("\nUser include paths");
-        for (Iterator it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();) {
+        for (Iterator<FSPath> it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();) {
             System.err.println("    " + it.next());
         }
         System.err.println("\nSystem macros");
-        for (Iterator it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) {
+        for (Iterator<String> it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) {
             System.err.println("    " + it.next());
         }
         System.err.println("\nUser macros");
-        for (Iterator it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();) {
+        for (Iterator<String> it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();) {
             System.err.println("    " + it.next());
         }
         List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
@@ -309,9 +312,9 @@ public class ModelSupport implements PropertyChangeListener {
         return nativeProject;
     }
 
-    private String toString(Project project) {
+    private String toString(Lookup.Provider project) {
         StringBuilder sb = new StringBuilder();
-        ProjectInformation pi = ProjectUtils.getInformation(project);
+        ProjectInformation pi = ProjectUtils.getInformation((Project) project);
         if (pi != null) {
             sb.append(" Name=").append(pi.getName()); // NOI18N
             sb.append(" DisplayName=").append(pi.getDisplayName()); // NOI18N
@@ -323,7 +326,7 @@ public class ModelSupport implements PropertyChangeListener {
         return sb.toString();
     }
 
-    private void addProject(final Project project) {
+    private void addProject(final Lookup.Provider project) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
         }
@@ -347,7 +350,9 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
-                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
+                    NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
+                    // enable by default
+                    boolean enableModel = (settings == null) ? true : settings.isCodeAssistanceEnabled();
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
             };
@@ -386,7 +391,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    private void closeProject(Project project) {
+    private void closeProject(Lookup.Provider project) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
         }
@@ -452,21 +457,6 @@ public class ModelSupport implements PropertyChangeListener {
         if (alerter != null) {
             alerter.alert(event, fatal);
         }
-    }
-
-    public static NativeProject[] getOpenNativeProjects() {
-        if (CndUtils.isStandalone()) {
-            return new NativeProject[0];
-        }
-        List<NativeProject> result = new ArrayList<NativeProject>();
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            NativeProject nativeProject = projects[i].getLookup().lookup(NativeProject.class);
-            if (nativeProject != null) {
-                result.add(nativeProject);
-            }
-        }
-        return result.toArray(new NativeProject[result.size()]);
     }
 
     private static final class BufAndProj {
@@ -581,8 +571,8 @@ public class ModelSupport implements PropertyChangeListener {
                 Set<DataObject> toDelete = new HashSet<DataObject>();
 
                 // find all files, which stopped editing
-                for (Iterator iter = buffers.keySet().iterator(); iter.hasNext();) {
-                    DataObject dao = (DataObject) iter.next();
+                for (Iterator<DataObject> iter = buffers.keySet().iterator(); iter.hasNext();) {
+                    DataObject dao = iter.next();
                     if (!contains(objs, dao)) {
                         for (BufAndProj bufNP : getBufNP(dao)) {
                             if (bufNP != null) {
@@ -752,9 +742,16 @@ public class ModelSupport implements PropertyChangeListener {
                         ProjectBase project = (ProjectBase)CsmUtilities.getCsmProject(fo);
                         if (project != null) {
                             project.onFileExternalCreate(fo);
+                        } else {
+                            CndFileUtils.clearFileExistenceCache();
                         }
                    } else {
-                        CsmFile[] files = CsmUtilities.getCsmFiles(fo, false);
+                        CsmFile[] files;
+                        try {
+                            files = CsmUtilities.getCsmFiles(DataObject.find(fo), false, false);
+                        } catch (DataObjectNotFoundException ex) {
+                            files = new CsmFile[0];
+                        }                        
                         for (int i = 0; i < files.length; ++i) {
                             FileImpl file = (FileImpl) files[i];
                             ProjectBase project = file.getProjectImpl(true);

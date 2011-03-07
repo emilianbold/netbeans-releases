@@ -65,10 +65,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferSnapshot;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
@@ -95,7 +95,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     private SoftReference<FileBufferSnapshot> snapRef = new SoftReference<FileBufferSnapshot>(null);
     
     FileBufferImpl(FileObject fileObject, FileImpl fileImpl) {
-        this(getFileSystem(fileObject), CndFileUtils.getNormalizedPath(fileObject), fileImpl);
+        this(getFileSystem(fileObject), CndFileUtils.normalizePath(fileObject), fileImpl);
         attachListeners(fileObject);
     }
 
@@ -186,7 +186,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     }
 
     @Override
-    public String getText() throws IOException {
+    public CharSequence getText() throws IOException {
         return getSnapshot().getText();
     }
 

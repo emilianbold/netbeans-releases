@@ -88,6 +88,10 @@ public class RemoteBuildLinksTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void testSymLinksBuild() throws Exception {
+        if (Utilities.isWindows()) {
+            System.err.printf("Skipping %s on Windows\n", getName());
+            return;
+        }
         doTest(Toolchain.GNU);
     }
 

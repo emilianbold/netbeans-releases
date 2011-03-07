@@ -6,6 +6,7 @@ package org.netbeans.modules.dlight.api.impl;
 
 //import org.netbeans.modules.dlight.api.indicator.ConfigurationData;
 import java.util.List;
+import org.netbeans.modules.dlight.api.indicator.IndicatorActionDescriptor;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
@@ -16,40 +17,39 @@ import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
  */
 public abstract class IndicatorConfigurationAccessor {
 
-  private static volatile IndicatorConfigurationAccessor DEFAULT;
+    private static volatile IndicatorConfigurationAccessor DEFAULT;
 
-  public static IndicatorConfigurationAccessor getDefault() {
-    IndicatorConfigurationAccessor a = DEFAULT;
-    if (a != null) {
-      return a;
+    public static IndicatorConfigurationAccessor getDefault() {
+        IndicatorConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(IndicatorConfiguration.class.getName(), true, IndicatorConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    try {
-      Class.forName(IndicatorConfiguration.class.getName(), true, IndicatorConfiguration.class.getClassLoader());//
-    } catch (Exception e) {
+    public static void setDefault(IndicatorConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
-    return DEFAULT;
-  }
 
-  public static void setDefault(IndicatorConfigurationAccessor accessor) {
-    if (DEFAULT != null) {
-      throw new IllegalStateException();
+    public IndicatorConfigurationAccessor() {
     }
-    DEFAULT = accessor;
-  }
-
-  public IndicatorConfigurationAccessor() {
-  }
 
 //  public abstract ConfigurationData getConfigurationData(IndicatorConfiguration configuration);
+    public abstract IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration);
 
-  public abstract IndicatorMetadata getIndicatorMetadata(IndicatorConfiguration configuration);
+    public abstract int getIndicatorPosition(IndicatorConfiguration configuration);
 
-  public abstract int getIndicatorPosition(IndicatorConfiguration configuration);
+    public abstract List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration);
+    
+    public abstract IndicatorActionDescriptor getDefaultActionDescriptor(IndicatorConfiguration configuration);
 
-  public abstract List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration);
-
-  public abstract String getActionDisplayName(IndicatorConfiguration configuration);
-
-  public abstract String getActionTooltip(IndicatorConfiguration configuration);
+    public abstract List<IndicatorActionDescriptor> getActionDescriptors(IndicatorConfiguration configuration);
 }

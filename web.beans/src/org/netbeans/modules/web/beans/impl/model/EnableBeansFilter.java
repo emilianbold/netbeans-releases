@@ -43,13 +43,10 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -250,9 +247,9 @@ class EnableBeansFilter {
         }
         return result;
     }
-    
+
     private void checkProxyability( TypeElement typeElement,
-            LinkedList<Element> types , Set<Element> result)
+            LinkedList<Element> types , Set<Element> elements)
     {
         /*
          * Certain legal bean types cannot be proxied by the container:
@@ -263,7 +260,7 @@ class EnableBeansFilter {
          */
         if ( hasModifier(typeElement, Modifier.FINAL)){
             types.remove(typeElement);
-            result.remove( typeElement );
+            elements.remove( typeElement );
             return;
         }
         List<ExecutableElement> methods = ElementFilter.methodsIn(
@@ -271,7 +268,7 @@ class EnableBeansFilter {
         for (ExecutableElement executableElement : methods) {
             if ( hasModifier(executableElement, Modifier.FINAL)){
                 types.remove(typeElement);
-                result.remove( typeElement );
+                elements.remove( typeElement );
                 return;
             }
         }
@@ -291,7 +288,7 @@ class EnableBeansFilter {
         
         if ( !appropriateCtor){
             types.remove(typeElement);
-            result.remove( typeElement );
+            elements.remove( typeElement );
         }
     }
     
@@ -306,7 +303,7 @@ class EnableBeansFilter {
     }
 
     private void checkSpecializes( TypeElement typeElement, 
-            LinkedList<Element> beans, Set<Element> resultSet, 
+            LinkedList<Element> beans, Set<Element> resultElementSet, 
             Set<Element> originalElements)
     {
         TypeElement current = typeElement;
@@ -321,7 +318,7 @@ class EnableBeansFilter {
             TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
                 .asElement();
             if (originalElements.contains(superElement)) {
-                resultSet.remove(superElement);
+                resultElementSet.remove(superElement);
             }
             beans.remove( superElement );
             if ( !getResult().getTypeElements().contains( superElement)){

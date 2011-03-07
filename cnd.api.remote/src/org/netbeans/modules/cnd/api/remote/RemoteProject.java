@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.remote;
 
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -76,5 +77,7 @@ public interface RemoteProject {
      * Base project directory (to resolve relative paths against)
      * @return 
      */
-    String getBaseDir();
+    String getSourceBaseDir();
+    
+    FileObject getSourceBaseDirFileObject();
 }

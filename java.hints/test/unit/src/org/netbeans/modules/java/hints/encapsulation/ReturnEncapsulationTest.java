@@ -91,6 +91,17 @@ public class ReturnEncapsulationTest extends TestBase {
                             "}");
     }
 
+    public void testReturnUnmodifiableCollectionField195557() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private final java.util.List l = java.util.Arrays.asList(1);\n" +
+                            "    public java.util.List getList() {\n"+
+                            "        return l;\n"+
+                            "    }\n"+
+                            "}");
+    }
+
     public void testReturnArrayField() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

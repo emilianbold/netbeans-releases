@@ -528,6 +528,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             txtGoals.setText(createSpaceSeparatedList(mapp != null ? mapp.getGoals() : Collections.EMPTY_LIST));
             txtProfiles.setText(createSpaceSeparatedList(mapp != null ? mapp.getActivatedProfiles() : Collections.EMPTY_LIST));
             taProperties.setText(createPropertiesList(mapp != null ? mapp.getProperties() : new Properties()));
+            taProperties.setCaretPosition(0);
             if (handle != null && "pom".equals(handle.getProject().getPackaging())) { //NOI18N
                 cbRecursively.setEnabled(true);
                 cbRecursively.setSelected(mapp != null ? mapp.isRecursive() : true);
@@ -670,16 +671,16 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     private String createPropertiesList(Properties properties) {
-        String str = ""; //NOI18N
+        StringBuilder b = new StringBuilder();
         if (properties != null) {
-            Iterator it = properties.keySet().iterator();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
-                String val = properties.getProperty(elem);
-                str = str + elem + "=" + val + "\n"; //NOI18N
+            for (Map.Entry<?,?> entry : properties.entrySet()) {
+                if (b.length() > 0) {
+                    b.append('\n');
+                }
+                b.append(entry.getKey()).append('=').append(entry.getValue());
             }
         }
-        return str;
+        return b.toString();
     }
     
     

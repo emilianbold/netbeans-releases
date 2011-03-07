@@ -406,6 +406,39 @@ public class Method1Test extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testRemoveLastThrownException195250() throws Exception {
+        String test =
+                "class Test {\n" +
+                "    void m() throws IllegalStateException {\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    void m() {\n" +
+                "    }\n" +
+                "}";
+        File file = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(file, test);
+        JavaSource src = getJavaSource(file);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                
+                ClassTree clazz = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TreeMaker make = copy.getTreeMaker();
+                
+                copy.rewrite(method, make.removeMethodThrows(method, 0));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(file);
+        assertEquals(golden, res);
+    }
+    
     /**
      * Tests method body.
      */

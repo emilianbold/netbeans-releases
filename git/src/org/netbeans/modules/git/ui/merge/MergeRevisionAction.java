@@ -47,8 +47,11 @@ import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -103,14 +106,61 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
                         revision = mergeRevision.getRevision();
                         LOG.log(Level.FINE, "Merging revision {0} into HEAD", revision); //NOI18N
-                        GitMergeResult result = client.merge(revision, this);
-                        processResult(result);
+                        boolean cont;
+                        do {
+                            cont = false;
+                            try {
+                                GitMergeResult result = client.merge(revision, this);
+                                processResult(result);
+                            } catch (GitException.CheckoutConflictException ex) {
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                                }
+                                File[] localModifications = getFilesInConflict(ex.getConflicts());
+                                cont = resolveConflicts(localModifications);
+                            }
+                        } while (cont);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                         Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
                         GitUtils.headChanged(repository);
+                    }
+                }
+                
+                private File[] getFilesInConflict (String[] conflicts) {
+                    List<File> files = new ArrayList<File>(conflicts.length);
+                    for (String path : conflicts) {
+                        files.add(new File(repository, path));
+                    }
+                    return files.toArray(new File[files.size()]);
+                }
+                
+                private boolean resolveConflicts (File[] conflicts) throws GitException {
+                    JButton revert = new JButton();
+                    Mnemonics.setLocalizedText(revert, NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction.revertButton.text")); //NOI18N
+                    revert.setToolTipText(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction.revertButton.TTtext")); //NOI18N
+                    JButton review = new JButton();
+                    Mnemonics.setLocalizedText(review, NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction.reviewButton.text")); //NOI18N
+                    review.setToolTipText(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction.reviewButton.TTtext")); //NOI18N
+                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.localModifications"), //NOI18N
+                            NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction.localModifications"), //NOI18N
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] { revert, review, NotifyDescriptor.CANCEL_OPTION }, revert));
+                    if (o == revert) {
+                        GitClient client = getClient();
+                        LOG.log(Level.FINE, "Checking out paths from HEAD"); //NOI18N
+                        client.checkout(conflicts, GitUtils.HEAD, this);
+                        LOG.log(Level.FINE, "Cleanup new files"); //NOI18N
+                        client.clean(conflicts, this);
+                        LOG.log(Level.FINE, "Checking out branch: {0}, second shot", revision); //NOI18N
+                        return true;
+                    } else if (o == review) {
+                        setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                        GitUtils.openInVersioningView(Arrays.asList(conflicts), repository, this);
+                        return false;
+                    } else {
+                        return false;
                     }
                 }
 
@@ -158,7 +208,7 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                             sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failedFiles", revision)); //NOI18N
                             printConflicts(sb, result.getConflicts());
                             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failed"), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+                                    NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                             break;
                         case NOT_SUPPORTED:
                             sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.unsupported")); //NOI18N

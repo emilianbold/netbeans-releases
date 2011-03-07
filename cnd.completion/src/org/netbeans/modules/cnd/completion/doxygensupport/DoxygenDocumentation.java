@@ -336,6 +336,7 @@ public class DoxygenDocumentation {
         int i = 0;
         boolean wasContent = true;
         boolean verbatimMode = false;
+        boolean escapedCommand = false;
 
         OUTER:
         while (i < text.length()) {
@@ -376,6 +377,53 @@ public class DoxygenDocumentation {
                     break;
                 case '@':
                 case '\\': // NOI18N
+                    if (escapedCommand) {
+                        escapedCommand = false;
+                        img.append(text.charAt(i));
+                        i++;
+                        break;
+                    }
+                    boolean escaped = false;
+                    if (text.charAt(i) == '\\' && (i+1) < text.length()) {
+                        // could be escaped predefined symbols 
+                        switch (text.charAt(i+1)) {
+                            case '\\':// This command writes a backslash character (\) to the output. The backslash has to be escaped in some cases because doxygen uses it to detect commands.
+                                escaped = true;
+                                escapedCommand = true;
+                                i++;
+                                break;
+                            case '@':// This command writes an at-sign (@) to the output. The at-sign has to be escaped in some cases because doxygen uses it to detect JavaDoc commands.
+                                escaped = true;
+                                escapedCommand = true;
+                                i++;
+                                break;
+                            case '&':// This command writes the & character to output. This character has to be escaped because it has a special meaning in HTML.
+                            case '$':// This command writes the $ character to the output. This character has to be escaped in some cases, because it is used to expand environment variables.
+                            case '#':// This command writes the # character to the output. This character has to be escaped in some cases, because it is used to refer to documented entities.
+                            case '<':// This command writes the < character to the output. This character has to be escaped because it has a special meaning in HTML.
+                            case '>':// This command writes the > character to the output. This character has to be escaped because it has a special meaning in HTML.
+                            case '%':// This command writes the % character to the output. This character has to be escaped in some cases, because it is used to prevent auto-linking to word that is also a documented class or struct.
+                            case '"':// This command writes the " character to the output. This character has to be escaped in some cases, because it is used in pairs to indicate an unformatted text fragment.
+                                i++;
+                                img.append(text.charAt(i));
+                                escaped = true;
+                                break;
+                            case ':':
+                                if ((i+2) < text.length()) {
+                                    if (text.charAt(i+2) == ':') {
+                                        //  This command write a double colon (::) to the output. This character sequence has to be escaped in some cases, because it is used to ref to documented entities.
+                                        i+=3;
+                                        img.append("::"); // NOI18N
+                                        escaped = true;
+                                        break;
+                                    }
+                                }
+                        }
+                        if (escaped) {
+                            wasContent = true;
+                            break;
+                        }
+                    }                    
                     img.append('\\');
                     i++;
                     while (i < text.length() && Character.isLetter(text.charAt(i))) {

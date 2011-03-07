@@ -54,7 +54,7 @@ public class CustomWritableSystemFileSystemTest extends NbTestCase {
     @SuppressWarnings("deprecation")
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", "memory");
+        System.setProperty("netbeans.user", getWorkDirPath());
         System.setProperty("org.netbeans.core.systemfilesystem.custom", PoohFileSystem.class.getName());
         sfs = (SystemFileSystem) Repository.getDefault().getDefaultFileSystem();
     }
@@ -63,11 +63,18 @@ public class CustomWritableSystemFileSystemTest extends NbTestCase {
         FileSystem writable = sfs.createWritableOn(null);
         assertTrue(writable instanceof ModuleLayeredFileSystem);
         ModuleLayeredFileSystem mlf = (ModuleLayeredFileSystem) writable;
-        assertTrue(mlf.getWritableLayer() instanceof PoohFileSystem);
+        assertTrue("Expected fs" + mlf.getWritableLayer(), mlf.getWritableLayer() instanceof PoohFileSystem);
+        PoohFileSystem pooh = (PoohFileSystem)mlf.getWritableLayer();
+        assertEquals("Proper value of nb user", getWorkDirPath(), pooh.netbeansUser);
     }
 
     public static class PoohFileSystem extends FileSystem {
-
+        String netbeansUser;
+        
+        public PoohFileSystem() {
+            netbeansUser = System.getProperty("netbeans.user");
+        }
+        
         public String getDisplayName() {
             return "Pooh";
         }

@@ -720,7 +720,7 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fold2 = getTestFolder1(fold1);
         
         assertEquals("Is parent", fold1, fold2.getParent());
-        assertEquals("No .. can be used", null, fold2.getFileObject(".."));
+        assertEquals(".. goes to parent", fold1, fold2.getFileObject(".."));
     }
 
     public void  testFindResourceWithDots() throws Exception {
@@ -730,11 +730,18 @@ public class FileObjectTestHid extends TestBaseHid {
         
         String[] arr = fold2.getPath().split("/");
         StringBuilder sb = new StringBuilder();
+        boolean first = true;
         for (String s : arr) {
-            sb.append(s).append("/../").append(s).append('/');
+            sb.append(s);
+            if (first) {
+                first = false;
+            } else {
+                sb.append("/../").append(s);
+            }
+            sb.append('/');
         }
-        assertNull(
-            "No .. in findResource allowed", 
+        assertEquals(
+            "Properly found", fold2,
             fold2.getFileSystem().findResource(sb.toString())
         );
     }
@@ -821,8 +828,8 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject r2 = fo1.getParent().getFileObject("../x/y.java");
         FileObject r3 = fo1.getFileObject("../../x/y.java");
         assertEquals("y.java found without ..", fo2, r1);
-        assertNull("y.java not found with ..", r2);
-        assertNull("y.java not found with ../..", r3);
+        assertEquals("y.java found with ..", fo2, r2);
+        assertEquals("y.java found with ../..", fo2, r3);
     }
 
     public void  testGetPath5() throws  IOException{
@@ -940,6 +947,49 @@ public class FileObjectTestHid extends TestBaseHid {
         fileRenamedAssert("fireFileRenamedEvent should not be fired ",0);
         fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);
         fileChangedAssert("fireFileChangedEvent should not be fired ",0);
+    }
+    
+    public void testRenameFolder() throws Exception {
+        FileObject data;
+        try {
+            data = FileUtil.createData(root, "one/two/three/X.java");
+        } catch (IOException iex) {
+            fsAssert("createData fired IOException. So there was expected fs or fo are read-only: " + iex.toString() ,
+            fs.isReadOnly() || root.isReadOnly());
+            fileDataCreatedAssert("fs or fo is read-only. So no event should be fired",0);
+            return;
+        }        
+        FileObject two = data.getParent().getParent();
+        registerDefaultListener(data.getFileSystem());
+        {
+            Enumeration<? extends FileObject> en = two.getParent().getChildren(true);
+            int cnt = 0;
+            while (en.hasMoreElements()) {
+                FileObject fo = en.nextElement();
+                if (fo.isData()) {
+                    cnt++;
+                }
+            }
+            assertEquals("One data object found", 1, cnt);
+        }
+        FileLock lock = two.lock();
+        two.rename(lock, "dva", null);
+        lock.releaseLock();
+
+        {
+            Enumeration<? extends FileObject> en = two.getParent().getChildren(true);
+            int cnt = 0;
+            while (en.hasMoreElements()) {
+                FileObject fo = en.nextElement();
+                if (fo.isData()) {
+                    cnt++;
+                }
+            }
+            assertEquals("One data object found", 1, cnt);
+        }
+        
+        fileRenamedAssert("One rename", 1);
+        
     }
 
     /** Test of fireFileDataCreatedEvent method, of class org.openide.filesystems.FileObject. */
@@ -1211,10 +1261,11 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fo = getTestFile1(root);
         registerDefaultListener(fo);
         FileLock lock = null;
-        
+        String uName = fo.getName().toUpperCase();
+        String uExt = fo.getExt().toUpperCase();
         try {
             lock = fo.lock();
-            fo.rename(lock,fo.getName().toUpperCase(),fo.getExt().toUpperCase());
+            fo.rename(lock,uName, uExt);
         } catch (IOException iex) {
             if (!fs.isReadOnly() && !root.isReadOnly()) {
                 throw iex;
@@ -1231,6 +1282,11 @@ public class FileObjectTestHid extends TestBaseHid {
         fileDataCreatedAssert("fireFileDataCreatedEvent should not be fired ",0);
         fileFolderCreatedAssert("fireFolderDataCreatedEvent  should not be fired ",0);
         fileDeletedAssert("fireFileDeletedEvent should not be fired ",0);
+        
+        File real = FileUtil.toFile(fo);
+        if (real != null) {
+            assertEquals("Renamed too", real.getName(), uName + '.' + uExt);
+        }
     }
 
     /** Test of fireFileRenamedEvent method, of class org.openide.filesystems.FileObject. */

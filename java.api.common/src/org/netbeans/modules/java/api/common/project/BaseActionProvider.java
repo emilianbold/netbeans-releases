@@ -653,7 +653,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 classes = getTopLevelClasses(files[0]);
             } else {
                 files = findTestSources(context, false);
-                assert files != null : "findTestSources () can't be null: " + projectTestRoots.getRoots();   //NOI18N
+                assert files != null : "findTestSources () can't be null: " + Arrays.toString(projectTestRoots.getRoots());   //NOI18N
                 path = FileUtil.getRelativePath(getRoot(projectTestRoots.getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }

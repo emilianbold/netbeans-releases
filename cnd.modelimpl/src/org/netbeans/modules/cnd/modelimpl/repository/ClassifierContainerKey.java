@@ -77,7 +77,6 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
         return 37*KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY + super.hashCode();
     }
 
-
     @Override
     public int getSecondaryDepth() {
         return 1;

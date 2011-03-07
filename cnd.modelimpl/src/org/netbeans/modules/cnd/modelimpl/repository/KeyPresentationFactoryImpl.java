@@ -88,6 +88,8 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                 return new ProjectSettingsValidatorKey(presentation);
             case 'I':
                 return new IncludeKey(presentation);
+            case 'i':
+                return new InstantiationKey(presentation);
             case 'h':
             case 'y':
             case 'H':
@@ -114,6 +116,7 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                         case NAMESPACE_ALIAS:
                         case ENUMERATOR:
                         case FUNCTION_DEFINITION:
+                        case FUNCTION_INSTANTIATION:
                         case USING_DIRECTIVE:
                         case TEMPLATE_PARAMETER:
                         case CLASS_FRIEND_DECLARATION:
@@ -131,4 +134,5 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
         }
         return null;
     }
+    
 }

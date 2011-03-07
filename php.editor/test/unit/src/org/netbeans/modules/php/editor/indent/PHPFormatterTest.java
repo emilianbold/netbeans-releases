@@ -1278,6 +1278,36 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.spaceAroundUnaryOps, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps03.php", options);
     }
+    
+    public void testSpacesBeforeUseStatementPart01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeUseStatementPart01.php", options);
+    }
+    
+    public void testSpacesBeforeUseStatementPart02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeUseStatementPart02.php", options);
+    }
+    
+    public void testSpacesBeforeUseStatementPart03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeUseStatementPart03.php", options);
+    }
+    
+    public void testSpacesBeforeUseStatementPart04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeUseStatementPart04.php", options);
+    }
+    
+    public void testSpacesBeforeUseStatementPart05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeUseStatementPart05.php", options);
+    }
+    
+    public void testSpacesBeforeUseStatementPart06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeUseStatementPart06.php", options);
+    }
 
     public void testSpacesBeforeKeywords01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -2173,6 +2203,12 @@ public class PHPFormatterTest extends PHPTestBase {
     @Override
     protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
         reformatFileContents(file, preferences, 0);
+    }
+    
+    public void testIssue195562() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.continuationIndentSize, 4);
+        reformatFileContents("testfiles/formatting/spaces/issue195562.php", options);
     }
 
     protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {

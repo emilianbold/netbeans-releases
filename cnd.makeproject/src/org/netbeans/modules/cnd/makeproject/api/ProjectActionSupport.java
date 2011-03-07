@@ -64,11 +64,14 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
@@ -462,6 +465,8 @@ public class ProjectActionSupport {
             if (type == PredefinedType.RUN
                     || type == PredefinedType.DEBUG
                     || type == PredefinedType.DEBUG_STEPINTO
+                    || type == PredefinedType.DEBUG_TEST
+                    || type == PredefinedType.DEBUG_STEPINTO_TEST
                     || type == PredefinedType.CHECK_EXECUTABLE
                     || type == PredefinedType.CUSTOM_ACTION) {
                 if (!checkExecutable(pae) || type == PredefinedType.CHECK_EXECUTABLE) {
@@ -531,7 +536,16 @@ public class ProjectActionSupport {
         }
 
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
-            handler.init(pae, paes);
+            if (additional == null) {
+                additional = BuildActionsProvider.getDefault().getActions(pae.getActionName(), paes);
+            }
+            List<OutputStreamHandler> streamHandlers = new ArrayList<OutputStreamHandler>();
+            for(BuildAction action : additional) {
+                if (action instanceof OutputStreamHandler) {
+                    streamHandlers.add((OutputStreamHandler) action);
+                }
+            }
+            handler.init(pae, paes, streamHandlers);
             progressHandle.finish();
             progressHandle = handler.canCancel() ? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();
@@ -634,7 +648,7 @@ public class ProjectActionSupport {
                         makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     }
                     else if (makeConfiguration.isLibraryConfiguration()) {
-                        makeConfiguration.getProfile().setRunCommand(executable);
+                        makeConfiguration.getProfile().getRunCommand().setValue(executable);
                     }
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                     if (pdp != null) {
@@ -775,21 +789,27 @@ public class ProjectActionSupport {
 
         public TermAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/action/local_term.png", false)); // NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/terminal/ui/term.png", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.TermAction.text")); // NOI18N
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String dir = null;
-            ExecutionEnvironment env = null;
             for (int i = handleEvents.paes.length-1; i >=0 ; i--) {
+                String dir = null;
+                ExecutionEnvironment env = null;
                 ProjectActionEvent pae = handleEvents.paes[i];
-                dir = pae.getProfile().getRunDirectory();
+                String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
+                dir = pae.getProfile().getRunDirectory();                                
                 env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                if (env.isRemote()) {
+                    if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
+                        dir = RemoteSyncSupport.getPathMap(pae.getProject()).getRemotePath(dir);
+                    }
+                }
+                TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
                 break;
             }
-            TerminalSupport.openTerminal(IOContainer.getDefault(), env, dir);
         }
     }
     
@@ -798,7 +818,7 @@ public class ProjectActionSupport {
         return NbBundle.getBundle(ProjectActionSupport.class).getString(s);
     }
 
-    private static String getString(String s, String arg) {
+    private static String getString(String s, String... arg) {
         return NbBundle.getMessage(ProjectActionSupport.class, s, arg);
     }
 }

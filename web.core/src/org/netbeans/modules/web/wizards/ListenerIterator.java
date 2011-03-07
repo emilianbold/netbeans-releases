@@ -67,6 +67,7 @@ import org.openide.DialogDisplayer;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -101,8 +102,11 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
         panel = new ListenerPanel(wizard);
         
         WizardDescriptor.Panel packageChooserPanel;
-        if (sourceGroups.length == 0)
+        if (sourceGroups.length == 0) {
+            Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
+            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             packageChooserPanel = Templates.createSimpleTargetChooser(project, sourceGroups, panel);
+        }
         else
             packageChooserPanel = JavaTemplates.createPackageChooser(project, sourceGroups, panel);
 
@@ -234,6 +238,7 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
                     new Object [] {"Servlet Listener"}); //NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);                         
+            return null;
         }
         return Collections.singleton (result);
     }

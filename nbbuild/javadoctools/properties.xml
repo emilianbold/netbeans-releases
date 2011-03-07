@@ -191,7 +191,6 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-jellytools-ide" value="${javadoc.web.root}/org-netbeans-modules-jellytools-ide"/>
 <property name="javadoc.docs.org-netbeans-modules-jellytools-java" value="${javadoc.web.root}/org-netbeans-modules-jellytools-java"/>
 <property name="javadoc.docs.org-netbeans-modules-jellytools-platform" value="${javadoc.web.root}/org-netbeans-modules-jellytools-platform"/>
-<property name="javadoc.docs.org-netbeans-modules-jellytools-ruby" value="${javadoc.web.root}/org-netbeans-modules-jellytools-ruby"/>
 <property name="javadoc.docs.org-netbeans-modules-javacard-spi" value="${javadoc.web.root}/org-netbeans-modules-javacard-spi"/>
 <property name="javadoc.docs.org-netbeans-modules-keyring" value="${javadoc.web.root}/org-netbeans-modules-keyring"/>
 <property name="javadoc.docs.org-netbeans-modules-schema2beans" value="${javadoc.web.root}/org-netbeans-modules-schema2beans"/>
@@ -200,3 +199,5 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-dlight-nativeexecution" value="${javadoc.web.root}/org-netbeans-modules-dlight-nativeexecution"/>
 <property name="javadoc.docs.org-netbeans-core-netigso" value="${javadoc.web.root}/org-netbeans-core-netigso"/>
 <property name="javadoc.docs.org-netbeans-modules-parsing-lucene" value="${javadoc.web.root}/org-netbeans-modules-parsing-lucene"/>
+<property name="javadoc.docs.org-netbeans-modules-autoupdate-ui" value="${javadoc.web.root}/org-netbeans-modules-autoupdate-ui"/>
+<property name="javadoc.docs.org-netbeans-modules-php-project" value="${javadoc.web.root}/org-netbeans-modules-php-project"/>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Scene Scope="Project" version="2">
-    <Scope Scope="Faces Configuration Only"/>
-    <Scope Scope="Project">
-        <Node id="Page1.jsp" x="145" y="149"/>
-        <Node id="Preview.jsp" x="241" y="536"/>
-    </Scope>
-</Scene>

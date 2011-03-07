@@ -78,7 +78,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class Bug138973Test extends NbTestCase {
 
-    private static final String TESTING_TEXT = "This is a testing text.";
+    private static final String TESTING_TEXT = "print('This is a testing text.')";
     private static final TestCharset TEST_CHARSET = new TestCharset();
     private static final String EXT = ".test";
     private static final String TEMPLATE_NAME = "Bug138973TestTemplate";
@@ -102,7 +102,7 @@ public class Bug138973Test extends NbTestCase {
         FileObject templateFile = FileUtil.createData(templatesFolder,
                                                       TEMPLATE_NAME_EXT);
         templateFile.setAttribute ("template", Boolean.TRUE);
-        templateFile.setAttribute("javax.script.ScriptEngine", "freemarker");
+        templateFile.setAttribute("javax.script.ScriptEngine", "js");
         byte[] templateBytes = TESTING_TEXT.getBytes("ISO-8859-1");
         InputStream source = new ByteArrayInputStream(templateBytes);
         OutputStream target = templateFile.getOutputStream();

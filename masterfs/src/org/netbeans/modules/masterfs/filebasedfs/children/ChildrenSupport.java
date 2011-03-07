@@ -80,13 +80,15 @@ public class ChildrenSupport {
         return mutex.isReadAccess() || mutex.isWriteAccess();
     }
 
-    public Set<FileNaming> getCachedChildren() {
-        return getExisting(false);
+    public synchronized Set<FileNaming> getCachedChildren() {
+        return new HashSet<FileNaming>(getExisting(false));
     }
 
-    public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan) {
+    public synchronized Set<FileNaming> getChildren(final FileNaming folderName, final boolean rescan, Runnable[] task) {
         if (rescan || !isStatus(ChildrenSupport.ALL_CHILDREN_CACHED))  {
-            rescanChildren(folderName, false);
+            if (rescanChildren(folderName, false, task) == null) {
+                return null;
+            }
             setStatus(ChildrenSupport.ALL_CHILDREN_CACHED);
         } /*else if (!isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
 
@@ -137,7 +139,7 @@ public class ChildrenSupport {
 
 
 
-    public synchronized Map<FileNaming, Integer> refresh(final FileNaming folderName) {
+    public synchronized Map<FileNaming, Integer> refresh(final FileNaming folderName, Runnable[] task) {
         Map<FileNaming, Integer> retVal = new HashMap<FileNaming, Integer>();
         Set<FileNaming> e = new HashSet<FileNaming>(getExisting(false));
         Set<FileNaming> nE = new HashSet<FileNaming>(getNotExisting(false));
@@ -160,7 +162,7 @@ public class ChildrenSupport {
                 }
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
-            retVal = rescanChildren(folderName, true);
+            retVal = rescanChildren(folderName, true, task);
         }
         return retVal;
     }
@@ -208,34 +210,57 @@ public class ChildrenSupport {
         return retval;
     }
 
-    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, boolean ignoreCache) {
+    private Map<FileNaming, Integer> rescanChildren(final FileNaming folderName, final boolean ignoreCache, Runnable[] task) {
         final Map<FileNaming, Integer> retval = new IdentityHashMap<FileNaming, Integer>();
-        final Set<FileNaming> newChildren = new LinkedHashSet<FileNaming>();
 
         final File folder = folderName.getFile();
         assert folderName.getFile().getAbsolutePath().equals(folderName.toString());
-
-        final File[] children = folder.listFiles();
-        if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                final FileInfo fInfo = new FileInfo(children[i],1);
-                if (fInfo.isConvertibleToFileObject()) {
-                    FileNaming child = NamingFactory.fromFile(folderName, children[i], ignoreCache);
-                    newChildren.add(child);
+        
+        class IOJob implements Runnable {
+            boolean folderExists;
+            Set<FileNaming> newChildren;
+            @Override
+            public void run() {
+                final File[] children = folder.listFiles();
+                if (children != null) {
+                    newChildren = new LinkedHashSet<FileNaming>();
+                    for (int i = 0; i < children.length; i++) {
+                        final FileInfo fInfo = new FileInfo(children[i], 1);
+                        if (fInfo.isConvertibleToFileObject()) {
+                            FileNaming child = NamingFactory.fromFile(folderName, children[i], ignoreCache);
+                            newChildren.add(child);
+                        }
+                    }
+                } else {
+                    folderExists = folder.exists();
+                    // #150009 - children == null -> folder does not exists, or an I/O error occurs
+                    // folder.listFiles() failed with I/O exception - do not remove children
                 }
             }
-        } else if (folder.exists()) { // #150009 - children == null -> folder does not exists, or an I/O error occurs
-            // folder.listFiles() failed with I/O exception - do not remove children
-            return retval;
+        }
+        IOJob job;
+        if (task[0] instanceof IOJob) {
+            job = (IOJob)task[0];
+        } else {
+            task[0] = new IOJob();
+            return null;
         }
 
-        Set<FileNaming> deleted = deepMinus(getExisting(false), newChildren);
+        if (job.newChildren == null) {
+            if (job.folderExists) { // #150009 - children == null -> folder does not exists, or an I/O error occurs
+                // folder.listFiles() failed with I/O exception - do not remove children
+                return retval;
+            }
+            job.newChildren = new LinkedHashSet<FileNaming>();
+        }
+
+        Set<FileNaming> deleted = deepMinus(getExisting(false), job.newChildren);
         for (FileNaming fnRem : deleted) {
             removeChild(folderName, fnRem);
             retval.put(fnRem, ChildrenCache.REMOVED_CHILD);
         }
 
-        Set<FileNaming> added = deepMinus(newChildren, getExisting(false));
+        Set<FileNaming> added = deepMinus(job.newChildren, getExisting(false));
         for (FileNaming fnAdd : added) {
             addChild(folderName, fnAdd);
             retval.put(fnAdd, ChildrenCache.ADDED_CHILD);
@@ -249,6 +274,7 @@ public class ChildrenSupport {
         for (FileNaming fn : base) {
             detract.put(fn, fn);
         }
+        assert minus != null;
         for (FileNaming mm : minus) {
             FileNaming orig = detract.remove(mm);
             if (orig != null && orig.isFile() != mm.isFile()) {

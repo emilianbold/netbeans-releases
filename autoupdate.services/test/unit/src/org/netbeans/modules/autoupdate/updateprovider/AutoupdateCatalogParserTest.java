@@ -44,8 +44,10 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
@@ -54,12 +56,16 @@ import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jiri Rechtacek
  */
 public class AutoupdateCatalogParserTest extends NbTestCase {
+    static {
+        URL.setURLStreamHandlerFactory(Lookup.getDefault().lookup(URLStreamHandlerFactory.class));
+    }
     
     public AutoupdateCatalogParserTest (String testName) {
         super (testName);
@@ -71,6 +77,7 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
 
     @Override
     protected void setUp () throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
         URL_TO_TEST_CATALOG = AutoupdateCatalogParserTest.class.getResource ("data/catalog.xml");
         updateItems = AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, null);
     }
@@ -138,7 +145,7 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
         assertEquals ("org.netbeans.test.eager is in Base IDE category", "Base IDE", mi.getCategory ());
     }
     
-    public void testCatalogNotification () {
+    public void testCatalogNotification () throws IOException {
         UpdateUnitProvider p = UpdateUnitProviderFactory.getDefault ().create ("test-provider", "test-provider", URL_TO_TEST_CATALOG);
         UpdateUnitProviderImpl i = Trampoline.API.impl (p);
         AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, (AutoupdateCatalogProvider) i.getUpdateProvider ());

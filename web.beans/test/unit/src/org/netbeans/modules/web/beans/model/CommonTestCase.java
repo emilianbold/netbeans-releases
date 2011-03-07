@@ -284,10 +284,36 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({ANNOTATION_TYPE}) "+          
                 "public @interface Stereotype  {}");
         
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Typed.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface Typed  {" +
+                " Class<?>[] value() ; "+
+                "}");
+        
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/event/Event.java",
                 "package javax.enterprise.event; " +
                 "public interface Event<T>  {" +
                 " void fire( T event ); "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/decorator/Delegate.java",
+                "package javax.decorator; " +
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({FIELD, PARAMETER}) "+          
+                "public @interface Delegate  {" +
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Instance.java",

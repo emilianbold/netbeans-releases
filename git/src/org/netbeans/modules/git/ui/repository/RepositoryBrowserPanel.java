@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -73,13 +74,16 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
+import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -116,6 +120,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_BRANCHES_LOCAL,
         DISPLAY_BRANCHES_REMOTE,
         DISPLAY_COMMIT_IDS,
+        DISPLAY_REMOTES,
         DISPLAY_REVISIONS,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
@@ -351,7 +356,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final File repository;
 
         public RepositoryNode (final File repository, RepositoryInfo info) {
-            super(new RepositoryChildren());
+            super(new RepositoryChildren(), Lookups.fixed(repository));
             this.repository = repository;
             if (info == null) {
                 setDisplayName(repository.getName());
@@ -404,6 +409,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         public File getRepository() {
             return repository;
         }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            return new Action[] {
+                SystemAction.get(FetchAction.class)
+            };
+        }
     }
 
     private class RepositoryChildren extends Children.Keys<AbstractNode> {
@@ -421,6 +433,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
                 if (options.contains(Option.DISPLAY_TAGS)) {
                     keys.add(new TagsNode(((RepositoryNode) getNode()).getRepository()));
+                }
+                if (options.contains(Option.DISPLAY_REMOTES)) {
+                    keys.add(new RemotesNode(((RepositoryNode) getNode()).getRepository()));
                 }
                 setKeys(keys);
             }
@@ -782,6 +797,196 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="remotes">
+    private class RemotesNode extends RepositoryBrowserNode {
+
+        public RemotesNode (File repository) {
+            super(new AllRemotesChildren(repository), Lookups.fixed(repository));
+        }
+
+        @Override
+        public String getDisplayName () {
+            return getName();
+        }
+
+        @Override
+        public String getName () {
+            return NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemotesNode.name"); //NOI18N
+        }
+    }
+
+    private class AllRemotesChildren extends Children.Keys<GitRemoteConfig> implements PropertyChangeListener {
+        private final File repository;
+        private boolean refreshing;
+
+        private AllRemotesChildren (File repository) {
+            this.repository = repository;
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+        }
+
+        @Override
+        protected void addNotify () {
+            super.addNotify();
+            refreshRemotes();
+        }
+
+        private void refreshRemotes () {
+            new GitProgressSupport.NoOutputLogging() {
+                @Override
+                protected void perform () {
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    refreshing = true;
+                    try {
+                        info.refreshRemotes();
+                        java.util.Map<String, GitRemoteConfig> remotes = info.getRemotes();
+                        if (!isCanceled()) {
+                            refreshRemotes(remotes);
+                        }
+                    } finally {
+                        refreshing = false;
+                    }
+                }
+            }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingRemotes")); //NOI18N
+        }
+        
+        private void refreshRemotes (java.util.Map<String, GitRemoteConfig> remotes) {
+            setKeys(remotes.values());
+        }
+
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            if (!refreshing && RepositoryInfo.PROPERTY_REMOTES.equals(evt.getPropertyName())) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        refreshRemotes((java.util.Map<String, GitRemoteConfig>) evt.getNewValue());
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected Node[] createNodes (GitRemoteConfig key) {
+            return new Node[] { new RemoteNode(repository, key) };
+        }
+    }
+
+    private class RemoteNode extends RepositoryBrowserNode {
+        private final String remoteName;
+        private final File repository;
+
+        public RemoteNode (File repository, GitRemoteConfig remote) {
+            super(new RemoteChildren(remote), Lookups.fixed(remote, repository));
+            this.repository = repository;
+            this.remoteName = remote.getRemoteName();
+        }
+
+        @Override
+        public String getName () {
+            return remoteName;
+        }
+        
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    FetchAction action = SystemAction.get(FetchAction.class);
+                    action.fetch(repository, getLookup().lookup(GitRemoteConfig.class));
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    new RemoveRemoteConfig().removeRemote(repository, remoteName);
+                }
+            });
+            return actions.toArray(new Action[actions.size()]);
+        }
+    }
+
+    private class RemoteUri {
+        final String uri;
+        final boolean push;
+
+        public RemoteUri (String url, boolean push) {
+            this.uri = url;
+            this.push = push;
+        }
+    }
+    
+    private class RemoteChildren extends Children.Keys<RemoteUri> {
+        private final GitRemoteConfig remote;
+        
+        public RemoteChildren (GitRemoteConfig remote) {
+            this.remote = remote;
+        }
+
+        @Override
+        protected void addNotify () {
+            super.addNotify();
+            ArrayList<RemoteUri> urls = new ArrayList<RemoteUri>(remote.getPushUris().size() + remote.getUris().size());
+            for (String s : remote.getUris()) {
+                urls.add(new RemoteUri(s, false));
+            }
+            if (remote.getPushUris().isEmpty() && !remote.getUris().isEmpty()) {
+                urls.add(new RemoteUri(remote.getUris().get(0), true));
+            } else {
+                for (String s : remote.getPushUris()) {
+                    urls.add(new RemoteUri(s, true));
+                }
+            }
+            Collections.sort(urls, new Comparator<RemoteUri>() {
+                @Override
+                public int compare (RemoteUri o1, RemoteUri o2) {
+                    return o1.uri.compareTo(o2.uri);
+                }
+            });
+            setKeys(urls);
+        }
+        
+        @Override
+        protected Node[] createNodes (RemoteUri key) {
+            return new Node[] { new RemoteUriNode(key, remote) };
+        }
+    }
+    
+    private class RemoteUriNode extends RepositoryBrowserNode {
+        private final RemoteUri uri;
+        private final GitRemoteConfig remote;
+
+        public RemoteUriNode (RemoteUri uri, GitRemoteConfig remote) {
+            super(Children.LEAF);
+            this.uri = uri;
+            this.remote = remote;
+        }
+
+        @Override
+        public String getName () {
+            return new StringBuilder(uri.push ? "Push" : "Fetch").append(" - ").append(uri.uri).toString();
+        }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            if (uri.push) {
+                // push action
+            } else {
+                actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        FetchAction action = SystemAction.get(FetchAction.class);
+                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs());
+                    }
+                });
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+    }
+    //</editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

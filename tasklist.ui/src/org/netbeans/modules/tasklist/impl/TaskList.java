@@ -233,7 +233,12 @@ public class TaskList {
     }
     
     public List<? extends Task> getTasks() {
-        return new ArrayList<Task>( sortedTasks );
+        lock.readLock().lock();
+        try {
+            return new ArrayList<Task>( sortedTasks );
+        } finally {
+            lock.readLock().unlock();
+        }
     }
     
     int countTasks( FileTaskScanner scanner ) {

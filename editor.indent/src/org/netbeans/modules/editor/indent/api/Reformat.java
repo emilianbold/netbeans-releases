@@ -151,7 +151,7 @@ public final class Reformat {
      * @param endOffset end offset of the area to be reformatted.
      */
     public void reformat(int startOffset, int endOffset) throws BadLocationException {
-        impl.reformat(startOffset, endOffset);
+        impl.reformat(startOffset, endOffset, startOffset);
     }
 
 }

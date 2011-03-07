@@ -443,6 +443,7 @@ static int init() {
         report_error("protocol error during initialization: unexpected EOF\n");
         return false;
     }
+    return true;
 }
 
 /**

@@ -76,14 +76,12 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 
 /**
  *
  * @author mkleint
  */
 public class ProjectInfoPanel extends TopComponent implements MultiViewElement, LookupListener {
-    private MultiViewElementCallback callback;
     private Lookup.Result<MavenProject> result;
     private JToolBar toolbar;
 
@@ -102,6 +100,10 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             this.pnlMailingLists.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             this.pnlScm.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+    }
+
+    public @Override int getPersistenceType() {
+        return PERSISTENCE_NEVER;
     }
 
     /** This method is called from within the constructor to
@@ -154,7 +156,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
         taDescription.setColumns(20);
         taDescription.setEditable(false);
-        taDescription.setRows(5);
+        taDescription.setLineWrap(true);
+        taDescription.setRows(3);
+        taDescription.setWrapStyleWord(true);
         jScrollPane1.setViewportView(taDescription);
 
         lblProjectHome.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblProjectHome.text")); // NOI18N
@@ -190,8 +194,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .addComponent(lblIssues))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlIssuesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnIssues, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE)
-                    .addComponent(txtSystem, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE))
+                    .addComponent(btnIssues, javax.swing.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+                    .addComponent(txtSystem, javax.swing.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlIssuesLayout.setVerticalGroup(
@@ -235,19 +239,21 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             .addGroup(pnlScmLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblScmUrl)
-                    .addComponent(lblConnection)
-                    .addComponent(lblDevConnection))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnScmUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
                     .addGroup(pnlScmLayout.createSequentialGroup()
-                        .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(txtDevConnection, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
-                            .addComponent(txtConnection, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCheckout)))
-                .addContainerGap())
+                        .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblScmUrl)
+                            .addComponent(lblConnection))
+                        .addGap(42, 42, 42)
+                        .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnScmUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 653, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlScmLayout.createSequentialGroup()
+                                .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(txtDevConnection, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
+                                    .addComponent(txtConnection, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnCheckout)))
+                        .addContainerGap())
+                    .addComponent(lblDevConnection)))
         );
         pnlScmLayout.setVerticalGroup(
             pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -262,8 +268,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .addComponent(btnCheckout))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlScmLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblDevConnection)
-                    .addComponent(txtDevConnection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtDevConnection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblDevConnection))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -292,8 +298,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .addComponent(lblCimUrl))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlCimLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnCimUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE)
-                    .addComponent(txtCimSystem, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE))
+                    .addComponent(btnCimUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE)
+                    .addComponent(txtCimSystem, javax.swing.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlCimLayout.setVerticalGroup(
@@ -322,22 +328,22 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(pnlMailingLists, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
-                    .addComponent(pnlLicense, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
+                    .addComponent(pnlScm, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pnlMailingLists, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 818, Short.MAX_VALUE)
+                    .addComponent(pnlLicense, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 818, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblProjectName)
                             .addComponent(lblDescription))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
-                            .addComponent(txtProjectName, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
+                            .addComponent(txtProjectName, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(lblProjectHome)
                         .addGap(18, 18, 18)
-                        .addComponent(btnProjectHome, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE))
+                        .addComponent(btnProjectHome, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE))
                     .addComponent(pnlIssues, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnlScm, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnlCim, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -359,14 +365,14 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(pnlIssues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(pnlScm, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pnlScm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pnlCim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(pnlLicense, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(pnlMailingLists, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(85, 85, 85))
+                .addGap(158, 158, 158))
         );
 
         jScrollPane2.setViewportView(jPanel4);
@@ -375,21 +381,20 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGap(0, 869, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 845, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGap(0, 531, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
-                    .addContainerGap()))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)))
         );
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
@@ -435,7 +440,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
+            toolbar = new JToolBar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
@@ -487,9 +492,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     }
 
 
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
-    }
+    public @Override void setMultiViewCallback(MultiViewElementCallback callback) {}
 
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;

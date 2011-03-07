@@ -75,6 +75,8 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     private static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
 
     private static final String JBOSS_5_JAVA_OPTS = "-Xms128m -Xmx512m"; // NOI18N
+    
+    private static final String JBOSS_6_JAVA_OPTS = "-Xms128m -Xmx512m -XX:MaxPermSize=256m"; // NOI18N
 
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
@@ -161,7 +163,9 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
             initialProperties.put(JBPluginProperties.PROPERTY_HOST, host);
             initialProperties.put(JBPluginProperties.PROPERTY_PORT, port);
 
-            if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0) {
+            if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
+                initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_6_JAVA_OPTS);
+            } else if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0) {
                 initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_5_JAVA_OPTS);
             }
 

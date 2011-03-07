@@ -894,7 +894,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     break;
                 case ENDS_WITH_SEMICOLON:
                     builder.append(getName());
-                    builder.append(";"); //NOI18N
+                    if (';' != request.info.getSnapshot().getText().charAt(request.anchor + request.prefix.length())) {
+                        builder.append(";"); //NOI18N
+                    }
                     break;
                 case ENDS_WITH_COLON:
                     builder.append(getName());

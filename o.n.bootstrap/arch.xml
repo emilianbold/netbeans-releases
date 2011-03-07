@@ -731,12 +731,17 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="exec-reflection">
+        <p>
         The bootstrap code of course uses reflection to start the normal core.
         Currently some reflection is used in bootstrap class loaders to work
         around a variety of JRE bugs in handling loading from JAR files,
         especially on Windows which has mandatory file locking - the JRE code to
         load from JARs is rather buggy when it comes to changing or removing the
         JAR during the JVM session.
+        </p>
+        <api category="friend" group="java" name="Javeleon" type="import" url="https://netbeans.org/bugzilla/show_bug.cgi?id=195074">
+            <p>When present as a Java agent on the boot classpath, Javeleon is invoked reflectively to enhance module reloading.</p>
+        </api>
     </answer>
 
 

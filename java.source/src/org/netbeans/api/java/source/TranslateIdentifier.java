@@ -43,6 +43,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
 /**
  * Replaces identifiers representing all used types with the new ones - imports
@@ -59,12 +60,14 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     private final @NonNull CompilationInfo info;
     private final @NonNull TreeMaker make;
     private final @NullAllowed CompilationUnitTree unit;
+    private final CommentHandlerService commentService;
     private Element rootElement;
     
     public TranslateIdentifier(@NonNull final WorkingCopy copy) {
         this.info = copy;
         this.make = copy.getTreeMaker();
         this.unit = copy.getFileObject() != null ? copy.getCompilationUnit() : null;
+        this.commentService = CommentHandlerService.instance(info.impl.getJavacTask().getContext());
     }
 
     public Tree visitAnnotation(AnnotationTree node, Boolean p) {
@@ -723,6 +726,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             }
             Tree res = tree.accept(this, null);
 
+            commentService.copyComments(tree, res);
+
             return res;
         }
     }
@@ -754,6 +759,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             return null;
         } else {
             Tree newTree = tree.accept(this, p);
+            commentService.copyComments(tree, newTree);
             return newTree;
         }
     }

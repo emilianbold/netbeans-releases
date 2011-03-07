@@ -44,7 +44,6 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -163,22 +162,24 @@ public interface GitClient {
     
     /**
      * Fetches remote changes for references specified in the config file under a given remote.
-     * @param remote
+     * @param remote should be a name of a remote set up in the repository config file
      * @param monitor
      * @return 
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
     
     /**
      * Fetches remote changes for given reference specifications.
-     * @param remote
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
      * @param fetchRefSpecifications 
      * @param monitor
      * @return 
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
     
     /**
      * Returns all branches
@@ -203,6 +204,23 @@ public interface GitClient {
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
 
+    /**
+     * Returns remote configuration set up for this repository identified by a given remoteName
+     * @param remoteName
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns all remote configurations set up for this repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException;
+    
     /**
      * Returns the current state of the repository this client is associated with.
      * @return current repository state
@@ -240,33 +258,39 @@ public interface GitClient {
      * @param monitor
      * @return
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
      * @param revision
      * @param monitor
      * @return revision
+     * @throws GitException.MissingObjectException no such revision exists
+     * @throws GitException other error occurs
      */
-    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
      * @param searchCriteria
      * @param monitor 
      * @return revisions that fall between the given boundaries
+     * @throws GitException.MissingObjectException revision specified in search criteria (or head if no such revision is specified) does not exist
+     * @throws GitException other error occurs
      */
-    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
     
     /**
      * Merges a given revision with the current head
      * @param revision
      * @param monitor
      * @return result of the merge
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
      * @throws GitException an error occurs
      */
-    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException;
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree
@@ -276,6 +300,13 @@ public interface GitClient {
      */
     public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException;
     public void removeNotificationListener (NotificationListener listener);
+    
+    /**
+     * Removes remote configuration from the config file
+     * @param remote name of the remote
+     * @param monitor 
+     */
+    public void removeRemote (String remote, ProgressMonitor monitor) throws GitException;
 
     /**
      * Renames source file or folder to target
@@ -302,6 +333,18 @@ public interface GitClient {
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
     
+    /**
+     * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
+     */
+    public void setCallback (GitClientCallback callback);
+    
+    /**
+     * Sets the remote configuration in the configuration file.
+     * @param remoteConfig
+     * @param monitor 
+     */
+    public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException;
+
     /**
      * Unignores given files
      * @param files

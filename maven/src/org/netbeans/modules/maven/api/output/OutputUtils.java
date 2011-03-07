@@ -62,7 +62,7 @@ import org.openide.windows.OutputListener;
  * @author mkleint
  */
 public final class OutputUtils {
-    static final Pattern linePattern = Pattern.compile("(?:\\[catch\\])?\\sat (.*)\\((.*)\\.java\\:(.*)\\)"); //NOI18N
+    private static final Pattern linePattern = Pattern.compile("(?:\\[catch\\])?\\sat (.*)\\((.*)\\.java\\:(\\d+)\\)"); //NOI18N
     
     /** Creates a new instance of OutputUtils */
     private OutputUtils() {

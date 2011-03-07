@@ -55,7 +55,6 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,7 +74,6 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -86,6 +84,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -103,6 +102,7 @@ import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -140,7 +140,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -163,8 +162,8 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject folderFileObject;
     private final File projectFile;
     private final Lookup lookup;
-    private Updater updater1;
-    private Updater updater2;
+    private final Updater projectFolderUpdater;
+    private final Updater userFolderUpdater;
     private Reference<MavenProject> project;
     private ProblemReporterImpl problemReporter;
     private final Info projectInfo;
@@ -211,8 +210,8 @@ public final class NbMavenProjectImpl implements Project {
         watcher = ACCESSOR.createWatcher(this);
         subs = new SubprojectProviderImpl(this, watcher);
         lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs, fileObject);
-        updater1 = new Updater();
-        updater2 = new Updater(USER_DIR_FILES);
+        projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
+        userFolderUpdater = new Updater("settings.xml");
         state = projectState;
         problemReporter = new ProblemReporterImpl(this);
         auxiliary = new M2AuxilaryConfigImpl(this);
@@ -547,13 +546,16 @@ public final class NbMavenProjectImpl implements Project {
         return desc;
     }
 
-    Updater getProjectFolderUpdater() {
-        return updater1;
+    /** Begin listening to pom.xml changes. */
+    void attachUpdater() {
+        projectFolderUpdater.attachAll(getProjectDirectory());
+        userFolderUpdater.attachAll(getHomeDirectory());
+    }
+   void detachUpdater() {
+        projectFolderUpdater.detachAll();
+        userFolderUpdater.detachAll();
     }
 
-    Updater getUserFolderUpdater() {
-        return updater2;
-    }
     private static Map<String, String> pkg2Icon = Collections.unmodifiableMap(new HashMap<String, String>() {
 
         {
@@ -934,8 +936,8 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenDebuggerImpl(this),
                     new DefaultReplaceTokenProvider(this),
                     new MavenFileLocator(this),
-                    new ProjectOpenedHookImpl(this),
                     // default mergers..        
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
@@ -1033,15 +1035,6 @@ public final class NbMavenProjectImpl implements Project {
             pcs.removePropertyChangeListener(listener);
         }
     }
-    // needs to be binary sorted;
-    private static final String[] DEFAULT_FILES = new String[]{
-        "nb-configuration.xml", //NOI18N
-        "pom.xml",//NOI18N
-        "profiles.xml"//NOI18N
-    };
-    private static final String[] USER_DIR_FILES = new String[]{
-        "settings.xml" //NOI18N
-    };
 
     //MEVENIDE-448 seems to help against creation of duplicate project instances
     // no idea why, it's supposed to be ProjectManager job.. maybe related to
@@ -1066,18 +1059,15 @@ public final class NbMavenProjectImpl implements Project {
 
     }
 
-    class Updater implements FileChangeListener {
+    private class Updater implements FileChangeListener {
 
-        //        private FileObject fileObject;
         private String[] filesToWatch;
         private long lastTime = 0;
         private FileObject folder;
 
-        Updater() {
-            this(DEFAULT_FILES);
-        }
-
-        Updater(String[] toWatch) {
+        /** Relative file paths to watch. */
+        Updater(String... toWatch) {
+            Arrays.sort(toWatch);
             filesToWatch = toWatch;
         }
 
@@ -1262,6 +1252,9 @@ public final class NbMavenProjectImpl implements Project {
             }
             packaging = packaging.trim();
             if (NbMavenProject.TYPE_POM.equals(packaging)) {
+                if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+                    return JAR_APPLICATION_TYPES; // #192735
+                }
                 return POM_APPLICATION_TYPES;
             }
             if (NbMavenProject.TYPE_JAR.equals(packaging)) {
@@ -1342,16 +1335,6 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
-    private String repositoryListToString(List<ArtifactRepository> repositories) {
-        String toRet = "";
-        if (repositories != null) {
-            for (ArtifactRepository repo : repositories) {
-                toRet = toRet + "      " + repo.getId() + "  (" + repo.getUrl() + ")\n"; //NOI18N
-            }
-        }
-        return toRet;
-    }
-
     private static Throwable getCause(Exception exc, Class exceptionClazz) {
         Throwable t = exc;
         while (t != null) {
@@ -1361,21 +1344,5 @@ public final class NbMavenProjectImpl implements Project {
             t = t.getCause();
         }
         return null;
-    }
-
-    @SuppressWarnings("serial")
-    private static class OpenWikiPage extends AbstractAction {
-
-        private URL url;
-
-        public OpenWikiPage(URL url) {
-            putValue(Action.NAME, "Open Wiki page");
-            this.url = url;
-        }
-
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent event) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        }
     }
 }

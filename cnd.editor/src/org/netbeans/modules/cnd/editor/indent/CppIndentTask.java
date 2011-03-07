@@ -56,6 +56,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor.MutableContext;
 import org.openide.util.Exceptions;
 
 /**
@@ -65,11 +66,53 @@ import org.openide.util.Exceptions;
 public class CppIndentTask extends IndentSupport implements IndentTask {
 
     private Context context;
+    private MutableContext TBIcontext;
     private Document doc;
 
     public CppIndentTask(Context context) {
         this.context = context;
         doc = context.document();
+    }
+
+    public CppIndentTask(MutableContext context) {
+        this.TBIcontext = context;
+        doc = context.getDocument();
+    }
+
+    public boolean doxyGen() throws BadLocationException {
+        int caretOffset = TBIcontext.getCaretOffset();
+        ts = CndLexerUtilities.getCppTokenSequence(doc, TBIcontext.getCaretOffset(), false, false);
+        if (ts == null) {
+            return false;
+        }
+        TokenItem token = new TokenItem(ts, true);
+        if (isMultiLineComment(token)) {
+            if (caretOffset == token.getTokenSequence().offset()) {
+                return false;
+            }
+            if (codeStyle == null) {
+                codeStyle = CodeStyle.getDefault(doc);
+            }
+            // Indent the inner lines of the multi-line comment by one
+            if (getFormatLeadingStarInComment()) {
+                int indent = getTokenColumn(token) + 1;
+                try {
+                    if (caretOffset - token.getTokenSequence().offset() == 3
+                            && doc.getLength() > token.getTokenSequence().offset() + 5
+                            && "/***/".equals(doc.getText(token.getTokenSequence().offset(), 5))) { // NOI18N
+                        Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
+                        if (function != null) {
+                            StringBuilder buf = createDoc(indent, function);
+                            TBIcontext.setText("\n"+buf.toString(), 0, indent+3); // NOI18N
+                            return true;
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return false;
     }
 
     @Override

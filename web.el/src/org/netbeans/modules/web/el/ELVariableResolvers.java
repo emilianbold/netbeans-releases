@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.web.el;
 
-import com.sun.el.parser.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.el.ELException;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.openide.filesystems.FileObject;
@@ -92,26 +90,26 @@ public final class ELVariableResolvers {
         return null;
     }
 
-    /**
-     * Gets the AST node of the expression referred by the EL identifier
-     * at the given {@code offset}.
-     * @param snapshot
-     * @param offset
-     * @return the node or {@code null}.
-     */
-    public static Node getReferredExpression(Snapshot snapshot, int offset) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String expression = resolver.getReferredExpression(snapshot, offset);
-            if (expression != null) {
-                try {
-                    return ELParser.parse(expression);
-                } catch (ELException e) {
-                    // not valid EL
-                }
-            }
-        }
-        return null;
-    }
+//    /**
+//     * Gets the AST node of the expression referred by the EL identifier
+//     * at the given {@code offset}.
+//     * @param snapshot
+//     * @param offset
+//     * @return the node or {@code null}.
+//     */
+//    public static Node getReferredExpression(Snapshot snapshot, int offset) {
+//        for (ELVariableResolver resolver : getResolvers()) {
+//            String expression = resolver.getReferredExpression(snapshot, offset);
+//            if (expression != null) {
+//                try {
+//                    return ELParser.parse(expression);
+//                } catch (ELException e) {
+//                    // not valid EL
+//            }
+//        }
+//        }
+//        return null;
+//    }
 
     public static List<ELVariableResolver.VariableInfo> getManagedBeans(FileObject context) {
         List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
@@ -128,11 +126,46 @@ public final class ELVariableResolvers {
         }
         return result;
     }
+    
+//    public static List<ELVariableResolver.VariableInfo> getVariables(Snapshot snapshot, int offset, ELTypeUtilities typeUtilities) {
+//        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+//        for (ELVariableResolver resolver : getResolvers()) {
+//            Collection<ELVariableResolver.VariableInfo> vinfos = resolver.getVariables(snapshot, offset);
+//            //resove the unresolved variables (they do not have the clazz field properly set, jut the
+//            //expression
+//            for(ELVariableResolver.VariableInfo vi : vinfos) {
+//                if(vi.clazz == null) {
+//                    //unresolved
+//                    ELElement element;
+//                    try {
+//                        Node node = ELParser.parse(vi.expression);
+//                        element = ELElement.valid(node, vi.expression, OffsetRange.NONE, snapshot);
+//                    } catch (ELException ex) {
+//                        ELElement errorElement = ELElement.error(ex, vi.expression, OffsetRange.NONE, snapshot);
+//                        ELSanitizer sanitizer = new ELSanitizer(errorElement);
+//                        element = sanitizer.sanitized();
+//                    }
+//                    typeUtilities.resolveElement(element, node);
+//                }
+//            }
+//
+//            result.addAll(vinfos);
+//        }
+//        return result;
+//    }
 
-    public static List<ELVariableResolver.VariableInfo> getBeansInScope(String scope, FileObject context) {
+    public static List<ELVariableResolver.VariableInfo> getBeansInScope(String scope, Snapshot context) {
         List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
         for (ELVariableResolver resolver : getResolvers()) {
             result.addAll(resolver.getBeansInScope(scope, context));
+        }
+        return result;
+    }
+
+    public static List<ELVariableResolver.VariableInfo> getRawObjectProperties(String name, Snapshot context) {
+        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+        for (ELVariableResolver resolver : getResolvers()) {
+            result.addAll(resolver.getRawObjectProperties(name, context));
         }
         return result;
     }

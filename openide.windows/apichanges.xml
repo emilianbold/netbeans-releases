@@ -50,6 +50,24 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="mainwindow.custom.background">
+    <api name="winsys"/>
+    <summary>Allow custom painted background in the main IDE window.</summary>
+    <version major="6" minor="38"/>
+    <date day="15" month="2" year="2011"/>
+    <author login="saubrecht"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        There's a new Boolean property <code>NbMainWindow.showCustomBackground</code>
+        in <code>javax.swing.UIManager</code>. When the property value is <code>TRUE</code>
+        then the window system will turn off opacity for most of the main window
+        components - menu bar, toolbars, status bar, sliding bars and the main
+        desktop area component. That means that the main window background will
+        be showing through these components. It can be used to paint some watermark
+        or logo or gradient on the main window background, especially when using
+        custom main window implementation, see change id reuse.existing.frame.as.the.main.window
+    </description>
+</change>
 <change id="topcomponent.registration">
     <api name="winsys"/>
     <summary>Register default TopComponent location via annotations</summary>

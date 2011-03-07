@@ -31,19 +31,19 @@ DEFAULTCONF=Solaris_x64
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 Solaris_sparc Solaris_sparc64 
+ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 Solaris_sparc Solaris_sparc64 Windows_x86 
 
 
 # build
 .build-impl: .build-pre .validate-impl .depcheck-impl
 	@#echo "=> Running $@... Configuration=$(CONF)"
-	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf
+	"${MAKE}" -f nbproject/Makefile-${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .build-conf
 
 
 # clean
 .clean-impl: .clean-pre .validate-impl .depcheck-impl
 	@#echo "=> Running $@... Configuration=$(CONF)"
-	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .clean-conf
+	"${MAKE}" -f nbproject/Makefile-${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .clean-conf
 
 
 # clobber 
@@ -51,7 +51,7 @@ ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 Solaris
 	@#echo "=> Running $@..."
 	for CONF in ${ALLCONFS}; \
 	do \
-	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .clean-conf; \
+	    "${MAKE}" -f nbproject/Makefile-$${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .clean-conf; \
 	done
 
 # all 
@@ -59,8 +59,18 @@ ALLCONFS=Solaris_x64 Solaris_x86 Linux_x64 Linux_x86 MacOS_x64 MacOS_x86 Solaris
 	@#echo "=> Running $@..."
 	for CONF in ${ALLCONFS}; \
 	do \
-	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf; \
+	    "${MAKE}" -f nbproject/Makefile-$${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .build-conf; \
 	done
+
+# build tests
+.build-tests-impl: .build-impl .build-tests-pre
+	@#echo "=> Running $@... Configuration=$(CONF)"
+	"${MAKE}" -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-tests-conf
+
+# run tests
+.test-impl: .build-tests-impl .test-pre
+	@#echo "=> Running $@... Configuration=$(CONF)"
+	"${MAKE}" -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .test-conf
 
 # dependency checking support
 .depcheck-impl:

@@ -168,28 +168,28 @@ public class FileInformation extends VCSFileInformation {
             value -= 100;
         }
         if (containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
-            value -= 100;
+            value -= 200;
         }
         if (containsStatus(Status.NEW_HEAD_WORKING_TREE)) {
-            value -= 100;
+            value -= 300;
         }
         if (containsStatus(Status.REMOVED_HEAD_INDEX)) {
             value -= 10;
         }
         if (containsStatus(Status.MODIFIED_HEAD_INDEX)) {
-            value -= 10;
+            value -= 20;
         }
         if (containsStatus(Status.NEW_HEAD_INDEX)) {
-            value -= 10;
+            value -= 30;
         }
         if (containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {
             value -= 1;
         }
         if (containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) {
-            value -= 1;
+            value -= 2;
         }
         if (containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-            value -= 1;
+            value -= 3;
         }
         if (value == 400) {
             throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N

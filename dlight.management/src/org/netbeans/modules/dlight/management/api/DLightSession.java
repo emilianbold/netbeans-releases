@@ -814,6 +814,10 @@ public final class DLightSession implements
      * @return
      */
     public DataProvider createDataProvider(DataModelScheme dataModelScheme, DataTableMetadata dataMetadata) {
+        if (useSharedStorage){
+            return DLightManager.getDefault().createDataProvider(sharedStorageID,
+                    dataModelScheme, dataMetadata);
+        }
 
         // Get a list of all provider factories that can create providers
         // for required dataModelScheme.
@@ -832,7 +836,6 @@ public final class DLightSession implements
         //
         // TODO: should priorities be setuped in case when several providerFactories/storages pairs found?
         //
-
         final List<DataStorage> availableStorages = getStorages();
 
         for (DataProviderFactory providerFactory : providerFactories) {

@@ -209,6 +209,12 @@ public class LHTestCase extends NbTestCase {
         }
         store.fileCreate(file, ts);        
     }
+    
+    static void createSymlink(LocalHistoryStore store, File file, long ts, File fileSym) throws Exception {
+        Process p = Runtime.getRuntime().exec(new String[] {"ln", "-s", file.getAbsolutePath(), fileSym.getAbsolutePath()});
+        p.waitFor();
+        store.fileCreate(fileSym, ts);        
+    }
 
     static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
         // this isn't like a real-life change on a file where the file gets stored before a change.

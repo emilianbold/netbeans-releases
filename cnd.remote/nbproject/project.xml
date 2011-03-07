@@ -110,6 +110,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.terminal</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -128,6 +136,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -142,7 +159,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.37</specification-version>
+                        <specification-version>1.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -286,6 +303,10 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.dlight.remote.impl</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -324,6 +345,8 @@
             <friend-packages>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
+                <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <package>org.netbeans.modules.cnd.remote.api</package>
                 <package>org.netbeans.modules.cnd.remote.mapper</package>

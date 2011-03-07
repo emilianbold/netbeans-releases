@@ -421,7 +421,7 @@ int pthread_create(void *newthread,
     // TODO: check for null???
     data->user_start_routine = user_start_routine;
     data->arg = arg;
-    prev(newthread, attr, pthread_routine_wrapper, data);
+    return prev(newthread, attr, pthread_routine_wrapper, data);
 }
 
 #define real_open(function_name, path, flags) \
