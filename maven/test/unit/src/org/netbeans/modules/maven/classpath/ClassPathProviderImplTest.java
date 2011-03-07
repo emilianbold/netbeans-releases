@@ -101,6 +101,24 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertRoots(ClassPath.getClassPath(trsrc, ClassPath.SOURCE), tsrc, trsrc);
     }
 
+    public void testITSourcePath() throws Exception {
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "<build>" +
+                "<testSourceDirectory>src/it/java</testSourceDirectory>" +
+                "</build>" +
+                "</project>");
+        FileObject itsrc = FileUtil.createFolder(d, "src/it/java");
+        assertRoots(ClassPath.getClassPath(itsrc, ClassPath.SOURCE), itsrc);
+    }
+
     public void testEndorsedClassPath() throws Exception {
         TestFileUtils.writeFile(d,
                 "pom.xml",
