@@ -1521,7 +1521,7 @@ public class ConfigurationMakefileWriter {
 
         OutputStream os = null;
         final String scriptName = "Package-" + conf.getName() + ".bash"; // NOI18N
-        FileObject projectBaseFO = RemoteFileUtil.getProjectSourceBaseFileObject(projectDescriptor.getProject());
+        FileObject projectBaseFO = projectDescriptor.getProject().getProjectDirectory();
         if (projectBaseFO == null) {
             return;
         }
