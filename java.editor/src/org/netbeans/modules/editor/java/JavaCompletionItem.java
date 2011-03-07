@@ -1989,21 +1989,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final String text2 = text;
             final int length = len;
             final int offset2 = offset;
-            final Position[] position = new Position [1];
+            final Position[] position = new Position[1];
             doc.runAtomic (new Runnable () {
                 public void run () {
                     try {
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                        Position pos = doc.createPosition(offset2);
                         String textToReplace = doc.getText(offset2, length);
                         String newText = insertName ? simpleName + text2 : text2;
-                        if (textToReplace.contentEquals(newText)) {
-                            c.setCaretPosition(offset2 + newText.length());
-                        } else {
+                        if (!textToReplace.contentEquals(newText)) {
                             doc.remove(offset2, length);
-                            doc.insertString(pos.getOffset(), newText, null);
+                            doc.insertString(offset2, newText, null);
                         }
-                        position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
+                        c.setCaretPosition(offset2 + newText.length());
+                        position[0] = doc.createPosition(offset2 + newText.indexOf('('));
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                         else if (!isAbstract && params.isEmpty() && lpar)
@@ -2042,8 +2040,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (!params.isEmpty() && text.length() > 1) {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
-                    if (position [0] != null)
-                        offset = position [0].getOffset();
+                    if (position[0] != null)
+                        offset = position[0].getOffset();
                     if (toAdd == null)
                         toAdd = ""; //NOI18N
                     if (text.startsWith("()" + toAdd)) //NOI18N
