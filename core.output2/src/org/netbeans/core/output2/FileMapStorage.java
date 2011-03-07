@@ -167,7 +167,7 @@ class FileMapStorage implements Storage {
         return outfile == null ? "[unused or disposed FileMapStorage]" : outfile.getPath();
     }
     
-    private FileChannel writeChannel() {
+    private FileChannel writeChannel() throws IOException {
         FileChannel channel = fileChannel();
         closed = !channel.isOpen();
         return channel;
@@ -176,20 +176,13 @@ class FileMapStorage implements Storage {
     /**
      * Get a FileChannel opened for reading/writing against the output file.
      */
-    private FileChannel fileChannel() {
-        try {
-            if (fileChannel == null || !fileChannel.isOpen()) {
-                ensureFileExists();
-                RandomAccessFile raf = new RandomAccessFile(outfile, "rw");
-                fileChannel = raf.getChannel();
-            }
-            return fileChannel;
-        } catch (FileNotFoundException fnfe) {
-            fnfe.printStackTrace(); //XXX
-        } catch (IOException ioe) {
-            ioe.printStackTrace(); //XXX
+    private FileChannel fileChannel() throws IOException {
+        if (fileChannel == null || !fileChannel.isOpen()) {
+            ensureFileExists();
+            RandomAccessFile raf = new RandomAccessFile(outfile, "rw");
+            fileChannel = raf.getChannel();
         }
-        return null;
+        return fileChannel;
     }
 
     /**

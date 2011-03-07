@@ -114,12 +114,6 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
-    static { 
-        DELETE_ACTION.putValue (
-            Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke ("DELETE")
-        );
-    };
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_Customize"),
         new Models.ActionPerformer () {
@@ -132,6 +126,13 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
+    static {
+        DELETE_ACTION.putValue (
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
+        );
+        CUSTOMIZE_ACTION.putValue("edit", Boolean.TRUE);
+    };
     
     
     private ContextProvider contextProvider;
