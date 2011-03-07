@@ -69,6 +69,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -573,10 +574,11 @@ final class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                LOG.log(Level.INFO, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
+                LOG.log(notified.add(foProvider.getPath()) ? Level.INFO : Level.FINE, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
             }
             return null; // problem getting the value...
         }
+        private static final Set<String> notified = Collections.synchronizedSet(new HashSet<String>());
 
         public Class<?> getType( BFSBase foProvider) {
             try {
@@ -604,7 +606,7 @@ final class BinaryFS extends FileSystem {
                 }
             } catch (Exception exc) {
                 Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
-                LOG.log(Level.INFO, null, exc);
+                LOG.log(notified.add(foProvider.getPath()) ? Level.INFO : Level.FINE, null, exc);
             }
             return null; // problem getting the value...
         }
