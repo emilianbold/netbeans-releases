@@ -337,6 +337,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(576, 303));
 
+        lblJavaPlatform.setLabelFor(comJavaPlatform);
         org.openide.awt.Mnemonics.setLocalizedText(lblJavaPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblJavaPlatform.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnMngPlatform, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.text")); // NOI18N
