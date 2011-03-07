@@ -223,6 +223,15 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                           "}\n"));
     }
 
+    public void test187766() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { int i; public enum F { A, B, C; } }"));
+        performInnerToOuterTest(false);
+        verifyContent(src,
+                      new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
+                      new File("t/A.java", "package t; public class A { int i; }"));
+    }
+
     private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
         

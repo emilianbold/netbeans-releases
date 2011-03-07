@@ -925,9 +925,9 @@ public class CasualDiff {
             } else {
                 if (oldVariable) {
                     List<JCVariableDecl> oldInit = NbCollections.checkedListByCopy(oldT.init, JCVariableDecl.class, false);
-                    FieldGroupTree old = new FieldGroupTree(oldInit, false);
+                    FieldGroupTree old = new FieldGroupTree(oldInit);
                     List<JCVariableDecl> newInit = NbCollections.checkedListByCopy(newT.init, JCVariableDecl.class, false);
-                    FieldGroupTree nue = new FieldGroupTree(newInit, false);
+                    FieldGroupTree nue = new FieldGroupTree(newInit);
                     int[] initBounds = getBounds(oldT.init.head);
 
                     JCTree last = oldT.init.get(oldT.init.size() - 1);
@@ -2556,7 +2556,7 @@ public class CasualDiff {
                             fieldGroup.add(var);
                         } else {
                             if (fieldGroup.size() > 1) {
-                                result.add(new FieldGroupTree(fieldGroup, false));
+                                result.add(new FieldGroupTree(fieldGroup));
                             } else {
                                 result.add(fieldGroup.get(0));
                             }
@@ -2573,7 +2573,7 @@ public class CasualDiff {
 
             if (!fieldGroup.isEmpty()) {
                 if (fieldGroup.size() > 1) {
-                    result.add(new FieldGroupTree(fieldGroup, false));
+                    result.add(new FieldGroupTree(fieldGroup));
                 } else {
                     result.add(fieldGroup.get(0));
                 }
@@ -2596,13 +2596,13 @@ public class CasualDiff {
         }
         if (!fieldGroup.isEmpty()) {
             if (fieldGroup.size() > 1) {
-                result.add(new FieldGroupTree(fieldGroup, false));
+                result.add(new FieldGroupTree(fieldGroup));
             } else {
                 result.add(fieldGroup.get(0));
             }
         }
         if (!enumConstants.isEmpty()) {
-            result.addFirst(new FieldGroupTree(enumConstants, true));
+            result.addFirst(new FieldGroupTree(enumConstants, !result.isEmpty()));
         }
         return result;
     }
