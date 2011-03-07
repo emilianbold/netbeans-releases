@@ -235,6 +235,9 @@ public class ConfigurationMakefileWriter {
             if (children != null) {
                 for (int i = 0; i < children.length; i++) {
                     String filename = children[i].getNameExt();
+                    if (filename.equals("Makefile-impl.mk") || filename.equals("Makefile-variables.mk")) { // NOI18N
+                        continue;
+                    }
                     if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
                         boolean known = false;
                         for (Configuration conf : projectDescriptor.getConfs().toArray()) {
