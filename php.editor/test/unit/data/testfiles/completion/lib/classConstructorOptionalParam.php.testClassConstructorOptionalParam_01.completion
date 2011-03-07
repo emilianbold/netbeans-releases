@@ -5,6 +5,7 @@ CONSTRUCTO A($var)                         [PUBLIC]   A
 CONSTRUCTO A($var, $var2 = 10)             [PUBLIC]   A
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
+PACKAGE    App                             [PUBLIC]   null
 ------------------------------------
 CONSTRUCTO A()                             [PUBLIC]   A
 CONSTRUCTO a()                             [PUBLIC]   a
