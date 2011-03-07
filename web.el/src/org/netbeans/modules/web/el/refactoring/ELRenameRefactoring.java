@@ -83,8 +83,8 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
         // explicitly specified in the annotation
         String beanName = ELVariableResolvers.findBeanName(type.getQualifiedName().toString(), getFileObject());
         if (beanName != null && beanName.equalsIgnoreCase(type.getSimpleName().toString())) {
-            for (AnnotationMirror ann : info.getElements().getAllAnnotationMirrors(type)) {
-                CharSequence annFqn = info.getTypeUtilities().getTypeName(ann.getAnnotationType(), TypeNameOptions.PRINT_FQN);
+            for (AnnotationMirror ann : refactoringContext.getInfo().getElements().getAllAnnotationMirrors(type)) {
+                CharSequence annFqn = refactoringContext.getInfo().getTypeUtilities().getTypeName(ann.getAnnotationType(), TypeNameOptions.PRINT_FQN);
                 if ("javax.faces.bean.ManagedBean".contentEquals(annFqn)) { //NOI18N
                     for (ExecutableElement annElem : ann.getElementValues().keySet()) { 
                         if ("name".contentEquals(annElem.getSimpleName())) { //NOI18N

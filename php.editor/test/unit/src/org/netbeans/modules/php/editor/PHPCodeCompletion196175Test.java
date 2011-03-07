@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,50 +40,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony.ui.actions;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
-import org.netbeans.modules.php.symfony.util.SymfonyUtils;
+package org.netbeans.modules.php.editor;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
-public final class SymfonyGoToViewAction extends GoToViewAction {
-    private static final long serialVersionUID = 89745632134654L;
+/**
+ *
+ * @author Petr Pisl
+ */
+public class PHPCodeCompletion196175Test extends PHPTestBase {
 
-    private final FileObject fo;
-    private final int offset;
-
-    public SymfonyGoToViewAction(FileObject fo, int offset) {
-        assert SymfonyUtils.isAction(fo);
-        this.fo = fo;
-        this.offset = offset;
+    public PHPCodeCompletion196175Test(String testName) {
+        super(testName);
     }
 
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196175/IndexController.php", "$this->_request->^", false);
+    }
+    
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196175/test196175.php", "$a->^", false);
+    }
+    
+
     @Override
-    public boolean goToView() {
-        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-        PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
-        if (phpElement == null) {
-            return false;
-        }
-        final List<FileObject> views = SymfonyUtils.getViews(fo, phpElement);
-        if (views.size() == 1) {
-            UiUtils.open(views.get(0), DEFAULT_OFFSET);
-            return true;
-        } else if (views.size() > 1) {
-            SymfonyGoToViewActionPopup popup = new SymfonyGoToViewActionPopup(views, offset);
-            popup.show();
-            return true;
-        }
-        return false;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests196175"))
+            })
+        );
     }
 }

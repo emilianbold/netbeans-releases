@@ -276,6 +276,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             case ProblemDescription.ERROR:
             case ProblemDescription.FATAL:
                 return Severity.ERROR;
+            case ProblemDescription.INTERNAL_ERROR:
+                return Severity.INFO;
             default:
                 throw new IllegalArgumentException("Invalid ProblemDescription type: " + problemtype); //NOI18N
         }

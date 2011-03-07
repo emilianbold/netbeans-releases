@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.jsf.editor.index;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -105,10 +104,8 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                     JsfIndexSupport.indexTagLibraryDescriptor(context, file, namespace);
                     LOGGER.log(Level.FINE, "The file {0} indexed as a TLD (namespace={1})", new Object[]{file, namespace}); //NOI18N
                 }
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.info(String.format("Error parsing %s file: %s", file.getPath(), ex.getMessage()));//NOI18N
             }
         }
 
@@ -123,10 +120,8 @@ public class JsfBinaryIndexer extends BinaryIndexer {
                     JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
                     LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                 }
-            } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.info(String.format("Error parsing %s file: %s", file.getPath(), ex.getMessage()));//NOI18N
             }
         }
 

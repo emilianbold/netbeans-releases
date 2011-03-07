@@ -1443,17 +1443,24 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL, boolean inIDE);
         protected abstract SlownessData getSlownessData();
+        
+        DialogDescriptor findDD() {
+            if (dd == null) {
+                if (report) {
+                    dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
+                } else {
+                    dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
+                }
+            }
+            return dd;
+        }
 
         public void doShow(DataType dataType) {
             if (dataType == DataType.DATA_UIGESTURE) {
                 logDeactivated();
             }
-            if (report) {
-                dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
-            } else {
-                dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "MSG_SubmitDialogTitle"));
-            }
-
+            findDD();
+            
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
 
             String defaultURI = NbBundle.getMessage(Installer.class, msg);
@@ -1964,7 +1971,8 @@ public class Installer extends ModuleInstall implements Runnable {
                         p.setViewportView(browser);
                         p.setBorder(BorderFactory.createEmptyBorder());
                         p.setPreferredSize(dim);
-                        dd.setMessage(p);
+                        DialogDescriptor descr = findDD();
+                        descr.setMessage(p);
                         //        AbstractNode root = new AbstractNode(new Children.Array());
                         //        root.setName("root"); // NOI18N
                         //        root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
@@ -1975,11 +1983,11 @@ public class Installer extends ModuleInstall implements Runnable {
                         //
                         //        panel.getExplorerManager().setRootContext(root);
                         Object[] arr = new Object[]{exitMsg};
-                        dd.setOptions(arr);
-                        dd.setClosingOptions(arr);
-                        dd.setButtonListener(SubmitInteractive.this);
-                        dd.setModal(true);
-                        d = DialogDisplayer.getDefault().createDialog(dd);
+                        descr.setOptions(arr);
+                        descr.setClosingOptions(arr);
+                        descr.setButtonListener(SubmitInteractive.this);
+                        descr.setModal(true);
+                        d = DialogDisplayer.getDefault().createDialog(descr);
                     }
                 });
             } catch (InterruptedException ex) {

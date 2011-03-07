@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony.ui.actions;
+package org.netbeans.modules.uihandler;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
-import org.netbeans.modules.php.symfony.util.SymfonyUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.io.File;
+import org.openide.filesystems.FileSystem;
 
-public final class SymfonyGoToViewAction extends GoToViewAction {
-    private static final long serialVersionUID = 89745632134654L;
-
-    private final FileObject fo;
-    private final int offset;
-
-    public SymfonyGoToViewAction(FileObject fo, int offset) {
-        assert SymfonyUtils.isAction(fo);
-        this.fo = fo;
-        this.offset = offset;
+/** Checks that the SelfSampleVFS in this module is similar to the one in core.ui.
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class SelfSampleVFSTest extends org.netbeans.core.ui.sampler.SelfSampleVFSTest {
+    
+    public SelfSampleVFSTest(String s) {
+        super(s);
     }
-
+    
     @Override
-    public boolean goToView() {
-        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-        PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
-        if (phpElement == null) {
-            return false;
-        }
-        final List<FileObject> views = SymfonyUtils.getViews(fo, phpElement);
-        if (views.size() == 1) {
-            UiUtils.open(views.get(0), DEFAULT_OFFSET);
-            return true;
-        } else if (views.size() > 1) {
-            SymfonyGoToViewActionPopup popup = new SymfonyGoToViewActionPopup(views, offset);
-            popup.show();
-            return true;
-        }
-        return false;
-    }
+    protected FileSystem createVFS(String[] names, File[] files) {
+        return new SelfSampleVFS(names, files);
+    }    
 }

@@ -174,6 +174,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         "http://c.validator.nu/table/", "http://c.validator.nu/nfc/",
         "http://c.validator.nu/unchecked/", "http://c.validator.nu/usemap/"};
     private static boolean INITIALIZED = false;
+    
+    private static String INTERNAL_ERROR_MSG = "Validation of the code failed unexpectedly, the validator results may be inaccurate. See the IDE log for more information"; //NOI18N
+    
     protected String document = null;
     ParserMode parser = ParserMode.AUTO;
     private boolean laxType = false;
@@ -647,7 +650,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             LOGGER.log(Level.INFO, getDocumentErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } catch (TooManyErrorsException e) {
             LOGGER.log(Level.FINE, getDocumentErrorMsg(), e);
             errorHandler.fatalError(e);
@@ -663,12 +666,12 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             reportRuntimeExceptionOnce(e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } catch (Error e) {
             LOGGER.log(Level.INFO, getDocumentInternalErrorMsg(), e);
             errorHandler.internalError(
                     e,
-                    "Oops. That was not supposed to happen. A bug manifested itself in the application internals. See the IDE log for more information");
+                    INTERNAL_ERROR_MSG);
         } finally {
             errorHandler.end(successMessage(), failureMessage());
         }
@@ -728,11 +731,11 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     }
 
     private String getDocumentErrorMsg() {
-        return new StringBuilder().append("An error occured during validation of ").append(document).toString();
+        return new StringBuilder().append("An error occurred during validation of ").append(document).toString(); //NOI18N
     }
 
     private String getDocumentInternalErrorMsg() {
-        return new StringBuilder().append("An internal error occured during validation of ").append(document).toString();
+        return new StringBuilder().append("An internal error occurred during validation of ").append(document).toString(); //NOI18N
     }
 
     /**
