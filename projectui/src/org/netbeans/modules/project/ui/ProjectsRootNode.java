@@ -444,8 +444,6 @@ public class ProjectsRootNode extends AbstractNode {
     }
 
     static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
-
-        private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
         private final Object privateLock = new Object();
         private Set<FileObject> files;
         private Map<FileSystem,FileStatusListener> fileSystemListeners;
@@ -730,7 +728,7 @@ public class ProjectsRootNode extends AbstractNode {
                     LOG.log(Level.INFO, null, e);
                 }
             }
-            return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
+            return original;
         }
 
         /** Get display name used for logging as original display name can cause deadlock issue #160512 */
