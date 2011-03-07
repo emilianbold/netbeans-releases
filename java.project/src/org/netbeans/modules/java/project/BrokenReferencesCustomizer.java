@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.ImageUtilities;
@@ -193,7 +194,12 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             or.getType() == BrokenReferencesModel.RefType.LIBRARY_CONTENT) {
             fix.setEnabled(false);
             try {
-                LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
+                final LibraryManager lm = model.getProjectLibraryManager(or);
+                if (lm == null) {
+                    //Closed and freed project
+                    return;
+                }
+                LibrariesCustomizer.showCustomizer(null,lm);
             } finally {
                 fix.setEnabled(true);
             }
@@ -213,7 +219,12 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
                     } catch (Exception x) {
                         LOG.log(Level.INFO, null, x);
                         // fallback: user may need to create library manually
-                        LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
+                        final LibraryManager lm = model.getProjectLibraryManager(or);
+                        if (lm == null) {
+                            //Closed and freed project
+                            return;
+                        }
+                        LibrariesCustomizer.showCustomizer(null, lm);
                     } finally {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override

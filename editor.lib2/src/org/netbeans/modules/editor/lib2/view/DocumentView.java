@@ -693,7 +693,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     private void checkSettingsInfo() {
-        if (textComponent == null) {
+        JTextComponent tc = textComponent;
+        if (tc == null) {
             return;
         }
         if (lookupListener == null) {
@@ -726,7 +727,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     });
                 }
             };
-            String mimeType = DocumentUtilities.getMimeType(textComponent);
+            String mimeType = DocumentUtilities.getMimeType(tc);
             Lookup lookup = MimeLookup.getLookup(mimeType);
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             // Called without explicitly acquiring mutex but it's called only when lookup listener is null
@@ -738,7 +739,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
 
         if (prefs == null) {
-            String mimeType = DocumentUtilities.getMimeType(textComponent);
+            String mimeType = DocumentUtilities.getMimeType(tc);
             prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
             prefsListener = new PreferenceChangeListener() {
                 @Override

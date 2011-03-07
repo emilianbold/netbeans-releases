@@ -47,18 +47,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class SelfSampleVFSTest extends NbTestCase {
-    private SelfSampleVFS fs;
+    private FileSystem fs;
 
     public SelfSampleVFSTest(String s) {
         super(s);
     }
 
+    /** for subclass(es) in uihandler module 
+     * @param array of names that shall be visible on the VFS
+     * @param files locations of real files that represent content of those names
+     */
+    protected FileSystem createVFS(String[] names, File[] files) {
+        return new SelfSampleVFS(names, files);
+    }
+    
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
@@ -69,7 +78,7 @@ public class SelfSampleVFSTest extends NbTestCase {
         write(a, "Ahoj");
         write(b, "Kuk");
         
-        fs = new SelfSampleVFS(new String[] { "x.pdf", "y.ps" }, new File[] { a, b });
+        fs = createVFS(new String[] { "x.pdf", "y.ps" }, new File[] { a, b });
     }
     
     public void testCanList() {

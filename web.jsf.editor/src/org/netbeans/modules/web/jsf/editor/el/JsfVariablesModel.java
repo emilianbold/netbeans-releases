@@ -132,13 +132,18 @@ public class JsfVariablesModel {
                     //instead of the expression language, the code needs to be taken from
                     //the original document
                     AstNode.Attribute valueAttr = node.getAttribute(VALUE_NAME);
+                    if(valueAttr.unquotedValue().isEmpty()) {
+                        //empty value, skip this one
+                        continue;
+                    }
+                    
                     int doc_from = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset());
                     int doc_to = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset() + valueAttr.value().length());
 
                     if(doc_from == -1 || doc_to == -1) {
                         continue; //the offsets cannot be mapped to the document
                     }
-
+                    
                     String documentValueContent = topLevelSnapshot.getText().subSequence(doc_from, doc_to).toString();
 
                     JsfVariableContext context = new JsfVariableContext(

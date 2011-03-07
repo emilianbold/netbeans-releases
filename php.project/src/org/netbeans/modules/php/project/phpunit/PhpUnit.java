@@ -666,7 +666,7 @@ public abstract class PhpUnit extends PhpProgram {
 
     static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
         //                                                              PHPUnit 3.3.1 by Sebastian Bergmann.
-        private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\s+"); // NOI18N
+        private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\w*\\s+"); // NOI18N
 
         @Override
         public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {

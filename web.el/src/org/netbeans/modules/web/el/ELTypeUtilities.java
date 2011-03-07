@@ -67,6 +67,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -152,6 +153,39 @@ public final class ELTypeUtilities {
         runTask(task);
         return task.getResult();
     }
+    
+    /**
+     * 
+     * @param element
+     * @return a list of Element-s representing all the superclasses of the element. 
+     * The list starts with the given element itself and ends with java.lang.Object
+     */
+    public List<Element> getSuperTypesFor(Element element) {
+        final TypeMirror tm = getTypeMirrorFor(element);
+        SourceTask<List<Element>> task = new SourceTask<List<Element>>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                List<Element> types = new ArrayList<Element>();
+                TypeMirror mirror = tm;
+                while(mirror.getKind() == TypeKind.DECLARED) {
+                    Element el = info.getTypes().asElement(mirror);
+                    types.add(el);
+                    
+                    if(el.getKind() == ElementKind.CLASS) {
+                        TypeElement tel = (TypeElement)el;
+                        mirror = tel.getSuperclass();
+                    } else {
+                        break;
+                    }
+                }
+                
+                setResult(types);
+            }
+        };
+        runTask(task);
+        return task.getResult();
+    }
 
     /**
      * Resolves the element for the given {@code target}.
@@ -180,7 +214,51 @@ public final class ELTypeUtilities {
                 } else if (returnTypeKind == TypeKind.VOID) {
                     setResult(info.getTypes().getNoType(returnTypeKind));
                 } else {
-                    setResult(method.getReturnType());
+                    TypeMirror tm = method.getReturnType();
+                    TypeMirror returnType = tm;
+                    
+                    if(tm.getKind() == TypeKind.DECLARED) {
+                        //check whether the return type implements Iterable, if so use the 
+                        //parametrized type of the Iterable
+                        TypeMirror iterableType = info.getElements().getTypeElement("java.lang.Iterable").asType(); //NOI18N
+                        assert iterableType != null;
+                        TypeMirror iterableErasure = info.getTypes().erasure(iterableType);
+                        TypeMirror tmErasure = info.getTypes().erasure(method.getReturnType());
+                        //hack>>>
+                        //direct usage of the tm doesn't work, the isSubtype() method 
+                        //returns false for the erased types. Why? Different contexts???
+                        //The types seems to be exactly the same... no idea...
+
+                        //so convert to the FQN
+                        String tmName = info.getTypeUtilities().getTypeName(tmErasure, TypeNameOptions.PRINT_FQN).toString();
+                        //and back to the type
+                        TypeElement tm2Element = info.getElements().getTypeElement(tmName);
+                        //<<<hack
+
+                        if(tm2Element != null) {
+                            TypeMirror tm2 = tm2Element.asType(); 
+                            TypeMirror tm2Erasure = info.getTypes().erasure(tm2);
+
+                            if(info.getTypes().isSubtype(tm2Erasure, iterableErasure)) {
+                                //the return type is an Iterable
+                                if(tm.getKind() == TypeKind.DECLARED) {
+                                    DeclaredType dt = (DeclaredType)tm;
+
+                                    List<? extends TypeMirror> typeArguments = dt.getTypeArguments();
+                                    if(typeArguments.size() > 0) {
+                                        returnType = typeArguments.iterator().next();
+                                    }
+                                }
+                            }
+                        }
+                    } else if(tm.getKind() == TypeKind.ARRAY) {
+                        //The type is an array, use its member type
+                        returnType = ((ArrayType) tm).getComponentType();
+                    }
+                    
+                    
+                    
+                    setResult(returnType);
                 }
             }
         };
@@ -398,13 +476,15 @@ public final class ELTypeUtilities {
      * @return
      */
     private ExecutableElement getElementForProperty(Node property, Element enclosing) {
-        for (ExecutableElement each : ElementFilter.methodsIn(enclosing.getEnclosedElements())) {
-            // we're only interested in public methods
-            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            if (isSameMethod(property, each)) {
-                return each;
+        for (Element element : getSuperTypesFor(enclosing)) {
+            for (ExecutableElement each : ElementFilter.methodsIn(element.getEnclosedElements())) {
+                // we're only interested in public methods
+                if (!each.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                if (isSameMethod(property, each)) {
+                    return each;
+                }
             }
         }
         return null;
@@ -541,21 +621,7 @@ public final class ELTypeUtilities {
                         return;
                     }
                     TypeMirror returnType = getReturnType(method);
-                    //XXX: works just for generic collections, i.e. the assumption is
-                    // that variables refer to collections, which is not always the case
-
-                    //XXX: marek: is that even correct? Shouldn't the usage of the type arguments
-                    //be restricted only for the Iterable types?
-                    if (returnType instanceof DeclaredType) {
-                        List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
-                        for (TypeMirror arg : typeArguments) {
-                            result[0] = info.getTypes().asElement(arg);
-                            return;
-                        }
-                        //use the returned type itself
-                        result[0] = info.getTypes().asElement(returnType);
-                    }
-
+                    result[0] = info.getTypes().asElement(returnType);
                 }
             }
         });
