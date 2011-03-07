@@ -58,9 +58,13 @@ public class ClassPathProviderImplTest extends NbTestCase {
         super(n);
     }
 
-    public void testClassPath() throws Exception {
+    private FileObject d;
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
-        FileObject d = FileUtil.toFileObject(getWorkDir());
+        d = FileUtil.toFileObject(getWorkDir());
+    }
+
+    public void testClassPath() throws Exception {
         TestFileUtils.writeFile(d,
                 "pom.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
@@ -78,8 +82,6 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
 
     public void testEndorsedClassPath() throws Exception {
-        clearWorkDir();
-        FileObject d = FileUtil.toFileObject(getWorkDir());
         TestFileUtils.writeFile(d,
                 "pom.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
