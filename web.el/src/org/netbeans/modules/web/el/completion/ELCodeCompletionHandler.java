@@ -57,6 +57,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -186,24 +188,29 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
     private void proposeMethods(CodeCompletionContext context, Element resolved,
             PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
-
-        resolved = typeUtilities.getTypeFor(resolved);
-        if (resolved == null || resolved.getKind() == ElementKind.TYPE_PARAMETER) {
-            return;
-        }
-        for (ExecutableElement enclosed : ElementFilter.methodsIn(resolved.getEnclosedElements())) {
-            if (!enclosed.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
+        
+        List<Element> allTypes = typeUtilities.getSuperTypesFor(resolved);
+        for(Element element : allTypes) {
+            for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
+                //do not propose Object's members
+                if(enclosed.getSimpleName().contentEquals("Object")) { //NOI18N
+                    //XXX hmm, not an ideal non-fqn check
+                    continue;
+                }
+                
+                if (!enclosed.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                String methodName = enclosed.getSimpleName().toString();
+                String propertyName = RefactoringUtil.getPropertyName(methodName, true);
+                if (!prefix.matches(propertyName)) {
+                    continue;
+                }
+                ELJavaCompletionItem item = new ELJavaCompletionItem(enclosed, elElement, typeUtilities);
+                item.setSmart(true);
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                proposals.add(item);
             }
-            String methodName = enclosed.getSimpleName().toString();
-            String propertyName = RefactoringUtil.getPropertyName(methodName, true);
-            if (!prefix.matches(propertyName)) {
-                continue;
-            }
-            ELJavaCompletionItem item = new ELJavaCompletionItem(enclosed, elElement, typeUtilities);
-            item.setSmart(true);
-            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            proposals.add(item);
         }
     }
 
