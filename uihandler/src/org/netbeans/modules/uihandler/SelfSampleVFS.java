@@ -57,7 +57,7 @@ import org.openide.util.Enumerations;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class SelfSampleVFS extends AbstractFileSystem 
+final class SelfSampleVFS extends AbstractFileSystem 
 implements AbstractFileSystem.List, AbstractFileSystem.Info, AbstractFileSystem.Attr {
     private final String[] names;
     private final File[] contents;
