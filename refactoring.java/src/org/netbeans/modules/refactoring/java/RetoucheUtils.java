@@ -336,11 +336,14 @@ public class RetoucheUtils {
             return false;
 
         //workaround for 143542
+        // XXX why is it checking open projects, rather than just p?
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (Project pr : opened) {
-            for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
-                    return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
+            for (String type : new String[] {JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
+                for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(type)) {
+                    if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
+                        return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
+                    }
                 }
             }
         }
