@@ -762,7 +762,7 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(1100);
         write(new File(new File(repositoryLocation, ".git"), "HEAD"), commitId);
         RepositoryInfo.getInstance(repositoryLocation).refresh();
-        assertEquals("reposka<font color=\"#999999\"> [(no branch) " + commitId + "]</font>", annotator.annotateName("reposka", VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(repositoryLocation)) })));
+        assertEquals("reposka<font color=\"#999999\"> [" + commitId.substring(0, 10) + "...]</font>", annotator.annotateName("reposka", VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(repositoryLocation)) })));
     }
 
     public void testAllStatusAreComparable () throws Exception {
