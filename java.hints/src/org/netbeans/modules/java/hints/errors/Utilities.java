@@ -403,10 +403,12 @@ public class Utilities {
                         doc.render(new Runnable() {
                             public void run() {
                                 try {
-                                    int[] span = diff.getSpan(tag);
-                                    if(span != null) {
-                                        pos[0] = fdoc.createPosition(span[0]);
-                                        pos[1] = fdoc.createPosition(span[1]);
+                                    if (tag != null) {
+                                        int[] span = diff.getSpan(tag);
+                                        if(span != null) {
+                                            pos[0] = fdoc.createPosition(span[0]);
+                                            pos[1] = fdoc.createPosition(span[1]);
+                                        }
                                     } else {
                                         pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
                                         pos[1] = pos[0];
