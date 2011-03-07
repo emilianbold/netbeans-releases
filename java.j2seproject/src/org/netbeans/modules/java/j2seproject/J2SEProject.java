@@ -663,7 +663,12 @@ public final class J2SEProject implements Project {
                     }
                     J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
                     if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
-                        BrokenReferencesSupport.showAlert();
+                        BrokenReferencesSupport.showAlert(
+                                helper,
+                                refHelper,
+                                eval,
+                                physicalViewProvider.getBreakableProperties(),
+                                physicalViewProvider.getPlatformProperties());
                     }
                 }
             });

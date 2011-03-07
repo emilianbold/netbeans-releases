@@ -152,15 +152,7 @@ public class SourceUtils {
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
-        if (from.getKind() == TypeKind.DECLARED) {
-            com.sun.tools.javac.util.List<Type> typeVars = com.sun.tools.javac.util.List.nil();
-            for (TypeMirror tm : ((DeclaredType)from).getTypeArguments()) {
-                if (tm.getKind() == TypeKind.TYPEVAR)
-                    typeVars = typeVars.append((Type)tm);
-            }
-            if (!typeVars.isEmpty())
-                from = new Type.ForAll(typeVars, (Type)from);
-        } else if (from.getKind() == TypeKind.WILDCARD) {
+        if (from.getKind() == TypeKind.WILDCARD) {
             from = Types.instance(c).upperBound((Type)from);
         }
         return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
