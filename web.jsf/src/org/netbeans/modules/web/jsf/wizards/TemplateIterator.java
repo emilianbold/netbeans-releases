@@ -39,6 +39,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -94,6 +95,10 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + templateFile), ENCODING);
             result = FileUtil.createData(targetDir, TEMPLATE_XHTML); //NOI18N
             JSFFrameworkProvider.createFile(result, content, ENCODING); //NOI18N
+            DataObject dob = DataObject.find(result);
+            if (dob != null) {
+                JSFPaletteUtilities.reformat(dob);
+            }
         }
         return result;
     }
@@ -158,7 +163,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 });
 
                 FileObject target = df.getPrimaryFile().getFileObject(targetName, XHTML_EXT);
-                return Collections.singleton(DataObject.find(target));
+                DataObject dob = DataObject.find(target);
+                JSFPaletteUtilities.reformat(dob);
+                return Collections.singleton(dob);
             }
         }
         return Collections.EMPTY_SET;
