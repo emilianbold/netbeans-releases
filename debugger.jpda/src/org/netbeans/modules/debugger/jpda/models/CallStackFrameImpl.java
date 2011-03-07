@@ -117,8 +117,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     private int                 depth;
     private JPDADebuggerImpl    debugger;
     //private AST                 ast;
-    private Operation           currentOperation;
-    private EqualsInfo          equalsInfo;
+    private volatile Operation  currentOperation;
+    private final EqualsInfo    equalsInfo;
     private boolean             valid;
     
     public CallStackFrameImpl (
@@ -165,11 +165,11 @@ public class CallStackFrameImpl implements CallStackFrame {
         }
     }
     
-    public synchronized Operation getCurrentOperation(String struts) {
+    public Operation getCurrentOperation(String struts) {
         return currentOperation;
     }
     
-    public synchronized void setCurrentOperation(Operation operation) {
+    public void setCurrentOperation(Operation operation) {
         this.currentOperation = operation;
     }
 
@@ -899,7 +899,7 @@ public class CallStackFrameImpl implements CallStackFrame {
         return equalsInfo.equals(frame.equalsInfo);
     }
     
-    public synchronized int hashCode () {
+    public int hashCode () {
         return equalsInfo.hashCode();
     }
 
