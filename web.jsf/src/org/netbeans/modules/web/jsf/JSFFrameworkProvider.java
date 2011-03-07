@@ -87,7 +87,6 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -102,7 +101,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.openide.util.Exceptions;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -519,6 +518,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 content = content.replaceAll("__ENCODING__", encoding.name());
                                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
                                 createFile(target, content, encoding.name());  //NOI18N
+                                DataObject dob = DataObject.find(target);
+                                if (dob != null) {
+                                    JSFPaletteUtilities.reformat(dob);
+                                }
+                                
                             }
                         }
                     } else if (faceletsEnabled && welcomeFiles == null) {
@@ -701,7 +705,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                 content = content.replaceAll("__ENCODING__", encoding.name());
                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);
-                createFile(target, content, encoding.name());  
+                createFile(target, content, encoding.name());
+                DataObject dob = DataObject.find(target);
+                if (dob != null) {
+                    JSFPaletteUtilities.reformat(dob);
+                }
             }
         }
         private boolean shouldAddMappings(WebModule webModule) {

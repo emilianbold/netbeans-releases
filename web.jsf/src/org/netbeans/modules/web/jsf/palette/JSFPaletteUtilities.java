@@ -60,15 +60,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-//import javax.servlet.jsp.tagext.TagLibraryInfo;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
-//import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
-//import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -209,6 +209,10 @@ public final class JSFPaletteUtilities {
         } finally {
             w.close();
         }
+        DataObject dob = DataObject.find(target);
+        if (dob != null) {
+            JSFPaletteUtilities.reformat(dob);
+        }
     }
 
     public static void expandJSFTemplate(FileObject template, Map<String, Object> values, Charset targetEncoding, Writer w) throws IOException {
@@ -232,4 +236,36 @@ public final class JSFPaletteUtilities {
         }
     }
 
+    public static void reformat(DataObject dob) {
+        try {
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+
+            final StyledDocument doc = ec.openDocument();
+            final Reformat reformat = Reformat.get(doc);
+            
+            reformat.lock();
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reformat.unlock();
+                ec.saveDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
