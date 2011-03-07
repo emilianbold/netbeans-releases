@@ -247,8 +247,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         if (enclosing == null) {
                             break;
                         }
-//                        if (info.getTypes().isSameType(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {                        
-                        if (isSameType(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
+                        if (isSameTypeOrSupertype(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
                             TypeMirror matching = getTypeForProperty(child, enclosing);
                             if (matching != null) {
                                 result.add(child);
@@ -264,6 +263,18 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return result;
     }
     
+    private boolean isSameTypeOrSupertype(TypeMirror tm1, TypeMirror tm2) {
+        DeclaredType declaredTm2 = (DeclaredType)tm2;
+        List<Element> all = typeUtilities.getSuperTypesFor(declaredTm2.asElement());
+        for(Element e : all) {
+            TypeMirror tm = e.asType();
+            if(isSameType(tm1, tm)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     //marekf: a bad fix for an issue I do not know the right solution for
     private boolean isSameType(TypeMirror tm1, TypeMirror tm2) {
         if(info.getTypes().isSameType(tm1, tm2)) {
@@ -272,6 +283,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             //XXX this must be resolved properly ??? I cannot spot any difference 
             //between two types which supposedly 
             //represents the same type but Types.isSameType() claims they do not.
+            //It looks like the mirrors are obtained from different JavaSource contexts.
             if(tm1.getKind() == TypeKind.DECLARED && tm2.getKind() == TypeKind.DECLARED) {
                 return ((DeclaredType)tm1).asElement().getSimpleName().
                         contentEquals((((DeclaredType)tm2).asElement().getSimpleName()));
@@ -314,21 +326,24 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      */
     private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
         String name = property.getImage();
-        List<? extends Element> enclosedElements = info.getTypes().asElement(enclosing).getEnclosedElements();
-        for (Element each : ElementFilter.methodsIn(enclosedElements)) {
-            // we're only interested in public methods
-            // XXX: should probably include public fields too
-            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            ExecutableElement methodElem = (ExecutableElement) each;
-            String methodName = methodElem.getSimpleName().toString();
+        Element el = info.getTypes().asElement(enclosing);
+        for(Element element : typeUtilities.getSuperTypesFor(el)) {
+            List<? extends Element> enclosedElements = element.getEnclosedElements();
+            for (Element each : ElementFilter.methodsIn(enclosedElements)) {
+                // we're only interested in public methods
+                // XXX: should probably include public fields too
+                if (!each.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                ExecutableElement methodElem = (ExecutableElement) each;
+                String methodName = methodElem.getSimpleName().toString();
 
-            if (typeUtilities.isSameMethod(property, methodElem)) {
-                return typeUtilities.getReturnType(methodElem);
+                if (typeUtilities.isSameMethod(property, methodElem)) {
+                    return typeUtilities.getReturnType(methodElem);
 
-            } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                return typeUtilities.getReturnType(methodElem);
+                } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+                    return typeUtilities.getReturnType(methodElem);
+                }
             }
         }
         return null;

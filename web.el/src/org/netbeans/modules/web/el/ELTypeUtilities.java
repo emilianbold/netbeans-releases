@@ -153,6 +153,39 @@ public final class ELTypeUtilities {
         runTask(task);
         return task.getResult();
     }
+    
+    /**
+     * 
+     * @param element
+     * @return a list of Element-s representing all the superclasses of the element. 
+     * The list starts with the given element itself and ends with java.lang.Object
+     */
+    public List<Element> getSuperTypesFor(Element element) {
+        final TypeMirror tm = getTypeMirrorFor(element);
+        SourceTask<List<Element>> task = new SourceTask<List<Element>>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                List<Element> types = new ArrayList<Element>();
+                TypeMirror mirror = tm;
+                while(mirror.getKind() == TypeKind.DECLARED) {
+                    Element el = info.getTypes().asElement(mirror);
+                    types.add(el);
+                    
+                    if(el.getKind() == ElementKind.CLASS) {
+                        TypeElement tel = (TypeElement)el;
+                        mirror = tel.getSuperclass();
+                    } else {
+                        break;
+                    }
+                }
+                
+                setResult(types);
+            }
+        };
+        runTask(task);
+        return task.getResult();
+    }
 
     /**
      * Resolves the element for the given {@code target}.
@@ -443,13 +476,15 @@ public final class ELTypeUtilities {
      * @return
      */
     private ExecutableElement getElementForProperty(Node property, Element enclosing) {
-        for (ExecutableElement each : ElementFilter.methodsIn(enclosing.getEnclosedElements())) {
-            // we're only interested in public methods
-            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            if (isSameMethod(property, each)) {
-                return each;
+        for (Element element : getSuperTypesFor(enclosing)) {
+            for (ExecutableElement each : ElementFilter.methodsIn(element.getEnclosedElements())) {
+                // we're only interested in public methods
+                if (!each.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                if (isSameMethod(property, each)) {
+                    return each;
+                }
             }
         }
         return null;
@@ -587,21 +622,6 @@ public final class ELTypeUtilities {
                     }
                     TypeMirror returnType = getReturnType(method);
                     result[0] = info.getTypes().asElement(returnType);
-//                    //XXX: works just for generic collections, i.e. the assumption is
-//                    // that variables refer to collections, which is not always the case
-//
-//                    //XXX: marek: is that even correct? Shouldn't the usage of the type arguments
-//                    //be restricted only for the Iterable types?
-//                    if (returnType instanceof DeclaredType) {
-//                        List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
-//                        for (TypeMirror arg : typeArguments) {
-//                            result[0] = info.getTypes().asElement(arg);
-//                            return;
-//                        }
-//                        //use the returned type itself
-//                        result[0] = info.getTypes().asElement(returnType);
-//                    }
-
                 }
             }
         });
