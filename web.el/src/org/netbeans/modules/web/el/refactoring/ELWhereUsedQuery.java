@@ -92,9 +92,9 @@ import org.openide.util.Exceptions;
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(ELWhereUsedQuery.class.getName());
-    protected CompilationInfo info;
-    protected ELTypeUtilities typeUtilities;
 
+    protected RefactoringSessionContext refactoringContext;
+    
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
     }
@@ -105,19 +105,28 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         if (handle == null) {
             return null;
         }
-        this.info = RefactoringUtil.getCompilationInfo(handle, refactoring);
-        this.typeUtilities = ELTypeUtilities.create(info.getFileObject(), refactoring.getContext().lookup(ClasspathInfo.class));
-        Element element = resolveElement(handle);
-        if (element == null) {
-            LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
-            return null;
-        }
-        if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
-                && element instanceof ExecutableElement) {
-            return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
-        }
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
-            return handleClass(refactoringElementsBag, handle, element);
+        CompilationInfo info = RefactoringUtil.getCompilationInfo(handle, refactoring);
+        ELTypeUtilities typeUtilities = ELTypeUtilities.create(info.getFileObject(), refactoring.getContext().lookup(ClasspathInfo.class));
+        
+        this.refactoringContext = new RefactoringSessionContext(info, typeUtilities);
+        try {
+            Element element = resolveElement(handle);
+            if (element == null) {
+                LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
+                return null;
+            }
+            if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
+                    && element instanceof ExecutableElement) {
+                return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
+            }
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
+                return handleClass(refactoringElementsBag, handle, element);
+            }
+        } finally {
+            //do not hold the instancies wrapped in the context object since
+            //they can be pretty big and the livecycle of this refactoring plugin
+            //can be pretty long.
+            refactoringContext.dispose(); 
         }
         return null;
     }
@@ -215,7 +224,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     TypeElement fmbType = null;
                     if (beanClass != null) {
                         //found corresponding bean class
-                        fmbType = info.getElements().getTypeElement(beanClass);                        
+                        fmbType = refactoringContext.getInfo().getElements().getTypeElement(beanClass);                        
                     } else {
                         //no bean found, try to resolve as a variable
                         VariableInfo var = findVariable(astIdent, variables);
@@ -228,7 +237,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                             } else {
                                 //unresolved, we need to resolve the corresponding expression
                                 //to get the type
-                                fmbType = (TypeElement)typeUtilities.getReferredType(var, context);
+                                fmbType = (TypeElement)refactoringContext.getUtilities().getReferredType(var, context);
                             }
                         }
                     } 
@@ -247,7 +256,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         if (enclosing == null) {
                             break;
                         }
-                        if (isSameTypeOrSupertype(targetType, enclosing) && typeUtilities.isSameMethod(child, targetMethod)) {
+                        if (isSameTypeOrSupertype(targetType, enclosing) && refactoringContext.getUtilities().isSameMethod(child, targetMethod)) {
                             TypeMirror matching = getTypeForProperty(child, enclosing);
                             if (matching != null) {
                                 result.add(child);
@@ -265,7 +274,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     
     private boolean isSameTypeOrSupertype(TypeMirror tm1, TypeMirror tm2) {
         DeclaredType declaredTm2 = (DeclaredType)tm2;
-        List<Element> all = typeUtilities.getSuperTypesFor(declaredTm2.asElement());
+        List<Element> all = refactoringContext.getUtilities().getSuperTypesFor(declaredTm2.asElement());
         for(Element e : all) {
             TypeMirror tm = e.asType();
             if(isSameType(tm1, tm)) {
@@ -277,7 +286,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     
     //marekf: a bad fix for an issue I do not know the right solution for
     private boolean isSameType(TypeMirror tm1, TypeMirror tm2) {
-        if(info.getTypes().isSameType(tm1, tm2)) {
+        if(refactoringContext.getInfo().getTypes().isSameType(tm1, tm2)) {
             return true;
         } else {
             //XXX this must be resolved properly ??? I cannot spot any difference 
@@ -326,8 +335,8 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      */
     private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
         String name = property.getImage();
-        Element el = info.getTypes().asElement(enclosing);
-        for(Element element : typeUtilities.getSuperTypesFor(el)) {
+        Element el = refactoringContext.getInfo().getTypes().asElement(enclosing);
+        for(Element element : refactoringContext.getUtilities().getSuperTypesFor(el)) {
             List<? extends Element> enclosedElements = element.getEnclosedElements();
             for (Element each : ElementFilter.methodsIn(enclosedElements)) {
                 // we're only interested in public methods
@@ -338,11 +347,11 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                 ExecutableElement methodElem = (ExecutableElement) each;
                 String methodName = methodElem.getSimpleName().toString();
 
-                if (typeUtilities.isSameMethod(property, methodElem)) {
-                    return typeUtilities.getReturnType(methodElem);
+                if (refactoringContext.getUtilities().isSameMethod(property, methodElem)) {
+                    return refactoringContext.getUtilities().getReturnType(methodElem);
 
                 } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                    return typeUtilities.getReturnType(methodElem);
+                    return refactoringContext.getUtilities().getReturnType(methodElem);
                 }
             }
         }
@@ -370,4 +379,41 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return result;
 
     }
+    
+    protected class RefactoringSessionContext {
+        
+        private CompilationInfo info;
+        private ELTypeUtilities utilities;
+        private boolean active;
+
+        public RefactoringSessionContext(CompilationInfo info, ELTypeUtilities utilities) {
+            this.info = info;
+            this.utilities = utilities;
+            this.active = true;
+        }
+
+        public CompilationInfo getInfo() {
+            checkActive();
+            return info;
+        }
+
+        public ELTypeUtilities getUtilities() {
+            checkActive();
+            return utilities;
+        }
+        
+        protected void dispose() {
+            info = null;
+            utilities = null;
+            active = false;
+        }
+        
+        private void checkActive() {
+            if(!active) {
+                throw new IllegalStateException("already disposed");//NOI18N
+            }
+        }
+        
+    }
+    
 }
