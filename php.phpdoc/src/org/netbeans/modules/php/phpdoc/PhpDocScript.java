@@ -45,7 +45,7 @@ package org.netbeans.modules.php.phpdoc;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -161,7 +161,7 @@ public class PhpDocScript extends PhpProgram {
         
         @Override
         public LineConvertor newLineConvertor() {
-            Pattern pattern = Pattern.compile(".*(" + docTarget + "/errors\\.html).*"); // NOI18N
+            Pattern pattern = Pattern.compile("(.*)(" + docTarget + "/errors\\.html)(.*)"); // NOI18N
             return new ErrorFileLineConvertor(pattern);
         }
         
@@ -180,8 +180,16 @@ public class PhpDocScript extends PhpProgram {
             Matcher matcher = pattern.matcher(line);
             if (matcher.matches()) {
                 try {
-                    final URL url = new URL("file:///" + matcher.group(1)); // NOI18N
-                    return Collections.<ConvertedLine>singletonList(ConvertedLine.forText(line, new ErrorFileOutputListener(url)));
+                    URL url = new URL("file://" + matcher.group(2)); // NOI18N
+                    List<ConvertedLine> lines = new LinkedList<ConvertedLine>();
+                    if (!matcher.group(1).trim().isEmpty()) {
+                        lines.add(ConvertedLine.forText(matcher.group(1), null));
+                    }
+                    lines.add(ConvertedLine.forText(matcher.group(2), new ErrorFileOutputListener(url)));
+                    if (!matcher.group(3).trim().isEmpty()) {
+                        lines.add(ConvertedLine.forText(matcher.group(3), null));
+                    }
+                    return lines;
                 } catch (MalformedURLException ex) {
                     LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                 }
