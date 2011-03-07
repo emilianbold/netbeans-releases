@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -105,7 +104,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
@@ -150,7 +148,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
-    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 10);//NOI18N
     
     private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
@@ -690,15 +687,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     @Override
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
-        RequestProcessor.Task task = RP.post(saveRunnable);
         if (SwingUtilities.isEventDispatchThread() && WindowManager.getDefault().getMainWindow().isVisible()) {
             ModalMessageDlg.runLongTask(
                     WindowManager.getDefault().getMainWindow(),
-                    task, null, null,
+                    saveRunnable, null, null,
                     getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
                     getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
         } else {
-            task.waitFinished();
+            saveRunnable.run();
         }
         return saveRunnable.ret;
     }

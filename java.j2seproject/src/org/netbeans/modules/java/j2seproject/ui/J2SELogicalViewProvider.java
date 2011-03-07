@@ -51,8 +51,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.UIManager;
@@ -65,6 +68,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -97,6 +101,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -115,6 +120,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private final ReferenceHelper resolver;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final PropertyChangeListener pcl;
+    private Map<URL,Object[]> activeLibManLocs;
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
@@ -127,14 +133,58 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         assert resolver != null;
         pcl = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
+                if (LibraryManager.PROP_OPEN_LIBRARY_MANAGERS.equals(evt.getPropertyName())) {
+                    addLibraryManagerListener();
+                }
                 testBroken();
             }
         };
+
         evaluator.addPropertyChangeListener(pcl);
-        // When evaluator fires changes that platform properties were
-        // removed the platform still exists in JavaPlatformManager.
-        // That's why I have to listen here also on JPM:
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
+        LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
+        addLibraryManagerListener();
+    }
+
+    private void addLibraryManagerListener() {
+        final Map<URL,Object[]> oldLMs;
+        final boolean attachToDefault;
+        synchronized (this) {
+            attachToDefault = activeLibManLocs == null;
+            if (attachToDefault) {
+                activeLibManLocs = new HashMap<URL,Object[]>();
+            }
+            oldLMs = new HashMap<URL,Object[]>(activeLibManLocs);
+        }
+        if (attachToDefault) {
+            final LibraryManager manager = LibraryManager.getDefault();
+            manager.addPropertyChangeListener(WeakListeners.propertyChange(pcl, manager));
+        }
+        final Collection<? extends LibraryManager> managers = LibraryManager.getOpenManagers();
+        final Map<URL,LibraryManager> managerByLocation = new HashMap<URL, LibraryManager>();
+        for (LibraryManager manager : managers) {
+            final URL url = manager.getLocation();
+            if (url != null) {
+                managerByLocation.put(url, manager);
+            }
+        }
+        final HashMap<URL,Object[]> toRemove = new HashMap<URL,Object[]>(oldLMs);
+        toRemove.keySet().removeAll(managerByLocation.keySet());
+        for (Object[] pair : toRemove.values()) {
+            ((LibraryManager)pair[0]).removePropertyChangeListener((PropertyChangeListener)pair[1]);
+        }
+        managerByLocation.keySet().removeAll(oldLMs.keySet());
+        final HashMap<URL,Object[]> toAdd = new HashMap<URL,Object[]>();
+        for (Map.Entry<URL,LibraryManager> e : managerByLocation.entrySet()) {
+            final LibraryManager manager = e.getValue();
+            final PropertyChangeListener listener = WeakListeners.propertyChange(pcl, manager);
+            manager.addPropertyChangeListener(listener);
+            toAdd.put(e.getKey(), new Object[] {manager, listener});
+        }
+        synchronized (this) {
+            activeLibManLocs.keySet().removeAll(toRemove.keySet());
+            activeLibManLocs.putAll(toAdd);
+        }
     }
     
     public Node createLogicalView() {
@@ -212,9 +262,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
      * about project's broken references and advises him to use BrokenLinksAction to correct it.
      */
     public @Override void testBroken() {
-        task.schedule(100);
+        task.schedule(500);
     }
-    
     
     // Private innerclasses ----------------------------------------------------
     
@@ -261,7 +310,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
          return !J2SEProjectUtil.isCompileOnSaveEnabled(project) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
     
-    private String[] getBreakableProperties() {
+    public String[] getBreakableProperties() {
         SourceRoots roots = this.project.getSourceRoots();
         String[] srcRootProps = roots.getRootProperties();
         roots = this.project.getTestSourceRoots();
@@ -271,6 +320,10 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
         System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
         return result;
+    }
+
+    public String[] getPlatformProperties() {
+        return new String[] {J2SEProjectProperties.JAVA_PLATFORM};
     }
     
     private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif", true);
@@ -456,10 +509,31 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         public void actionPerformed(ActionEvent e) {
             try {
                 helper.requestUpdate();
-                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[] {J2SEProjectProperties.JAVA_PLATFORM});
+                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), getPlatformProperties());
                 testBroken();
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
+            }
+        }
+
+    }
+
+    private static class OpenManagersWeakListener extends WeakReference<PropertyChangeListener> implements Runnable, PropertyChangeListener {
+
+        public OpenManagersWeakListener(final PropertyChangeListener listener) {
+            super(listener, Utilities.activeReferenceQueue());
+        }
+
+        @Override
+        public void run() {
+            LibraryManager.removeOpenManagersPropertyChangeListener(this);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final PropertyChangeListener listener = get();
+            if (listener != null) {
+                listener.propertyChange(evt);
             }
         }
 
