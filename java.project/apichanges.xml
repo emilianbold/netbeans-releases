@@ -109,6 +109,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="BrokenReferencesSupport-showAlert">
+            <api name="general"/>
+            <summary>Added <code>showAlert</code> method into the<code>BrokenReferencesSupport</code></summary>
+            <version major="1" minor="37"/>
+            <date day="7" month="3" year="2011"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added showAlert method having project context allowing the broken references alert to do
+                    the broken references resolution.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <issue number="195249"/>
+        </change>
         <change id="LibraryDefiner">
             <api name="general"/>
             <summary>Added <code>LibraryDefiner</code></summary>
