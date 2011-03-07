@@ -64,16 +64,16 @@ import org.openide.util.Exceptions;
 class NBRepositoryModelResolver
         implements ModelResolver {
 
-    private RepositorySystem repositorySystem;
+    private final MavenEmbedder embedder;
     private List<ArtifactRepository> remoteRepositories = new ArrayList<ArtifactRepository>();
 
 
-    public NBRepositoryModelResolver(RepositorySystem repositorySystem) {
-        this.repositorySystem = repositorySystem;
+    NBRepositoryModelResolver(MavenEmbedder embedder) {
+        this.embedder = embedder;
     }
 
     private NBRepositoryModelResolver(NBRepositoryModelResolver original) {
-        this.repositorySystem = original.repositorySystem;
+        this(original.embedder);
         this.remoteRepositories = new ArrayList<ArtifactRepository>(original.remoteRepositories);
     }
 
@@ -85,6 +85,7 @@ class NBRepositoryModelResolver
     @Override
     public void addRepository(Repository repository)
             throws InvalidRepositoryException {
+        RepositorySystem repositorySystem = embedder.lookupComponent(RepositorySystem.class);
         try {
             ArtifactRepository repo = repositorySystem.buildArtifactRepository(repository);
             remoteRepositories.add(repo);
@@ -97,12 +98,9 @@ class NBRepositoryModelResolver
     @Override
     public ModelSource resolveModel(String groupId, String artifactId, String version)
             throws UnresolvableModelException {
-        
-
-        Artifact artifactParent = repositorySystem.createProjectArtifact(groupId, artifactId, version);
-        MavenEmbedder onlineEmbedder = EmbedderFactory.getOnlineEmbedder();
+        Artifact artifactParent = embedder.lookupComponent(RepositorySystem.class).createProjectArtifact(groupId, artifactId, version);
         try {
-            onlineEmbedder.resolve(artifactParent, remoteRepositories, onlineEmbedder.getLocalRepository());
+            embedder.resolve(artifactParent, remoteRepositories, embedder.getLocalRepository());
         } catch (ArtifactResolutionException ex) {
             Exceptions.printStackTrace(ex);
              throw new UnresolvableModelException(ex.getMessage(),  groupId , artifactId , version );
