@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.symfony.ui.actions;
 
+import java.util.List;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
@@ -68,9 +69,13 @@ public final class SymfonyGoToViewAction extends GoToViewAction {
         if (phpElement == null) {
             return false;
         }
-        FileObject view = SymfonyUtils.getView(fo, phpElement);
-        if (view != null) {
-            UiUtils.open(view, DEFAULT_OFFSET);
+        final List<FileObject> views = SymfonyUtils.getViews(fo, phpElement);
+        if (views.size() == 1) {
+            UiUtils.open(views.get(0), DEFAULT_OFFSET);
+            return true;
+        } else if (views.size() > 1) {
+            SymfonyGoToViewActionPopup popup = new SymfonyGoToViewActionPopup(views, offset);
+            popup.show();
             return true;
         }
         return false;
