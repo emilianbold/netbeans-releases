@@ -180,7 +180,11 @@ public class SvnClientFactory {
         if(exception != null) {
             throw exception;
         }
-        return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
+        try {
+            return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
+        } catch (Error err) {
+            throw new SVNClientException(err);
+        }
     }
 
     /**
