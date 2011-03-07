@@ -226,14 +226,14 @@ public class BrokenReferencesSupport {
 
 
     @Messages({
-        "CTL_Broken_References_Resolve=Resolve",
+        "CTL_Broken_References_Resolve=Resolve Problems...",
         "AD_Broken_References_Resolve=N/A",
         "CTL_Broken_References_Close=Close",
         "AD_Broken_References_Close=N/A",
         "MSG_Broken_References_Title=Open Project",
         "LBL_Broken_References_Resolve_Panel_Close=Close",
         "AD_Broken_References_Resolve_Panel_Close=N/A",
-        "LBL_Broken_References_Resolve_Panel_Title=Broken References"
+        "LBL_Broken_References_Resolve_Panel_Title=Resolve Reference Problems"
     })
     private static synchronized void showAlertImpl(@NullAllowed final BrokenReferencesModel.BrokenProject broken) {        
         if (!JavaProjectSettings.isShowAgainBrokenRefAlert()) {
