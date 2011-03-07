@@ -42,14 +42,18 @@
 
 package org.netbeans.modules.cnd.makeproject.actions;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -82,6 +86,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -163,6 +168,96 @@ public class ShadowProjectSynchronizer {
             progress.finish();
         }
     }
+    
+    private FileObject[] filterChildren(FileObject[] children) {
+        for (int i = 0; i < children.length; i++) {
+            if (TMP_NBPROJECT_SUBFOLDER_NAME.equals(children[i].getName())) {
+                FileObject[] result = new FileObject[children.length - 1];
+                if (i == 0) {
+                    System.arraycopy(children, 1, result, 0, children.length-1);
+                } else {
+                    System.arraycopy(children, 0, result, 0, i);
+                    System.arraycopy(children, i+1, result, i, children.length-i-1);
+                }
+                return result;
+            }            
+        }
+        return children;
+    }
+    
+    private boolean differ(FileObject fo1, FileObject fo2) {
+        Parameters.notNull("file object 1", fo1);
+        Parameters.notNull("file object 2", fo2);
+        if (fo1.isValid() != fo2.isValid()) {
+            LOGGER.log(Level.FINEST, "PrjDiff: validity differ for {0} and {1}", new Object[] {fo1, fo2});
+            return true;
+        }
+        if (fo1.isFolder()) {
+            if (!fo2.isFolder()) {
+                LOGGER.log(Level.FINEST, "PrjDiff: {0} is not a folder", fo2);
+                return true;
+            }
+            FileObject[] children1 = filterChildren(fo1.getChildren());
+            FileObject[] children2 = filterChildren(fo2.getChildren());
+            if (children1.length != children2.length) {
+                LOGGER.log(Level.FINEST, "PrjDiff: child count differ for {0} and {1}: {2} vs {3}", new Object[]{fo1, fo2, children1.length, children2.length});
+                return true;
+            }
+            Comparator<FileObject> comparator = new Comparator<FileObject>() {
+                @Override
+                public int compare(FileObject o1, FileObject o2) {
+                    return o1.getNameExt().compareTo(o2.getNameExt());
+                }                
+            };
+            Arrays.sort(children1, comparator);
+            Arrays.sort(children2, comparator);
+            for (int i = 0; i < children1.length; i++) {
+                if (differ(children1[i], children2[i])) {                    
+                    return true;
+                }
+            }
+        } else {
+            if (fo2.isFolder()) {
+                LOGGER.log(Level.FINEST, "PrjDiff: {0} is folder\n", fo2);
+                return true;
+            }
+            long size1 = fo1.getSize();
+            long size2 = fo2.getSize();
+            if (size1 != size2) {
+                LOGGER.log(Level.FINEST, "PrjDiff: size differ for {0} and {1}: {2} vs {3}", new Object[]{fo1, fo2, size1, size2});
+                return true;
+            }
+            BufferedReader reader1 = null, reader2 = null;
+            try {
+                reader1 = new BufferedReader(new InputStreamReader(fo1.getInputStream()));
+                reader2 = new BufferedReader(new InputStreamReader(fo2.getInputStream()));
+                int c1;
+                while ((c1 = reader1.read()) >= 0) {
+                    int c2 = reader2.read();
+                    if (c1 != c2) {
+                        LOGGER.log(Level.FINEST, "PrjDiff: {0} and {1} differ in content\n", new Object[]{fo1, fo2});
+                        return true;
+                    }
+                }
+            } catch (IOException e) {
+                // does not make sense to report
+                LOGGER.log(Level.FINEST, "PrjDiff: exception: {0} when reading {1} or {2}\n", new Object[]{e.getMessage(), fo1, fo2});
+                return true;
+            } finally {
+                try {
+                    if (reader1 != null) {
+                        reader1.close();
+                    }
+                    if (reader2 != null) {
+                        reader1.close();
+                    }
+                } catch (IOException e) {
+                    // does not make sense to report
+                }
+            }
+        }
+        return false;
+    }
 
     public void updateRemoteProjectImpl(ProgressHandle progress) throws IOException, SAXException, InterruptedException {
         FileObject localNbprojectFO = getFileObject(localProject, "nbproject"); // NOI18N
@@ -170,7 +265,7 @@ public class ShadowProjectSynchronizer {
         this.remoteProject = getFileObject(env, remoteProjectPath);
         FileObject remoteNbprojectFO = getFileObject(remoteProject, "nbproject"); // NOI18N
 
-        progress.switchToDeterminate(6);
+        progress.switchToDeterminate(7);
         
         // Schedule remote temporary directory creation
         AtomicReference<FileObject> remoteTmpFoRef = new AtomicReference<FileObject>();
@@ -192,6 +287,11 @@ public class ShadowProjectSynchronizer {
             updateRemoteConfiguration(tmpFO, remoteProject);
             updateRemotePrivateConfiguration(tmpFO);
             progress.progress(2);
+            
+            if (!differ(tmpNbProjFO, remoteNbprojectFO)) {
+                LOGGER.fine("PrjDiff: Project has not change - no synchronization to remote host is needed");
+                return;
+            }
             
             // wait for remote temporary directory creation, make sure it's ok
             progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_remote_temp"));
@@ -226,6 +326,10 @@ public class ShadowProjectSynchronizer {
             progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_cleanup"));
             Future<Integer> rmTask = CommonTasksSupport.rmDir(
                     env, remoteNbprojectFO.getPath() + '/' + TMP_NBPROJECT_SUBFOLDER_PATH, true, new PrintWriter(System.err));
+
+            remoteNbprojectFO.refresh();
+            progress.progress(6);
+
             // it's better to wait, otherwise subsequent save might clash with this cleanup
             try {
                 int rc = rmTask.get().intValue();
@@ -239,7 +343,7 @@ public class ShadowProjectSynchronizer {
             }
         } finally {
             remove(tmpFO);
-            progress.progress(6);
+            progress.progress(7);
         }
     }
     
