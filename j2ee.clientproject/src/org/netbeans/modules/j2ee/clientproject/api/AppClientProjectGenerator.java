@@ -423,10 +423,14 @@ public class AppClientProjectGenerator {
             return;
         }
         if (!createData.skipTests() && rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
+            if (LibraryManager.getDefault().getLibrary("junit") != null) {
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
+            }
         }
         if (!createData.skipTests() && rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+            if (LibraryManager.getDefault().getLibrary("junit_4") != null) {
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+            }
         }
         Profile j2eeProfile = createData.getJavaEEProfile();
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
