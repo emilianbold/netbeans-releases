@@ -52,7 +52,7 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
     private final PHPDocNode variable;
 
     public PHPDocVarTypeTag(int start, int end, PHPDocTag.Type kind, String value,
-            List<PHPDocNode> types, PHPDocNode variable) {
+            List<PHPDocTypeNode> types, PHPDocNode variable) {
         super(start, end, kind, value, types);
         this.variable = variable;
     }
