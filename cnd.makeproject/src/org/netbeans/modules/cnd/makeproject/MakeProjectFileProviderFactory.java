@@ -273,9 +273,12 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
                             if (!packageSearch.isEmpty() && (isLocalHost || runPackagesSearchInRemote)) {
                                 for (UserOptionsProvider userOptionsProvider : packageSearch) {
-                                    res = userOptionsProvider.getPackageFileSearch((Project)p).searchFile(project, fileName);
-                                    if(res != null) {
-                                        break;
+                                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch((Project)p);
+                                    if (search != null) {
+                                        res = search.searchFile(project, fileName);
+                                        if(res != null) {
+                                            break;
+                                        }
                                     }
                                 }
                             }
