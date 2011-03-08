@@ -60,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -73,6 +74,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     private FileSystem rootFileSystem = null;
     private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
     private final boolean isWindows = Utilities.isWindows();
+    private static RequestProcessor RP = new RequestProcessor(LocalFileSystemProvider.class.getSimpleName());
 
     @Override
     public String normalizeAbsolutePath(String absPath, ExecutionEnvironment env) {
@@ -251,4 +253,28 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
     }
+
+    public void scheduleRefresh(FileObject fileObject) {
+        final File file = FileUtil.toFile(fileObject);
+        scheduleRefresh(file);
+    }
+
+    public void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
+        RemoteLogger.assertTrue(env.isLocal());
+        File[] files = new File[paths.size()];
+        int pos = 0;
+        for (String path : paths) {
+            files[pos++] = new File(path);
+        }
+        scheduleRefresh(files);
+    }
+    
+    private void scheduleRefresh(final File... files) {
+        RP.post(new Runnable() {
+            public void run() {
+                FileUtil.refreshFor(files);
+            }
+        });
+    }
+    
 }

@@ -75,4 +75,6 @@ public interface FileSystemProviderImplementation {
     FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;
     String getCanonicalPath(FileObject fileObject) throws IOException;
     String getCanonicalPath(FileSystem fs, String absPath) throws IOException;
+    void scheduleRefresh(FileObject fileObject);
+    void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths);
 }
