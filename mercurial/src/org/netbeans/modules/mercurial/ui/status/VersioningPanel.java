@@ -122,6 +122,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
         jPanel2.setLayout(new ToolbarLayout());
+        
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color); 
+            jPanel2.setBackground(color); 
+        }        
     }
     
     
