@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -57,28 +59,51 @@ public class OffsetRegionTest extends NbTestCase {
     }
     
     public void testUnionAndIntersection() throws Exception {
-        OffsetRegion empty = OffsetRegion.empty();
-        assertTrue(empty.isEmpty());
-        OffsetRegion empty2 = OffsetRegion.create(5, 5);
-        assertTrue(empty2.isEmpty());
+        Document doc = new PlainDocument();
+        doc.insertString(0, "abcdefghij", null);
+        OffsetRegion empty00 = OffsetRegion.create(doc, 0, 0);
+        assertTrue(empty00.isEmpty());
+        OffsetRegion empty55 = OffsetRegion.create(doc, 5, 5);
+        assertTrue(empty55.isEmpty());
+        OffsetRegion empty99 = OffsetRegion.create(doc, 9, 9);
+        assertTrue(empty99.isEmpty());
         try {
-            OffsetRegion i = OffsetRegion.create(5, 1);
+            OffsetRegion i = OffsetRegion.create(doc, 5, 1);
             fail("Creation succeeded"); // NOI18N
         } catch (IllegalArgumentException ex) {
             // Expected
         }
-        OffsetRegion r1 = OffsetRegion.create(5, 9);
-        OffsetRegion r2 = OffsetRegion.create(1, 5);
-        OffsetRegion r3 = OffsetRegion.create(3, 7);
-        OffsetRegion r4 = OffsetRegion.create(5, 6);
-        OffsetRegion r = r1.union(r2);
+        OffsetRegion r1 = OffsetRegion.create(doc, 5, 9);
+        OffsetRegion r2 = OffsetRegion.create(doc, 1, 5);
+        OffsetRegion r21 = OffsetRegion.create(doc, 1, 9);
+        OffsetRegion r3 = OffsetRegion.create(doc, 3, 7);
+        OffsetRegion r4 = OffsetRegion.create(doc, 5, 6);
+        OffsetRegion r = r1.union(r2, false);
         assertRegion(r, 1, 9);
-        assertSame(r3, r3.union(r3));
-        assertSame(r3, r3.union(r4));
-        assertSame(r3, r3.union(r4));
-        assertSame(empty, r1.intersection(1, 4));
-        assertSame(empty, r1.intersection(10, 12));
-        assertSame(r1, r1.intersection(5, 9));
+        assertEquals(r21, r1.union(r2, false));
+        assertEquals(r21, r1.union(doc, 1, 5, false));
+        assertEquals(r21, r2.union(r1, false));
+        assertEquals(r21, r2.union(doc, 5, 9, false));
+        assertSame(r3, r3.union(r3, false));
+        assertSame(r3, r3.union(doc, 3, 7, false));
+        assertSame(r3, r3.union(r4, false));
+        assertSame(r3, r3.union(doc, 5, 6, false));
+        // Union with empty
+        assertSame(r2, r2.union(empty99, true));
+        assertSame(r2, r2.union(doc, 9, 9, true));
+        assertSame(r2, empty99.union(r2, true));
+        assertEquals(r21, r2.union(empty99, false));
+        assertEquals(r21, r2.union(doc, 9, 9, false));
+        assertEquals(r21, empty99.union(r2, false));
+                
+        assertSame(null, r1.intersection(doc, 1, 4, true));
+        assertEquals(empty55, r1.intersection(doc, 1, 4, false)); // implementation-dependent
+        assertEquals(empty55, r1.intersection(doc, 5, 5, true)); // implementation-dependent
+        assertEquals(empty55, r1.intersection(doc, 5, 5, false)); // implementation-dependent
+        assertSame(null, r1.intersection(doc, 10, 12, true));
+        assertEquals(empty99, r1.intersection(doc, 10, 12, false));
+        assertSame(r1, r1.intersection(doc, 5, 9, true));
+        assertSame(r1, r1.intersection(r1, true));
     }
     
     private static void assertRegion(OffsetRegion r, int startOffset, int endOffset) {
