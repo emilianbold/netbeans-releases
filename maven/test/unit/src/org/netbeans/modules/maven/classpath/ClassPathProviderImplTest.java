@@ -43,14 +43,21 @@
 package org.netbeans.modules.maven.classpath;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
 public class ClassPathProviderImplTest extends NbTestCase {
@@ -120,6 +127,17 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
 
     public void testEndorsedClassPath() throws Exception {
+        MockLookup.setInstances(new RepositoryIndexerImplementation() { // need to suppress RepositoryQueries.findBySHA1 for test
+            public @Override String getType() {
+                return RepositoryPreferences.TYPE_NEXUS;
+            }
+            public @Override Lookup getCapabilityLookup() {
+                return Lookup.EMPTY;
+            }
+            public @Override void indexRepo(RepositoryInfo repo) {}
+            public @Override void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {}
+            public @Override void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact) {}
+        });
         TestFileUtils.writeFile(d,
                 "pom.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
