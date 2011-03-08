@@ -268,7 +268,7 @@ public class BrokenReferencesSupport {
                         });
                         resolveOption.setVisible(!context.isEmpty());
                         if (DialogDisplayer.getDefault().notify(dd) == resolveOption) {
-                            final BrokenReferencesModel model = new BrokenReferencesModel(context);
+                            final BrokenReferencesModel model = new BrokenReferencesModel(context, true);
                             final BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
                             JButton close = new JButton (Bundle.LBL_Broken_References_Resolve_Panel_Close());
                             close.getAccessibleContext ().setAccessibleDescription (Bundle.AD_Broken_References_Resolve_Panel_Close());
