@@ -758,6 +758,7 @@ made subject to such option by the copyright holder.
                         <fileset dir="${ant.home}" includes="patches/*.jar"/>
                         <pathelement location="${ant.home}/lib/ant.jar"/>
                         <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+                        <pathelement location="${ant.home}/lib/ant-junit4.jar"/>
                     </classpath>
                     <jvmarg line="${test.bootclasspath.prepend.args}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>

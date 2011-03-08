@@ -43,13 +43,21 @@
 package org.netbeans.modules.maven.classpath;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
 public class ClassPathProviderImplTest extends NbTestCase {
@@ -58,9 +66,13 @@ public class ClassPathProviderImplTest extends NbTestCase {
         super(n);
     }
 
-    public void testClassPath() throws Exception {
+    private FileObject d;
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
-        FileObject d = FileUtil.toFileObject(getWorkDir());
+        d = FileUtil.toFileObject(getWorkDir());
+    }
+
+    public void testClassPath() throws Exception {
         TestFileUtils.writeFile(d,
                 "pom.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
@@ -72,14 +84,60 @@ public class ClassPathProviderImplTest extends NbTestCase {
                 "<name>Test</name>" +
                 "</project>");
         FileObject src = FileUtil.createFolder(d, "src/main/java");
-        ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
-        assertNotNull(cp);
-        assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
+        assertRoots(ClassPath.getClassPath(src, ClassPath.COMPILE));
+    }
+
+    public void testSourcePathWithResources() throws Exception {
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject rsrc = FileUtil.createFolder(d, "src/main/resources");
+        FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
+        FileObject trsrc = FileUtil.createFolder(d, "src/test/resources");
+        assertRoots(ClassPath.getClassPath(src, ClassPath.SOURCE), src, rsrc);
+        assertRoots(ClassPath.getClassPath(rsrc, ClassPath.SOURCE), src, rsrc);
+        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, trsrc);
+        assertRoots(ClassPath.getClassPath(trsrc, ClassPath.SOURCE), tsrc, trsrc);
+    }
+
+    public void testITSourcePath() throws Exception {
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "<build>" +
+                "<testSourceDirectory>src/it/java</testSourceDirectory>" +
+                "</build>" +
+                "</project>");
+        FileObject itsrc = FileUtil.createFolder(d, "src/it/java");
+        assertRoots(ClassPath.getClassPath(itsrc, ClassPath.SOURCE), itsrc);
     }
 
     public void testEndorsedClassPath() throws Exception {
-        clearWorkDir();
-        FileObject d = FileUtil.toFileObject(getWorkDir());
+        MockLookup.setInstances(new RepositoryIndexerImplementation() { // need to suppress RepositoryQueries.findBySHA1 for test
+            public @Override String getType() {
+                return RepositoryPreferences.TYPE_NEXUS;
+            }
+            public @Override Lookup getCapabilityLookup() {
+                return Lookup.EMPTY;
+            }
+            public @Override void indexRepo(RepositoryInfo repo) {}
+            public @Override void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {}
+            public @Override void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact) {}
+        });
         TestFileUtils.writeFile(d,
                 "pom.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
@@ -95,13 +153,30 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertNotNull(cp);
         MockPropertyChangeListener pcl = new MockPropertyChangeListener();
         cp.addPropertyChangeListener(pcl);
-        assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
+        assertRoots(cp);
+        ClassPath bcp = ClassPath.getClassPath(src, ClassPath.BOOT);
+        assertNotNull(bcp);
+        MockPropertyChangeListener pcl2 = new MockPropertyChangeListener();
+        bcp.addPropertyChangeListener(pcl2);
+        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
         FileObject jar = TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertEquals(Collections.singletonList(FileUtil.getArchiveRoot(jar)), Arrays.asList(cp.getRoots()));
+        assertRoots(cp, jar);
+        pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertTrue(bcp.toString(), bcp.toString().contains("override.jar"));
         d.getFileObject("target").delete();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
+        assertRoots(cp);
+        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
+    }
+
+    private static void assertRoots(ClassPath cp, FileObject... files) {
+        assertNotNull(cp);
+        Set<FileObject> roots = new LinkedHashSet<FileObject>();
+        for (FileObject file : files) {
+            roots.add(FileUtil.isArchiveFile(file) ? FileUtil.getArchiveRoot(file) : file);
+        }
+        assertEquals(roots, new LinkedHashSet<FileObject>(Arrays.asList(cp.getRoots())));
     }
 
 }

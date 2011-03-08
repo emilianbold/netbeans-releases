@@ -61,6 +61,10 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -105,6 +109,15 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                 File[] jars = endorsed.listFiles();
                 if (jars != null) {
                     for (File jar : jars) {
+                        if (jar.isFile()) {
+                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar, RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]))) {
+                                File jar2 = RepositoryUtil.createArtifact(analogue).getFile();
+                                if (jar2.isFile()) {
+                                    jar = jar2;
+                                    break;
+                                }
+                            }
+                        }
                         result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(jar)));
                     }
                 }

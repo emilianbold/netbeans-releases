@@ -992,7 +992,8 @@ public final class WebProject implements Project {
             artifactSupport.enableArtifactSynchronization(true);
 
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(WebProject.this);
