@@ -43,6 +43,8 @@
 package org.netbeans.modules.junit;
 
 import java.awt.event.ActionEvent;
+import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.options.OptionsDisplayer;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
@@ -102,7 +104,8 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
         "nodownload_header=\"junit\" library has not been downloaded",
         "nodownload_message=You can try to download \"junit\" library again, or \n\n"
             + "if you have the missing \"junit\" library, you can resolve the reference "
-            + "problem manually using Library Manager."
+            + "problem manually using Library Manager.",
+        "active_handle=Activating JUnit"
     })
     
     public @Override Callable<Library> missingLibrary(final String name) {
@@ -190,6 +193,35 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
             unit = findJUnitLib();
             if (unit == null) {
                 LOG.fine("could not find junitlib on any update site");
+                return showNoDownloadDialog(name);
+            }
+        }
+        // check if JUnit installed
+        if (unit.getInstalled() != null) {
+            LOG.fine(unit.getInstalled() + " already installed. Is active? " + unit.getInstalled().isEnabled());
+            if (unit.getInstalled().isEnabled()) {
+                throw new Exception(unit.getInstalled() + " already installed and active");
+            } else {
+                // activate it
+                OperationContainer<OperationSupport> oc = OperationContainer.createForEnable();
+                if (!oc.canBeAdded(unit, unit.getInstalled())) {
+                    throw new Exception("could not add " + unit.getInstalled() + " for activation");
+                }
+                for (UpdateElement req : oc.add(unit.getInstalled()).getRequiredElements()) {
+                    oc.add(req);
+                }
+                ProgressHandle activeHandle = ProgressHandleFactory.createHandle (active_handle());
+                Restarter restarter = oc.getSupport().doOperation(activeHandle);
+                assert restarter == null : "No Restater need to make " + unit.getInstalled() + " active";
+                // XXX new library & build.properties apparently do not show up immediately... how to listen properly?
+                for (int i = 0; i < 10; i++) {
+                    Library lib = LibraryManager.getDefault().getLibrary(name);
+                    if (lib != null) {
+                        return lib;
+                    }
+                    Thread.sleep(1000);
+                }
+                LOG.info("junitlib failed to make active properly");
                 return showNoDownloadDialog(name);
             }
         }
