@@ -55,7 +55,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -64,7 +63,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -175,15 +173,8 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         } else {
             assert optionsCategoryButton.isSelected();
             File icon = new File(iconField.getText());
-            FileObject iconFO = icon.isFile() ? FileUtil.toFileObject(FileUtil.normalizeFile(icon)) : null;
-            // XXX would be cleaner to use ret value from BasicDataModel.addCreateIconOperation for this:
-            String iconRel = iconFO != null ? FileUtil.getRelativePath(Util.getResourceDirectory(data.getProject()), iconFO) : null;
-            if (iconRel == null) {
-                iconRel = data.getPackageName().replace('.', '/') + "/" + icon.getName(); //NOI18N
-            }
             retCode = data.setDataForPrimaryPanel(
                     categoryNameField.getText(),
-                    iconRel,
                     icon,
                     allowSecondaryPanelsCheckBox.isSelected(),
                     primaryKwField.getText());
