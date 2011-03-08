@@ -370,7 +370,7 @@ AtomicLockListener, FoldHierarchyListener {
                     try {
                         DocumentView docView = DocumentView.get(c);
                         if (docView != null) {
-                            docView.syncViewsRebuild(); // Make sure pending views changes are resolved
+                            // docView.syncViewsRebuild(); // Make sure pending views changes are resolved
                         }
                         newCaretBounds = c.getUI().modelToView(
                                 c, offset, Position.Bias.Forward);

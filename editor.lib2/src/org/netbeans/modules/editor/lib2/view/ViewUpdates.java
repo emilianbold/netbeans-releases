@@ -72,7 +72,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     /**
      * Delay between view factory reports a change and the actual view(s) rebuild.
      */
-    private static final int REBUILD_DELAY = 200;
+    private static final int REBUILD_DELAY = 0;
     
     /**
      * Maximum number of characters where the view rebuilds still produce local intra-paragraph views.

@@ -369,7 +369,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (mutex != null) {
             mutex.lock();
             try {
-                viewUpdates.syncViewsRebuild();
+                if (viewUpdates != null) {
+                    viewUpdates.syncViewsRebuild();
+                }
             } finally {
                 mutex.unlock();
             }
