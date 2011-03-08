@@ -133,7 +133,7 @@ public class PhysicalView {
         
         if ( projectDirGroup == null ) {
             // Illegal project
-            LOG.log(Level.WARNING,"Project {0} either does not contain it''s project directory under generic source groups or the directory is under more than one source group", p);
+            LOG.log(Level.WARNING, "Project {0} either does not contain its project directory under generic source groups or the directory is under more than one source group", p);
             return new Node[0];
         }
 
