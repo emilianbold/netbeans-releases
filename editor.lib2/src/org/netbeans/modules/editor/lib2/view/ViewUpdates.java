@@ -55,6 +55,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -63,36 +64,69 @@ import org.openide.util.WeakListeners;
  * @author Miloslav Metelka
  */
 
-public final class ViewUpdates implements DocumentListener {
+public final class ViewUpdates implements DocumentListener, EditorViewFactoryListener {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUpdates.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUpdates.class.getName());
+    
+    /**
+     * Delay between view factory reports a change and the actual view(s) rebuild.
+     */
+    private static final int REBUILD_DELAY = 200;
     
     /**
      * Maximum number of characters where the view rebuilds still produce local intra-paragraph views.
      */
     private static final int MAX_LOCAL_VIEWS_REBUILD_LENGTH = 200;
     
+//    /**
+//     * Maximum number of characters that will be synced directly when
+//     * syncViewsRebuild() gets called.
+//     */
+//    private static final int MAX_DIRECT_SYNC_LENGTH = 2000;
+    
     /**
      * How many lines should be inited at once at minimum.
      */
     private static final int LAZY_CHILDREN_MIN_BATCH_LINES = 5; // How many lines init at once
 
+    private static final RequestProcessor rebuildRegionRP = 
+            new RequestProcessor("ViewHierarchy-Region-Rebuilding", 1, false, false); // NOI18N
+
     private final DocumentView documentView;
 
     private EditorViewFactory[] viewFactories;
 
-    private FactoriesListener factoriesListener;
-
     private DocumentListener incomingModificationListener;
 
-    OffsetRegion rebuildRegion = OffsetRegion.empty();
+    private OffsetRegion rebuildRegion;
+    
+    private Object rebuildRegionLock = new String("rebuild-region-lock"); // NOI18N
 
+    /**
+     * Whether currently building views. Some highlighting layers may fire changes
+     * when asked for highlights but such changes must not influence current views building.
+     */
     private boolean buildingViews;
+
+    private final RequestProcessor.Task rebuildRegionTask = rebuildRegionRP.create(new Runnable() {
+        private boolean insideDocumentRender = false;
+        public @Override void run() {
+            if (insideDocumentRender) {
+                documentView.syncViewsRebuild();
+            } else {
+                insideDocumentRender = true;
+                try {
+                    documentView.getDocument().render(this);
+                } finally {
+                    insideDocumentRender = false;
+                }
+            }
+        }
+    });
 
     public ViewUpdates(DocumentView documentView) {
         this.documentView = documentView;
-        factoriesListener = new FactoriesListener();
         incomingModificationListener = new IncomingModificationListener();
         Document doc = documentView.getDocument();
         // View hierarchy uses a pair of its own document listeners and DocumentView ignores
@@ -124,7 +158,7 @@ public final class ViewUpdates implements DocumentListener {
         for (int i = 0; i < factoryFactories.size(); i++) {
             viewFactories[i] = factoryFactories.get(i).createEditorViewFactory(component);
             viewFactories[i].addEditorViewFactoryListener(WeakListeners.create(
-                    EditorViewFactoryListener.class, factoriesListener, viewFactories[i]));
+                    EditorViewFactoryListener.class, this, viewFactories[i]));
         }
     }
     
@@ -134,18 +168,19 @@ public final class ViewUpdates implements DocumentListener {
     {
 //        assert (DocumentUtilities.isReadLocked(documentView.getDocument())) :
 //                "Document NOT READ-LOCKED: " + documentView.getDocument(); // NOI18N
-//        assert documentView.isMutexAcquired() : "View hierarchy mutex not acquired";
+        assert documentView.isMutexAcquired() : "View hierarchy mutex not acquired";
         assert !buildingViews : "Already building views"; // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView,
                 paragraphViewIndex, viewFactories, startOffset, endOffset,
                 modOffset, offsetDelta, createLocalViews
         );
-        buildingViews = true;
+        setBuildingViews(true);
         try {
+            documentView.checkMutexAcquiredIfLogging();
             viewBuilder.createViews();
             viewBuilder.replaceAndRepaintViews();
         } finally {
-            buildingViews = false;
+            setBuildingViews(false);
             viewBuilder.finish(); // Includes factory.finish() in each factory
         }
         // Fire change of views
@@ -154,6 +189,16 @@ public final class ViewUpdates implements DocumentListener {
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.finer("ViewUpdates.buildViews(): UPDATED-DOC-VIEW:\n" + documentView); // NOI18N
         }
+    }
+
+    private boolean isBuildingViews() {
+        return buildingViews;
+    }
+
+    private void setBuildingViews(boolean buildingViews) {
+        assert (buildingViews != this.buildingViews) : "buildingViews=" + buildingViews + // NOI18N
+                " == this.buildingViews=" + this.buildingViews; // NOI18N
+        this.buildingViews = buildingViews;
     }
 
     void reinitViews() {
@@ -218,11 +263,18 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
-            documentView.checkDocumentLocked();
+            documentView.checkDocumentLockedIfLogging();
             try {
                 if (!documentView.isUpdatable()) {
                     return;
                 }
+                if (documentView.getViewCount() == 0) {
+                    // It would later fail on paragraphViewIndex == -1
+                    // Even for empty doc there should be 
+                    return;
+                }
+                Document doc = documentView.getDocument();
+                assert (doc == evt.getDocument()) : "Invalid document";
                 // Insert into document was performed -> update or rebuild views
                 // First update factories since they may fire rebuilding
                 checkFactoriesComponentInited();
@@ -232,42 +284,39 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 // Check if the factories fired any changes
-                OffsetRegion rRegion = rebuildRegion;
-                resetRebuildInfo();
-                if (documentView.getViewCount() == 0) {
-                    return; // It would later fail on paragraphViewIndex == -1
-                }
+                OffsetRegion rRegion = fetchRebuildRegion(); // may be null
 
                 int insertOffset = evt.getOffset();
                 int insertLength = evt.getLength();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("\nDOCUMENT-INSERT-evt: offset=" + insertOffset + ", length=" + insertLength + // NOI18N
-                            ", docLen=" + evt.getDocument().getLength() + '\n'); // NOI18N
+                            ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
-                rRegion = rRegion.union(insertOffset, insertOffset + insertLength);
+                rRegion = OffsetRegion.union(rRegion, doc, insertOffset, insertOffset + insertLength, false);
+                // rRegion is non-null
 
                 // If line elements were modified the views will be modified too
-                Document doc = evt.getDocument();
                 DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
                 if (lineElementChange != null) {
+                    // Since removed/added lines are held as positions they already reflect just performed modification
                     Element[] removedLines = lineElementChange.getChildrenRemoved();
                     if (removedLines.length > 0) { // Insertion at line's begining
                         int firstRemovedLineStartOffset = removedLines[0].getStartOffset();
                         int lastRemovedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
                         assert (insertOffset >= firstRemovedLineStartOffset && insertOffset <= lastRemovedLineEndOffset);
-                        rRegion = rRegion.union(firstRemovedLineStartOffset, lastRemovedLineEndOffset);
+                        rRegion = rRegion.union(doc, firstRemovedLineStartOffset, lastRemovedLineEndOffset, false);
                     }
                     Element[] addedLines = lineElementChange.getChildrenAdded();
                     if (addedLines.length > 0) { // Insertion at line's begining
                         int firstAddedLineStartOffset = addedLines[0].getStartOffset();
                         int lastAddedLineEndOffset = addedLines[addedLines.length - 1].getEndOffset();
-                        rRegion = rRegion.union(firstAddedLineStartOffset, lastAddedLineEndOffset);
+                        rRegion = rRegion.union(doc, firstAddedLineStartOffset, lastAddedLineEndOffset, false);
                     }
                 }
                 int docViewStartOffset = documentView.getStartOffset();
                 int docViewEndOffset = documentView.getEndOffset();
-                rRegion = rRegion.intersection(docViewStartOffset, docViewEndOffset);
-                if (rRegion.isEmpty()) {
+                rRegion = rRegion.intersection(doc, docViewStartOffset, docViewEndOffset, true);
+                if (rRegion == null) {
                     // Outside of area covered by document view
                     return;
                 }
@@ -300,7 +349,9 @@ public final class ViewUpdates implements DocumentListener {
                         int paragraphStartOffset = paragraphView.getStartOffset();
                         assert (paragraphStartOffset <= rRegion.startOffset()) :
                                 "paragraphStartOffset=" + paragraphStartOffset + " > rStartOffset=" + rRegion.startOffset(); // NOI18N
-                        rRegion = rRegion.union(paragraphStartOffset, paragraphStartOffset + paragraphView.getLength());
+                        // Since the document is longer (due to just performed insert) the region
+                        // can (possibly) be extended by paragraphView's length
+                        rRegion = rRegion.union(doc, paragraphStartOffset, paragraphStartOffset + paragraphView.getLength(), false);
                         paragraphView = null;
                         // When the original area had null children then it should be fine
                         // to rebuild without local views creation
@@ -328,11 +379,18 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
-            documentView.checkDocumentLocked();
+            documentView.checkDocumentLockedIfLogging();
             try {
                 if (!documentView.isUpdatable()) {
                     return;
                 }
+                if (documentView.getViewCount() == 0) {
+                    // It would later fail on paragraphViewIndex == -1
+                    // Even for empty doc there should be 
+                    return;
+                }
+                Document doc = documentView.getDocument();
+                assert (doc == evt.getDocument()) : "Invalid document";
                 // Removal in document was performed -> update or rebuild views
                 checkFactoriesComponentInited();
                 for (int i = 0; i < viewFactories.length; i++) {
@@ -341,33 +399,29 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 // Check if the factories fired any changes
-                OffsetRegion rRegion = rebuildRegion;
-                resetRebuildInfo();
-                if (documentView.getViewCount() == 0) {
-                    return; // It would later fail on paragraphViewIndex == -1
-                }
+                OffsetRegion rRegion = fetchRebuildRegion();
 
                 int removeOffset = evt.getOffset();
                 int removeLength = evt.getLength();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("\nDOCUMENT-REMOVE-evt: offset=" + removeOffset + ", length=" + removeLength + // NOI18N
-                            ", docLen=" + evt.getDocument().getLength() + '\n'); // NOI18N
+                            ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
-                rRegion = rRegion.union(removeOffset, removeOffset + removeLength);
+                // Update the region by modification region (in after-mod offsets) i.e. empty region
+                rRegion = OffsetRegion.union(rRegion, doc, removeOffset, removeOffset, false);
+                // rRegion is non-null
                 int docViewStartOffset = documentView.getStartOffset();
                 int docViewOrigEndOffset = documentView.getEndOffset();
                 if (docViewOrigEndOffset >= removeOffset) {
                     docViewOrigEndOffset += removeLength;
                 }
-                rRegion = rRegion.intersection(docViewStartOffset, docViewOrigEndOffset);
-                if (rRegion.isEmpty()) {
+                rRegion = rRegion.intersection(doc, docViewStartOffset, docViewOrigEndOffset, true);
+                if (rRegion == null) {
                     // Outside of area covered by document view
                     return;
                 }
 
-
                 // If line elements were modified the views will be modified too
-                Document doc = evt.getDocument();
                 DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
                 Element[] removedLines = null;
                 if (lineElementChange != null) {
@@ -375,13 +429,13 @@ public final class ViewUpdates implements DocumentListener {
                     if (removedLines.length > 0) { // Insertion at line's begining
                         int firstRemovedLineStartOffset = removedLines[0].getStartOffset();
                         int lastRemovedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
-                        rRegion = rRegion.union(firstRemovedLineStartOffset, lastRemovedLineEndOffset);
+                        rRegion = rRegion.union(doc, firstRemovedLineStartOffset, lastRemovedLineEndOffset, false);
                     }
                     Element[] addedLines = lineElementChange.getChildrenAdded();
                     if (addedLines.length > 0) { // Insertion at line's begining
                         int firstAddedLineStartOffset = addedLines[0].getStartOffset();
                         int lastAddedLineEndOffset = addedLines[addedLines.length - 1].getEndOffset();
-                        rRegion = rRegion.union(firstAddedLineStartOffset, lastAddedLineEndOffset);
+                        rRegion = rRegion.union(doc, firstAddedLineStartOffset, lastAddedLineEndOffset, false);
                     }
                 }
                 // During remove the paragraph views (which are based on positions) may get fused.
@@ -398,7 +452,12 @@ public final class ViewUpdates implements DocumentListener {
                     int paragraphStartOffset = paragraphView.getStartOffset();
                     assert (paragraphStartOffset <= rRegion.startOffset()) :
                             "paragraphStartOffset=" + paragraphStartOffset + " > rStartOffset=" + rRegion.startOffset(); // NOI18N
-                    rRegion = rRegion.union(paragraphStartOffset, paragraphStartOffset + paragraphView.getLength());
+                    int parEndOffset = paragraphStartOffset + paragraphView.getLength();
+                    // Project into current coords
+                    if (parEndOffset > removeOffset) {
+                        parEndOffset = Math.max(parEndOffset - removeLength, removeOffset);
+                    }
+                    rRegion = rRegion.union(doc, paragraphStartOffset, parEndOffset, false);
                     paragraphView = null;
                     // When the original area had null children then it should be fine
                     // to rebuild without local views creation
@@ -425,7 +484,7 @@ public final class ViewUpdates implements DocumentListener {
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
-            documentView.checkDocumentLocked();
+            documentView.checkDocumentLockedIfLogging();
             try {
                 if (!documentView.isUpdatable()) {
                     return;
@@ -436,7 +495,6 @@ public final class ViewUpdates implements DocumentListener {
                     editorViewFactory.changedUpdate(evt);
                 }
                 // TODO finish
-                resetRebuildInfo();
                 documentView.checkIntegrity();
             } finally {
                 documentView.setIncomingModification(false);
@@ -445,19 +503,24 @@ public final class ViewUpdates implements DocumentListener {
         }
     }
 
-    boolean isRebuildNecessary() {
-        return !rebuildRegion.isEmpty();
-    }
-
-    void resetRebuildInfo() {
-        rebuildRegion = OffsetRegion.empty();
-    }
-
-    void extendRebuildInfo(int startOffset, int endOffset) {
-        OffsetRegion oldRegion = rebuildRegion;
-        rebuildRegion = rebuildRegion.union(startOffset, endOffset);
-        if (rebuildRegion != oldRegion) {
-            LOG.fine("ViewUpdates.Change extended to " + rebuildRegion + "\n");
+    @Override
+    public void viewFactoryChanged(EditorViewFactoryEvent evt) {
+        synchronized (rebuildRegionLock) {
+            documentView.checkDocumentLockedIfLogging();
+            boolean postRebuildTask = (rebuildRegion == null);
+            List<EditorViewFactory.Change> changes = evt.getChanges();
+            for (EditorViewFactory.Change change : changes) {
+                int startOffset = change.getStartOffset();
+                int endOffset = change.getEndOffset();
+                // Do not ignore empty <startOffset,endOffset> regions - should we??
+                rebuildRegion = OffsetRegion.union(rebuildRegion, documentView.getDocument(), startOffset, endOffset, false);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("ViewUpdates.viewFactoryChanged: <" + startOffset + "," + endOffset + ">\n"); // NOI18N
+                }
+            }
+            if (postRebuildTask) {
+                rebuildRegionTask.schedule(REBUILD_DELAY);
+            }
         }
     }
 
@@ -466,82 +529,65 @@ public final class ViewUpdates implements DocumentListener {
             initFactories();
         }
     }
-
-    /*private*/ void checkRebuild(OffsetRegion region) {
-        PriorityMutex mutex = documentView.getMutex();
-        if (mutex != null) {
-            mutex.lock();
-            try {
-                documentView.checkDocumentLocked();
-                // Check buildingViews flag since it's possible that asking for a highlight
-                // triggered firing of a highlight change resulting in checkRebuild() call
-                rebuildRegion = rebuildRegion.union(region);
-                if (!buildingViews && documentView.isActive()) {
-                    if (isRebuildNecessary()) {
-                        OffsetRegion rRegion = rebuildRegion;
-                        resetRebuildInfo();
-                        int docViewStartOffset = documentView.getStartOffset();
-                        int docViewEndOffset = documentView.getEndOffset();
-                        rRegion = rRegion.intersection(docViewStartOffset, docViewEndOffset);
-                        if (rRegion.isEmpty()) {
-                            // Outside of area covered by document view
-                            return;
-                        }
-                        documentView.checkIntegrity();
-                        int paragraphViewIndex = documentView.getViewIndexFirst(rRegion.startOffset());
-                        assert (paragraphViewIndex >= 0) : "Paragraph view index is " + paragraphViewIndex + // NOI18N
-                                " for " + rRegion; // NOI18N
-                        ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
-                        // Decide whether create local views - reflect paragraphView length since
-                        // a local rebuild inside even a long paragraphView should create local views.
-                        boolean createLocalViews = (rRegion.length()
-                                <= MAX_LOCAL_VIEWS_REBUILD_LENGTH + paragraphView.getLength());
-                        if (paragraphView.children == null) { // Rebuild must include whole paragraphView
-                            int paragraphStartOffset = paragraphView.getStartOffset();
-                            assert (paragraphStartOffset <= rRegion.startOffset()) :
-                                "paragraphStartOffset=" + paragraphStartOffset + " > rRegion.startOffset=" + rRegion.startOffset(); // NOI18N
-                            rRegion = rRegion.union(paragraphStartOffset, paragraphStartOffset + paragraphView.getLength());
-                            paragraphView = null;
-                            // When the original area had null children then it should be fine
-                            // to rebuild without local views creation
-                            createLocalViews = false;
-                        }
-                        createLocalViews |= documentView.isAccurateSpan();
-
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("ViewUpdates.checkRebuild-buildViews(): " + rRegion + // NOI18N
-                                    " createLocalViews=" + createLocalViews + "\n"); // NOI18N
-                        }
-                        buildViews(paragraphView, paragraphViewIndex,
-                                rRegion.startOffset(), rRegion.endOffset(),
-                                rRegion.endOffset(), 0, createLocalViews);
-                    }
-                }
-            } finally {
-                mutex.unlock();
-            }
+    
+    void syncViewsRebuild() {
+        OffsetRegion region = fetchRebuildRegion();
+        if (region != null) {
+            checkRebuild(region);
         }
     }
 
-
-    private final class FactoriesListener implements EditorViewFactoryListener {
-
-        @Override
-        public void viewFactoryChanged(EditorViewFactoryEvent evt) {
-            OffsetRegion region = OffsetRegion.empty();
-            List<EditorViewFactory.Change> changes = evt.getChanges();
-            for (EditorViewFactory.Change change : changes) {
-                region = region.union(change.getStartOffset(), change.getEndOffset());
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("ViewUpdates.viewFactoryChanged: <" + change.getStartOffset() +
-                            "," + change.getEndOffset() + ">\n");
-                }
-            }
-            if (!region.isEmpty()) {
-                checkRebuild(region);
-            }
+    private OffsetRegion fetchRebuildRegion() {
+        synchronized (rebuildRegionLock) {
+            OffsetRegion region = rebuildRegion;
+            rebuildRegion = null;
+            return region;
         }
+    }
+    
+    private void checkRebuild(OffsetRegion region) {
+        assert (region != null);
+        documentView.checkDocumentLockedIfLogging();
+        assert (!isBuildingViews()) : "Already building views"; // NOI18N
+        // Do nothing if docView is not active. Once becomes active a full rebuild will be done.
+        if (documentView.isActive()) {
+            Document doc = documentView.getDocument();
+            int docViewStartOffset = documentView.getStartOffset();
+            int docViewEndOffset = documentView.getEndOffset();
+            region = region.intersection(doc, docViewStartOffset, docViewEndOffset, true);
+            if (region == null) {
+                // Outside of area covered by document view
+                return;
+            }
+            documentView.checkIntegrity();
+            int paragraphViewIndex = documentView.getViewIndexFirst(region.startOffset());
+            assert (paragraphViewIndex >= 0) : "Paragraph view index is " + paragraphViewIndex + // NOI18N
+                    " for " + region; // NOI18N
+            ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+            // Decide whether create local views - reflect paragraphView length since
+            // a local rebuild inside even a long paragraphView should create local views.
+            boolean createLocalViews = (region.length()
+                    <= MAX_LOCAL_VIEWS_REBUILD_LENGTH + paragraphView.getLength());
+            if (paragraphView.children == null) { // Rebuild must include whole paragraphView
+                int paragraphStartOffset = paragraphView.getStartOffset();
+                assert (paragraphStartOffset <= region.startOffset()) :
+                    "paragraphStartOffset=" + paragraphStartOffset + " > rRegion.startOffset=" + region.startOffset(); // NOI18N
+                region = region.union(doc, paragraphStartOffset, paragraphStartOffset + paragraphView.getLength(), false);
+                paragraphView = null;
+                // When the original area had null children then it should be fine
+                // to rebuild without local views creation
+                createLocalViews = false;
+            }
+            createLocalViews |= documentView.isAccurateSpan();
 
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("ViewUpdates.checkRebuild-buildViews(): " + region + // NOI18N
+                        " createLocalViews=" + createLocalViews + "\n"); // NOI18N
+            }
+            buildViews(paragraphView, paragraphViewIndex,
+                    region.startOffset(), region.endOffset(),
+                    region.endOffset(), 0, createLocalViews);
+        }
     }
 
     private final class IncomingModificationListener implements DocumentListener {
