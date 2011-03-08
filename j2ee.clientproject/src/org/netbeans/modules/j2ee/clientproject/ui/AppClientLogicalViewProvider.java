@@ -95,7 +95,7 @@ public class AppClientLogicalViewProvider extends AbstractLogicalViewProvider2 {
     }
     
     @Override
-    protected String[] getBreakableProperties() {
+    public String[] getBreakableProperties() {
         return createListOfBreakableProperties(project.getSourceRoots(), project.getTestSourceRoots(), BREAKABLE_PROPERTIES);
     }
 
