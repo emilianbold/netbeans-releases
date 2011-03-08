@@ -67,7 +67,6 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.repository.LocalArtifactRepository;
-import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -372,7 +371,7 @@ public final class EmbedderFactory {
         req.setPomFile(pom);
         req.setProcessPlugins(false);
         req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        req.setModelResolver(new NBRepositoryModelResolver(embedder.lookupComponent(RepositorySystem.class)));
+        req.setModelResolver(new NBRepositoryModelResolver(embedder));
         
         ModelBuildingResult res = mb.build(req);
         List<Model> toRet = new ArrayList<Model>();

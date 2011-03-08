@@ -52,11 +52,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
-import org.apache.maven.execution.DefaultMavenExecutionResult;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Profile;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -96,8 +92,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -250,9 +244,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         //TODO rewrite
         MavenProjectBuilder bldr = embedder.lookupComponent(MavenProjectBuilder.class);
         assert bldr !=null : "MavenProjectBuilder component not found in maven";
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(embedder.getLocalRepository().getBasedir()));
-        embedder.lookupComponent(LegacySupport.class).setSession(new MavenSession(embedder.getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
+        embedder.setUpLegacySupport();
         return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository()) ;
     }
     
