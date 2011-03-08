@@ -195,8 +195,8 @@ public class TreeLoader extends LazyTreeLoader {
         try {
             assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked() || !contended;
             if (clazz != null) {
-                JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
-                if (page != null && argsFromJavaDocAllowedFor(page)) {
+                JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz, ALWAYS_ALLOW_JDOC_ARG_NAMES, null);
+                if (page != null) {
                     if (getParamNamesFromJavadocText(page, clazz)) {
                         return true;
                     }
@@ -686,7 +686,4 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
     
-    private static boolean argsFromJavaDocAllowedFor(final JavadocHelper.TextStream page) {        
-        return ALWAYS_ALLOW_JDOC_ARG_NAMES || !page.isRemote();
-    }
 }
