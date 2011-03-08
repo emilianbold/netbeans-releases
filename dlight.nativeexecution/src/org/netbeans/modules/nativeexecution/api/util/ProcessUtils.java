@@ -428,7 +428,7 @@ public final class ProcessUtils {
 
         @Override
         public String toString() {
-            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + error + "\noutput=" + output;
+            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + error + "\noutput=" + output; // NOI18N
         }
     }
 
