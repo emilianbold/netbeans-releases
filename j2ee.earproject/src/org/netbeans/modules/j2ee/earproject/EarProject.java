@@ -414,7 +414,8 @@ public final class EarProject implements Project, AntProjectListener {
             }
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
 
             String servInstID = EarProject.this.getUpdateHelper().

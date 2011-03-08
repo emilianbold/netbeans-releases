@@ -874,7 +874,8 @@ public class EjbJarProject implements Project, FileChangeListener {
             artifactSupport.enableArtifactSynchronization(true);
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
