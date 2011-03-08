@@ -214,51 +214,7 @@ public final class ELTypeUtilities {
                 } else if (returnTypeKind == TypeKind.VOID) {
                     setResult(info.getTypes().getNoType(returnTypeKind));
                 } else {
-                    TypeMirror tm = method.getReturnType();
-                    TypeMirror returnType = tm;
-                    
-                    if(tm.getKind() == TypeKind.DECLARED) {
-                        //check whether the return type implements Iterable, if so use the 
-                        //parametrized type of the Iterable
-                        TypeMirror iterableType = info.getElements().getTypeElement("java.lang.Iterable").asType(); //NOI18N
-                        assert iterableType != null;
-                        TypeMirror iterableErasure = info.getTypes().erasure(iterableType);
-                        TypeMirror tmErasure = info.getTypes().erasure(method.getReturnType());
-                        //hack>>>
-                        //direct usage of the tm doesn't work, the isSubtype() method 
-                        //returns false for the erased types. Why? Different contexts???
-                        //The types seems to be exactly the same... no idea...
-
-                        //so convert to the FQN
-                        String tmName = info.getTypeUtilities().getTypeName(tmErasure, TypeNameOptions.PRINT_FQN).toString();
-                        //and back to the type
-                        TypeElement tm2Element = info.getElements().getTypeElement(tmName);
-                        //<<<hack
-
-                        if(tm2Element != null) {
-                            TypeMirror tm2 = tm2Element.asType(); 
-                            TypeMirror tm2Erasure = info.getTypes().erasure(tm2);
-
-                            if(info.getTypes().isSubtype(tm2Erasure, iterableErasure)) {
-                                //the return type is an Iterable
-                                if(tm.getKind() == TypeKind.DECLARED) {
-                                    DeclaredType dt = (DeclaredType)tm;
-
-                                    List<? extends TypeMirror> typeArguments = dt.getTypeArguments();
-                                    if(typeArguments.size() > 0) {
-                                        returnType = typeArguments.iterator().next();
-                                    }
-                                }
-                            }
-                        }
-                    } else if(tm.getKind() == TypeKind.ARRAY) {
-                        //The type is an array, use its member type
-                        returnType = ((ArrayType) tm).getComponentType();
-                    }
-                    
-                    
-                    
-                    setResult(returnType);
+                    setResult(method.getReturnType());
                 }
             }
         };
@@ -348,8 +304,8 @@ public final class ELTypeUtilities {
                 }
 
                 if (result.length() > 0) {
-                    result.insert(0, "(");
-                    result.append(")");
+                result.insert(0, "(");
+                result.append(")");
                 }
                 setResult(result.toString());
             }
@@ -621,14 +577,63 @@ public final class ELTypeUtilities {
                         return;
                     }
                     TypeMirror returnType = getReturnType(method);
-                    result[0] = info.getTypes().asElement(returnType);
+                    //XXX: works just for generic collections, i.e. the assumption is
+                    // that variables refer to collections, which is not always the case
+
+                    if (returnType.getKind() == TypeKind.DECLARED) {
+                        if(isSubtypeOf(returnType, "java.lang.Iterable", info)) { //NOI18N
+                            List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
+                            for (TypeMirror arg : typeArguments) {
+                                result[0] = info.getTypes().asElement(arg);
+                                return;
+                            }
+                            //use the returned type itself
+                            result[0] = info.getTypes().asElement(returnType);
+                        }
+                    } else if(returnType.getKind() == TypeKind.ARRAY) {
+                        TypeMirror componentType = ((ArrayType)returnType).getComponentType();
+                        result[0] = info.getTypes().asElement(componentType);
+                    }
                 }
             }
         });
 
         return result[0];
     }
+    
+    private boolean isSubtypeOf(TypeMirror tm, CharSequence typeName, CompilationController info) {
+        //check whether the return type implements Iterable, if so use the 
+        //parametrized type of the Iterable
+        Element element = info.getElements().getTypeElement(typeName);
+        if (element == null) {
+            return false;
+        }
+        TypeMirror type = element.asType(); //NOI18N
+        TypeMirror erasedType = info.getTypes().erasure(type);
+        TypeMirror tmErasure = info.getTypes().erasure(tm);
 
+        //hack>>>
+        //direct usage of the tm doesn't work, the isSubtype() method 
+        //returns false for the erased types. Why? Different contexts???
+        //The types seems to be exactly the same... no idea...
+
+        //so convert to the FQN
+        String tmName = info.getTypeUtilities().getTypeName(tmErasure, TypeNameOptions.PRINT_FQN).toString();
+        //and back to the type
+        TypeElement tm2Element = info.getElements().getTypeElement(tmName);
+        //<<<hack
+
+        if (tm2Element == null) {
+            return false;
+        }
+
+        TypeMirror tm2 = tm2Element.asType();
+        TypeMirror tm2Erasure = info.getTypes().erasure(tm2);
+
+        return info.getTypes().isSubtype(tm2Erasure, erasedType);
+
+    }
+   
     private TypeElement getTypeFor(final String clazz) {
         SourceTask<TypeElement> task = new SourceTask<TypeElement>() {
 

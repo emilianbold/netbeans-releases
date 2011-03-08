@@ -169,6 +169,10 @@ public final class RefactoringUtil {
         return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
     }
     
+    public static boolean isPropertyAccessor(String accessor) {
+        return !getPropertyName(accessor).equals(accessor);
+    }
+    
     private static int getPrefixLength(String accessor, boolean includeSetter) {
         List<String> accessorPrefixes = new ArrayList<String>();
         accessorPrefixes.add("get");
