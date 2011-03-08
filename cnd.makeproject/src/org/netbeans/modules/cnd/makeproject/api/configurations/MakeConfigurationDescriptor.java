@@ -83,7 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
-import org.netbeans.modules.cnd.makeproject.MakeConfigurationSaveListener;
+import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
@@ -101,7 +101,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor.Task;
@@ -745,20 +744,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 return;
             }
             synchronized (getWriteLock(project)) {
-                Collection<? extends MakeConfigurationSaveListener> listeners = 
-                        Lookup.getDefault().lookupAll(MakeConfigurationSaveListener.class);
-                for (MakeConfigurationSaveListener listener : listeners) {
-                    listener.configurationSaving(MakeConfigurationDescriptor.this);
-                }
+                FullRemoteExtension.configurationSaving(MakeConfigurationDescriptor.this);
                 try {
                     ret = saveWorker(extraMessage);
                 } finally {
-                    for (MakeConfigurationSaveListener listener : listeners) {
-                        listener.configurationSaved(MakeConfigurationDescriptor.this, ret);
-                    }
+                    FullRemoteExtension.configurationSaved(MakeConfigurationDescriptor.this, ret);
                 }
             }
-            
         }
     }
 
