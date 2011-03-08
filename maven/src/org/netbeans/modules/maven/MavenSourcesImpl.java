@@ -77,7 +77,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Implementation of Sources interface for maven projects.
@@ -136,25 +137,33 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         });
     }
     
+    @Messages({
+        "SG_Sources=Source Packages",
+        "SG_Test_Sources=Test Packages",
+        "SG_GroovySources=Groovy Packages",
+        "SG_Test_GroovySources=Groovy Test Packages",
+        "SG_ScalaSources=Scala Packages",
+        "SG_Test_ScalaSources=Scala Test Packages"
+    })
     private void checkChanges(boolean fireChanges, boolean checkAlsoNonJavaStuff) {
         boolean changed = false;
         synchronized (lock) {
             MavenProject mp = project.getOriginalMavenProject();
             FileObject folder = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
-            changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"), javaGroup);
+            changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, SG_Sources(), javaGroup);
             folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
-            changed = changed | checkSourceGroupCache(folder, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"), javaGroup);
+            changed = changed | checkSourceGroupCache(folder, NAME_TESTSOURCE, SG_Test_Sources(), javaGroup);
             changed = changed | checkGeneratedGroupsCache(project.getGeneratedSourceRoots());
             //groovy
             folder = FileUtilities.convertURItoFileObject(project.getGroovyDirectory(false));
-            changed = changed | checkSourceGroupCache(folder, NAME_GROOVYSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_GroovySources"), groovyGroup);
+            changed = changed | checkSourceGroupCache(folder, NAME_GROOVYSOURCE, SG_GroovySources(), groovyGroup);
             folder = FileUtilities.convertURItoFileObject(project.getGroovyDirectory(true));
-            changed = changed | checkSourceGroupCache(folder, NAME_GROOVYTESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_GroovySources"), groovyGroup);
+            changed = changed | checkSourceGroupCache(folder, NAME_GROOVYTESTSOURCE, SG_Test_GroovySources(), groovyGroup);
             //scala
             folder = FileUtilities.convertURItoFileObject(project.getScalaDirectory(false));
-            changed = changed | checkSourceGroupCache(folder, NAME_SCALASOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_ScalaSources"), scalaGroup);
+            changed = changed | checkSourceGroupCache(folder, NAME_SCALASOURCE, SG_ScalaSources(), scalaGroup);
             folder = FileUtilities.convertURItoFileObject(project.getScalaDirectory(true));
-            changed = changed | checkSourceGroupCache(folder, NAME_SCALATESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_ScalaSources"), scalaGroup);
+            changed = changed | checkSourceGroupCache(folder, NAME_SCALATESTSOURCE, SG_Test_ScalaSources(), scalaGroup);
 
             if (checkAlsoNonJavaStuff) {
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
@@ -266,6 +275,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         return new SourceGroup[0];
     }
 
+    @Messages("SG_Project_Resources=Project Resources")
     private SourceGroup[] getOrCreateResourceSourceGroup(boolean test, boolean create) {
         URI[] uris = project.getResources(test);
         if (uris.length > 0) {
@@ -277,7 +287,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                     virtuals.add(u);
                 } else {
                     existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
-                        NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
+                        SG_Project_Resources(), null, null));
                 }
             }
             if (create && existing.isEmpty()) {
@@ -289,7 +299,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                     Exceptions.printStackTrace(ex);
                 }
                 existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
-                    NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
+                    SG_Project_Resources(), null, null));
             }
             //TODO we should probably add includes/excludes to source groups.
             return existing.toArray(new SourceGroup[0]);
@@ -351,6 +361,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     /**
      * consult the SourceGroup cache, return true if anything changed..
      */
+    @Messages("SG_Generated_Sources=Generated Sources ({0})")
     private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix) {
         SourceGroup group = genSrcGroup.get(rootFile);
         if (root == null && group != null) {
@@ -362,12 +373,12 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
         boolean changed = false;
         if (group == null) {
-            group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Generated_Sources", nameSuffix));
+            group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, SG_Generated_Sources(nameSuffix));
             genSrcGroup.put(rootFile, group);
             changed = true;
         } else {
             if (!group.getRootFolder().isValid() || !group.getRootFolder().equals(root)) {
-                group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Generated_Sources", nameSuffix));
+                group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, SG_Generated_Sources(nameSuffix));
                 genSrcGroup.put(rootFile, group);
                 changed = true;
             }
@@ -498,6 +509,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         private Resource resource;
         private PropertyChangeSupport support = new PropertyChangeSupport(this);
         
+        @Messages("SG_Root_not_defined=<Root not defined>")
         OtherGroup(NbMavenProjectImpl p, FileObject rootFold, String nm, String displayNm, boolean test) {
             project = p;
             rootFolder = rootFold;
@@ -516,7 +528,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 icon = ImageUtilities.image2Icon(NodeUtils.getTreeFolderIcon(false));
                 openedIcon = ImageUtilities.image2Icon(NodeUtils.getTreeFolderIcon(true));
                 name = nm;
-                displayName = displayNm != null ? displayNm : NbBundle.getMessage(MavenSourcesImpl.class, "SG_Root_not_defined");
+                displayName = displayNm != null ? displayNm : SG_Root_not_defined();
             }
         }
         
@@ -612,7 +624,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             rootFolder = rootFold;
             rootFile = FileUtil.toFile(rootFolder);
             name = nm;
-            displayName = displayNm != null ? displayNm : NbBundle.getMessage(MavenSourcesImpl.class, "SG_Root_not_defined");
+            displayName = displayNm != null ? displayNm : SG_Root_not_defined();
 //            icon = icn;
 //            openedIcon = opened;
         }
