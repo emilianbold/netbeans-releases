@@ -50,8 +50,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -90,6 +94,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
@@ -105,11 +110,11 @@ import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.loaders.DataFolder;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 
 /**
@@ -119,6 +124,8 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 
     private static final RequestProcessor RP = new RequestProcessor("AbstractLogicalViewProvider.RP"); // NOI18N
     
+    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
+    
     private final Project project;
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
@@ -127,6 +134,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     private PropertyChangeListener pcl;
     private InstanceListener il;
     private ConfigurationFilesListener cfl;
+    private Map<URL,Object[]> activeLibManLocs;
 
     protected AbstractLogicalViewProvider(Project project, UpdateHelper helper,
             PropertyEvaluator evaluator, ReferenceHelper resolver, J2eeModuleProvider j2eeModuleProvider) {
@@ -141,9 +149,53 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         registerListeners(j2eeModuleProvider);
     }
 
+    private void addLibraryManagerListener() {
+        final Map<URL,Object[]> oldLMs;
+        final boolean attachToDefault;
+        synchronized (this) {
+            attachToDefault = activeLibManLocs == null;
+            if (attachToDefault) {
+                activeLibManLocs = new HashMap<URL,Object[]>();
+            }
+            oldLMs = new HashMap<URL,Object[]>(activeLibManLocs);
+        }
+        if (attachToDefault) {
+            final LibraryManager manager = LibraryManager.getDefault();
+            manager.addPropertyChangeListener(WeakListeners.propertyChange(pcl, manager));
+        }
+        final Collection<? extends LibraryManager> managers = LibraryManager.getOpenManagers();
+        final Map<URL,LibraryManager> managerByLocation = new HashMap<URL, LibraryManager>();
+        for (LibraryManager manager : managers) {
+            final URL url = manager.getLocation();
+            if (url != null) {
+                managerByLocation.put(url, manager);
+            }
+        }
+        final HashMap<URL,Object[]> toRemove = new HashMap<URL,Object[]>(oldLMs);
+        toRemove.keySet().removeAll(managerByLocation.keySet());
+        for (Object[] pair : toRemove.values()) {
+            ((LibraryManager)pair[0]).removePropertyChangeListener((PropertyChangeListener)pair[1]);
+        }
+        managerByLocation.keySet().removeAll(oldLMs.keySet());
+        final HashMap<URL,Object[]> toAdd = new HashMap<URL,Object[]>();
+        for (Map.Entry<URL,LibraryManager> e : managerByLocation.entrySet()) {
+            final LibraryManager manager = e.getValue();
+            final PropertyChangeListener listener = WeakListeners.propertyChange(pcl, manager);
+            manager.addPropertyChangeListener(listener);
+            toAdd.put(e.getKey(), new Object[] {manager, listener});
+        }
+        synchronized (this) {
+            activeLibManLocs.keySet().removeAll(toRemove.keySet());
+            activeLibManLocs.putAll(toAdd);
+        }
+    }
+    
     private void registerListeners(J2eeModuleProvider j2eeModuleProvider) {
         pcl = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
+                if (LibraryManager.PROP_OPEN_LIBRARY_MANAGERS.equals(evt.getPropertyName())) {
+                    addLibraryManagerListener();
+                }
                 testBroken();
             }
         };
@@ -176,6 +228,8 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         // removed the platform still exists in JavaPlatformManager.
         // That's why I have to listen here also on JPM:
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
+        LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
+        addLibraryManagerListener();
 
         j2eeModuleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                     InstanceListener.class, il, j2eeModuleProvider));
@@ -356,16 +410,20 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     @Override
     public void testBroken () {
         if (isInitialized()) {
-            task.schedule(100);
+            task.schedule(500);
         }
     }
     
     public boolean hasBrokenLinks() {
         return BrokenReferencesSupport.isBroken(helper.getAntProjectHelper(), resolver, getBreakableProperties(),
-            new String[] {"platform.active"});
+            new String[] {JAVA_PLATFORM});
     }
     
-    abstract protected String[] getBreakableProperties();
+    abstract public String[] getBreakableProperties();
+
+    public String[] getPlatformProperties() {
+        return new String[] {JAVA_PLATFORM};
+    }
 
     protected final Project getProject() {
         return project;
@@ -414,7 +472,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             return false;
         }
 
-        final String platformId = this.evaluator.getProperty("platform.active");  //NOI18N
+        final String platformId = this.evaluator.getProperty(JAVA_PLATFORM);  //NOI18N
         final JavaPlatform activePlatform = getActivePlatform (platformId);
         if (activePlatform == null) {
             return true;
@@ -691,7 +749,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         public void actionPerformed(ActionEvent e) {
             try {
                 helper.requestUpdate();
-                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[] {"platform.active"});
+                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), getPlatformProperties());
                 testBroken();
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
@@ -833,4 +891,24 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         return BrokenServerLibrarySupport.isBroken(project);
     }
             
+    private static class OpenManagersWeakListener extends WeakReference<PropertyChangeListener> implements Runnable, PropertyChangeListener {
+
+        public OpenManagersWeakListener(final PropertyChangeListener listener) {
+            super(listener, Utilities.activeReferenceQueue());
+        }
+
+        @Override
+        public void run() {
+            LibraryManager.removeOpenManagersPropertyChangeListener(this);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final PropertyChangeListener listener = get();
+            if (listener != null) {
+                listener.propertyChange(evt);
+            }
+        }
+
+    }
 }
