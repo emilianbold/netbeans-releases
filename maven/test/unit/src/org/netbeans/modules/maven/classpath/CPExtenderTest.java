@@ -72,8 +72,9 @@ public class CPExtenderTest extends NbTestCase {
         clearWorkDir();
     }
 
-    public void testAddPomLib() throws Exception {
+    public void testAddRemovePomLib() throws Exception {
         Library lib = LibraryManager.getDefault().createLibrary("j2se", "Stuff", Collections.singletonMap("maven-pom", Collections.singletonList(new URL("http://repo1.maven.org/maven2/grp/stuff/1.0/stuff-1.0.pom"))));
+        Library lib2 = LibraryManager.getDefault().createLibrary("j2se", "Stuff2", Collections.singletonMap("maven-pom", Collections.singletonList(new URL("http://repo1.maven.org/maven2/grp/stuff/2.0/stuff-2.0.pom"))));
         FileObject d = FileUtil.toFileObject(getWorkDir());
         TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj</artifactId>"
@@ -86,7 +87,16 @@ public class CPExtenderTest extends NbTestCase {
         assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
         NbMavenProject.fireMavenProjectReload(p); // XXX why is this necessary?
         assertEquals("[Dependency {groupId=grp, artifactId=stuff, version=1.0, type=jar}]", mp.getMavenProject().getDependencies().toString());
+        assertFalse(ProjectClassPathModifier.removeLibraries(new Library[] {lib2}, java, ClassPath.COMPILE));
+        assertTrue(ProjectClassPathModifier.removeLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
+        assertFalse(ProjectClassPathModifier.removeLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
+        NbMavenProject.fireMavenProjectReload(p);
+        assertEquals("[]", mp.getMavenProject().getDependencies().toString());
     }
+
+    // XXX test adding & removing POM lib when <dependencyManagement> is in parent
+    // XXX test adding & removing JARs (incl. lib w/o POM)
+    // XXX test adding subprojects
 
     @ServiceProvider(service=LibraryTypeProvider.class, path=/*LibraryTypeRegistry.REGISTRY*/"org-netbeans-api-project-libraries/LibraryTypeProviders")
     public static class MockLibraryProvider implements LibraryTypeProvider {
