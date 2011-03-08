@@ -76,7 +76,6 @@ import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -129,30 +128,26 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     }
     
     public boolean addArchiveFile(FileObject arch) throws IOException {
-        final FileObject file = FileUtil.getArchiveFile(arch);
-        if (file.isFolder()) {
-            throw new IOException("Cannot add folders to Maven projects as dependencies: " + file.getURL()); //NOI18N
+        final File jar = FileUtil.archiveOrDirForURL(arch.getURL());
+        if (jar == null || jar.isDirectory()) {
+            throw new IOException("Cannot add folders to Maven projects as dependencies: " + arch); //NOI18N
         }
-
-        final Boolean[] added = new Boolean[1];
+        final AtomicBoolean added = new AtomicBoolean();
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 try {
-                    added[0] = addArchiveFile(file, model, null);
+                    added.compareAndSet(false, addJAR(jar, model, null));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                    added[0] = Boolean.FALSE;
                 }
             }
         };
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        //TODO is the manual reload necessary if pom.xml file is being saved?
-//                NbMavenProject.fireMavenProjectReload(project);
-        if (added[0]) {
+        if (added.get()) {
             project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
         }
-        return added[0];
+        return added.get();
     }
 
     private boolean addLibrary(Library library, POMModel model, String scope) throws IOException {
@@ -162,52 +157,47 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
             added = urls.size() > 0;
             assert model != null;
             for (URL url : urls) {
-                FileObject fo = URLMapper.findFileObject(FileUtil.getArchiveFile(url));
-                if (fo == null) {
+                File jar = FileUtil.archiveOrDirForURL(url);
+                if (jar == null) {
                     throw new IOException("Could find no file corresponding to " + url);
                 }
-                if (fo.isFolder()) {
-                    throw new IOException("Cannot add folders to Maven projects as dependencies: " + fo.getURL()); //NOI18N
+                if (jar.isDirectory()) {
+                    throw new IOException("Cannot add folders to Maven projects as dependencies: " + url); //NOI18N
                 }
-                added = added && addArchiveFile(fo, model, scope);
+                added = added && addJAR(jar, model, scope);
             }
         }
         return added;
     }
     
-    private boolean addArchiveFile(FileObject file, POMModel mdl, String scope) throws IOException {
-            
-        String[] dep = checkRepositoryIndices(FileUtil.toFile(file));
-        //if not found anywhere, add to a custom file:// based repository structure within the project's directory.
-        if (dep == null || "unknown.binary".equals(dep[0])) {  //NOI18N
-            //also go this route when the artifact was found in local repo but is of unknown.binary groupId.
-            dep = new String[3];
-            dep[0] = "unknown.binary"; //NOI18N
-            dep[1] = file.getName();
-            dep[2] = "SNAPSHOT"; //NOI18N
-            addJarToPrivateRepo(file, mdl, dep);
-        }
-        if (dep != null) {
-            Dependency dependency = ModelUtils.checkModelDependency(mdl, dep[0], dep[1], true);
-            dependency.setVersion(dep[2]);
-            if (scope != null) {
-                dependency.setScope(scope);
+    private boolean addJAR(File jar, POMModel mdl, String scope) throws IOException {
+        NBVersionInfo dep = null;
+        for (NBVersionInfo _dep : RepositoryQueries.findBySHA1(jar)) {
+            if (!"unknown.binary".equals(_dep.getGroupId())) {
+                dep = _dep;
+                break;
             }
-            return true;
         }
-        return false;
-    }
-    
-    private String[] checkRepositoryIndices(File file) {
-        List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(file);
-        for (NBVersionInfo elem : lst) {
-            String[] dep = new String[3];
-            dep[0] = elem.getGroupId();
-            dep[1] = elem.getArtifactId();
-            dep[2] = elem.getVersion();
-            return dep;
+        if (dep == null) {
+            dep = new NBVersionInfo(null, "unknown.binary", jar.getName().replaceFirst("[.]jar$", ""), "SNAPSHOT", null, null, null, null, null);
+            addJarToPrivateRepo(jar, mdl, dep);
         }
-        return null;
+        //if not found anywhere, add to a custom file:// based repository structure within the project's directory.
+        boolean added = false;
+        Dependency dependency = ModelUtils.checkModelDependency(mdl, dep.getGroupId(), dep.getArtifactId(), false);
+        if (dependency == null) {
+            dependency = ModelUtils.checkModelDependency(mdl, dep.getGroupId(), dep.getArtifactId(), true);
+            added = true;
+        }
+        if (!Utilities.compareObjects(dep.getVersion(), dependency.getVersion())) {
+            dependency.setVersion(dep.getVersion());
+            added = true;
+        }
+        if (!Utilities.compareObjects(scope, dependency.getScope())) {
+            dependency.setScope(scope);
+            added = true;
+        }
+        return added;
     }
     
     /**
@@ -329,12 +319,10 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public @Override void performOperation(POMModel model) {
                 for (URL url : urls) {
-                    URL fileUrl = FileUtil.getArchiveFile(url);
-                    if (fileUrl != null) {
-                        FileObject fo  = URLMapper.findFileObject(fileUrl);
-                        assert fo != null;
+                    File jar = FileUtil.archiveOrDirForURL(url);
+                    if (jar != null && jar.isFile()) {
                         try {
-                            added.compareAndSet(false, addArchiveFile(fo, model, scope));
+                            added.compareAndSet(false, addJAR(jar, model, scope));
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -429,7 +417,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         return scope;
     }
 
-    private void addJarToPrivateRepo(FileObject file, POMModel mdl, String[] dep) throws IOException {
+    // XXX this is a poor solution; http://jira.codehaus.org/secure/attachment/53864/MNG-1867.zip is better
+    private void addJarToPrivateRepo(File jar, POMModel mdl, NBVersionInfo dep) throws IOException {
         //first add the local repo to
         List<Repository> repos = mdl.getProject().getRepositories();
         boolean found = false;
@@ -458,12 +447,13 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         }
         assert path != null;
         FileObject root = FileUtil.createFolder(project.getProjectDirectory(), path);
-        FileObject grp = FileUtil.createFolder(root, dep[0].replace('.', '/')); //NOI18N
-        FileObject art = FileUtil.createFolder(grp, dep[1]);
-        FileObject ver = FileUtil.createFolder(art, dep[2]);
-        String name = dep[1] + "-" + dep[2];//NOI18N
+        FileObject grp = FileUtil.createFolder(root, dep.getGroupId().replace('.', '/')); //NOI18N
+        FileObject art = FileUtil.createFolder(grp, dep.getArtifactId());
+        FileObject ver = FileUtil.createFolder(art, dep.getVersion());
+        String name = dep.getArtifactId() + '-' + dep.getVersion();
+        FileObject file = FileUtil.toFileObject(jar);
         if (ver.getFileObject(name, file.getExt()) == null) { //#160803
-            FileUtil.copyFile(file, ver, dep[1] + "-" + dep[2], file.getExt()); //NOI18N
+            FileUtil.copyFile(file, ver, name, file.getExt());
         }
     }
 }
