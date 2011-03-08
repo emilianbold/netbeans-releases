@@ -180,6 +180,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         this.initialRefreshDisabled = initialRefreshDisabled;
         currentType = initialType;
         initComponents();
+        aquaBackgroundWorkaround();
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
@@ -193,6 +194,18 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
     }
 
+    private void aquaBackgroundWorkaround() {
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color); 
+            controlsToolBar.setBackground(color); 
+            jPanel1.setBackground(color); 
+            jPanel2.setBackground(color); 
+            jPanel4.setBackground(color); 
+            jPanel5.setBackground(color); 
+        }
+    }
+    
     /**
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
