@@ -40,47 +40,45 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.options;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.test.AnnotationProcessorTestUtils;
+import org.openide.util.test.TestFileUtils;
 
-public class MavenSourcesImplTest extends NbTestCase {
+public class OptionsPanelControllerProcessorTest extends NbTestCase {
 
-    public MavenSourcesImplTest(String name) {
+    public OptionsPanelControllerProcessorTest(String name) {
         super(name);
     }
 
-    private FileObject d;
     protected @Override void setUp() throws Exception {
         clearWorkDir();
-        d = FileUtil.toFileObject(getWorkDir());
     }
 
-    public void testITSourceGroups() throws Exception {
-        TestFileUtils.writeFile(d,
-                "pom.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
-                "<modelVersion>4.0.0</modelVersion>" +
-                "<groupId>grp</groupId>" +
-                "<artifactId>art</artifactId>" +
-                "<packaging>jar</packaging>" +
-                "<version>1.0-SNAPSHOT</version>" +
-                "<name>Test</name>" +
-                "<build>" +
-                "<testSourceDirectory>src/it/java</testSourceDirectory>" +
-                "</build>" +
-                "</project>");
-        FileObject itsrc = FileUtil.createFolder(d, "src/it/java");
-        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        assertEquals(1, grps.length);
-        assertEquals(itsrc, grps[0].getRootFolder());
+    public void testBadIconBase() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "@org.netbeans.spi.options.OptionsPanelController.TopLevelRegistration(iconBase=\"no/such/icon\", categoryName=\"x\", keywords=\"x\", keywordsCategory=\"x\")",
+                "public class C extends org.netbeans.spi.options.OptionsPanelController {",
+                "    public void update() {}",
+                "    public void applyChanges() {}",
+                "    public void cancel() {}",
+                "    public boolean isValid() {return false;}",
+                "    public boolean isChanged() {return false;}",
+                "    public org.openide.util.HelpCtx getHelpCtx() {return null;}",
+                "    public javax.swing.JComponent getComponent(org.openide.util.Lookup l) {return null;}",
+                "    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {}",
+                "    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {}",
+                "}");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("no/such/icon"));
+        TestFileUtils.writeFile(new File(src, "no/such/icon"), "whatever");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
     }
 
 }

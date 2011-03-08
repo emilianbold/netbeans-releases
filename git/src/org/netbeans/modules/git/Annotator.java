@@ -429,7 +429,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
 
     @Override
     public void propertyChange (final PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == RepositoryInfo.PROPERTY_ACTIVE_BRANCH || evt.getPropertyName() == RepositoryInfo.PROPERTY_STATE) {
+        if (evt.getPropertyName() == RepositoryInfo.PROPERTY_ACTIVE_BRANCH || evt.getPropertyName() == RepositoryInfo.PROPERTY_STATE
+                || evt.getPropertyName() == RepositoryInfo.PROPERTY_HEAD && ((GitBranch) evt.getNewValue()).getName() == GitBranch.NO_BRANCH) {
             Utils.post(new Runnable() {
                 @Override
                 public void run() {

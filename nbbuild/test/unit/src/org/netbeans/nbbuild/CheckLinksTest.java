@@ -104,7 +104,26 @@ public class CheckLinksTest extends TestBase {
             // ok, this should fail on exit code
         }
     }
-  
+
+    public void testForbiddenURLsInLinkElements() throws Exception {
+        File html = extractHTMLFile("<html><head><link rel=\"stylesheet\" href=\"http://www.netbeans.org/netbeans.css\" type=\"text/css\"></head>\n");
+        File f = extractString(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\">" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\">" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "'>" +
+            "    <include name=\"" + html.getName() + "\"/>" +
+            "    <filter accept='false' pattern='http://www\\.netbeans\\.org/netbeans\\.css'/>" +
+            "  </checklinks>" +
+            "</target>" +
+            "</project>"
+        );
+        try {
+            execute(f, new String[] {});
+            fail();
+        } catch (ExecutionError ex) {}
+    }
   
     public void testAnyURLCanBeForbidden () throws Exception {
         java.io.File html = extractHTMLFile (

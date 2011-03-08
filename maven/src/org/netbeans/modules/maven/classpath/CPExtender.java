@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.classpath;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -64,6 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;

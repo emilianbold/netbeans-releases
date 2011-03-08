@@ -79,11 +79,11 @@ public class MergeTest extends AbstractGitTestCase {
         client.commit(roots, "initial", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         String branchName = "nova";
         assertEquals(branchName, client.createBranch(branchName, "master", ProgressMonitor.NULL_PROGRESS_MONITOR).getName());
-        client.checkoutBranch(branchName, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(branchName, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         write(f, "blablabla");
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
         client.commit(roots, branchName, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.checkoutBranch("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals("", read(f));
         
         final Set<File> notifiedFiles = new HashSet<File>();
