@@ -527,7 +527,7 @@ public final class ClassPath {
      * if the resource is not within the ClassPath contents.
      * @param resource resource to find root for.
      */
-    public final FileObject findOwnerRoot(FileObject resource) {
+    public final @CheckForNull FileObject findOwnerRoot(FileObject resource) {
 	FileObject[] roots = getRoots();
         Set<FileObject> rootsSet = new HashSet<FileObject>(Arrays.asList(roots));
         for (FileObject f = resource; f != null; f = f.getParent()) {

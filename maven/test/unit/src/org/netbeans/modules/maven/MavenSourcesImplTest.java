@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.classpath;
+package org.netbeans.modules.maven;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 
-/**
- *
- * @author  Milos Kleint 
- */
-class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
-    
-    /**
-     * Creates a new instance of TestSourceClassPathImpl
-     */
-    public TestSourceClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
+public class MavenSourcesImplTest extends NbTestCase {
+
+    public MavenSourcesImplTest(String name) {
+        super(name);
     }
-    
-    @Override
-    URI[] createPath() {
-        Collection<URI> col = new ArrayList<URI>();
-        col.addAll(Arrays.asList(getMavenProject().getSourceRoots(true)));
-        //#180020 remote items from resources that are either duplicate or child roots of source roots.
-        List<URI> resources = new ArrayList<URI>(Arrays.asList(getMavenProject().getResources(true)));
-        Iterator<URI> it = resources.iterator();
-        while (it.hasNext()) {
-            URI res = it.next();
-            for (URI srcs : col) {
-                if (res.toString().startsWith(srcs.toString())) {
-                    it.remove();
-                }
-            }
-        }
-        col.addAll(resources);
-        
-        URI[] uris = new URI[col.size()];
-        uris = col.toArray(uris);
-        return uris;        
+
+    private FileObject d;
+    protected @Override void setUp() throws Exception {
+        clearWorkDir();
+        d = FileUtil.toFileObject(getWorkDir());
     }
-    
+
+    public void testITSourceGroups() throws Exception {
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "<build>" +
+                "<testSourceDirectory>src/it/java</testSourceDirectory>" +
+                "</build>" +
+                "</project>");
+        FileObject itsrc = FileUtil.createFolder(d, "src/it/java");
+        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(1, grps.length);
+        assertEquals(itsrc, grps[0].getRootFolder());
+    }
+
 }

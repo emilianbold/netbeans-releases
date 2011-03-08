@@ -87,7 +87,15 @@ public class PackageRenameHandlerImpl implements PackageRenameHandler {
                         msg, NotifyDescriptor.INFORMATION_MESSAGE));
                     return;
                 }
-                FileObject newFolder = FileUtil.createFolder(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), newName.replace('.','/'));
+                ClassPath sourcepath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (sourcepath == null) {
+                    throw new IOException("no sourcepath for " + fo);
+                }
+                FileObject root = sourcepath.findOwnerRoot(fo);
+                if (root == null) {
+                    throw new IOException(fo + " not in its own sourcepath " + sourcepath);
+                }
+                FileObject newFolder = FileUtil.createFolder(root, newName.replace('.','/'));
                 while (dob.getChildren().length == 0 && dob.isDeleteAllowed() && !dob.getPrimaryFile().equals(newFolder)) {
                     DataFolder parent = dob.getFolder();
                     dob.delete();
