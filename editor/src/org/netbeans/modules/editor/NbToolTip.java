@@ -417,7 +417,11 @@ public class NbToolTip extends FileChangeAdapter {
             if (!isRequestValid()) {
                 return null;
             }
-            
+
+            return getTooltipFromHighlightingLayers();
+        }
+
+        private String getTooltipFromHighlightingLayers() {
             // Read tooltip from highlighting layers attribute
             String tooltipFromHighlightingLayers = null;
             {
@@ -479,20 +483,36 @@ public class NbToolTip extends FileChangeAdapter {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (Annotation.PROP_SHORT_DESCRIPTION.equals(propName) || AnnotationDesc.PROP_SHORT_DESCRIPTION.equals(propName)) {
-                if (evt.getNewValue() != null) {
-                    final String tipText = (String)evt.getNewValue();
-                    Utilities.runInEventDispatchThread( // ensure to run in AWT thread
-                        new Runnable() {
-                            public void run() {
-                                final ToolTipSupport ftts = tts;
-                                if (ftts != null) {
-                                    ftts.setToolTipText(tipText);
+                final Object newValue = evt.getNewValue();
+                toolTipRP.post(new Runnable() {
+                    @Override public void run() {
+                        final String tipText;
+                        if (newValue != null) {
+                            tipText = (String) newValue;
+                        } else {
+                            if (isRequestValid()) {
+                                tipText = getTooltipFromHighlightingLayers();
+                                if (tipText == null || tipText.isEmpty()) {
+                                    return ;
                                 }
+                            } else {
+                                return ;
                             }
                         }
-                    );
-                }
-                
+                        if (tipText != null) {
+                            Utilities.runInEventDispatchThread( // ensure to run in AWT thread
+                                new Runnable() {
+                                    public void run() {
+                                        final ToolTipSupport ftts = tts;
+                                        if (ftts != null) {
+                                            ftts.setToolTipText(tipText);
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                    }
+                });
             } else if (ToolTipSupport.PROP_STATUS.equals(propName)) {
                 if (((Integer)evt.getNewValue()).intValue() == ToolTipSupport.STATUS_HIDDEN) {
                     dismiss();
