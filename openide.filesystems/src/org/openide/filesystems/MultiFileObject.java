@@ -942,6 +942,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         if (fire) {
             oldValue = getAttribute(attrName);
+            if (oldValue == value) {
+                return;
+            }
         }
 
         if (fo == null) {
