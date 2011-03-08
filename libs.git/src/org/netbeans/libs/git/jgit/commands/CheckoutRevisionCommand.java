@@ -63,17 +63,17 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  *
  * @author ondra
  */
-public class CheckoutBranchCommand extends GitCommand {
+public class CheckoutRevisionCommand extends GitCommand {
 
     private final FileListener listener;
     private final ProgressMonitor monitor;
-    private final String branch;
+    private final String revision;
     private final boolean failOnConflict;
     private DirCache cache;
 
-    public CheckoutBranchCommand (Repository repository, String branch, boolean failOnConflict, ProgressMonitor monitor, FileListener listener) {
+    public CheckoutRevisionCommand (Repository repository, String revision, boolean failOnConflict, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
-        this.branch = branch;
+        this.revision = revision;
         this.listener = listener;
         this.monitor = monitor;
         this.failOnConflict = failOnConflict;
@@ -85,7 +85,10 @@ public class CheckoutBranchCommand extends GitCommand {
         try {
             Ref headRef = repository.getRef(Constants.HEAD);
             ObjectId headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
-            Ref ref = repository.getRef(branch);
+            Ref ref = repository.getRef(revision);
+            if (ref != null && !ref.getName().startsWith(Constants.R_HEADS)) {
+                ref = null;
+            }
             String fromName = headRef.getTarget().getName();
             if (fromName.startsWith(Constants.R_HEADS)) {
                 fromName = fromName.substring(Constants.R_HEADS.length());
@@ -94,8 +97,10 @@ public class CheckoutBranchCommand extends GitCommand {
 
             cache = repository.lockDirCache();
             DirCacheCheckout dco = null;
+            RevCommit commit;
             try {
-                dco = new DirCacheCheckout(repository, headTree, cache, Utils.findCommit(repository, branch).getTree());
+                commit = Utils.findCommit(repository, revision);
+                dco = new DirCacheCheckout(repository, headTree, cache, commit.getTree());
                 dco.setFailOnConflict(failOnConflict);
                 dco.checkout();
                 File workDir = repository.getWorkTree();
@@ -110,14 +115,26 @@ public class CheckoutBranchCommand extends GitCommand {
             }
             
             if (!monitor.isCanceled()) {
-                RefUpdate refUpdate = repository.updateRef(Constants.HEAD);
+                RefUpdate refUpdate = repository.updateRef(Constants.HEAD, ref == null);
                 refUpdate.setForceUpdate(false);
-                String toName = ref.getName();
-                if (toName.startsWith(Constants.R_HEADS)) {
-                    toName = toName.substring(Constants.R_HEADS.length());
-                }
+                
+                String toName;
+                if (ref == null) {
+                    toName = commit.getName();
+                } else {
+                    toName = ref.getName();
+                    if (toName.startsWith(Constants.R_HEADS)) {
+                        toName = toName.substring(Constants.R_HEADS.length());
+                    }
+                }                
                 refUpdate.setRefLogMessage(refLogMessage + " to " + toName, false); //NOI18N
-                RefUpdate.Result updateResult = refUpdate.link(ref.getName());
+                RefUpdate.Result updateResult;
+                if (ref != null)
+                        updateResult = refUpdate.link(ref.getName());
+                else {
+                        refUpdate.setNewObjectId(commit);
+                        updateResult = refUpdate.forceUpdate();
+                }
 
                 boolean ok = false;
                 switch (updateResult) {
@@ -144,7 +161,7 @@ public class CheckoutBranchCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git checkout ").append(branch); //NOI18N
+        StringBuilder sb = new StringBuilder("git checkout ").append(revision); //NOI18N
         return sb.toString();
     }
 

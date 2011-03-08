@@ -43,7 +43,6 @@
 package org.netbeans.libs.git;
 
 import java.io.File;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -112,18 +111,18 @@ public interface GitClient {
      * @throws GitException other error
      */
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
-    
+
     /**
      * Checks out the the state of a given revision.
      * @param revision cannot be null
      * @param failOnConflict if set to false, the command tries to merge local changes into the new branch
      * @throws GitException other error
      */
-    public void checkoutBranch (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Cleans the working tree by recursively removing files that are not under 
- *   * version control starting from the given roots.
+     * version control starting from the given roots.
      * @param roots
      * @param monitor
      * @throws GitException 
