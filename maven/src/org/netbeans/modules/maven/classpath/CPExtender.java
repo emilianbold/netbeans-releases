@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
@@ -75,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * an implementation of ProjectClassPathModifierImplementation that tried to match 
@@ -152,8 +154,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     }
 
     private boolean addLibrary(Library library, POMModel model, String scope) throws IOException {
-        boolean added = checkLibraryForPoms(library, model, scope);
-        if (!added) {
+        Boolean added = checkLibraryForPoms(library, model, scope);
+        if (added == null) {
             List<URL> urls = library.getContent("classpath"); //NOI18N
             added = urls.size() > 0;
             assert model != null;
@@ -207,27 +209,38 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     }
     
     /**
+     * @return true if something was added, false if everything was already there, null if could not do anything
      */
-    private boolean checkLibraryForPoms(Library library, POMModel model, String scope) {
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private Boolean checkLibraryForPoms(Library library, POMModel model, String scope) {
         if (!"j2se".equals(library.getType())) {//NOI18N
             //only j2se library supported for now..
-            return false;
+            return null;
         }
         List<URL> poms = library.getContent("maven-pom"); //NOI18N
-        boolean added = false;
+        Boolean added = null;
         if (poms != null && poms.size() > 0) {
             for (URL pom : poms) {
                 ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
                 if (result != null) {
-                    added = true;
                     //set dependency
-                    Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);
-                    dep.setVersion(result.getVersion());
-                    if (scope != null) {
-                        dep.setScope(scope);
+                    added = false;
+                    Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), false);
+                    if (dep == null) {
+                        dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);
+                        added = true;
                     }
-                    if (result.getClassifier() != null) {
+                    if (!Utilities.compareObjects(result.getVersion(), dep.getVersion())) {
+                        dep.setVersion(result.getVersion());
+                        added = true;
+                    }
+                    if (!Utilities.compareObjects(scope, dep.getScope())) {
+                        dep.setScope(scope);
+                        added = true;
+                    }
+                    if (!Utilities.compareObjects(result.getClassifier(), dep.getClassifier())) {
                         dep.setClassifier(result.getClassifier());
+                        added = true;
                     }
                     //set repository
                     org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
@@ -236,6 +249,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
                         reposit.setId(library.getName());
                         reposit.setLayout(result.getRepoType());
                         reposit.setName("Repository for library " + library); //NOI18N - content coming into the pom.xml file
+                        added = true;
                     }
                 }
             }
