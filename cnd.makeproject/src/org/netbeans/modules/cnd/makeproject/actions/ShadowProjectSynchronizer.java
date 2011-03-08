@@ -54,7 +54,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -91,6 +95,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -284,7 +289,7 @@ public class ShadowProjectSynchronizer {
             // Process files in local temp dir
             progress.progress(NbBundle.getMessage(ShadowProjectSynchronizer.class, "Progress_sync_local_merge"));
             updateRemoteProjectXml(tmpFO);
-            updateRemoteConfiguration(tmpFO, remoteProject);
+            updateRemoteConfiguration(tmpFO);
             updateRemotePrivateConfiguration(tmpFO);
             progress.progress(2);
             
@@ -452,10 +457,20 @@ public class ShadowProjectSynchronizer {
         if (origCSList.getLength() > 0) {
             Node origCsNode = origCSList.item(0);
             if (origCsNode.getChildNodes().getLength() >0) {
-                origCsName = origCsNode.getChildNodes().item(0).getNodeValue();
+                origCsName = getSimpleNodeValue(origCsNode);
             }
         }
         return origCsName;
+    }
+    
+    private static String getSimpleNodeValue(Node node) {
+        if (node != null) {
+            NodeList childNodes = node.getChildNodes();
+            if (childNodes.getLength() > 0) {
+                return childNodes.item(0).getNodeValue();
+            }
+        }
+        return null;
     }
     
     private static FileObject getFileObject(ExecutionEnvironment env, String absPath) throws FileNotFoundException {
@@ -482,8 +497,8 @@ public class ShadowProjectSynchronizer {
         return fo;
     }
     
-    private static FileObject updateRemoteConfiguration(FileObject remoteProjectCopy, FileObject remoteProjectOrig) throws IOException, SAXException {
-        String origCsName = getOrigCompilerSet(remoteProjectOrig);
+    private FileObject updateRemoteConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+        String origCsName = getOrigCompilerSet(remoteProject);
         FileObject fo = getFileObject(remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
         Element root = doc.getDocumentElement();
@@ -491,14 +506,7 @@ public class ShadowProjectSynchronizer {
             NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
             for(int i = 0; i < toolSetList.getLength(); i++) {
                 Node node = toolSetList.item(i);
-                NodeList childNodes = node.getChildNodes();
-                List<Node> list = new ArrayList<Node>();
-                for(int j = 0; j < childNodes.getLength(); j++) {
-                    list.add(childNodes.item(j));
-                }
-                for(Node n : list) {
-                    node.removeChild(n);
-                }
+                removeChildren(node);
                 Element el = doc.createElement(MakeProject.REMOTE_MODE);
                 el.setTextContent(RemoteProject.Mode.LOCAL_SOURCES.name());
                 node.appendChild(el);
@@ -509,28 +517,45 @@ public class ShadowProjectSynchronizer {
         }
         return saveXml(doc, remoteProjectCopy, PROJECT_CONFIGURATION_FILE);
     }
+
+    private Map<String, ServerAndPlatform> getOrigPlatforms() throws IOException, SAXException {
+        Map<String, ServerAndPlatform> compilerSets = new HashMap<String, ServerAndPlatform>();
+        FileObject origPublicConfigurationsFO = getFileObject(remoteProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
+        Document doc = XMLUtil.parse(new InputSource(origPublicConfigurationsFO.getInputStream()), false, true, null, null);
+        for (Node conf : getIterableByTagName(doc.getDocumentElement(), CommonConfigurationXMLCodec.CONF_ELEMENT)) {
+            NamedNodeMap attrs = conf.getAttributes();
+            String confName = attrs.getNamedItem("name").getNodeValue();
+            for (Node toolSetNode : getIterableByTagName(conf, CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT)) {
+                Node serverNode = getNodeByTagName(toolSetNode, CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
+                Node platformNode = getNodeByTagName(toolSetNode, CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
+                ServerAndPlatform sp = new ServerAndPlatform(getSimpleNodeValue(serverNode), getSimpleNodeValue(platformNode));
+                compilerSets.put(confName, sp);
+            }
+        }
+        return compilerSets;
+    }
     
-    private static FileObject updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+    private FileObject updateRemotePrivateConfiguration(FileObject remoteProjectCopy) throws IOException, SAXException {
+        Map<String, ServerAndPlatform> origPlatforms = getOrigPlatforms();
         FileObject fo = getFileObject(remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
         Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
-        Element root = doc.getDocumentElement();
-        if (root != null) {
-            NodeList toolSetList = root.getElementsByTagName(CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT);
-            if (toolSetList.getLength() > 0) {
-                for(int i = 0; i < toolSetList.getLength(); i++) {
-                    Node node = toolSetList.item(i);
-                    NodeList childNodes = node.getChildNodes();
-                    List<Node> list = new ArrayList<Node>();
-                    for(int j = 0; j < childNodes.getLength(); j++) {
-                        list.add(childNodes.item(j));
-                    }
-                    for(Node n : list) {
-                        node.removeChild(n);
-                    }
-                    Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
-                    remoteMode.setTextContent(ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal()));
-                    node.appendChild(remoteMode);
-                }
+        for (Node conf : getIterableByTagName(doc.getDocumentElement(), CommonConfigurationXMLCodec.CONF_ELEMENT)) {
+            NamedNodeMap attrs = conf.getAttributes();
+            String confName = attrs.getNamedItem("name").getNodeValue();
+            ServerAndPlatform sp = origPlatforms.get(confName);
+            if (sp == null) {
+                sp = new ServerAndPlatform(ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal()), 
+                        Integer.toString(getPlatform(env)));
+            }
+            for (Node node : getIterableByTagName(conf, CommonConfigurationXMLCodec.TOOLS_SET_ELEMENT)) {
+                removeChildren(node);
+                Element remoteMode;
+                remoteMode = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
+                remoteMode.setTextContent(sp.server);
+                node.appendChild(remoteMode);
+                remoteMode = doc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
+                remoteMode.setTextContent(sp.platform);
+                node.appendChild(remoteMode);
             }
         }
         return saveXml(doc, remoteProjectCopy, PROJECT_PRIVATE_CONFIGURATION_FILE);
@@ -585,14 +610,7 @@ public class ShadowProjectSynchronizer {
             if (toolSetList.getLength() > 0) {
                 for(int i = 0; i < toolSetList.getLength(); i++) {
                     Node node = toolSetList.item(i);
-                    NodeList childNodes = node.getChildNodes();
-                    List<Node> list = new ArrayList<Node>();
-                    for(int j = 0; j < childNodes.getLength(); j++) {
-                        list.add(childNodes.item(j));
-                    }
-                    for(Node n : list) {
-                        node.removeChild(n);
-                    }
+                    removeChildren(node);
                     Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.FIXED_SYNC_FACTORY_ELEMENT);
                     remoteMode.setTextContent("full"); //NOI18N
                     node.appendChild(remoteMode);
@@ -625,21 +643,21 @@ public class ShadowProjectSynchronizer {
             if (toolSetList.getLength() > 0) {
                 for(int i = 0; i < toolSetList.getLength(); i++) {
                     Node node = toolSetList.item(i);
-                    NodeList childNodes = node.getChildNodes();
-                    List<Node> list = new ArrayList<Node>();
-                    for(int j = 0; j < childNodes.getLength(); j++) {
-                        list.add(childNodes.item(j));
-                    }
-                    for(Node n : list) {
-                        node.removeChild(n);
-                    }
+                    removeChildren(node);
                     Element remoteMode = doc.createElement(CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT);
                     remoteMode.setTextContent(ExecutionEnvironmentFactory.toUniqueID(env));
                     node.appendChild(remoteMode);
+                    Element platformElement = doc.createElement(CommonConfigurationXMLCodec.PLATFORM_ELEMENT);
+                    platformElement.setTextContent(Integer.toString(getPlatform(env)));
+                    node.appendChild(platformElement);
                 }
             }
         }
         return saveXml(doc, localProject, PROJECT_PRIVATE_CONFIGURATION_FILE);
+    }
+
+    private static int getPlatform(ExecutionEnvironment env) {
+        return CompilerSetManager.get(env).getPlatform();
     }
 
     private static FileObject getOrCreateFileObject(FileObject dstParent, String name, boolean folder) throws IOException {
@@ -749,4 +767,110 @@ public class ShadowProjectSynchronizer {
         }
         return xml;
     }
+
+    private static void removeChildren(Node node) {
+        NodeList childNodes = node.getChildNodes();
+        List<Node> list = new ArrayList<Node>();
+        for(int j = 0; j < childNodes.getLength(); j++) {
+            list.add(childNodes.item(j));
+        }
+        for(Node n : list) {
+            node.removeChild(n);
+        }
+    }
+    
+    private static Node getNodeByTagName(Node node, String tagName) {
+        Iterator<Node> it = getIteratorByTagName(node, tagName);
+        if (it.hasNext()) {
+            Node result = it.next();
+            if (it.hasNext()) {
+                LOGGER.log(Level.WARNING, "More than one node of type {0}", tagName); //NOI18N
+            }
+            return result;
+        }
+        return null;
+    }
+    
+    private static Iterator<Node> getIteratorByTagName(Node node, String tagName) {
+        if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
+            return new NodeListIterator(((Element) node).getElementsByTagName(tagName));
+        }
+        return new EmptyIterator<Node>();
+    }
+
+    private static NodeListIterable getIterableByTagName(Node node, String tagName) {
+        if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
+            return new NodeListIterable(((Element) node).getElementsByTagName(tagName));
+        }
+        return new NodeListIterable(null);
+    }
+    
+    private static class NodeListIterable implements Iterable<Node> {
+
+        private final NodeList nodeList;
+
+        public NodeListIterable(NodeList nodeList) {
+            this.nodeList = nodeList;
+        }
+        
+        @Override
+        public Iterator<Node> iterator() {
+            return (nodeList == null) ? new EmptyIterator<Node>() : new NodeListIterator(nodeList);
+        }
+    }
+
+    private static class ServerAndPlatform {
+        public final String server;
+        public final String platform;
+        
+        public ServerAndPlatform(String server, String platform) {
+            this.server = server;
+            this.platform = platform;
+        }
+        
+        @Override
+        public String toString() {
+            return server + ',' + platform;
+        }        
+    }
+    
+    private static class NodeListIterator implements Iterator<Node> {
+        
+        private final NodeList nodeList;
+        private int curr = 0;
+
+        public NodeListIterator(NodeList nodeList) {
+            this.nodeList = nodeList;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return curr < nodeList.getLength();
+        }
+
+        @Override
+        public Node next() {
+            return nodeList.item(curr++);
+        }
+
+        @Override
+        public void remove() {
+            throw new IllegalStateException();
+        }
+    }
+
+    private static class EmptyIterator<E> implements Iterator<E> {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+        @Override
+        public E next() {
+            throw new NoSuchElementException();
+        }
+        @Override
+        public void remove() {
+            throw new IllegalStateException();
+        }
+    }    
 }
