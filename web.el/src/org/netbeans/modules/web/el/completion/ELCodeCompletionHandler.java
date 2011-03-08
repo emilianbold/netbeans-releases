@@ -193,7 +193,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         for(Element element : allTypes) {
             for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
                 //do not propose Object's members
-                if(enclosed.getSimpleName().contentEquals("Object")) { //NOI18N
+                if(element.getSimpleName().contentEquals("Object")) { //NOI18N
                     //XXX hmm, not an ideal non-fqn check
                     continue;
                 }
