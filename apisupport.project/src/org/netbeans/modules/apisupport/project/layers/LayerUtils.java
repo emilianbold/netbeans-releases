@@ -67,6 +67,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -552,7 +553,7 @@ public class LayerUtils {
      * @param Project, must contain {@link NbModuleProvider} in lookup.
      * @return Platform for project
      */
-    public static NbPlatform getPlatformForProject(Project project) {
+    public static @CheckForNull NbPlatform getPlatformForProject(Project project) {
         NbModuleProvider mod = project.getLookup().lookup(NbModuleProvider.class);
         NbPlatform platform = null;
         File platformDir = mod.getActivePlatformLocation();
