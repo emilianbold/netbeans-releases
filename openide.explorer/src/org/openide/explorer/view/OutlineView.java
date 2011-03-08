@@ -195,6 +195,8 @@ public class OutlineView extends JScrollPane {
                                                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED :
                                                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER;
     private ScrollListener listener;
+    
+    private Selection selection = null;
 
     /** Creates a new instance of TableView */
     public OutlineView() {
@@ -625,6 +627,9 @@ public class OutlineView extends JScrollPane {
         lookupExplorerManager ();
         ViewUtil.adjustBackground(outline);
         ViewUtil.adjustBackground(getViewport());
+        if (selection != null) {
+            selection.setTo(outline.getSelectionModel());
+        }
     }
     
     /**
@@ -804,6 +809,7 @@ public class OutlineView extends JScrollPane {
     @Override
     public void removeNotify () {
         super.removeNotify ();
+        selection = new Selection(outline.getSelectionModel());
         outline.getSelectionModel().clearSelection();
         outline.getSelectionModel().removeListSelectionListener(managerListener);
         if (manager != null) {
@@ -1994,6 +2000,48 @@ public class OutlineView extends JScrollPane {
             }
         }
 
+    }
+
+    /** Selection persistence, which allows to clear selected nodes. */
+    private static class Selection {
+        int selectionMode;
+        int anchor;
+        int lead;
+        List<int[]> intervals = new ArrayList<int[]>();
+
+        public Selection(ListSelectionModel sm) {
+            selectionMode = sm.getSelectionMode();
+            anchor = sm.getAnchorSelectionIndex();
+            lead = sm.getLeadSelectionIndex();
+            int min = sm.getMinSelectionIndex();
+            int max = sm.getMaxSelectionIndex();
+            int i1 = -1;
+            for (int i = min; i <= max; i++) {
+                if (sm.isSelectedIndex(i)) {
+                    if (i1 == -1) {
+                        i1 = i;
+                    }
+                } else {
+                    if (i1 != -1) {
+                        intervals.add(new int[] { i1, i});
+                        i1 = -1;
+                    }
+                }
+            }
+            if (i1 != -1) {
+                intervals.add(new int[] { i1, max});
+            }
+        }
+
+        public void setTo(ListSelectionModel sm) {
+            sm.clearSelection();
+            sm.setSelectionMode(selectionMode);
+            for (int[] itv : intervals) {
+                sm.addSelectionInterval(itv[0], itv[1]);
+            }
+            sm.setAnchorSelectionIndex(anchor);
+            sm.setLeadSelectionIndex(lead);
+        }
     }
 
 }
