@@ -44,7 +44,9 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
@@ -278,4 +280,20 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
         RemoteFileSystemManager.getInstance().removeDownloadListener(listener);
     }
+
+    @Override
+    public void scheduleRefresh(FileObject fileObject) {
+        if (fileObject instanceof RemoteFileObjectBase) {
+            RemoteFileObjectBase fo = (RemoteFileObjectBase) fileObject;
+            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo));
+        } else {
+            RemoteLogger.getInstance().log(Level.WARNING, "Unexpected fileObject class: {0}", fileObject.getClass());
+        }
+    }
+
+    @Override
+    public void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
+        RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+        fs.scheduleRefreshExistent(paths);
+    }    
 }

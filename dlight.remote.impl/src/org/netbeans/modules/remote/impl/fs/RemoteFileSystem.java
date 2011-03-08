@@ -70,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -167,6 +168,17 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    public void scheduleRefreshExistent(Collection<String> paths) {
+        Collection<RemoteFileObjectBase> fileObjects = new ArrayList<RemoteFileObjectBase>(paths.size());
+        for (String path : paths) {
+            RemoteFileObjectBase fo = factory.getCachedFileObject(path);
+            if (fo != null) {
+                fileObjects.add(fo);
+            }
+        }
+        refreshManager.scheduleRefresh(fileObjects);
+    }
+
     private void resetDirtyTimestamp() {
         cache.setLastModified(System.currentTimeMillis());
         dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
