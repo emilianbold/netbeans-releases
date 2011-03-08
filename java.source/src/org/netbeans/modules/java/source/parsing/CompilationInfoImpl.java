@@ -94,6 +94,7 @@ public final class CompilationInfoImpl {
     private Snapshot snapshot;
     private final JavacParser parser;
     private final boolean isClassFile;
+    private final boolean isDetached;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase
 
     /**
@@ -103,13 +104,15 @@ public final class CompilationInfoImpl {
      * @param root the owner of the parsed file
      * @param javacTask used javac or null if new one should be created
      * @param snapshot rendered content of the file
+     * @param detached true if the CompilationInfoImpl is detached from parsing infrastructure.
      * @throws java.io.IOException
      */
     CompilationInfoImpl (final JavacParser parser,
                          final FileObject file,
                          final FileObject root,
                          final JavacTaskImpl javacTask,
-                         final Snapshot snapshot) throws IOException {
+                         final Snapshot snapshot,
+                         final boolean detached) throws IOException {
         assert parser != null;
         this.parser = parser;
         this.cpInfo = parser.getClasspathInfo();
@@ -121,6 +124,7 @@ public final class CompilationInfoImpl {
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
         this.isClassFile = false;
+        this.isDetached = detached;
     }
 
     /**
@@ -136,6 +140,7 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = false;
+        this.isDetached = false;
     }
 
     /**
@@ -157,6 +162,7 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = true;
+        this.isDetached = false;
     }
 
     void update (final Snapshot snapshot) throws IOException {
@@ -353,6 +359,19 @@ public final class CompilationInfoImpl {
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
+
+    /**
+     * Returns {@link JavacTaskImpl}, when it doesn't exist
+     * it's created.
+     * @return JavacTaskImpl
+     */
+    public synchronized JavacTaskImpl getJavacTask() {
+        if (javacTask == null) {
+            javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
+                    this.parser, new DiagnosticListenerImpl(this.jfo), null, isDetached);
+        }
+	return javacTask;
+    }
     
     /**
      * Sets the current {@link JavaSource.Phase}
@@ -378,21 +397,8 @@ public final class CompilationInfoImpl {
     void setCompilationUnit(final CompilationUnitTree compilationUnit) {
         assert compilationUnit != null;
         this.compilationUnit = compilationUnit;
-    }        
-    
-    /**
-     * Returns {@link JavacTaskImpl}, when it doesn't exist
-     * it's created.
-     * @return JavacTaskImpl
-     */
-    public synchronized JavacTaskImpl getJavacTask() {	
-        if (javacTask == null) {
-            javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
-                    this.parser, new DiagnosticListenerImpl(this.jfo), null);
-        }
-	return javacTask;
     }
-    
+                
     private boolean hasSource () {
         return this.jfo != null && !isClassFile;
     }

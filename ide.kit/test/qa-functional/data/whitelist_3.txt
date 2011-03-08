@@ -1,5 +1,7 @@
 #include whitelist_2.txt
 
+#include whitelist_bug_195029.txt
+
 #191731
 org.netbeans.modules.cnd.api.xml.XMLDecoder
 org.netbeans.modules.cnd.api.xml.XMLDocReader

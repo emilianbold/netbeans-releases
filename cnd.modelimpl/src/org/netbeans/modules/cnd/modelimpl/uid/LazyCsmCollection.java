@@ -76,14 +76,17 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return (Tfact) UIDCsmConverter.UIDtoCsmObject(uid);
     }
 
+    @Override
     public int size() {
         return uids.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return uids.isEmpty();
     }
 
+    @Override
     public boolean contains(Object o) {
         Iterator<Tfact> it = iterator();
         while (it.hasNext()) {
@@ -96,6 +99,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return false;
     }
 
+    @Override
     public Iterator<Tfact> iterator() {
         return allowNullsAndSkip ? new MySafeIterator() : new MyIterator();
     }
@@ -104,6 +108,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return new MySafeIterator(filter);
     }
 
+    @Override
     public Object[] toArray() {
         Object[] result = new Object[size()];
         Iterator<Tfact> e = iterator();
@@ -120,6 +125,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T[] toArray(T[] a) {
         int size = size();
         if (a.length < size) {
@@ -139,14 +145,17 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return a;
     }
 
+    @Override
     public boolean add(Tfact o) {
         return uids.add(UIDs.<Tuid>get(o));
     }
 
+    @Override
     public boolean remove(Object o) {
         return uids.remove(UIDs.get(o));
     }
 
+    @Override
     public boolean containsAll(Collection<?> c) {
         Iterator<?> e = c.iterator();
         while (e.hasNext()) {
@@ -157,6 +166,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return true;
     }
 
+    @Override
     public boolean addAll(Collection<? extends Tfact> c) {
         boolean modified = false;
         if (c instanceof LazyCsmCollection<?, ?>) {
@@ -176,6 +186,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return modified;
     }
 
+    @Override
     public boolean removeAll(Collection<?> c) {
         boolean modified = false;
         Iterator<?> it = iterator();
@@ -188,6 +199,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return modified;
     }
 
+    @Override
     public boolean retainAll(Collection<?> c) {
         boolean modified = false;
         Iterator<Tfact> it = iterator();
@@ -200,6 +212,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
         return modified;
     }
 
+    @Override
     public void clear() {
         uids.clear();
     }
@@ -226,16 +239,18 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     private class MyIterator implements Iterator<Tfact> {
 
-        private Iterator<CsmUID<Tuid>> it;
+        private final Iterator<CsmUID<Tuid>> it;
 
         private MyIterator() {
             it = uids.iterator();
         }
 
+        @Override
         public boolean hasNext() {
             return it.hasNext();
         }
 
+        @Override
         public Tfact next() {
             // we know that Tfact is the real type so cast is okay
             @SuppressWarnings("unchecked") // checked
@@ -245,6 +260,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             return decl;
         }
 
+        @Override
         public void remove() {
             it.remove();
         }
@@ -252,9 +268,9 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     private class MySafeIterator implements Iterator<Tfact> {
 
-        private Iterator<CsmUID<Tuid>> it;
+        private final Iterator<CsmUID<Tuid>> it;
         private Tfact next;
-        private CsmFilter filter;
+        private final CsmFilter filter;
 
         private MySafeIterator() {
             this(null);
@@ -266,6 +282,7 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             next = getNextNonNull();
         }
 
+        @Override
         public boolean hasNext() {
             return next != null;
         }
@@ -285,12 +302,14 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             return out;
         }
 
+        @Override
         public Tfact next() {
             Tfact decl = next;
             next = getNextNonNull();
             return decl;
         }
 
+        @Override
         public void remove() {
             it.remove();
         }

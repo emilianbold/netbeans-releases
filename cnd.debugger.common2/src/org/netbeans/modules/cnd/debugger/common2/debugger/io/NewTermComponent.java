@@ -173,11 +173,7 @@ public class NewTermComponent implements TermComponent {
 	// select the IO but don't front or activate anything.
 	// IO.select() will also open the TC so is not the right thing!
 	// Mainly used when we switch sessions.
-	if (IOSelect.isSupported(io)) {
-	    IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
-	} else {
-	    io.select();
-	}
+        IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
     }
 
     public void open() {

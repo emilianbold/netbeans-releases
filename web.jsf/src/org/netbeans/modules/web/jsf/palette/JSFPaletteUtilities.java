@@ -60,15 +60,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.servlet.jsp.tagext.TagLibraryInfo;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,72 +76,72 @@ import org.openide.util.Exceptions;
  * @author Libor Kotouc
  */
 public final class JSFPaletteUtilities {
-    private static final String JSF_CORE_PREFIX = "f";  //NOI18N
-    private static final String JSF_CORE_URI = "http://java.sun.com/jsf/core";  //NOI18N
-    private static final String JSF_HTML_PREFIX = "h";  //NOI18N
-    private static final String JSF_HTML_URI = "http://java.sun.com/jsf/html";  //NOI18N
-    
-    public static String findJsfCorePrefix(JTextComponent target) {
-        String res = getTagLibPrefix(target, JSF_CORE_URI);
-        if (res == null)
-            insertTagLibRef(target, JSF_CORE_PREFIX, JSF_CORE_URI);
-        return (res != null) ? res : JSF_CORE_PREFIX;
-    }
-    
-    public static String findJsfHtmlPrefix(JTextComponent target) {
-        String res = getTagLibPrefix(target, JSF_HTML_URI);
-        if (res == null)
-            insertTagLibRef(target, JSF_HTML_PREFIX, JSF_HTML_URI);
-        return (res != null) ? res : JSF_HTML_PREFIX;
-    }
-    
-    public static String getTagLibPrefix(JTextComponent target, String tagLibUri) {
-        FileObject fobj = getFileObject(target);
-        if (fobj != null) {
-            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(fobj, false, true);
-            if (result != null && result.getPageInfo() != null) {
-                 for (TagLibraryInfo tli : result.getPageInfo().getTaglibs()) {
-                     if (tagLibUri.equals(tli.getURI()))
-                         return tli.getPrefixString();
-                 }
-            }
-        }
-        return null;
-    }
-    
-    private static void insertTagLibRef(final JTextComponent target, final String prefix, final String uri) {
-        Document doc = target.getDocument();
-        if (doc != null && doc instanceof BaseDocument) {
-            final BaseDocument baseDoc = (BaseDocument) doc;
-            Runnable edit = new Runnable() {
-                public void run() {
-                    try {
-                        int pos = 0;  // FIXME: compute better where to insert tag lib definition?
-                        String definition = "<%@taglib prefix=\"" + prefix + "\" uri=\"" + uri + "\"%>\n";  //NOI18N
-                        
-                        //test for .jspx. FIXME: find better way to detect xml syntax?.
-                        FileObject fobj = getFileObject(target);
-                        if (fobj != null && "jspx".equals(fobj.getExt())) {
-                            int baseDocLength = baseDoc.getLength();
-                            String text = baseDoc.getText(0, baseDocLength);
-                            String jspRootBegin = "<jsp:root "; //NOI18N
-                            int jspRootIndex = text.indexOf(jspRootBegin);
-                            if (jspRootIndex != -1) {
-                                pos = jspRootIndex + jspRootBegin.length();
-                                definition = "xmlns:" + prefix + "=\"" + uri + "\" ";  //NOI18N
-                            }
-                        }
-                
-                        baseDoc.insertString(pos, definition, null);
-                    } catch (BadLocationException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            };
-            baseDoc.runAtomic(edit);
-        }
-    }
-        
+//    private static final String JSF_CORE_PREFIX = "f";  //NOI18N
+//    private static final String JSF_CORE_URI = "http://java.sun.com/jsf/core";  //NOI18N
+//    private static final String JSF_HTML_PREFIX = "h";  //NOI18N
+//    private static final String JSF_HTML_URI = "http://java.sun.com/jsf/html";  //NOI18N
+//    
+//    public static String findJsfCorePrefix(JTextComponent target) {
+//        String res = getTagLibPrefix(target, JSF_CORE_URI);
+//        if (res == null)
+//            insertTagLibRef(target, JSF_CORE_PREFIX, JSF_CORE_URI);
+//        return (res != null) ? res : JSF_CORE_PREFIX;
+//    }
+//
+//    public static String findJsfHtmlPrefix(JTextComponent target) {
+//        String res = getTagLibPrefix(target, JSF_HTML_URI);
+//        if (res == null)
+//            insertTagLibRef(target, JSF_HTML_PREFIX, JSF_HTML_URI);
+//        return (res != null) ? res : JSF_HTML_PREFIX;
+//    }
+//
+//    public static String getTagLibPrefix(JTextComponent target, String tagLibUri) {
+//        FileObject fobj = getFileObject(target);
+//        if (fobj != null) {
+//            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(fobj, false, true);
+//            if (result != null && result.getPageInfo() != null) {
+//                 for (TagLibraryInfo tli : result.getPageInfo().getTaglibs()) {
+//                     if (tagLibUri.equals(tli.getURI()))
+//                         return tli.getPrefixString();
+//                 }
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private static void insertTagLibRef(final JTextComponent target, final String prefix, final String uri) {
+//        Document doc = target.getDocument();
+//        if (doc != null && doc instanceof BaseDocument) {
+//            final BaseDocument baseDoc = (BaseDocument) doc;
+//            Runnable edit = new Runnable() {
+//                public void run() {
+//                    try {
+//                        int pos = 0;  // FIXME: compute better where to insert tag lib definition?
+//                        String definition = "<%@taglib prefix=\"" + prefix + "\" uri=\"" + uri + "\"%>\n";  //NOI18N
+//
+//                        //test for .jspx. FIXME: find better way to detect xml syntax?.
+//                        FileObject fobj = getFileObject(target);
+//                        if (fobj != null && "jspx".equals(fobj.getExt())) {
+//                            int baseDocLength = baseDoc.getLength();
+//                            String text = baseDoc.getText(0, baseDocLength);
+//                            String jspRootBegin = "<jsp:root "; //NOI18N
+//                            int jspRootIndex = text.indexOf(jspRootBegin);
+//                            if (jspRootIndex != -1) {
+//                                pos = jspRootIndex + jspRootBegin.length();
+//                                definition = "xmlns:" + prefix + "=\"" + uri + "\" ";  //NOI18N
+//                            }
+//                        }
+//
+//                        baseDoc.insertString(pos, definition, null);
+//                    } catch (BadLocationException e) {
+//                        Exceptions.printStackTrace(e);
+//                    }
+//                }
+//            };
+//            baseDoc.runAtomic(edit);
+//        }
+//    }
+//
     public static FileObject getFileObject(JTextComponent target) {
         BaseDocument doc = (BaseDocument) target.getDocument();
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
@@ -149,11 +149,7 @@ public final class JSFPaletteUtilities {
         return fobj;
     }
     
-    public static void insert(String s, JTextComponent target) throws BadLocationException {
-        insert(s, target, true);
-    }
-    
-    public static void insert(String s, final JTextComponent target, final boolean reformat) throws BadLocationException {
+    public static void insert(String s, final JTextComponent target) throws BadLocationException {
         Document doc = target.getDocument();
         if (doc != null && doc instanceof BaseDocument) {
             final String str = (s == null) ? "" : s;
@@ -166,7 +162,7 @@ public final class JSFPaletteUtilities {
                         int start = insert(str, target, baseDoc);
 
                         // format the inserted text
-                        if (reformat && start >= 0) {
+                        if (start >= 0) {
                             int end = start + str.length();
                             formatter.reformat(start, end);
                             
@@ -213,6 +209,10 @@ public final class JSFPaletteUtilities {
         } finally {
             w.close();
         }
+        DataObject dob = DataObject.find(target);
+        if (dob != null) {
+            JSFPaletteUtilities.reformat(dob);
+        }
     }
 
     public static void expandJSFTemplate(FileObject template, Map<String, Object> values, Charset targetEncoding, Writer w) throws IOException {
@@ -230,12 +230,42 @@ public final class JSFPaletteUtilities {
             is = new InputStreamReader(template.getInputStream(), sourceEnc);
             eng.eval(is);
         } catch (ScriptException ex) {
-            IOException io = new IOException(ex.getMessage());
-            io.initCause(ex);
-            throw io;
+            throw new IOException(ex);
         } finally {
             if (is != null) is.close();
         }
     }
 
+    public static void reformat(DataObject dob) {
+        try {
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
+            }
+
+            final StyledDocument doc = ec.openDocument();
+            final Reformat reformat = Reformat.get(doc);
+            
+            reformat.lock();
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reformat.unlock();
+                ec.saveDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }

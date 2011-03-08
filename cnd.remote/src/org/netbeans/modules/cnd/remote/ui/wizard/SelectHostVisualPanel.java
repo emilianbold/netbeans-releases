@@ -52,8 +52,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -75,7 +73,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Vladimir Kvashin
  */
-public final class SelectHostVisualPanel extends javax.swing.JPanel {
+final class SelectHostVisualPanel extends javax.swing.JPanel {
 
     private final SelectHostWizardPanel controller;
     private final boolean allowLocal;
@@ -85,11 +83,13 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     private RequestProcessor.Task focusTask;
 
     private static final String LAST_SELECTED_HOST_KEY = "last-selected-remote-host"; //NOI18N
+    private final boolean allowToCreateNewHostDirectly;
 
     public SelectHostVisualPanel(SelectHostWizardPanel controller, boolean allowLocal,
-            CreateHostVisualPanel1 createHostPanel, AtomicBoolean setupNewHost) {
+            CreateHostVisualPanel1 createHostPanel, AtomicBoolean setupNewHost, boolean allowToCreateNewHostDirectly) {
         
         setName(NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.title"));
+        this.allowToCreateNewHostDirectly = allowToCreateNewHostDirectly;
         this.controller = controller;
         this.setupNewHost = setupNewHost;
         this.allowLocal = allowLocal;
@@ -111,6 +111,11 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
                 requestFocusInEDT(lstDevHosts);
             }
         });
+        if (setupNewHost.get()) {
+            requestFocusInEDT(SelectHostVisualPanel.this.createHostPanel);
+        } else {
+            requestFocusInEDT(lstDevHosts);
+        }
     }
 
     private void requestFocusInEDT(final Component c) {
@@ -316,11 +321,14 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     }
 
     public ExecutionEnvironment getSelectedHost() {
+        ExecutionEnvironment execEnv = null;
         if (rbExistent.isSelected()) {
             ServerRecord record = (ServerRecord) lstDevHosts.getSelectedValue();
-            return  (record == null) ? null : record.getExecutionEnvironment();
+            execEnv =  (record == null) ? null : record.getExecutionEnvironment();
+        } else if (allowToCreateNewHostDirectly && controller.isValid()) {
+            execEnv = ExecutionEnvironmentFactory.createNew(createHostPanel.getUser(), createHostPanel.getHostname(), createHostPanel.getPort());
         }
-        return null;
+        return execEnv;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -334,9 +342,9 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
 
     void enableControls(boolean enable) {
         rbExistent.setEnabled(enable);
-        rbExistent.setEnabled(enable);
+        rbNew.setEnabled(enable);
         lstDevHosts.setEnabled(enable);
-        createHostPanel.setEnabled(enable);
+        createHostPanel.setEnabled(rbNew.isSelected() ? enable : false);
     }
     // End of variables declaration
 

@@ -42,8 +42,9 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -57,14 +58,18 @@ public interface FileSystemProviderImplementation {
     String normalizeAbsolutePath(String absPath, ExecutionEnvironment env);
     FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
     FileObject urlToFileObject(String absoluteURL);
+    FileObject fileToFileObject(File file);
     String toURL(FileObject fileObject);
     String toURL(FileSystem fileSystem, String absPath);
     boolean isMine(ExecutionEnvironment env);
     boolean isMine(FileObject fileObject);
     boolean isMine(String absoluteURL);
     boolean isMine(FileSystem fileSystem);
+    boolean isMine(File file);
+    boolean isAbsolute(String path);
     ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem);
-    boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException;
+    boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException;
+    boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException;
     void addDownloadListener(FileSystemProvider.DownloadListener listener);
     void removeDownloadListener(FileSystemProvider.DownloadListener listener);
     FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;

@@ -276,11 +276,11 @@ public class FolderLookup extends FolderInstance {
     
     /** Notifies the exception. Helper method. */
     private static void exception (Exception e) {
-        Logger.getLogger(FolderLookup.class.getName()).log(Level.WARNING, null, e);
+        Logger.getLogger(FolderLookup.class.getName()).log(Level.INFO, null, e);
     }
+    private static final Set<String> notified = Collections.synchronizedSet(new HashSet<String>());
     private static void exception(Exception e, FileObject fo) {
-        Exceptions.attachMessage(e, "Bad file: " + fo); // NOI18N
-        exception(e);
+        Logger.getLogger(FolderLookup.class.getName()).log(notified.add(fo.getPath()) ? Level.INFO : Level.FINE, "Bad file: " + fo, e);
     }
 
     static final class Dispatch implements Executor, Runnable {

@@ -57,6 +57,7 @@ public class MakeArtifact {
     public static final int TYPE_QT_APPLICATION = 4;
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
+    public static final int TYPE_DB_APPLICATION = 7;
 
     // Project
     private String projectLocation;
@@ -108,8 +109,13 @@ public class MakeArtifact {
             cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
         } else {
             workingDirectory = projectLocation;
-            buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
-            cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+            if (!pd.getProjectMakefileName().isEmpty()) {
+                buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
+            } else {
+                buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName; // NOI18N
+                cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " CONF=" + configurationName + " clean"; // NOI18N
+            }
         }
 
         switch (makeConfiguration.getConfigurationType().getValue()) {
@@ -133,6 +139,9 @@ public class MakeArtifact {
                 break;
             case MakeConfiguration.TYPE_QT_STATIC_LIB:
                 configurationType = MakeArtifact.TYPE_QT_STATIC_LIB;
+                break;
+            case MakeConfiguration.TYPE_DB_APPLICATION:
+                configurationType = MakeArtifact.TYPE_DB_APPLICATION;
                 break;
             default:
                 assert false; // FIXUP: error

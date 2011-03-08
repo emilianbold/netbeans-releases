@@ -72,6 +72,7 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceAct
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -119,8 +120,9 @@ public final class SessionNode extends AbstractNode implements OpenCookie, Prope
         if (beanClassHandle != null) {
             instanceContent.add(beanClassHandle);
         }
-        if (ejbViewController.getBeanDo() != null) {
-            instanceContent.add(ejbViewController.getBeanDo().getPrimaryFile());
+        DataObject dataObject = ejbViewController.getBeanDo();
+        if (dataObject != null && dataObject.getPrimaryFile() != null) {
+            instanceContent.add(dataObject.getPrimaryFile());
         }
         try {
             instanceContent.add(ejbViewController.createEjbReference());
@@ -194,7 +196,9 @@ public final class SessionNode extends AbstractNode implements OpenCookie, Prope
     public void open() {
         FileObject fo = ejbViewController.getBeanFo();
         ElementHandle<TypeElement> beh = ejbViewController.getBeanClass();
-        ElementOpen.open(fo, beh);
+        if (fo != null && beh != null) {
+            ElementOpen.open(fo, beh);
+        }
 /*
         if (dataObject != null) {
             OpenCookie cookie = dataObject.getCookie(OpenCookie.class);

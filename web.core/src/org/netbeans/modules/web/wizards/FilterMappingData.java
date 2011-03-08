@@ -47,7 +47,7 @@ package org.netbeans.modules.web.wizards;
  * Filter Mapping representation
  * @author ana.von.klopp@sun.com
  */
-class FilterMappingData {
+public class FilterMappingData {
 
     private String name = null;
     private Type type = null;

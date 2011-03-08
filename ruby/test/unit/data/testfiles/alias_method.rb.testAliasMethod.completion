@@ -1,5 +1,0 @@
-Code completion result for source line:
-Far.new.far_|far_away
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     far_away                                   Far
-METHOD     far_far_away                               Far

@@ -119,9 +119,6 @@ public final class SessionGenerator {
 
     private final Map<String, String> templateParameters;
 
-    private Project projectForRemoteInterface;
-    private String remoteInterfacePackageName;
-
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
         return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, false);
@@ -160,14 +157,16 @@ public final class SessionGenerator {
         }
     }
 
-    public void setRemoteInterfaceDestination(Project projectForRemoteInterface, String remoteInterfacePackageName) throws IOException {
-        this.projectForRemoteInterface = projectForRemoteInterface;
-        this.remoteInterfacePackageName = remoteInterfacePackageName;
+    public void initRemoteInterfacePackage(Project projectForRemoteInterface, String remoteInterfacePackageName, FileObject ejbSourcePackage) throws IOException {
+        remotePkg = SessionGenerator.createRemoteInterfacePackage(projectForRemoteInterface, remoteInterfacePackageName, ejbSourcePackage);
+    }
+    
+    public static FileObject createRemoteInterfacePackage(Project projectForRemoteInterface, String remoteInterfacePackageName, FileObject ejbSourcePackage) throws IOException {
         assert ProjectUtils.getSources(projectForRemoteInterface).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0;
         FileObject root = ProjectUtils.getSources(projectForRemoteInterface).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)[0].getRootFolder();
-        remotePkg = FileUtil.createFolder(root, remoteInterfacePackageName.replace('.', '/'));
+        FileObject remotePkg = FileUtil.createFolder(root, remoteInterfacePackageName.replace('.', '/'));
         // add project where remote interface is defined to classpath of project where EJB is going to be implemented:
-        ProjectClassPathModifier.addProjects(new Project[]{projectForRemoteInterface}, pkg, ClassPath.COMPILE);
+        ProjectClassPathModifier.addProjects(new Project[]{projectForRemoteInterface}, ejbSourcePackage, ClassPath.COMPILE);
         // make sure project where remote interfrace is going to be defined has javax.ejb API available:
         assert LibraryManager.getDefault().getLibrary("javaee-api-6.0") != null;
         if (ClassPath.getClassPath(remotePkg, ClassPath.COMPILE).findResource("javax/ejb") == null) {
@@ -178,6 +177,7 @@ public final class SessionGenerator {
                 ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, ClassPath.COMPILE);
             }
         }
+        return remotePkg;
     }
 
     public FileObject generate() throws IOException {

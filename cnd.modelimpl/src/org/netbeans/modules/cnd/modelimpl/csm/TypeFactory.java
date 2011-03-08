@@ -192,11 +192,14 @@ public class TypeFactory {
 
         TypeImpl type;
 
+        boolean functionPointerType = false;
+        
         if (parent != null) {
             type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
+            functionPointerType = true;
         } else {
             type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
         }
@@ -263,11 +266,16 @@ public class TypeFactory {
                                 //assert namePart.getType() == CPPTokenTypes.SCOPE;
                                 if( templateDepth == 0) {
                                     if (namePart.getType() == CPPTokenTypes.SCOPE) {
-                                        // We're done here, start filling nested type
-                                        type.setClassifierText(NameCache.getManager().getString(sb));
-                                        type.setQName(l.toArray(new CharSequence[l.size()]));
-                                        type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
-                                        break;
+                                        if(functionPointerType) {
+                                            sb.append("::"); // NOI18N
+                                            continue;
+                                        } else {
+                                            // We're done here, start filling nested type
+                                            type.setClassifierText(NameCache.getManager().getString(sb));
+                                            type.setQName(l.toArray(new CharSequence[l.size()]));
+                                            type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
+                                            break;
+                                        }
                                     } else {
                                         if (TraceFlags.DEBUG) {
                                             StringBuilder tokenText = new StringBuilder();

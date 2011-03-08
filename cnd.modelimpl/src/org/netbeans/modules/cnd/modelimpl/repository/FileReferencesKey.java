@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  *
  * @author Alexander Simon
  */
-public class FileReferencesKey extends ProjectFileNameBasedKey {
+public final class FileReferencesKey extends ProjectFileNameBasedKey {
 
     public FileReferencesKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());

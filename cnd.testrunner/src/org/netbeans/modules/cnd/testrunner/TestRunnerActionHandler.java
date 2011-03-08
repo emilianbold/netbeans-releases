@@ -59,11 +59,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
@@ -110,7 +111,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     private InputOutput lastIO = null;
 
     @Override
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
     }
 
@@ -148,7 +149,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         ArrayList<String> args = new ArrayList<String>(Arrays.asList(pae.getProfile().getArgsArray()));
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
-        boolean unbuffer = false;
+        boolean unbuffer = true;
 
         final CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String csdirs = compilerSet.getDirectory();
@@ -168,7 +169,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
-        String workingDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
+        String workingDirectory = convertToRemoteIfNeeded(execEnv, pae.getProject(), runDirectory);
 
         if (workingDirectory == null) {
             // TODO: fix me
@@ -288,12 +289,12 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         });
     }
 
-    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, Project project, String localDir) {
         if (!checkConnection(execEnv)) {
             return null;
         }
         if (execEnv.isRemote()) {
-            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            return RemoteSyncSupport.getPathMap(execEnv, project).getRemotePath(localDir, false);
         }
         return localDir;
     }

@@ -242,7 +242,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             Collection<Error> errs = new ArrayList<Error>();
             for (ProblemDescription pd : res.getProblems()) {
                 DefaultError error = new DefaultError(pd.getKey(),
-                        "nu.validator issue", //NOI18N
+                        pd.getText(), //NOI18N
                         pd.getText(),
                         res.getContext().getFile(),
                         pd.getFrom(),
@@ -276,6 +276,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             case ProblemDescription.ERROR:
             case ProblemDescription.FATAL:
                 return Severity.ERROR;
+            case ProblemDescription.INTERNAL_ERROR:
+                return Severity.INFO;
             default:
                 throw new IllegalArgumentException("Invalid ProblemDescription type: " + problemtype); //NOI18N
         }

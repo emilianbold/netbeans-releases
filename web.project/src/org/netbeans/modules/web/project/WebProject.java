@@ -992,7 +992,8 @@ public final class WebProject implements Project {
             artifactSupport.enableArtifactSynchronization(true);
 
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(WebProject.this);
@@ -1710,6 +1711,8 @@ public final class WebProject implements Project {
         }
 
         private boolean handleResource(FileEvent fe) {
+            // this may happen in broken project - see issue #191516
+            // in any case it can't be resource event when resources is null            
             if (resources == null) {
                 return false;
             }

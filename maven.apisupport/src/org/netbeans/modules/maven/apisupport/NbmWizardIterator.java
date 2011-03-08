@@ -75,7 +75,6 @@ import org.netbeans.modules.maven.model.settings.Activation;
 import org.netbeans.modules.maven.model.settings.Profile;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsQName;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
@@ -92,17 +91,17 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.6"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.7"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.7"); //NOI18N
+        NB_APP_ARCH.setVersion("1.8"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.3"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.4"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
     }
 
@@ -216,9 +215,6 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
                 NbMavenProject mprj = prj.getLookup().lookup(NbMavenProject.class);
                 if (mprj == null) {
                     continue;
-                }
-                if (NbMavenProject.TYPE_NBM.equals(mprj.getPackagingType())) {
-                    storeNbAppModuleDirInfo(prj);
                 }
             }
             if ("SNAPSHOT".equals(version)) { // NOI18N
@@ -365,13 +361,6 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         //TODO report inability to create? or if the file doesn't exist, it was already
         //reported?
    }
-
-    private static void storeNbAppModuleDirInfo(Project prj) {
-        final AuxiliaryProperties auxConfig = prj.getLookup().lookup(AuxiliaryProperties.class);
-        //TODO the following works fine for current nb app suite archetype,
-        //otherwise calculate real relative path from nbAppModuleDir
-        auxConfig.put(MavenNbModuleImpl.PROP_PATH_NB_APPLICATION_MODULE, "../application", true); //NOI18N
-    }
 
     private static void addModuleToApplication(File file, ProjectInfo nbm, Object object) {
         FileObject appPrjFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));

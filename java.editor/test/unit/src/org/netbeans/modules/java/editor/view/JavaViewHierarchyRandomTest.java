@@ -204,6 +204,16 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.undo(context, 1);
     }
 
+    public void testNewlineInEmptyDoc() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        RandomTestContainer.Context gContext = container.context();
+        DocumentTesting.insert(gContext, 0, "\n");
+    }
+    
     public void testSimple1() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();

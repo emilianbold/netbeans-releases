@@ -14,10 +14,6 @@
             excludes="${excludes}" 
             destfile="${examples}/CustomComponentProject_standalone.zip"
             />
-        <zip basedir="template_netbeansorg" 
-            excludes="${excludes}" 
-            destfile="${examples}/CustomComponentProject_netbeansorg.zip"
-            />
         <zip basedir="template_suitecomponent" 
             excludes="${excludes}" 
             destfile="${examples}/CustomComponentProject_suitecomponent.zip"

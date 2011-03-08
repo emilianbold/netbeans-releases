@@ -24,10 +24,7 @@
       <ol>
         <li><a href="../server/server_register.html">Register</a> a Java EE application 
           server. You cannot deploy enterprise applications to the Tomcat server.</li>
-        <li><a href="appclient_create.html">Create the project</a> for the application 
-          client.</li>
-        <li><a href="../enterprise/general/add_modules_to_ent_app.html">Add the 
-          application client to an enterprise application</a>.</li>
+        <li><a href="appclient_create.html">Create the application client project</a>.</li>
       </ol>
     </td>
   </tr>
@@ -41,11 +38,9 @@
       <b>Code the application client</b></td>
     <td> 
       <ol>
-        <li>Create classes in your application client that access modules in the enterprise application. </li>
-        <li><a href="../ejb/editing/call_ejb.html">Call enterprise beans</a> from 
-          web application modules and other enterprise beans.</li>
-        <li><a href="../webservice/consume/wsc_create.html">Access web services</a> 
-          in the application client.</li>
+        <li>Configure the classpath of the application client project to add the Java class library project that contains the required remote interfaces.</li>
+        <li><a href="../ejb/editing/call_ejb.html">Call the remote interfaces of the enterprise beans</a> from the application client.</li>
+        <li><a href="../webservice/consume/wsc_create.html">Access web services</a> in the application client.</li>
         </ol>
     </td>
   </tr>
@@ -59,7 +54,7 @@
       <b>Configure the application</b></td>
     <td> 
       <ol>
-        <li><a href="appclient_edit_dd.html">Edit the application client's deployment descriptors.</a></li>
+        <li><a href="appclient_edit_dd.html">Edit the application client's deployment descriptors</a>, if necessary.</li>
       </ol>
     </td>
   </tr>
@@ -88,7 +83,7 @@
       <b>Deploy the module</b> </td>
     <td> 
       <ol>
-        <li>Right-click the enterprise application that contains the application client and choose 
+        <li>Right-click the application client and choose 
           <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/run/run_app.html">Run</a>.</li>
         </ol>
     </td>

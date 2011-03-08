@@ -44,6 +44,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.List;
 import org.junit.Test;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall; 
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.threads.api.DeadlockThreadSnapshot;
 import static org.junit.Assert.*;
@@ -117,10 +118,12 @@ public class DeadlockImplTest {
         DeadlockThreadSnapshot ds1 = d1.getThreadStates().get(0);
         assertEquals(0x804a0f8, ds1.getHeldLockAddress());
         assertEquals(6, ds1.getHeldLockCallStack().size());
-        assertEquals("clone", ds1.getHeldLockCallStack().get(0).getFunction().getName());
-        assertEquals("get_fork", ds1.getHeldLockCallStack().get(5).getFunction().getName());
-        assertEquals("din_phil.c", ((FunctionCallImpl)ds1.getHeldLockCallStack().get(5)).getSourceFile());
-        assertEquals(104, ((FunctionCallImpl)ds1.getHeldLockCallStack().get(5)).getOffset());
+        FunctionCall first = ds1.getHeldLockCallStack().get(5);
+        FunctionCall last = ds1.getHeldLockCallStack().get(0);
+        assertEquals("clone", first.getFunction().getName());
+        assertEquals("get_fork", last.getFunction().getName());
+        assertEquals("din_phil.c", ((FunctionCallImpl)last).getSourceFile());
+        assertEquals(104, ((FunctionCallImpl)last).getOffset());
         assertEquals(0x804a098, ds1.getRequestedLockAddress());
         assertEquals(6, ds1.getRequestedLockCallStack().size());
 

@@ -40,7 +40,6 @@
             <file name="CustomComponentCD.java" url="templates/CustomComponentCD.template"/>
             <file name="CustomComponentProducer.java" url="templates/CustomComponentProducer.template"/>
             <file name="CustomComponentProject_standalone.zip" url="templates/CustomComponentProject_standalone.zip"/>
-            <file name="CustomComponentProject_netbeansorg.zip" url="templates/CustomComponentProject_netbeansorg.zip"/>
             <file name="CustomComponentProject_suitecomponent.zip" url="templates/CustomComponentProject_suitecomponent.zip"/>
             <file name="layer.xml" url="templates/layer.xml"/>
         </folder>

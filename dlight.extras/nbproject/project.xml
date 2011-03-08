@@ -73,6 +73,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.sysmon</friend>
+                <friend>com.sun.tools.dlight.systemwide</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.dlight.core.ui</friend>

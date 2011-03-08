@@ -69,6 +69,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.dlight.systemwide.threadmap</friend>
+                <friend>com.sun.tools.dlight.systemwide.visualizers</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.threadmap.api</package>

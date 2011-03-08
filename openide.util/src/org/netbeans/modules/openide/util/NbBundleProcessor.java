@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,72 +85,74 @@ public class NbBundleProcessor extends AbstractProcessor {
         if (roundEnv.processingOver()) {
             return false;
         }
-        Map</*package*/String,Map</*key*/String,/*value*/String>> pairs = new HashMap<String,Map<String,String>>();
-        Map</*package*/String,Set</*identifier*/String>> identifiers = new HashMap<String,Set<String>>();
-        Map</*package*/String,List<Element>> originatingElements = new HashMap<String,List<Element>>();
-        Map</*package*/String,Map</*key*/String,/*line*/String[]>> comments = new HashMap<String,Map<String,String[]>>();
+        Map</*package*/String,Set<Element>> annotatedElementsByPackage = new HashMap<String,Set<Element>>();
         for (Element e : roundEnv.getElementsAnnotatedWith(NbBundle.Messages.class)) {
-            String pkg = findPackage(e);
-            Map<String, String> pairsByPackage = pairs.get(pkg);
-            if (pairsByPackage == null) {
-                pairsByPackage = new HashMap<String, String>();
-                pairs.put(pkg, pairsByPackage);
-            }
-            Set<String> identifiersByPackage = identifiers.get(pkg);
-            if (identifiersByPackage == null) {
-                identifiersByPackage = new HashSet<String>();
-                identifiers.put(pkg, identifiersByPackage);
-            }
-            List<Element> originatingElementsByPackage = originatingElements.get(pkg);
-            if (originatingElementsByPackage == null) {
-                originatingElementsByPackage = new ArrayList<Element>();
-                originatingElements.put(pkg, originatingElementsByPackage);
-            }
-            Map<String,String[]> commentsByPackage = comments.get(pkg);
-            if (commentsByPackage == null) {
-                commentsByPackage = new HashMap<String,String[]>();
-                comments.put(pkg, commentsByPackage);
-            }
-            List<String> runningComments = new ArrayList<String>();
             NbBundle.Messages messages = e.getAnnotation(NbBundle.Messages.class);
-            if (messages == null) {
+            if (messages == null) { // bug in java.source, apparently; similar to #195983
                 continue;
             }
-            for (String keyValue : messages.value()) {
-                if (keyValue.startsWith("#")) {
-                    runningComments.add(keyValue);
-                    continue;
-                }
-                int i = keyValue.indexOf('=');
-                if (i == -1) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Bad key=value: " + keyValue, e);
-                    continue;
-                }
-                String key = keyValue.substring(0, i);
-                if (key.isEmpty() || !key.equals(key.trim())) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Whitespace not permitted in key: " + keyValue, e);
-                    continue;
-                }
-                if (!identifiersByPackage.add(toIdentifier(key))) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, e);
-                    continue;
-                }
-                String value = keyValue.substring(i + 1);
-                pairsByPackage.put(key, value);
-                originatingElementsByPackage.add(e);
-                if (!runningComments.isEmpty()) {
-                    commentsByPackage.put(key, runningComments.toArray(new String[runningComments.size()]));
-                    runningComments.clear();
-                }
+            String pkg = findPackage(e);
+            Set<Element> annotatedElements = annotatedElementsByPackage.get(pkg);
+            if (annotatedElements == null) {
+                annotatedElements = new HashSet<Element>();
+                annotatedElementsByPackage.put(pkg, annotatedElements);
             }
-            if (!runningComments.isEmpty()) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, "Comments must precede keys", e);
-            }
+            annotatedElements.add(e);
         }
-        for (Map.Entry<String,Map<String,String>> entry : pairs.entrySet()) {
-            String pkg = entry.getKey();
-            Map<String,String> keysAndValues = entry.getValue();
-            Element[] elements = originatingElements.get(pkg).toArray(new Element[0]);
+        PACKAGE: for (Map.Entry<String,Set<Element>> packageEntry : annotatedElementsByPackage.entrySet()) {
+            String pkg = packageEntry.getKey();
+            Set<Element> annotatedElements = packageEntry.getValue();
+            PackageElement pkgE = processingEnv.getElementUtils().getPackageElement(pkg);
+            if (pkgE != null) {
+                Set<Element> unscannedTopElements = new HashSet<Element>();
+                unscannedTopElements.add(pkgE);
+                unscannedTopElements.addAll(pkgE.getEnclosedElements());
+                unscannedTopElements.removeAll(roundEnv.getRootElements());
+                addToAnnotatedElements(unscannedTopElements, annotatedElements);
+            } else {
+                processingEnv.getMessager().printMessage(Kind.WARNING, "Could not check for other source files in " + pkg);
+            }
+            Map</*key*/String,/*value*/String> pairs = new HashMap<String,String>();
+            Map</*identifier*/String,Element> identifiers = new HashMap<String,Element>();
+            Map</*key*/String,/*simplename*/String> compilationUnits = new HashMap<String,String>();
+            Map</*key*/String,/*line*/String[]> comments = new HashMap<String,String[]>();
+            for (Element e : annotatedElements) {
+                String simplename = findCompilationUnitName(e);
+                List<String> runningComments = new ArrayList<String>();
+                for (String keyValue : e.getAnnotation(NbBundle.Messages.class).value()) {
+                    if (keyValue.startsWith("#")) {
+                        runningComments.add(keyValue);
+                        continue;
+                    }
+                    int i = keyValue.indexOf('=');
+                    if (i == -1) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Bad key=value: " + keyValue, e);
+                        continue;
+                    }
+                    String key = keyValue.substring(0, i);
+                    if (key.isEmpty() || !key.equals(key.trim())) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Whitespace not permitted in key: " + keyValue, e);
+                        continue;
+                    }
+                    Element original = identifiers.put(toIdentifier(key), e);
+                    if (original != null) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, e);
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Duplicate key: " + key, original);
+                        continue PACKAGE; // do not generate anything
+                    }
+                    String value = keyValue.substring(i + 1);
+                    pairs.put(key, value);
+                    compilationUnits.put(key, simplename);
+                    if (!runningComments.isEmpty()) {
+                        comments.put(key, runningComments.toArray(new String[runningComments.size()]));
+                        runningComments.clear();
+                    }
+                }
+                if (!runningComments.isEmpty()) {
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "Comments must precede keys", e);
+                }
+            }
+            Element[] elements = new HashSet<Element>(identifiers.values()).toArray(new Element[0]);
             try {
                 EditableProperties p = new EditableProperties(true);
                 // Load any preexisting bundle so we can just add our keys.
@@ -164,8 +167,8 @@ public class NbBundleProcessor extends AbstractProcessor {
                     // OK, not there
                 }
                 for (String key : p.keySet()) {
-                    if (keysAndValues.containsKey(key)) {
-                        processingEnv.getMessager().printMessage(Kind.ERROR, "Key " + key + " is a duplicate of one from Bundle.properties", elements[0]);
+                    if (pairs.containsKey(key)) {
+                        processingEnv.getMessager().printMessage(Kind.ERROR, "Key " + key + " is a duplicate of one from Bundle.properties", identifiers.get(toIdentifier(key)));
                     }
                 }
                 // Also check class output for (1) incremental builds, (2) preexisting bundles from Maven projects.
@@ -182,8 +185,8 @@ public class NbBundleProcessor extends AbstractProcessor {
                 } catch (IOException x) {
                     // OK, not there
                 }
-                p.putAll(keysAndValues);
-                for (Map.Entry<String,String[]> entry2 : comments.get(pkg).entrySet()) {
+                p.putAll(pairs);
+                for (Map.Entry<String,String[]> entry2 : comments.entrySet()) {
                     p.setComment(entry2.getKey(), entry2.getValue(), false);
                 }
                 OutputStream os = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, pkg, "Bundle.properties", elements).openOutputStream();
@@ -193,15 +196,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     os.close();
                 }
                 Map</*identifier*/String,/*method body*/String> methods = new TreeMap<String,String>();
-                try {
-                    Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
-                    while (m.find()) {
-                        methods.put(m.group(1), m.group());
-                    }
-                } catch (IOException x) {
-                    // OK, not there
-                }
-                for (Map.Entry<String, String> entry2 : keysAndValues.entrySet()) {
+                for (Map.Entry<String, String> entry2 : pairs.entrySet()) {
                     String key = entry2.getKey();
                     String value = entry2.getValue();
                     StringBuilder method = new StringBuilder();
@@ -211,7 +206,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     while (value.contains("{" + i)) {
                         params.add("arg" + i++);
                     }
-                    String[] commentLines = comments.get(pkg).get(key);
+                    String[] commentLines = comments.get(key);
                     if (commentLines != null) {
                         for (String comment : commentLines) {
                             Matcher m = Pattern.compile("# [{](\\d+)[}] - (.+)").matcher(comment);
@@ -235,6 +230,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     m.appendTail(annotatedValue);
                     annotatedValue.append("</i>");
                     method.append("     * @return ").append(annotatedValue.toString().replace("<i></i>", "")).append('\n');
+                    method.append("     * @see ").append(compilationUnits.get(key)).append('\n');
                     method.append("     */\n");
                     String name = toIdentifier(key);
                     method.append("    static String ").append(name).append("(");
@@ -262,6 +258,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                     PrintWriter pw = new PrintWriter(w);
                     pw.println("package " + pkg + ";");
                     pw.println("/** Localizable strings for {@link " + pkg + "}. */");
+                    pw.println("@javax.annotation.Generated(value=\"" + NbBundleProcessor.class.getName() + "\")");
                     pw.println("class Bundle {");
                     for (String method : methods.values()) {
                         pw.print(method);
@@ -289,6 +286,22 @@ public class NbBundleProcessor extends AbstractProcessor {
         }
     }
 
+    private String findCompilationUnitName(Element e) {
+        switch (e.getKind()) {
+        case PACKAGE:
+            return "package-info";
+        case CLASS:
+        case INTERFACE:
+        case ENUM:
+        case ANNOTATION_TYPE:
+            switch (e.getEnclosingElement().getKind()) {
+            case PACKAGE:
+                return e.getSimpleName().toString();
+            }
+        }
+        return findCompilationUnitName(e.getEnclosingElement());
+    }
+
     private String toIdentifier(String key) {
         if (Utilities.isJavaIdentifier(key)) {
             return key;
@@ -304,6 +317,15 @@ public class NbBundleProcessor extends AbstractProcessor {
 
     private String toJavadoc(String text) {
         return text.replace("&", "&amp;").replace("<", "&lt;").replace("*/", "&#x2A;/").replace("\n", "<br>").replace("@", "&#64;");
+    }
+
+    private void addToAnnotatedElements(Collection<? extends Element> unscannedElements, Set<Element> annotatedElements) {
+        for (Element e : unscannedElements) {
+            if (e.getAnnotation(NbBundle.Messages.class) != null) {
+                annotatedElements.add(e);
+            }
+            addToAnnotatedElements(e.getEnclosedElements(), annotatedElements);
+        }
     }
 
 }

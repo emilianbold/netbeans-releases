@@ -62,13 +62,13 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -115,6 +115,7 @@ public class J2SEProjectBuilder {
     private final StringBuilder jvmArgs;
     
     private boolean hasDefaultRoots;
+    private boolean skipTests;
     private SpecificationVersion defaultSourceLevel;
     private String mainClass;
     private String manifest;
@@ -147,6 +148,16 @@ public class J2SEProjectBuilder {
      */    
     public J2SEProjectBuilder addDefaultSourceRoots() {
         this.hasDefaultRoots = true;
+        return this;
+    }
+
+    /**
+     * Avoids creating the test root folder and adding JUnit dependencies.
+     * The test folder is still registered so {@link SourceGroupModifier} with {@link JavaProjectConstants#SOURCES_HINT_TEST} will work later.
+     * @return the builder
+     */
+    public J2SEProjectBuilder skipTests(boolean skipTests) {
+        this.skipTests = skipTests;
         return this;
     }
     
@@ -292,6 +303,7 @@ public class J2SEProjectBuilder {
                         sourceLevel,
                         hasDefaultRoots ? "src" : null,     //NOI18N
                         hasDefaultRoots ? "test" : null,    //NOI18N
+                        skipTests,
                         buildXmlName,
                         mainClass,
                         manifest,
@@ -311,7 +323,7 @@ public class J2SEProjectBuilder {
                             registerRoots(h[0], refHelper, testRoots, true);
                             ProjectManager.getDefault().saveProject (p);
                             final List<Library> libsToCopy = new ArrayList<Library>();
-                            libsToCopy.addAll(getMandatoryLibraries());
+                            libsToCopy.addAll(getMandatoryLibraries(skipTests));
                             libsToCopy.addAll(compileLibraries);
                             libsToCopy.addAll(runtimeLibraries);
                             copyRequiredLibraries(h[0], refHelper, libsToCopy);                                                                                    
@@ -326,7 +338,9 @@ public class J2SEProjectBuilder {
                 FileObject srcFolder = null;
                 if (hasDefaultRoots) {
                     srcFolder = dirFO.createFolder("src") ; // NOI18N
-                    dirFO.createFolder("test"); // NOI18N
+                    if (!skipTests) {
+                        dirFO.createFolder("test"); // NOI18N
+                    }
                 } else if (!sourceRoots.isEmpty()) {
                     srcFolder = FileUtil.toFileObject(sourceRoots.iterator().next());
                 }
@@ -344,6 +358,7 @@ public class J2SEProjectBuilder {
             SpecificationVersion sourceLevel,
             String srcRoot,
             String testRoot,
+            boolean skipTests,
             String buildXmlName,
             String mainClass,
             String manifestFile,
@@ -353,24 +368,24 @@ public class J2SEProjectBuilder {
             String[] compileClassPath,
             String[] runtimeClassPath) throws IOException {
         
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, librariesDefinition);
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProject.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+        Element nameEl = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+        Element sourceRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
         }
         data.appendChild (sourceRoots);
-        Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+        Element testRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
         if (testRoot != null) {
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","test.src.dir");   //NOI18N
             testRoots.appendChild (root);
             ep.setProperty("test.src.dir", testRoot); // NOI18N
@@ -413,7 +428,10 @@ public class J2SEProjectBuilder {
         ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
-        ep.setProperty("javac.test.classpath", new String[] { // NOI18N
+        ep.setProperty("javac.test.classpath", skipTests ? new String[] { // NOI18N
+            "${javac.classpath}:", // NOI18N
+            "${build.classes.dir}", // NOI18N
+        } : new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}:", // NOI18N
@@ -466,6 +484,7 @@ public class J2SEProjectBuilder {
         if (buildXmlName != null) {
             ep.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
         }
+        ep.setProperty(J2SEProjectProperties.MKDIST_DISABLED, isLibrary ? "true" : "false");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
@@ -486,7 +505,7 @@ public class J2SEProjectBuilder {
         final Element data = helper.getPrimaryConfigurationData(true);
         final Document doc = data.getOwnerDocument();
         NodeList nl = data.getElementsByTagNameNS(
-                J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
                 tests ? "test-roots" : "source-roots");
         assert nl.getLength() == 1;
         final Element sourceRoots = (Element) nl.item(0);
@@ -508,7 +527,7 @@ public class J2SEProjectBuilder {
                 propName = (tests ? "test." : "") + name + rootIndex + ".dir";   //NOI18N
             }
             String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id",propName);   //NOI18N
             sourceRoots.appendChild(root);
             props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -623,10 +642,10 @@ public class J2SEProjectBuilder {
         }        
     }
     
-    private static Collection<? extends Library> getMandatoryLibraries() {
+    private static Collection<? extends Library> getMandatoryLibraries(boolean skipTests) {
         final List<Library> result = new ArrayList<Library>();
         final LibraryManager manager = LibraryManager.getDefault();
-        for (final String mandatoryLib : new String[] {"junit", "junit_4", "CopyLibs"}) {   //NOI18N
+        for (final String mandatoryLib : skipTests ? new String[] {"CopyLibs"} : new String[] {"junit", "junit_4", "CopyLibs"}) {   //NOI18N
             final Library lib = manager.getLibrary(mandatoryLib);
             if (lib != null) {
                 result.add(lib);

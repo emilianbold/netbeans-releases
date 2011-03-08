@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,14 +48,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.ini4j.Config;
@@ -64,10 +63,10 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -96,8 +95,6 @@ public class SvnConfigFiles {
      * file used by the Subversion module */
     private Ini config = null;
 
-    private ProxySettings proxySettings;
-    
     private static final String UNIX_CONFIG_DIR = ".subversion/";                                                               // NOI18N
     private static final String GROUPS_SECTION = "groups";                                                                      // NOI18N
     private static final String GLOBAL_SECTION = "global";                                                                      // NOI18N
@@ -108,7 +105,6 @@ public class SvnConfigFiles {
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
 
     private String recentUrl;
-    private final static String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; //NOI18N
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -123,6 +119,7 @@ public class SvnConfigFiles {
      * Also sets password-stores to empty value. We currently handle password stores poorly and occasionally non-empty values cause a deadlock (see #178122).
      */
     private class ConfigIniFilePatcher implements IniFilePatcher {
+        @Override
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
             Ini.Section auth = (Ini.Section) file.get("auth");                  // NOI18N
@@ -200,13 +197,6 @@ public class SvnConfigFiles {
 
         String repositoryUrl = url.toString();
         changes = !repositoryUrl.equals(recentUrl);
-        ProxySettings ps = new ProxySettings();
-        if(proxySettings != null && ps.equals(proxySettings)) {
-            // do nothing
-        } else {
-            proxySettings = ps;
-            changes = true;
-        }
 
         if(changes) {
             RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
@@ -244,36 +234,28 @@ public class SvnConfigFiles {
     private boolean setProxy(SVNUrl url, Ini.Section nbGlobalSection) {
         String host =  SvnUtils.ripUserFromHost(url.getHost());        
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
-        if(!proxySettings.isDirect()) {
-            String proxyHost = "";
-            int proxyPort = -1;
-            if(url.getProtocol().startsWith("https")) {
-                proxyHost = proxySettings.getHttpsHost();
-                proxyPort = proxySettings.getHttpsPort();
-            }
-            if(proxyHost.equals("")) {
-                proxyHost = proxySettings.getHttpHost();
-                proxyPort = proxySettings.getHttpPort();
-            }
-            String exceptions = proxySettings.getNotProxyHosts();
+        URI uri = null;
+        try {
+            uri = new URI(url.toString());
+        } catch (URISyntaxException ex) {
+            Subversion.LOG.log(Level.INFO, null, ex);
+            return true;
+        }
+        String proxyHost = NetworkSettings.getProxyHost(uri);
+        // check DIRECT connection
+        if(proxyHost != null && proxyHost.length() > 0) {
+            String proxyPort = NetworkSettings.getProxyPort(uri);
+            assert proxyPort != null;
+            nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
+            nbGlobalSection.put("http-proxy-port", proxyPort);                     // NOI18N
 
-            if(proxyHost != null && !proxyHost.equals("")) {
-                nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
-                nbGlobalSection.put("http-proxy-port", Integer.toString(proxyPort));   // NOI18N
-                if(!exceptions.equals("")) {
-                    nbGlobalSection.put("http-proxy-exceptions", exceptions);   // NOI18N
-                }
+            // and the authentication
+            String username = NetworkSettings.getAuthenticationUsername(uri);
+            if(username != null) {
+                String password = getProxyPassword(NetworkSettings.getKeyForAuthenticationPassword(uri));
 
-                // and the authentication
-                Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core");  // NOI18N
-                boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N
-                if(useAuth) {
-                    String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
-                    String password = getProxyPassword(prefs);
-
-                    nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
-                    nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
-                }
+                nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
+                nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
             }
         }
         // check if there are also some no proxy settings
@@ -696,13 +678,9 @@ public class SvnConfigFiles {
         return appdataPath;
     }
 
-    private String getProxyPassword (Preferences prefs) {
-        String retval = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
-        if (retval == null) {
-            char[] pwd = KeyringSupport.read(PROXY_AUTHENTICATION_PASSWORD, null);
-            retval = pwd == null ? "" : new String(pwd); //NOI18N
-        }
-        return retval;
+    private String getProxyPassword(String key) {
+        char[] pwd = KeyringSupport.read(key, null);
+        return pwd == null ? "" : new String(pwd); //NOI18N
     }
     
 }

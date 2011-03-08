@@ -93,6 +93,7 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -260,7 +261,28 @@ public final class VeryPretty extends JCTree.Visitor {
         int start = toString().length();
 
         if (!handlePossibleOldTrees(Collections.singletonList(t), false)) {
-            t.accept(this);
+            if (t instanceof FieldGroupTree) {
+                //XXX: should be able to use handlePossibleOldTrees over the individual variables:
+                FieldGroupTree fgt = (FieldGroupTree) t;
+                if (fgt.isEnum()) {
+                    printEnumConstants(List.from(fgt.getVariables().toArray(new JCTree[0])), !fgt.isEnum() || fgt.moreElementsFollowEnum());
+                } else {
+                    //XXX: this will unroll the field group (see FieldGroupTest.testMove187766)
+                    //XXX: copied from visitClassDef
+                    boolean firstMember = true;
+                    for (JCVariableDecl var : fgt.getVariables()) {
+                        oldTrees.remove(var);
+                        assert !isEnumerator(var);
+                        assert !isSynthetic(var);
+                        toColExactly(out.leftMargin);
+                        printStat(var, true, firstMember);
+                        newline();
+                        firstMember = false;
+                    }
+                }
+            } else {
+                t.accept(this);
+            }
         }
 
         int end = toString().length();
@@ -654,41 +676,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	if (!emptyClass) {
 	    blankLines(cs.getBlankLinesAfterClassHeader());
             if ((tree.mods.flags & ENUM) != 0) {
-                boolean first = true;
-                boolean hasNonEnumerator = false;
-                for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
-                    if (isEnumerator(l.head)) {
-                        if (first) {
-                            toColExactly(out.leftMargin);
-                            first = false;
-                        } else {
-                            print(cs.spaceBeforeComma() ? " ," : ",");
-                            switch(cs.wrapEnumConstants()) {
-                            case WRAP_IF_LONG:
-                                int rm = cs.getRightMargin();
-                                if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                                    if (cs.spaceAfterComma())
-                                        print(' ');
-                                    break;
-                                }
-                            case WRAP_ALWAYS:
-                                newline();
-                                toColExactly(out.leftMargin);
-                                break;
-                            case WRAP_NEVER:
-                                if (cs.spaceAfterComma())
-                                    print(' ');
-                                break;
-                            }
-                        }
-                        printStat(l.head, true, false);
-                    } else if (!isSynthetic(l.head))
-                        hasNonEnumerator = true;
-                }
-                if (hasNonEnumerator) {
-                    print(";");
-                    newline();
-                }
+                printEnumConstants(tree.defs, false);
             }
             boolean firstMember = true;
             for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
@@ -709,6 +697,44 @@ public final class VeryPretty extends JCTree.Visitor {
 	undent(old);
 	print('}');
 	enclClassName = enclClassNamePrev;
+    }
+
+    private void printEnumConstants(List<JCTree> defs, boolean forceSemicolon) {
+        boolean first = true;
+        boolean hasNonEnumerator = false;
+        for (List<JCTree> l = defs; l.nonEmpty(); l = l.tail) {
+            if (isEnumerator(l.head)) {
+                if (first) {
+                    toColExactly(out.leftMargin);
+                    first = false;
+                } else {
+                    print(cs.spaceBeforeComma() ? " ," : ",");
+                    switch(cs.wrapEnumConstants()) {
+                    case WRAP_IF_LONG:
+                        int rm = cs.getRightMargin();
+                        if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
+                            if (cs.spaceAfterComma())
+                                print(' ');
+                            break;
+                        }
+                    case WRAP_ALWAYS:
+                        newline();
+                        toColExactly(out.leftMargin);
+                        break;
+                    case WRAP_NEVER:
+                        if (cs.spaceAfterComma())
+                            print(' ');
+                        break;
+                    }
+                }
+                printStat(l.head, true, false);
+            } else if (!isSynthetic(l.head))
+                hasNonEnumerator = true;
+        }
+        if (hasNonEnumerator || forceSemicolon) {
+            print(";");
+            newline();
+        }
     }
 
     @Override

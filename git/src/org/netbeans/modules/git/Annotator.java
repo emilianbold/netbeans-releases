@@ -68,9 +68,11 @@ import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
+import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.ignore.UnignoreAction;
 import org.netbeans.modules.git.ui.init.InitAction;
@@ -132,7 +134,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(ca);
                 } else {
                     actions.add(SystemAction.get(InitAction.class));
+//                    actions.add(null);
+//                    actions.add(SystemAction.get(CloneAction.class));
                 }
+//                actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
@@ -171,6 +176,9 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(a);
                 }
                 actions.add(SystemAction.get(ResetAction.class));
+                actions.add(null);
+//                actions.add(SystemAction.get(CloneAction.class));
+                actions.add(SystemAction.get(FetchAction.class));
             }
         } else {
             Lookup lkp = context.getElements();
@@ -216,6 +224,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(null);
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
+                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName"), lkp)); //NOI18N
             }
         }
 
@@ -368,6 +378,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private final Map<RepositoryInfo, Set<File>> filesWithRepositoryAnnotations = new WeakHashMap<RepositoryInfo, Set<File>>(3);
     
     private String annotateFolderNameHtml (String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
@@ -376,7 +387,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         String folderAnnotation = ""; //NOI18N
         Set<File> roots = context.getRootFiles();
         File repository = Git.getInstance().getRepositoryRoot(mostImportantFile);
-        if (roots.size() > 1 || mostImportantFile.equals(repository)) {
+        if (annotationsVisible && (roots.size() > 1 || mostImportantFile.equals(repository))) {
             // project node or repository root
             String branchLabel = ""; //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
@@ -385,8 +396,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             if (branch != null) {
                 branchLabel = branch.getName();
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
-                    // not on a branch, show also commit id
-                    branchLabel += " " + branch.getId(); // NOI18N
+                    // not on a branch, show at least part of commit id
+                    branchLabel = branch.getId().substring(0, 10) + "..."; //NOI18N
                 }
             }
             GitRepositoryState repositoryState = info.getRepositoryState();

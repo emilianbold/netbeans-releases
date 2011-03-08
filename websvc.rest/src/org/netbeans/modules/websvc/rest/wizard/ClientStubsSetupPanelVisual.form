@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -16,6 +16,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -27,13 +28,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="createJmakiCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="overwriteCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="127" max="32767" attributes="0"/>
-          </Group>
           <Component id="jSeparator2" alignment="0" pref="525" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
@@ -42,8 +36,8 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="wadlTextField" alignment="0" pref="389" max="32767" attributes="2"/>
-                          <Component id="jScrollPane1" alignment="0" pref="389" max="32767" attributes="2"/>
+                          <Component id="wadlTextField" alignment="0" pref="399" max="32767" attributes="2"/>
+                          <Component id="jScrollPane1" alignment="0" pref="399" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                   </Group>
@@ -55,9 +49,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectTextField" alignment="1" pref="351" max="32767" attributes="2"/>
-                          <Component id="locationCB" alignment="1" pref="351" max="32767" attributes="2"/>
-                          <Component id="folderTextField" alignment="1" pref="351" max="32767" attributes="2"/>
+                          <Component id="projectTextField" alignment="1" pref="370" max="32767" attributes="2"/>
+                          <Component id="locationCB" alignment="1" pref="370" max="32767" attributes="2"/>
+                          <Component id="folderTextField" alignment="1" pref="370" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                   </Group>
@@ -71,6 +65,11 @@
               </Group>
           </Group>
           <Component id="jSeparator1" alignment="0" pref="525" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="overwriteCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="376" max="32767" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -115,12 +114,9 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jSeparator2" min="-2" pref="9" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="createJmakiCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="overwriteCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="overwriteCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -324,17 +320,6 @@
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="DESC_OverwriteExisting" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="createJmakiCheckBox">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_CreateJmakiRestComponents" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="createJmakiCheckBoxStateChanged"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="projectRadioButton">
       <Properties>

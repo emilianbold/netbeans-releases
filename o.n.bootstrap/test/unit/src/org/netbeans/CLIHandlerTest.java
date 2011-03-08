@@ -465,10 +465,11 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("First one executed", 1, h1.cnt);
         assertEquals("CLI evaluation failed with return code of h1", 1, res.getExitCode());
         
-        res = cliInitialize(template, java.util.Collections.<CLIHandler>emptyList(), nullInput, nullOutput, nullOutput, null, currentDir);
-        assertEquals("But again executed h1", 2, h1.cnt);
-        assertEquals("Now the result is 2 as cnt++ was increased", 2, res.getExitCode());
+        CLIHandler.waitSecureCLIOver();
         
+        res = cliInitialize(template, java.util.Collections.<CLIHandler>emptyList(), nullInput, nullOutput, nullOutput, null, currentDir);
+        assertEquals("But again executed h1: " + res, 2, h1.cnt);
+        assertEquals("Now the result is 2 as cnt++ was increased", 2, res.getExitCode());
     }
 
     @RandomlyFails

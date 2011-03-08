@@ -112,7 +112,7 @@ public final class ActiveQueue {
                     } catch (Throwable t) {
                         // Should not happen.
                         // If it happens, it is a bug in client code, notify!
-                        LOGGER.log(Level.WARNING, null, t);
+                        LOGGER.log(Level.WARNING, "Cannot process " + ref, t);
                     } finally {
                         // to allow GC
                         ref = null;

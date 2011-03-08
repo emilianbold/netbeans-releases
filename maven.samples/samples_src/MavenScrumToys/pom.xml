@@ -82,11 +82,5 @@ Other names may be trademarks of their respective owners. The contents of
             <version>6.0-RC2</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.2</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

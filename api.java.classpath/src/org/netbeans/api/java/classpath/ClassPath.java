@@ -69,6 +69,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
 import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -277,13 +279,50 @@ public final class ClassPath {
 
     private FileObject[] createRoots (final List<ClassPath.Entry> entries) {
         final List<FileObject> l = new ArrayList<FileObject> ();
-        final Set<URL> listenOn = new HashSet<URL>();
+        final Set<File> listenOn = new HashSet<File>();
         for (Entry entry : entries) {
-            listenOn.add(entry.getURL());
             FileObject fo = entry.getRoot();
+            File file = null;
             if (fo != null) {
                 l.add(fo);
                 root2Filter.put(fo, entry.filter);
+                FileObject fileFo = FileUtil.getArchiveFile(fo);
+                if (fileFo  == null) {
+                    fileFo = fo;
+                }
+                file = FileUtil.toFile(fileFo);
+            }
+            if (file == null) {
+                URL url = entry.getURL();
+                if ("jar".equals(url.getProtocol())) { //NOI18N
+                    url = FileUtil.getArchiveFile(url);
+                }
+                if (!"file".equals(url.getProtocol())) { // NOI18N
+                    // Try to convert nbinst to file
+                    FileObject fileFo = URLMapper.findFileObject(url);
+                    if (fileFo != null) {
+                        URL external = URLMapper.findURL(fileFo, URLMapper.EXTERNAL);
+                        if (external != null) {
+                            url = external;
+                        }
+                    }
+                }
+                try {
+                    //todo: Ignore non file urls, we can try to url->fileobject->url
+                    //if it becomes a file.
+                    if ("file".equals(url.getProtocol())) { //NOI18N
+                        file = FileUtil.normalizeFile(new File(url.toURI()));
+                    }
+                } catch (IllegalArgumentException e) {
+                    LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
+                    //pass
+                } catch (URISyntaxException e) {
+                    LOG.log(Level.WARNING, "Invalid URL: {0}", url);
+                    //pass
+                }
+            }
+            if (file != null) {
+                listenOn.add(file);
             }
         }
         final RootsListener rL = this.getRootsListener();
@@ -488,7 +527,7 @@ public final class ClassPath {
      * if the resource is not within the ClassPath contents.
      * @param resource resource to find root for.
      */
-    public final FileObject findOwnerRoot(FileObject resource) {
+    public final @CheckForNull FileObject findOwnerRoot(FileObject resource) {
 	FileObject[] roots = getRoots();
         Set<FileObject> rootsSet = new HashSet<FileObject>(Arrays.asList(roots));
         for (FileObject f = resource; f != null; f = f.getParent()) {
@@ -583,7 +622,7 @@ public final class ClassPath {
      *         there is no classpath available
      * @see ClassPathProvider
      */
-    public static ClassPath getClassPath(FileObject f, String id) {
+    public static @CheckForNull ClassPath getClassPath(@NonNull FileObject f, @NonNull String id) {
         if (f == null) {
             // What else can we do?? Backwards compatibility only.
             Thread.dumpStack();
@@ -629,12 +668,13 @@ public final class ClassPath {
         WARN,
         /**
          * {@link #toString(ClassPath.PathConversionMode)} will fail with an {@link IllegalArgumentException}.
+         * Useful for unit tests.
          */
         FAIL,
         /**
          * The entry is simply displayed as a URL.
-         * Useful for debug logging or unit tests.
-         * Used by {@link ClassPath#toString}.
+         * Useful for logging.
+         * @see ClassPath#toString()
          */
         PRINT,
     }
@@ -681,6 +721,10 @@ public final class ClassPath {
         return b.toString();
     }
 
+    /**
+     * Calls {@link #toString(ClassPath.PathConversionMode)} with {@link ClassPath.PathConversionMode#PRINT}.
+     * @return a classpath suitable for logging or debugging
+     */
     public @Override String toString() {
         return toString(PathConversionMode.PRINT);
     }
@@ -722,7 +766,6 @@ public final class ClassPath {
             if (_root != null && _root.isValid()) {
                 return _root;
             }
-
             for (int retryCount = 0; retryCount<=1; retryCount++) { //Bug 193086 : try to do refresh
                 _root = URLMapper.findFileObject(this.url);            
                 synchronized (this) {
@@ -743,7 +786,9 @@ public final class ClassPath {
                                                 " file: " + file.isFile() +             //NOI18N
                                                 " directory: "+ file.isDirectory() +    //NOI18N
                                                 " read: "+ file.canRead() +             //NOI18N
-                                                " write: "+ file.canWrite()+")";        //NOI18N
+                                                " write: "+ file.canWrite()+        //NOI18N
+                                                " root: "+ root +        //NOI18N
+                                                " _root: "+ _root +")";        //NOI18N
                                 } catch (IllegalArgumentException e) {
                                     //Non local file - keep file null (not log file state)
                                 } catch (URISyntaxException e) {
@@ -1107,37 +1152,9 @@ public final class ClassPath {
             roots = new HashSet<File> ();
         }
 
-        public void addRoots (final Set<? extends URL> urls) {
-            Parameters.notNull("urls",urls);    //NOI18N
-            final Set<File> newRoots = new HashSet<File>();
-            for (URL url : urls) {
-                if ("jar".equals(url.getProtocol())) { //NOI18N
-                    url = FileUtil.getArchiveFile(url);
-                }
-                if (!"file".equals(url.getProtocol())) { // NOI18N
-                    // Try to convert nbinst to file
-                    FileObject file = URLMapper.findFileObject(url);
-                    if (file != null) {
-                        URL external = URLMapper.findURL(file, URLMapper.EXTERNAL);
-                        if (external != null) {
-                            url = external;
-                        }
-                    }
-                }
-                try {
-                    //todo: Ignore non file urls, we can try to url->fileobject->url
-                    //if it becomes a file.
-                    if ("file".equals(url.getProtocol())) { //NOI18N
-                        newRoots.add(new File(url.toURI()));
-                    }
-                } catch (IllegalArgumentException e) {
-                    LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
-                    //pass
-                } catch (URISyntaxException e) {
-                    LOG.log(Level.WARNING, "Invalid URL: {0}", url);
-                    //pass
-                }
-            }
+        public void addRoots (final Set<? extends File> newRoots) {
+            Parameters.notNull("urls",newRoots);    //NOI18N
+
             synchronized (this) {
                 final Set<File> toRemove = new HashSet<File>(roots);
                 toRemove.removeAll(newRoots);

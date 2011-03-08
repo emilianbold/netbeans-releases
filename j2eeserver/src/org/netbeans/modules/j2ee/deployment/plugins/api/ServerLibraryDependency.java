@@ -201,16 +201,40 @@ public final class ServerLibraryDependency {
             return false;
         }
         final ServerLibraryDependency other = (ServerLibraryDependency) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.specificationVersion != other.specificationVersion && (this.specificationVersion == null || !this.specificationVersion.equals(other.specificationVersion))) {
+        if (!specificationEquals(obj)) {
             return false;
         }
         if (this.implementationVersion != other.implementationVersion && (this.implementationVersion == null || !this.implementationVersion.equals(other.implementationVersion))) {
             return false;
         }
         if (this.exactMatch != other.exactMatch) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns <code>true</code> if the other object is library dependency and both
+     * name and specification version are equal to name and specification version
+     * of this object.
+     * 
+     * @param obj object to test
+     * @return <code>true</code> if the other object is library dependency
+     *             with same name and specification version as this object
+     * @since 1.77
+     */
+    public boolean specificationEquals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ServerLibraryDependency other = (ServerLibraryDependency) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.specificationVersion != other.specificationVersion && (this.specificationVersion == null || !this.specificationVersion.equals(other.specificationVersion))) {
             return false;
         }
         return true;

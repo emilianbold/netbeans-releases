@@ -119,6 +119,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.DebugRepaintManager.level=FINE
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
+    
+    // True to log real source chars
+    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text");
 
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u00BB'; // \u21FE
@@ -455,13 +458,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 mutex.lock();
                 try {
                     super.setParent(parent);
+                    textLayoutCache = new TextLayoutCache();
                     textComponent = tc;
                     viewHierarchy = ViewHierarchy.get(textComponent);
                     startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
                     endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
                     accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
                     viewUpdates = new ViewUpdates(this);
-                    textLayoutCache = new TextLayoutCache();
                     textComponent.addPropertyChangeListener(this);
                     if (REPAINT_LOG.isLoggable(Level.FINE)) {
                         DebugRepaintManager.register(textComponent);
@@ -481,8 +484,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     if (mutex != null) {
                         mutex.lock();
                         try {
-                            textComponent.removePropertyChangeListener(DocumentView.this);
-                            textComponent = null; // View services stop working and propagating to children
+                            if (textComponent != null) {
+                                if (listeningOnViewport != null) {
+                                    listeningOnViewport.removeChangeListener(DocumentView.this);
+                                }
+                                textComponent.removePropertyChangeListener(DocumentView.this);
+                                textLayoutCache = null;
+                                viewUpdates = null;
+                                textComponent = null; // View services stop working and propagating to children
+                            }
                             DocumentView.super.setParent(null);
                         } finally {
                             mutex.unlock();
@@ -683,7 +693,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     private void checkSettingsInfo() {
-        if (textComponent == null) {
+        JTextComponent tc = textComponent;
+        if (tc == null) {
             return;
         }
         if (lookupListener == null) {
@@ -716,7 +727,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     });
                 }
             };
-            String mimeType = DocumentUtilities.getMimeType(textComponent);
+            String mimeType = DocumentUtilities.getMimeType(tc);
             Lookup lookup = MimeLookup.getLookup(mimeType);
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             // Called without explicitly acquiring mutex but it's called only when lookup listener is null
@@ -728,7 +739,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
 
         if (prefs == null) {
-            String mimeType = DocumentUtilities.getMimeType(textComponent);
+            String mimeType = DocumentUtilities.getMimeType(tc);
             prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
             prefsListener = new PreferenceChangeListener() {
                 @Override
@@ -808,20 +819,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         defaultBackground = backColor;
         defaultLimitLine = limitLineColor;
 
-        if (!customFont) {
+        if (!customFont && textComponent != null) {
             textComponent.setFont(defaultFont);
         }
-        if (!customForeground) {
+        if (!customForeground && textComponent != null) {
             textComponent.setForeground(defaultForeground);
         }
-        if (!customBackground) {
+        if (!customBackground && textComponent != null) {
             textComponent.setBackground(defaultBackground);
         }
 
-        updateCharMetrics(); // Update metrics with just updated font
+        if (textComponent != null) {
+            updateCharMetrics(); // Update metrics with just updated font
 
-        releaseChildren();
-
+            releaseChildren();
+        }
+            
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
@@ -848,7 +861,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
 
-            LOG.fine("updateCharMetrics() called\n"); // NOI18N
+            LOG.fine("updateCharMetrics(): FontRenderContext: AA=" + frc.isAntiAliased() + // NOI18N
+                    ", AATransformed=" + frc.isTransformed() + // NOI18N
+                    ", AAFractMetrics=" + frc.usesFractionalMetrics() + // NOI18N
+                    ", AAHint=" + frc.getAntiAliasingHint() + "\n"); // NOI18N
         }
     }
     
@@ -1329,6 +1345,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
     }
 
+    boolean isMutexAcquired() {
+        PriorityMutex mutex = getMutex();
+        return (mutex != null && mutex.getLockThread() == Thread.currentThread());
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         boolean releaseChildren = false;
@@ -1358,7 +1379,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             String propName = evt.getPropertyName();
             if ("ancestor".equals(propName)) { // NOI18N
 
-            } else if ("font".equals(propName)) {
+            } else if ("document".equals(propName)) { // NOI18N
+                
+            } else if ("font".equals(propName)) { // NOI18N
                 if (!customFont && defaultFont != null) {
                     customFont = (textComponent != null) &&
                             !defaultFont.equals(textComponent.getFont());
@@ -1445,8 +1468,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         super.appendViewInfoCore(sb, indent, importantChildIndex);
         sb.append("; incomingMod=").append(incomingModification);
         sb.append("; lengthyAtomicEdit=").append(lengthyAtomicEdit);
-        Document doc = getDocument();
-        sb.append("\nDoc: ").append(ViewUtils.toString(doc));
+        if (LOG_SOURCE_TEXT) {
+            Document doc = getDocument();
+            sb.append("\nDoc: ").append(ViewUtils.toString(doc));
+        }
         return sb;
     }
 

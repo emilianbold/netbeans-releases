@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Error.Badging;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -78,7 +79,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
 
     public static final String  INDEXER_NAME = "TLIndexer"; //NOI18N
-    public static final int     INDEXER_VERSION = 4;
+    public static final int     INDEXER_VERSION = 5;
 
     public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
     public static final String FIELD_DESCRIPTION = "description"; //NOI18N
@@ -156,18 +157,19 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         public ErrorConvertorImpl(List<Integer> lineStartOffsets) {
             this.lineStartOffsets = lineStartOffsets;
         }
+        @Override
         public ErrorKind getKind(Error error) {
             if (error.getSeverity() == Severity.WARNING) {
                 return ErrorKind.WARNING;
             } else if (error instanceof Badging && ((Badging) error).showExplorerBadge()) {
-                return ErrorKind.ERROR;
-            } else {
-                return ErrorKind.ERROR_NO_BADGE;
+                    return ErrorKind.ERROR;
+                } else {
+                    return ErrorKind.ERROR_NO_BADGE;
+                }
             }
-        }
+        @Override
         public int getLineNumber(Error error) {
-            // #172100, ParserResult.getDiagnostics() uses document offsets rather then snapshot offsets
-            int originalOffset = error.getStartPosition();
+            int originalOffset = error.getStartPosition(); //snapshot offset
             int lineNumber = 1;
             if (originalOffset >= 0) {
                 int idx = Collections.binarySearch(lineStartOffsets, originalOffset);
@@ -186,6 +188,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
 
             return lineNumber;
         }
+        @Override
         public String getMessage(Error error) {
             return error.getDisplayName();
         }
@@ -233,10 +236,10 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             if (lineStartOffsets == null) {
                 lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
             }
-
-            storedErrors.addAll(gsfParserResult.getDiagnostics ());
+            
+            storedErrors.addAll(ErrorFilterQuery.getFilteredErrors(gsfParserResult, ErrorFilter.FEATURE_TASKLIST));
         }
-
+        
         private static List<Integer> getLineStartOffsets(Source source) {
             List<Integer> lineStartOffsets = new ArrayList<Integer>();
 

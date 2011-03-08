@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.runprofiles;
 
+import org.netbeans.modules.cnd.api.picklist.PicklistElement;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
@@ -65,8 +66,11 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     private final static String VALUE_ATTR = "value"; // NOI18N
     private final static String ENVIRONMENT_ELEMENT = "environment"; // NOI18N
     private final static String ARGS_ELEMENT = "args"; // NOI18N
+    private final static String ARGUMENTS_ELEMENT = "arguments"; // NOI18N
     private final static String RUNDIR_ELEMENT = "rundir"; // NOI18N
     private final static String RUNCOMMAND_ELEMENT = "runcommand"; // NOI18N
+    private final static String RUNCOMMAND_PICKLIST_ELEMENT = "runcommandpicklist"; // NOI18N
+    private final static String RUNCOMMAND_PICKLIST_ITEM_ELEMENT = "runcommandpicklistitem"; // NOI18N
     private final static String BUILD_FIRST_ELEMENT = "buildfirst"; // NOI18N
     private final static String CONSOLE_TYPE_ELEMENT = "console-type"; // NOI18N
     private final static String TERMINAL_TYPE_ELEMENT = "terminal-type"; // NOI18N
@@ -77,13 +81,15 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
 
     /*
+     *  V9 - NB 7.0
+     *    Re-introduced Arguments (for dbxtool). It's hidden by default.
+     *  V8 - NB 7.0
+     *    Don't save ARGS_ELEMENT. Args and Run command are now merged.
         Versions changes tracker (started from version 6):
-
         2010/12/09
             Run Command field is added (see Bug 154529). Version is not upgraded, because default value the property is provided.
-
      */
-    private final static int thisversion = 6;
+    private final static int thisversion = 9;
 
     public RunProfileXMLCodec(RunProfile profile) {
 	this.profile = profile;
@@ -120,9 +126,12 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	    profile.getEnvironment().
 		putenv(atts.getValue(NAME_ATTR), atts.getValue(VALUE_ATTR));
 	}
+        else if(element.equals(RUNCOMMAND_PICKLIST_ELEMENT)) {
+	}
     }
 
     // interface XMLDecoder
+    @SuppressWarnings("deprecation")
     @Override
     public void endElement(String element, String currentText) {
 	if (element.equals(ARGS_ELEMENT)) {
@@ -131,11 +140,18 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	else if (element.equals(RUNDIR_ELEMENT)) {
 	    profile.setRunDir(currentText);
 	}
+	else if (element.equals(ARGUMENTS_ELEMENT)) {
+	    profile.getConfigurationArguments().setValue(currentText);
+	}
 	else if (element.equals(RUNCOMMAND_ELEMENT)) {
-	    profile.setRunCommand(currentText);
+	    profile.getRunCommand().setValue(currentText); // FIXUP
+            profile.getRunCommand().getPicklist().addElement(currentText);
 	}
 	else if (element.equals(BUILD_FIRST_ELEMENT)) {
 	    profile.setBuildFirst(currentText.equals(TRUE_VALUE));
+	}
+	else if (element.equals(RUNCOMMAND_PICKLIST_ITEM_ELEMENT)) {
+	    profile.getRunCommand().getPicklist().addElement(currentText);
 	}
 	else {
             int idx;            
@@ -189,10 +205,21 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
      * was: RunProfileHelper.java.writeProfileBlock
      */
 
+    @SuppressWarnings("deprecation")
     private static void encode(XMLEncoderStream xes, RunProfile profile) {
 	xes.elementOpen(PROFILE_ID, getVersion());
-        xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand());
-        xes.element(ARGS_ELEMENT, profile.getArgsFlat());
+
+        xes.elementOpen(RUNCOMMAND_PICKLIST_ELEMENT);
+        PicklistElement[] elements = profile.getRunCommand().getPicklist().getElements();
+        for (int i = (elements.length-1); i >= 0; i--) {
+             xes.element(RUNCOMMAND_PICKLIST_ITEM_ELEMENT, elements[i].displayName());
+        }
+        xes.elementClose(RUNCOMMAND_PICKLIST_ELEMENT);
+
+        xes.element(RUNCOMMAND_ELEMENT, profile.getRunCommand().getValue()); // FIXUP
+        if (profile.getConfigurationArguments().getModified()) {
+            xes.element(ARGUMENTS_ELEMENT, profile.getConfigurationArguments().getValue());
+        }
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
         if (profile.getConsoleType().getModified()) {

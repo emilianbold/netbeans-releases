@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -173,7 +175,11 @@ public class ProxyLookup extends Lookup {
                 while (it.hasNext()) {
                     LookupEvent ev = (LookupEvent)it.next();
                     LookupListener l = (LookupListener)it.next();
-                    l.resultChanged(ev);
+                    try {
+                        l.resultChanged(ev);
+                    } catch (RuntimeException x) {
+                        Logger.getLogger(ProxyLookup.class.getName()).log(Level.WARNING, null, x);
+                    }
                 }
             }
         }
