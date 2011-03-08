@@ -40,37 +40,83 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.actions;
+package org.netbeans.api.actions;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
-import org.netbeans.api.actions.Savable;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.actions.AbstractSavable;
 
-/** Default implementation of {@link Savable} interface. 
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class Savables {
-    private Savables() {
-    }
-    
-    public static Savable create(
-        Object identity, 
-        Callable<Void> callback,
-        CharSequence displayName,
-        CharSequence saveMessage
-    ) {
-        return null;
+public class SavableTest extends NbTestCase {
+
+    public SavableTest(String n) {
+        super(n);
     }
 
-    public static void destroy(Object identity) {
+    public void testSavablesAreRegistered() throws IOException {
+        String id = "identity";
+        DoSave savable = new DoSave(id, null, null);
+        assertNotNull("Savable created", savable);
+        
+        assertTrue(
+            "Is is among the list of savables that need save", 
+            Savable.REGISTRY.lookupAll(Savable.class).contains(savable)
+        );
+        
+        savable.save();
+        assertTrue("called", savable.save);
+        
+        assertTrue("No other pending saves", Savable.REGISTRY.lookupAll(Savable.class).isEmpty());
+    }
+
+    public void testTwoSavablesForEqual() {
+        Object id = new Object();
+        
+        Savable s = new DoSave(id, null, null);
+        assertEquals("The first", s, Savable.REGISTRY.lookup(Savable.class));
+        Savable s2 = new DoSave(id, null, null);
+        
+        assertEquals("Only one savable", 1, Savable.REGISTRY.lookupAll(Savable.class).size());
+        assertEquals("The later", s2, Savable.REGISTRY.lookup(Savable.class));
     }
     
-    public static Set<Savable> findPendingSavables() {
-        return null;
+    static class DoSave extends AbstractSavable {
+        boolean save;
+        private final Object id;
+        private final CharSequence displayName, ch2;
+
+        public DoSave(Object id, CharSequence displayName, CharSequence ch2) {
+            this.id = id;
+            this.displayName = displayName;
+            this.ch2 = ch2;
+            register();
+        }
+
+        @Override
+        public String findDisplayName() {
+            return displayName.toString();
+        }
+
+        @Override
+        protected void handleSave() throws IOException {
+            save = true;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof DoSave) {
+                return ((DoSave)obj).id.equals(id);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
     }
     
-    public static String findDisplayName(Savable savable) {
-        return null;
-    }
 }

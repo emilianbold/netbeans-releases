@@ -43,18 +43,36 @@
 package org.netbeans.api.actions;
 
 import java.io.IOException;
-import org.netbeans.spi.actions.Savables;
+import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.util.Lookup;
 
 /** Context interface that represents ability to save. To get best
- * interaction with the system, it is preferable to use {@link Savables}
+ * interaction with the system, it is preferable to use {@link AbstractSavable}
  * to create instances of this interface rather than implementing it 
  * directly.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since XXX
  */
 public interface Savable {
+    /** Global registry of all {@link Savable}s that are modified in the
+     * application and subject to save by <em>Save All</em> action. See 
+     * {@link AbstractSavable} for description how to register your own
+     * implementation into the registry.
+     */
+    public static final Lookup REGISTRY = Lookup.EMPTY; // XXX - impl based on InstanceContent
+    
     /** Invoke the save operation.
      * @throws IOException if the object could not be saved
      */
     public void save() throws IOException;
+
+    /** Allows a {@link Savable} to specify its human readable name.
+     * This is an additional interface that implementations of {@link Savable}
+     * may implement to represent themselves in various UI elements 
+     * with proper display name.
+     */
+    public static interface DisplayName extends Savable {
+        public String findDisplayName();
+    }
 }
