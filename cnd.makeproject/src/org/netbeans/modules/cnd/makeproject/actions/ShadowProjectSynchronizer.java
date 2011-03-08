@@ -107,7 +107,7 @@ import org.xml.sax.SAXException;
  */
 public class ShadowProjectSynchronizer {
     
-    public static final String DEFAULT = "default";
+    public static final String DEFAULT = "default"; // NOI18N
 
     private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
     private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
