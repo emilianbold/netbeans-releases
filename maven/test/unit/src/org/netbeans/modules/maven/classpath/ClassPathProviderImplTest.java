@@ -154,12 +154,20 @@ public class ClassPathProviderImplTest extends NbTestCase {
         MockPropertyChangeListener pcl = new MockPropertyChangeListener();
         cp.addPropertyChangeListener(pcl);
         assertRoots(cp);
+        ClassPath bcp = ClassPath.getClassPath(src, ClassPath.BOOT);
+        assertNotNull(bcp);
+        MockPropertyChangeListener pcl2 = new MockPropertyChangeListener();
+        bcp.addPropertyChangeListener(pcl2);
+        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
         FileObject jar = TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp, jar);
+        pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        assertTrue(bcp.toString(), bcp.toString().contains("override.jar"));
         d.getFileObject("target").delete();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp);
+        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
     }
 
     private static void assertRoots(ClassPath cp, FileObject... files) {
