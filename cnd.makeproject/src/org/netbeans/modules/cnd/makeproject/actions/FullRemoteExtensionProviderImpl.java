@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.io.IOException;
@@ -50,8 +49,9 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.makeproject.MakeConfigurationSaveListener;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.FullRemoteExtensionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.awt.NotificationDisplayer;
@@ -62,18 +62,20 @@ import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
 /**
- * @author Vladimnir Kvbashin
+ *
+ * @author Vladimir Kvashin
  */
-@ServiceProvider(service=MakeConfigurationSaveListener.class)
-public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveListener {
 
+@ServiceProvider(service=FullRemoteExtensionProvider.class, position=1000)
+public class FullRemoteExtensionProviderImpl implements FullRemoteExtensionProvider {
+    
     private final LinkedList<MakeConfigurationDescriptor> savingProjects =
             new LinkedList<MakeConfigurationDescriptor>();
     private final Object lock = new Object();
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
     
     @Override
-    public void configurationSaving(MakeConfigurationDescriptor mkd) {        
+    public boolean configurationSaving(MakeConfigurationDescriptor mkd) {        
         Project project = mkd.getProject();
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
@@ -85,10 +87,11 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
                 }
             }
         }
+        return true; // there probably is another provider that is after me and wants to add something
     }
     
     @Override
-    public void configurationSaved(MakeConfigurationDescriptor mkd, boolean success) {
+    public boolean configurationSaved(MakeConfigurationDescriptor mkd, boolean success) {
         synchronized (lock) {
             if (savingProjects.contains(mkd)) {
                 savingProjects.remove(mkd);
@@ -101,6 +104,12 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
             LOGGER.log(Level.FINE, "Synchronizing remote project {0}", mkd.getProjectDirFileObject().getPath());
             updateRemoteProject(mkd);
         }
+        return true; // there probably is another provider that is after me and wants to add something
+    }
+    
+    @Override
+    public boolean canChangeHost(MakeConfiguration makeConfiguration) {
+        return Boolean.getBoolean("cnd.full.remote.change.host");
     }
     
     private void updateRemoteProject(MakeConfigurationDescriptor mkd) {        
@@ -115,10 +124,10 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
                         try {
                             ConnectionManager.getInstance().connectTo(env);
                         } catch (IOException ex) {
-                           LOGGER.log(Level.SEVERE, NbBundle.getMessage(MakeConfigurationSaveListenerImpl.class, "ERR_Connection_Error"), ex);
+                           LOGGER.log(Level.SEVERE, NbBundle.getMessage(FullRemoteExtensionProviderImpl.class, "ERR_Connection_Error"), ex);
                            return;
                         } catch (CancellationException ex) {
-                            LOGGER.severe(NbBundle.getMessage(MakeConfigurationSaveListenerImpl.class, "ERR_Connection_Cancelled"));
+                            LOGGER.severe(NbBundle.getMessage(FullRemoteExtensionProviderImpl.class, "ERR_Connection_Cancelled"));
                             return;
                         }
                     }                            
@@ -140,7 +149,7 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
         }
     }    
     
-    public void reportException(Exception ex, FileObject localProjectFO, String remotePath, ExecutionEnvironment env) {
+    private void reportException(Exception ex, FileObject localProjectFO, String remotePath, ExecutionEnvironment env) {
         String title = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_SyncToRemote", env.getDisplayName());
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false); // NOI18N
 //        String localName = localProjectFO.getNameExt();
@@ -149,4 +158,5 @@ public class MakeConfigurationSaveListenerImpl implements MakeConfigurationSaveL
         LOGGER.log(Level.INFO, "{0}: {1}", new Object[]{title, details});
         NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }        
+    
 }

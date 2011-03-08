@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Represents a constant class access in PHP Doc.
- * It can be used in tags like @return, @param etc.
- * <pre>e.g.<pre> @return MyClass::CONST
+ * Represent a type in php doc
  * @author Petr Pisl
  */
-public class PHPDocStaticAccessType extends PHPDocTypeNode {
-    private final PHPDocNode className;
-    private final PHPDocNode constant;
+public class PHPDocTypeNode extends PHPDocNode {
+
+    private final boolean array;
     
-    public PHPDocStaticAccessType (int start, int end, String value, PHPDocNode className, PHPDocNode constant) {
-        super(start, end, value, false);
-        this.className = className;
-        this.constant = constant;
+    public PHPDocTypeNode(int start, int end, String value, boolean isArray) {
+        super(start, end, value);
+        this.array = isArray;
     }
 
-    /**
-     *
-     * @return the class name
-     */
-    public PHPDocNode getClassName() {
-        return className;
+    public boolean isArray() {
+        return array;
     }
-
-    public PHPDocNode getConstant() {
-        return constant;
-    }
-
-
+    
     @Override
     public void accept(Visitor visitor) {
-        visitor.visit(this);
+            visitor.visit(this);
     }
 }

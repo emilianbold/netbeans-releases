@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.spi;
 
-package org.netbeans.modules.php.editor.parser.astnodes;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 
 /**
- * Represents a constant class access in PHP Doc.
- * It can be used in tags like @return, @param etc.
- * <pre>e.g.<pre> @return MyClass::CONST
- * @author Petr Pisl
+ *
+ * @author Vladimir Kvashin
  */
-public class PHPDocStaticAccessType extends PHPDocTypeNode {
-    private final PHPDocNode className;
-    private final PHPDocNode constant;
-    
-    public PHPDocStaticAccessType (int start, int end, String value, PHPDocNode className, PHPDocNode constant) {
-        super(start, end, value, false);
-        this.className = className;
-        this.constant = constant;
-    }
-
-    /**
-     *
-     * @return the class name
-     */
-    public PHPDocNode getClassName() {
-        return className;
-    }
-
-    public PHPDocNode getConstant() {
-        return constant;
-    }
-
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
+public interface FullRemoteExtensionProvider {
+    boolean configurationSaving(MakeConfigurationDescriptor makeConfigurationDescriptor);
+    boolean configurationSaved(MakeConfigurationDescriptor makeConfigurationDescriptor, boolean success);    
+    boolean canChangeHost(MakeConfiguration makeConfiguration);
 }

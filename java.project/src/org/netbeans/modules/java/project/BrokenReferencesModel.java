@@ -73,6 +73,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
@@ -93,17 +94,19 @@ public final class BrokenReferencesModel extends AbstractListModel {
 
     private static final Logger LOG = Logger.getLogger(BrokenReferencesModel.class.getName());
 
-    final Context ctx;
+    private final Context ctx;
+    private final boolean global;
     private List<OneReference> references;
 
     public BrokenReferencesModel(AntProjectHelper helper, 
             ReferenceHelper resolver, String[] props, String[] platformsProps) {
-        this(new Context(new BrokenProject(helper, resolver, helper.getStandardPropertyEvaluator(), props, platformsProps)));
+        this(new Context(new BrokenProject(helper, resolver, helper.getStandardPropertyEvaluator(), props, platformsProps)),false);
     }
 
-    public BrokenReferencesModel(final @NonNull Context ctx) {
+    public BrokenReferencesModel(final @NonNull Context ctx, boolean global) {
         assert ctx != null;
         this.ctx = ctx;
+        this.global = global;
         references = new ArrayList<OneReference>();
         refresh();
         ctx.addChangeListener(new ChangeListener() {
@@ -134,30 +137,64 @@ public final class BrokenReferencesModel extends AbstractListModel {
         "LBL_BrokenLinksCustomizer_BrokenFileReference=\"{0}\" file/folder could not be found",
         "LBL_BrokenLinksCustomizer_BrokenVariable=\"{0}\" variable could not be found",
         "LBL_BrokenLinksCustomizer_BrokenVariableContent=\"{0}\" variable based file/folder could not be found",
-        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found"
+        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenLibrary_In_Project=\"{0}\" library (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenDefinableLibrary_In_Project=\"{0}\" library (in {1}) must be defined",
+        "LBL_BrokenLinksCustomizer_BrokenLibraryContent_In_Project=\"{0}\" library (in {1}) has missing items",
+        "LBL_BrokenLinksCustomizer_BrokenProjectReference_In_Project=\"{0}\" project (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenFileReference_In_Project=\"{0}\" file/folder (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenVariable_In_Project=\"{0}\" variable (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenVariableContent_In_Project=\"{0}\" variable based file/folder (in {1}) could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenPlatform_In_Project=\"{0}\" platform (in {1}) could not be found"
     })
     public @Override Object getElementAt(int index) {
-        OneReference or = getOneReference(index);
-        switch (or.type) {
-            case LIBRARY:
-                return LBL_BrokenLinksCustomizer_BrokenLibrary(or.getDisplayID());
-            case DEFINABLE_LIBRARY:
-                return LBL_BrokenLinksCustomizer_BrokenDefinableLibrary(or.getDisplayID());
-            case LIBRARY_CONTENT:
-                return LBL_BrokenLinksCustomizer_BrokenLibraryContent(or.getDisplayID());
-            case PROJECT:
-                return LBL_BrokenLinksCustomizer_BrokenProjectReference(or.getDisplayID());
-            case FILE:
-                return LBL_BrokenLinksCustomizer_BrokenFileReference(or.getDisplayID());
-            case VARIABLE:
-                return LBL_BrokenLinksCustomizer_BrokenVariable(or.getDisplayID());
-            case VARIABLE_CONTENT:
-                return LBL_BrokenLinksCustomizer_BrokenVariableContent(or.getDisplayID());
-            case PLATFORM:
-                return LBL_BrokenLinksCustomizer_BrokenPlatform(or.getDisplayID());
-            default:
-                assert false;
-                return null;
+        final OneReference or = getOneReference(index);
+        final Project prj = or.bprj.getProject();
+        if (global && prj != null) {
+            final String projectName = ProjectUtils.getInformation(prj).getDisplayName();
+            switch (or.type) {
+                case LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenLibrary_In_Project(or.getDisplayID(), projectName);
+                case DEFINABLE_LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenDefinableLibrary_In_Project(or.getDisplayID(), projectName);
+                case LIBRARY_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenLibraryContent_In_Project(or.getDisplayID(), projectName);
+                case PROJECT:
+                    return LBL_BrokenLinksCustomizer_BrokenProjectReference_In_Project(or.getDisplayID(), projectName);
+                case FILE:
+                    return LBL_BrokenLinksCustomizer_BrokenFileReference_In_Project(or.getDisplayID(), projectName);
+                case VARIABLE:
+                    return LBL_BrokenLinksCustomizer_BrokenVariable_In_Project(or.getDisplayID(), projectName);
+                case VARIABLE_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenVariableContent_In_Project(or.getDisplayID(), projectName);
+                case PLATFORM:
+                    return LBL_BrokenLinksCustomizer_BrokenPlatform_In_Project(or.getDisplayID(), projectName);
+                default:
+                    assert false;
+                    return null;
+            }
+        } else {
+            switch (or.type) {
+                case LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenLibrary(or.getDisplayID());
+                case DEFINABLE_LIBRARY:
+                    return LBL_BrokenLinksCustomizer_BrokenDefinableLibrary(or.getDisplayID());
+                case LIBRARY_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenLibraryContent(or.getDisplayID());
+                case PROJECT:
+                    return LBL_BrokenLinksCustomizer_BrokenProjectReference(or.getDisplayID());
+                case FILE:
+                    return LBL_BrokenLinksCustomizer_BrokenFileReference(or.getDisplayID());
+                case VARIABLE:
+                    return LBL_BrokenLinksCustomizer_BrokenVariable(or.getDisplayID());
+                case VARIABLE_CONTENT:
+                    return LBL_BrokenLinksCustomizer_BrokenVariableContent(or.getDisplayID());
+                case PLATFORM:
+                    return LBL_BrokenLinksCustomizer_BrokenPlatform(or.getDisplayID());
+                default:
+                    assert false;
+                    return null;
+            }
         }
     }
 
@@ -595,7 +632,7 @@ public final class BrokenReferencesModel extends AbstractListModel {
                 return false;
             }
             OneReference or = (OneReference)o;
-            return (this.type == or.type && this.ID.equals(or.ID));
+            return (this.type == or.type && this.ID.equals(or.ID) && this.bprj.equals(or.bprj));
         }
         
         public @Override int hashCode() {
@@ -634,6 +671,11 @@ public final class BrokenReferencesModel extends AbstractListModel {
             return helper.get();
         }
 
+        Project getProject() {
+            final AntProjectHelper h = getAntProjectHelper();
+            return h == null ? null : FileOwnerQuery.getOwner(h.getProjectDirectory());
+        }
+
         ReferenceHelper getReferenceHelper() {
             return referenceHelper.get();
         }
@@ -648,6 +690,24 @@ public final class BrokenReferencesModel extends AbstractListModel {
 
         String[] getPlatformProperties() {
             return this.platformProperties;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof BrokenProject)) {
+                return false;
+            }
+            final AntProjectHelper myAPH = getAntProjectHelper();
+            final AntProjectHelper otherAPH = ((BrokenProject)other).getAntProjectHelper();
+            final FileObject myDir = myAPH == null ? null : myAPH.getProjectDirectory();
+            final FileObject otherDir = otherAPH == null ? null : otherAPH.getProjectDirectory();
+            return myDir == null ? otherDir == null : myDir.equals(otherDir);
+        }
+
+        @Override
+        public int hashCode() {
+            final AntProjectHelper h = getAntProjectHelper();
+            return h == null ? 0 : h.getProjectDirectory().hashCode();
         }
     }
 

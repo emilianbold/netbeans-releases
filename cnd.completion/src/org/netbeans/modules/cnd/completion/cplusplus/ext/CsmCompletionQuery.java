@@ -1544,11 +1544,12 @@ abstract public class CsmCompletionQuery {
                             if (item.getParameterCount() == 2) { // index in array follows
                                 int ptrDepth = lastType.getPointerDepth();
                                 int arrDepth = lastType.getArrayDepth();
-                                if (ptrDepth > 0) {
-                                    ptrDepth--;
-                                    lastType = CsmCompletion.getType(cls, ptrDepth, ptrDepth > 0, arrDepth, lastType.isConst());
-                                } else if (arrDepth > 0) {
+                                // first try to decrease depth of array, then handle pointer as arrays as well
+                                if (arrDepth > 0) {
                                     arrDepth--;
+                                    lastType = CsmCompletion.getType(cls, ptrDepth, ptrDepth > 0, arrDepth, lastType.isConst());
+                                } else if (ptrDepth > 0) {
+                                    ptrDepth--;
                                     lastType = CsmCompletion.getType(cls, ptrDepth, ptrDepth > 0, arrDepth, lastType.isConst());
                                 } else {
                                     CsmFunction opArray = CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.ARRAY);

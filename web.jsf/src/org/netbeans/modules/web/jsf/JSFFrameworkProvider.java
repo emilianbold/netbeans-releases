@@ -62,6 +62,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -101,6 +102,8 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -446,13 +449,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             
             //Add Faces Servlet and servlet-mapping into web.xml
-            if (ddRoot != null){
+            if (ddRoot != null && ddRoot.getVersion() != null) {
                 boolean shouldAddMappings = shouldAddMappings(webModule);
                 try{
                     if (shouldAddMappings || !DEFAULT_MAPPING.equals(facesMapping)) {
                         boolean servletDefined = false;
                         Servlet servlet;
-
+                        
                         if (ConfigurationUtils.getFacesServlet(webModule)!=null) {
                             servletDefined = true;
                         }
@@ -546,6 +549,18 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 } catch (ClassNotFoundException cnfe){
                     LOGGER.log(Level.WARNING, "Exception in JSFMoveClassPlugin", cnfe); //NOI18N
                 }
+            }  else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        NotifyDescriptor warningDialog = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(JSFFrameworkProvider.class, "WARN_UnknownDeploymentDescriptorText"), //NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(warningDialog);
+                    }
+                });
+
             }
 
             // copy faces-config.xml
