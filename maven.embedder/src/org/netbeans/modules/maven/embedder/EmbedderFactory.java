@@ -372,6 +372,7 @@ public final class EmbedderFactory {
         req.setProcessPlugins(false);
         req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
         req.setModelResolver(new NBRepositoryModelResolver(embedder));
+        req.setSystemProperties(embedder.getSystemProperties());
         
         ModelBuildingResult res = mb.build(req);
         List<Model> toRet = new ArrayList<Model>();
