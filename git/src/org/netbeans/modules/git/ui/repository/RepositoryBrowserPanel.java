@@ -381,7 +381,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (branch != null) {
                 branchLabel = branch.getName();
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
-                    branchLabel = branch.getId().substring(0, 10) + "..."; // NOI18N
+                    branchLabel = branch.getId();
+                    if (branchLabel.length() > 10) {
+                        branchLabel = branchLabel.substring(0, 10) + "..."; //NOI18N
+                    }
                 }
             }
             GitRepositoryState repositoryState = info.getRepositoryState();
