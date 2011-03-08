@@ -69,7 +69,6 @@ public final class CoverageVO {
     }
 
     public void setPhpUnitVersion(String phpUnitVersion) {
-        assert phpUnitVersion != null;
         assert this.phpUnitVersion == null;
         this.phpUnitVersion = phpUnitVersion;
     }

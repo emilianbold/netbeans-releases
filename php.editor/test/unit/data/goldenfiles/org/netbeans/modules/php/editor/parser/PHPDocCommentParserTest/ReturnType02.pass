@@ -2,8 +2,8 @@
     <Tags>
         <PHPDocTypeTag start='23' end='60' kind='RETURN'>
             <Types>
-                <PHPDocNode start='31' end='37' value='string'/>
-                <PHPDocNode start='38' end='41' value='int'/>
+                <PHPDocTypeNode start='31' end='37' value='string' isArray='false'/>
+                <PHPDocTypeNode start='38' end='41' value='int' isArray='false'/>
             </Types>
         </PHPDocTypeTag>
     </Tags>
