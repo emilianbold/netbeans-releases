@@ -183,6 +183,10 @@ public abstract class CsmResultItem implements CompletionItem {
                                 insertOffset--;
                                 removeLength++;
                                 insertText = "->" + insertText; // NOI18N
+                                if (selectionStartOffset >= 0) {
+                                    selectionStartOffset += 2;
+                                    selectionEndOffset += 2;
+                                }
                             }
                         }
                         doc.remove(insertOffset, removeLength);
@@ -1184,6 +1188,10 @@ public abstract class CsmResultItem implements CompletionItem {
                                     insertOffset--;
                                     removeLength++;
                                     insertText = "->" + insertText; // NOI18N
+                                    if (selectionStartOffset >= 0) {
+                                        selectionStartOffset += 2;
+                                        selectionEndOffset += 2;
+                                    }
                                 }
                             }
                             doc.remove(insertOffset, removeLength);
