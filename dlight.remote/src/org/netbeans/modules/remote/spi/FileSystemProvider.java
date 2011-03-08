@@ -292,6 +292,23 @@ public final class FileSystemProvider {
             provider.addDownloadListener(listener);
         }
     }
+    
+    public static void scheduleRefresh(FileObject fileObject) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                provider.scheduleRefresh(fileObject); 
+            }
+        }
+    }
+    
+    public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                provider.scheduleRefresh(env, paths);
+            }
+        }
+    }
 
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        

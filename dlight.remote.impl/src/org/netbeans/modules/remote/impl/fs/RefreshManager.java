@@ -117,13 +117,13 @@ public class RefreshManager {
     
     public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {
         if (REFRESH_ON_FOCUS) {
-            scheduleRefresh(filterDirectories(fileObjects));        
+            scheduleRefresh(filterDirectories(fileObjects), false);
         }
     }
     
     public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
         if (REFRESH_ON_CONNECT) {
-            scheduleRefresh(filterDirectories(fileObjects));        
+            scheduleRefresh(filterDirectories(fileObjects), false);
         }
     }
     
@@ -150,12 +150,16 @@ public class RefreshManager {
 //        }
 //    }
     
-    private void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
+    public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects) {
+        scheduleRefresh(fileObjects, true);
+    }
+    
+    private void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean toTheHead) {
         if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
             RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
         }        
         synchronized (queueLock) {
-            queue.addAll(fileObjects);
+            queue.addAll(toTheHead ? 0 : queue.size(), fileObjects);
             set.addAll(fileObjects);
         }
         updateTask.schedule(0);
