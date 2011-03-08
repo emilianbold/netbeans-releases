@@ -47,6 +47,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 
@@ -62,6 +63,8 @@ import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -73,6 +76,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.save.ElementOverlay;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -584,6 +589,59 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
                 VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("java.util.List"), null);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test195882() throws Exception {
+        clearWorkDir();
+        assertTrue(new File(getWorkDir(), "test").mkdirs());
+        testFile = new File(getWorkDir(), "test/Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    List orig;\n" +
+            "    void t() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        File listFile = new File(getWorkDir(), "test/List.java");
+        TestUtilities.copyStringToFile(listFile,
+            "package test;\n" +
+            "\n" +
+            "public class List {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    List orig;\n" +
+            "    void t() {\n" +
+            "        java.util.List l;\n" +
+            "    }\n" +
+            "}\n";
+
+        ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
+        JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                //check that test.List exists:
+                assertNotNull(workingCopy.getElements().getTypeElement("test.List"));
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                BlockTree block = method.getBody();
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("java.util.List"), null);
+                workingCopy.rewrite(block, make.addBlockStatement(block, vt));
             }
 
         };
