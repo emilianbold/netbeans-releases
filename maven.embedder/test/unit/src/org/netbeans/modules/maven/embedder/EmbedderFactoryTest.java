@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.maven.embedder;
 
+import java.io.File;
+import java.util.List;
+import org.apache.maven.model.Model;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 
 public class EmbedderFactoryTest extends NbTestCase {
     
@@ -53,6 +57,40 @@ public class EmbedderFactoryTest extends NbTestCase {
     public void testCreateProjectLikeEmbedder() throws Exception {
         MavenEmbedder embedder = EmbedderFactory.createProjectLikeEmbedder();
         // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
+    }
+
+    public void testCreateModelLineage() throws Exception {
+        clearWorkDir();
+        File pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+            "<modelVersion>4.0.0</modelVersion>" +
+            "<groupId>grp</groupId>" +
+            "<artifactId>art</artifactId>" +
+            "<packaging>jar</packaging>" +
+            "<version>1.0-SNAPSHOT</version>" +
+            "</project>");
+        List<Model> lineage = EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+        assertEquals(/* second is inherited master POM */2, lineage.size());
+        assertEquals("grp:art:jar:1.0-SNAPSHOT", lineage.get(0).getId());
+        // #195295: JDK activation
+        pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+            "<modelVersion>4.0.0</modelVersion>" +
+            "<groupId>grp</groupId>" +
+            "<artifactId>art2</artifactId>" +
+            "<packaging>jar</packaging>" +
+            "<version>1.0-SNAPSHOT</version>" +
+            "<profiles>" +
+            "<profile>" +
+            "<id>jdk15</id>" +
+            "<activation>" +
+            "<jdk>1.5</jdk>" +
+            "</activation>" +
+            "</profile>" +
+            "</profiles>" +
+            "</project>");
+        lineage = EmbedderFactory.createModelLineage(pom, EmbedderFactory.createProjectLikeEmbedder());
+        assertEquals(2, lineage.size());
+        assertEquals("grp:art2:jar:1.0-SNAPSHOT", lineage.get(0).getId());
+        assertEquals(1, lineage.get(0).getProfiles().size());
     }
 
 }
