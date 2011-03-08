@@ -397,7 +397,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 branchLabel = branch.getName();
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
                     // not on a branch, show at least part of commit id
-                    branchLabel = branch.getId().substring(0, 10) + "..."; //NOI18N
+                    branchLabel = branch.getId();
+                    if (branchLabel.length() > 10) {
+                        branchLabel = branchLabel.substring(0, 10) + "..."; //NOI18N
+                    }
                 }
             }
             GitRepositoryState repositoryState = info.getRepositoryState();
