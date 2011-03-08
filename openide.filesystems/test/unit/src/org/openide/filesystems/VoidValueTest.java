@@ -79,7 +79,7 @@ public class VoidValueTest extends NbTestCase {
         assertNull("VoidValue should not be copied.", file11FO.getAttribute("VOIDVALUE-ATTR"));
     }
 
-    public void XXX_testNullValue() throws Exception { // #16761
+    public void testNullValue() throws Exception { // #16761
         clearWorkDir();
         LocalFileSystem local = new LocalFileSystem();
         local.setRootDirectory(getWorkDir());
@@ -91,6 +91,7 @@ public class VoidValueTest extends NbTestCase {
         baseFile.setAttribute("nonexistent", null);
         assertNull(baseFile.getAttribute("nonexistent"));
         assertNull(derivedFile.getAttribute("nonexistent"));
+        assertFalse("No file created yet", new File(getWorkDir(), ".nbattrs").isFile());
         derivedFile.setAttribute("nonexistent", null); // ought to be a no-op
         assertNull(baseFile.getAttribute("nonexistent"));
         assertNull(derivedFile.getAttribute("nonexistent"));
