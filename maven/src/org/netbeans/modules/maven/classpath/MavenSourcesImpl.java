@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.classpath;
 
 import java.awt.Image;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -70,6 +70,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
@@ -77,7 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import static org.netbeans.modules.maven.Bundle.*;
+import static org.netbeans.modules.maven.classpath.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 /**
