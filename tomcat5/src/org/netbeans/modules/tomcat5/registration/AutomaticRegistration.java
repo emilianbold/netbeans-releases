@@ -147,7 +147,7 @@ public class AutomaticRegistration {
 
         String version;
         try {
-            version = TomcatFactory.getTomcatVersion(catalinaHome);
+            version = TomcatFactory.getTomcatVersionString(catalinaHome);
         } catch (IllegalStateException e) {
             LOGGER.log(Level.INFO, "Cannot register the default Tomcat server.  Cannot recognize the Tomcat version."); // NOI18N
             LOGGER.log(Level.INFO, null, e);

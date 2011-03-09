@@ -49,7 +49,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -61,10 +60,9 @@ class InstallPanel implements WizardDescriptor.Panel, ChangeListener {
     private final List listeners = new ArrayList();
     private WizardDescriptor wizard;
     private InstallPanelVisual component;
-    private final TomcatVersion tomcatVersion;
 
-    public InstallPanel(TomcatVersion tomcatVersion) {
-        this.tomcatVersion = tomcatVersion;
+    public InstallPanel() {
+        super();
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -90,17 +88,15 @@ class InstallPanel implements WizardDescriptor.Panel, ChangeListener {
         boolean result = getVisual().hasValidData();
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
-        //if (!result) {
-            wizard.putProperty(
-                    getVisual().isInfoMessage() ? WizardDescriptor.PROP_INFO_MESSAGE : WizardDescriptor.PROP_ERROR_MESSAGE,
-                    getVisual().getErrorMessage());
-        //}
+        wizard.putProperty(
+                getVisual().isInfoMessage() ? WizardDescriptor.PROP_INFO_MESSAGE : WizardDescriptor.PROP_ERROR_MESSAGE,
+                getVisual().getErrorMessage());
         return result;
     }
 
     public java.awt.Component getComponent() {
         if (component == null) {
-            component = new InstallPanelVisual(tomcatVersion);
+            component = new InstallPanelVisual();
             component.addChangeListener(this);
         }
 
