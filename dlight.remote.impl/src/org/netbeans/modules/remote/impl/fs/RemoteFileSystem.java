@@ -103,7 +103,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final RefreshManager refreshManager;
     private final File cache;
     private final RemoteFileObjectFactory factory;
-    private long dirtyTimestamp;
     /** File transfer statistics */
     private static int fileCopyCount;
     /** Directory synchronization statistics */
@@ -177,17 +176,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
         refreshManager.scheduleRefresh(fileObjects);
-    }
-
-    private void resetDirtyTimestamp() {
-        cache.setLastModified(System.currentTimeMillis());
-        dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
-        RemoteLogger.getInstance().log(Level.FINEST, "Sync: resetting dirty timestamp for {0} to {1}", new Object[]{execEnv, dirtyTimestamp});
-    }
-
-    /*package*/
-    public long getDirtyTimestamp() {
-        return dirtyTimestamp;
     }
 
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
