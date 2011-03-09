@@ -44,8 +44,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Hashtable;
@@ -58,6 +56,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Replace paths prefixes with variables. 
@@ -274,20 +273,11 @@ public class ShorterPaths extends Task {
     }
 
     private String copyExtraLib(File file) throws IOException{
-        String name = null;
-        if (this.extraLibsDir != null && extraLibsDir.isDirectory() && file.isFile()) {
-            log("Copying " + file + " to extralibs despite " + replacements);
-            name = file.getName();
-            byte buff[] = new byte[100000];
-            FileInputStream fis = new FileInputStream(file);
-            FileOutputStream fos = new FileOutputStream(new File (extraLibsDir,name));
-            int size = 0;
-            while ((size = fis.read(buff)) > 0 ) {
-                fos.write(buff,0,size);
-            }
-            fos.close();
-            fis.close();
+        if (extraLibsDir == null || !extraLibsDir.isDirectory() || !file.isFile()) {
+            return null;
         }
+        log("Copying " + file + " to extralibs despite " + replacements);
+        FileUtils.getFileUtils().copyFile(file, new File(extraLibsDir, file.getName()));
         if (file.getName().endsWith(".jar")) {
             String cp;
             try {
@@ -308,7 +298,7 @@ public class ShorterPaths extends Task {
                 }
             }
         }
-        return name;
+        return file.getName();
     }
  
     
