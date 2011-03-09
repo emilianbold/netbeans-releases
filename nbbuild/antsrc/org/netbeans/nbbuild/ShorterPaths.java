@@ -276,8 +276,15 @@ public class ShorterPaths extends Task {
         if (extraLibsDir == null || !extraLibsDir.isDirectory() || !file.isFile()) {
             return null;
         }
+        File copy = new File(extraLibsDir, file.getName());
+        if (FileUtils.getFileUtils().contentEquals(file, copy)) {
+            return file.getName();
+        } else if (copy.isFile()) {
+            // Could try to copy to a different name, but this is probably something that should be fixed anyway:
+            throw new IOException(file + " is not the same as " + copy + "; will not overwrite");
+        }
         log("Copying " + file + " to extralibs despite " + replacements);
-        FileUtils.getFileUtils().copyFile(file, new File(extraLibsDir, file.getName()));
+        FileUtils.getFileUtils().copyFile(file, copy);
         if (file.getName().endsWith(".jar")) {
             String cp;
             try {
@@ -298,7 +305,7 @@ public class ShorterPaths extends Task {
                 }
             }
         }
-        return file.getName();
+        return copy.getName();
     }
  
     
