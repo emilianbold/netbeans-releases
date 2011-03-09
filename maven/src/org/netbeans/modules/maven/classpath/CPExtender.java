@@ -50,9 +50,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
@@ -73,8 +76,8 @@ import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * an implementation of ProjectClassPathModifierImplementation that tried to match 
@@ -106,7 +109,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 try {
-                    added[0] = addLibrary(library, model, null);
+                    added[0] = addRemoveLibrary(library, model, null, true);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                     added[0] = Boolean.FALSE;
@@ -125,122 +128,135 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     }
     
     public boolean addArchiveFile(FileObject arch) throws IOException {
-        final FileObject file = FileUtil.getArchiveFile(arch);
-        if (file.isFolder()) {
-            throw new IOException("Cannot add folders to Maven projects as dependencies: " + file.getURL()); //NOI18N
+        final File jar = FileUtil.archiveOrDirForURL(arch.getURL());
+        if (jar == null || jar.isDirectory()) {
+            throw new IOException("Cannot add folders to Maven projects as dependencies: " + arch); //NOI18N
         }
-
-        final Boolean[] added = new Boolean[1];
+        final AtomicBoolean added = new AtomicBoolean();
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 try {
-                    added[0] = addArchiveFile(file, model, null);
+                    added.compareAndSet(false, addRemoveJAR(jar, model, null, true));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                    added[0] = Boolean.FALSE;
                 }
             }
         };
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        //TODO is the manual reload necessary if pom.xml file is being saved?
-//                NbMavenProject.fireMavenProjectReload(project);
-        if (added[0]) {
+        if (added.get()) {
             project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
         }
-        return added[0];
+        return added.get();
     }
 
-    private boolean addLibrary(Library library, POMModel model, String scope) throws IOException {
-        boolean added = checkLibraryForPoms(library, model, scope);
-        if (!added) {
+    private boolean addRemoveLibrary(Library library, POMModel model, String scope, boolean add) throws IOException {
+        Boolean modified = checkLibraryForPoms(library, model, scope, add);
+        if (modified == null) {
             List<URL> urls = library.getContent("classpath"); //NOI18N
-            added = urls.size() > 0;
+            modified = urls.size() > 0;
             assert model != null;
             for (URL url : urls) {
-                FileObject fo = URLMapper.findFileObject(FileUtil.getArchiveFile(url));
-                if (fo == null) {
+                File jar = FileUtil.archiveOrDirForURL(url);
+                if (jar == null) {
                     throw new IOException("Could find no file corresponding to " + url);
                 }
-                if (fo.isFolder()) {
-                    throw new IOException("Cannot add folders to Maven projects as dependencies: " + fo.getURL()); //NOI18N
+                if (jar.isDirectory()) {
+                    throw new IOException("Cannot add folders to Maven projects as dependencies: " + url); //NOI18N
                 }
-                added = added && addArchiveFile(fo, model, scope);
+                modified = modified && addRemoveJAR(jar, model, scope, add);
             }
+        }
+        return modified;
+    }
+    
+    private boolean addRemoveJAR(File jar, POMModel mdl, String scope, boolean add) throws IOException {
+        if (!add) {
+            throw new UnsupportedOperationException("removing JARs not yet supported");
+        }
+        NBVersionInfo dep = null;
+        for (NBVersionInfo _dep : RepositoryQueries.findBySHA1(jar)) {
+            if (!"unknown.binary".equals(_dep.getGroupId())) {
+                dep = _dep;
+                break;
+            }
+        }
+        if (dep == null) {
+            dep = new NBVersionInfo(null, "unknown.binary", jar.getName().replaceFirst("[.]jar$", ""), "SNAPSHOT", null, null, null, null, null);
+            addJarToPrivateRepo(jar, mdl, dep);
+        }
+        //if not found anywhere, add to a custom file:// based repository structure within the project's directory.
+        boolean added = false;
+        Dependency dependency = ModelUtils.checkModelDependency(mdl, dep.getGroupId(), dep.getArtifactId(), false);
+        if (dependency == null) {
+            dependency = ModelUtils.checkModelDependency(mdl, dep.getGroupId(), dep.getArtifactId(), true);
+            added = true;
+        }
+        if (!Utilities.compareObjects(dep.getVersion(), dependency.getVersion())) {
+            dependency.setVersion(dep.getVersion());
+            added = true;
+        }
+        if (!Utilities.compareObjects(scope, dependency.getScope())) {
+            dependency.setScope(scope);
+            added = true;
         }
         return added;
-    }
-    
-    private boolean addArchiveFile(FileObject file, POMModel mdl, String scope) throws IOException {
-            
-        String[] dep = checkRepositoryIndices(FileUtil.toFile(file));
-        //if not found anywhere, add to a custom file:// based repository structure within the project's directory.
-        if (dep == null || "unknown.binary".equals(dep[0])) {  //NOI18N
-            //also go this route when the artifact was found in local repo but is of unknown.binary groupId.
-            dep = new String[3];
-            dep[0] = "unknown.binary"; //NOI18N
-            dep[1] = file.getName();
-            dep[2] = "SNAPSHOT"; //NOI18N
-            addJarToPrivateRepo(file, mdl, dep);
-        }
-        if (dep != null) {
-            Dependency dependency = ModelUtils.checkModelDependency(mdl, dep[0], dep[1], true);
-            dependency.setVersion(dep[2]);
-            if (scope != null) {
-                dependency.setScope(scope);
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    private String[] checkRepositoryIndices(File file) {
-        List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(file);
-        for (NBVersionInfo elem : lst) {
-            String[] dep = new String[3];
-            dep[0] = elem.getGroupId();
-            dep[1] = elem.getArtifactId();
-            dep[2] = elem.getVersion();
-            return dep;
-        }
-        return null;
     }
     
     /**
+     * @return true if something was added, false if everything was already there, null if could not do anything
      */
-    private boolean checkLibraryForPoms(Library library, POMModel model, String scope) {
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private Boolean checkLibraryForPoms(Library library, POMModel model, String scope, boolean add) {
         if (!"j2se".equals(library.getType())) {//NOI18N
             //only j2se library supported for now..
-            return false;
+            return null;
         }
-        List<URL> poms = library.getContent("maven-pom"); //NOI18N
-        boolean added = false;
-        if (poms != null && poms.size() > 0) {
-            for (URL pom : poms) {
-                ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
-                if (result != null) {
-                    added = true;
-                    //set dependency
-                    Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);
+        Boolean modified = null;
+        for (URL pom : library.getContent("maven-pom")) {
+            ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
+            if (result != null) {
+                //set dependency
+                modified = false;
+                Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), false);
+                if (!add) {
+                    if (dep != null &&
+                            Utilities.compareObjects(result.getVersion(), dep.getVersion()) &&
+                            Utilities.compareObjects(scope, dep.getScope()) &&
+                            Utilities.compareObjects(result.getClassifier(), dep.getClassifier())) {
+                        model.removeChildComponent(dep);
+                        modified = true;
+                    }
+                    break;
+                }
+                if (dep == null) {
+                    dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);
+                    modified = true;
+                }
+                if (!Utilities.compareObjects(result.getVersion(), dep.getVersion())) {
                     dep.setVersion(result.getVersion());
-                    if (scope != null) {
-                        dep.setScope(scope);
-                    }
-                    if (result.getClassifier() != null) {
-                        dep.setClassifier(result.getClassifier());
-                    }
-                    //set repository
-                    org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
-                            project.getOriginalMavenProject(), model, result.getRepoRoot());
-                    if (reposit != null) {
-                        reposit.setId(library.getName());
-                        reposit.setLayout(result.getRepoType());
-                        reposit.setName("Repository for library " + library); //NOI18N - content coming into the pom.xml file
-                    }
+                    modified = true;
+                }
+                if (!Utilities.compareObjects(scope, dep.getScope())) {
+                    dep.setScope(scope);
+                    modified = true;
+                }
+                if (!Utilities.compareObjects(result.getClassifier(), dep.getClassifier())) {
+                    dep.setClassifier(result.getClassifier());
+                    modified = true;
+                }
+                //set repository
+                org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
+                        project.getOriginalMavenProject(), model, result.getRepoRoot());
+                if (reposit != null) {
+                    reposit.setId(library.getName());
+                    reposit.setLayout(result.getRepoType());
+                    reposit.setName("Repository for library " + library); //NOI18N - content coming into the pom.xml file
+                    modified = true;
                 }
             }
         }
-        return added;
+        return modified;
     }
         
     public boolean addAntArtifact(AntArtifact arg0, URI arg1) throws IOException {
@@ -277,28 +293,24 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         };
     }
 
-    public boolean addLibraries(final Library[] libraries, SourceGroup grp, String type) throws IOException {
-        final Boolean[] added = new Boolean[1];
-        added[0] = libraries.length > 0;
-        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null; //NOI18N
-        //figure if we deal with test or regular sources.
-        String name = grp.getName();
-        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
-            scope = "test"; //NOI18N
-        }
-        if (scope == null && 
-            (CLASSPATH_COMPILE_ONLY.equals(type) || JavaClassPathConstants.PROCESSOR_PATH.equals(type))) {
-            scope = Artifact.SCOPE_PROVIDED;
-        }
-        final String fScope = scope;
+    public @Override boolean addLibraries(Library[] libraries, SourceGroup grp, String type) throws IOException {
+        return addRemoveLibraries(libraries, grp, type, true);
+    }
+
+    public @Override boolean removeLibraries(Library[] libraries, SourceGroup grp, String type) throws IOException {
+        return addRemoveLibraries(libraries, grp, type, false);
+    }
+
+    private boolean addRemoveLibraries(final Library[] libraries, SourceGroup grp, String type, final boolean add) throws IOException {
+        final AtomicBoolean modified = new AtomicBoolean();
+        final String scope = findScope(grp, type);
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
+            public @Override void performOperation(POMModel model) {
                 for (Library library : libraries) {
                     try {
-                        added[0] = added[0] && addLibrary(library, model, fScope);
+                        modified.compareAndSet(false, addRemoveLibrary(library, model, scope, add));
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
-                        added[0] = Boolean.FALSE;
                     }
                 }
             }
@@ -307,78 +319,46 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
         //TODO is the manual reload necessary if pom.xml file is being saved?
 //                NbMavenProject.fireMavenProjectReload(project);
-        if (added[0]) {
+        if (modified.get()) {
             project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
         }
-        return added[0];
+        return modified.get();
     }
-    
-    public boolean removeLibraries(Library[] arg0, SourceGroup arg1,
-                                      String arg2) throws IOException,
-                                                          UnsupportedOperationException {
-        throw new UnsupportedOperationException("Not supported in maven projects.");//NOI18N
-    }
-    
-    public boolean addRoots(final URL[] urls, SourceGroup grp, String type) throws IOException {
-        final Boolean[] added = new Boolean[1];
-        added[0] = urls.length > 0;
-        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
-        //figure if we deal with test or regular sources.
-        String name = grp.getName();
-        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
-            scope = "test"; //NOI18N
-        }
-        if (scope == null && JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
-            scope = Artifact.SCOPE_PROVIDED;
-        }
-        final String fScope = scope;
+
+    public @Override boolean addRoots(final URL[] urls, SourceGroup grp, String type) throws IOException {
+        final AtomicBoolean added = new AtomicBoolean();
+        final String scope = findScope(grp, type);
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
+            public @Override void performOperation(POMModel model) {
                 for (URL url : urls) {
-                    URL fileUrl = FileUtil.getArchiveFile(url);
-                    if (fileUrl != null) {
-                        FileObject fo  = URLMapper.findFileObject(fileUrl);
-                        assert fo != null;
+                    File jar = FileUtil.archiveOrDirForURL(url);
+                    if (jar != null && jar.isFile()) {
                         try {
-                            added[0] = added[0] && addArchiveFile(fo, model, fScope);
+                            added.compareAndSet(false, addRemoveJAR(jar, model, scope, true));
                         } catch (IOException ex) {
-                            added[0] = Boolean.FALSE;
                             Exceptions.printStackTrace(ex);
                         }
                     } else {
-                        Logger.getLogger(CPExtender.class.getName()).info("Adding non-jar root to Maven projects makes no sense. (" + url + ")"); //NOI18N
+                        Logger.getLogger(CPExtender.class.getName()).log(Level.INFO, "Adding non-jar root to Maven projects makes no sense. ({0})", url); //NOI18N
                     }
                 }
             }
         };
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        //TODO is the manual reload necessary if pom.xml file is being saved?
-//                NbMavenProject.fireMavenProjectReload(project);
-        if (added[0]) {
+        if (added.get()) {
             project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
         }
-        return added[0];
+        return added.get();
     }
 
     @Override
     protected boolean addProjects(final Project[] projects, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
-        final Boolean[] added = new Boolean[2];
-
-        added[0] = false;
-        added[1] = false;
-        String scope = ClassPath.EXECUTE.equals(classPathType) ? Artifact.SCOPE_RUNTIME : null;//NOI18N
-        //figure if we deal with test or regular sources.
-        String name = sg.getName();
-        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
-            scope = "test"; //NOI18N
-        }
-        if (scope == null && JavaClassPathConstants.PROCESSOR_PATH.equals(classPathType)) {
-            scope = Artifact.SCOPE_PROVIDED;
-        }
-        final String fScope = scope;
+        final AtomicBoolean added = new AtomicBoolean();
+        final AtomicBoolean nonMavenError = new AtomicBoolean();
+        final String scope = findScope(sg, classPathType);
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
+            public @Override void performOperation(POMModel model) {
                 Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 for (Project prj: projects) {
                     NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
@@ -393,30 +373,30 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
                         }
                         Dependency dependency = ModelUtils.checkModelDependency(model, mp.getGroupId(), mp.getArtifactId(), true);
                         dependency.setVersion(mp.getVersion());
-                        if (fScope != null) {
-                            dependency.setScope(fScope);
+                        if (scope != null) {
+                            dependency.setScope(scope);
                         } else {
                             if (NbMavenProject.TYPE_EJB.equals(nbprj.getPackagingType()) ||
                                 NbMavenProject.TYPE_WAR.equals(nbprj.getPackagingType())) {
                                 dependency.setScope(Artifact.SCOPE_PROVIDED);
                             }
                         }
-                        added[0] = true;
+                        added.set(true);
                     } else {
                         // unsupported usecase, not a maven project
-                        added[1] = true;
+                        nonMavenError.set(true);
                     }
                 }
             }
         };
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML);//NOI18N
         org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-        if (added[1]) {
+        if (nonMavenError.get()) {
             //throw late to prevent the pom model to go bust eventually
             throw new UnsupportedOperationException("Attempting to add a non-Maven project dependency to a Maven project, not supported."); //NOI18N
         }
 
-        return added[0];
+        return added.get();
 
     }
 
@@ -435,7 +415,22 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         throw new UnsupportedOperationException("Cannot remove Ant based projects as subprojects from Maven projects.");//NOI18N
     }
     
-    private void addJarToPrivateRepo(FileObject file, POMModel mdl, String[] dep) throws IOException {
+    private static String findScope(SourceGroup grp, String type) {
+        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null; //NOI18N
+        //figure if we deal with test or regular sources.
+        String name = grp.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
+        if (scope == null &&
+            (CLASSPATH_COMPILE_ONLY.equals(type) || JavaClassPathConstants.PROCESSOR_PATH.equals(type))) {
+            scope = Artifact.SCOPE_PROVIDED;
+        }
+        return scope;
+    }
+
+    // XXX this is a poor solution; http://jira.codehaus.org/secure/attachment/53864/MNG-1867.zip is better
+    private void addJarToPrivateRepo(File jar, POMModel mdl, NBVersionInfo dep) throws IOException {
         //first add the local repo to
         List<Repository> repos = mdl.getProject().getRepositories();
         boolean found = false;
@@ -464,12 +459,13 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         }
         assert path != null;
         FileObject root = FileUtil.createFolder(project.getProjectDirectory(), path);
-        FileObject grp = FileUtil.createFolder(root, dep[0].replace('.', '/')); //NOI18N
-        FileObject art = FileUtil.createFolder(grp, dep[1]);
-        FileObject ver = FileUtil.createFolder(art, dep[2]);
-        String name = dep[1] + "-" + dep[2];//NOI18N
+        FileObject grp = FileUtil.createFolder(root, dep.getGroupId().replace('.', '/')); //NOI18N
+        FileObject art = FileUtil.createFolder(grp, dep.getArtifactId());
+        FileObject ver = FileUtil.createFolder(art, dep.getVersion());
+        String name = dep.getArtifactId() + '-' + dep.getVersion();
+        FileObject file = FileUtil.toFileObject(jar);
         if (ver.getFileObject(name, file.getExt()) == null) { //#160803
-            FileUtil.copyFile(file, ver, dep[1] + "-" + dep[2], file.getExt()); //NOI18N
+            FileUtil.copyFile(file, ver, name, file.getExt());
         }
     }
 }

@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.apisupport.hints;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +81,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -122,21 +126,34 @@ public class LayerHints implements UpToDateStatusProviderFactory {
     private static class Prov extends UpToDateStatusProvider implements Runnable {
 
         private final Document doc;
+        private final DataObject xml;
         private final LayerHandle handle;
         private boolean processed;
         private final RequestProcessor.Task task;
         private final FileChangeListener listener = new FileChangeAdapter() {
             public @Override void fileChanged(FileEvent fe) {
-                processed = false;
-                task.schedule(0);
-                firePropertyChange(PROP_UP_TO_DATE, null, null);
+                change();
             }
         };
+        private final PropertyChangeListener pcl = new PropertyChangeListener() {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
+                if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
+                    change();
+                }
+            }
+        };
+        private void change() {
+            processed = false;
+            task.schedule(0);
+            firePropertyChange(PROP_UP_TO_DATE, null, null);
+        }
 
         Prov(Document doc, DataObject xml, LayerHandle handle) {
             this.doc = doc;
+            this.xml = xml;
             this.handle = handle;
             xml.getPrimaryFile().addFileChangeListener(FileUtil.weakFileChangeListener(listener, xml.getPrimaryFile()));
+            xml.addPropertyChangeListener(WeakListeners.propertyChange(pcl, xml));
             task = RP.post(this);
         }
 
@@ -147,9 +164,20 @@ public class LayerHints implements UpToDateStatusProviderFactory {
             return processed ? UpToDateStatus.UP_TO_DATE_OK : UpToDateStatus.UP_TO_DATE_PROCESSING;
         }
 
+        private void cancelAll() {
+            HintsController.setErrors(doc, LayerHints.class.getName(), Collections.<ErrorDescription>emptyList());
+            processed = true;
+            firePropertyChange(PROP_UP_TO_DATE, null, null);
+        }
+
         public @Override void run() {
+            if (xml.isModified()) {
+                cancelAll();
+                return;
+            }
             FileSystem fs = handle.layer(false);
             if (fs == null) {
+                cancelAll();
                 return;
             }
             final URL layerURL;
@@ -157,6 +185,7 @@ public class LayerHints implements UpToDateStatusProviderFactory {
                 layerURL = handle.getLayerFile().getURL();
             } catch (FileStateInvalidException x) {
                 LOG.log(Level.INFO, null, x);
+                cancelAll();
                 return;
             }
             String expectedLayers = "[" + layerURL + "]";

@@ -408,6 +408,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
                         <test/>
