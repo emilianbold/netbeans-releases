@@ -239,7 +239,7 @@ public class MakeProjectGenerator {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+        Element nameEl = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
 
