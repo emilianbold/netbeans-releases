@@ -378,7 +378,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    // TODO: should it be removed?
     @Override
     public String getBaseDir() {
         return baseDirFO.getPath();
@@ -386,6 +385,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public FileObject getBaseDirFileObject() {
         return baseDirFO;
+    }
+
+    public String getProjectDir() {
+        return projectDirFO.getPath();
     }
 
     public FileObject getProjectDirFileObject() {
