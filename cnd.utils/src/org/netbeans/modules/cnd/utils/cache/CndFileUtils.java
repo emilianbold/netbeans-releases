@@ -584,6 +584,7 @@ public final class CndFileUtils {
                 if (fo.isFolder()) {
                     return DIRECTORY;
                 } else {
+                    assert fo.isData() : "not a file " + fo;
                     return FILE;
                 }
             } else {
