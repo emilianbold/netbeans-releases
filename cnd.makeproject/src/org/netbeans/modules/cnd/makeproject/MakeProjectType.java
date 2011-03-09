@@ -56,6 +56,7 @@ public final class MakeProjectType implements AntBasedProjectType {
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
+    public static final String PROJECT_CONFIGURATION__NAME_NAME = "name"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project-private/1"; // NOI18N
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
