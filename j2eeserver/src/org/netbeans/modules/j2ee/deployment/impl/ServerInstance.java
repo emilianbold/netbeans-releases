@@ -1465,8 +1465,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
             managerStartedByIde = true;
             coTarget = null;
             targets = null;
-            initCoTarget();
         }
+        initCoTarget();
     }
     
     // startDebugging
@@ -1485,8 +1485,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
             managerStartedByIde = true;
             coTarget = null;
             targets = null;
-            initCoTarget();
         }
+        initCoTarget();
     }
     
     /** start server in the profile mode */
