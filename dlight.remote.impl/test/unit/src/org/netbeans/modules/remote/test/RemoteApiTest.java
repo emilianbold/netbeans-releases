@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
@@ -53,6 +54,7 @@ import org.netbeans.modules.remote.impl.fs.DirectoryStorageLsTestCase;
 import org.netbeans.modules.remote.impl.fs.DirectoryStorageSftpTestCase;
 import org.netbeans.modules.remote.impl.fs.EscapeWindowsNameTestCase;
 import org.netbeans.modules.remote.impl.fs.ListenersTestCase;
+import org.netbeans.modules.remote.impl.fs.NormalizationTestCase;
 import org.netbeans.modules.remote.impl.fs.RefreshTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTestCase;
@@ -82,6 +84,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            CanonicalTestCase.class,
            CreateDataAndFolderTestCase.class,
            ListenersTestCase.class,
+           NormalizationTestCase.class,
            RemoteFileSystemOffilneTestCase.class);
     }
 

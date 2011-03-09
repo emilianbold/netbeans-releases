@@ -62,7 +62,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,7 +69,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -103,7 +101,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final RefreshManager refreshManager;
     private final File cache;
     private final RemoteFileObjectFactory factory;
-    private long dirtyTimestamp;
     /** File transfer statistics */
     private static int fileCopyCount;
     /** Directory synchronization statistics */
@@ -179,17 +176,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         refreshManager.scheduleRefresh(fileObjects);
     }
 
-    private void resetDirtyTimestamp() {
-        cache.setLastModified(System.currentTimeMillis());
-        dirtyTimestamp = cache.lastModified(); // otherwise we can't compare it with files - we can easily get a tiny difference...
-        RemoteLogger.getInstance().log(Level.FINEST, "Sync: resetting dirty timestamp for {0} to {1}", new Object[]{execEnv, dirtyTimestamp});
-    }
-
-    /*package*/
-    public long getDirtyTimestamp() {
-        return dirtyTimestamp;
-    }
-
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
     }
@@ -207,11 +193,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         //but URI is really very restrictive so let's use another way
         //will use the face that path is absolute and we have Unix like system
         //no special code for Windows
-        return normalize(absPath);
-
-    }
-
-    private static String normalize(String absPath) {
         return PathUtilities.normalizeUnixPath(absPath);
     }
 

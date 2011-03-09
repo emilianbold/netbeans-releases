@@ -66,6 +66,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -244,16 +245,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return getExecutionEnvironment().getDisplayName() + ':' + path;
     }
 
-    private String removeDoubleSlashes(String path) {
-        if (path == null) {
-            return null;
-        }
-        return path.replace("//", "/"); //TODO:rfs remove triple paths, etc
-    }
-
     @Override
     public RemoteFileObjectBase getFileObject(String relativePath) {
-        relativePath = removeDoubleSlashes(relativePath);
+        relativePath = PathUtilities.normalizeUnixPath(relativePath);
+        if ("".equals(relativePath)) { // NOI18N
+            return this;
+        }
+        if (relativePath.startsWith("..")) { //NOI18N
+            String absPath = getPath() + '/' + relativePath;
+            absPath = PathUtilities.normalizeUnixPath(absPath);
+            return getFileSystem().findResource(absPath);
+        }        
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
@@ -271,12 +273,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             } else {
                 return null;
             }
-        }
-        if (".".equals(relativePath)) { // NOI18N
-            return this;
-        } else if ("..".equals(relativePath)) { // NOI18N
-            RemoteFileObjectBase parent = getParent();
-            return (parent == null) ? this : parent ;
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
@@ -552,8 +548,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             for (DirEntry entry : directoryReader.getEntries()) {
                 newEntries.put(entry.getName(), entry);
             }
-            boolean changed = false;
+            boolean changed = (newEntries.size() != storage.size());
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
+            List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
             for (DirEntry newEntry : newEntries.values()) {
                 String cacheName;
                 DirEntry oldEntry = storage.getEntry(newEntry.getName());
@@ -564,26 +561,30 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     if (oldEntry.isSameType(newEntry)) {
                         cacheName = oldEntry.getCache();
                         keepCacheNames.add(newEntry);
+                        boolean fire = false;
                         if (!newEntry.isSameLastModified(oldEntry)) {
+                            changed = fire = true;
                             if (newEntry.isPlainFile()) {
-                                changed = true;
                                 File entryCache = new File(getCache(), oldEntry.getCache());
                                 if (entryCache.exists()) {
                                     if (trace) { trace("removing cache for updated file {0}", entryCache.getAbsolutePath()); } // NOI18N
                                     entryCache.delete();
                                 }
-                            } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
-                                changed = true;
-                                getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
-                            } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
-                                changed = true;
-                            } else if (!newEntry.isSameUser(oldEntry)) {
-                                changed = true;
-                            } else if (!newEntry.isSameGroup(oldEntry)) {
-                                changed = true;
-                            } else if (newEntry.getSize() != oldEntry.getSize()) {
-                                changed = true;
-                            }
+                            } 
+                        } else if (!equals(newEntry.getLinkTarget(), oldEntry.getLinkTarget())) {
+                            changed = fire = true;
+                            getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
+                        } else if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                            changed = fire = true;
+                        } else if (!newEntry.isSameUser(oldEntry)) {
+                            changed = fire = true;
+                        } else if (!newEntry.isSameGroup(oldEntry)) {
+                            changed = fire = true;
+                        } else if (newEntry.getSize() != oldEntry.getSize()) {
+                            changed = fire = true;
+                        }
+                        if (fire) {
+                            entriesToFireChanged.add(newEntry);
                         }
                     } else {
                         changed = true;
@@ -604,21 +605,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     dupEntries.add(newEntry);
                 }
             }
-            if (changed || newEntries.size() != storage.size()) {
+            if (changed) {
                 // Check for removal
                 for (DirEntry oldEntry : storage.list()) {
                     if (!newEntries.containsKey(oldEntry.getName())) {
                         changed = true;
                         invalidate(oldEntry);
-                    }
-                }
-                if (loaded) {
-                    for (DirEntry newEntry : newEntries.values()) {
-                        DirEntry oldEntry = storage.getEntry(newEntry.getName());
-                        if (oldEntry == null) {
-                            RemoteFileObjectBase fo = createFileObject(newEntry);
-                            fireRemoteFileObjectCreated(fo);
-                        }
                     }
                 }
             }
@@ -660,6 +652,23 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             storageFile.setLastModified(System.currentTimeMillis());
             if (trace) { trace("set lastModified to {0}", storageFile.lastModified()); } // NOI18N
+            if (changed) {
+                if (loaded) {
+                    for (DirEntry newEntry : newEntries.values()) {
+                        DirEntry oldEntry = storage.getEntry(newEntry.getName());
+                        if (oldEntry == null) {
+                            RemoteFileObjectBase fo = createFileObject(newEntry);
+                            fireRemoteFileObjectCreated(fo);
+                        }
+                    }
+                }
+                for (DirEntry entry : entriesToFireChanged) {
+                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+                    if (fo != null) {
+                        fireFileChangedEvent(getListeners(), new FileEvent(fo));
+                    }
+                }
+            }
         } finally {
             lock.unlock();
         }
