@@ -209,10 +209,10 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
 
     @Override
     public void write(DataOutput output) throws IOException {
+        super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
         
-        super.write(output);
         PersistentUtils.writeParameterList(this.parameterList, output);        
         
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
