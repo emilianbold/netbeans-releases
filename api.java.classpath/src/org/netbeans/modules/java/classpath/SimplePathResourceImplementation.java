@@ -44,10 +44,13 @@
 package org.netbeans.modules.java.classpath;
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import java.net.URL;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -99,6 +102,18 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
                 iae.initCause(initiatedIn);
             }
             throw iae;
+        }
+        try {
+            final URI uri = root.toURI();
+            if (!uri.equals(uri.normalize())) {
+                final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; it cannot contain current or parent dir reference." + context); //NOI18N
+                if (initiatedIn != null) {
+                    iae.initCause(initiatedIn);
+                }
+                throw iae;
+            }
+        } catch (URISyntaxException use) {
+            Exceptions.printStackTrace(use);
         }
     }
 
