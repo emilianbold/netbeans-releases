@@ -196,7 +196,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         sourcepath = new MutableCP(sources);
         nativeProjectProvider = new NativeProjectProvider(this, projectDescriptorProvider);
         lookup = createLookup(aux);
-        helper.addAntProjectListener(MakeProject.this);
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
@@ -909,10 +908,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 @Override
                 public String run() {
                     Element data = helper.getPrimaryConfigurationData(true);
-                    // XXX replace by XMLUtil when that has findElement, findText, etc.
-                    NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    if (nl.getLength() == 1) {
-                        nl = nl.item(0).getChildNodes();
+                    Element nameEl =  getNameElement(data);
+                    if (nameEl != null) {
+                        NodeList nl = nameEl.getChildNodes();
                         if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
                             return ((Text) nl.item(0)).getNodeValue();
                         }
@@ -933,17 +931,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 @Override
                 public Void run() {
                     Element data = helper.getPrimaryConfigurationData(true);
-                    // XXX replace by XMLUtil when that has findElement, findText, etc.
-                    NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    Element nameEl;
-                    if (nl.getLength() == 1) {
-                        nameEl = (Element) nl.item(0);
+                    Element nameEl =  getNameElement(data);
+                    if (nameEl != null) {
                         NodeList deadKids = nameEl.getChildNodes();
                         while (deadKids.getLength() > 0) {
                             nameEl.removeChild(deadKids.item(0));
                         }
                     } else {
-                        nameEl = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                        nameEl = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.PROJECT_CONFIGURATION__NAME_NAME);
                         data.insertBefore(nameEl, data.getChildNodes().item(0));
                     }
                     nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
@@ -955,6 +950,22 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             _getName();
         }
 
+        private Element getNameElement(Element data) {
+            NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.PROJECT_CONFIGURATION__NAME_NAME);
+            if (nl.getLength() > 0) {
+                for(int i = 0; i < nl.getLength(); i++) {
+                    if (nl.item(i) instanceof Element) {
+                        Element e = (Element) nl.item(i);
+                        Node parentNode = e.getParentNode();
+                        if (parentNode != null && parentNode.getLocalName().equals(MakeProjectType.PROJECT_CONFIGURATION_NAME)) {
+                            return e;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        
         @Override
         public String getDisplayName() {
             String aName = _getName();
@@ -1115,6 +1126,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private synchronized void onProjectOpened() {
         if (!isOpenHookDone) {
+            helper.addAntProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {
                 for (Runnable runnable : openedTasks) {
@@ -1145,6 +1157,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private synchronized void onProjectClosed() {
         LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        helper.removeAntProjectListener(this);
         save();
         if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().closed();
