@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileObject;
@@ -189,7 +190,9 @@ public class ProjectSupport {
                 PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
                 return mapper.getRemotePath(localDir, false);
             } else {
-                return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
+                if (CndPathUtilitities.isPathAbsolute(localDir)) {
+                    return localDir;
+                }
             }
         }
         return localDir;

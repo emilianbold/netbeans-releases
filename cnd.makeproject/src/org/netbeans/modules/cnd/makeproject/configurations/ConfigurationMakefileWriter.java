@@ -147,7 +147,7 @@ public class ConfigurationMakefileWriter {
     public void writeMissingMakefiles() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
         long xmlFileTimeStamp = CndFileUtils.createLocalFile(
-                CndFileUtils.createLocalFile(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER),
+                CndFileUtils.createLocalFile(projectDescriptor.getProjectDir(), MakeConfiguration.NBPROJECT_FOLDER),
                 MakeConfiguration.CONFIGURATIONS_XML).lastModified();
         for (MakeConfiguration conf : okConfs) {
             File file = CndFileUtils.createLocalFile(getMakefilePath(conf));
@@ -164,11 +164,11 @@ public class ConfigurationMakefileWriter {
     }
 
     private String getMakefilePath(MakeConfiguration conf) {
-        return projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
+        return projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
     }
 
     private String getPackageScriptPath(MakeConfiguration conf) {
-        return projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
+        return projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
     }
 
     /**
@@ -271,7 +271,7 @@ public class ConfigurationMakefileWriter {
             is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
 
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
         try {
             os = new FileOutputStream(outputFileName);
         } catch (IOException ioe) {
@@ -287,7 +287,7 @@ public class ConfigurationMakefileWriter {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
 
         // Project name
-        String projectName = CndPathUtilitities.getBaseName(projectDescriptor.getBaseDir());
+        String projectName = CndPathUtilitities.getBaseName(projectDescriptor.getProjectDir());
 
         // Configurations
         StringBuilder configurations = new StringBuilder();
@@ -1403,7 +1403,7 @@ public class ConfigurationMakefileWriter {
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
         try {
-            String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
+            String outputFileName = projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
             FileOutputStream os = null;
             os = new FileOutputStream(outputFileName);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
@@ -1412,7 +1412,7 @@ public class ConfigurationMakefileWriter {
             bw.flush();
             bw.close();
 
-            outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
+            outputFileName = projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
             os = new FileOutputStream(outputFileName);
             bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefilePrivateVariablesBody(bw);
