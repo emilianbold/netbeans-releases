@@ -9,19 +9,19 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="7.0 RC1"/>
+    <property name="appname" value="7.0 RC1"/> 
+    <property name="mpkg.name_nb" value="7.0 RC1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
     <property name="nb.id" value="${buildnumber}"/>
 
-    <property name="appversion" value="Development Version"/>
-    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev"/>
+    <property name="appversion" value="7.0 RC1"/>
+    <property name="nb.display.version.long"  value="7.0 RC1"/>
+    <property name="nb.display.version.short" value="7.0 RC1"/>
 
-    <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
+    <property name="servicetag.source" value="NetBeans ${nb.display.version.short} Installer"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="7.0.6"/>
