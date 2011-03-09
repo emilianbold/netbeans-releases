@@ -77,14 +77,17 @@ public class RevertModificationsAction extends ContextAction {
     public RevertModificationsAction() {
     }
     
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Revert"; // NOI18N
     }
     
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
     
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
@@ -94,6 +97,7 @@ public class RevertModificationsAction extends ContextAction {
         return "org/netbeans/modules/subversion/resources/icons/get_clean.png"; // NOI18N
     }
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
@@ -136,6 +140,7 @@ public class RevertModificationsAction extends ContextAction {
         }
         
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            @Override
             public void perform() {
                 performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
