@@ -195,7 +195,15 @@ public final class EditorBridge {
 	DataObject dao = dataObjectForLine(l);
 	if (dao == null)
 	    return null;
-	return FileUtil.toFile(dao.getPrimaryFile()).getPath();
+        FileObject fo = dao.getPrimaryFile();
+        File file = FileUtil.toFile(fo);
+        // it would be s better to leave just fo.getPath(), 
+        // but I'm not quite sure about '\\' vs '/' issue
+        if (file == null) {
+            return fo.getPath();
+        } else {
+            return file.getPath();
+        }
     }
 
     public static Line getCurrentLine() {
@@ -283,11 +291,14 @@ public final class EditorBridge {
      */
 
     public static Line getLine(String fileName, int lineNumber) {
+	return getLine(IpeUtils.findFileObject(fileName), lineNumber);
+    }
+
+    public static Line getLine(FileObject fo, int lineNumber) {
 
 	if (Log.Editor.debug)
-	    System.out.printf("getline(\"%s\", %d)\n", fileName, lineNumber); // NOI18N
+	    System.out.printf("getline(\"%s\", %d)\n", fo.getPath(), lineNumber); // NOI18N
 
-	FileObject fo = IpeUtils.findFileObject(fileName);
 	DataObject dao = dataObjectFor(fo);
 	if (dao == null) {
 	    if (Log.Editor.debug)

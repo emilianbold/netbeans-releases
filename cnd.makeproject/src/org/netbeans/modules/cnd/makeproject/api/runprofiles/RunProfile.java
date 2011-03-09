@@ -136,21 +136,23 @@ public final class RunProfile implements ConfigurationAuxObject {
     };
     private IntConfiguration removeInstrumentation;
 
+    private RunProfile(String baseDir, int platform, PropertyChangeSupport pcs, int initialConsoleType) {
+        this.platform = platform;
+        this.baseDir = baseDir;
+        this.pcs = pcs;
+        initializeImpl(initialConsoleType);
+    }
+    
     /**
      * creation of help run profiles to be executed in output window
      */
     public RunProfile(String baseDir, int platform) {
-        this.platform = platform;
-        this.baseDir = baseDir;
-        this.pcs = null;
-        initializeImpl(CONSOLE_TYPE_OUTPUT_WINDOW);
+        this(baseDir, platform, null, CONSOLE_TYPE_OUTPUT_WINDOW);
     }
 
     public RunProfile(String baseDir, PropertyChangeSupport pcs) {
-        platform = PlatformTypes.getDefaultPlatform(); //TODO: it's not always right
-        this.baseDir = baseDir;
-        this.pcs = pcs;
-        initializeImpl(getDefaultConsoleType());
+        //TODO: PlatformTypes.getDefaultPlatform() it's not always right
+        this(baseDir, PlatformTypes.getDefaultPlatform(), pcs, getDefaultConsoleType());
     }
 
     @Override

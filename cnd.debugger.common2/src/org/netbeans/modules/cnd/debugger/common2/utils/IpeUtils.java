@@ -66,6 +66,9 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -327,12 +330,24 @@ public class IpeUtils {
 				PathUtils.equivalentPaths(fileName, docPath)) {
 			fileName = docPath;
 			break;
-		    }
-		}
-	    }
-	}
+                        }
+                    }
+                }
+            }
 	*/
-
+            
+        for (JTextComponent comp : EditorRegistry.componentList()) {
+            Document doc = comp.getDocument();
+            if (doc != null) {
+                FileObject fo = NbEditorUtilities.getFileObject(doc);
+                if (fo != null) {
+                    if (fo.getPath().equals(fileName)) {
+                        return fo;
+                    }
+                }
+            }
+        }
+        
 	File file = new File(fileName);
 	File normalizedFile = FileUtil.normalizeFile(file);
 	FileObject fo = FileUtil.toFileObject(normalizedFile);
