@@ -206,7 +206,7 @@ public class RevertModificationsAction extends ContextAction {
                             for (File file : deletedFiles) {
                                 client.revert(file, false);
                             }    
-                        }                        
+                        }
                     }
                 }
             } catch (SVNClientException ex) {
@@ -218,6 +218,17 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (File file : cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            if (file.isDirectory()) {
+                cache.refresh(file, null);
+            }
+        }
+        
+        if(support.isCanceled()) {
+            return;
+        }
+
         if(revertNewFiles) {
             File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
             for (int i = 0; i < newfiles.length; i++) {
