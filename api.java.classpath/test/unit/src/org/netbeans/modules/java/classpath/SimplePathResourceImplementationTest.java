@@ -86,6 +86,16 @@ public class SimplePathResourceImplementationTest extends NbTestCase {
             assertTrue("Verify should fail for URLs having .",false);
         } catch (IllegalArgumentException e) {
         }
+        try {
+            SimplePathResourceImplementation.verify(new URL("file:////server/share/path/"),null);            
+        } catch (IllegalArgumentException e) {
+            assertTrue("Verify should not fail for UNC URL.",false);
+        }
+        try {
+            SimplePathResourceImplementation.verify(new URL("file:////server/share/path/../foo/"),null);
+            assertTrue("Verify should fail for UNC URLs having ..",false);
+        } catch (IllegalArgumentException e) {
+        }
     }
 
 }
