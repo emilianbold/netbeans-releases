@@ -509,11 +509,13 @@ public class ConfigurationMakefileWriter {
             bw.write("\n"); // NOI18N
         }
         bw.write("# Link Libraries and Options\n"); // NOI18N
-        String oicLibOptions = ""; //NOI18N
+        String oicLibOptionsPrefix = ""; //NOI18N
+        String oicLibOptionsPostfix = ""; //NOI18N
         if(provider != null) {
-             oicLibOptions = provider.getLibraryOptions(projectDescriptor, conf);
+             oicLibOptionsPrefix = provider.getLibraryOptionsPrefix(projectDescriptor, conf);
+             oicLibOptionsPostfix = provider.getLibraryOptionsPostfix(projectDescriptor, conf);
         }        
-        bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptions + "\n"); // NOI18N
+        bw.write("LDLIBSOPTIONS=" + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
