@@ -34,9 +34,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.PlainDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
@@ -77,6 +82,70 @@ public class BaseDocumentTest extends NbTestCase {
         for (int i = 0; i < doc.getLength() + 1; i++) {
             assertEquals(doc.getText(i, 1).charAt(0), text.charAt(i));
         }
+    }
+
+    public void testParagraphUpdates() throws Exception {
+        paragraphUpdatesImpl(new PlainDocument());
+        BaseDocument doc = new BaseDocument(false, "text/plain");
+        paragraphUpdatesImpl(doc);
+    }
+
+    public void paragraphUpdatesImpl(Document doc) throws Exception {
+        doc.addDocumentListener(new DocumentListener() {
+            int version;
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                switch (version++) {
+                    case 0:
+                        assertLineElementChange(e, 0, 17, 0, 3, 3, 7, 7, 8, 8, 14, 14, 17);
+                        break;
+                    default:
+                        fail("Invalid insertUpdate version=" + version);
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                switch (version++) {
+                    case 1:
+                        assertLineElementChange(e, 8, 10, 10, 11, 8, 11);
+                        break;
+                    default:
+                        fail("Invalid insertUpdate version=" + version);
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+            
+            private void assertLineElementChange(DocumentEvent evt, int... startEndOffsets) {
+                int offsetsIndex = 0;
+                DocumentEvent.ElementChange lineElementChange = evt.getChange(evt.getDocument().getDefaultRootElement());
+                if (lineElementChange != null) {
+                    Element[] removedLines = lineElementChange.getChildrenRemoved();
+                    for (int i = 0; i < removedLines.length; i++) {
+                        assertElementBounds(removedLines[i], startEndOffsets, offsetsIndex);
+                        offsetsIndex += 2;
+                    }
+                    Element[] addedLines = lineElementChange.getChildrenAdded();
+                    for (int i = 0; i < addedLines.length; i++) {
+                        assertElementBounds(addedLines[i], startEndOffsets, offsetsIndex);
+                        offsetsIndex += 2;
+                    }
+                }
+            }
+            
+            private void assertElementBounds(Element line, int[] startEndOffsets, int index) {
+                assertTrue("startEndOffsets.length=" + startEndOffsets.length + " < " + (index + 2), index + 2 <= startEndOffsets.length);
+                assertEquals("Invalid line[" + (index >> 1) + "] startOffset", startEndOffsets[index], line.getStartOffset());
+                assertEquals("Invalid line[" + (index >> 1) + "] endOffset", startEndOffsets[index + 1], line.getEndOffset());
+
+            }
+        });
+        doc.insertString(0, "ab\ncde\n\nfghij\nkl", null);
+        doc.remove(10, 6);
     }
 
     public void testRecursiveUndoableEdits() throws Exception {

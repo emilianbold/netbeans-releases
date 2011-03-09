@@ -64,9 +64,9 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -96,7 +97,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -129,10 +129,13 @@ public class ProjectActionSupport {
     private static void refreshProjectFiles(Project project) {
         try {
             Set<File> files = new HashSet<File>();
+            Set<FileObject> fileObjects = new HashSet<FileObject>();
             FileObject projectFileObject = project.getProjectDirectory();
             File f = FileUtil.toFile(projectFileObject);
             if (f != null) {
                 files.add(f);
+            } else {
+                fileObjects.add(projectFileObject);
             }
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -141,14 +144,22 @@ public class ProjectActionSupport {
                 File file = FileUtil.toFile(rootFolder);
                 if (file != null) {
                     files.add(file);
+                } else {
+                    fileObjects.add(rootFolder);
                 }
             }
             File[] array = files.toArray(new File[files.size()]);
             if (array.length > 0) {
                 FileUtil.refreshFor(array);
             }
+            if (!fileObjects.isEmpty()) {
+                for (FileObject fo : fileObjects) {
+                    FileSystemProvider.scheduleRefresh(fo);
+                }
+            }
             MakeLogicalViewProvider.refreshBrokenItems(project);
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -477,7 +488,18 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             boolean runInExternalTerminal = false;
-            int consoleType = pae.getProfile().getConsoleType().getValue();
+            Project project = pae.getProject();
+            if (project != null) {
+                RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+                if (remoteProject != null) {
+                    if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                        String remoteBaseDir = remoteProject.getSourceBaseDir();
+                        pae.getProfile().setBaseDir(remoteBaseDir);
+                    }
+                }
+            }
+            
+            int consoleType = pae.getProfile().getConsoleType().getValue(); 
             runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
             if (!pae.getConfiguration().getDevelopmentHost().isLocalhost() && runInExternalTerminal){
                 //set to internal terminal

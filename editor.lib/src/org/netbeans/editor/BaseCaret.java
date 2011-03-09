@@ -110,6 +110,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
@@ -350,36 +351,49 @@ AtomicLockListener, FoldHierarchyListener {
      *  and assigned or false otherwise.
      */
     private boolean updateCaretBounds() {
-        JTextComponent c = component;
+        final JTextComponent c = component;
+        final boolean[] ret = { false };
         if (c != null) {
-            int offset = getDot();
-            Rectangle newCaretBounds;
-            try {
-                newCaretBounds = c.getUI().modelToView(
-                        c, offset, Position.Bias.Forward);
-                // [TODO] Temporary fix - impl should remember real bounds computed by paintCustomCaret()
-                if (newCaretBounds != null) {
-                    newCaretBounds.width = Math.max(newCaretBounds.width, 2);
-                }
+            final Document doc = c.getDocument();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    int offset = getDot();
+                    if (offset > doc.getLength()) {
+                        offset = doc.getLength();
+                    }
+                    if (doc != null) {
+                        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
+                        dotChar[0] = docText.charAt(offset);
+                    }
+                    Rectangle newCaretBounds;
+                    try {
+                        DocumentView docView = DocumentView.get(c);
+                        if (docView != null) {
+                            // docView.syncViewsRebuild(); // Make sure pending views changes are resolved
+                        }
+                        newCaretBounds = c.getUI().modelToView(
+                                c, offset, Position.Bias.Forward);
+                        // [TODO] Temporary fix - impl should remember real bounds computed by paintCustomCaret()
+                        if (newCaretBounds != null) {
+                            newCaretBounds.width = Math.max(newCaretBounds.width, 2);
+                        }
 
-                BaseDocument doc = Utilities.getDocument(c);
-                if (doc != null) {
-                    doc.getChars(offset, this.dotChar, 0, 1);
+                    } catch (BadLocationException e) {
+                        newCaretBounds = null;
+                        Utilities.annotateLoggable(e);
+                    }
+                    if (newCaretBounds != null) {
+                        LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
+                                new Object[]{caretBounds, newCaretBounds, offset}); //NOI18N
+                        caretBounds = newCaretBounds;
+                        ret[0] = true;
+                    }
                 }
-            } catch (BadLocationException e) {
-                newCaretBounds = null;
-                Utilities.annotateLoggable(e);
-            }
-        
-            if (newCaretBounds != null) {
-                LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
-                        new Object [] { caretBounds, newCaretBounds, offset }); //NOI18N
-                caretBounds = newCaretBounds;
-                return true;
-            }
+            });
         }
         LOG.log(Level.FINE, "updateCaretBounds: no change, old={0}", caretBounds); //NOI18N
-        return false;
+        return ret[0];
     }
 
     /** Called when UI is being installed into JTextComponent */
@@ -661,7 +675,6 @@ AtomicLockListener, FoldHierarchyListener {
         JTextComponent c = component;
         if (c != null) {
             BaseTextUI ui = (BaseTextUI)c.getUI();
-            EditorUI editorUI = ui.getEditorUI();
             BaseDocument doc = Utilities.getDocument(c);
             if (doc != null) {
                 Rectangle oldCaretBounds = caretBounds; // no need to deep copy

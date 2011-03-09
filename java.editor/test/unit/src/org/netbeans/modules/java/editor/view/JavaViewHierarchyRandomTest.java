@@ -81,6 +81,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
         List<String> includes = new ArrayList<String>();
+//        includes.add("testRemoveNewline");
 //        includes.add("testGap");
 //        includes.add("testNPEInRedo", "");
 //        includes.add("testRandomModsPlainText");
@@ -121,8 +122,10 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.INFO;
 //        return Level.FINEST;
+//        return Level.FINE;
+//        return Level.INFO;
+        return null;
     }
 
     private RandomTestContainer createContainer() throws Exception {
@@ -131,7 +134,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         // org.netbeans.core.windows.actions.RecentViewListAction fails to load
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(kit); // no problem for both java and plain mime-types
         container.setName(this.getName());
-        boolean logOpAndDoc = true;
+        boolean logOpAndDoc = false; //true;
         container.setLogOp(logOpAndDoc);
         DocumentTesting.setLogDoc(container, logOpAndDoc);
         return container;
