@@ -105,7 +105,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
-                "checkoutBranch",
+                "checkoutRevision",
                 "clean",
                 "commit",
                 "copyAfter",
@@ -134,7 +134,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "unignore"));
         Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
-                "checkoutBranch",
+                "checkoutRevision",
                 "merge",
                 "remove",
                 "reset",
@@ -174,7 +174,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
-                "checkoutBranch",
+                "checkoutRevision",
                 "clean",
                 "commit",
                 "copyAfter",
@@ -257,7 +257,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
-                "checkoutBranch",
+                "checkoutRevision",
                 "clean",
                 "commit",
                 "copyAfter",
@@ -286,7 +286,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "unignore"));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
-                "checkoutBranch",
+                "checkoutRevision",
                 "commit",
                 "createBranch",
                 "fetch",
@@ -374,7 +374,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "catFile",
                 "catIndexEntry",
                 "checkout",
-                "checkoutBranch",
+                "checkoutRevision",
                 "clean",
                 "commit",
                 "copyAfter",

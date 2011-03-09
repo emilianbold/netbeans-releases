@@ -47,7 +47,6 @@ package org.netbeans.modules.editor.lib2.view;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
@@ -60,7 +59,6 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -77,16 +75,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.stack=true
-    private static final boolean dumpHighlightChangeStack =
-            Boolean.getBoolean(HighlightsViewFactory.class.getName() + ".stack");
-
-    private static final RequestProcessor RP = 
-            new RequestProcessor("Highlights-Coalescing", 1, false, false); // NOI18N
-
-//    private static final boolean SYNC_HIGHLIGHTS = 
-//            Boolean.getBoolean("org.netbeans.editor.sync.highlights"); //NOI18N
-
     private final HighlightsContainer highlightsContainer;
 
     private CharSequence docText;
@@ -101,43 +89,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private int highlightEndOffset;
     private AttributeSet highlightAttributes;
 
-    private final Object dirtyRegionLock = new String("dirty-region-lock"); //NOI18N
-    private int dirtyReqionStartOffset = Integer.MAX_VALUE;
-    private int dirtyReqionEndOffset = Integer.MIN_VALUE;
-
     private int usageCount = 0; // Avoid nested use of the factory
-
-    private final RequestProcessor.Task dirtyRegionTask = RP.create(new Runnable() {
-        private boolean insideRender = false;
-        public @Override void run() {
-            if (true || SwingUtilities.isEventDispatchThread()) {
-                if (insideRender) {
-                    int[] region = getAndClearDirtyRegion();
-                    if (region != null) {
-                        if (LOG.isLoggable(Level.FINER)) {
-                            LOG.fine("coallesced-event: <" + region[0] + ',' + region[1] + ">\n"); // NOI18N
-                        }
-                        fireEvent(Collections.singletonList(createChange(region[0], region[1])));
-                    }
-                } else {
-                    insideRender = true;
-                    try {
-                        Document doc = HighlightsViewFactory.this.document();
-                        doc.render(this);
-                    } finally {
-                        insideRender = false;
-                    }
-                }
-            } else {
-                try {
-                    // Must be invoke-later since 
-                    SwingUtilities.invokeLater(this);
-                } catch (Exception ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-            }
-        }
-    });
 
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
@@ -288,42 +240,20 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(HighlightsChangeEvent event) {
-        final int startOffset = event.getStartOffset();
-        final int endOffset = event.getEndOffset();
-
+        int startOffset = event.getStartOffset();
+        int endOffset = event.getEndOffset();
+        int docTextLength = document().getLength() + 1;
+        assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
+        assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
+        startOffset = Math.min(startOffset, docTextLength);
+        endOffset = Math.min(endOffset, docTextLength);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINER, "highlightChanged: event:<{0}{1}{2}>, thread:{3}\n", //NOI18N
                     new Object[] {startOffset, ',', endOffset, Thread.currentThread()}); // NOI18N
-            if (dumpHighlightChangeStack) {
-                LOG.log(Level.INFO, "Highlight Change Thread Dump for <" + // NOI18N
-                        startOffset + "," + endOffset + ">", new Exception()); // NOI18N
-            }
         }
 
-        if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
-            // Coalesce highglihts events by reposting to RP and then to EDT
-            extendDirtyRegion(startOffset, endOffset);
-            dirtyRegionTask.schedule(0);
-        }
-    }
-
-    private void extendDirtyRegion(int startOffset, int endOffset) {
-        synchronized (dirtyRegionLock) {
-            dirtyReqionStartOffset = Math.min(dirtyReqionStartOffset, startOffset);
-            dirtyReqionEndOffset = Math.max(dirtyReqionEndOffset, endOffset);
-        }
-    }
-    
-    private int[] getAndClearDirtyRegion() {
-        synchronized (dirtyRegionLock) {
-            if (dirtyReqionStartOffset == Integer.MAX_VALUE || dirtyReqionEndOffset == Integer.MIN_VALUE) {
-                return null;
-            } else {
-                int [] region = new int[] { dirtyReqionStartOffset, dirtyReqionEndOffset };
-                dirtyReqionStartOffset = Integer.MAX_VALUE;
-                dirtyReqionEndOffset = Integer.MIN_VALUE;
-                return region;
-            }
+        if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
+            fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
         }
     }
 

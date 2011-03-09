@@ -41,7 +41,7 @@
  */
 
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.classpath;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

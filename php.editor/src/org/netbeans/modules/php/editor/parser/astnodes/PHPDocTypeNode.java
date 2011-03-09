@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-@OptionsPanelController.ContainerRegistration(
-    id="Editor",
-    position=200,
-    categoryName="#CTL_Editor",
-    iconBase="org/netbeans/modules/options/editor/editor.png",
-    keywords="#KW_EditorOptions",
-    keywordsCategory="Editor"
-//    title="#CTL_Editor_Title",
-//    description="#CTL_Editor_Description"
-)
-package org.netbeans.modules.options.editor;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.netbeans.spi.options.OptionsPanelController;
+/**
+ * Represent a type in php doc
+ * @author Petr Pisl
+ */
+public class PHPDocTypeNode extends PHPDocNode {
+
+    private final boolean array;
+    
+    public PHPDocTypeNode(int start, int end, String value, boolean isArray) {
+        super(start, end, value);
+        this.array = isArray;
+    }
+
+    public boolean isArray() {
+        return array;
+    }
+    
+    @Override
+    public void accept(Visitor visitor) {
+            visitor.visit(this);
+    }
+}

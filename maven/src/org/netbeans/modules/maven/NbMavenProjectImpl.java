@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.maven;
 
+import org.netbeans.modules.maven.classpath.CPExtenderLookupMerger;
+import org.netbeans.modules.maven.classpath.CPModifierLookupMerger;
+import org.netbeans.modules.maven.classpath.CPExtender;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import java.util.MissingResourceException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;

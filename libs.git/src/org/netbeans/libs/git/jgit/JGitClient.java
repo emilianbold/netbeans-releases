@@ -73,7 +73,7 @@ import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
-import org.netbeans.libs.git.jgit.commands.CheckoutBranchCommand;
+import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
@@ -158,14 +158,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
             cmd.execute();
         }
     }
-    
+
     @Override
-    public void checkoutBranch (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+    public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         if (!failOnConflict) {
             throw new IllegalArgumentException("Currently unsupported. failOnConflict must be set to true. JGit lib is buggy."); //NOI18N
         }
         Repository repository = gitRepository.getRepository();
-        CheckoutBranchCommand cmd = new CheckoutBranchCommand(repository, revision, failOnConflict, monitor, this);
+        CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, revision, failOnConflict, monitor, this);
         cmd.execute();
     }
    

@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -59,6 +60,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
@@ -156,7 +158,6 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         //OptionsCategory
         private String categoryName;
-        private String iconPath;
         private File icon;
         private String secondaryKeywords;
         private boolean allowAdvanced;
@@ -175,10 +176,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return checkFirstPanel();
         }
         
-        int setDataForPrimaryPanel(final String categoryName, final String iconPath, File icon, final boolean allowAdvanced, final String primaryKeywords) {
+        int setDataForPrimaryPanel(final String categoryName, File icon, final boolean allowAdvanced, final String primaryKeywords) {
             this.advanced = false;
             this.categoryName = categoryName;
-            this.iconPath = iconPath;
             this.icon = icon;
             this.allowAdvanced = allowAdvanced;
             this.primaryKeywords = primaryKeywords;
@@ -240,7 +240,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 } else {
                     return "@OptionsPanelController.TopLevelRegistration(\n" +
                             "    categoryName=\"#OptionsCategory_Name_" + getClassNamePrefix() + "\",\n" +
-                            "    iconBase=\"" + iconPath + "\",\n" +
+                            "    iconBase=\"" + getIconPath() + "\",\n" +
                             "    keywords=\"#OptionsCategory_Keywords_" + getClassNamePrefix() + "\",\n" +
                             "    keywordsCategory=\"" + getClassNamePrefix() + "\"\n" +
                             ")\n";
@@ -453,7 +453,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 String instanceName = isAdvancedCategory() ? getClassNamePrefix() : getOptionsCategoryClassName();
                 String instanceFullPath = resourcePathPrefix + instanceName + ".instance"; //NOI18N
                 Map<String, Object> attrsMap = new HashMap<String, Object>(7);
-                attrsMap.put("iconBase", iconPath); // NOI18N
+                attrsMap.put("iconBase", getIconPath()); // NOI18N
                 attrsMap.put("keywordsCategory", getClassNamePrefix()); //NOI18N
 
                 files.add(files.createLayerEntry(instanceFullPath, null, null, null, attrsMap));
@@ -478,7 +478,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             Map<String,Object> attrs = new LinkedHashMap<String,Object>();
             attrs.put("id", getClassNamePrefix());
             attrs.put("categoryName", "#OptionsCategory_Name_" + getClassNamePrefix());
-            attrs.put("iconBase", iconPath);
+            attrs.put("iconBase", getIconPath());
             attrs.put("keywords", "#OptionsCategory_Keywords_" + getClassNamePrefix());
             attrs.put("keywordsCategory", getClassNamePrefix());
             files.add(files.packageInfo(getPackageName(),
@@ -537,8 +537,18 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private String getIconPath() {
-            assert isAdvanced() || iconPath != null;
-            return iconPath;
+            assert isAdvanced() || icon != null;
+            FileObject iconFO = FileUtil.toFileObject(FileUtil.normalizeFile(icon));
+            if (iconFO != null) {
+                // XXX would be cleaner to use ret value from BasicDataModel.addCreateIconOperation for this:
+                String iconRel = FileUtil.getRelativePath(Util.getResourceDirectory(getProject()), iconFO);
+                if (iconRel != null) {
+                    // Icon already in source tree.
+                    return iconRel;
+                }
+            }
+            // To be copied into destination package.
+            return getPackageName().replace('.', '/') + '/' + icon.getName();
         }
         
         String getClassNamePrefix() {

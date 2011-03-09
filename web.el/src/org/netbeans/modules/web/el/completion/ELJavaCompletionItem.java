@@ -90,7 +90,6 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         this.javaElement = javaElement;
         this.elElement = elElement;
         this.typeUtilities = typeUtilities;
-        this.elementKind = ElementKind.METHOD;
         this.elementName = elementName;
         this.adapter = new ElementHandleAdapter();
         setAnchorOffset(elElement.getOriginalOffset().getStart());
@@ -107,6 +106,11 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
     }
 
     @Override
+    public ElementKind getKind() {
+        return adapter.getKind();
+    }
+    
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.singleton(Modifier.PUBLIC);
     }
@@ -116,8 +120,18 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         ElementKind kind = getKind();
         formatter.name(kind, true);
         formatter.appendText(getName());
-        if (javaElement.getKind() == javax.lang.model.element.ElementKind.METHOD) {
-            formatter.appendText(typeUtilities.getParametersAsString((ExecutableElement) javaElement));
+        
+        //do not add the method parameters for the is/get/set methods - properties
+        if(adapter.isMethod()) {
+            if(!adapter.isPropertyMethod()) {
+                if(adapter.isMethodWithParamaters()) {
+                    //method with params
+                    formatter.appendText(typeUtilities.getParametersAsString((ExecutableElement) javaElement));
+                } else {
+                    //w/o params, add empty () pair
+                    formatter.appendText("()");
+                }
+            }
         }
         formatter.name(kind, false);
 
@@ -142,14 +156,20 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         if (!adapter.isMethod()) {
             return null;
         }
-        return typeUtilities.getParameterNames((ExecutableElement) javaElement);
+        if(adapter.isPropertyMethod()) { //no params for properties
+            return null;
+        }
+        
+        return !adapter.isPropertyMethod() && adapter.isMethodWithParamaters() 
+                ? typeUtilities.getParameterNames((ExecutableElement) javaElement) :
+                Collections.<String>singletonList(""); //add and empty paramater for non argument method calls
     }
 
     @Override
     public String[] getParamListDelimiters() {
         return new String[]{"(", ")"};
     }
-
+    
     final class ElementHandleAdapter extends ELElementHandle {
 
         @Override
@@ -166,7 +186,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         public String getName() {
             return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElement.getSimpleName().toString(), true);
         }
-
+            
         @Override
         public String getIn() {
             if (isMethod()) {
@@ -177,7 +197,11 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ElementKind getKind() {
-            return isMethod() ? ElementKind.METHOD : ElementKind.CLASS;
+            if(isPropertyMethod()) {
+                return ElementKind.PROPERTY;
+            } else {
+                return isMethod() ? ElementKind.METHOD : ElementKind.CLASS;
+            }
         }
 
         @Override
@@ -201,6 +225,15 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
         private boolean isMethod() {
             return javaElement.getKind() == javax.lang.model.element.ElementKind.METHOD;
+        }
+        
+        private boolean isMethodWithParamaters() {
+            return isMethod() && !typeUtilities.getParameterNames((ExecutableElement) javaElement).isEmpty();
+        }
+        
+        private boolean isPropertyMethod() {
+            return isMethod() && !isMethodWithParamaters() && 
+                    RefactoringUtil.isPropertyAccessor(javaElement.getSimpleName().toString());
         }
 
         @Override

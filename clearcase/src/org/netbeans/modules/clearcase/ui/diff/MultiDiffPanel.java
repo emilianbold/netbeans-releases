@@ -167,6 +167,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         refreshSetups();
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());        
+        
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N 
+            setBackground(color); 
+            controlsToolBar.setBackground(color); 
+        }     
     }
 
     /**

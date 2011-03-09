@@ -332,6 +332,7 @@ public final class SearchBar extends JPanel {
             }
         };
         
+        findLabel.setLabelFor(incrementalSearchComboBox);
         incrementalSearchComboBox.setEditable(true);
         incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
