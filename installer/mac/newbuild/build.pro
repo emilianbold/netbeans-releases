@@ -10,8 +10,8 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="7.0 RC1"/>
-    <property name="appname" value="7.0 RC1"/> 
-    <property name="mpkg.name_nb" value="7.0 RC1"/> 
+    <property name="appname" value="NetBeans 7.0 RC1"/> 
+    <property name="mpkg.name_nb" value="NetBeans 7.0 RC1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
