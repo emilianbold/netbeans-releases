@@ -77,14 +77,17 @@ public class RevertModificationsAction extends ContextAction {
     public RevertModificationsAction() {
     }
     
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Revert"; // NOI18N
     }
     
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
     
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
@@ -94,6 +97,7 @@ public class RevertModificationsAction extends ContextAction {
         return "org/netbeans/modules/subversion/resources/icons/get_clean.png"; // NOI18N
     }
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
@@ -136,6 +140,7 @@ public class RevertModificationsAction extends ContextAction {
         }
         
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            @Override
             public void perform() {
                 performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
@@ -206,7 +211,7 @@ public class RevertModificationsAction extends ContextAction {
                             for (File file : deletedFiles) {
                                 client.revert(file, false);
                             }    
-                        }                        
+                        }
                     }
                 }
             } catch (SVNClientException ex) {
@@ -218,6 +223,17 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (File file : cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            if (file.isDirectory()) {
+                cache.refresh(file, null);
+            }
+        }
+        
+        if(support.isCanceled()) {
+            return;
+        }
+
         if(revertNewFiles) {
             File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
             for (int i = 0; i < newfiles.length; i++) {
