@@ -298,16 +298,20 @@ public final class FileSystemProvider {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileObject)) {
                 provider.scheduleRefresh(fileObject); 
+                return;
             }
         }
+        noProvidersWarning(fileObject);
     }
     
     public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(env)) {
                 provider.scheduleRefresh(env, paths);
+                return;
             }
         }
+        noProvidersWarning(env);
     }
 
     private static void noProvidersWarning(Object object) {
