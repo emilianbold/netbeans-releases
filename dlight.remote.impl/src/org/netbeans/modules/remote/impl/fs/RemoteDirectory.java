@@ -66,6 +66,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -244,16 +245,17 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return getExecutionEnvironment().getDisplayName() + ':' + path;
     }
 
-    private String removeDoubleSlashes(String path) {
-        if (path == null) {
-            return null;
-        }
-        return path.replace("//", "/"); //TODO:rfs remove triple paths, etc
-    }
-
     @Override
     public RemoteFileObjectBase getFileObject(String relativePath) {
-        relativePath = removeDoubleSlashes(relativePath);
+        relativePath = PathUtilities.normalizeUnixPath(relativePath);
+        if ("".equals(relativePath)) { // NOI18N
+            return this;
+        }
+        if (relativePath.startsWith("..")) { //NOI18N
+            String absPath = getPath() + '/' + relativePath;
+            absPath = PathUtilities.normalizeUnixPath(absPath);
+            return getFileSystem().findResource(absPath);
+        }        
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
@@ -271,12 +273,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             } else {
                 return null;
             }
-        }
-        if (".".equals(relativePath)) { // NOI18N
-            return this;
-        } else if ("..".equals(relativePath)) { // NOI18N
-            RemoteFileObjectBase parent = getParent();
-            return (parent == null) ? this : parent ;
         }
         RemoteLogger.assertTrue(slashPos == -1);
         try {
