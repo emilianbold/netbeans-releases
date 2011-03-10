@@ -113,7 +113,8 @@ public abstract class WizardStepProgressSupport extends GitProgressSupport {
         });                                                
     }
 
-    protected void finnishProgress() {        
+    @Override
+    protected void finishProgress() {        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {                
