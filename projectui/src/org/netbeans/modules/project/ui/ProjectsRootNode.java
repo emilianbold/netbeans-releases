@@ -52,7 +52,6 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -459,20 +458,19 @@ public class ProjectsRootNode extends AbstractNode {
         private static final int DELAY = 50;
         private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
             public @Override void fileDataCreated(FileEvent fe) {
-                if (Boolean.getBoolean("test.nodelay")) { //for tests only
-                    setProjectFiles();
-                    return ;
-                }
-                fsRefreshTask.schedule(DELAY);
+                setProjectFilesAsynch();
             }
             public @Override void fileFolderCreated(FileEvent fe) {
-                if (Boolean.getBoolean("test.nodelay")) { //for tests only
-                    setProjectFiles();
-                    return ;
-                }
-                fsRefreshTask.schedule(DELAY);
+                setProjectFilesAsynch();
             }
         };
+        private void setProjectFilesAsynch() {
+            if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                setProjectFiles();
+                return;
+            }
+            fsRefreshTask.schedule(DELAY);
+        }
         private final RequestProcessor.Task fsRefreshTask = Hacks.RP.create(new Runnable() {
             public void run() {
                 setProjectFiles();
@@ -505,7 +503,7 @@ public class ProjectsRootNode extends AbstractNode {
             this.logicalView = logicalView;
             OpenProjectList.log(Level.FINER, "BadgingNode init {0}", toStringForLog()); // NOI18N
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
-            setProjectFiles();
+            setProjectFilesAsynch();
             OpenProjectList.log(Level.FINER, "BadgingNode finished {0}", toStringForLog()); // NOI18N
             AnnotationListener annotationListener = new AnnotationListener();
             annotationListener.init();
@@ -593,7 +591,7 @@ public class ProjectsRootNode extends AbstractNode {
                     bl.setMyLookups(n.getLookup());
                 }
                 OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
-                setProjectFiles();
+                setProjectFilesAsynch();
             } else {
                 FileObject newDir;
                 if (newProj != null) {
@@ -818,7 +816,7 @@ public class ProjectsRootNode extends AbstractNode {
                 replaceProject((Project)e.getNewValue());
             }
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
-                setProjectFiles();
+                setProjectFilesAsynch();
             }
         }
 
