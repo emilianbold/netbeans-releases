@@ -1853,7 +1853,8 @@ import org.openide.util.Exceptions;
         int size = stack_list.size();
 
         // iterate through frame list
-        guiStackFrames = new GdbFrame[size];
+        // initialize before assign, see IZ 196318
+        GdbFrame[] newGuiStackFrames = new GdbFrame[size];
         for (int vx = 0; vx < size; vx++) {
             MIResult frame = (MIResult) stack_list.get(vx);
             
@@ -1863,12 +1864,15 @@ import org.openide.util.Exceptions;
                 frameArgs = (MIResult) args_list.get(vx);
             }
             
-            guiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs);
+            newGuiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs);
             
             if (vx == 0) {
-                guiStackFrames[vx].setCurrent(true); // make top frame current
+                newGuiStackFrames[vx].setCurrent(true); // make top frame current
             }
         }
+        // 
+        guiStackFrames = newGuiStackFrames;
+        
         if (get_locals) {
             getMILocals(true); // "true" for gdb "var-update *" to get value update
         }
@@ -2781,9 +2785,8 @@ import org.openide.util.Exceptions;
             // is open, we need frame params info from here.
             if (get_locals && frameValue != null) {
                 // needs to get args info
-                guiStackFrames = new GdbFrame[1];
                 // frameValue include args  info
-                guiStackFrames[0] = new GdbFrame(this, frameValue, null);
+                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null)};
             }
 
 	    if (srcResults != null) {

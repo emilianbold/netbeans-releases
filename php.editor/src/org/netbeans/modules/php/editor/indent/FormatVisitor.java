@@ -1080,6 +1080,8 @@ public class FormatVisitor extends DefaultVisitor {
     private void addFormatToken(List<FormatToken> tokens) {
         if (lastIndex == ts.index()) {
             showAssertionFor188809();
+            ts.moveNext();
+            return;
         }
         lastIndex = ts.index();
 	switch (ts.token().id()) {

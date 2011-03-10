@@ -757,11 +757,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset + 1, sourcePositions[0]);
                 TreePath decl = Utilities.getPathElementOfKind(Tree.Kind.VARIABLE, path);
                 if (decl != null) {
-                    Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
+                    final Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
                     TypeMirror type = cInfo.getTrees().getTypeMirror(decl);
                     boolean isConst = ((VariableTree)decl.getLeaf()).getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
                     final Element element = cInfo.getTrees().getElement(decl);
-                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                    final ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                         public boolean accept(Element e, TypeMirror t) {
                             switch(e.getKind()) {
                                 case EXCEPTION_PARAMETER:
@@ -773,7 +773,34 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             }
                         }
                     };
-                    Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), cInfo.getElementUtilities().getLocalVars(s, acceptor), isConst).iterator();
+                    Iterable<? extends Element> loc = new Iterable<Element>() {
+                        @Override
+                        public Iterator<Element> iterator() {
+                            return new Iterator<Element>() {
+                                private Iterator<? extends Element> localsIt = locals.iterator();
+                                private Iterator<? extends Element> localVarsIt;
+                                @Override
+                                public boolean hasNext() {
+                                    if (localsIt != null) {
+                                        if (localsIt.hasNext())
+                                            return true;
+                                        localsIt = null;
+                                        localVarsIt = cInfo.getElementUtilities().getLocalVars(s, acceptor).iterator();
+                                    }
+                                    return localVarsIt.hasNext();
+                                }
+                                @Override
+                                public Element next() {
+                                    return localsIt != null ? localsIt.next() : localVarsIt.next();
+                                }
+                                @Override
+                                public void remove() {
+                                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                                }
+                            };
+                        }
+                    };
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
                     if (names.hasNext())
                         return names.next();
                 }
