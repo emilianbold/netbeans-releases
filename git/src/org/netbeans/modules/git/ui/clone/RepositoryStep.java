@@ -83,6 +83,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         repository = new Repository(forPath);
         repository.addChangeListener(this);
         this.panel = new RepositoryStepPanel(repository.getPanel());
+        validateRepository();
     }
 
     @Override
@@ -92,15 +93,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     protected final void validateBeforeNext () {
-        branches = null;
-
-        repository.validateFields();
-        if(!repository.isValid()) {
-            setValid(false, repository.getMessage());
-            return;
-        }
-
         try {
+            branches = null;
+            if(!validateRepository()) return;
+
             final File tempRepository = Utils.getTempFolder();
             String uri = repository.getUriString();
             if (uri != null && !uri.trim().isEmpty()) {
@@ -110,7 +106,14 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             }    
         } finally {
             support = null;
+            repository.enableFields(true);
         }
+    }
+
+    private boolean validateRepository() {
+        boolean valid = repository.isValid();
+        setValid(valid, repository.getMessage());
+        return valid;
     }
 
     public Map<String, GitBranch> getBranches() {
@@ -135,7 +138,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     public void prepareValidation () {
         repository.enableFields(false);
     }    
-
+    
     public void cancelBackgroundTasks () {
         if (support != null) {
             support.cancel();
@@ -151,29 +154,6 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         setValid(repository.isValid(), repository.getMessage());
     }
 
-    // XXX remoteuri vs guri
-    private static class RemoteUri implements Comparable<RemoteUri> {
-        private final String label;
-        private final String uri;
-        private final String remoteName;
-
-        public RemoteUri (String remoteName, String uri) {
-            this.uri = uri;
-            this.remoteName = remoteName;
-            this.label = NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.configuredRepository.uri", new Object[] { remoteName, uri }); //NOI18N
-        }
-
-        @Override
-        public String toString () {
-            return label;
-        }
-
-        @Override
-        public int compareTo (RemoteUri other) {
-            return toString().compareTo(other.toString());
-        }
-    }
-    
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
         private final String uri;
 

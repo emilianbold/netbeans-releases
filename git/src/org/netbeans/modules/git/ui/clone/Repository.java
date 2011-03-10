@@ -48,6 +48,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -56,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.util.ChangeSupport;
@@ -70,6 +73,7 @@ public class Repository implements DocumentListener, ActionListener {
     private Message msg;
 
     private ChangeSupport support = new ChangeSupport(this);
+    private static final Pattern SCHEME_PATTERN = Pattern.compile("([a-z][a-z0-9+-]+)://"); // NOI18N
 
     private enum Scheme {
         FILE("file"),
@@ -109,13 +113,14 @@ public class Repository implements DocumentListener, ActionListener {
         };
         
         attachListeners();
-        validateFields();
         initUrlComboValues();
         setFieldsVisibility();
         
         if(forPath != null) {
             ((JTextComponent)panel.urlComboBox.getEditor().getEditorComponent()).setText(forPath);
         }
+        
+        validateFields();
     }
     
     JPanel getPanel() {
@@ -178,7 +183,7 @@ public class Repository implements DocumentListener, ActionListener {
         }
     }
 
-    protected final void validateFields () {
+    private void validateFields () {
         boolean oldValid = valid;
         try {
             valid = true;
@@ -202,8 +207,21 @@ public class Repository implements DocumentListener, ActionListener {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                String uri = getUriString();
-                boolean isFile = uri != null && uri.startsWith(Scheme.FILE.toString());
+                String uriString = getUriString();
+                if(uriString == null) {
+                    return;
+                }
+                URI uri = null;
+                try {
+                    uri = new URI(uriString);
+                } catch (URISyntaxException ex) {
+                    Git.LOG.log(Level.INFO, null, ex);
+                }
+                if(uri == null) {
+                    return;
+                }
+                // XXX kind of dummy
+                boolean isFile = uri != null && (uri.getScheme() == null || uri.getScheme().equals(Scheme.FILE.toString()));
                 
                 panel.directoryBrowseButton.setVisible(isFile);
                 
