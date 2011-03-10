@@ -1091,7 +1091,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 try {
                     return new InputStreamReader(new ByteArrayInputStream(value), "utf8");  // NOI18N
                 } catch (UnsupportedEncodingException ex) {
-                    Mercurial.LOG.log(Level.SEVERE, "UnsupportedEncodingException " + ex);
+                    Mercurial.LOG.log(Level.SEVERE, "UnsupportedEncodingException {0}", ex);
                     return new StringReader("[ERROR: " + ex.getLocalizedMessage() + "]"); // NOI18N
                 }
             }
