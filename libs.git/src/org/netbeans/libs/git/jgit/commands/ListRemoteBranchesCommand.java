@@ -46,6 +46,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
@@ -79,11 +80,11 @@ public class ListRemoteBranchesCommand extends TransportCommand {
         Repository repository = getRepository();
         Transport t = null;
         FetchConnection conn = null;
-        Map<String, Ref> refs = null;
+        Collection<Ref> refs = null;
         try {
             t = openTransport();
             conn = t.openFetch();
-            refs = conn.getRefsMap();
+            refs = conn.getRefs();
         } catch (URISyntaxException ex) {
             throw new GitException(ex);
         } catch (NotSupportedException ex) {
@@ -99,16 +100,33 @@ public class ListRemoteBranchesCommand extends TransportCommand {
             }
         }
         remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(getRefs(refs.values(), Constants.R_HEADS));
+        remoteBranches.putAll(getRefs(refs, Constants.R_HEADS));
     }
 
     private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix) {
         Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+        
+        // try to find the head first - it usually is the active remote branch
+        Ref head = null;
+        for (final Ref ref : allRefs) {
+            if (ref.getLeaf().getName().equals(Constants.HEAD)) {
+                head = ref;
+                break;
+            }
+        }
+        
+        // get all refs/heads
         for (final Ref ref : RefComparator.sort(allRefs)) {
             String refName = ref.getLeaf().getName();
             if (refName.startsWith(prefix)) {
                 String name = refName.substring(refName.indexOf('/', 5) + 1);
-                branches.put(name, new JGitBranch(name, false, false, ref.getLeaf().getObjectId()));
+                branches.put(
+                    name, 
+                    new JGitBranch(
+                        name, 
+                        false, 
+                        head != null && ref.getObjectId().equals(head.getObjectId()), 
+                        ref.getLeaf().getObjectId()));
             }
         }
         return branches;
