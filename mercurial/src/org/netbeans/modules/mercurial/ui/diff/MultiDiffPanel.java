@@ -338,7 +338,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         cancelBackgroundTasks(); 
     }
 
-    void requestActive() {
+    public void requestActive() {
         if (fileTable != null) {
             fileTable.getTable().requestFocusInWindow();
         } else if (diffView != null) {

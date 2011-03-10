@@ -516,6 +516,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 tabbedPane.addTab(file.getName(), panel);
             }
             tabbedPane.setSelectedComponent(panel);
+            panel.requestActive();
         }
         revalidate();
         repaint();
