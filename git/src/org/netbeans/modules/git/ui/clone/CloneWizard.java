@@ -44,11 +44,15 @@ package org.netbeans.modules.git.ui.clone;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.io.File;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.git.ui.repository.remote.FetchBranchesStep;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.modules.git.ui.clone.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -62,8 +66,11 @@ class CloneWizard  implements ChangeListener {
 
     private PanelsIterator wizardIterator;
     private WizardDescriptor wizardDescriptor;
+    private final String forPath;
 
-    public CloneWizard () { }
+    public CloneWizard (String forPath) { 
+        this.forPath = forPath;
+    }
 
     boolean show () {
         wizardIterator = new PanelsIterator();
@@ -81,7 +88,6 @@ class CloneWizard  implements ChangeListener {
             if (value == WizardDescriptor.CLOSED_OPTION || value == WizardDescriptor.CANCEL_OPTION ) {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
                 wizardIterator.repositoryStep.cancelBackgroundTasks();
-//                wizardIterator.fetchRefsStep.cancelBackgroundTasks();
             }            
         }
         return finnished;
@@ -108,6 +114,30 @@ class CloneWizard  implements ChangeListener {
         setErrorMessage(step.getErrorMessage());
     }    
     
+    String getRemoteUri() {
+        return wizardIterator.repositoryStep.getUriString();
+    }
+
+    List<Branch> getBranches() {
+        return wizardIterator.fetchBranchesStep.getSelectedBranches();
+    }
+    
+    File getDestination() {
+        return wizardIterator.cloneDestinationStep.getDestination();
+    }
+
+    String getRemoteName() {
+        return wizardIterator.cloneDestinationStep.getRemoteName();
+    }
+
+    Branch getBranch() {
+        return wizardIterator.cloneDestinationStep.getBranch();
+    }
+    
+    boolean scanForProjects() {
+        return wizardIterator.cloneDestinationStep.scanForProjects();
+    }
+    
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         private RepositoryStep repositoryStep;
         private FetchBranchesStep fetchBranchesStep;        
@@ -115,10 +145,12 @@ class CloneWizard  implements ChangeListener {
 
         @Override
         protected Panel<WizardDescriptor>[] initializePanels () {
-            repositoryStep = new RepositoryStep();
+            repositoryStep = new RepositoryStep(forPath);
             repositoryStep.addChangeListener(CloneWizard.this);
-//            fetchBranchesStep = new FetchBranchesStep(FetchBranchesStep.Mode.ACCEPT_NON_EMPTY_SELECTION_ONLY);
+            fetchBranchesStep = new FetchBranchesStep();
+            fetchBranchesStep.addChangeListener(CloneWizard.this);
             cloneDestinationStep = new CloneDestinationStep();
+            cloneDestinationStep.addChangeListener(CloneWizard.this);
             
             Panel[] panels = new Panel[] { repositoryStep, fetchBranchesStep, cloneDestinationStep };
 
@@ -149,7 +181,10 @@ class CloneWizard  implements ChangeListener {
         @Override
         public synchronized void nextPanel () {
             if (current() == repositoryStep) {
-
+                Map<String, GitBranch> branches = repositoryStep.getBranches();
+                fetchBranchesStep.fillRemoteBranches(branches.values());
+            } else if (current() == fetchBranchesStep) {
+                cloneDestinationStep.setBranches(fetchBranchesStep.getSelectedBranches());
             }
             super.nextPanel();
         }

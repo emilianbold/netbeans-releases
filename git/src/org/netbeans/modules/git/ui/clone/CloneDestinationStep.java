@@ -43,43 +43,49 @@
  */
 package org.netbeans.modules.git.ui.clone;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.File;
+import java.util.List;
+import java.util.MissingResourceException;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.clone.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
+import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class CloneDestinationStep extends AbstractWizardPanel implements DocumentListener {
+public class CloneDestinationStep extends AbstractWizardPanel implements DocumentListener, ItemListener, WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private CloneDestinationPanel panel;
-    private boolean valid;
-    private String errorMessage;
 
     public CloneDestinationStep() {
         panel = new CloneDestinationPanel();
         panel.directoryField.getDocument().addDocumentListener(this);
         panel.nameField.getDocument().addDocumentListener(this);
+        panel.remoteTextField.getDocument().addDocumentListener(this);
+        panel.branchesComboBox.addItemListener(this);
+        panel.branchesComboBox.setRenderer(new BranchRenderer());
+        
+        validateNoEmptyFields();
     }
     
-    
-    
-    // Get the visual component for the panel. In this template, the component
-    // is kept separate. This can be more efficient: if the wizard is created
-    // but never displayed, or not all panels are displayed, it is better to
-    // create only those which really need to be visible.
     @Override
     public JComponent getJComponent() {        
         return panel;
@@ -90,83 +96,139 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         return new HelpCtx(CloneDestinationPanel.class);
     }
     
-    //public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        //return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
-    //}
-    
     @Override
     public void insertUpdate(DocumentEvent e) {
-        validateBeforeNext();
+        validateNoEmptyFields();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        validateBeforeNext();
+        validateNoEmptyFields();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {        
-        validateBeforeNext();
+        validateNoEmptyFields();
     }
 
-    private void textChanged(final DocumentEvent e) {
-        // repost later to AWT otherwise it can deadlock because
-        // the document is locked while firing event and we try
-        // synchronously access its content
+    @Override
+    public void itemStateChanged(ItemEvent ie) {
+        validateNoEmptyFields();
     }
 
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
+    @Override
+    public boolean isFinishPanel () {
+        return true;
+    }
+    
+    @Override
+    protected void validateBeforeNext() {
+        if (validateNoEmptyFields()) {
+            return;
+        }
+        GitProgressSupport support = new GitProgressSupport() {
+           @Override
+           protected void perform() {
+               setEnabled(false);
+               try {
+                    File dest = getDestination();
+                    if(!dest.exists()) {
+                        return;
+                    }
+                    if(dest.isFile()) {
+                        setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_DEST_IS_FILE_ERROR"), false));
+                        return;
+                    }
+                    File[] files = dest.listFiles();
+                    if(files != null && files.length > 0) {
+                        setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_DEST_IS_NOT_EMPTY_ERROR"), false));
+                        return;
+                    }
+               } finally {
+                   setEnabled(true);
+               }
+           }
+       };
+       support.start(Git.getInstance().getRequestProcessor(), getDestination(), NbBundle.getMessage(CloneDestinationStep.class, "MSG_VALIDATING_DESTINATION")).waitFinished();
+    }
+
+    private boolean validateNoEmptyFields() throws MissingResourceException {
+        String parent = panel.getDirectory();
+        if (parent == null || parent.trim().isEmpty()) {
+            setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_PARENT_ERROR"), true));
+            return true;
+        }
+        String name = panel.getCloneName();
+        if (name == null || name.trim().isEmpty()) {
+            setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_NAME_ERROR"), true));
+            return true;
+        }
+        String branch = panel.getBranch();
+        if (branch == null || branch.trim().isEmpty()) {
+            setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_BRANCH_ERROR"), true));
+            return true;
+        }
+        String remoteName = panel.getRemoteName();
+        if (remoteName == null || remoteName.trim().isEmpty()) {
+            setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_REMOTE_ERROR"), true));
+            return true;
+        }
+        setValid(true, null);
+        return false;
+    }
+
+    void setBranches(List<Branch> branches) {
+        if(branches == null) {
+            return;
+        }
+        DefaultComboBoxModel model = new DefaultComboBoxModel(branches.toArray(new Branch[branches.size()]));
+        panel.branchesComboBox.setModel(model);
+        Branch activeBranch = null;
+        for (Branch branch : branches) {
+            if(branch.isActive()) {
+                activeBranch = branch;
+                break;
+            }
+        }
+        if(activeBranch != null) {
+            panel.branchesComboBox.setSelectedItem(activeBranch);
         }
     }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+
+    File getDestination() {
+        return new File(panel.getDirectory() + "/" + panel.getCloneName());
     }
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
+    
+    String getRemoteName() {
+        return panel.remoteTextField.getText();
+    }
+    
+    Branch getBranch() {
+        return (Branch) panel.branchesComboBox.getSelectedItem();
+    }
+
+    boolean scanForProjects() {
+        return panel.scanForProjectsCheckBox.isSelected();
+    }
+    
+    private class BranchRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
+            if(o instanceof Branch) {
+                Branch b = (Branch) o;
+                return super.getListCellRendererComponent(jlist, b.getName(), i, bln, bln1);
+            }
+            return super.getListCellRendererComponent(jlist, o, i, bln, bln1);
         }
     }
     
-//    // You can use a settings object to keep track of state. Normally the
-//    // settings object will be the WizardDescriptor, so you can use
-//    // WizardDescriptor.getProperty & putProperty to store information entered
-//    // by the user.
-//    public void readSettings(Object settings) {
-//        if (settings instanceof WizardDescriptor) {
-////            HgURL repository = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
-//
-//            component.nameField.setText(new File(repository.getPath()).getName());
-//        }
-//    }
-//    public void storeSettings(Object settings) {
-//        if (settings instanceof WizardDescriptor) {
-//            String directory = ((CloneDestinationPanel) component).getDirectory();
-//            String cloneName = ((CloneDestinationPanel) component).getCloneName();
-//            ((WizardDescriptor) settings).putProperty("directory", new File(directory)); //NOI18N
-//            ((WizardDescriptor) settings).putProperty("cloneName", cloneName);  //NOI18N
-//        }
-//    }
-
-    @Override
-    protected void validateBeforeNext() {
-        
-    }
+    private void setEnabled(boolean en) {
+        panel.branchesComboBox.setEnabled(en);
+        panel.directoryField.setEnabled(en);
+        panel.nameField.setEnabled(en);
+        panel.remoteTextField.setEnabled(en);
+        panel.scanForProjectsCheckBox.setEnabled(en);
+    }        
 
 }
 

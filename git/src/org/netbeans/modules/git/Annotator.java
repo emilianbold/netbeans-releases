@@ -134,10 +134,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(ca);
                 } else {
                     actions.add(SystemAction.get(InitAction.class));
-//                    actions.add(null);
-//                    actions.add(SystemAction.get(CloneAction.class));
+                    actions.add(null);
+                    actions.add(SystemAction.get(CloneAction.class));
                 }
-//                actions.add(null);
+                actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
@@ -177,7 +177,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 }
                 actions.add(SystemAction.get(ResetAction.class));
                 actions.add(null);
-//                actions.add(SystemAction.get(CloneAction.class));
+                actions.add(SystemAction.get(CloneAction.class));
                 actions.add(SystemAction.get(FetchAction.class));
             }
         } else {
@@ -225,6 +225,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
                 actions.add(null);
+                
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CloneAction.class), NbBundle.getMessage(CloneAction.class, "LBL_CloneAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName"), lkp)); //NOI18N
             }
         }
