@@ -56,12 +56,14 @@ import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitBranch;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -74,7 +76,7 @@ public class BranchesSelector implements ListSelectionListener {
 
     public BranchesSelector(String title) {
         panel = new BranchesPanel();
-        panel.titleLabel.setText(title);
+        Mnemonics.setLocalizedText(panel.titleLabel, title); 
         panel.branchesList.setCellRenderer(new BranchRenderer());
         attachListeners();
     }
@@ -129,6 +131,10 @@ public class BranchesSelector implements ListSelectionListener {
     public void setEnabled(boolean b) {
         panel.branchesList.setEnabled(b);
         panel.titleLabel.setEnabled(b);
+    }
+
+    public boolean isEmpty() {
+        return panel.branchesList.getModel().getSize() == 0;
     }
     
     public static class Branch implements GitBranch, Comparable<Branch> {
@@ -221,6 +227,7 @@ public class BranchesSelector implements ListSelectionListener {
                 renderer.setText(b.getName() + (b.isActive() ? "*" : ""));
                 renderer.setSelected(b.isSelected());
             }
+            renderer.setBorder(isSelected ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
             return renderer;
         }
         

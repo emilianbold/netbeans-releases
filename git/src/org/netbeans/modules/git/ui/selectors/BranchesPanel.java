@@ -75,6 +75,7 @@ public class BranchesPanel extends javax.swing.JPanel {
         titleLabel.setToolTipText(org.openide.util.NbBundle.getMessage(BranchesPanel.class, "BranchesPanel.titleLabel.toolTipText")); // NOI18N
 
         branchesList.setModel(new DefaultListModel());
+        branchesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(branchesList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
