@@ -64,6 +64,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
@@ -103,10 +104,16 @@ public class NbBundleProcessor extends AbstractProcessor {
             String pkg = packageEntry.getKey();
             Set<Element> annotatedElements = packageEntry.getValue();
             PackageElement pkgE = processingEnv.getElementUtils().getPackageElement(pkg);
+            boolean workAround196556 = false;
             if (pkgE != null) {
                 Set<Element> unscannedTopElements = new HashSet<Element>();
                 unscannedTopElements.add(pkgE);
+                try {
                 unscannedTopElements.addAll(pkgE.getEnclosedElements());
+                } catch (NullPointerException x) { // #196556
+                    processingEnv.getMessager().printMessage(Kind.WARNING, "#196556: reading " + pkg + " failed with " + x + " in " + x.getStackTrace()[0] + "; do a clean build!");
+                    workAround196556 = true;
+                }
                 unscannedTopElements.removeAll(roundEnv.getRootElements());
                 addToAnnotatedElements(unscannedTopElements, annotatedElements);
             } else {
@@ -196,6 +203,17 @@ public class NbBundleProcessor extends AbstractProcessor {
                     os.close();
                 }
                 Map</*identifier*/String,/*method body*/String> methods = new TreeMap<String,String>();
+                if (workAround196556) {
+                    try {
+                        Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*] @see (?:\\w+)\r?\n     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
+                        while (m.find()) {
+                            methods.put(m.group(1), m.group());
+                        }
+                        processingEnv.getMessager().printMessage(Kind.NOTE, "#196556 workaround: loaded idents " + methods.keySet() + " from earlier run");
+                    } catch (IOException x) {
+                        // OK, not there
+                    }
+                }
                 for (Map.Entry<String, String> entry2 : pairs.entrySet()) {
                     String key = entry2.getKey();
                     String value = entry2.getValue();
@@ -324,8 +342,10 @@ public class NbBundleProcessor extends AbstractProcessor {
             if (e.getAnnotation(NbBundle.Messages.class) != null) {
                 annotatedElements.add(e);
             }
+            if (e.getKind() != ElementKind.PACKAGE) {
             addToAnnotatedElements(e.getEnclosedElements(), annotatedElements);
         }
+    }
     }
 
 }
