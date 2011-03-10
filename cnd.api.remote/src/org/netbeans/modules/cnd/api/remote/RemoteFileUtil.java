@@ -170,8 +170,11 @@ public class RemoteFileUtil {
         return ExecutionEnvironmentFactory.getLocal();
     }
 
+    // it should take not-normalized path ok, since the caller can not normalize
+    // because it does not know execution environment
     public static FileObject getFileObject(String absolutePath, Project project) {
         ExecutionEnvironment execEnv = getProjectSourceExecutionEnvironment(project);
+        absolutePath = FileSystemProvider.normalizeAbsolutePath(absolutePath, execEnv);
         if (execEnv != null && execEnv.isRemote()) {
             return getFileObject(absolutePath, execEnv);
         }
@@ -179,7 +182,7 @@ public class RemoteFileUtil {
         CndUtils.assertNotNull(projectDir, "Null project dir for " + project); //NOI18N
         final FileSystem fs;
         try {
-            fs = projectDir.getFileSystem();
+            fs = projectDir.getFileSystem();            
             return fs.findResource(absolutePath);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);

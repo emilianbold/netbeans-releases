@@ -84,7 +84,6 @@ import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -135,7 +134,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             assert false;
         }
 
-        final String runDirectory = FileUtil.normalizePath(pae.getProfile().getRunDirectory()); // it's local so far
+        final String runDirectory = pae.getProfile().getRunDirectory(); // it's local so far
         final MakeConfiguration conf = pae.getConfiguration();
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
