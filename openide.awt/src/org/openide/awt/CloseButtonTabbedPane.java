@@ -203,7 +203,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 return true;
             }
         }
-        if( version.startsWith("1.6.0_22") && isAquaLaF() )
+        if( version.startsWith("1.6.0_24") && isAquaLaF() )
             return true;
         return false;
     }
