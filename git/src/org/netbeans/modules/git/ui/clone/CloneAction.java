@@ -125,7 +125,7 @@ public class CloneAction extends GitAction {
                         }
                         
                         client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
-                        client.checkoutBranch(branch.getName(), true, this);
+                        client.checkoutRevision(branch.getName(), true, this);
 
                         Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
                         Git.getInstance().versionedFilesChanged();                       
