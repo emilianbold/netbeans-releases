@@ -1068,7 +1068,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(new File(thisPath));
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             File file = CndFileUtils.toFile(fileObject);
@@ -1106,7 +1106,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileObject fileObject = fe.getFile();
         assert fileObject.isFolder();
         String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(new File(thisPath));
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             if (fileObject.isValid()) {
@@ -1179,7 +1179,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileRenamed(FileRenameEvent fe) {
         FileObject fileObject = fe.getFile();
         String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(new File(thisPath));
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             if (log.isLoggable(Level.FINE)) {
