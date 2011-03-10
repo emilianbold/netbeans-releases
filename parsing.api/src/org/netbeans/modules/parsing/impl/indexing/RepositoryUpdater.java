@@ -2238,7 +2238,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             Document doc = jtc.getDocument();
             assert doc != null;
-            return Source.create(doc);
+            return DocumentUtilities.getMimeType(doc) == null ? null : Source.create(doc);
         }
 
         protected void refreshActiveDocument() {            
