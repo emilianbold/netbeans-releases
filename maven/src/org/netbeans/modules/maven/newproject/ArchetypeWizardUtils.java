@@ -315,8 +315,6 @@ public class ArchetypeWizardUtils {
                     progressCounter += 3;
                 }
                 addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
-                updateProjectName(rootFile,
-                        NbBundle.getMessage(ArchetypeWizardUtils.class, "TXT_EAProjectName", vi.artifactId));
                 Set<FileObject> projects = openProjects(rootFile, earFile);
                 handle.progress(++progressCounter);
                 return projects;
@@ -422,19 +420,6 @@ public class ArchetypeWizardUtils {
 
         Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
         progressCounter++;
-    }
-
-    private static void updateProjectName (final File projDir, final String newName) {
-        FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml")); //NOI18N
-        if (pomFO != null) {
-            ModelOperation<POMModel> op = new ModelOperation<POMModel> () {
-                @Override
-                public void performOperation(POMModel model) {
-                    model.getProject().setName(newName);
-                }
-            };
-            Utilities.performPOMModelOperations(pomFO, Collections.singletonList(op));
-        }
     }
 
     public static class AddDependencyOperation implements ModelOperation<POMModel> {
