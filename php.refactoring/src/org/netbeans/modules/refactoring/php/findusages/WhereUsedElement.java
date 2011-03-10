@@ -44,7 +44,9 @@
 package org.netbeans.modules.refactoring.php.findusages;
 
 
+import java.io.IOException;
 import javax.swing.Icon;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 
 import org.netbeans.editor.BaseDocument;
@@ -56,11 +58,13 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -187,36 +191,44 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                     end = bdoc.getLength();
                 }
             }
-        } catch (Exception ex) {
+
+
+            StringBuilder sb = new StringBuilder();
+            if (end < sta) {
+                // XXX Shouldn't happen, but I still have AST offset errors
+                sta = end;
+            }
+            if (start < sta) {
+                // XXX Shouldn't happen, but I still have AST offset errors
+                start = sta;
+            }
+            if (en < end) {
+                // XXX Shouldn't happen, but I still have AST offset errors
+                en = end;
+            }
+            sb.append(RefactoringUtils.getHtml(content.subSequence(sta, start).toString()));
+            sb.append("<b>"); // NOI18N
+            sb.append(content.subSequence(start, end));
+            sb.append("</b>"); // NOI18N
+            sb.append(RefactoringUtils.getHtml(content.subSequence(end, en).toString()));
+
+            CloneableEditorSupport ces = RefactoringUtils.findCloneableEditorSupport(fo);
+            PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
+            PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
+            PositionBounds bounds = new PositionBounds(ref1, ref2);
+
+            return new WhereUsedElement(bounds, sb.toString().trim(), fo, name,
+                    new OffsetRange(start, end), icon);
+        } catch (UserQuestionException ex) {
+            return null;
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        StringBuilder sb = new StringBuilder();
-        if (end < sta) {
-            // XXX Shouldn't happen, but I still have AST offset errors
-            sta = end;
-        }
-        if (start < sta) {
-            // XXX Shouldn't happen, but I still have AST offset errors
-            start = sta;
-        }
-        if (en < end) {
-            // XXX Shouldn't happen, but I still have AST offset errors
-            en = end;
-        }
-        sb.append(RefactoringUtils.getHtml(content.subSequence(sta, start).toString()));
-        sb.append("<b>"); // NOI18N
-        sb.append(content.subSequence(start, end));
-        sb.append("</b>"); // NOI18N
-        sb.append(RefactoringUtils.getHtml(content.subSequence(end, en).toString()));
-
-        CloneableEditorSupport ces = RefactoringUtils.findCloneableEditorSupport(fo);
-        PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
-        PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
-        PositionBounds bounds = new PositionBounds(ref1, ref2);
-
-        return new WhereUsedElement(bounds, sb.toString().trim(), fo, name, 
-                new OffsetRange(start, end), icon);
+        return null;
     }
 
     /**
