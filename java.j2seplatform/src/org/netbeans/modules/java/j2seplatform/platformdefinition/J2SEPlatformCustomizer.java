@@ -381,8 +381,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 PathModel model = (PathModel) this.resources.getModel();
                 boolean addingFailed = false;
                 int firstIndex = this.resources.getModel().getSize();
-                for (int i = 0; i < fs.length; i++) {
-                    File f = fs[i];
+                for (File f : fs) {
                     //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
                     // E.g. for /foo/src it returns /foo/src/src
                     // Try to convert it back by removing last invalid name component
@@ -392,7 +391,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                             f = parent;
                         }
                     }
-                    addingFailed|=!model.addPath (f);
+                    if (f.exists()) {
+                        addingFailed|=!model.addPath (f);
+                    }
                 }
                 if (addingFailed) {
                     new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
