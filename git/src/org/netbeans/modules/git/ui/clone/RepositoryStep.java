@@ -101,19 +101,16 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         if(!repository.isValid()) {
             setValid(false, repository.getMessage());
             return;
-    }
+        }
 
         try {
             final File tempRepository = Utils.getTempFolder();
-
-            GitURI uri = repository.getURI();
-            if (uri != null) {
+            String uri = repository.getUriString();
+            if (uri != null && !uri.trim().isEmpty()) {
                 support = new RepositoryStepProgressSupport(panel.progressPanel, repository.getUriString());        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
             }    
-        } catch (URISyntaxException ex) {
-            Git.LOG.log(Level.FINEST, null, ex);
         } finally {
             support = null;
         }

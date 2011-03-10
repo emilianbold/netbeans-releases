@@ -188,16 +188,10 @@ public class Repository implements DocumentListener, ActionListener {
             valid = true;
             msg = null;
             
-            GitURI guri = null;
-            try {                
-                guri = getURI();            
-            } catch (URISyntaxException ex) {
+            String uri = getUriString();
+            if(uri == null || uri.trim().isEmpty()) {
                 valid = false;
-                msg = new Message(ex.getMessage(), true);    
-            }        
-            if(valid && guri == null) {
-                valid = false;
-                msg = new Message("Url cannot be empty.", true);
+                msg = new Message(NbBundle.getMessage(Repository.class, "MSG_EMPTY_URI_ERROR"), true);
             } else {
                 // XXX check suported protocols
             }
@@ -212,13 +206,8 @@ public class Repository implements DocumentListener, ActionListener {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                boolean isFile = false; 
-                try {
-                    GitURI uri = getURI();
-                    isFile = uri != null && (uri.getScheme() == null || Scheme.FILE.toString().equals(uri.getScheme()));
-                } catch (URISyntaxException ex) {
-                    Git.LOG.log(Level.FINEST, null, ex);
-                }
+                String uri = getUriString();
+                boolean isFile = uri != null && uri.startsWith(Scheme.FILE.toString());
                 
                 panel.directoryBrowseButton.setVisible(isFile);
                 
@@ -233,14 +222,6 @@ public class Repository implements DocumentListener, ActionListener {
         });
     }
 
-    GitURI getURI() throws URISyntaxException {
-        String uriString = (String) panel.urlComboBox.getEditor().getItem();
-        if(uriString == null || uriString.trim().isEmpty()) {
-            return null;
-        }
-        return GitClientFactory.getInstance(null).createURI(uriString);
-    }
-            
     String getUriString() {
         return (String) panel.urlComboBox.getEditor().getItem();        
     }
