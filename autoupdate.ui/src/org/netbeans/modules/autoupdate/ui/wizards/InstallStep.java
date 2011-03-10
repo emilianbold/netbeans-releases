@@ -138,23 +138,29 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean wasStored = false;
     private boolean runInBg = false;
     private OperationException installException;
+    private final boolean allowRunInBackground;
     
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
         this (model, false);
     }
     public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits) {
+        this(model, clearLazyUnits, true);
+    }
+    public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground) {
         this.model = model;
         this.clearLazyUnits = clearLazyUnits;
+        this.allowRunInBackground = allowRunInBackground;
     }
     
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new OperationPanel (true);
+            panel = new OperationPanel(allowRunInBackground);
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent evt) {
                         if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
