@@ -1443,10 +1443,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="kits" file="${generated.files.dir}/kits.txt" />
       <output type="kit-dependencies" file="${generated.files.dir}/kit-deps.txt" />
       <output type="plugins" file="${generated.files.dir}/plugins.txt"/>
+      <output type="reverse-dependencies" file="${generated.files.dir}/reverse-deps.txt"/>
     </deps>
 
     <taskdef name="test-deps" classname="org.netbeans.nbbuild.ModuleTestDependencies" classpath="nbantext.jar"/>
-    <test-deps output="${generated.files.dir}/test-deps.txt"/>
+    <test-deps output="${generated.files.dir}/test-deps.txt" reverseOutput="${generated.files.dir}/reverse-test-deps.txt"/>
   </target>
   
   <target name="generate-files-layout" depends="generate-golden-files-init" description="Generate summary of installed files.">
