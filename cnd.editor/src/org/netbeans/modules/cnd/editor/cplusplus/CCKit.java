@@ -43,14 +43,9 @@
  */
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.awt.Cursor;
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -58,16 +53,12 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 
 
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
@@ -138,7 +129,6 @@ public class CCKit extends NbEditorKit {
     Action[] createActions() {
         Action[] superActions = super.createActions();
         Action[] ccActions = new Action[]{
-            new CCFormatAction(),
             getToggleCommentAction(),
             getCommentAction(),
             getUncommentAction(),
@@ -165,82 +155,6 @@ public class CCKit extends NbEditorKit {
             }
         }
         return null;
-    }
-
-    /** Holds action classes to be created as part of createAction.
-    This allows dependent modules to add editor actions to this
-    kit on startup.
-     */
-    @Override
-    protected void updateActions() {
-        super.updateActions();
-        addSystemActionMapping(formatAction, CCFormatAction.class);
-    }
-
-    public class CCFormatAction extends BaseAction {
-
-        public CCFormatAction() {
-            super(BaseKit.formatAction,
-                    MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-            putValue("helpID", CCFormatAction.class.getName()); // NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-            if (target != null) {
-
-                if (!target.isEditable() || !target.isEnabled()) {
-                    target.getToolkit().beep();
-                    return;
-                }
-
-		final BaseDocument doc = (BaseDocument)target.getDocument();
-                final Reformat formatter = Reformat.get(doc);
-
-                // Set hourglass cursor
-                Cursor origCursor = target.getCursor();
-                target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                
-                formatter.lock();
-                try {
-                    doc.runAtomic(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                Caret caret = target.getCaret();
-
-                                int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-                                int start;
-                                int end;
-                                //if (caret.isSelectionVisible()) {
-                                if (Utilities.isSelectionShowing(caret)) {
-                                    start = target.getSelectionStart();
-                                    end = target.getSelectionEnd();
-                                } else {
-                                    start = 0;
-                                    end = doc.getLength();
-                                }
-
-                                formatter.reformat(start, end);
-
-                                // Restore the line
-                                int pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-                                if (pos >= 0) {
-                                    caret.setDot(pos);
-                                }
-                            } catch (BadLocationException e) {
-                                //failed to format
-                            }
-                        }
-                    });
-                } finally {
-                    formatter.unlock();
-                }
-
-                target.setCursor(origCursor);
-	    }
-	}
     }
 
 }

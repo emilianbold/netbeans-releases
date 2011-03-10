@@ -60,7 +60,7 @@ import org.openide.util.lookup.Lookups;
 @OptionsPanelController.TopLevelRegistration(
     id="Keymaps",
     categoryName="#CTL_Keymap_Options",
-    iconBase="org/netbeans/modules/options/resources/keymap.png",
+    iconBase="org/netbeans/modules/options/keymap/keymap.png",
     keywords="#KW_KeymapOptions",
     keywordsCategory="Keymaps",
     position=600

@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
@@ -110,7 +111,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     @Override
-    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+    public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
         this.pae = pae;
     }
 

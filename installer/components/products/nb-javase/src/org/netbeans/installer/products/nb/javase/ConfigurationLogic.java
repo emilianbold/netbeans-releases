@@ -39,8 +39,18 @@
 
 package org.netbeans.installer.products.nb.javase;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.InstallationException;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.progress.Progress;
 
 /**
  *
@@ -59,6 +69,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "{profiler-cluster}"; // NOI18N
     private static final String ID = 
             "JAVA"; // NOI18N
+    private static final String JUNIT_ACCEPTED_PROPERTY =
+            "junit.accepted"; // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -68,5 +80,31 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             APISUPPORT_CLUSTER, 
             HARNESS_CLUSTER,
             PROFILER_CLUSTER}, ID);
+    }
+
+    @Override
+    public void install(Progress progress) throws InstallationException {
+        super.install(progress);
+        String junitAccepted = getProduct().getProperty(JUNIT_ACCEPTED_PROPERTY);
+        if(junitAccepted != null) {
+            final List<Dependency> dependencies =
+                    getProduct().getDependencyByUid(BASE_IDE_UID);
+            final List<Product> sources =
+                    Registry.getInstance().getProducts(dependencies.get(0));
+
+            // pick the first one and integrate with it
+            final File nbLocation = sources.get(0).getInstallationLocation();
+            String licenseAcceptedText = junitAccepted.equals("true")? 
+                getString("CL.junit.accepted.tag") :
+                getString("CL.junit.denied.tag");
+            LogManager.log("Adding " + licenseAcceptedText + " to license_accepted file");            
+            try {
+                NetBeansUtils.createLicenseAcceptedMarker(nbLocation, licenseAcceptedText);// NOI18N
+            } catch (IOException e) {
+                throw new InstallationException(
+                        getString("CL.install.error.license.accepted"), // NOI18N
+                        e);
+            }
+        }
     }
 }

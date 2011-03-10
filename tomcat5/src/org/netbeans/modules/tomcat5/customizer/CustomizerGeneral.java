@@ -45,13 +45,12 @@
 package org.netbeans.modules.tomcat5.customizer;
 
 import org.openide.awt.Mnemonics;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import javax.swing.JTextField;
 import javax.swing.JSpinner;
 import javax.accessibility.AccessibleContext;
 import java.awt.Font;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 
 /**
  * Customizer general (connection) tab.
@@ -125,7 +124,7 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         baseTextField.setDocument(custData.getCatalinaBaseModel());
         baseTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(credentialsLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(credentialsLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.text", new Object[] {custData.isTomcat70() ? "manager-script" : "manager"})); // NOI18N
         credentialsLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.toolTipText")); // NOI18N
 
         usernameLabel.setLabelFor(usernameTextField);

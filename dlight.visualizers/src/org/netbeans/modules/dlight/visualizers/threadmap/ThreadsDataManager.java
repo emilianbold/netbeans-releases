@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
@@ -411,7 +412,8 @@ public final class ThreadsDataManager {
                             if (dump == null) {
                                 continue;
                             }
-                            updateName(dump.getStack().get(lookAt).getFunction().getQuilifiedName(), i);
+                            final List<FunctionCall> stack = dump.getStack();
+                            updateName(stack.get(stack.size() - 1 - lookAt).getFunction().getQuilifiedName(), i);
                         }
                     }
                 } catch (Throwable ex) {
@@ -424,8 +426,10 @@ public final class ThreadsDataManager {
     }
 
     private boolean isValidDump(ThreadSnapshot dump, int lookAt) {
-        if (dump.getStack().size() > lookAt) {
-            String s = dump.getStack().get(0).getFunction().getQuilifiedName();
+        List<FunctionCall> stack = dump.getStack();
+        
+        if (stack.size() > lookAt) {
+            String s = stack.get(stack.size() - 1).getFunction().getQuilifiedName();
             if ("_start".equals(s) || "_lwp_start".equals(s)) { //NOI18N
                 return true;
             }

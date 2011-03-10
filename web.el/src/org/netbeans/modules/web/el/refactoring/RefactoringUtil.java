@@ -169,6 +169,10 @@ public final class RefactoringUtil {
         return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
     }
     
+    public static boolean isPropertyAccessor(String accessor) {
+        return !getPropertyName(accessor).equals(accessor);
+    }
+    
     private static int getPrefixLength(String accessor, boolean includeSetter) {
         List<String> accessorPrefixes = new ArrayList<String>();
         accessorPrefixes.add("get");
@@ -189,7 +193,7 @@ public final class RefactoringUtil {
         int startOffset = elem.getOriginalOffset().getStart() + targetNode.startOffset();
         int endOffset = startOffset + targetNode.getImage().length();
 
-        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getParserResult().getFileObject());
+        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(elem.getSnapshot().getSource().getFileObject());
         PositionRef start = editor.createPositionRef(startOffset, Bias.Forward);
         PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
 

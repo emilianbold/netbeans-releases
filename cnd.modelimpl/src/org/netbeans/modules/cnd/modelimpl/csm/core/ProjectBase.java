@@ -1093,12 +1093,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
         List<FSPath> origUserIncludePaths = nativeFile.getUserIncludePaths();
+        if (TraceFlags.DUMP_NATIVE_FILE_ITEM_USER_INCLUDE_PATHS) {
+            System.err.println("Item "+nativeFile.getAbsolutePath());
+            for(FSPath path : origUserIncludePaths) {
+                System.err.println("\tPath "+path.getPath());
+            }
+        }
         List<FSPath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         String entryKey = FileContainer.getFileKey(nativeFile.getAbsolutePath(), true).toString();
-        CndUtils.assertTrue(nativeFile.getNativeProject().getFileSystem().equals(getFileSystem()), "File systems differ"); //NOI18N
-        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey,
+        if (CndUtils.isDebugMode()) {
+            FileSystem curPrjFS = getFileSystem();
+            FileSystem nativeProjectFS = nativeFile.getNativeProject().getFileSystem();
+            CndUtils.assertTrue(nativeProjectFS.equals(curPrjFS), "File systems differ: incoming=" + nativeProjectFS + ";cur=" + curPrjFS); //NOI18N
+        }
+        StartEntry startEntry = new StartEntry(getFileSystem(), entryKey, 
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;
         Object aPlatformProject = getPlatformProject();
@@ -1738,17 +1748,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //    private static final boolean isValid(APTPreprocHandler.State state) {
 //        return state != null && state.isValid();
 //    }
-    public ProjectBase findFileProject(CharSequence absPath) {
+    public ProjectBase findFileProject(CharSequence absPath, boolean waitFilesCreated) {
         // check own files
         // Wait while files are created. Otherwise project file will be recognized as library file.
-        ensureFilesCreated();
+        if (waitFilesCreated) {
+            ensureFilesCreated();
+        }
         if (getFileUID(absPath, false) != null) {
             return this;
         } else {
             // else check in libs
             for (CsmProject prj : getLibraries()) {
                 // Wait while files are created. Otherwise project file will be recognized as library file.
-                ((ProjectBase) prj).ensureFilesCreated();
+                if (waitFilesCreated) {
+                    ((ProjectBase) prj).ensureFilesCreated();
+                }
                 if (((ProjectBase) prj).getFileUID(absPath, false) != null) {
                     return (ProjectBase) prj;
                 }
@@ -1798,12 +1812,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     @Override
-    public final CsmFile findFile(Object absolutePathOrNativeFileItem, boolean snapShot) {
+    public final CsmFile findFile(Object absolutePathOrNativeFileItem, boolean createIfPossible, boolean snapShot) {
         CsmFile res = null;
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
-            res = findFileByPath((CharSequence) absolutePathOrNativeFileItem);
+            res = findFileByPath((CharSequence) absolutePathOrNativeFileItem, createIfPossible);
         } else if (absolutePathOrNativeFileItem instanceof NativeFileItem) {
-            res = findFileByItem((NativeFileItem) absolutePathOrNativeFileItem);
+            res = findFileByItem((NativeFileItem) absolutePathOrNativeFileItem, createIfPossible);
         }
         if (snapShot && (res instanceof FileImpl)) {
             res = ((FileImpl)res).getSnapshot();
@@ -1815,9 +1829,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getSize();
     }
     
-    private CsmFile findFileByPath(CharSequence absolutePath) {
+    private CsmFile findFileByPath(CharSequence absolutePath, boolean createIfPossible) {
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(absolutePath) == null) {
+            if (!createIfPossible) {
+                return null;
+            }
             NativeFileItem nativeFile = null;
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject) {
@@ -1846,11 +1863,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return findFile(absolutePath, false, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
-    private CsmFile findFileByItem(NativeFileItem nativeFile) {
+    private CsmFile findFileByItem(NativeFileItem nativeFile, boolean createIfPossible) {
         CharSequence file = nativeFile.getAbsolutePath();
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getEntry(file) == null) {
-            if (!Utils.acceptNativeItem(nativeFile)) {
+            if (!createIfPossible || !Utils.acceptNativeItem(nativeFile)) {
                 return null;
             }
             // Try to find native file
@@ -1887,24 +1904,37 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private FileImpl findFileImpl(CharSequence absPath, boolean treatSymlinkAsSeparateFile, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = null;
+        boolean create = false;
         synchronized (fileContainerLock) {
             impl = getFile(absPath, treatSymlinkAsSeparateFile);
             if (impl == null) {
-                assert preprocHandler != null : "null preprocHandler for " + absPath;
-                FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
-                CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
-                impl = new FileImpl(ModelSupport.createFileBuffer(fo), this, fileType, nativeFileItem);
-                if (nativeFileItem != null) {
-                    putNativeFileItem(impl.getUID(), nativeFileItem);
-                }
-                putFile(impl, initial);
-                // NB: parse only after putting into a map
-                if (scheduleParseIfNeed) {
-                    APTPreprocHandler.State ppState = preprocHandler.getState();
-                    ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                create = true;
+            }
+        }
+        if (create) {
+            // it is expensive in Full Remote mode to create buffer, so do the work out of sync block
+            assert preprocHandler != null : "null preprocHandler for " + absPath;
+            FileObject fo = CndFileUtils.toFileObject(fileSystem, absPath);
+            CndUtils.assertTrueInConsole(fo != null, "file object not found " + absPath + " in fs=" + fileSystem); // NOI18N
+            FileBuffer fileBuffer = ModelSupport.createFileBuffer(fo);
+            // and all other under lock again
+            synchronized (fileContainerLock) {
+                impl = getFile(absPath, treatSymlinkAsSeparateFile);
+                if (impl == null) {
+                    impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
+                    if (nativeFileItem != null) {
+                        putNativeFileItem(impl.getUID(), nativeFileItem);
+                    }
+                    putFile(impl, initial);
+                    // NB: parse only after putting into a map
+                    if (scheduleParseIfNeed) {
+                        APTPreprocHandler.State ppState = preprocHandler.getState();
+                        ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                    }
                 }
             }
         }
+
         if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
             impl.setSourceFile();
         } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {

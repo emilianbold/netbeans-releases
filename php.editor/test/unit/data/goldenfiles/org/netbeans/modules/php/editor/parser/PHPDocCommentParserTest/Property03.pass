@@ -5,7 +5,7 @@
                 <PHPDocNode start='63' end='68' value='$ahoj'/>
             </Variable>
             <Types>
-                <PHPDocNode start='59' end='62' value='int'/>
+                <PHPDocTypeNode start='59' end='62' value='int' isArray='false'/>
             </Types>
         </PHPDocVarTypeTag>
         <PHPDocVarTypeTag start='72' end='98' kind='PROPERTY_WRITE'>
@@ -13,7 +13,7 @@
                 <PHPDocNode start='92' end='98' value='$death'/>
             </Variable>
             <Types>
-                <PHPDocNode start='88' end='91' value='int'/>
+                <PHPDocTypeNode start='88' end='91' value='int' isArray='false'/>
             </Types>
         </PHPDocVarTypeTag>
     </Tags>

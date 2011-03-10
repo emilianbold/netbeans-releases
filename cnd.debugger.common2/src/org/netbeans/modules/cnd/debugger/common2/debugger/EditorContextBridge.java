@@ -60,6 +60,10 @@ public class EditorContextBridge {
         return contextDispatcher.getCurrentURLAsString();
     }
 
+    public static FileObject getCurrentFileObject() {
+        return contextDispatcher.getCurrentFile();
+    }
+
     public static String getCurrentFilePath() {
         FileObject currentFile = contextDispatcher.getCurrentFile();
         if (currentFile != null) {

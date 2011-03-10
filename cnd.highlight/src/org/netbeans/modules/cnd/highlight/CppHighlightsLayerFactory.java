@@ -55,9 +55,18 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  * @author Sergey Grinev
  */
 public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
+    private final static boolean SEMANTIC_DISABLED = Boolean.getBoolean("cnd.semantic.disabled"); // NOI18N
     
     @Override
     public HighlightsLayer[] createLayers(Context context) {
+        if (SEMANTIC_DISABLED) {
+            return new HighlightsLayer[]{
+                        HighlightsLayer.create(
+                        MarkOccurrencesHighlighter.class.getName(),
+                        ZOrder.CARET_RACK.forPosition(1000),
+                        true,
+                        MarkOccurrencesHighlighter.getHighlightsBag(context.getDocument())),};
+        } else {
         return 
             new HighlightsLayer[] {
                 HighlightsLayer.create(
@@ -71,5 +80,6 @@ public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
                     true,
                     MarkOccurrencesHighlighter.getHighlightsBag(context.getDocument())),
             };
+        }
     }
 }

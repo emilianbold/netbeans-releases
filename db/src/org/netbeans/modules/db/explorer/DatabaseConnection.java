@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -852,7 +852,7 @@ public final class DatabaseConnection implements DBConnection {
             }
         };
 
-        Task task = RequestProcessor.getDefault().post(runnable, 0);
+        Task task = RP.post(runnable, 0);
         return task;
     }
 
@@ -1085,7 +1085,8 @@ public final class DatabaseConnection implements DBConnection {
 
     public void showConnectionDialog() {
         try {
-            final ConnectionNode cni = findConnectionNode(getName());
+            final ConnectionNode cni = findConnectionNode(getDisplayName());
+            assert cni != null : "DatabaseConnection node found for " + this;
             if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override

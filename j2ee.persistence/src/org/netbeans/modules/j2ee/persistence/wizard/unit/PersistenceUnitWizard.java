@@ -170,9 +170,10 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         Library lib = null;
         boolean useModelgen = false;
         String modelGenLib = null;
+        Provider selectedProvider = null;
         boolean libIsAdded = false;//used to check if lib was added to compile classpath
         if (descriptor.isContainerManaged()) {
-            Provider selectedProvider=descriptor.getSelectedProvider();
+            selectedProvider=descriptor.getSelectedProvider();
             if (descriptor.isNonDefaultProviderEnabled()) {
                 lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
@@ -203,6 +204,16 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         }
         handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_CreatePU"));
         String version = (lib!=null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use project provided api and avoid use of unsupported features this way
+        //
+        if (selectedProvider != null && version != null) {
+            String provVersion = ProviderUtil.getVersion(selectedProvider);
+            if (provVersion != null) {
+                //even if project support jpa 2.0 etc, but selected provider is reported as jpa1.0 use jpa1.0
+                if (Double.parseDouble(version) > Double.parseDouble(provVersion)) {
+                    version = provVersion;
+                }
+            }
+        }
         try{
             LOG.fine("Retrieving PUDataObject");
             pud = ProviderUtil.getPUDataObject(project, version);

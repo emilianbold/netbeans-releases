@@ -405,6 +405,8 @@ final class CommandManager implements ActionListener {
                     slidedModel.setText(0, freshText);
                     slideBar.repaint();
                 }
+                curSlideButton = slideBar.getButton(curSlidedIndex);
+                curSlideButton.setSelected(true);
             }
         }
     }
@@ -420,7 +422,7 @@ final class CommandManager implements ActionListener {
     
     private final class EscapeAction extends javax.swing.AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            slideOut(true, true);
+            slideBar.getSelectionModel().setSelectedIndex(-1);
         }
     } // end of EscapeAction
    

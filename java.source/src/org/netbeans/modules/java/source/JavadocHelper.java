@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import java.awt.EventQueue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -76,6 +77,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -148,6 +150,7 @@ public class JavadocHelper {
                 LOG.log(Level.FINE, "loaded cached content for {0}", url);
                 return new ByteArrayInputStream(cache);
             }
+            assert !isRemote() || !EventQueue.isDispatchThread();
             InputStream uncached;
             if (stream != null) {
                 uncached = stream;
@@ -155,7 +158,7 @@ public class JavadocHelper {
             } else {
                 uncached = JavadocHelper.openStream(url);
             }
-            if (url.getProtocol().startsWith("http")) { // NOI18N
+            if (isRemote()) {
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
                     FileUtil.copy(uncached, baos);
@@ -169,6 +172,16 @@ public class JavadocHelper {
                 return uncached;
             }
         }
+        /**
+         * @return true if this looks to be a web location
+         */
+        public boolean isRemote() {
+            return JavadocHelper.isRemote(url);
+        }
+    }
+
+    private static boolean isRemote(URL url) {
+        return url.getProtocol().startsWith("http"); // NOI18N
     }
     
     /**
@@ -201,7 +214,21 @@ public class JavadocHelper {
      * @param cancel a Callable to signal cancel request
      * @return the javadoc page or null when the javadoc is not available.
      */
-    public static TextStream getJavadoc(Element element, final Callable<Boolean> cancel) {
+    public static TextStream getJavadoc(Element element, final @NullAllowed Callable<Boolean> cancel) {
+        return getJavadoc(element, true, cancel);
+    }
+
+    /**
+     * Richer version of {@link SourceUtils#getJavadoc}.
+     * Finds {@link URL} of a javadoc page for given element when available. This method
+     * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
+     * For {@link PackageElement} it returns the package-summary.html for given package.
+     * @param element to find the Javadoc for
+     * @param allowRemoteJavadoc true if non-local javadoc sources should be enabled
+     * @param cancel a Callable to signal cancel request
+     * @return the javadoc page or null when the javadoc is not available.
+     */
+    public static TextStream getJavadoc(Element element, boolean allowRemoteJavadoc, final @NullAllowed Callable<Boolean> cancel) {
         synchronized (cachedJavadoc) {
             TextStream result = cachedJavadoc.get(element);
             if (result != null) {
@@ -209,19 +236,27 @@ public class JavadocHelper {
                 return result;
             }
         }
-        TextStream result = doGetJavadoc(element, cancel);
+        TextStream result = doGetJavadoc(element, allowRemoteJavadoc, cancel);
         synchronized (cachedJavadoc) {
             cachedJavadoc.put(element, result);
         }
         return result;
     }
 
+    /**
+     * Richer version of {@link SourceUtils#getJavadoc}.
+     * Finds {@link URL} of a javadoc page for given element when available. This method
+     * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
+     * For {@link PackageElement} it returns the package-summary.html for given package.
+     * @param element to find the Javadoc for
+     * @return the javadoc page or null when the javadoc is not available.
+     */
     public static TextStream getJavadoc(Element element) {
         return getJavadoc(element, null);
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS"/*,justification="URLs have never host part"*/)
-    private static TextStream doGetJavadoc(final Element element, final Callable<Boolean> cancel) {
+    private static TextStream doGetJavadoc(final Element element, final boolean allowRemoteJavadoc, final Callable<Boolean> cancel) {
         if (element == null) {
             throw new IllegalArgumentException("Cannot pass null as an argument of the SourceUtils.getJavadoc"); // NOI18N
         }
@@ -277,7 +312,7 @@ public class JavadocHelper {
                 final Future<TextStream> future = RP.submit(new Callable<TextStream>() {
                     @Override
                     public TextStream call() throws Exception {
-                        return findJavadoc(classFile, pkgNameF, pageNameF, fragment);
+                        return findJavadoc(classFile, pkgNameF, pageNameF, fragment, allowRemoteJavadoc);
                     }
                 });
                 do {
@@ -303,7 +338,8 @@ public class JavadocHelper {
             final URL classFile,
             final String pkgName,
             final String pageName,
-            final CharSequence fragment) {
+            final CharSequence fragment,
+            final boolean allowRemoteJavadoc) {
 
         URL sourceRoot = null;
         Set<URL> binaries = new HashSet<URL>();
@@ -367,16 +403,22 @@ public class JavadocHelper {
                                 new Object[] {javadocResult.getClass(), root.toExternalForm()});
                         continue;
                     }
+                    if (!allowRemoteJavadoc && isRemote(root)) {
+                        continue;
+                    }
                     URL url = new URL(root, pkgName + "/" + pageName + ".html");
                     InputStream is = null;
                     String rootS = root.toString();
-                    if (knownGoodRoots.contains(rootS)) {
+                    boolean useKnownGoodRoots = result.length == 1 && isRemote(url);
+                    if (useKnownGoodRoots && knownGoodRoots.contains(rootS)) {
                         LOG.log(Level.FINE, "assumed valid Javadoc stream at {0}", url);
                     } else {
                         try {
                             is = openStream(url);
-                            knownGoodRoots.add(rootS);
-                            LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
+                            if (useKnownGoodRoots) {
+                                knownGoodRoots.add(rootS);
+                                LOG.log(Level.FINE, "found valid Javadoc stream at {0}", url);
+                            }
                         } catch (IOException x) {
                             LOG.log(Level.FINE, "invalid Javadoc stream at {0}: {1}", new Object[] {url, x});
                             continue;

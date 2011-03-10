@@ -81,7 +81,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
- * V77 - NB 7.0
+ * V79 - NB 7.0
+ *    Configuration type (CONFIGURATION_TYPE_ELEMENT) in project.xml
+ * V78 - NB 7.0
+ *    storing active configuration inde in private/private.xml and no longer in private/configurations.xml
+ * V77 (76?) - NB 7.0
  *    Store configuration type in project.xml
  * V76 - NB 7.0
  *    reintroducing No longer generation makefiles for unmanaged projects. Calling projects make directly
@@ -221,7 +225,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 76;
+    public final static int CURRENT_VERSION = 79;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -405,9 +409,9 @@ public abstract class CommonConfigurationXMLCodec
             //writeSourceEncoding(xes);
         }
         xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
-        if (!publicLocation) {
-            xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
-        }
+//        if (!publicLocation) {
+//            xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
+//        }
         writeConfsBlock(xes);
         xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
     }
@@ -472,6 +476,7 @@ public abstract class CommonConfigurationXMLCodec
         writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         switch (makeConfiguration.getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_APPLICATION:
+            case MakeConfiguration.TYPE_DB_APPLICATION:
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
             case MakeConfiguration.TYPE_QT_APPLICATION:
             case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:

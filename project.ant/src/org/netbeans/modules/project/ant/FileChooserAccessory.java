@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -405,6 +406,9 @@ public class FileChooserAccessory extends javax.swing.JPanel
         List<File> fs = new ArrayList<File>();
         for (File file : files) {
             FileObject fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                throw new FileNotFoundException(file.toString());
+            }
             FileObject newFO;
             if (fo.isFolder()) {
                 newFO = copyFolderRecursively(fo, newRoot);

@@ -76,11 +76,14 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     private Lookup lookup;
     private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
     private final boolean useHtmlFormat;
+    private final GoToSourceCallbackAction callbackAction;
 
-    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML,
+            GoToSourceCallbackAction callbackAction) {        
         this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
+        this.callbackAction = callbackAction;
         this.useHtmlFormat = useHTML;
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
         treeView = new MyOwnBeanTreeView();
         treeView.setRootVisible(false);
@@ -113,15 +116,21 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public static MultipleCallStackPanel createInstance() {
-        return new MultipleCallStackPanel(null, false);
+        return new MultipleCallStackPanel(null, false, null);
     }
 
     public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
-        return new MultipleCallStackPanel(sourceFileInfoDataProvider, false);
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, false, null);
     }
 
-    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider, boolean useHTML) {
-        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML);
+    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider,
+            boolean useHTML) {
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML, null);
+    }
+
+    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider,
+            boolean useHTML, GoToSourceCallbackAction callbackAction) {
+        return new MultipleCallStackPanel(sourceFileInfoDataProvider, useHTML, callbackAction);
     }
 
     @Override
@@ -177,17 +186,17 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     }
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack, Action[] actions) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions, useHtmlFormat));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions, useHtmlFormat, callbackAction));
     }
 
 
     public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, useHtmlFormat));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, useHtmlFormat, callbackAction));
     }
 
     public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
         treeView.setRootVisible(false);
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack, useHtmlFormat));
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack, useHtmlFormat, callbackAction));
     }
 
     public void update() {

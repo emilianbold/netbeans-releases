@@ -206,7 +206,7 @@ public class NSIcomPlatformDetector extends CDCPlatformDetector {
             String[] command = new String[5];
             command[0] = javaPath;
             command[1] = "-classpath";    //NOI18N
-            command[2] = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-j2me-cdc-platform-nsicom-probe.jar", "org.netbeans.modules.java.j2seplatform", false).getAbsolutePath(); // NOI18N
+            command[2] = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-j2me-cdc-platform-nsicom-probe.jar", "org.netbeans.modules.j2me.cdc.platform.nsicom", false).getAbsolutePath(); // NOI18N
             command[3] = "org.netbeans.modules.j2me.cdc.platform.nsicom.wizard.SDKProbe";
             command[4] = path;
             final Process process = runtime.exec(command);

@@ -146,6 +146,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * name of the stub test method
      */
     private static final String STUB_TEST_NAME = "testSomeMethod";      //NOI18N
+    /**
+     * name of the 'container' variable in the generated ejb test method skeleton
+     */
+    private static final String CONTAINER_VAR_NAME = "container";         //NOI18N
+
     /** */
     private static final EnumSet<Modifier> NO_MODIFIERS
             = EnumSet.noneOf(Modifier.class);
@@ -1415,19 +1420,21 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             if (!isStatic) {
 
                 boolean useNoArgConstructor = hasAccessibleNoArgConstructor(srcClass);
-                boolean ejb = isClassEjb31Bean(workingCopy, srcClass);
 
-                VariableTree instanceVarInit = maker.Variable(
+                if (isClassEjb31Bean(workingCopy, srcClass)) {
+                    statements.addAll(generateEJBLookupCode(maker, srcClass, srcMethod));
+                } else {
+                    VariableTree instanceVarInit = maker.Variable(
                         maker.Modifiers(Collections.<Modifier>emptySet()),
                         INSTANCE_VAR_NAME,
                         maker.QualIdent(srcClass),
-                        ejb ? generateEJBLookupCode(maker, srcClass, srcClass.getSimpleName()) :
-                            useNoArgConstructor
-                                 ? generateNoArgConstructorCall(maker,
-                                                                srcClass,
-                                                                instanceClsName)
-                                 : maker.Literal(null));
-                statements.add(instanceVarInit);
+                        useNoArgConstructor
+                            ? generateNoArgConstructorCall(maker,
+                                                            srcClass,
+                                                            instanceClsName)
+                             : maker.Literal(null));
+                    statements.add(instanceVarInit);
+                }
             }
 
             MethodInvocationTree methodCall = maker.MethodInvocation(
@@ -1484,6 +1491,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     statements.add(expectedValue);
                     statements.add(actualValue);
                     statements.add(comparisonStmt);
+            }
+
+            // close EJBContainer if ejb called
+            if (isClassEjb31Bean(workingCopy, srcClass)) {
+                statements.add(generateEJBCleanUpCode(maker));
             }
         }
 
@@ -2105,25 +2117,108 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return false;
     }
 
-    private ExpressionTree generateEJBLookupCode(TreeMaker maker,TypeElement cls, CharSequence instanceClsName) {
+    private List<VariableTree> generateEJBLookupCode(TreeMaker maker, TypeElement srcClass, ExecutableElement srcMethod) {
+        final String ejbContainerPackage = "javax.ejb.embeddable.EJBContainer"; // NOI18N
+        List<VariableTree> trees = new ArrayList<VariableTree>();
+
         // TODO: there are probably better ways how to generate code below:
-        IdentifierTree container = maker.Identifier("("+instanceClsName+")javax.ejb.embeddable.EJBContainer"); // NOI18N
+        IdentifierTree container = maker.Identifier(ejbContainerPackage); 
         MethodInvocationTree invocation = maker.MethodInvocation(
+            Collections.<ExpressionTree>emptyList(),
+            maker.MemberSelect(container, "createEJBContainer"), // NOI18N
+            Collections.<ExpressionTree>emptyList()
+        );
+        VariableTree containerVarInit = maker.Variable(
+            maker.Modifiers(Collections.<Modifier>emptySet()),
+            CONTAINER_VAR_NAME,
+            maker.QualIdent(ejbContainerPackage), 
+            invocation
+            );
+        trees.add(containerVarInit);
+
+        String className = getBeanInterfaceOrImplementationClassName(srcClass, srcMethod);
+        IdentifierTree bean = maker.Identifier("(" + className + ")" + CONTAINER_VAR_NAME); // NOI18N
+        MethodInvocationTree contextInvocation = maker.MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
-                maker.MemberSelect(container, "createEJBContainer"), // NOI18N
+                maker.MemberSelect(bean, "getContext"), // NOI18N
                 Collections.<ExpressionTree>emptyList()
         );
-        invocation = maker.MethodInvocation(
+        contextInvocation = maker.MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
-                maker.MemberSelect(invocation, "getContext"), // NOI18N
-                Collections.<ExpressionTree>emptyList()
+                maker.MemberSelect(contextInvocation, "lookup"), // NOI18N
+                Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+srcClass.getSimpleName())) // NOI18N
         );
-        invocation = maker.MethodInvocation(
-                Collections.<ExpressionTree>emptyList(),
-                maker.MemberSelect(invocation, "lookup"), // NOI18N
-                Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+instanceClsName)) // NOI18N
+        VariableTree beanVarInit = maker.Variable(
+            maker.Modifiers(Collections.<Modifier>emptySet()),
+            INSTANCE_VAR_NAME,
+            maker.QualIdent(className),
+            contextInvocation
+            );
+        trees.add(beanVarInit);
+
+        return trees;
+    }
+
+    /**
+     * Get name of the implementation class or interface which should be used
+     * for searching in server container context.
+     *
+     * @param srcClass class for which are generated JUnit tests
+     * @param srcMethod currently generated method 
+     * @return {@code String} which should be used for searching in context
+     */
+    private String getBeanInterfaceOrImplementationClassName(TypeElement srcClass, ExecutableElement srcMethod) {
+        List<? extends TypeMirror> interfaces = srcClass.getInterfaces();
+        for (TypeMirror typeMirror : interfaces) {
+            if (typeMirror instanceof DeclaredType) {
+                DeclaredType declaredType = (DeclaredType) typeMirror;
+                TypeElement interfaceElement = (TypeElement) declaredType.asElement();
+                if (isMethodDeclaredByInterface(interfaceElement, srcMethod)) {
+                    return interfaceElement.getSimpleName().toString();
+                }
+            }
+        }
+        return srcClass.getSimpleName().toString();
+    }
+
+    /**
+     * Checks whether the interface declare given method
+     *
+     * @param trgInterface interface to be declaring the method
+     * @param srcMethod method to be declared
+     * @return {@code true} if the method is declared by the interface, {@code false} otherwise
+     */
+    private boolean isMethodDeclaredByInterface(TypeElement trgInterface, ExecutableElement srcMethod) {
+        List<? extends Element> enclosedElements = trgInterface.getEnclosedElements();
+        List<? extends VariableElement> methodParameters = srcMethod.getParameters();
+        for (Element enclosedElement : enclosedElements) {
+            if (enclosedElement instanceof ExecutableElement) {
+                ExecutableElement exElement = (ExecutableElement) enclosedElement;
+                List<? extends VariableElement> elementParameters = exElement.getParameters();
+                if (srcMethod.getSimpleName() != exElement.getSimpleName()
+                        || (methodParameters.size() != elementParameters.size())) {
+                    continue;
+                }
+                for (int i = 0; i < methodParameters.size(); i++) {
+                    if (!((VariableElement) methodParameters.get(i)).asType().toString().equals(
+                            ((VariableElement) elementParameters.get(i)).asType().toString())) {
+                        continue;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private StatementTree generateEJBCleanUpCode(TreeMaker maker) {
+        IdentifierTree container = maker.Identifier(CONTAINER_VAR_NAME);
+        MethodInvocationTree invocation = maker.MethodInvocation(
+            Collections.<ExpressionTree>emptyList(),
+            maker.MemberSelect(container, "close"), // NOI18N
+            Collections.<ExpressionTree>emptyList()
         );
-        return invocation;
+        return maker.ExpressionStatement(invocation);
     }
 
     /**

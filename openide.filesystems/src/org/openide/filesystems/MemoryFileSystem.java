@@ -57,6 +57,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -90,7 +91,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
     private java.util.Date created = new java.util.Date();
 
     /** maps String to Entry */
-    private Map<String, Entry> entries = initEntry();
+    private final Map<String, Entry> entries = initEntry();
     
     @SuppressWarnings("deprecation") // need to set it for compat
     private void _setSystemName(String s) throws PropertyVetoException {
@@ -316,6 +317,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
         return false;
     }
 
+    @Override
     public void rename(String oldName, String newName)
     throws IOException {
         if (!isValidEntry(oldName)) {
@@ -329,10 +331,15 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
         if ((newName.length() > 0) && (newName.charAt(0) == '/')) {
             newName = newName.substring(1);
         }
-
-        Entry e = getOrCreateEntry(oldName);
-        entries.remove(oldName);
-        entries.put(newName, e);
+        
+        ArrayList<Map.Entry<String, Entry>> clone = new ArrayList<Map.Entry<String, Entry>>(entries.entrySet());
+        for (Map.Entry<String, Entry> each : clone) {
+            if (each.getKey().startsWith(oldName)) {
+                entries.remove(each.getKey());
+                String n = newName + each.getKey().substring(oldName.length());
+                entries.put(n, each.getValue());
+            }
+        }
     }
 
     public void renameAttributes(String oldName, String newName) {

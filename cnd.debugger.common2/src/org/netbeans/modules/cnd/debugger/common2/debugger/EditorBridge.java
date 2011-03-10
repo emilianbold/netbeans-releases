@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A bridge to the NB editor.
@@ -195,7 +196,15 @@ public final class EditorBridge {
 	DataObject dao = dataObjectForLine(l);
 	if (dao == null)
 	    return null;
-	return FileUtil.toFile(dao.getPrimaryFile()).getPath();
+        FileObject fo = dao.getPrimaryFile();
+        File file = FileUtil.toFile(fo);
+        // it would be s better to leave just fo.getPath(), 
+        // but I'm not quite sure about '\\' vs '/' issue
+        if (file == null) {
+            return fo.getPath();
+        } else {
+            return file.getPath();
+        }
     }
 
     public static Line getCurrentLine() {
@@ -282,12 +291,19 @@ public final class EditorBridge {
      * Find the Line object for the given file:line pair
      */
 
+    public static Line getLine(String fileName, int lineNumber, ExecutionEnvironment env) {
+	return getLine(IpeUtils.findFileObject(fileName, env), lineNumber);
+    }
+
     public static Line getLine(String fileName, int lineNumber) {
+	return getLine(IpeUtils.findFileObject(fileName), lineNumber);
+    }
+
+    public static Line getLine(FileObject fo, int lineNumber) {
 
 	if (Log.Editor.debug)
-	    System.out.printf("getline(\"%s\", %d)\n", fileName, lineNumber); // NOI18N
+	    System.out.printf("getline(\"%s\", %d)\n", fo.getPath(), lineNumber); // NOI18N
 
-	FileObject fo = IpeUtils.findFileObject(fileName);
 	DataObject dao = dataObjectFor(fo);
 	if (dao == null) {
 	    if (Log.Editor.debug)
@@ -331,14 +347,6 @@ public final class EditorBridge {
 
 	} catch (Exception e) {
 	}
-    }
-
-    public static void showInEditor(String fileName, int lineNumber) {
-	if (Log.Editor.debug) {
-	    System.out.printf("showInEditor(\"%s\", %d)\n", // NOI18N
-		              fileName, lineNumber);
-	}
-	showInEditor(getLine(fileName, lineNumber));
     }
 
     /**

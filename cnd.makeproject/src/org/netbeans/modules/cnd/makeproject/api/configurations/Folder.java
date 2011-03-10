@@ -62,6 +62,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -147,7 +148,13 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
-        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath;
+        RemoteProject remoteProject = getProject().getLookup().lookup(RemoteProject.class);
+        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            AbsRootPath = remoteProject.resolveRelativeRemotePath(rootPath);
+        } else {
+            AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
+        }
         AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, getProject());
         FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
 //        if (folderFile == null) { // see IZ 194221
@@ -270,18 +277,18 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (log.isLoggable(Level.FINER)) {
                 log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
             }
-        }
-
-        try {
-            FileUtil.addFileChangeListener(this, folderFile);
-            if (log.isLoggable(Level.FINER)) {
-                log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
+            try {
+                FileUtil.addRecursiveListener(this, folderFile);
+                if (log.isLoggable(Level.FINER)) {
+                    log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
+                }
+            } catch (IllegalArgumentException iae) {
+                // Can happen if trying to attach twice...
+                if (log.isLoggable(Level.FINER)) {
+                    log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
+                }
             }
-        } catch (IllegalArgumentException iae) {
-            // Can happen if trying to attach twice...
-            if (log.isLoggable(Level.FINER)) {
-                log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
-            }
+            return;
         }
 
         // Repeast for all sub folders
@@ -1060,67 +1067,144 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        File file = CndFileUtils.toFile(fileObject);
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{file, getPath()}); // NOI18N
+        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject aParent = fileObject.getParent();
+        if (aParent.equals(thisFolder)) {
+            File file = CndFileUtils.toFile(fileObject);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{file, getPath()}); // NOI18N
+            }
+            //if (true) return;
+            if (!file.exists() || file.isDirectory()) {
+                return; // FIXUP: error
+            }
+            if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
+                fireChangeEvent(this, false);
+                return;
+            }
+            String itemPath = file.getPath();
+            itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
+            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            Item item = new Item(itemPath);
+            addItemAction(item, false);
+        } else {
+            while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
+                if (aParent.equals(thisFolder)) {
+                    for(Folder folder :getFolders()) {
+                        folder.fileDataCreated(fe);
+                    }
+                    return;
+                }
+                aParent = aParent.getParent();
+            }
         }
-        //if (true) return;
-        if (!file.exists() || file.isDirectory()) {
-            return; // FIXUP: error
-        }
-        if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
-            fireChangeEvent(this, false);
-            return;
-        }
-        String itemPath = file.getPath();
-        itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
-        Item item = new Item(itemPath);
-        addItemAction(item, false);
     }
 
     @Override
     public void fileFolderCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         assert fileObject.isFolder();
-        if (fileObject.isValid()) {
-            File file = CndFileUtils.toFile(fileObject);
-            if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject aParent = fileObject.getParent();
+        if (aParent.equals(thisFolder)) {
+            if (fileObject.isValid()) {
+                File file = CndFileUtils.toFile(fileObject);
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                }
+                if (!file.exists() || !file.isDirectory()) {
+                    // It is possible that short-living temporary folder is created while building project
+                    return;
+                }
+                /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
             }
-            if (!file.exists() || !file.isDirectory()) {
-                // It is possible that short-living temporary folder is created while building project
-                return;
+        } else {
+            while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
+                if (aParent.equals(thisFolder)) {
+                    for(Folder folder :getFolders()) {
+                        folder.fileFolderCreated(fe);
+                    }
+                    return;
+                }
+                aParent = aParent.getParent();
             }
-            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
         }
     }
 
     @Override
     public void fileDeleted(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        File file = CndFileUtils.toFile(fileObject);
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject aParent = fileObject.getParent();
+        if (aParent.equals(thisFolder)) {
+            File file = CndFileUtils.toFile(fileObject);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+            }
+            //if (true) return;
+            String path = getRootPath() + '/' + file.getName();
+            if (path.startsWith("./")) { // NOI18N
+                path = path.substring(2);
+            }
+            // Try item first
+            Item item = findItemByPath(path);
+            if (item != null) {
+                removeItemAction(item, false);
+                return;
+            }
+            // then folder
+            Folder folder = findFolderByName(file.getName());
+            if (folder != null) {
+                removeFolderAction(folder, false);
+                return;
+            }
+            fireChangeEvent(this, false);
+        } else {
+            while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
+                if (aParent.equals(thisFolder)) {
+                    for(Folder folder :getFolders()) {
+                        folder.fileDeleted(fe);
+                    }
+                    return;
+                }
+                aParent = aParent.getParent();
+            }
         }
-        //if (true) return;
-        String path = getRootPath() + '/' + file.getName();
-        if (path.startsWith("./")) { // NOI18N
-            path = path.substring(2);
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        FileObject fileObject = fe.getFile();
+        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
+        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject aParent = fileObject.getParent();
+        if (aParent.equals(thisFolder)) {
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------fileRenamed {0} in {1}", new Object[]{fileObject.getPath(), getPath()}); // NOI18N
+            }
+            // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
+            Folder folder = findFolderByName(fe.getName());
+            if (folder != null && folder.isDiskFolder()) {
+                // Add new Folder
+                Folder top = getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
+                // Copy all configurations
+                copyConfigurations(folder, top);
+                // Remove old folder
+                removeFolderAction(folder, false);
+            }
+        } else {
+            while (aParent != null && aParent.isValid() && !aParent.isRoot()) {
+                if (aParent.equals(thisFolder)) {
+                    for(Folder folder :getFolders()) {
+                        folder.fileRenamed(fe);
+                    }
+                }
+                aParent = aParent.getParent();
+            }
         }
-        // Try item first
-        Item item = findItemByPath(path);
-        if (item != null) {
-            removeItemAction(item, false);
-            return;
-        }
-        // then folder
-        Folder folder = findFolderByName(file.getName());
-        if (folder != null) {
-            removeFolderAction(folder, false);
-            return;
-        }
-        fireChangeEvent(this, false);
     }
 
     private void copyConfigurations(Folder src) {
@@ -1155,24 +1239,6 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (dstFolder != null) {
                 dstFolder.copyConfigurations(srcFolder);
             }
-        }
-    }
-
-    @Override
-    public void fileRenamed(FileRenameEvent fe) {
-        FileObject fileObject = fe.getFile();
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "------------fileRenamed {0} in {1}", new Object[]{fileObject.getPath(), getPath()}); // NOI18N
-        }
-        // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
-        Folder folder = findFolderByName(fe.getName());
-        if (folder != null && folder.isDiskFolder()) {
-            // Add new Folder
-            Folder top = getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
-            // Copy all configurations
-            copyConfigurations(folder, top);
-            // Remove old folder
-            removeFolderAction(folder, false);
         }
     }
 

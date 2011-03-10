@@ -34,9 +34,9 @@
                             <PHPDocNode start='14' end='20' value='$hello'/>
                         </Variable>
                         <Types>
-                            <PHPDocNode start='21' end='27' value='person'/>
-                            <PHPDocNode start='28' end='32' value='null'/>
-                            <PHPDocNode start='33' end='37' value='user'/>
+                            <PHPDocTypeNode start='21' end='27' value='person' isArray='false'/>
+                            <PHPDocTypeNode start='28' end='32' value='null' isArray='false'/>
+                            <PHPDocTypeNode start='33' end='37' value='user' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                 </Variable>
@@ -48,9 +48,9 @@
                             <PHPDocNode start='14' end='20' value='$hello'/>
                         </Variable>
                         <Types>
-                            <PHPDocNode start='21' end='27' value='person'/>
-                            <PHPDocNode start='28' end='32' value='null'/>
-                            <PHPDocNode start='33' end='37' value='user'/>
+                            <PHPDocTypeNode start='21' end='27' value='person' isArray='false'/>
+                            <PHPDocTypeNode start='28' end='32' value='null' isArray='false'/>
+                            <PHPDocTypeNode start='33' end='37' value='user' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                 </Variable>

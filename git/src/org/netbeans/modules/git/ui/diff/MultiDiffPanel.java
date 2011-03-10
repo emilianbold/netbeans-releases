@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.git.ui.diff;
 
+import javax.swing.UIManager;
+
 /**
  *
  * @author Maros Sandor
@@ -52,6 +54,14 @@ class MultiDiffPanel extends javax.swing.JPanel {
 
     public MultiDiffPanel () {
         initComponents();
+        
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            controlToolbar.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            jPanel3.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            jPanel4.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+        } 
     }
 
     /** This method is called from within the constructor to

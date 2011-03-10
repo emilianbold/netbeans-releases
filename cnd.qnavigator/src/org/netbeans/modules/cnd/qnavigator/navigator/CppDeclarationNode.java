@@ -473,6 +473,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     return null;
                 }
             }
+            if (CsmKindUtilities.isTemplate(element)) {
+                if (((CsmTemplate)element).isExplicitSpecialization()) {
+                    return null;
+                }
+            }
             node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model,lineNumberIndex);
             node.name = getClassifierName((CsmClassifier)element);
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
@@ -486,6 +491,8 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             if(CsmKindUtilities.isFunction(element)){
                 node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
                 node.name = CharSequences.create(CsmUtilities.getSignature((CsmFunction)element, true));
+            } else if(CsmKindUtilities.isFunctionExplicitInstantiation(element)) {
+                return null;
             } else {
                 CharSequence name = ((CsmDeclaration)element).getName();
                 if (name.length() == 0 && CsmKindUtilities.isVariable(element)){

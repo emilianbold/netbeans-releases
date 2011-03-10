@@ -69,6 +69,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -799,6 +800,28 @@ public final class WLPluginProperties {
         return false;
     }
 
+    @CheckForNull
+    public static File getMiddlewareHome(File platformRootFile) {
+        String mwHome = WLProductProperties.getMiddlewareHome(platformRootFile);
+        return getMiddlewareHome(platformRootFile, mwHome);
+    } 
+    
+    @CheckForNull
+    public static File getMiddlewareHome(@NonNull File platformRootFile, @NullAllowed String mwHome) {
+        File middleware = null;
+        if (mwHome != null) {
+            middleware = new File(mwHome);
+        }
+        if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
+            middleware = platformRootFile.getParentFile();
+        }
+
+        if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+            return middleware;
+        }
+        return null;
+    }     
+        
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
         if (null == candidate)
             return false;

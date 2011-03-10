@@ -46,7 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.maven.MavenSourcesImpl;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;

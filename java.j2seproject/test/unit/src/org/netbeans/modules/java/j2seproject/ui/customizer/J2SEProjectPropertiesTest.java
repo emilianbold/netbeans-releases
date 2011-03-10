@@ -69,7 +69,7 @@ public class J2SEProjectPropertiesTest extends NbTestCase {
     protected void setUp() throws Exception {
         MockLookup.setLayersAndInstances();
         clearWorkDir();
-        J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null);
+        J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null, false);
         p = (J2SEProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         pp = new J2SEProjectProperties(p, p.getUpdateHelper(), p.evaluator(), p.getReferenceHelper(), null);
     }

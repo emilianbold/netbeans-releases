@@ -44,26 +44,33 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.event.WindowAdapter;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.BrokenReferencesAlertPanel;
 import org.netbeans.modules.java.project.BrokenReferencesCustomizer;
 import org.netbeans.modules.java.project.BrokenReferencesModel;
 import org.netbeans.modules.java.project.JavaProjectSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 
@@ -83,11 +90,12 @@ import static org.netbeans.spi.java.project.support.ui.Bundle.*;
  */
 public class BrokenReferencesSupport {
 
-    /** Last time in ms when the Broken References alert was shown. */
-    private static long brokenAlertLastTime = 0;
+    private static final RequestProcessor RP = new RequestProcessor(BrokenReferencesSupport.class);
     
     /** Is Broken References alert shown now? */
-    private static boolean brokenAlertShown = false;
+    private static BrokenReferencesModel.Context context;
+
+    private static RequestProcessor.Task rpTask;
 
     /** Timeout within which request to show alert will be ignored. */
     private static int BROKEN_ALERT_TIMEOUT = 1000;
@@ -133,6 +141,7 @@ public class BrokenReferencesSupport {
      *    name is one and it is "platform.active". The name of the default
      *    platform is expected to be "default_platform" and this platform
      *    always exists.
+     * @see LibraryDefiner
      */
     @Messages({
         "LBL_BrokenLinksCustomizer_Close=Close",
@@ -175,81 +184,153 @@ public class BrokenReferencesSupport {
      * once for several subsequent calls during a timeout.
      * The alert box has also "show this warning again" check box.
      */
+    public static void showAlert() {
+        showAlertImpl(null);
+    }
+
+    /**
+     * Show alert message box informing user that a project has broken
+     * references. This method can be safely called from any thread, e.g. during
+     * the project opening, and it will take care about showing message box only
+     * once for several subsequent calls during a timeout.
+     * The alert box has also "show this warning again" check box and provides resolve
+     * broken references option
+     * @param projectHelper the {@link AntProjectHelper} used to resolve broken references
+     * @param referenceHelper the {@link ReferenceHelper} used to resolve broken references
+     * @param evaluator the {@link PropertyEvaluator} used to resolve broken references
+     * @param properties array of property names which values hold
+     *    references which may be broken. For example for J2SE project
+     *    the property names will be: "javac.classpath", "run.classpath", etc.
+     * @param platformProperties array of property names which values hold
+     *    name of the platform(s) used by the project. These platforms will be
+     *    checked for existence. For example for J2SE project the property
+     *    name is one and it is "platform.active". The name of the default
+     *    platform is expected to be "default_platform" and this platform
+     *    always exists.
+     * @since 1.37
+     */
+    
+    public static void showAlert(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final ReferenceHelper referenceHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String[] properties,
+            @NonNull final String[] platformProperties) {
+        Parameters.notNull("projectHelper", projectHelper);             //NOI18N
+        Parameters.notNull("referenceHelper", referenceHelper);         //NOI18N
+        Parameters.notNull("evaluator", evaluator);                     //NOI18N
+        Parameters.notNull("properties", properties);                   //NOI18N
+        Parameters.notNull("platformProperties", platformProperties);   //NOI18N
+        showAlertImpl(new BrokenReferencesModel.BrokenProject(projectHelper, referenceHelper, evaluator, properties, platformProperties));
+    }
+
+
     @Messages({
+        "CTL_Broken_References_Resolve=Resolve Problems...",
+        "AD_Broken_References_Resolve=N/A",
         "CTL_Broken_References_Close=Close",
         "AD_Broken_References_Close=N/A",
-        "MSG_Broken_References_Title=Open Project"
+        "MSG_Broken_References_Title=Open Project",
+        "LBL_Broken_References_Resolve_Panel_Close=Close",
+        "AD_Broken_References_Resolve_Panel_Close=N/A",
+        "LBL_Broken_References_Resolve_Panel_Title=Resolve Reference Problems"
     })
-    public static synchronized void showAlert() {
-        // Do not show alert if it is already shown or if it was shown
-        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
-        if (brokenAlertShown || 
-                brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
-                !JavaProjectSettings.isShowAgainBrokenRefAlert()) {
+    private static synchronized void showAlertImpl(@NullAllowed final BrokenReferencesModel.BrokenProject broken) {        
+        if (!JavaProjectSettings.isShowAgainBrokenRefAlert()) {
             return;
-        }
-        brokenAlertShown = true;
-        final Runnable task = new Runnable() {
-            public @Override void run() {
-                try {
-                    JButton closeOption = new JButton (CTL_Broken_References_Close());
-                    closeOption.getAccessibleContext().setAccessibleDescription(AD_Broken_References_Close());
-                    DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(),
-                        MSG_Broken_References_Title(),
-                        true,
-                        new Object[] {closeOption},
-                        closeOption,
-                        DialogDescriptor.DEFAULT_ALIGN,
-                        null,
-                        null); // NOI18N
-                    dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-                    Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-                    dlg.setVisible(true);
-                } finally {
+        } else if (context == null) {
+            assert rpTask == null;
+
+            final Runnable task = new Runnable() {
+                public @Override void run() {
                     synchronized (BrokenReferencesSupport.class) {
-                        brokenAlertLastTime = System.currentTimeMillis();
-                        brokenAlertShown = false;
+                        rpTask = null;
+                    }
+                    try {
+                        final JButton resolveOption = new JButton(CTL_Broken_References_Resolve());
+                        resolveOption.getAccessibleContext().setAccessibleDescription(AD_Broken_References_Resolve());
+                        JButton closeOption = new JButton (CTL_Broken_References_Close());
+                        closeOption.getAccessibleContext().setAccessibleDescription(AD_Broken_References_Close());
+                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(),
+                            MSG_Broken_References_Title(),
+                            true,
+                            new Object[] {resolveOption, closeOption},
+                            closeOption,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
+                        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+                        context.addChangeListener(new ChangeListener() {
+                            @Override
+                            public void stateChanged(ChangeEvent e) {
+                                resolveOption.setVisible(!context.isEmpty());
+                            }
+                        });
+                        resolveOption.setVisible(!context.isEmpty());
+                        if (DialogDisplayer.getDefault().notify(dd) == resolveOption) {
+                            final BrokenReferencesModel model = new BrokenReferencesModel(context, true);
+                            final BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
+                            JButton close = new JButton (Bundle.LBL_Broken_References_Resolve_Panel_Close());
+                            close.getAccessibleContext ().setAccessibleDescription (Bundle.AD_Broken_References_Resolve_Panel_Close());
+                            dd = new DialogDescriptor(customizer,
+                                Bundle.LBL_Broken_References_Resolve_Panel_Title(),
+                                true,
+                                new Object[] {DialogDescriptor.CANCEL_OPTION},
+                                DialogDescriptor.CANCEL_OPTION,
+                                DialogDescriptor.DEFAULT_ALIGN,
+                                null,
+                                null);
+                            Dialog dlg = null;
+                            try {
+                                dlg = DialogDisplayer.getDefault().createDialog(dd);
+                                dlg.setVisible(true);
+                            } finally {
+                                if (dlg != null) {
+                                    dlg.dispose();
+                                }
+                            }
+                        }
+                    } finally {
+                        synchronized (BrokenReferencesSupport.class) {
+                            //Clean seen references and start from empty list
+                            //Is it what we good from UI point of view?
+                            context = null;
+                        }
                     }
                 }
-            }
-        };
-        SwingUtilities.invokeLater(new Runnable() {
-            @SuppressWarnings("ResultOfObjectAllocationIgnored")
-            public @Override void run() {
-                Frame f = WindowManager.getDefault().getMainWindow();
-                if (f == null || f.isShowing()) {
-                    task.run();
+            };
+
+            context = new BrokenReferencesModel.Context();
+            rpTask = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    WindowManager.getDefault().invokeWhenUIReady(task);
                 }
-                else {
-                    new MainWindowListener (f,task);
-                }
-            }
-        });
-    }
-    
-    
-    private static class MainWindowListener extends WindowAdapter {
-        
-        private Frame frame;
-        private Runnable task;
-        
+            });
+        }
+
+        assert context != null;        
+        if (broken != null) {
+            context.offer(broken);
+        }
+        if (rpTask != null) {
+            //Not yet shown, move
+            rpTask.schedule(BROKEN_ALERT_TIMEOUT);
+        }
+    }            
+    /**
+     * Service which may be {@linkplain ServiceProvider registered} to download remote libraries or otherwise define them.
+     * @since org.netbeans.modules.java.project/1 1.35
+     */
+    public interface LibraryDefiner {
+
         /**
-         * Has to be called by the event thread!
-         *
+         * Checks to see if a missing library definition can be created.
+         * @param name a desired {@link Library#getName}
+         * @return a callback which may be run (asynchronously) to create and return a library with the given name, or null if not recognized
          */
-        public MainWindowListener (Frame frame, Runnable task) {
-            assert frame != null && task != null;
-            assert SwingUtilities.isEventDispatchThread();
-            this.frame = frame;
-            this.task = task;
-            frame.addWindowListener(this);
-        }
-        
-        public @Override void windowOpened(java.awt.event.WindowEvent e) {
-            MainWindowListener.this.frame.removeWindowListener (this);
-            SwingUtilities.invokeLater(this.task);
-        }
+        @CheckForNull Callable<Library> missingLibrary(String name);
+
     }
-    
     
 }

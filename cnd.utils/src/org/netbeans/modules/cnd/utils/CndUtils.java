@@ -129,6 +129,12 @@ public class CndUtils {
         }
     }
 
+    public static void assertNotNullInConsole(Object object, String message) {
+        if (isDebugMode()) {
+            assertTrueInConsole(object != null, message); //NOI18N
+        }
+    }
+
     public static void assertNull(Object object, String message) {
         if (isDebugMode()) {
             assertTrue(object == null, message); //NOI18N

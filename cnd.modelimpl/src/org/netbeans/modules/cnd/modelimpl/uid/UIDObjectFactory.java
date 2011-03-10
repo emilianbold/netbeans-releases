@@ -57,9 +57,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -71,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl.FileNameSortedKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentDeclarations.OffsetSortedKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentMacros.NameSortedKey;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentReferences.ReferenceImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
@@ -331,6 +334,13 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         HelperMacrosSortedMap helper = new HelperMacrosSortedMap(this, aStream, manager);
         return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>(helper);
     }
+
+    public TreeMap<ReferenceImpl, CsmUID<CsmObject>> readReferencesSortedToUIDMap(DataInput aStream, CsmUID<CsmFile> fileUID) throws IOException {
+        assert aStream != null;
+        HelperReferencesSortedMap helper = new HelperReferencesSortedMap(this, aStream, fileUID);
+        return new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(helper);
+    }
+
 
     public TreeMap<NamespaceImpl.FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> readNameSortedToUIDMap2(DataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
@@ -1419,6 +1429,191 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 }
                 @Override
                 public boolean addAll(Collection<? extends Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean retainAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean removeAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public void clear() {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+            };
+        }
+    }
+    
+    private static final Comparator<ReferenceImpl> ReferenceComparator = new Comparator<ReferenceImpl>() {
+        @Override
+       public int compare(ReferenceImpl o1, ReferenceImpl o2) {
+            return o1.compareTo(o2);
+        }
+    };
+
+    private static final class HelperReferencesSortedMap implements SortedMap<ReferenceImpl, CsmUID<CsmObject>> {
+        private final DataInput aStream;
+        private final int size;
+        private final UIDObjectFactory factory;
+        private final CsmUID<CsmFile> fileUID;
+
+        private HelperReferencesSortedMap(UIDObjectFactory factory, DataInput aStream, CsmUID<CsmFile> fileUID) throws IOException {
+            size = aStream.readInt();
+            this.aStream = aStream;
+            this.factory = factory;
+            this.fileUID = fileUID;
+        }
+        @Override
+        public Comparator<? super ReferenceImpl> comparator() {
+            return ReferenceComparator;
+        }
+        @Override
+        public SortedMap<ReferenceImpl, CsmUID<CsmObject>> subMap(ReferenceImpl fromKey, ReferenceImpl toKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public SortedMap<ReferenceImpl, CsmUID<CsmObject>> headMap(ReferenceImpl toKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public SortedMap<ReferenceImpl, CsmUID<CsmObject>> tailMap(ReferenceImpl fromKey) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public ReferenceImpl firstKey() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public ReferenceImpl lastKey() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public int size() {
+            return size;
+        }
+        @Override
+        public boolean isEmpty() {
+            return size > 0;
+        }
+        @Override
+        public boolean containsKey(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public boolean containsValue(Object value) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public CsmUID<CsmObject> get(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public CsmUID<CsmObject> put(ReferenceImpl key, CsmUID<CsmObject> value) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public CsmUID<CsmObject> remove(Object key) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public void putAll(Map<? extends ReferenceImpl, ? extends CsmUID<CsmObject>> t) {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public Set<ReferenceImpl> keySet() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public Collection<CsmUID<CsmObject>> values() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+        @Override
+        public Set<Entry<ReferenceImpl, CsmUID<CsmObject>>> entrySet() {
+            return new Set<Entry<ReferenceImpl, CsmUID<CsmObject>>>(){
+                @Override
+                public int size() {
+                    return size;
+                }
+                @Override
+                public boolean isEmpty() {
+                    return size > 0;
+                }
+                @Override
+                public boolean contains(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public Iterator<Entry<ReferenceImpl, CsmUID<CsmObject>>> iterator() {
+                    return new Iterator<Entry<ReferenceImpl, CsmUID<CsmObject>>>(){
+                        private int current = 0;
+                        @Override
+                        public boolean hasNext() {
+                            return current < size;
+                        }
+                        @Override
+                        public Entry<ReferenceImpl, CsmUID<CsmObject>> next() {
+                            if (current < size) {
+                                current++;
+                                try {
+                                    final CsmUID<CsmObject> uid = factory.<CsmObject>readUID(aStream);
+                                    assert uid != null;
+                                    final ReferenceImpl key = new ReferenceImpl(fileUID, uid, factory, aStream);
+                                    assert key != null;
+                                    return new Map.Entry<ReferenceImpl, CsmUID<CsmObject>>(){
+                                        @Override
+                                        public ReferenceImpl getKey() {
+                                            return key;
+                                        }
+                                        @Override
+                                        public CsmUID<CsmObject> getValue() {
+                                            return uid;
+                                        }
+                                        @Override
+                                        public CsmUID<CsmObject> setValue(CsmUID<CsmObject> value) {
+                                            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                                        }
+                                    };
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            return null;
+                        }
+                        @Override
+                        public void remove() {
+                            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                        }
+                    };
+                }
+                @Override
+                public Object[] toArray() {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public <T> T[] toArray(T[] a) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean add(Entry<ReferenceImpl, CsmUID<CsmObject>> o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean remove(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean containsAll(Collection<?> c) {
+                    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+                }
+                @Override
+                public boolean addAll(Collection<? extends Entry<ReferenceImpl, CsmUID<CsmObject>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
                 @Override

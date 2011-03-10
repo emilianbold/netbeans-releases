@@ -109,7 +109,7 @@ public class UpdateDisabledModuleTest extends NbTestCase {
         
         File middle = new File(install, "middle");
         File last = new File(install, "last");
-        System.setProperty("netbeans.dirs", middle.getPath() + ":" + last.getPath());
+        System.setProperty("netbeans.dirs", middle.getPath() + File.pathSeparator + last.getPath());
         
         final String fn = moduleCodeNameBaseForTest().replace('.', '-') + ".xml";
         File conf = new File(new File(new File(middle, "config"), "Modules"), fn);

@@ -48,12 +48,12 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * <pre>e.g.<pre> @return MyClass::CONST
  * @author Petr Pisl
  */
-public class PHPDocStaticAccessType extends PHPDocNode {
+public class PHPDocStaticAccessType extends PHPDocTypeNode {
     private final PHPDocNode className;
     private final PHPDocNode constant;
     
     public PHPDocStaticAccessType (int start, int end, String value, PHPDocNode className, PHPDocNode constant) {
-        super(start, end, value);
+        super(start, end, value, false);
         this.className = className;
         this.constant = constant;
     }

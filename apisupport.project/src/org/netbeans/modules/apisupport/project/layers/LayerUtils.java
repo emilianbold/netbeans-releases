@@ -67,6 +67,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -470,7 +472,7 @@ public class LayerUtils {
      * @throws IOException if there were problems loading layers, etc.
      * @see "#62257"
      */
-    public static FileSystem getEffectiveSystemFilesystem(Project p) throws IOException {
+    public static @NonNull FileSystem getEffectiveSystemFilesystem(Project p) throws IOException {
         
             NbModuleProvider.NbModuleType type = Util.getModuleType(p);
             FileSystem projectLayer = LayerHandle.forProject(p).layer(false);
@@ -551,7 +553,7 @@ public class LayerUtils {
      * @param Project, must contain {@link NbModuleProvider} in lookup.
      * @return Platform for project
      */
-    public static NbPlatform getPlatformForProject(Project project) {
+    public static @CheckForNull NbPlatform getPlatformForProject(Project project) {
         NbModuleProvider mod = project.getLookup().lookup(NbModuleProvider.class);
         NbPlatform platform = null;
         File platformDir = mod.getActivePlatformLocation();
@@ -648,7 +650,7 @@ public class LayerUtils {
      * Create a merged filesystem from one writable layer (may be null) and some read-only layers.
      * You should also pass a classpath that can be used to look up resource bundles and icons.
      */
-    private static FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers) {
+    private static @NonNull FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers) {
         if (writableLayer == null) {
             writableLayer = new XMLFileSystem();
         }

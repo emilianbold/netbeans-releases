@@ -253,6 +253,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
 
                 List<Dependency> deps = plug.getDependencies();
                 final MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                online.setUpLegacySupport();
 
                 //TODO: check alternative for deprecated maven components
                 final MavenProjectBuilder builder = online.lookupComponent(MavenProjectBuilder.class);
@@ -270,6 +271,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                             public void run() {
                                 try {
                                     //TODO add progress bar.
+                                    // XXX does online.resolve(...) not suffice?
                                     builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
                                     synchronized (AuxPropsImpl.this) {
                                         recheck = true;

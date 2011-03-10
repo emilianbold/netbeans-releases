@@ -55,7 +55,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -144,7 +144,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
                 EngineType projectDebuggerType = DebuggerManager.debuggerType(conf);
 
                 String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
-                path = HostInfoProvider.getMapper(exEnv).getRemotePath(path, true);
+                path = RemoteSyncSupport.getPathMap(exEnv, project).getRemotePath(path, true);
 
                 if (projectDebuggerType != null) {
                     // do not change the original configuration!

@@ -60,6 +60,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -97,6 +98,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
 
 /**
@@ -333,7 +335,7 @@ public class HgCommand {
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
     private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
-    private static final String ENCODING = getEncoding();
+    public static final String ENCODING = getEncoding();
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -400,7 +402,9 @@ public class HgCommand {
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
     }
     private static final String HG_FLAG_TOPO = "--topo"; //NOI18N
-
+    
+    private static final String CMD_EXE = "cmd.exe"; //NOI18N
+    
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -879,26 +883,27 @@ public class HgCommand {
 
     private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails, OutputLogger logger){
         String proxy = null;
-        if(defaultPath != null &&
-                (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
-            HgProxySettings ps = new HgProxySettings();
-            if (ps.isManualSetProxy()) {
-                if ((defaultPath.startsWith("http:") && !ps.getHttpHost().equals(""))||
-                    (defaultPath.startsWith("https:") && !ps.getHttpHost().equals("") && ps.getHttpsHost().equals(""))) { // NOI18N
-                    proxy = ps.getHttpHost();
-                    if (proxy != null && !proxy.equals("")) {
-                        proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
-                    } else {
-                        proxy = null;
-                    }
-                } else if (defaultPath.startsWith("https:") && !ps.getHttpsHost().equals("")) { // NOI18N
-                    proxy = ps.getHttpsHost();
-                    if (proxy != null && !proxy.equals("")) {
-                        proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
-                    } else {
-                        proxy = null;
-                    }
-                }
+        if( defaultPath != null &&
+           (defaultPath.startsWith("http:") ||                                  // NOI18N
+            defaultPath.startsWith("https:")))                                  // NOI18N
+        { 
+        
+            URI uri = null;
+            try {
+                uri = new URI(defaultPath);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+        
+            String proxyHost = NetworkSettings.getProxyHost(uri);
+
+            // check DIRECT connection
+            if(proxyHost != null && proxyHost.length() > 0) {
+                proxy = proxyHost;
+                String proxyPort = NetworkSettings.getProxyPort(uri);
+                assert proxyPort != null;
+
+                proxy += !proxyPort.equals("") ? ":" + proxyPort : ""; // NOI18N
             }
         }
         if(proxy != null && bOutputDetails){
@@ -2873,7 +2878,7 @@ public class HgCommand {
                 return runWithoutIndexing(new Callable<List<String>>() {
                     @Override
                     public List<String> call() throws Exception {
-                        return exec(command, pb);
+                        return exec(commandLine, pb);
                     }
                 }, Collections.singletonList(repository), hgCommand);
             } else {
@@ -3129,7 +3134,27 @@ public class HgCommand {
             first = false;
         }
         assert !result.isEmpty();
+        modifyArguments(result);
         return result;
+    }
+    
+    private static void modifyArguments (List<String> result) {
+        if (CMD_EXE.equals(result.get(0))) {
+            // it seems that when running a command in a win cmd.exe, the command needs to be passed as a single parameter
+            // and all spaces in it's arguments need to be enclosed in double-quotes
+            StringBuilder commandArg = new StringBuilder();
+            int pos = 0;
+            for (ListIterator<String> it = result.listIterator(); it.hasNext(); ++pos) {
+                String arg = it.next();
+                if (pos >= 2) {
+                    it.remove();
+                    commandArg.append(arg.replace(" ", "\" \"")).append(' '); //NOI18N
+                }
+            }
+            assert result.size() == 2;
+            int len = commandArg.length();
+            result.add((len == 0 ? commandArg : commandArg.delete(len - 1, len)).toString());
+        }
     }
 
     /**
@@ -3190,7 +3215,7 @@ public class HgCommand {
         if (Utilities.isWindows() && !launcherPath.endsWith(HG_WINDOWS_EXE)) {
             /* handle .bat and .cmd files: */
             result = new ArrayList<String>(3);
-            result.add("cmd.exe");                                      //NOI18N
+            result.add(CMD_EXE);
             result.add("/C");                                           //NOI18N
             result.add(launcherPath);
             return result;

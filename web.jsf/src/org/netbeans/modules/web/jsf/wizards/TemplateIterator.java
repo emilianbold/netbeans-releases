@@ -29,15 +29,17 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -93,6 +95,10 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + templateFile), ENCODING);
             result = FileUtil.createData(targetDir, TEMPLATE_XHTML); //NOI18N
             JSFFrameworkProvider.createFile(result, content, ENCODING); //NOI18N
+            DataObject dob = DataObject.find(result);
+            if (dob != null) {
+                JSFPaletteUtilities.reformat(dob);
+            }
         }
         return result;
     }
@@ -157,7 +163,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 });
 
                 FileObject target = df.getPrimaryFile().getFileObject(targetName, XHTML_EXT);
-                return Collections.singleton(DataObject.find(target));
+                DataObject dob = DataObject.find(target);
+                JSFPaletteUtilities.reformat(dob);
+                return Collections.singleton(dob);
             }
         }
         return Collections.EMPTY_SET;
@@ -241,9 +249,10 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         else
             sourceGroups = sourceGroups1;
         
-        templatePanel=new TemplatePanel(wiz);
+        templatePanel = new TemplatePanel(wiz);
         // creates simple wizard panel with bottom panel
-        WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project,sourceGroups,templatePanel);
+        WizardDescriptor.Panel firstPanel = new ValidationPanel(
+                Templates.createSimpleTargetChooser(project,sourceGroups,templatePanel));
         JComponent c = (JComponent)firstPanel.getComponent();
         Dimension d  = c.getPreferredSize();
         d.setSize(d.getWidth(), d.getHeight()+65);
@@ -269,5 +278,32 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
+    }
+
+    /**
+     * A panel which checks that the target project has a valid server set
+     * otherwise it warn user about that fact.
+     */
+    private class ValidationPanel extends DelegatingWizardDescriptorPanel {
+
+        private ValidationPanel(WizardDescriptor.Panel delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public boolean isValid() {
+            Project project = getProject();
+            WizardDescriptor wizardDescriptor = getWizardDescriptor();
+
+            if (super.isValid()) {
+                // check thatthis project has a valid target server
+                if (!Util.isValidServerInstance(project)) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                            NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
+                }
+                return true;
+            }
+            return false;
+        }
     }
 }

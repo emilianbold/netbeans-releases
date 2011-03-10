@@ -1192,7 +1192,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return true;
     }
 
-    private boolean isCacheFile(FileObject f) {
+    public boolean isCacheFile(FileObject f) {
         return FileUtil.isParentOf(CacheFolder.getCacheFolder(), f);
     }
 
@@ -3031,7 +3031,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // check for differencies from the initialState
                     final Map<URL,List<URL>> removed = new HashMap<URL,List<URL>>();
                     final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
+                    final Map<URL,List<URL>> removedPeers = new HashMap<URL,List<URL>>();
+                    final Map<URL,List<URL>> addedOrChangedPeers = new HashMap<URL,List<URL>>();
                     diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
+                    diff(depCtx.initialRoots2Peers, depCtx.newRoots2Peers, addedOrChangedPeers, removedPeers);
+
 
                     final Level logLevel = Level.FINE;
                     if (LOGGER.isLoggable(logLevel) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
@@ -3048,8 +3052,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
-                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());                                                
-//                    depCtx.fullRescanSourceRoots = new HashSet<URL>(addedOrChanged.keySet()); - probably unneeded, only hurts performance. The indexer should be responsible for dependencies.
+                    final Set<URL> toScan = new HashSet<URL>(addedOrChanged.keySet());
+                    toScan.addAll(addedOrChangedPeers.keySet());
+                    depCtx.newRootsToScan.retainAll(toScan);
                 }
             } else {
                 restarted = true;
@@ -3572,6 +3577,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         } else {
                             LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
                         }
+
+                        followUpWorksSorted = false;
                         
                         if (!scheduled && protectedOwners.isEmpty()) {
                             scheduled = true;
@@ -3788,6 +3795,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         // -------------------------------------------------------------------
 
         private final List<Work> todo = new LinkedList<Work>();
+        private boolean followUpWorksSorted = true;
         private Work workInProgress = null;
         private Work cancelledWork = null;
         private boolean scheduled = false;
@@ -3851,6 +3859,47 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Work w;
                 if (!cancelled && protectedOwners.isEmpty() && todo.size() > 0) {
                     w = todo.remove(0);
+
+                    if (w instanceof FileListWork && ((FileListWork) w).isFollowUpJob() && !followUpWorksSorted) {
+                        Map<URL, List<FileListWork>> toSort = new HashMap<URL, List<FileListWork>>();
+
+                        toSort.put(((FileListWork) w).root, new LinkedList<FileListWork>(Arrays.asList((FileListWork) w)));
+                        
+                        for (Iterator<Work> it = todo.iterator(); it.hasNext(); ) {
+                            Work current = it.next();
+
+                            if (current instanceof FileListWork && ((FileListWork) current).isFollowUpJob()) {
+                                List<FileListWork> currentWorks = toSort.get(((FileListWork) current).root);
+
+                                if (currentWorks == null) {
+                                    toSort.put(((FileListWork) current).root, currentWorks = new LinkedList<FileListWork>());
+
+                                }
+
+                                currentWorks.add((FileListWork) current);
+                                it.remove();
+                            }
+                        }
+
+                        List<URL> sortedRoots;
+
+                        try {
+                            sortedRoots = new ArrayList<URL>(org.openide.util.Utilities.topologicalSort(toSort.keySet(), getDefault().scannedRoots2Dependencies));
+                        } catch (TopologicalSortException tse) {
+                            LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
+                            @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
+                            sortedRoots = new ArrayList<URL>(partialSort);
+                        }
+
+                        Collections.reverse(sortedRoots);
+
+                        for (URL url : sortedRoots) {
+                            todo.addAll(toSort.get(url));
+                        }
+
+                        followUpWorksSorted = true;
+                        w = todo.remove(0);
+                    }
                 } else {
                     w = null;
                 }

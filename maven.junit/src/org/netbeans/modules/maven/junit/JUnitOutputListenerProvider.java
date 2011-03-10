@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.junit;
 
 import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
-import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +53,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -73,8 +73,6 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -87,7 +85,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private Pattern runningPattern;
     private Pattern outDirPattern2;
     private Pattern outDirPattern;
-    String outputDir;
+    private File outputDir;
     String runningTestClass;
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
@@ -115,20 +113,19 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         Matcher match = outDirPattern.matcher(line);
         if (match.matches()) {
-            outputDir = match.group(1);
+            outputDir = new File(match.group(1));
             return;
         }
         match = outDirPattern2.matcher(line);
         if (match.matches()) {
-            outputDir = match.group(1);
+            outputDir = new File(match.group(1));
             return;
         }
         
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
-                FileObject report = getTestReportFileObject(outputDir, "TEST-" + runningTestClass + ".xml"); //NOI18N
-                generateTest(report);
+                generateTest();
             }
             runningTestClass = match.group(1);
             return;
@@ -172,8 +169,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            FileObject report = getTestReportFileObject(outputDir, "TEST-" + runningTestClass + ".xml"); //NOI18N
-            generateTest(report);
+            generateTest();
         }
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;
@@ -203,33 +199,19 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         return t;
     }
 
-    private FileObject getTestReportFileObject(String outputDirectory, String reportFileName) {
-        assert outputDirectory != null;
-        File file = FileUtil.normalizeFile(new File(outputDir));
-        FileUtil.refreshFor(file);
-        FileObject outDir = FileUtil.toFileObject(file);
-        if (outDir != null) {
-            FileObject report = outDir.getFileObject(reportFileName);
-            return report;
-        }
-        return null;
-    }
-
-
-
     public @Override void sequenceFail(String sequenceId, OutputVisitor visitor) {
         sequenceEnd(sequenceId, visitor);
     }
 
     
-    private void generateTest(FileObject report) {
-        if (report == null) {
+    private void generateTest() {
+        File report = new File(outputDir, "TEST-" + runningTestClass + ".xml");
+        if (!report.isFile()) {
             return;
         }
         try {
             SAXBuilder builder = new SAXBuilder();
-            InputStream stream = report.getInputStream();
-            Document document = builder.build(stream);
+            Document document = builder.build(report);
             Element testSuite = document.getRootElement();
             assert "testsuite".equals(testSuite.getName()) : "Root name " + testSuite.getName(); //NOI18N
             TestSuite suite = new TestSuite(testSuite.getAttributeValue("name"));
@@ -278,6 +260,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
+            File output = new File(outputDir, runningTestClass + "-output.txt");
+            if (output.isFile()) {
+                Manager.getInstance().displayOutput(session, FileUtils.fileRead(output), false);
+            }
         } catch (JDOMException x) {
             LOG.log(Level.INFO, "parsing " + report, x);
         } catch (Exception x) {

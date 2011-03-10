@@ -582,7 +582,7 @@ made subject to such option by the copyright holder.
                           extralibs="extra.test.libs.short"
                           extralibsdir="${extra.test.libs.dir}"
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/> <!-- for pre-7.0 and NB.org projects -->
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir" excluded="${netbeans.dest.dir}/extra"/> <!-- for pre-7.0 and NB.org projects -->
                 <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
                 <!-- XXX this will not be right on Macs: -->
                 <replacement dir="${nbjdk.home}/jre" name="java.home"/>
@@ -758,6 +758,7 @@ made subject to such option by the copyright holder.
                         <fileset dir="${ant.home}" includes="patches/*.jar"/>
                         <pathelement location="${ant.home}/lib/ant.jar"/>
                         <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+                        <pathelement location="${ant.home}/lib/ant-junit4.jar"/>
                     </classpath>
                     <jvmarg line="${test.bootclasspath.prepend.args}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
@@ -994,6 +995,7 @@ made subject to such option by the copyright holder.
         <delete includeemptydirs="true" failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->
             <fileset dir="${cluster}">
                 <patternset refid="module.files"/>
+                <exclude name="config/Modules/${code.name.base.dashes}.xml" if="${do.not.clean.module.config.xml}"/>
             </fileset>
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>

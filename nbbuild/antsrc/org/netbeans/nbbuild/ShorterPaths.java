@@ -44,8 +44,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Hashtable;
@@ -53,8 +51,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes.Name;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Replace paths prefixes with variables. 
@@ -68,6 +70,7 @@ public class ShorterPaths extends Task {
     public static class Replacement {
         String name; 
         File dir;
+        File excluded;
         
         public void setName(String name) {
             this.name = name;
@@ -75,10 +78,13 @@ public class ShorterPaths extends Task {
         public void setDir(File dir) {
             this.dir = dir;
         }
+        public void setExcluded(File excluded) {
+            this.excluded = excluded;
+        }
 
         @Override
         public String toString() {
-            return dir + " => ${" + name + "}";
+            return dir + (excluded != null ? " - " + excluded : "") + " => ${" + name + "}";
         }
     }
     private List<Replacement> replacements = new LinkedList<Replacement>(); // List<Nestme>
@@ -226,7 +232,7 @@ public class ShorterPaths extends Task {
            path = file.getAbsolutePath();
            for (Replacement repl: replacements) {
                 String dirCan = repl.dir.getCanonicalPath();
-                if (path.startsWith(dirCan)) {
+                if (path.startsWith(dirCan) && (repl.excluded == null || !path.startsWith(repl.excluded.getCanonicalPath()))) {
                     if (nbLibBuff.length() > 0 ) {
                         nbLibBuff.append(":\\\n");
                     }  
@@ -267,21 +273,39 @@ public class ShorterPaths extends Task {
     }
 
     private String copyExtraLib(File file) throws IOException{
-        String name = null;
-        if (this.extraLibsDir != null && extraLibsDir.isDirectory() && file.isFile()) {
-            log("Copying " + file + " to extralibs despite " + replacements);
-            name = file.getName();
-            byte buff[] = new byte[100000];
-            FileInputStream fis = new FileInputStream(file);
-            FileOutputStream fos = new FileOutputStream(new File (extraLibsDir,name));
-            int size = 0;
-            while ((size = fis.read(buff)) > 0 ) {
-                fos.write(buff,0,size);
-            }
-            fos.close();
-            fis.close();
+        if (extraLibsDir == null || !extraLibsDir.isDirectory() || !file.isFile()) {
+            return null;
         }
-        return name;
+        File copy = new File(extraLibsDir, file.getName());
+        if (FileUtils.getFileUtils().contentEquals(file, copy)) {
+            return file.getName();
+        } else if (copy.isFile()) {
+            // Could try to copy to a different name, but this is probably something that should be fixed anyway:
+            throw new IOException(file + " is not the same as " + copy + "; will not overwrite");
+        }
+        log("Copying " + file + " to extralibs despite " + replacements);
+        FileUtils.getFileUtils().copyFile(file, copy);
+        if (file.getName().endsWith(".jar")) {
+            String cp;
+            try {
+                JarFile jf = new JarFile(file);
+                try {
+                    Manifest manifest = jf.getManifest();
+                    cp = manifest != null ? manifest.getMainAttributes().getValue(Name.CLASS_PATH) : null;
+                } finally {
+                    jf.close();
+                }
+            } catch (IOException x) {
+                log("Could not parse " + file + " for Class-Path", Project.MSG_WARN);
+                cp = null;
+            }
+            if (cp != null) {
+                for (String ext : cp.split(" ")) {
+                    copyExtraLib(new File(file.getParentFile(), ext));
+                }
+            }
+        }
+        return copy.getName();
     }
  
     

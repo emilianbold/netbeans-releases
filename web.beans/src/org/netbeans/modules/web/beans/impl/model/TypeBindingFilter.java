@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -52,6 +53,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+
+import org.netbeans.modules.web.beans.impl.model.AbstractAssignabilityChecker.AssignabilityType;
+
 
 
 /**
@@ -65,11 +70,12 @@ class TypeBindingFilter extends Filter<TypeElement> {
         return new TypeBindingFilter();
     }
     
-    void init( TypeMirror varType , String name, WebBeansModelImplementation modelImpl )
+    void init( TypeMirror varType , Element injectionPoint, WebBeansModelImplementation modelImpl )
     {
-        mySimpleName = name;
+        mySimpleName = injectionPoint.getSimpleName().toString();
         myImpl = modelImpl;
         myVarType = varType;
+        myInjectionPoint = injectionPoint;
         
         setIsGeneric();
     }
@@ -103,16 +109,42 @@ class TypeBindingFilter extends Filter<TypeElement> {
         }
     }
     
-    boolean isAssignable( TypeMirror type ){
-        if ( !isGeneric && getImplementation().getHelper().getCompilationController().
-                getTypes().isAssignable( type, getType()))
-        {
-            WebBeansModelProviderImpl.LOGGER.fine("Found type  " +type+
-                    " for variable element " +mySimpleName + 
-                    " by typesafe resolution");                 // NOI18N
-            return true;
+    /*
+     * <code>type</code> type for assignability check,
+     * <code>sourceElement</code> the element which the source of the <code>type</code>.
+     * The latter element could be either Type element or production element.
+     */
+    boolean isAssignable( TypeMirror type , Element sourceElement ){
+        if ( !isGeneric ) {
+            Collection<TypeMirror> restrictedTypes = RestrictedTypedFilter.
+                getRestrictedTypes(sourceElement, getImplementation());
+            if ( restrictedTypes == null ){
+                if ( getImplementation().getHelper().
+                        getCompilationController().getTypes().isAssignable( 
+                                type, getType()))
+                    {
+                        WebBeansModelProviderImpl.LOGGER.fine("Found type  " 
+                                +type+ " for variable element " +mySimpleName + 
+                                " by typesafe resolution");                 // NOI18N
+                        return true;                    
+                    }
+            }
+            else {
+                Types types = getImplementation().getHelper().
+                    getCompilationController().getTypes();
+                for( TypeMirror restrictedType : restrictedTypes ){
+                    if ( types.isSameType( types.erasure( getType()), 
+                            types.erasure( restrictedType)))
+                    {
+                        WebBeansModelProviderImpl.LOGGER.fine("Found type  " 
+                                +type+" for variable element " +mySimpleName + 
+                            " by typesafe resolution");                 // NOI18N
+                        return true; 
+                    }
+                }
+            }
         }
-        else if ( checkAssignability(  type  )){
+        if ( checkAssignability(  type  , sourceElement )){
             WebBeansModelProviderImpl.LOGGER.fine("Probably found " +
                     "castable parametrizied or raw type " +
                     type+" for variable element " +mySimpleName+ 
@@ -124,7 +156,7 @@ class TypeBindingFilter extends Filter<TypeElement> {
     
     private void setIsGeneric(){
         Element typeElement = getImplementation().getHelper().
-        getCompilationController().getTypes().asElement(getType());
+            getCompilationController().getTypes().asElement(getType());
     
         isGeneric = (typeElement instanceof TypeElement) &&
             ((TypeElement)typeElement).getTypeParameters().size() != 0;
@@ -136,26 +168,39 @@ class TypeBindingFilter extends Filter<TypeElement> {
             iterator.hasNext(); )
         {
             TypeElement type = iterator.next();
-            if ( !isAssignable(type.asType())){
+            if ( !isAssignable(type.asType() , type )){
                 iterator.remove();
             }
         }
     }
     
-    private boolean checkAssignability( TypeMirror type )
-    {
+    private boolean checkAssignability( TypeMirror type, Element originalElement ){
         if ( !(type instanceof ReferenceType )){
             return false;
         }
-        AssignabilityChecker checker = AssignabilityChecker.get( false );
+        Element injectionPoint = getInjectionPoint();
+        AssignabilityType assignType = AssignabilityType.PLAIN;
+        if ( injectionPoint != null && AnnotationObjectProvider.
+                hasAnnotation(injectionPoint, 
+                        FieldInjectionPointLogic.DELEGATE_ANNOTATION, 
+                        getImplementation().getHelper()))
+        {
+            assignType = AssignabilityType.DECORATOR;
+        }
+        AbstractAssignabilityChecker checker = AbstractAssignabilityChecker.get( 
+                assignType);
         checker.init((DeclaredType)getType(),  (ReferenceType)type, 
-                getImplementation());
+                originalElement, getImplementation());
         return checker.check();
     }
     
     
     private TypeMirror getType(){
         return myVarType;
+    }
+    
+    private Element getInjectionPoint(){
+        return myInjectionPoint;
     }
     
     private WebBeansModelImplementation getImplementation(){
@@ -166,5 +211,6 @@ class TypeBindingFilter extends Filter<TypeElement> {
     private WebBeansModelImplementation myImpl;
     private String mySimpleName;
     private boolean isGeneric;
+    private Element myInjectionPoint;
     
 }

@@ -182,7 +182,6 @@ public class PushDownTransformer extends RefactoringVisitor {
                         TreePath path = workingCopy.getTrees().getPath(member);
                         Tree memberTree = genUtils.importComments(path.getLeaf(), path.getCompilationUnit());
                         memberTree = genUtils.importFQNs(memberTree);
-                        RetoucheUtils.copyJavadoc(member, memberTree, workingCopy);
                         if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
                             MethodTree oldOne = (MethodTree) memberTree;
                             MethodTree m = make.Method(

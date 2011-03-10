@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.remote.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -107,7 +107,17 @@ public final class FileSystemProvider {
         return null;
     }
 
-    public static boolean waitWrites(ExecutionEnvironment env, List<String> failedFiles) throws InterruptedException {
+    public static boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.waitWrites(env, filesToWait, failedFiles);
+            }
+        }
+        noProvidersWarning(env);
+        return true;
+    }
+    
+    public static boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(env)) {
                 return provider.waitWrites(env, failedFiles);
@@ -124,6 +134,16 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(env);
+        return FileUtil.normalizePath(absPath); // or should it return just absPath?
+    }
+
+    public static String normalizeAbsolutePath(String absPath, FileSystem fileSystem) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.normalizeAbsolutePath(absPath, fileSystem);
+            }
+        }
+        noProvidersWarning(fileSystem);
         return FileUtil.normalizePath(absPath); // or should it return just absPath?
     }
 
@@ -150,6 +170,19 @@ public final class FileSystemProvider {
         } else {
             return baseFileObject.getFileObject(relativeOrAbsolutePath);
         }
+    }
+    
+    /**
+     * Just a convenient shortcut
+     */
+    public static FileObject getFileObject(ExecutionEnvironment env, String absPath) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.getFileSystem(env, "/").findResource(absPath);
+            }
+        }
+        noProvidersWarning(env);
+        return FileUtil.toFileObject(FileUtil.normalizeFile(new File(absPath)));
     }
 
     public static FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
@@ -181,6 +214,15 @@ public final class FileSystemProvider {
         return absPath;
     }
 
+    public static boolean isAbsolute(ExecutionEnvironment env,  String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.isAbsolute(path);
+            }
+        }
+        return true; // for other file system, let us return true - or should it be false? 
+    }
+    
     public static boolean isAbsolute(String path) {
         if (path == null || path.length() == 0) {
             return false;
@@ -195,6 +237,23 @@ public final class FileSystemProvider {
         }
     }
 
+    /**
+     * JFileChooser works in the term of files.
+     * For such "perverted" files FileUtil.toFileObject won't work.
+     * @param file
+     * @return 
+     */
+    public static FileObject fileToFileObject(File file) {
+        Parameters.notNull("file", file);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(file)) {
+                return provider.fileToFileObject(file);
+            }
+        }
+        noProvidersWarning(file);
+        return FileUtil.toFileObject(file);
+    }
+    
     public static FileObject urlToFileObject(String url) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(url)) {
@@ -242,6 +301,27 @@ public final class FileSystemProvider {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             provider.addDownloadListener(listener);
         }
+    }
+    
+    public static void scheduleRefresh(FileObject fileObject) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                provider.scheduleRefresh(fileObject); 
+                return;
+            }
+        }
+        noProvidersWarning(fileObject);
+    }
+    
+    public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                provider.scheduleRefresh(env, paths);
+                return;
+            }
+        }
+        noProvidersWarning(env);
     }
 
     private static void noProvidersWarning(Object object) {

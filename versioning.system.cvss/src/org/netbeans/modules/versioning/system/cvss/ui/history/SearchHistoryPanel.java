@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
+import java.awt.Color;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -107,9 +108,22 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         explorerManager = new ExplorerManager ();
         initComponents();
         setupComponents();
+        aquaBackgroundWorkaround();
         refreshComponents(true);
     }
 
+     private void aquaBackgroundWorkaround() {
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color);
+            jToolBar1.setBackground(color);
+            resultsPanel.setBackground(color);
+            jPanel1.setBackground(color);
+            searchCriteriaPanel.setBackground(color);
+            criteria.setBackground(color);
+        }
+    }
+     
     private void setupComponents() {
         remove(jPanel1);
 

@@ -15,12 +15,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.libs.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.22</specification-version>
+                        <specification-version>1.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,23 +28,6 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.23</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -88,43 +70,15 @@
                         <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.37</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                </test-type>
-            </test-dependencies>
             <friend-packages>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.tools.analytics.codemodel.bridge</friend>
+                <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.analytics.targets.gui</friend>
+                <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
@@ -132,7 +86,11 @@
                 <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.ide.remote</friend>
+                <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
+                <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
@@ -147,6 +105,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <package>org.netbeans.modules.remote.api</package>
                 <package>org.netbeans.modules.remote.api.ui</package>
                 <package>org.netbeans.modules.remote.spi</package>

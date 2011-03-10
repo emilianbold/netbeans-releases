@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
+import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
@@ -238,14 +238,16 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
             if (makeConfiguration.isMakefileConfiguration()) {
                 MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
-                String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
-                try {
-                    FileObject fileObject = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(path));
-                    if (fileObject != null /*paranoia*/ && fileObject.isValid()) {
-                        set.add(fileObject);
+                FileObject buildCommandFO = makefileConfiguration.getAbsBuildCommandFileObject();
+                if (buildCommandFO != null && buildCommandFO.isValid()) {
+                    try {
+                        FileObject fileObject = CndFileUtils.getCanonicalFileObject(buildCommandFO);
+                        if (fileObject != null /*paranoia*/ && fileObject.isValid()) {
+                            set.add(fileObject);
+                        }
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace(System.err);
                     }
-                } catch (IOException ioe) {
-                    ioe.printStackTrace(System.err);
                 }
             }
         }
@@ -275,6 +277,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             fireDisplayNameChange(null, null);
         } else if (ProjectInformation.PROP_NAME.equals(prop)) {
             fireNameChange(null, null);
+        } else if (ProjectInformation.PROP_ICON.equals(prop)) {
+            fireIconChange();
         }
     }
 
