@@ -39,66 +39,22 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.libs.git;
 
-package org.netbeans.modules.git.ui.clone;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
-import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import java.text.MessageFormat;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public class FetchBranchesStep extends AbstractWizardPanel implements ChangeListener {
-    private final BranchesSelector branches;
+public class Utils {
 
-    public FetchBranchesStep () {
-        branches = new BranchesSelector(NbBundle.getMessage(FetchBranchesStep.class, "LBL_RemoteBranchesTitle"));
-        branches.addChangeListener(this);
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run () {
-                validateBeforeNext();
-            }
-        });
-    }
+    private Utils() { }
     
-    @Override
-    protected final void validateBeforeNext () {
-        setValid(true, null);
-        if(branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
-        } else {
-            setValid(true, null);
-        }
+    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+            
+    public static String getRefSpec(GitBranch branch, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
     }
-
-    @Override
-    protected JComponent getJComponent () {
-        return branches.getPanel();
-    }
-
-    public void fillRemoteBranches (Collection<GitBranch> remoteBranches) {
-        branches.setBranches(remoteBranches);
-    }
-    
-    public List<GitBranch> getSelectedBranches () {
-        return branches.getSelectedBranches();
-    }
-
-    @Override
-    public void stateChanged(ChangeEvent ce) {
-        validateBeforeNext();
-    }
-
+        
 }

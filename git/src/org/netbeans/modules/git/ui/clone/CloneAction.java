@@ -50,10 +50,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
+import org.netbeans.libs.git.Utils;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -103,10 +105,10 @@ public class CloneAction extends GitAction {
             final String remoteUri = wiz.getRemoteUri();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
-            List<Branch> branches = wiz.getBranches();
+            List<GitBranch> branches = wiz.getBranches();
             final List<String> refSpecs = new ArrayList<String>(branches.size());
-            for (Branch branch : branches) {
-                refSpecs.add(branch.getRefSpec(remoteName));
+            for (GitBranch branch : branches) {
+                refSpecs.add(Utils.getRefSpec(branch, remoteName));
             }
             final Branch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();

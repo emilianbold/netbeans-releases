@@ -55,6 +55,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
@@ -177,14 +178,14 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         return false;
     }
 
-    void setBranches(List<Branch> branches) {
+    void setBranches(List<GitBranch> branches) {
         if(branches == null) {
             return;
         }
         DefaultComboBoxModel model = new DefaultComboBoxModel(branches.toArray(new Branch[branches.size()]));
         panel.branchesComboBox.setModel(model);
-        Branch activeBranch = null;
-        for (Branch branch : branches) {
+        GitBranch activeBranch = null;
+        for (GitBranch branch : branches) {
             if(branch.isActive()) {
                 activeBranch = branch;
                 break;
@@ -216,7 +217,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
             if(o instanceof Branch) {
                 Branch b = (Branch) o;
-                return super.getListCellRendererComponent(jlist, b.getName(), i, bln, bln1);
+                return super.getListCellRendererComponent(jlist, b.getName() + (b.isActive() ? "*" : ""), i, bln, bln1);
             }
             return super.getListCellRendererComponent(jlist, o, i, bln, bln1);
         }

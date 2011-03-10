@@ -118,7 +118,7 @@ class CloneWizard  implements ChangeListener {
         return wizardIterator.repositoryStep.getUriString();
     }
 
-    List<Branch> getBranches() {
+    List<GitBranch> getBranches() {
         return wizardIterator.fetchBranchesStep.getSelectedBranches();
     }
     

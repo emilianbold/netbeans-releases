@@ -46,8 +46,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
@@ -57,6 +59,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitBranch;
 import org.openide.util.ChangeSupport;
 
@@ -64,7 +68,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author Tomas Stupka
  */
-public class BranchesSelector {
+public class BranchesSelector implements ListSelectionListener {
     private BranchesPanel panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -87,16 +91,23 @@ public class BranchesSelector {
         changeSupport.addChangeListener(listener);
     }
 
-    public void setBranches(List<Branch> branches) {
-        final DefaultListModel model = new DefaultListModel();
-        for (Branch branch : branches) {
-            model.addElement(branch);
+    public void setBranches(Collection<GitBranch> branches) {
+        ArrayList<GitBranch> l = new ArrayList<GitBranch>(branches);
+        Collections.sort(l, new Comparator<GitBranch>() {
+            @Override
+            public int compare (GitBranch b1, GitBranch b2) {
+                return b1.getName().compareTo(b2.getName());
+            }
+        });
+        DefaultListModel model = new DefaultListModel();
+        for (GitBranch branch : l) {
+            model.addElement(new Branch(branch));
         }
         panel.branchesList.setModel(model);        
     }
     
-    public List<Branch> getSelectedBranches() {
-        List<Branch> ret = new ArrayList<Branch>(panel.branchesList.getModel().getSize());
+    public List<GitBranch> getSelectedBranches() {
+        List<GitBranch> ret = new ArrayList<GitBranch>(panel.branchesList.getModel().getSize());
         for (int i = 0; i < panel.branchesList.getModel().getSize(); i++) {
             Branch b = (Branch)panel.branchesList.getModel().getElementAt(i);
             if(b.isSelected()) {
@@ -105,13 +116,26 @@ public class BranchesSelector {
         }
         return ret;
     }
-   
-    public static class Branch implements Comparable<Branch> {
-        private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+
+    @Override
+    public void valueChanged (ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting()) {
+            if (e.getSource() == panel.branchesList.getSelectionModel()) {
+                changeSupport.fireChange();
+            }
+        }
+    }
+
+    public void setEnabled(boolean b) {
+        panel.branchesList.setEnabled(b);
+        panel.titleLabel.setEnabled(b);
+    }
+    
+    public static class Branch implements GitBranch, Comparable<Branch> {
         private final GitBranch branch;
         boolean selected = false;
 
-        public Branch(GitBranch branch) {
+        private Branch(GitBranch branch) {
             this.branch = branch;
         }
 
@@ -122,19 +146,26 @@ public class BranchesSelector {
         }
 
         public String getName() {
-            return branch.getName() + (isActive() ? "*" : "");
+            return branch.getName();
         }
-        
-        public String getRefSpec(String remoteName) {
-            return MessageFormat.format(REF_SPEC_PATTERN, getName(), remoteName);
+
+        @Override
+        public boolean isActive () {
+           return branch.isActive();
+        }
+
+        @Override
+        public boolean isRemote() {
+            return branch.isRemote();
+        }
+
+        @Override
+        public String getId() {
+            return branch.getId();
         }
 
         private boolean isSelected () {
            return selected;
-        }
-        
-        public boolean isActive () {
-           return branch.isActive();
         }
 
         private void setSelected(boolean selected) {
@@ -187,7 +218,7 @@ public class BranchesSelector {
             
             if(value instanceof Branch) {
                 Branch b = (Branch) value;
-                renderer.setText(b.getName());
+                renderer.setText(b.getName() + (b.isActive() ? "*" : ""));
                 renderer.setSelected(b.isSelected());
             }
             return renderer;
