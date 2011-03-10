@@ -119,7 +119,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     
     @Override
     public FileObject getFileObject() {
-        FileObject result = fileSystem.findResource(absPath.toString());
+        FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
         if (result == null) {
             CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
         }

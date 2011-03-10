@@ -127,7 +127,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public FileObject getFileObject() {
-        FileObject result = fileSystem.findResource(absPath.toString());
+        FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
         if (result == null) {
             result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
         }
