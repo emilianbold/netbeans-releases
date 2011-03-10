@@ -123,7 +123,7 @@
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
 
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql.version"      value="5.0.67"/>
