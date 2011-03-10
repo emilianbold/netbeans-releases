@@ -148,15 +148,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
-        String AbsRootPath;
-        RemoteProject remoteProject = getProject().getLookup().lookup(RemoteProject.class);
-        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            AbsRootPath = remoteProject.resolveRelativeRemotePath(rootPath);
-        } else {
-            AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
-        }
-        AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, getProject());
-        FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
+        FileObject folderFile = getThisFolder();
 //        if (folderFile == null) { // see IZ 194221
 //            // that's a normal situation when moving or deleting items and folders
 //            log.log(Level.FINEST, "Null file object; folder kind: {0}, path: {1}", new Object[] { kind, AbsRootPath }); //NOI18N
@@ -1064,11 +1056,24 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileChanged(FileEvent fe) {
     }
 
+    private FileObject getThisFolder() {
+        String rootPath = getRootPath();
+        String absRootPath;
+        RemoteProject remoteProject = getProject().getLookup().lookup(RemoteProject.class);
+        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            absRootPath = remoteProject.resolveRelativeRemotePath(rootPath);
+        } else {
+            absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
+        }
+        absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, getProject());
+        FileObject folderFile = RemoteFileUtil.getFileObject(absRootPath, getProject());
+        return folderFile;
+    }
+    
     @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             File file = CndFileUtils.toFile(fileObject);
@@ -1105,8 +1110,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileFolderCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         assert fileObject.isFolder();
-        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             if (fileObject.isValid()) {
@@ -1136,8 +1140,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileDeleted(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             File file = CndFileUtils.toFile(fileObject);
@@ -1178,8 +1181,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         FileObject fileObject = fe.getFile();
-        String thisPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), getRootPath());
-        FileObject thisFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(thisPath)));
+        FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
             if (log.isLoggable(Level.FINE)) {

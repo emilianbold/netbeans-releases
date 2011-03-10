@@ -295,10 +295,6 @@ public final class EditorBridge {
 	return getLine(IpeUtils.findFileObject(fileName, env), lineNumber);
     }
 
-    public static Line getLine(String fileName, int lineNumber) {
-	return getLine(IpeUtils.findFileObject(fileName), lineNumber);
-    }
-
     public static Line getLine(FileObject fo, int lineNumber) {
 
 	if (Log.Editor.debug)
@@ -347,28 +343,6 @@ public final class EditorBridge {
 
 	} catch (Exception e) {
 	}
-    }
-
-    /**
-     * Force the editor to save the given filename.
-     */
-    public static boolean saveFile(String fileName) {
-
-        FileObject fo = IpeUtils.findFileObject(fileName);
-        DataObject dao = dataObjectFor(fo);
-        if (dao == null)
-            return false;
-
-        EditorCookie ec = dao.getCookie(EditorCookie.class);
-        if (ec == null)
-            return false;
-
-        try {
-	    ec.saveDocument();
-	} catch (java.io.IOException ex) {
-	    return false;
-	}
-	return true;
     }
 
     public static Date lastModified(Line line) {
