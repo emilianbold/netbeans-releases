@@ -64,7 +64,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -875,7 +874,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
                     // Locations should already be in local path form.
 		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
-		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line());
+		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
+                            ((MakeConfiguration)getNDI().getConfiguration()).getFileSystemHost());
 		    if (l != null) {
                         ShowMode showMode = ShowMode.NONE;
                         if (andShow) {

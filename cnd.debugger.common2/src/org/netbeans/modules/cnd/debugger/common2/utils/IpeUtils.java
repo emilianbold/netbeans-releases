@@ -66,9 +66,9 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -302,57 +302,11 @@ public class IpeUtils {
      */
 
 
-    /**
-     * This method is currently not needed. However, there is a pending
-     * bug fix which makes it important. The code from Venus is commented out.
-     * Assuming we get the requested NetBeans RFE, it should be
-     * uncommented and the PathUtils class added to t-common. Then it
-     * makes sense to keep this as a method rather  than replacing it
-     * with a FileUtil.toFileObject() call.
-     */
-    public static FileObject findFileObject(String fileName) {
-	/*
-	String name;
-	int slash = fileName.lastIndexOf(File.separatorChar);
-
-	if (slash != -1) {
-	    name = fileName.substring(slash + 1);
-
-	    Iterator iter = TopComponent.getRegistry().getOpened().iterator();
-	    while (iter.hasNext()) {
-		Object o = iter.next();
-		if (o instanceof CppEditorComponent &&
-			    ((CloneableEditor) o).getName().equals(name)) {
-		    CppEditorSupport support = ((CppEditorComponent) o).getSupport();
-		    StyledDocument doc = support.getDocument();
-		    String docPath = (String) doc.getProperty(Document.TitleProperty);
-		    if (!(docPath.equals(fileName)) &&
-				PathUtils.equivalentPaths(fileName, docPath)) {
-			fileName = docPath;
-			break;
-                        }
-                    }
-                }
-            }
-	*/
-            
-        for (JTextComponent comp : EditorRegistry.componentList()) {
-            Document doc = comp.getDocument();
-            if (doc != null) {
-                FileObject fo = NbEditorUtilities.getFileObject(doc);
-                if (fo != null) {
-                    if (fo.getPath().equals(fileName)) {
-                        return fo;
-                    }
-                }
-            }
-        }
-        
-	File file = new File(fileName);
-	File normalizedFile = FileUtil.normalizeFile(file);
-	FileObject fo = FileUtil.toFileObject(normalizedFile);
-	return fo;
-    }
+    public static FileObject findFileObject(String fileName, ExecutionEnvironment env) {
+        CndUtils.assertAbsolutePathInConsole(fileName);
+        String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, env);
+        return FileSystemProvider.getFileObject(env, normPath);
+    }   
 
     /** Compare two boolean values and return 0 if they are equal,
 	-1 if the first is "less" than the second, and 1 if the first

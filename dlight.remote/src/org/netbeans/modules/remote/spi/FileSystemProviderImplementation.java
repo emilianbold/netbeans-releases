@@ -56,6 +56,7 @@ import org.openide.filesystems.FileSystem;
 public interface FileSystemProviderImplementation {
     FileSystem getFileSystem(ExecutionEnvironment env, String root);
     String normalizeAbsolutePath(String absPath, ExecutionEnvironment env);
+    String normalizeAbsolutePath(String absPath, FileSystem fileSystem);
     FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
     FileObject urlToFileObject(String absoluteURL);
     FileObject fileToFileObject(File file);

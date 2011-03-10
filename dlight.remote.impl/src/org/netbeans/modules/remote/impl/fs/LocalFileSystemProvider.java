@@ -82,6 +82,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public String normalizeAbsolutePath(String absPath, FileSystem fileSystem) {
+        return FileUtil.normalizePath(absPath);
+    }
+
+    @Override
     public boolean isAbsolute(String path) {
         return new File(path).isAbsolute();
     }
