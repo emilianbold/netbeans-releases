@@ -90,23 +90,15 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
         return message;
     }
 
-    /**
-     * Validates user's input
-     * @return <code>true</code> if directory does not exist, <code>false</code> otherwise
-     */
-    public boolean isInputValid() {
-        String dir = directoryField.getText();
-        String name = nameField.getText();
-        File file = new File (dir, name);
-        if (file.exists()) {
-            message = NbBundle.getMessage(CloneDestinationPanel.class, "MSG_TARGET_EXISTS"); // NOI18N
-            return false;
-        } else {
-            message = "";
-            return true;
-        }
+    public String getBranch() {
+        Object item = branchesComboBox.getSelectedItem();
+        return item == null ? "" : item.toString();
     }
-
+    
+    public String getRemoteName() {
+        return remoteTextField.getText();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -121,9 +113,7 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
         nameLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
 
         destinationDirectoryPanel.setName(org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "destinationDirectoryPanel.Name")); // NOI18N
 
@@ -150,10 +140,10 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "CloneDestinationPanel.jLabel3.text")); // NOI18N
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "CloneDestinationPanel.jTextField1.text")); // NOI18N
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        remoteTextField.setText(org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "CloneDestinationPanel.remoteTextField.text")); // NOI18N
+        remoteTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                remoteTextFieldActionPerformed(evt);
             }
         });
 
@@ -184,8 +174,8 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField1)
-                    .addComponent(jComboBox1, 0, 260, Short.MAX_VALUE))
+                    .addComponent(remoteTextField)
+                    .addComponent(branchesComboBox, 0, 260, Short.MAX_VALUE))
                 .addGap(222, 222, 222))
         );
         destinationDirectoryPanelLayout.setVerticalGroup(
@@ -208,10 +198,10 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
                 .addGap(5, 5, 5)
                 .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(branchesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(remoteTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scanForProjectsCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -238,9 +228,9 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
         // TODO add your handling code here:
     }//GEN-LAST:event_directoryFieldActionPerformed
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void remoteTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_remoteTextFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_remoteTextFieldActionPerformed
     
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == directoryBrowseButton) {
@@ -317,17 +307,17 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JComboBox branchesComboBox = new javax.swing.JComboBox();
     private javax.swing.JPanel destinationDirectoryPanel;
     private javax.swing.JButton directoryBrowseButton;
     final javax.swing.JTextField directoryField = new javax.swing.JTextField();
     private javax.swing.JLabel directoryLabel;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JTextField jTextField1;
     final javax.swing.JTextField nameField = new javax.swing.JTextField();
     private javax.swing.JLabel nameLabel;
+    final javax.swing.JTextField remoteTextField = new javax.swing.JTextField();
     final javax.swing.JCheckBox scanForProjectsCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
     
