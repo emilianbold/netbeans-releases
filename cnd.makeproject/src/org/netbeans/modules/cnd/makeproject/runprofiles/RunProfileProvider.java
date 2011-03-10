@@ -44,8 +44,10 @@
 package org.netbeans.modules.cnd.makeproject.runprofiles;
 
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
@@ -54,8 +56,9 @@ public class RunProfileProvider implements ConfigurationAuxObjectProvider {
     /**
      * Creates an instance of the auxiliary information object
      */
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-        RunProfile runProfile = new RunProfile(baseDir, pcs);
+    @Override
+    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
+        RunProfile runProfile = new RunProfile(baseDir, pcs, (MakeConfiguration) configuration);
         return runProfile;
     }
 }

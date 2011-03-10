@@ -66,7 +66,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -488,17 +487,6 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             boolean runInExternalTerminal = false;
-            Project project = pae.getProject();
-            if (project != null) {
-                RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-                if (remoteProject != null) {
-                    if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                        String remoteBaseDir = remoteProject.getSourceBaseDir();
-                        pae.getProfile().setBaseDir(remoteBaseDir);
-                    }
-                }
-            }
-            
             int consoleType = pae.getProfile().getConsoleType().getValue(); 
             runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;            
             if (!pae.getConfiguration().getDevelopmentHost().isLocalhost() && runInExternalTerminal){
