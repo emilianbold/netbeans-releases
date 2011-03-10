@@ -211,6 +211,17 @@ public final class FileSystemProvider {
                 return provider.getCanonicalPath(fileSystem, absPath);
             }
         }
+        noProvidersWarning(fileSystem);
+        return absPath;
+    }
+
+    public static String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.getCanonicalPath(env, absPath);
+            }
+        }
+        noProvidersWarning(env);
         return absPath;
     }
 
