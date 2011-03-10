@@ -93,12 +93,12 @@ public class PathUtilities {
         String norm = normalize(absPath);
         if (absPath.startsWith("/") &&  norm.contains("..")) { //NOI18N
             int pos = norm.lastIndexOf(".."); //NOI18N
-            if (norm.endsWith("/")) {
+            if (norm.endsWith("/")) { // NOI18N
                 norm = norm.substring(pos + 2, norm.length() - 1);
             } else {
                 norm = norm.substring(pos + 2);
             }
-        } else if (norm.endsWith("/")) {
+        } else if (norm.endsWith("/")) { // NOI18N
             norm = norm.substring(0, norm.length() - 1);
         }
         return norm;
