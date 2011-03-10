@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.ui.clone.BranchesSelector.Branch;
+import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;

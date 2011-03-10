@@ -58,7 +58,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.git.ui.clone.BranchesSelector.Branch;
+import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.versioning.util.ProjectUtilities;

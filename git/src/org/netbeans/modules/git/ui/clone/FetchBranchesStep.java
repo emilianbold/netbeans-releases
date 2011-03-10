@@ -49,7 +49,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.ui.clone.BranchesSelector.Branch;
+import org.netbeans.modules.git.ui.selectors.BranchesSelector;
+import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -76,7 +77,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     protected final void validateBeforeNext () {
         setValid(true, null);
         if(branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(FetchBranchesPanel.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
+            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
         } else {
             setValid(true, null);
         }

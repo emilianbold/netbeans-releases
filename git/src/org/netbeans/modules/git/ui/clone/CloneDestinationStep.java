@@ -57,7 +57,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.clone.BranchesSelector.Branch;
+import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;

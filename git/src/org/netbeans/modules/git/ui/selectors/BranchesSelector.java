@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.git.ui.clone;
+package org.netbeans.modules.git.ui.selectors;
 
 import java.awt.Component;
 import java.awt.event.KeyAdapter;

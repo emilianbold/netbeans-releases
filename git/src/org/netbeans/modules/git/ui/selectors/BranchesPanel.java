@@ -45,7 +45,7 @@
  *
  * Created on Mar 9, 2011, 10:36:35 AM
  */
-package org.netbeans.modules.git.ui.clone;
+package org.netbeans.modules.git.ui.selectors;
 
 import javax.swing.DefaultListModel;
 
