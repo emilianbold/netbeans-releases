@@ -47,6 +47,8 @@ package org.netbeans.modules.j2ee.jboss4.ide;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -60,6 +62,7 @@ import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -182,10 +185,27 @@ class JBStopRunnable implements Runnable {
                 } catch (InterruptedException e) {}
             } else {
                 LOGGER.log(Level.FINER, "JBoss has been stopped, going to stop the Log Writer thread");
-                final JBLogWriter logWriter = JBLogWriter.getInstance(ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
-                if (logWriter != null && logWriter.isRunning()) {
-                    logWriter.waitForServerProcessFinished(10000);
-                    logWriter.stop();
+                JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, false);
+                try {
+                    if (outputSupport != null) {
+                        try {
+                            outputSupport.waitForStop(10000);
+                        } catch (TimeoutException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                        }
+                        outputSupport.stop();
+                    }
+                } catch (InterruptedException ex) {
+                    startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                            NbBundle.getMessage(JBStopRunnable.class, "MSG_StopServerInterrupted", serverName)));//NOI18N                    
+                    LOGGER.log(Level.INFO, null, ex);
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (ExecutionException ex) {
+                    startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                            NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED", serverName)));//NOI18N                    
+                    LOGGER.log(Level.INFO, null, ex);
+                    return;
                 }
 
                 startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
