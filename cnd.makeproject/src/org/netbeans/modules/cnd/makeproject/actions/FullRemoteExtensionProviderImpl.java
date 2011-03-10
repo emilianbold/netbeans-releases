@@ -134,7 +134,6 @@ public class FullRemoteExtensionProviderImpl implements FullRemoteExtensionProvi
                     String remotePath = remoteProject.resolveRelativeRemotePath("."); //NOI18N
                     FileObject localProjectFO = mkd.getProjectDirFileObject();
                     try {
-                        // TODO:FullRemote it's better not to hide IOException, but show it to user
                         ShadowProjectSynchronizer sync = new ShadowProjectSynchronizer(remotePath, localProjectFO.getPath(), env);
                         sync.updateRemoteProject(); 
                     } catch (IOException ex) {
@@ -155,7 +154,7 @@ public class FullRemoteExtensionProviderImpl implements FullRemoteExtensionProvi
 //        String localName = localProjectFO.getNameExt();
 //        String remoteName = env.getDisplayName() + ':' + remotePath;
         String details = NbBundle.getMessage(ShadowProjectSynchronizer.class, "ERR_SyncToRemote_Details", ex.getLocalizedMessage());
-        LOGGER.log(Level.INFO, "{0}: {1}", new Object[]{title, details});
+        LOGGER.log(Level.INFO, title, ex);
         NotificationDisplayer.getDefault().notify(title, icon, details, null, NotificationDisplayer.Priority.HIGH);
     }        
     
