@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -108,7 +109,11 @@ public class MakeArtifact {
             buildCommand = makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue();
             cleanCommand = makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue();
         } else {
-            workingDirectory = projectLocation;
+            if (makeConfiguration.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                workingDirectory = pd.getBaseDir();
+            } else {
+                workingDirectory = projectLocation;
+            }
             if (!pd.getProjectMakefileName().isEmpty()) {
                 buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
                 cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N

@@ -549,7 +549,7 @@ public final class MakeActionProvider implements ActionProvider {
                 args = buildCommand.substring(index + 1);
                 buildCommand = removeQuotes(buildCommand.substring(0, index));
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -799,7 +799,7 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
-        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
@@ -813,7 +813,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         
         final String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         
         String buildCommand = null;
 
@@ -855,7 +855,7 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
-        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
@@ -916,7 +916,7 @@ public final class MakeActionProvider implements ActionProvider {
                 commandLine = "rm"; // NOI18N
                 args = "-rf " + outputFile; // NOI18N
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.CLEAN, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -928,7 +928,7 @@ public final class MakeActionProvider implements ActionProvider {
                 args = commandLine.substring(index + 1);
                 commandLine = commandLine.substring(0, index);
             }
-            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -977,7 +977,7 @@ public final class MakeActionProvider implements ActionProvider {
                     args = buildCommand.substring(index + 1);
                     buildCommand = removeQuotes(buildCommand.substring(0, index));
                 }
-                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
                 actionEvents.add(projectActionEvent);
