@@ -154,6 +154,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private Image viewIcon;
     private SessionProvider providerToDisplay;
     private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
+    private final Object destroyLock = new Object();
 
     private boolean isUp;
 
@@ -229,32 +230,34 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     Models.setModelsToView(tree, null);
                 }
             }
-            models.clear();
-            treeModels = new List[TREE_MODELS.length];
-            treeModelFilters = new List[TREE_MODEL_FILTERS.length];
-            treeExpansionModels = null;
-            treeExpansionModelFilters = null;
-            nodeModels = new List[NODE_MODELS.length];
-            nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
-            tableModels = null;
-            tableModelFilters = null;
-            nodeActionsProviders = null;
-            nodeActionsProviderFilters = null;
-            columnModels = null;
-            mm = null;
-            asynchModelFilters = null;
-            //rp = null;
-            sessionProviders = null;
-            currentSession = null;
-            providerToDisplay = null;
-            buttonsPane.removeAll();
-            buttons = null;
-            view.removeAll();
-            for (ViewModelListener l : subListeners) {
-                l.destroy();
+            synchronized (destroyLock) {
+                models.clear();
+                treeModels = new List[TREE_MODELS.length];
+                treeModelFilters = new List[TREE_MODEL_FILTERS.length];
+                treeExpansionModels = null;
+                treeExpansionModelFilters = null;
+                nodeModels = new List[NODE_MODELS.length];
+                nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
+                tableModels = null;
+                tableModelFilters = null;
+                nodeActionsProviders = null;
+                nodeActionsProviderFilters = null;
+                columnModels = null;
+                mm = null;
+                asynchModelFilters = null;
+                //rp = null;
+                sessionProviders = null;
+                currentSession = null;
+                providerToDisplay = null;
+                buttonsPane.removeAll();
+                buttons = null;
+                view.removeAll();
+                for (ViewModelListener l : subListeners) {
+                    l.destroy();
+                }
+                subListeners.clear();
+                isUp = false;
             }
-            subListeners.clear();
-            isUp = false;
         }
     }
 
@@ -557,9 +560,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 final JComponent buttonsSubPane;
-                List<AbstractButton> theButtons = buttons;
-                if (theButtons == null) return ; // Destroyed in between
-                synchronized (theButtons) {
+                synchronized (destroyLock) {
+                    List<AbstractButton> theButtons = buttons;
+                    if (theButtons == null) return ; // Destroyed in between
                     buttonsPane.removeAll();
                     if (theButtons.size() == 0 && sessionProviders.size() == 0) {
                         buttonsPane.setVisible(false);
