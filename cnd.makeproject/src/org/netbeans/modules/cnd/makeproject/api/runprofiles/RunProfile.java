@@ -54,6 +54,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -66,10 +68,12 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ComboStringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
@@ -135,24 +139,27 @@ public final class RunProfile implements ConfigurationAuxObject {
         getString("RemoveInstrumentation_No"), // NOI18N
     };
     private IntConfiguration removeInstrumentation;
+    private final MakeConfiguration makeConfiguration;
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
-    private RunProfile(String baseDir, int platform, PropertyChangeSupport pcs, int initialConsoleType) {
+    private RunProfile(String baseDir, int platform, PropertyChangeSupport pcs, int initialConsoleType, MakeConfiguration makeConfiguration) {
         this.platform = platform;
         this.baseDir = baseDir;
         this.pcs = pcs;
+        this.makeConfiguration = makeConfiguration;
         initializeImpl(initialConsoleType);
     }
     
     /**
      * creation of help run profiles to be executed in output window
      */
-    public RunProfile(String baseDir, int platform) {
-        this(baseDir, platform, null, CONSOLE_TYPE_OUTPUT_WINDOW);
+    public RunProfile(String baseDir, int platform, MakeConfiguration makeConfiguration) {
+        this(baseDir, platform, null, CONSOLE_TYPE_OUTPUT_WINDOW, makeConfiguration);
     }
 
-    public RunProfile(String baseDir, PropertyChangeSupport pcs) {
+    public RunProfile(String baseDir, PropertyChangeSupport pcs, MakeConfiguration makeConfiguration) {
         //TODO: PlatformTypes.getDefaultPlatform() it's not always right
-        this(baseDir, PlatformTypes.getDefaultPlatform(), pcs, getDefaultConsoleType());
+        this(baseDir, PlatformTypes.getDefaultPlatform(), pcs, getDefaultConsoleType(), makeConfiguration);
     }
 
     @Override
@@ -443,7 +450,11 @@ public final class RunProfile implements ConfigurationAuxObject {
      * Base directory is what run directory is relative to, if it is relative.
      */
     public String getBaseDir() {
-        return baseDir;
+        if (makeConfiguration == null) {
+            return baseDir;
+        } else {
+            return makeConfiguration.getSourceBaseDir();
+        }
     }
 
     /*
@@ -499,18 +510,30 @@ public final class RunProfile implements ConfigurationAuxObject {
         } else {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         }
-
-        // convert to canonical path
-        File runDirectoryFile = new File(runDirectory);
-        if (!runDirectoryFile.exists() || !runDirectoryFile.isDirectory()) {
-            return runDirectory; // ??? FIXUP
+        
+        if (makeConfiguration.getFileSystemHost().isLocal()) {
+            // TODO:fullRemote while cleaning up, remove the entire "if" branch - the "else" one should work in any case
+            // It's hight resistance mode now, that's why I'm leaving "local/classic remote" branch as it was - VK
+            // convert to canonical path
+            File runDirectoryFile = new File(runDirectory);
+            if (!runDirectoryFile.exists() || !runDirectoryFile.isDirectory()) {
+                return runDirectory; // ??? FIXUP
+            }
+            try {
+                runDirectoryCanonicalPath = runDirectoryFile.getCanonicalPath();
+            } catch (IOException ioe) {
+                runDirectoryCanonicalPath = runDirectory;
+            }
+            return runDirectoryCanonicalPath;
+        } else {
+            try {
+                String canonicalDir = FileSystemProvider.getCanonicalPath(makeConfiguration.getFileSystemHost(), runDirectory);
+                return canonicalDir;
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N
+                return runDirectory;
+            }
         }
-        try {
-            runDirectoryCanonicalPath = runDirectoryFile.getCanonicalPath();
-        } catch (IOException ioe) {
-            runDirectoryCanonicalPath = runDirectory;
-        }
-        return runDirectoryCanonicalPath;
     }
 
     /*
@@ -684,7 +707,7 @@ public final class RunProfile implements ConfigurationAuxObject {
      */
     @Override
     public RunProfile clone(Configuration conf) {
-        RunProfile p = new RunProfile(getBaseDir(), this.platform);
+        RunProfile p = new RunProfile(getBaseDir(), this.platform, (MakeConfiguration) conf);
         //p.setParent(getParent());
         p.setCloneOf(this);
         p.setDefault(isDefault());
