@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.io.IOException;
 
 import java.awt.Component;
@@ -96,12 +95,11 @@ public class IpeUtils {
 	         is some problem (IOException etc. in File's getCanonicalPath
 		 method)
     */
-    public static String normalizePath(String path) {
+    public static String normalizePath(String path, ExecutionEnvironment env) {
 	if (path == null)
 	    return null;
 	try {
-	    File file = new File(path);
-	    return file.getCanonicalPath();
+            return FileSystemProvider.getCanonicalPath(env, path);
 	} catch (IOException e) {
 	    return null;
 	}
