@@ -77,6 +77,15 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public String normalizeAbsolutePath(String absPath, FileSystem fileSystem) {
+        RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem); // see isMine(FileSystem)
+        if ((fileSystem instanceof RemoteFileSystem)) { // paranoidal check
+            return ((RemoteFileSystem) fileSystem).normalizeAbsolutePath(absPath);
+        }
+        return absPath;
+    }
+
+    @Override
     public boolean isAbsolute(String path) {
         return path.startsWith("/"); //NOI18N
     }
