@@ -231,7 +231,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     c.gridwidth = GridBagConstraints.REMAINDER;
                     c.fill = GridBagConstraints.HORIZONTAL;
                     c.anchor = GridBagConstraints.NORTHWEST;
-                    c.insets = new Insets(0, 6, 6, 12);
+                    c.insets = new Insets(0, 6, 6, 6);
                     ((GridBagLayout) this.getLayout()).setConstraints(addURLButton, c);
                     this.add(addURLButton);
                 }
