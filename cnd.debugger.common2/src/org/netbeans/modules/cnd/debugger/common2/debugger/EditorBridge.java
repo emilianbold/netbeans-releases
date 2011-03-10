@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A bridge to the NB editor.
@@ -290,6 +291,10 @@ public final class EditorBridge {
      * Find the Line object for the given file:line pair
      */
 
+    public static Line getLine(String fileName, int lineNumber, ExecutionEnvironment env) {
+	return getLine(IpeUtils.findFileObject(fileName, env), lineNumber);
+    }
+
     public static Line getLine(String fileName, int lineNumber) {
 	return getLine(IpeUtils.findFileObject(fileName), lineNumber);
     }
@@ -342,14 +347,6 @@ public final class EditorBridge {
 
 	} catch (Exception e) {
 	}
-    }
-
-    public static void showInEditor(String fileName, int lineNumber) {
-	if (Log.Editor.debug) {
-	    System.out.printf("showInEditor(\"%s\", %d)\n", // NOI18N
-		              fileName, lineNumber);
-	}
-	showInEditor(getLine(fileName, lineNumber));
     }
 
     /**

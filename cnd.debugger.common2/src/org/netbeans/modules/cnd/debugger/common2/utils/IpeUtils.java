@@ -68,7 +68,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -301,6 +304,12 @@ public class IpeUtils {
     }
      */
 
+
+    public static FileObject findFileObject(String fileName, ExecutionEnvironment env) {
+        CndUtils.assertAbsolutePathInConsole(fileName);
+        String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, env);
+        return FileSystemProvider.getFileObject(env, normPath);
+    }
 
     /**
      * This method is currently not needed. However, there is a pending
