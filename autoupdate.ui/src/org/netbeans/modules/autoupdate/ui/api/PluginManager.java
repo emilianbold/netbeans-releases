@@ -98,6 +98,6 @@ PluginManager.openInstallWizard(container);
         }
         OperationInfo<InstallSupport> info = all.get (0);
         OperationType doOperation = info.getUpdateUnit ().getInstalled () == null ? OperationType.INSTALL : OperationType.UPDATE;
-        return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, container));
+        return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, container), false);
     }
 }

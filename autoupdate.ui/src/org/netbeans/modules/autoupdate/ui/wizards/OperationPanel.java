@@ -59,7 +59,6 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
-import org.openide.util.RequestProcessor;
 
 /**
  *
