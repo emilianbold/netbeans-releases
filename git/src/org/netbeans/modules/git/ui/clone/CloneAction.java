@@ -60,7 +60,6 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
@@ -105,12 +104,12 @@ public class CloneAction extends GitAction {
             final String remoteUri = wiz.getRemoteUri();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
-            List<GitBranch> branches = wiz.getBranches();
+            List<? extends GitBranch> branches = wiz.getBranches();
             final List<String> refSpecs = new ArrayList<String>(branches.size());
             for (GitBranch branch : branches) {
                 refSpecs.add(Utils.getRefSpec(branch, remoteName));
             }
-            final Branch branch = wiz.getBranch();
+            final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();
             
             GitProgressSupport supp = new GitProgressSupport() {
@@ -167,8 +166,6 @@ public class CloneAction extends GitAction {
             };
             supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(FetchAction.class, "LBL_FetchAction.progressName")); //NOI18N
         }
-            
-            
     }
 
     public void scanForProjects(File workingFolder, GitProgressSupport support) {

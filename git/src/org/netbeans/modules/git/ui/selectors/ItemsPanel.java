@@ -41,26 +41,23 @@
  */
 
 /*
- * FetchRefsPanel.java
+ * BranchPanel.java
  *
- * Created on Feb 4, 2011, 3:21:02 PM
+ * Created on Mar 9, 2011, 10:36:35 AM
  */
-
-package org.netbeans.modules.git.ui.repository.remote;
+package org.netbeans.modules.git.ui.selectors;
 
 import javax.swing.DefaultListModel;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public class FetchBranchesPanel extends javax.swing.JPanel {
+public class ItemsPanel extends javax.swing.JPanel {
 
-    /** Creates new form FetchRefsPanel */
-    public FetchBranchesPanel() {
+    /** Creates new form BranchPanel */
+    public ItemsPanel() {
         initComponents();
-        setName(NbBundle.getMessage(FetchBranchesPanel.class, "LBL_FetchRefsPanel.name")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -72,15 +69,14 @@ public class FetchBranchesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
 
-        jLabel1.setLabelFor(lstRemoteBranches);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FetchBranchesPanel.class, "FetchBranchesPanel.jLabel1.text")); // NOI18N
-        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(FetchBranchesPanel.class, "FetchRefsPanel.jLabel1.TTtext")); // NOI18N
+        titleLabel.setText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.titleLabel.text")); // NOI18N
+        titleLabel.setToolTipText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.titleLabel.toolTipText")); // NOI18N
 
-        lstRemoteBranches.setModel(new DefaultListModel());
-        jScrollPane1.setViewportView(lstRemoteBranches);
+        list.setModel(new DefaultListModel());
+        list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane1.setViewportView(list);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -89,26 +85,23 @@ public class FetchBranchesPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                    .addComponent(jLabel1))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                    .addComponent(titleLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
-    final javax.swing.JList lstRemoteBranches = new javax.swing.JList();
+    final javax.swing.JList list = new javax.swing.JList();
+    final javax.swing.JLabel titleLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
-
 }

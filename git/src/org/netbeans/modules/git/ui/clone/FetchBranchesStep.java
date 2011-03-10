@@ -49,21 +49,21 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
+import org.netbeans.modules.git.ui.selectors.ItemSelector;
+import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
 public class FetchBranchesStep extends AbstractWizardPanel implements ChangeListener {
-    private final BranchesSelector branches;
+    private final ItemSelector<Branch> branches;
 
     public FetchBranchesStep () {
-        branches = new BranchesSelector(NbBundle.getMessage(FetchBranchesStep.class, "LBL_RemoteBranchesTitle"));
+        branches = new ItemSelector<Branch>(NbBundle.getMessage(FetchBranchesStep.class, "LBL_RemoteBranchesTitle"));
         branches.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -89,16 +89,63 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     }
 
     public void fillRemoteBranches (Collection<GitBranch> remoteBranches) {
-        branches.setBranches(remoteBranches);
+        List<Branch> l = new ArrayList<Branch>(remoteBranches.size());
+        for (GitBranch gitBranch : remoteBranches) {
+            l.add(new Branch(gitBranch));
+        }
+        branches.setBranches(l);
     }
     
-    public List<GitBranch> getSelectedBranches () {
+    public List<? extends GitBranch> getSelectedBranches () {
         return branches.getSelectedBranches();
     }
 
     @Override
     public void stateChanged(ChangeEvent ce) {
         validateBeforeNext();
+    }
+    
+    private static class Branch extends ItemSelector.Item implements GitBranch {
+        private final GitBranch branch;
+
+        public Branch(GitBranch branch) {
+            this.branch = branch;
+        }
+        
+        @Override
+        public String getText() {
+            return branch.getName() + (branch.isActive() ? "*" : "");
+        }
+        @Override
+        public String getTooltipText() {
+            return getText();
+        }
+        @Override
+        public String getName() {
+            return branch.getName();
+        }
+        @Override
+        public String getId() {
+            return branch.getId();
+        }
+        @Override
+        public boolean isRemote() {
+            return branch.isRemote();
+        }
+        @Override
+        public boolean isActive() {
+            return branch.isActive();
+        }
+        @Override
+        public int compareTo(Item t) {
+            if(t == null) {
+                return 1;
+            }
+            if(t instanceof Branch) {
+                return getName().compareTo(((Branch)t).getName());
+            }
+            return 0;
+        }
     }
 
 }

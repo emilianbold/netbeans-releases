@@ -58,7 +58,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -178,11 +177,11 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         return false;
     }
 
-    void setBranches(List<GitBranch> branches) {
+    void setBranches(List<? extends GitBranch> branches) {
         if(branches == null) {
             return;
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel(branches.toArray(new Branch[branches.size()]));
+        DefaultComboBoxModel model = new DefaultComboBoxModel(branches.toArray(new GitBranch[branches.size()]));
         panel.branchesComboBox.setModel(model);
         GitBranch activeBranch = null;
         for (GitBranch branch : branches) {
@@ -204,8 +203,8 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         return panel.remoteTextField.getText();
     }
     
-    Branch getBranch() {
-        return (Branch) panel.branchesComboBox.getSelectedItem();
+    GitBranch getBranch() {
+        return (GitBranch) panel.branchesComboBox.getSelectedItem();
     }
 
     boolean scanForProjects() {
@@ -215,8 +214,8 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
     private class BranchRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
-            if(o instanceof Branch) {
-                Branch b = (Branch) o;
+            if(o instanceof GitBranch) {
+                GitBranch b = (GitBranch) o;
                 return super.getListCellRendererComponent(jlist, b.getName() + (b.isActive() ? "*" : ""), i, bln, bln1);
             }
             return super.getListCellRendererComponent(jlist, o, i, bln, bln1);

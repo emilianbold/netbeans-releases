@@ -52,7 +52,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.ui.selectors.BranchesSelector.Branch;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -118,7 +117,7 @@ class CloneWizard  implements ChangeListener {
         return wizardIterator.repositoryStep.getUriString();
     }
 
-    List<GitBranch> getBranches() {
+    List<? extends GitBranch> getBranches() {
         return wizardIterator.fetchBranchesStep.getSelectedBranches();
     }
     
@@ -130,7 +129,7 @@ class CloneWizard  implements ChangeListener {
         return wizardIterator.cloneDestinationStep.getRemoteName();
     }
 
-    Branch getBranch() {
+    GitBranch getBranch() {
         return wizardIterator.cloneDestinationStep.getBranch();
     }
     
