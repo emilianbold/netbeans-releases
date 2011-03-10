@@ -1786,9 +1786,6 @@ public class EditorContextImpl extends EditorContext {
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
         if (js == null) return new String [0];
         final StyledDocument doc = findDocument(dataObject);
-        if (doc == null) {
-            return null;
-        }
         if (doc == null) return new String [0];
         final List<String> imports = new ArrayList<String>();
         try {
