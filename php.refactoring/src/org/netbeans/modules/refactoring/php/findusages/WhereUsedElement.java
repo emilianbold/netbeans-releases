@@ -45,6 +45,8 @@ package org.netbeans.modules.refactoring.php.findusages;
 
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
@@ -79,6 +81,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private FileObject parentFile;
     private final Icon icon;
     private final String name;
+    
+    private static final Logger LOGGER = Logger.getLogger(WhereUsedElement.class.getName());
 
     public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, String name,
         OffsetRange range, Icon icon) {
@@ -220,6 +224,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             return new WhereUsedElement(bounds, sb.toString().trim(), fo, name,
                     new OffsetRange(start, end), icon);
         } catch (UserQuestionException ex) {
+            LOGGER.log(Level.INFO, "Was not possible to obtain document for " + fo.getPath(), ex); //NOI18N
             return null;
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
