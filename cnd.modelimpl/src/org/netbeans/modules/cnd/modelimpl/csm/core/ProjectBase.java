@@ -1840,7 +1840,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (getPlatformProject() instanceof NativeProject) {
                 NativeProject prj = (NativeProject) getPlatformProject();
                 if (prj != null) {
-                    FileObject fo = prj.getFileSystem().findResource(absolutePath.toString());
+                    FileObject fo = CndFileUtils.toFileObject(prj.getFileSystem(), absolutePath.toString());
                     if (fo != null) {
                         nativeFile = prj.findFileItem(fo);
                     }
