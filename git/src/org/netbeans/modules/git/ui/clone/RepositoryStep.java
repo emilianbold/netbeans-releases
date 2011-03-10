@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.git.ui.clone;
 
-import java.net.URISyntaxException;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.ui.repository.remote.*;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
@@ -54,7 +52,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
