@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -146,7 +146,8 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                 }
             }
             if (listFileObjects.isEmpty()) {
-                files = null;
+                // a fallback if no other entries found
+                files = new FileObject[] {obj.getPrimaryFile()};
                 return;
             }
             files = listFileObjects.toArray(new FileObject[listFileObjects.size()]);
@@ -169,6 +170,7 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
 //        }
     }
 
+    @Override
     void updateEntries() {
         findEntries();
         if (files != null) {
