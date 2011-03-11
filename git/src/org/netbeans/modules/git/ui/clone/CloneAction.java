@@ -42,10 +42,33 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitTransportUpdate;
+import org.netbeans.libs.git.GitTransportUpdate.Type;
+import org.netbeans.libs.git.Utils;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
+import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.fetch.FetchAction;
+import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,10 +85,101 @@ public class CloneAction extends GitAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        CloneWizard wiz = new CloneWizard();
+        
+        String cloneFromPath = null;
+        if(nodes.length == 1) {
+            Project project =  nodes[0].getLookup().lookup(Project.class);
+            if(project != null) {
+                FileObject fo = project.getProjectDirectory();
+                File file = FileUtil.toFile(fo);
+                if(file != null) {
+                    cloneFromPath = file.getAbsolutePath();
+                }
+            }
+        }
+        
+        CloneWizard wiz = new CloneWizard(cloneFromPath);
         if (wiz.show()) {
             
+            final String remoteUri = wiz.getRemoteUri();
+            final File destination = wiz.getDestination();
+            final String remoteName = wiz.getRemoteName();
+            List<? extends GitBranch> branches = wiz.getBranches();
+            final List<String> refSpecs = new ArrayList<String>(branches.size());
+            for (GitBranch branch : branches) {
+                refSpecs.add(Utils.getRefSpec(branch, remoteName));
+            }
+            final GitBranch branch = wiz.getBranch();
+            final boolean scan = wiz.scanForProjects();
+            
+            GitProgressSupport supp = new GitProgressSupport() {
+                @Override
+                protected void perform () {
+                    try {
+                        GitClient client = getClient();
+                        client.init(this);
+                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri, refSpecs, this);
+                        log(updates);
+                        
+                        if(isCanceled()) {
+                            return;
+                        }
+                        
+                        client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
+                        client.checkoutRevision(branch.getName(), true, this);
+
+                        Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
+                        Git.getInstance().versionedFilesChanged();                       
+                        
+                        if(scan && !isCanceled()) {
+                            scanForProjects(destination, this);
+                        }
+                        
+                    } catch (GitException ex) {
+                        GitClientExceptionHandler.notifyException(ex, true);
+                    }
+                }
+
+                private void log (Map<String, GitTransportUpdate> updates) {
+                    OutputLogger logger = getLogger();
+                    if (updates.isEmpty()) {
+                        logger.output(NbBundle.getMessage(FetchAction.class, "MSG_FetchAction.updates.noChange")); //NOI18N
+                    } else {
+                        for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
+                            GitTransportUpdate update = e.getValue();
+                            if (update.getType() == Type.BRANCH) {
+                                logger.output(NbBundle.getMessage(FetchAction.class, "MSG_FetchAction.updates.updateBranch", new Object[] { //NOI18N
+                                    update.getLocalName(), 
+                                    update.getOldObjectId(),
+                                    update.getNewObjectId(),
+                                    update.getResult(),
+                                }));
+                            } else {
+                                logger.output(NbBundle.getMessage(FetchAction.class, "MSG_FetchAction.updates.updateTag", new Object[] { //NOI18N
+                                    update.getLocalName(), 
+                                    update.getResult(),
+                                }));
+                            }
+                        }
+                    }
+                }
+            };
+            supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(FetchAction.class, "LBL_FetchAction.progressName")); //NOI18N
         }
     }
 
+    public void scanForProjects(File workingFolder, GitProgressSupport support) {
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
+        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
+        if (fo != null) {
+            ProjectUtilities.scanForProjects(fo, checkedOutProjects);
+        }
+        if (support != null && support.isCanceled()) {
+            return;
+        }
+        // open project selection
+        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+    }    
 }

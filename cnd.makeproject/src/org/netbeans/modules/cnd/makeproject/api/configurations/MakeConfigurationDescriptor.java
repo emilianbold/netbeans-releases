@@ -100,6 +100,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -397,7 +398,22 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     
     public FileObject getNbprojectFileObject() {
         if (projectDirFO != null) {
-            return projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+            try {
+                return FileUtil.createFolder(projectDirFO, MakeConfiguration.NBPROJECT_FOLDER);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }    
+
+    public FileObject getNbPrivateProjectFileObject() {
+        if (projectDirFO != null) {
+            try {
+                return FileUtil.createFolder(projectDirFO, MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }    
@@ -496,7 +512,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public Item findItemByFileObject(FileObject fileObject) {
-        return findItemByPathImpl(fileObject.getPath());
+        return findProjectItemByPath(fileObject.getPath());
     }
 
     public Item findProjectItemByPath(String path) {

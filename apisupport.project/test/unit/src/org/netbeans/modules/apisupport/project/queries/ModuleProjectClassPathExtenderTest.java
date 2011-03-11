@@ -54,6 +54,7 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -122,6 +123,26 @@ public class ModuleProjectClassPathExtenderTest extends NbTestCase {
         assertEquals(projectXml, "release/modules/ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:binary-origin", input));
         assertEquals(projectXml, "ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:runtime-relative-path", input));
         assertEquals(projectXml, "release/modules/ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:binary-origin", input));
+    }
+
+    public void testAddJUnit() throws Exception {
+        NbModuleProject prj = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        FileObject tsrc = FileUtil.createFolder(prj.getProjectDirectory(), "test/unit/src");
+        Library junit3 = LibraryFactory.createLibrary(new LibImpl("junit"));
+        Library junit4 = LibraryFactory.createLibrary(new LibImpl("junit_4"));
+        assertEquals("{}", new ProjectXMLManager(prj).getTestDependencies(prj.getModuleList()).toString());
+        assertTrue(ProjectClassPathModifier.addLibraries(new Library[] {junit3}, tsrc, ClassPath.COMPILE));
+        assertEquals("{unit=[org.netbeans.libs.junit4;compile]}", new ProjectXMLManager(prj).getTestDependencies(prj.getModuleList()).toString());
+        assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {junit3}, tsrc, ClassPath.COMPILE));
+        assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {junit4}, tsrc, ClassPath.COMPILE));
+        assertEquals("{unit=[org.netbeans.libs.junit4;compile]}", new ProjectXMLManager(prj).getTestDependencies(prj.getModuleList()).toString());
+        prj = TestBase.generateStandaloneModule(getWorkDir(), "module2");
+        tsrc = FileUtil.createFolder(prj.getProjectDirectory(), "test/unit/src");
+        assertTrue(ProjectClassPathModifier.addLibraries(new Library[] {junit4}, tsrc, ClassPath.COMPILE));
+        assertEquals("{unit=[org.netbeans.libs.junit4;compile]}", new ProjectXMLManager(prj).getTestDependencies(prj.getModuleList()).toString());
+        assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {junit3}, tsrc, ClassPath.COMPILE));
+        assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {junit4}, tsrc, ClassPath.COMPILE));
+        assertEquals("{unit=[org.netbeans.libs.junit4;compile]}", new ProjectXMLManager(prj).getTestDependencies(prj.getModuleList()).toString());
     }
 
     private static class LibImpl implements LibraryImplementation {

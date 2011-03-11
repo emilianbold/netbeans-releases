@@ -2173,12 +2173,32 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             if (typeMirror instanceof DeclaredType) {
                 DeclaredType declaredType = (DeclaredType) typeMirror;
                 TypeElement interfaceElement = (TypeElement) declaredType.asElement();
-                if (isMethodDeclaredByInterface(interfaceElement, srcMethod)) {
+                if (isLocalOrRemoteInterface(interfaceElement)
+                        && isMethodDeclaredByInterface(interfaceElement, srcMethod)) {
                     return interfaceElement.getSimpleName().toString();
                 }
             }
         }
         return srcClass.getSimpleName().toString();
+    }
+
+    /**
+     * Checks whether is interface annotated as {@code @javax.ejb.Remote} or {@code @javax.ejb.Local}
+     *
+     * @param trgInterface interface which should be annotated
+     * @return {@code true} if the interface is annotated, {@code false} otherwise
+     */
+    private boolean isLocalOrRemoteInterface(TypeElement trgInterface) {
+        List<? extends AnnotationMirror> annotations = trgInterface.getAnnotationMirrors();
+        for (AnnotationMirror am : annotations) {
+            String annotation = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
+            if (annotation.equals("javax.ejb.Local") ||  // NOI18N
+                annotation.equals("javax.ejb.Remote")) { // NOI18N
+                // interface is @Local or @Remote
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

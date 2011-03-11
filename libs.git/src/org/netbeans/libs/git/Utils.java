@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.schema.completion;
+package org.netbeans.libs.git;
 
-import java.util.List;
-import junit.framework.*;
+import java.text.MessageFormat;
 
 /**
  *
- * @author Samaresh
+ * @author Tomas Stupka
  */
-public class CompletionPerfTest extends AbstractTestCase {
-    
-    static final String COMPLETION_TEST_DOCUMENT = "resources/OTA_TravelItinerary.xsd";
-    
-    public CompletionPerfTest(String testName) {
-        super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CompletionPerfTest.class);
-        return suite;
-    }
+public class Utils {
 
-    /**
-     * Queries elements on OTA.
-     */
-    public void testPerformance() throws Exception {
-        long startTime = System.currentTimeMillis();
-        setupCompletion(COMPLETION_TEST_DOCUMENT, null);
-        List<CompletionResultItem> items = query(819312);
-        long endTime = System.currentTimeMillis();
-        System.out.println(endTime - startTime);
-        String[] expectedResult = {"xs:include", "xs:import", "xs:redefine",
-                "xs:annotation", "xs:simpleType", "xs:complexType", "xs:group",
-                "xs:attributeGroup", "xs:element", "xs:attribute", "xs:notation", "xs:annotation"};
-        assertResult(items, expectedResult);
-    }
+    private Utils() { }
     
+    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+            
+    public static String getRefSpec(GitBranch branch, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
+    }
+        
 }

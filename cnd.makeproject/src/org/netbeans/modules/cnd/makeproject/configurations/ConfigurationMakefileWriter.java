@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -61,7 +60,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -263,22 +261,31 @@ public class ConfigurationMakefileWriter {
     private void writeMakefileImpl() {
         String resource = "/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile-impl.mk"; // NOI18N
         InputStream is = null;
-        FileOutputStream os = null;
+        OutputStream os = null;
         try {
             URL url = new URL("nbresloc:" + resource); // NOI18N
             is = url.openStream();
         } catch (Exception e) {
             is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
-
-        String outputFileName = projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
         try {
-            os = new FileOutputStream(outputFileName);
+            FileObject nbprojectFileObject = projectDescriptor.getNbprojectFileObject();
+            if (nbprojectFileObject == null) {
+                return;
+            }
+            FileObject masterMF = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_IMPL);
+            os = masterMF.getOutputStream();
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
         }
 
         if (is == null || os == null) {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                }
+            }
             // FIXUP: ERROR
             return;
         }
@@ -315,8 +322,12 @@ public class ConfigurationMakefileWriter {
             bw.flush();
             bw.close();
         } catch (Exception e) {
+            try {
+                br.close();
+                bw.close();
+            } catch (IOException ex) {
+            }
         }
-
     }
 
     private void writeMakefileConf(MakeConfiguration conf) {
@@ -1402,26 +1413,49 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
+        FileObject nbprojectFileObject = projectDescriptor.getNbprojectFileObject();
+        if (nbprojectFileObject == null) {
+            return;
+        }
+        OutputStream os = null;
         try {
-            String outputFileName = projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
-            FileOutputStream os = null;
-            os = new FileOutputStream(outputFileName);
+            FileObject vars = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
+            os = vars.getOutputStream();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefileFixedVariablesBody(bw);
             writeMakefileVariablesRedirector(bw);
             bw.flush();
             bw.close();
+        } catch (IOException ex) {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex1) {
+                }
+            }
+            Exceptions.printStackTrace(ex);
+        }
 
-            outputFileName = projectDescriptor.getProjectDir() + '/' + MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.MAKEFILE_VARIABLES; // UNIX path // NOI18N
-            os = new FileOutputStream(outputFileName);
-            bw = new BufferedWriter(new OutputStreamWriter(os));
+        FileObject nbPrivateProjectFileObject = projectDescriptor.getNbPrivateProjectFileObject();
+        if (nbPrivateProjectFileObject == null) {
+            return;
+        }
+        try {
+            os = null;
+            FileObject vars = FileUtil.createData(nbPrivateProjectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
+            os = vars.getOutputStream();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
             writeMakefilePrivateVariablesBody(bw);
             bw.flush();
             bw.close();
-        } catch (IOException e) {
-            // FIXUP
-            Exceptions.printStackTrace(e);
-            return;
+        } catch (IOException ex) {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex1) {
+                }
+            }
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -1431,13 +1465,13 @@ public class ConfigurationMakefileWriter {
 
         bw.write("#\n"); // NOI18N
         bw.write("# dmake command\n"); // NOI18N
-        bw.write("ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \\\n"); // NOI18N
+        bw.write("ROOT:sh = /bin/cat nbproject/private/Makefile-variables.mk > /dev/null || \\\n"); // NOI18N
 	bw.write("\tmkdir -p nbproject/private && \\\n"); // NOI18N
 	bw.write("\ttouch nbproject/private/Makefile-variables.mk\n"); // NOI18N
 
         bw.write("#\n"); // NOI18N
         bw.write("# gmake command\n"); // NOI18N
-        bw.write(".PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)\n"); // NOI18N
+        bw.write(".PHONY: $(shell /bin/cat nbproject/private/Makefile-variables.mk > /dev/null || mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)\n"); // NOI18N
         bw.write("#\n"); // NOI18N
         bw.write("include nbproject/private/Makefile-variables.mk\n"); // NOI18N
     }

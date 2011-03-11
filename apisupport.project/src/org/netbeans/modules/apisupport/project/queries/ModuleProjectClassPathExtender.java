@@ -104,6 +104,14 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
     protected boolean addLibraries(Library[] libraries, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
         boolean cpChanged = false;
         for (Library library : libraries) {
+            if (library.getName().matches("junit(_4)?")) {
+                ModuleEntry entry = project.getModuleList().getEntry("org.netbeans.libs.junit4");
+                if (entry != null) {
+                    ProjectXMLManager pxm = new ProjectXMLManager(project);
+                    cpChanged |= pxm.addTestDependency("unit", new TestModuleDependency(entry, false, false, true)); // NOI18N
+                }
+                continue;
+            }
             for (URL u : library.getContent("classpath")) { // NOI18N
                 URL jar = FileUtil.getArchiveFile(u);
                 if (jar != null && jar.getProtocol().equals("nbinst")) { // NOI18N

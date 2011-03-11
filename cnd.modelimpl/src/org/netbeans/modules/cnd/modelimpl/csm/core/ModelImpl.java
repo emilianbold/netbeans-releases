@@ -764,16 +764,21 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             final Object key = entry.getKey();
             CsmUID<CsmProject> value = entry.getValue();
             printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
-            if (withContainers) {
-                CsmProject prj = UIDCsmConverter.UIDtoProject(value);
-                if (prj == null) {
-                    printOut.printf("Project was NOT restored from repository\n");// NOI18N
-                } else if (prj instanceof ProjectBase) {
-                    printOut.printf("[%d] disposing=%s\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
-                    ((ProjectBase) prj).traceFileContainer(printOut);
-                } else {
-                    printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
+            CsmProject prj = UIDCsmConverter.UIDtoProject(value);
+            if (prj == null) {
+                printOut.printf("Project was NOT restored from repository\n");// NOI18N
+            } else if (prj instanceof ProjectBase) {
+                printOut.printf("[%d] disposing?=%s\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
+                Collection<CsmProject> libraries = prj.getLibraries();
+                int libInd = 0;
+                for (CsmProject lib : libraries) {
+                    printOut.printf("\tlib[%d]=%s\n", ++libInd, lib);// NOI18N
                 }
+                if (withContainers) {
+                    ((ProjectBase) prj).traceFileContainer(printOut);
+                }
+            } else {
+                printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
             }
             ind++;
         }
