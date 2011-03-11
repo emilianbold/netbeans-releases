@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.gdb2.options;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.NativeDebuggerAuxObjectFactory;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -60,7 +61,7 @@ public class GdbProfileProvider implements NativeDebuggerAuxObjectFactory {
     /**
      * Creates an instance of the auxiliary information object
      */
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
+    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
 	return new GdbProfile(pcs);
     }
 

@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -74,6 +75,8 @@ public class RefreshManager {
     
     private final class RefreshWorker implements Runnable {
         public void run() {
+            long time = System.currentTimeMillis();
+            int cnt = 0;
             while (true) {
                 RemoteFileObjectBase fo;
                 synchronized (queueLock) {
@@ -81,6 +84,7 @@ public class RefreshManager {
                    if (fo == null) {
                        break;
                    }
+                   cnt++;
                    set.remove(fo);
                 }
                 try {
@@ -100,9 +104,11 @@ public class RefreshManager {
                     ex.printStackTrace(System.err);
                 }
             }
+            time = System.currentTimeMillis() - time;
+            RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {1}", new Object[] {cnt, time, env});
         }
     }
-    
+
     private void clear() {
         synchronized (queueLock) {
             queue.clear();
@@ -117,12 +123,14 @@ public class RefreshManager {
     
     public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {
         if (REFRESH_ON_FOCUS) {
+            RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
             scheduleRefresh(filterDirectories(fileObjects), false);
         }
     }
-    
+
     public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
         if (REFRESH_ON_CONNECT) {
+            RemoteLogger.getInstance().log(Level.FINE, "Refresh on connect schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
             scheduleRefresh(filterDirectories(fileObjects), false);
         }
     }

@@ -549,7 +549,7 @@ public final class MakeActionProvider implements ActionProvider {
                 args = buildCommand.substring(index + 1);
                 buildCommand = removeQuotes(buildCommand.substring(0, index));
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -630,19 +630,27 @@ public final class MakeActionProvider implements ActionProvider {
             // On Windows we need to add paths to dynamic libraries from subprojects to PATH
             runProfile = conf.getProfile().clone(conf);
             Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
-            String path = ""; // NOI18N
+            StringBuilder path = new StringBuilder();
             // Add paths from subprojetcs
             Iterator<String> iter = subProjectOutputLocations.iterator();
+            
             while (iter.hasNext()) {
                 String location = CndPathUtilitities.naturalizeSlashes(iter.next());
-                path = location + ";" + path; // NOI18N
+                if (path.length() > 0) {
+                    path.append(';');
+                }
+                path.append(location);
             }
+            
             // Add paths from -L option
             List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
             iter = list.iterator();
             while (iter.hasNext()) {
                 String location = CndPathUtilitities.naturalizeSlashes(iter.next());
-                path = location + ";" + path; // NOI18N
+                if (path.length() > 0) {
+                    path.append(';');
+                }
+                path.append(location);
             }
             String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
             if (userPath == null) {
@@ -651,8 +659,15 @@ public final class MakeActionProvider implements ActionProvider {
                 }
                 userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
             }
-            path = path + ";" + userPath; // NOI18N
-            runProfile.getEnvironment().putenv(pi.getPathName(), path);
+            
+            if (userPath != null && !userPath.isEmpty()) {
+                if (path.length() > 0) {
+                    path.append(';');
+                }
+                path.append(userPath);
+            }
+            
+            runProfile.getEnvironment().putenv(pi.getPathName(), path.toString());
         } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
             // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
             StringBuilder path = new StringBuilder();
@@ -784,7 +799,7 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
-        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
@@ -798,7 +813,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         
         final String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         
         String buildCommand = null;
 
@@ -840,7 +855,7 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
-        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
@@ -901,7 +916,7 @@ public final class MakeActionProvider implements ActionProvider {
                 commandLine = "rm"; // NOI18N
                 args = "-rf " + outputFile; // NOI18N
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.CLEAN, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -913,7 +928,7 @@ public final class MakeActionProvider implements ActionProvider {
                 args = commandLine.substring(index + 1);
                 commandLine = commandLine.substring(0, index);
             }
-            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
             profile.setArgs(args);
             projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
@@ -962,7 +977,7 @@ public final class MakeActionProvider implements ActionProvider {
                     args = buildCommand.substring(index + 1);
                     buildCommand = removeQuotes(buildCommand.substring(0, index));
                 }
-                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
                 profile.setArgs(args);
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
                 actionEvents.add(projectActionEvent);

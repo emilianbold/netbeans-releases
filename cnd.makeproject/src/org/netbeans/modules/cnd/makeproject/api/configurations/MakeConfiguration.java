@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -144,7 +146,8 @@ public class MakeConfiguration extends Configuration {
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
     private RemoteSyncFactory fixedRemoteSyncFactory;
-    private RemoteProject.Mode remoteMode;
+    private volatile RemoteProject.Mode remoteMode;
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, null);
@@ -196,6 +199,7 @@ public class MakeConfiguration extends Configuration {
         qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
+        initAuxObjects();
     }
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
@@ -697,6 +701,23 @@ public class MakeConfiguration extends Configuration {
             return ExecutionEnvironmentFactory.getLocal();
         }
     }
+    
+    public String getSourceBaseDir() {        
+        if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+            FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
+            try {                
+                Project project = ProjectManager.getDefault().findProject(projectDirFO);
+                if (project != null) {
+                    RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+                    CndUtils.assertNotNullInConsole(remoteProject, "Null RemoteProject"); //NOI18N
+                    return remoteProject.getSourceBaseDir();
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.FINE, "Can not find a project in: " + projectDirFO, ioe);
+            }
+        }
+        return getBaseDir();
+    }
 
     public void setRemoteMode(RemoteProject.Mode mode) {
         CndUtils.assertNotNull(mode, "Null remote mode"); //NOI18N
@@ -940,7 +961,7 @@ public class MakeConfiguration extends Configuration {
             return output;
         }
         if (!CndPathUtilitities.isPathAbsolute(output)) {
-            output = getBaseDir() + "/" + output; // NOI18N
+            output = getSourceBaseDir() + "/" + output; // NOI18N
             output = CndPathUtilitities.normalizeSlashes(output);
         }
         return expandMacros(output);

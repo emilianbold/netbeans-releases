@@ -171,7 +171,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         return getCanonicalFileObject(fileObject).getPath();
     }
 
+    @Override
     public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {
+        return new File(absPath).getCanonicalPath();
+    }
+    
+    public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
+        RemoteLogger.assertTrueInConsole(env.isLocal(), getClass().getSimpleName() + ".getCanonicalPath is called for REMOTE env: " + env); //NOI18N
         return new File(absPath).getCanonicalPath();
     }
     

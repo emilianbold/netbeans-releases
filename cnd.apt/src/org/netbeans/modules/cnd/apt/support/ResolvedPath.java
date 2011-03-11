@@ -71,7 +71,7 @@ public final class ResolvedPath {
         this.index = index;
         assert CndFileUtils.isExistingFile(fileSystem, this.path.toString()) : "isExistingFile failed in " + fileSystem + " for " + path;
         assert !CndFileUtils.isLocalFileSystem(fileSystem) || new File(this.path.toString()).isFile() : "not a file " + this.path;
-        assert fileSystem.findResource(path.toString()) != null : "no FileObject in " + fileSystem + " for " + path + 
+        assert CndFileUtils.toFileObject(fileSystem, path) != null : "no FileObject in " + fileSystem + " for " + path + 
                 " FileUtil.toFileObject = " + FileUtil.toFileObject(new File(FileUtil.normalizePath(path.toString()))) + // NOI18N
                 " second check = " + fileSystem.findResource(path.toString()); // NOI18N
         CndUtils.assertNormalized(fileSystem, folder);
@@ -83,7 +83,8 @@ public final class ResolvedPath {
     }
 
     public FileObject getFileObject() {
-        return fileSystem.findResource(path.toString());
+        // using fileSystem.findResource is not safe, see #196425 -  AssertionError: no FileObject 
+        return CndFileUtils.toFileObject(fileSystem, path);
     }
     
     /**
