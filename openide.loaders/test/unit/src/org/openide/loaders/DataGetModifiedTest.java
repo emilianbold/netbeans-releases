@@ -44,11 +44,14 @@
 
 package org.openide.loaders;
 
+import java.util.Collection;
 import java.util.Iterator;
 import org.openide.filesystems.*;
 import java.beans.*;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 
 public class DataGetModifiedTest extends NbTestCase {
 
@@ -69,6 +72,11 @@ public class DataGetModifiedTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         TestUtilHid.destroyLocalFileSystem (getName());
+        for (Savable s : Savable.REGISTRY.lookupAll(Savable.class)) {
+            s.save();
+        }
+        Collection<? extends Savable> empty = Savable.REGISTRY.lookupAll(Savable.class);
+        assertTrue("registry is emptied: " + empty, empty.isEmpty());
     }
 
     
@@ -99,6 +107,46 @@ public class DataGetModifiedTest extends NbTestCase {
         assertFalse("No third object added when iterating", it.hasNext());
         
         assertEquals("But now visible", 3, DataObject.getRegistry().getModifiedSet().size());
+    }
+    
+    public void testSavableRegistry() throws Exception {
+        do1.getLookup().lookup(EditorCookie.class).openDocument().insertString(0, "Ahoj", null);
+        String name = do1.getNodeDelegate().getDisplayName();
+        assertTrue("DataObject is modified", do1.isModified());
+
+        Savable savable = findSavable(name);
+        assertNotNull("Savable for the do1 lookup found", savable);
+        savable.save();
+        assertFalse("DataObject no longer modified", do1.isModified());
+        
+        do1.getLookup().lookup(EditorCookie.class).openDocument().insertString(0, "Ahoj", null);
+        assertTrue("DataObject is modified again", do1.isModified());
+        
+        Savable another = findSavable(name);
+        assertNotSame("It is different instance", savable, another);
+        assertEquals("But it remains equals", savable, another);
+        
+        savable.save();
+        assertTrue("Calling save on old savable has no impact", do1.isModified());
+        
+        SaveCookie sc = do1.getLookup().lookup(SaveCookie.class);
+        sc.save();
+        assertFalse("Unmodified", do1.isModified());
+        
+        Savable none = findSavable(name);
+        assertNull("No savable for our dataobject found", none);
+        
+    }
+
+    private Savable findSavable(String name) {
+        Savable savable = null;
+        for (Savable.DisplayName s : Savable.REGISTRY.lookupAll(Savable.DisplayName.class)) {
+            if (s.findDisplayName().equals(name)) {
+                savable = s;
+                break;
+            }
+        }
+        return savable;
     }
     
     

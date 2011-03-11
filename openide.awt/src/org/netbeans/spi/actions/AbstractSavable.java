@@ -67,9 +67,12 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
     @Override
     public final void save() throws IOException {
         Template<AbstractSavable> t = new Template<AbstractSavable>(AbstractSavable.class, null, this);
-        if (Savable.REGISTRY.lookup(t).allInstances().contains(this)) {
-            handleSave();
-            unregister();
+        for (Savable s : Savable.REGISTRY.lookup(t).allInstances()) {
+            if (s == this) {
+                handleSave();
+                unregister();
+                return;
+            }
         }
     }
     

@@ -54,6 +54,8 @@ import java.util.logging.Logger;
 import javax.swing.event.*;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
+import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -108,9 +110,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
-    private static ModifiedRegistry modified = new ModifiedRegistry();
+    private static final ModifiedRegistry modified = new ModifiedRegistry();
     /** sync modified data (for modification operations) */
-    private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
+    private static final Set<DOSavable> syncModified = Collections.synchronizedSet(modified);
 
     /** Modified flag */
     private boolean modif = false;
@@ -454,10 +456,13 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public void setModified(boolean modif) {
         if (this.modif != modif) {
             this.modif = modif;
+            DOSavable dos = new DOSavable(this);
             if (modif) {
-                syncModified.add (this);
+                syncModified.add (dos);
+                dos.add();
             } else {
-                syncModified.remove (this);
+                syncModified.remove (dos);
+                dos.remove();
             }
             firePropertyChange(DataObject.PROP_MODIFIED,
                                !modif ? Boolean.TRUE : Boolean.FALSE,
@@ -1176,7 +1181,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         */
         public Set<DataObject> getModifiedSet() {
             synchronized (syncModified) {
-                return new HashSet<DataObject>(syncModified);
+                HashSet<DataObject> set = new HashSet<DataObject>();
+                for (DOSavable dos : syncModified) { 
+                    set.add(dos.obj);
+                }
+                return set;
             }
         }
 
@@ -1184,11 +1193,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         * @return array of objects
         */
         public DataObject[] getModified () {
-            return syncModified.toArray(new DataObject[0]);
+            return getModifiedSet().toArray(new DataObject[0]);
         }
     }
 
-    private static final class ModifiedRegistry extends HashSet<DataObject> {
+    private static final class ModifiedRegistry extends HashSet<DOSavable> {
         static final long serialVersionUID =-2861723614638919680L;
         private static final Logger REGLOG = Logger.getLogger("org.openide.loaders.DataObject.Registry"); // NOI18N
         
@@ -1213,7 +1222,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         /***** overriding of methods which change content in order to notify
         * listeners about the content change */
         @Override
-        public boolean add (DataObject o) {
+        public boolean add (DOSavable o) {
             boolean result = super.add(o);
             REGLOG.log(Level.FINER, "Data Object {0} modified, change {1}", new Object[] { o, result }); // NOI18N
             if (result) {
@@ -1233,6 +1242,57 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         }
 
     }  // end of ModifiedRegistry inner class
+    
+    private static final class DOSavable extends AbstractSavable {
+        final DataObject obj;
+
+        public DOSavable(DataObject obj) {
+            this.obj = obj;
+        }
+
+        @Override
+        public String findDisplayName() {
+            return obj.getNodeDelegate().getDisplayName();
+        }
+
+        @Override
+        protected void handleSave() throws IOException {
+            SaveCookie sc = obj.getCookie(SaveCookie.class);
+            if (sc != null) {
+                sc.save();
+            }
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof DOSavable) {
+                DOSavable dos = (DOSavable)other;
+                return obj.equals(dos.obj);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return obj.hashCode();
+        }
+
+        final void remove() {
+            unregister();
+        }
+
+        final void add() {
+            register();
+        }
+
+        @Override
+        public String toString() {
+            return "Savable[" + obj + "]"; // NOI18N
+        }
+        
+        
+        
+    }
 
     /** A.N. - profiling shows that MultiLoader.checkFiles() is called too often
     * This method is part of the fix - empty for DataObject.
