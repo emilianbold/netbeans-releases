@@ -121,6 +121,7 @@ import org.openide.util.Utilities;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
+            static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
@@ -584,7 +585,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         return binaryNames;
     }
 
-    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {                
+    private static Map<URL, Set<URL>> findDependent(final URL root, final Collection<ElementHandle<TypeElement>> classes, boolean includeFilesInError) throws IOException {
         //get dependencies
         Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
         Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();

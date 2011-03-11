@@ -166,7 +166,7 @@ final class OnePassCompileWorker extends CompileWorker {
             }
         }
 
-        if (units == null) {
+        if (units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
             return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
