@@ -493,7 +493,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public Item findItemByFileObject(FileObject fileObject) {
-        return findItemByPathImpl(fileObject.getPath());
+        return findProjectItemByPath(fileObject.getPath());
     }
 
     public Item findProjectItemByPath(String path) {
