@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -172,17 +171,14 @@ public final class RepositoryPreferences {
         return toRet;
     }
 
-    /**
-     * 
-     * @param info
-     */
     public synchronized void addOrModifyRepositoryInfo(RepositoryInfo info) {
         try {
             FileObject fo = getRepoFolder().getFileObject(getFileObjectName(info.getId()));
             if (fo == null) {
-                int position = calculatePosition();
+                List<FileObject> kids = new ArrayList<FileObject>(FileUtil.getOrder(Arrays.asList(getRepoFolder().getChildren()), true));
                 fo = getRepoFolder().createData(getFileObjectName(info.getId()));
-                fo.setAttribute("position", position); //NOI18N
+                kids.add(fo);
+                FileUtil.setOrder(kids);
             } else {
                 if (infoCache.containsKey(fo)) {
                     infoCache.put(fo, info);
@@ -190,35 +186,16 @@ public final class RepositoryPreferences {
             }
             fo.setAttribute(KEY_TYPE, info.getType());
             fo.setAttribute(KEY_DISPLAY_NAME, info.getName());
-            if (info.getRepositoryPath() != null) {
-                fo.setAttribute(KEY_PATH, info.getRepositoryPath());
-            }
+            fo.setAttribute(KEY_PATH, info.getRepositoryPath());
+            fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
             if (info.getRepositoryUrl() != null) {
-                fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
-                String inferred = info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX;
-                Object stored = fo.getAttribute(KEY_INDEX_URL);
-                String updated = info.getIndexUpdateUrl();
-                // #16761 workaround; would prefer to simply store updated == inferred ? null : updated
-                if (!updated.equals(inferred) || (stored != null && !stored.equals(updated))) {
-                    fo.setAttribute(KEY_INDEX_URL, updated);
-                }
+                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl().equals(info.getRepositoryUrl() + RepositoryInfo.DEFAULT_INDEX_SUFFIX) ? null : info.getIndexUpdateUrl());
             }
         } catch (SyncFailedException x) {
             LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    private int calculatePosition() {
-        int customStart = 5000;
-        for (FileObject fo : getRepoFolder().getChildren()) {
-            Integer attr = (Integer) fo.getAttribute("position"); //NOI18N
-            if (attr != null && attr.intValue() > customStart) {
-                customStart = attr.intValue();
-            }
-        }
-        return customStart + 1;
     }
 
     private static final char[] forbiddenChars =
