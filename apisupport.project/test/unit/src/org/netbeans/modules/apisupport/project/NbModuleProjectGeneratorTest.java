@@ -105,7 +105,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT, false); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT, false, true); // platform id
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -140,7 +140,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                suiteDir, false); // platform id
+                suiteDir, false, true); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject moduleProjectRel = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -165,7 +165,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                suiteDir, false); // platform id
+                suiteDir, false, true); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject moduleProjectAbs = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -221,7 +221,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT, true);
+                NbPlatform.PLATFORM_ID_DEFAULT, true, true);
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull(p);

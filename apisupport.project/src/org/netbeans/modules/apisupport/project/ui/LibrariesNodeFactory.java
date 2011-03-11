@@ -49,9 +49,12 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -66,9 +69,10 @@ public class LibrariesNodeFactory implements NodeFactory {
         return new LibraryNL(proj);
     }
     
-    private static class LibraryNL implements NodeList<String> {
+    private static class LibraryNL implements NodeList<String>, AntProjectListener {
         
         private NbModuleProject project;
+        private final ChangeSupport cs = new ChangeSupport(this);
         
         LibraryNL(NbModuleProject prj) {
             project = prj;
@@ -84,9 +88,11 @@ public class LibrariesNodeFactory implements NodeFactory {
         }
 
         public @Override void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
         }
 
         public @Override void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
         }
 
         public @Override Node node(String key) {
@@ -98,12 +104,18 @@ public class LibrariesNodeFactory implements NodeFactory {
         }
 
         public @Override void addNotify() {
-            //TODO shall we somehow listen on project and ech for the 
-            // test.unit.src.dir prop appearance/disappearance ??
+            project.getHelper().addAntProjectListener(this);
         }
 
         public @Override void removeNotify() {
+            project.getHelper().removeAntProjectListener(this);
         }
+
+        public @Override void configurationXmlChanged(AntProjectEvent ev) {
+            cs.fireChange();
+        }
+       
+        public @Override void propertiesChanged(AntProjectEvent ev) {}
     }
 
 }
