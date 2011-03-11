@@ -52,6 +52,8 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -81,6 +83,7 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
         List<String> includes = new ArrayList<String>();
+//        includes.add("testSimpleBadListener");
 //        includes.add("testRemoveNewline");
 //        includes.add("testGap");
 //        includes.add("testNPEInRedo", "");
@@ -238,6 +241,40 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.insert(gContext, 0, "a\nb\n\n");
         DocumentTesting.remove(gContext, 2, 1);
         DocumentTesting.insert(gContext, 1, "c");
+    }
+    
+    public void testSimpleBadListener() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        DocumentTesting.setSameThreadInvoke(container.context(), true); // Do not post to EDT
+        doc.addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                throw new IndexOutOfBoundsException("Test exception from bad listener");
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        RandomTestContainer.Context gContext = container.context();
+        DocumentTesting.insert(gContext, 0, "a\nb");
+        DocumentTesting.insert(gContext, 1, "c");
+        try {
+            DocumentTesting.remove(gContext, 2, 1);
+            fail("Exception expected.");
+        } catch (IndexOutOfBoundsException ex) {
+            // Expected
+        }
+        DocumentTesting.insert(gContext, 1, "d\nx");
     }
     
     public void testInsertTextWithNewlines() throws Exception {

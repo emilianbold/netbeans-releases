@@ -108,7 +108,9 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
      * when asked for highlights but such changes must not influence current views building.
      */
     private boolean buildingViews;
-
+    
+    private DocumentEvent incomingEvent;
+    
     private final RequestProcessor.Task rebuildRegionTask = rebuildRegionRP.create(new Runnable() {
         private boolean insideDocumentRender = false;
         public @Override void run() {
@@ -260,6 +262,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
 
     @Override
     public void insertUpdate(DocumentEvent evt) {
+        clearIncomingEvent(evt);
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
@@ -376,6 +379,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
 
     @Override
     public void removeUpdate(DocumentEvent evt) {
+        clearIncomingEvent(evt);
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
@@ -481,6 +485,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
 
     @Override
     public void changedUpdate(DocumentEvent evt) {
+        clearIncomingEvent(evt);
         PriorityMutex mutex = documentView.getMutex();
         if (mutex != null) {
             mutex.lock();
@@ -589,22 +594,41 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                     region.endOffset(), 0, createLocalViews);
         }
     }
+    
+    /*private*/ void incomingEvent(DocumentEvent evt) {
+        if (incomingEvent != null) {
+            throw new IllegalStateException("Pending incoming event: " + incomingEvent); // NOI18N
+        }
+        incomingEvent = evt;
+    }
+    
+    private void clearIncomingEvent(DocumentEvent evt) {
+        if (incomingEvent == null) {
+            throw new IllegalStateException("Incoming event already cleared"); // NOI18N
+        }
+        if (incomingEvent != evt) {
+            throw new IllegalStateException("Invalid incomingEvent=" + incomingEvent + " != evt=" + evt); // NOI18N
+        }
+        incomingEvent = null;
+    }
 
     private final class IncomingModificationListener implements DocumentListener {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
+            incomingEvent(e);
             documentView.setIncomingModification(true);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
+            incomingEvent(e);
             documentView.setIncomingModification(true);
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            documentView.setIncomingModification(true);
+            incomingEvent(e);
         }
 
     }
