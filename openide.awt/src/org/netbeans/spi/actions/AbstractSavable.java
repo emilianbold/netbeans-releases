@@ -44,6 +44,7 @@ package org.netbeans.spi.actions;
 
 import java.io.IOException;
 import org.netbeans.api.actions.Savable;
+import org.netbeans.modules.openide.awt.SavableRegistry;
 
 /** Default implementation of {@link Savable} interface and
  * additional contracts, including dealing with {@link Savable#REGISTRY}.
@@ -85,7 +86,10 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
     /** Equals and {@link #hashCode} need to be properly implemented 
      * by subclasses to correctly implement equality contract. 
      * Two {@link Savable}s should be equal
-     * if they represent the same underlying object beneath them.
+     * if they represent the same underlying object beneath them. Without
+     * correct implementation proper behavior of {@link #register()} and
+     * {@link #unregister()} cannot be guaranteed.
+     * 
      * @param obj object to compare this one to, 
      * @return true or false
      */
@@ -96,6 +100,7 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
      * by subclasses, so two {@link Savable}s representing the same object
      * beneath are really equal and have the same {@link #hashCode()}.
      * @return integer hash
+     * @see #equals(java.lang.Object)
      */
     @Override
     public abstract int hashCode();
@@ -111,12 +116,15 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
      * equal one}.
      */
     protected final void register() {
+        SavableRegistry.register(this);
     }
     
     /** Removes this {@link Savable} from the {@link Savable#REGISTRY} (if it 
-     * is present there). 
+     * is present there, by relying on {@link #equals(java.lang.Object)} 
+     * and {@link #hashCode()}). 
      */
     protected final void unregister() {
+        SavableRegistry.unregister(this);
     }
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.openide.awt;
 
-package org.netbeans.api.actions;
-
-import java.io.IOException;
-import org.netbeans.modules.openide.awt.SavableRegistry;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-/** Context interface that represents ability to save. To get best
- * interaction with the system, it is preferable to use {@link AbstractSavable}
- * to create instances of this interface rather than implementing it 
- * directly.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
- * @since XXX
  */
-public interface Savable {
-    /** Global registry of all {@link Savable}s that are modified in the
-     * application and subject to save by <em>Save All</em> action. See 
-     * {@link AbstractSavable} for description how to register your own
-     * implementation into the registry.
-     */
-    public static final Lookup REGISTRY = SavableRegistry.getRegistry();
+public final class SavableRegistry {
+    private static final InstanceContent IC = new InstanceContent();
+    private static final Lookup LOOKUP = new AbstractLookup(IC);
     
-    /** Invoke the save operation.
-     * @throws IOException if the object could not be saved
-     */
-    public void save() throws IOException;
-
-    /** Allows a {@link Savable} to specify its human readable name.
-     * This is an additional interface that implementations of {@link Savable}
-     * may implement to represent themselves in various UI elements 
-     * with proper display name.
-     */
-    public static interface DisplayName extends Savable {
-        public String findDisplayName();
+    public static Lookup getRegistry() {
+        return LOOKUP;
+    }
+    
+    public static void register(AbstractSavable as) {
+        IC.add(as);
+    }
+    
+    public static void unregister(AbstractSavable as) {
+        IC.remove(as);
     }
 }
