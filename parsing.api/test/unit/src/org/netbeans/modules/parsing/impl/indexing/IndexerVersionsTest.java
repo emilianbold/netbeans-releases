@@ -325,8 +325,7 @@ public class IndexerVersionsTest extends NbTestCase {
         public CustomIndexer createIndexer() {
             return new CustomIndexer() {
                 @Override
-                protected void index(Iterable<? extends Indexable> files, Context context) {
-                    System.out.println("Scanning " + files + " into " + context.getIndexFolder().getPath());
+                protected void index(Iterable<? extends Indexable> files, Context context) {                    
                 }
             };
         }
