@@ -82,15 +82,18 @@ public class SavableTest extends NbTestCase {
         assertTrue("No other pending saves", Savable.REGISTRY.lookupAll(Savable.class).isEmpty());
     }
 
-    public void testTwoSavablesForEqual() {
+    public void testTwoSavablesForEqual() throws IOException {
         Object id = new Object();
         
-        Savable s = new DoSave(id, null, null);
+        DoSave s = new DoSave(id, null, null);
         assertEquals("The first", s, Savable.REGISTRY.lookup(Savable.class));
-        Savable s2 = new DoSave(id, null, null);
+        DoSave s2 = new DoSave(id, null, null);
         
         assertEquals("Only one savable", 1, Savable.REGISTRY.lookupAll(Savable.class).size());
         assertEquals("The later", s2, Savable.REGISTRY.lookup(Savable.class));
+        
+        s.save();
+        assertFalse("Calling save on replaced savables has no effect", s.save);
     }
 
     public void testEventDeliveredAsynchronously() throws Exception {

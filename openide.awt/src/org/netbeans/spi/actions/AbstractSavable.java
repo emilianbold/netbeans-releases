@@ -45,6 +45,7 @@ package org.netbeans.spi.actions;
 import java.io.IOException;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.modules.openide.awt.SavableRegistry;
+import org.openide.util.Lookup.Template;
 
 /** Default implementation of {@link Savable} interface and
  * additional contracts, including dealing with {@link Savable#REGISTRY}.
@@ -65,8 +66,11 @@ public abstract class AbstractSavable implements Savable, Savable.DisplayName {
      */
     @Override
     public final void save() throws IOException {
-        handleSave();
-        unregister();
+        Template<AbstractSavable> t = new Template<AbstractSavable>(AbstractSavable.class, null, this);
+        if (Savable.REGISTRY.lookup(t).allInstances().contains(this)) {
+            handleSave();
+            unregister();
+        }
     }
     
     /** Finds suitable display name for the object this {@link Savable}
