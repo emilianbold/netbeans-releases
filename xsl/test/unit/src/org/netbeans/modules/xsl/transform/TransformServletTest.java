@@ -93,6 +93,7 @@ public class TransformServletTest extends NbTestCase {
         
     /** Test of getServletURL method, of class org.netbeans.modules.xsl.transform.TransformServlet. */
     public void testGetServletURL() {
+        // issue #196602
         System.out.println("testGetServletURL");
         
         URL servletURL = null;

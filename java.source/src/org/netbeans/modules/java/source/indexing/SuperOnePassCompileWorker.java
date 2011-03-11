@@ -164,7 +164,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
         }
 
-        if (jt == null || units == null) {
+        if (jt == null || units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
             return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (context.isCancelled()) {
