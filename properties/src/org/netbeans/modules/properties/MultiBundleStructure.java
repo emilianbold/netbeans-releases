@@ -146,7 +146,8 @@ class MultiBundleStructure extends BundleStructure implements Serializable {
                 }
             }
             if (listFileObjects.isEmpty()) {
-                files = null;
+                // a fallback if no other entries found
+                files = new FileObject[] {obj.getPrimaryFile()};
                 return;
             }
             files = listFileObjects.toArray(new FileObject[listFileObjects.size()]);
