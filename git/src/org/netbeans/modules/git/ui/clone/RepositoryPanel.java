@@ -44,38 +44,20 @@
 
 package org.netbeans.modules.git.ui.clone;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import javax.swing.JFileChooser;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.openide.util.NbBundle;
-
 /**
  *
  * @author Tomas Stupka
  */
 public class RepositoryPanel extends javax.swing.JPanel {
 
-    private Runnable postInitRoutine;
-
     /** Creates new form RepositoryPanel */
     public RepositoryPanel() {
         initComponents();
     }
 
-    void schedulePostInitRoutine(Runnable postInitRoutine) {
-        this.postInitRoutine = postInitRoutine;
-    }
-
     @Override
     public void addNotify() {
         super.addNotify();
-        setPreferredSize(getPreferredSize());
-        if (postInitRoutine != null) {
-            postInitRoutine.run();
-        }
     }
 
     /** This method is called from within the constructor to
@@ -93,14 +75,17 @@ public class RepositoryPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(titleLabel, bundle.getString("BK0001")); // NOI18N
 
-        jLabel2.setLabelFor(urlComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(leaveBlankLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0005")); // NOI18N
 
-        urlComboBox.setEditable(true);
-        java.awt.Component editorComp = urlComboBox.getEditor().getEditorComponent();
-        if (editorComp instanceof javax.swing.JTextField) {
-            ((javax.swing.JTextField) editorComp).setColumns(35);
-        }
+        passwordLabel.setLabelFor(userPasswordField);
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0004")); // NOI18N
+        passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_Password")); // NOI18N
+
+        userPasswordField.setColumns(8);
+        userPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
+
+        org.openide.awt.Mnemonics.setLocalizedText(tipLabel, "-"); // NOI18N
+        tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
 
         org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006")); // NOI18N
         proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_ProxyDialog")); // NOI18N
@@ -110,44 +95,33 @@ public class RepositoryPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(tipLabel, "-"); // NOI18N
-        tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
-
-        userPasswordField.setColumns(8);
-        userPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
-
-        passwordLabel.setLabelFor(userPasswordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0004")); // NOI18N
-        passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_Password")); // NOI18N
+        userTextField.setColumns(8);
+        userTextField.setMinimumSize(new java.awt.Dimension(11, 22));
 
         userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003")); // NOI18N
         userLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_UserName")); // NOI18N
 
-        userTextField.setColumns(8);
-        userTextField.setMinimumSize(new java.awt.Dimension(11, 22));
-
-        org.openide.awt.Mnemonics.setLocalizedText(leaveBlankLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0005")); // NOI18N
+        jLabel2.setLabelFor(urlComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002")); // NOI18N
 
         savePasswordCheckBox.setMnemonic('v');
         org.openide.awt.Mnemonics.setLocalizedText(savePasswordCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0007")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(chooseFolderButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.chooseFolderButton.text")); // NOI18N
-        chooseFolderButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.chooseFolderButton.toolTipText")); // NOI18N
-        chooseFolderButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chooseFolderButtonActionPerformed(evt);
-            }
-        });
+        urlComboBox.setEditable(true);
+        java.awt.Component editorComp = urlComboBox.getEditor().getEditorComponent();
+        if (editorComp instanceof javax.swing.JTextField) {
+            ((javax.swing.JTextField) editorComp).setColumns(35);
+        }
+
+        org.openide.awt.Mnemonics.setLocalizedText(directoryBrowseButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "directoryBrowseButton.Name")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(titleLabel)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(proxySettingsButton)
-                .addContainerGap())
+            .addComponent(proxySettingsButton)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2)
@@ -155,23 +129,19 @@ public class RepositoryPanel extends javax.swing.JPanel {
                     .addComponent(passwordLabel))
                 .addGap(38, 38, 38)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(savePasswordCheckBox)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(savePasswordCheckBox)
-                        .addContainerGap())
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(tipLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(userPasswordField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(userTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(leaveBlankLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
-                            .addContainerGap())
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(urlComboBox, 0, 338, Short.MAX_VALUE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(chooseFolderButton)
-                            .addContainerGap()))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(userPasswordField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(userTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(leaveBlankLabel)
+                        .addGap(0, 0, 0))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(urlComboBox, 0, 252, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(directoryBrowseButton))))
+            .addComponent(tipLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -181,7 +151,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(urlComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chooseFolderButton))
+                    .addComponent(directoryBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tipLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -199,52 +169,28 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 .addGap(3, 3, 3)
                 .addComponent(savePasswordCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(proxySettingsButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(proxySettingsButton))
         );
 
         titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
         titleLabel.getAccessibleContext().setAccessibleParent(this);
+        leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_InfoLabel")); // NOI18N
+        leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
+        passwordLabel.getAccessibleContext().setAccessibleParent(this);
+        userPasswordField.getAccessibleContext().setAccessibleParent(this);
+        proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
+        userTextField.getAccessibleContext().setAccessibleParent(this);
+        userLabel.getAccessibleContext().setAccessibleParent(this);
         jLabel2.getAccessibleContext().setAccessibleParent(this);
+        savePasswordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0011")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RepositoryURL")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleParent(this);
-        proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
-        userPasswordField.getAccessibleContext().setAccessibleParent(this);
-        passwordLabel.getAccessibleContext().setAccessibleParent(this);
-        userLabel.getAccessibleContext().setAccessibleParent(this);
-        userTextField.getAccessibleContext().setAccessibleParent(this);
-        leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_InfoLabel")); // NOI18N
-        leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
-        savePasswordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0011")); // NOI18N
+        directoryBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_BrowseFolder")); // NOI18N
+        directoryBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_BrowseFolder")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void chooseFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFolderButtonActionPerformed
-        JTextComponent comboEditor = ((JTextComponent) urlComboBox.getEditor().getEditorComponent());
-        String txt = comboEditor.getText();
-        if(txt == null || txt.trim().isEmpty()) {
-            return;
-        }
-        File file = null;
-        try {
-            URI uri = new URI(comboEditor.getText());
-            file = new File(uri);
-        } catch (URISyntaxException ex) {
-            //
-        }
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Descritpion"), //NOI18N
-                file);
-        fileChooser.setDialogTitle(NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.FileChooser.Title")); //NOI18N
-        fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.showDialog(this, null);
-        File f = fileChooser.getSelectedFile();
-        if (f != null) {
-            comboEditor.setText(f.toURI().toString());
-        }
-    }//GEN-LAST:event_chooseFolderButtonActionPerformed
 
     private void proxySettingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxySettingsButtonActionPerformed
         // TODO add your handling code here:
@@ -252,7 +198,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton chooseFolderButton = new javax.swing.JButton();
+    final javax.swing.JButton directoryBrowseButton = new javax.swing.JButton();
     private final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
     final javax.swing.JLabel leaveBlankLabel = new javax.swing.JLabel();
     final javax.swing.JLabel passwordLabel = new javax.swing.JLabel();

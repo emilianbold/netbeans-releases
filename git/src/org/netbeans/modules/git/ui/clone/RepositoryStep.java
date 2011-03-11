@@ -42,57 +42,48 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import javax.swing.event.ChangeEvent;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.ui.repository.remote.*;
-import java.awt.EventQueue;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.JTextComponent;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
+import org.netbeans.modules.git.utils.WizardStepProgressSupport;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositoryStep extends AbstractWizardPanel implements ActionListener, DocumentListener, AsynchronousValidatingPanel<WizardDescriptor> {
+public class RepositoryStep extends AbstractWizardPanel implements ActionListener, ChangeListener, AsynchronousValidatingPanel<WizardDescriptor> {
 
-    private final RepositoryPanel panel;
-    private final JComponent[] inputFields;
-    private GitProgressSupport supp;
-    private Map<String, GitBranch> remoteBranches;
-
-    public RepositoryStep () {
-        this.panel = new RepositoryPanel();
-        this.inputFields = new JComponent[] {
-            panel.urlComboBox,
-            panel.userTextField,
-            panel.userPasswordField,
-            panel.savePasswordCheckBox,
-            panel.chooseFolderButton,
-            panel.proxySettingsButton
-        };
-        attachListeners();
-        validateBeforeNext();
-        setFieldsVisibility();
-        initUrlComboValues();
-    }
+    private RepositoryStepProgressSupport support;
+    private Map<String, GitBranch> branches;
     
-    private void attachListeners () {
-        panel.proxySettingsButton.addActionListener(this);
-        panel.chooseFolderButton.addActionListener(this);
-        panel.urlComboBox.addActionListener(this);
-        ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);        
-        panel.userPasswordField.getDocument().addDocumentListener(this);
-        panel.userTextField.getDocument().addDocumentListener(this);
+    private Map<String, GitBranch> remoteBranches;
+    private final RepositoryStepPanel panel;
+    private final Repository repository;
+
+    public RepositoryStep (String forPath) {
+        repository = new Repository(forPath);
+        repository.addChangeListener(this);
+        this.panel = new RepositoryStepPanel(repository.getPanel());
+        validateRepository();
     }
 
     @Override
@@ -101,37 +92,36 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     }
 
     @Override
-    public void insertUpdate (DocumentEvent e) {
-        validateBeforeNext();
-        setFieldsVisibility();
-    }
-
-    @Override
-    public void removeUpdate (DocumentEvent e) {
-        validateBeforeNext();
-        setFieldsVisibility();
-    }
-
-    @Override
-    public void changedUpdate (DocumentEvent e) {
-        validateBeforeNext();
-        setFieldsVisibility();
-    }    
-
-    @Override
     protected final void validateBeforeNext () {
-        boolean valid = true;
-        Message msg = null;
-        
-        String urlString = (String) panel.urlComboBox.getEditor().getItem();
-        if(urlString == null || urlString.isEmpty()) {
-            valid = false;
-            msg = new Message("Url cannot be empty.", true);
-        } else {
-            // XXX check URI
+        try {
+            branches = null;
+            if(!validateRepository()) return;
+
+            final File tempRepository = Utils.getTempFolder();
+            String uri = repository.getUriString();
+            if (uri != null && !uri.trim().isEmpty()) {
+                support = new RepositoryStepProgressSupport(panel.progressPanel, repository.getUriString());        
+                RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
+                task.waitFinished();
+            }    
+        } finally {
+            support = null;
+            repository.enableFields(true);
         }
+    }
+
+    private boolean validateRepository() {
+        boolean valid = repository.isValid();
+        setValid(valid, repository.getMessage());
+        return valid;
+    }
+
+    public Map<String, GitBranch> getBranches() {
+        return branches;
+    }
         
-        setValid(valid, msg);
+    public String getUriString() {
+        return repository.getUriString();
     }
 
     @Override
@@ -146,18 +136,12 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     public void prepareValidation () {
-        setEnabled(false);
+        repository.enableFields(false);
     }    
-
-    private void setEnabled (boolean enabled) {
-        for (JComponent inputField : inputFields) {
-            inputField.setEnabled(enabled);
-        }
-    }
-
+    
     public void cancelBackgroundTasks () {
-        if (supp != null) {
-            supp.cancel();
+        if (support != null) {
+            support.cancel();
         }
     }
 
@@ -165,49 +149,39 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         return remoteBranches;
     }
     
-    private void setFieldsVisibility() {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                String urlString = (String) panel.urlComboBox.getEditor().getItem();
-                final boolean isFile = urlString != null && urlString.toLowerCase().startsWith("file:///");
-                
-                panel.chooseFolderButton.setVisible(isFile);
-                
-                panel.passwordLabel.setVisible(!isFile);
-                panel.userPasswordField.setVisible(!isFile);
-                panel.userLabel.setVisible(!isFile);
-                panel.userTextField.setVisible(!isFile);
-                panel.proxySettingsButton.setVisible(!isFile);
-                panel.savePasswordCheckBox.setVisible(!isFile);
-                panel.leaveBlankLabel.setVisible(!isFile);
-            }
-        });
+    @Override
+    public void stateChanged(ChangeEvent ce) {
+        setValid(repository.isValid(), repository.getMessage());
     }
 
-    private void initUrlComboValues() {
-//        String 
-    }
-            
-    private static class RemoteUri implements Comparable<RemoteUri> {
-        private final String label;
+    private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
         private final String uri;
-        private final String remoteName;
 
-        public RemoteUri (String remoteName, String uri) {
+        public RepositoryStepProgressSupport(JPanel panel, String uri) {
+            super(panel, true);
             this.uri = uri;
-            this.remoteName = remoteName;
-            this.label = NbBundle.getMessage(SelectUriPanel.class, "SelectUriPanel.configuredRepository.uri", new Object[] { remoteName, uri }); //NOI18N
         }
 
         @Override
-        public String toString () {
-            return label;
+        public void perform() {
+            try {
+                GitClient client = getClient();
+                client.init(this);
+                branches = new HashMap<String, GitBranch>();
+                branches.putAll(client.listRemoteBranches(uri, this));
+            } catch (GitException ex) {
+                GitClientExceptionHandler.notifyException(ex, false);
+                setValid(false, new Message(ex.getMessage(), true));
+                return;
+            } finally {
+                Utils.deleteRecursively(getRepositoryRoot());
+            }
         }
 
         @Override
-        public int compareTo (RemoteUri other) {
-            return toString().compareTo(other.toString());
-        }
-    }
+        public void setEnabled(boolean editable) {
+            repository.enableFields(editable);
+        }        
+    };
+
 }

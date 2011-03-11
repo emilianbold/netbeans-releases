@@ -77,7 +77,9 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNo
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -694,6 +696,11 @@ public class MakeConfiguration extends Configuration {
         return remoteMode;
     }
 
+    public FileSystem getSourceFileSystem() {
+        ExecutionEnvironment env = getFileSystemHost();
+        return FileSystemProvider.getFileSystem(env);
+    }
+    
     public ExecutionEnvironment getFileSystemHost() {
         if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
             return getDevelopmentHost().getExecutionEnvironment();
