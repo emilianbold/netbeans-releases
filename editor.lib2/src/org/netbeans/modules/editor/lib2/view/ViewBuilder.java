@@ -349,7 +349,7 @@ final class ViewBuilder {
 
         if (pReplace != null && pReplace != fReplace) { // Unfinished pReplace
             throw new IllegalStateException("Unfinished non-first replace - error during view replacement: view:\n" + // NOI18N
-                    dReplace.view + "\n\npReplace:\n" + pReplace + "\nfReplace:\n" + fReplace); // NOI18N
+                    dReplace.view.toStringDetail() + "\n\npReplace:\n" + pReplace + "\nfReplace:\n" + fReplace); // NOI18N
         }
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -387,7 +387,7 @@ final class ViewBuilder {
         int limitOffset = matchOffset;
         if (limitOffset > docViewEndOffset) {
             throw new IllegalStateException("matchOffset=" + matchOffset + // NOI18N
-                    " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+                    " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view.toStringDetail()); // NOI18N
         }
         for (int i = factoryStates.length - 1; i >= 0; i--) {
             FactoryState state = factoryStates[i];
@@ -444,7 +444,7 @@ final class ViewBuilder {
                             fReplace.removeTillEnd();
                             if (paragraphViewEndOffset > docViewEndOffset) {
                                 throw new IllegalStateException("paragraphViewEndOffset=" + paragraphViewEndOffset + // NOI18N
-                                        " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+                                        " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view.toStringDetail()); // NOI18N
                             }
                             matchOffset = paragraphViewEndOffset;
                             // Possibly need to remove next paragraph views
@@ -461,7 +461,7 @@ final class ViewBuilder {
                                     throw new IllegalStateException("matchOffset=" + matchOffset + // NOI18N
                                             " > docViewEndOffset=" + docViewEndOffset + // NOI18N
                                             ", pReplace-view-length=" + pReplace.view.getEditorView(index).getLength() + // NOI18N
-                                            "\ndocView:\n" + dReplace.view); // NOI18N
+                                            "\ndocView:\n" + dReplace.view.toStringDetail()); // NOI18N
                                 }
                                 pReplace.removeCount++;
                                 if (createdViewEndOffset <= matchOffset) {
@@ -523,7 +523,7 @@ final class ViewBuilder {
                     limitOffset = state.nextViewStartOffset;
                     if (limitOffset > docViewEndOffset) {
                         throw new IllegalStateException("state: limitOffset=" + limitOffset + // NOI18N
-                                " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view); // NOI18N
+                                " > docViewEndOffset=" + docViewEndOffset + "\ndocView:\n" + dReplace.view.toStringDetail()); // NOI18N
                     }
                 }
             }
