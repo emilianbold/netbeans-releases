@@ -45,6 +45,9 @@ package org.netbeans.api.actions;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  *
@@ -54,6 +57,13 @@ public class SavableTest extends NbTestCase {
 
     public SavableTest(String n) {
         super(n);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        for (DoSave savable : Savable.REGISTRY.lookupAll(DoSave.class)) {
+            savable.cleanup();
+        }
     }
 
     public void testSavablesAreRegistered() throws IOException {
@@ -81,6 +91,43 @@ public class SavableTest extends NbTestCase {
         
         assertEquals("Only one savable", 1, Savable.REGISTRY.lookupAll(Savable.class).size());
         assertEquals("The later", s2, Savable.REGISTRY.lookup(Savable.class));
+    }
+
+    public void testEventDeliveredAsynchronously() throws Exception {
+        class L implements LookupListener {
+            int change;
+            Object id = new Object();
+            
+            @Override
+            public synchronized void resultChanged(LookupEvent ev) {
+                change++;
+                notifyAll();
+            }
+            
+            public synchronized void createSavable() {
+                assertEquals("No changes yet", 0, change);
+                Savable s = new DoSave(id, null, null);
+                assertEquals("The first", s, Savable.REGISTRY.lookup(Savable.class));
+                assertEquals("Still no changes", 0, change);
+            }
+            
+            public synchronized void waitForChange() throws InterruptedException {
+                while (change == 0) {
+                    wait();
+                }
+                assertEquals("One change delivered", 1, change);
+            }
+        }
+        L listener = new L();
+        Result<Savable> res = Savable.REGISTRY.lookupResult(Savable.class);
+        
+        try {
+            res.addLookupListener(listener);
+            listener.createSavable();
+            listener.waitForChange();
+        } finally {
+            res.removeLookupListener(listener);
+        }
     }
     
     static class DoSave extends AbstractSavable {
@@ -116,6 +163,10 @@ public class SavableTest extends NbTestCase {
         @Override
         public int hashCode() {
             return id.hashCode();
+        }
+
+        final void cleanup() {
+            unregister();
         }
     }
     

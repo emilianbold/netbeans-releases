@@ -43,6 +43,7 @@ package org.netbeans.modules.openide.awt;
 
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -51,7 +52,8 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class SavableRegistry {
-    private static final InstanceContent IC = new InstanceContent();
+    private static final RequestProcessor RP = new RequestProcessor("Savable Registry");
+    private static final InstanceContent IC = new InstanceContent(RP);
     private static final Lookup LOOKUP = new AbstractLookup(IC);
     
     public static Lookup getRegistry() {
