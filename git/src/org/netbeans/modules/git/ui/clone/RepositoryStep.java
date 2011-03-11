@@ -98,9 +98,9 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             if(!validateRepository()) return;
 
             final File tempRepository = Utils.getTempFolder();
-            String uri = repository.getUriString();
+            String uri = repository.getUrlString();
             if (uri != null && !uri.trim().isEmpty()) {
-                support = new RepositoryStepProgressSupport(panel.progressPanel, repository.getUriString());        
+                support = new RepositoryStepProgressSupport(panel.progressPanel, repository.getUrlString());        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
             }    
@@ -121,7 +121,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     }
         
     public String getUriString() {
-        return repository.getUriString();
+        return repository.getUrlString();
     }
 
     @Override

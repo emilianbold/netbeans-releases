@@ -48,7 +48,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
@@ -58,7 +57,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.util.ChangeSupport;
@@ -76,18 +74,27 @@ public class Repository implements DocumentListener, ActionListener {
     private static final Pattern SCHEME_PATTERN = Pattern.compile("([a-z][a-z0-9+-]+)://"); // NOI18N
 
     private enum Scheme {
-        FILE("file"),
-        HTTP("http"),
-        HTTPS("https"),
-        FTP("ftp"),
-        FTPS("ftps");     
+        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),
+        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),
+        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),
+        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),
+        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),
+        SSH("ssh", "ssh://[user@]host.xz[:port]/path/to/repo.git/"),
+        GIT("git", "git://host.xz[:port]/path/to/repo.git/"),
+        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");     
         
         private final String name;
+        private final String tip;
 
-        private Scheme(String name) {
+        private Scheme(String name, String tip) {
             this.name = name;
+            this.tip = tip;
         };        
          
+        private String getTip() {
+            return tip;
+        }
+        
         @Override
         public String toString() {
             return name;
@@ -189,7 +196,7 @@ public class Repository implements DocumentListener, ActionListener {
             valid = true;
             msg = null;
             
-            String uri = getUriString();
+            String uri = getUrlString();
             if(uri == null || uri.trim().isEmpty()) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(Repository.class, "MSG_EMPTY_URI_ERROR"), true);
@@ -207,21 +214,23 @@ public class Repository implements DocumentListener, ActionListener {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                String uriString = getUriString();
-                if(uriString == null) {
+                String urlString = getUrlString();
+                if(urlString == null) {
                     return;
                 }
-                URI uri = null;
-                try {
-                    uri = new URI(uriString);
-                } catch (URISyntaxException ex) {
-                    Git.LOG.log(Level.INFO, null, ex);
+                
+                boolean isFile = true;
+                for (Scheme s : Scheme.values()) {
+                    if(s == Scheme.FILE) continue;
+                    if(urlString.startsWith(s.toString())) {
+                        panel.tipLabel.setText(s.getTip());
+                        isFile = false;
+                        break;
+                    }
                 }
-                if(uri == null) {
-                    return;
+                if(isFile) {
+                    panel.tipLabel.setText(Scheme.FILE.getTip());
                 }
-                // XXX kind of dummy
-                boolean isFile = uri != null && (uri.getScheme() == null || uri.getScheme().equals(Scheme.FILE.toString()));
                 
                 panel.directoryBrowseButton.setVisible(isFile);
                 
@@ -236,7 +245,7 @@ public class Repository implements DocumentListener, ActionListener {
         });
     }
 
-    String getUriString() {
+    String getUrlString() {
         return (String) panel.urlComboBox.getEditor().getItem();        
     }
     
